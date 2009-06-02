@@ -134,6 +134,14 @@ void convert_format(      cusp::dense_matrix<ValueType,cusp::host_memory,Orienta
 {    cusp::host::csr_to_dense(dst, src);    }
 
 
+/////////
+// DIA //
+/////////
+template <typename IndexType, typename ValueType>
+void convert_format(      cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& dst,
+                    const cusp::dia_matrix<IndexType,ValueType,cusp::host_memory>& src)
+{    cusp::host::dia_to_csr(dst, src);    }
+
 ///////////
 // Dense //
 ///////////

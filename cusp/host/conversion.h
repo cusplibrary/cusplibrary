@@ -253,6 +253,55 @@ void csr_to_dense(      cusp::dense_matrix<ValueType,cusp::host_memory,Orientati
 }
 
 
+/////////////////////
+// DIA Conversions //
+/////////////////////
+
+template <typename IndexType, typename ValueType>
+void dia_to_csr(      cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& dst,
+                const cusp::dia_matrix<IndexType,ValueType,cusp::host_memory>& src)
+{
+    IndexType num_entries = 0;
+    typedef typename cusp::dia_matrix<IndexType,ValueType,cusp::host_memory>::offset_type OffsetType;
+
+    for(IndexType n = 0; n < src.num_diagonals; n++){
+        const OffsetType k = src.diagonal_offsets[n];  //diagonal offset
+
+        const IndexType i_start = std::max((OffsetType) 0, -k);
+        const IndexType j_start = std::max((OffsetType) 0,  k);
+        
+        const ValueType * values = src.values + n * src.stride + i_start;
+
+        //number of elements to process
+        const IndexType M = std::min(src.num_rows - i_start, src.num_cols - j_start);
+
+        for(IndexType m = 0; m < M; m++){
+            if(values[m] != 0)
+                num_entries++;
+        }
+    }
+
+    cusp::allocate_matrix(dst, src.num_rows, src.num_cols, num_entries);
+
+    num_entries = 0;
+    dst.row_offsets[0] = 0;
+    for(IndexType i = 0; i < src.num_rows; i++){
+        for(IndexType n = 0; n < src.num_diagonals; n++){
+            const OffsetType j = i + src.diagonal_offsets[n];
+
+            if(j >= 0 && j < src.num_cols){
+                const ValueType value = src.values[n * src.stride + i];
+                if (value != 0){
+                    dst.column_indices[num_entries] = j;
+                    dst.values[num_entries] = value;
+                    num_entries++;
+                }
+            }
+        }
+        dst.row_offsets[i + 1] = num_entries;
+    }
+}
+
 
 ///////////////////////
 // Dense Conversions //

@@ -35,6 +35,29 @@ void initialize_conversion_example(cusp::coo_matrix<IndexType, ValueType, cusp::
     coo.row_indices[6] = 3;  coo.column_indices[6] = 1;  coo.values[6] = 16;
 }
 
+template <typename IndexType, typename ValueType>
+void initialize_conversion_example(cusp::dia_matrix<IndexType, ValueType, cusp::host_memory> & dia)
+{
+    cusp::allocate_matrix(dia, 4, 4, 7, 3, 4);
+
+    dia.diagonal_offsets[0] = -2;
+    dia.diagonal_offsets[1] =  0;
+    dia.diagonal_offsets[2] =  1;
+
+    dia.values[ 0] =  0; 
+    dia.values[ 1] =  0; 
+    dia.values[ 2] = 13; 
+    dia.values[ 3] = 16; 
+    dia.values[ 4] = 10; 
+    dia.values[ 5] =  0; 
+    dia.values[ 6] = 14; 
+    dia.values[ 7] =  0; 
+    dia.values[ 8] = 11; 
+    dia.values[ 9] = 12; 
+    dia.values[10] = 15; 
+    dia.values[11] =  0; 
+}
+
 template <typename ValueType, class Orientation>
 void initialize_conversion_example(cusp::dense_matrix<ValueType, cusp::host_memory, Orientation> & dense)
 {
@@ -310,6 +333,18 @@ void TestConvertCsrToEllMatrix(void)
     cusp::deallocate_matrix(ell);
 }
 DECLARE_UNITTEST(TestConvertCsrToEllMatrix);
+
+
+/////////////////////
+// DIA Conversions //
+/////////////////////
+
+void TestConvertDiaToCsrMatrix(void)
+{
+    TestConversion(cusp::csr_matrix<int, float, cusp::host_memory>(), 
+                   cusp::dia_matrix<int, float, cusp::host_memory>());
+}
+DECLARE_UNITTEST(TestConvertDiaToCsrMatrix);
 
 ///////////////////////
 // Dense Conversions //
