@@ -302,6 +302,34 @@ void dia_to_csr(      cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& d
     }
 }
 
+/////////////////////
+// ELL Conversions //
+/////////////////////
+
+template <typename IndexType, typename ValueType>
+void ell_to_csr(      cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& dst,
+                const cusp::ell_matrix<IndexType,ValueType,cusp::host_memory>& src)
+{
+    const IndexType invalid_index = cusp::ell_matrix<IndexType, ValueType, cusp::host_memory>::invalid_index;
+
+    cusp::allocate_matrix(dst, src.num_rows, src.num_cols, src.num_entries);
+
+    IndexType num_entries = 0;
+    dst.row_offsets[0] = 0;
+    for(IndexType i = 0; i < src.num_rows; i++){
+        for(IndexType n = 0; n < src.num_entries_per_row; n++){
+            const IndexType j = src.column_indices[src.stride * n + i];
+            const IndexType v = src.values[src.stride * n + i];
+            if(j != invalid_index){
+                dst.column_indices[num_entries] = j;
+                dst.values[num_entries] = v;
+                num_entries++;
+            }
+        }
+        dst.row_offsets[i + 1] = num_entries;
+    }
+}
+
 
 ///////////////////////
 // Dense Conversions //

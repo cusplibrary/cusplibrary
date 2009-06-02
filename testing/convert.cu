@@ -58,6 +58,32 @@ void initialize_conversion_example(cusp::dia_matrix<IndexType, ValueType, cusp::
     dia.values[11] =  0; 
 }
 
+
+template <typename IndexType, typename ValueType>
+void initialize_conversion_example(cusp::ell_matrix<IndexType, ValueType, cusp::host_memory> & ell)
+{
+    cusp::allocate_matrix(ell, 4, 4, 7, 3, 4);
+
+    const int X = cusp::ell_matrix<int, float, cusp::host_memory>::invalid_index;
+
+    ell.column_indices[ 0] =  0;  ell.values[ 0] = 10; 
+    ell.column_indices[ 1] =  2;  ell.values[ 1] = 12;
+    ell.column_indices[ 2] =  0;  ell.values[ 2] = 13;
+    ell.column_indices[ 3] =  1;  ell.values[ 3] = 16;
+    
+    ell.column_indices[ 4] =  1;  ell.values[ 4] = 11; 
+    ell.column_indices[ 5] =  X;  ell.values[ 5] =  0; 
+    ell.column_indices[ 6] =  2;  ell.values[ 6] = 14;
+    ell.column_indices[ 7] =  X;  ell.values[ 7] =  0;
+
+    ell.column_indices[ 8] =  X;  ell.values[ 8] =  0;
+    ell.column_indices[ 9] =  X;  ell.values[ 9] =  0;
+    ell.column_indices[10] =  3;  ell.values[10] = 15;
+    ell.column_indices[11] =  X;  ell.values[11] =  0;
+}
+
+
+
 template <typename ValueType, class Orientation>
 void initialize_conversion_example(cusp::dense_matrix<ValueType, cusp::host_memory, Orientation> & dense)
 {
@@ -166,7 +192,7 @@ void TestConversion(MatrixType1 dst, MatrixType2 src)
 {
     initialize_conversion_example(src);
     
-    cusp::detail::convert_format(dst, src);
+    cusp::convert_matrix(dst, src);
     
     compare_conversion_example(dst);
     
@@ -222,7 +248,7 @@ void TestConvertCsrToHybMatrix(void)
     // initialize host matrix
     initialize_conversion_example(csr);
 
-    cusp::detail::convert_format(hyb, csr, 1.0, 4);
+    cusp::convert_matrix(hyb, csr, 1.0, 4);
 
     // compare csr and hyb
     ASSERT_EQUAL(csr.num_rows,    hyb.num_rows);
@@ -260,9 +286,9 @@ void TestConvertCsrToDiaMatrix(void)
     // initialize host matrix
     initialize_conversion_example(csr);
 
-    ASSERT_THROWS(cusp::detail::convert_format(dia, csr, 1.0, 4), cusp::format_conversion_exception);
+    ASSERT_THROWS(cusp::convert_matrix(dia, csr, 1.0, 4), cusp::format_conversion_exception);
 
-    cusp::detail::convert_format(dia, csr, 3.0, 4);
+    cusp::convert_matrix(dia, csr, 3.0, 4);
 
     // compare csr and dia
     ASSERT_EQUAL(dia.num_rows,    csr.num_rows);
@@ -303,9 +329,9 @@ void TestConvertCsrToEllMatrix(void)
     // initialize host matrix
     initialize_conversion_example(csr);
 
-    ASSERT_THROWS(cusp::detail::convert_format(ell, csr, 1.0, 4), cusp::format_conversion_exception);
+    ASSERT_THROWS(cusp::convert_matrix(ell, csr, 1.0, 4), cusp::format_conversion_exception);
 
-    cusp::detail::convert_format(ell, csr, 3.0, 4);
+    cusp::convert_matrix(ell, csr, 3.0, 4);
 
     const int X = cusp::ell_matrix<int, float, cusp::host_memory>::invalid_index;
 
@@ -346,10 +372,22 @@ void TestConvertDiaToCsrMatrix(void)
 }
 DECLARE_UNITTEST(TestConvertDiaToCsrMatrix);
 
+
+/////////////////////
+// ELL Conversions //
+/////////////////////
+
+void TestConvertEllToCsrMatrix(void)
+{
+    TestConversion(cusp::csr_matrix<int, float, cusp::host_memory>(), 
+                   cusp::ell_matrix<int, float, cusp::host_memory>());
+}
+DECLARE_UNITTEST(TestConvertEllToCsrMatrix);
+
+
 ///////////////////////
 // Dense Conversions //
 ///////////////////////
-
 
 void TestConvertDenseToCsrMatrix(void)
 {
