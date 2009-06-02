@@ -82,7 +82,20 @@ void initialize_conversion_example(cusp::ell_matrix<IndexType, ValueType, cusp::
     ell.column_indices[11] =  X;  ell.values[11] =  0;
 }
 
+template <typename IndexType, typename ValueType>
+void initialize_conversion_example(cusp::hyb_matrix<IndexType, ValueType, cusp::host_memory> & hyb)
+{
+    cusp::allocate_matrix(hyb, 4, 4, 4, 3, 1, 4); 
 
+    hyb.ell.column_indices[0] = 0;  hyb.ell.values[0] = 10; 
+    hyb.ell.column_indices[1] = 2;  hyb.ell.values[1] = 12;
+    hyb.ell.column_indices[2] = 0;  hyb.ell.values[2] = 13;
+    hyb.ell.column_indices[3] = 1;  hyb.ell.values[3] = 16;
+
+    hyb.coo.row_indices[0] = 0; hyb.coo.column_indices[0] = 1; hyb.coo.values[0] = 11; 
+    hyb.coo.row_indices[1] = 2; hyb.coo.column_indices[1] = 2; hyb.coo.values[1] = 14;
+    hyb.coo.row_indices[2] = 2; hyb.coo.column_indices[2] = 3; hyb.coo.values[2] = 15;
+}
 
 template <typename ValueType, class Orientation>
 void initialize_conversion_example(cusp::dense_matrix<ValueType, cusp::host_memory, Orientation> & dense)
@@ -383,6 +396,18 @@ void TestConvertEllToCsrMatrix(void)
                    cusp::ell_matrix<int, float, cusp::host_memory>());
 }
 DECLARE_UNITTEST(TestConvertEllToCsrMatrix);
+
+
+/////////////////////
+// HYB Conversions //
+/////////////////////
+
+void TestConvertHybToCsrMatrix(void)
+{
+    TestConversion(cusp::csr_matrix<int, float, cusp::host_memory>(), 
+                   cusp::hyb_matrix<int, float, cusp::host_memory>());
+}
+DECLARE_UNITTEST(TestConvertHybToCsrMatrix);
 
 
 ///////////////////////

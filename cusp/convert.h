@@ -59,6 +59,8 @@ namespace cusp
 //  - CSR
 // ELL
 //  - CSR
+// HYB
+//  - CSR
 // Dense
 //  - COO
 //  - CSR
@@ -153,6 +155,15 @@ template <typename IndexType, typename ValueType>
 void convert_matrix(      cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& dst,
                     const cusp::ell_matrix<IndexType,ValueType,cusp::host_memory>& src)
 {    cusp::host::ell_to_csr(dst, src);    }
+
+
+/////////
+// HYB //
+/////////
+template <typename IndexType, typename ValueType>
+void convert_matrix(      cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& dst,
+                    const cusp::hyb_matrix<IndexType,ValueType,cusp::host_memory>& src)
+{    cusp::host::hyb_to_csr(dst, src);    }
 
 
 ///////////

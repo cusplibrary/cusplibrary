@@ -330,6 +330,45 @@ void ell_to_csr(      cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& d
     }
 }
 
+/////////////////////
+// HYB Conversions //
+/////////////////////
+
+template <typename IndexType, typename ValueType>
+void hyb_to_csr(      cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& dst,
+                const cusp::hyb_matrix<IndexType,ValueType,cusp::host_memory>& src)
+{
+    cusp::csr_matrix<IndexType,ValueType,cusp::host_memory> ell_part;
+    cusp::csr_matrix<IndexType,ValueType,cusp::host_memory> coo_part;
+
+    ell_to_csr(ell_part, src.ell);
+    coo_to_csr(coo_part, src.coo);
+
+    cusp::allocate_matrix(dst, src.num_rows, src.num_cols, src.num_entries);
+
+    // merge the two CSR parts
+    IndexType num_entries = 0;
+    dst.row_offsets[0] = 0;
+    for(IndexType i = 0; i < src.num_rows; i++){
+        for(IndexType jj = ell_part.row_offsets[i]; jj < ell_part.row_offsets[i + 1]; jj++){
+            dst.column_indices[num_entries] = ell_part.column_indices[jj];
+            dst.values[num_entries]         = ell_part.values[jj];
+            num_entries++;
+        }
+
+        for(IndexType jj = coo_part.row_offsets[i]; jj < coo_part.row_offsets[i + 1]; jj++){
+            dst.column_indices[num_entries] = coo_part.column_indices[jj];
+            dst.values[num_entries]         = coo_part.values[jj];
+            num_entries++;
+        }
+
+        dst.row_offsets[i + 1] = num_entries;
+    }
+
+    cusp::deallocate_matrix(ell_part);
+    cusp::deallocate_matrix(coo_part);
+}
+
 
 ///////////////////////
 // Dense Conversions //
