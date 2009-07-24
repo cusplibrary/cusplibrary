@@ -34,7 +34,7 @@ namespace device
 
 // segmented reduction in shared memory
 template <typename IndexType, typename ValueType>
-__device__ void segreduce_warp(const IndexType * idx, ValueType * val)
+__device__ void segscan_warp(const IndexType * idx, ValueType * val)
 {
     const IndexType thread_lane = threadIdx.x & (WARP_SIZE - 1);               // thread index within the warp
 
@@ -45,9 +45,9 @@ __device__ void segreduce_warp(const IndexType * idx, ValueType * val)
     if( thread_lane >= 16 && idx[threadIdx.x] == idx[threadIdx.x - 16] ) { val[threadIdx.x] += val[threadIdx.x - 16]; EMUSYNC; }
 }
 template <typename IndexType, typename ValueType>
-__device__ void segreduce_block(const IndexType * idx, ValueType * val)
+__device__ void segscan_block(const IndexType * idx, ValueType * val)
 {
-    // TODO use segreduce_warp
+    // TODO use segscan_warp
     
     ValueType left = 0;
     if( threadIdx.x >=   1 && idx[threadIdx.x] == idx[threadIdx.x -   1] ) { left = val[threadIdx.x -   1]; } __syncthreads(); val[threadIdx.x] += left; left = 0; __syncthreads();  
@@ -87,6 +87,80 @@ __device__ void segreduce_block(const IndexType * idx, ValueType * val)
 //   Same as spmv_coo_flat_atomic, except that the texture cache is 
 //   used for accessing the x vector.
 
+
+
+// spmv_coo_flat_kernel
+//
+// In this kernel each warp processes an interval of the nonzero values.
+// For example, if the matrix contains 128 nonzero values and there are
+// two warps and interval_size is 64, then the first warp (warp_id == 0)
+// will process the first set of 64 values (interval [0, 64)) and the 
+// second warp will process // the second set of 64 values 
+// (interval [64, 128)).  Note that the  number of nonzeros is not always
+// a multiple of 32 (the warp size) or 32 * the number of active warps,
+// so the last active warp will not always process a "full" interval of
+// interval_size.
+// 
+// The first thread in each warp (thread_lane == 0) has a special role:
+// it is responsible for keeping track of the "carry" values from one
+// iteration to the next.  The carry values consist of the row index and
+// partial sum from the previous batch of 32 elements.  In the example 
+// mentioned before with two warps and 128 nonzero elements, the first
+// warp iterates twice and looks at the carry of the first iteration to
+// decide whether to include this partial sum into the current batch.
+// Specifically, if a row extends over a 32-element boundary, then the
+// partial sum is carried over into the new 32-element batch.  If,
+// on the other hand, the _last_ row index of the previous batch (the carry)
+// differs from the _first_ row index of the current batch (the row
+// read by the thread with thread_lane == 0), then the partial sum
+// is written out to memory.
+//
+// Each warp iterates over its interval, processing 32 elements at a time.
+// For each batch of 32 elements, the warp does the following
+//  1) Fetch the row index, column index, and value for a matrix entry.  These
+//     values are loaded from I[n], J[n], and V[n] respectively.
+//     The row entry is stored in the shared memory array idx.
+//  2) Fetch the corresponding entry from the input vector.  Specifically, for a 
+//     nonzero entry (i,j) in the matrix, the thread must load the value x[j]
+//     from memory.  We use the function fetch_x to control whether the texture
+//     cache is used to load the value (UseCache == True) or whether a normal
+//     global load is used (UseCache == False).
+//  3) The matrix value A(i,j) (which was stored in V[n]) is multiplied by the 
+//     value x[j] and stored in the shared memory array val.
+//  4) The first thread in the warp (thread_lane == 0) considers the "carry"
+//     row index and either includes the carried sum in its own sum, or it
+//     updates the output vector (y) with the carried sum.
+//  5) With row indices in the shared array idx and sums in the shared array
+//     val, the warp conducts a segmented scan.  The segmented scan operation
+//     looks at the row entries for each thread (stored in idx) to see whether
+//     two values belong to the same segment (segments correspond to matrix rows).
+//     Consider the following example which consists of 3 segments
+//     (note: this example uses a warp size of 16 instead of the usual 32)
+//
+//           0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15   # thread_lane
+//     idx [ 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2]  # row indices
+//     val [ 4, 6, 5, 0, 8, 3, 2, 8, 3, 1, 4, 9, 2, 5, 2, 4]  # A(i,j) * x(j)
+//
+//     After the segmented scan the result will be
+//
+//     val [ 4,10,15,15,23,26, 2,10,13,14, 4,13,15,20,22,26]  # A(i,j) * x(j)
+//
+//  6) After the warp computes the segmented scan operation 
+//     each thread except for the last (thread_lane == 31) looks
+//     at the row index of the next thread (threadIdx.x + 1) to 
+//     see if the segment ends here, or continues into the 
+//     next thread.  The thread at the end of the segment writes
+//     the sum into the output vector (y) at the corresponding row
+//     index.
+//  7) The last thread in each warp (thread_lane == 31) writes
+//     its row index and partial sum into the designated spote in the
+//     carry_idx and carry_val arrays.  The carry arrays are indexed
+//     by warp_lane which is a number in [0, BLOCK_SIZE / 32).
+//  
+//  These steps are repeated until the warp reaches the end of its interval.
+//  The carry values at the end of each interval are written to arrays 
+//  temp_rows and temp_vals, which are processed by a second kernel.
+//
 template <typename IndexType, typename ValueType, unsigned int BLOCK_SIZE, bool UseCache>
 __global__ void
 spmv_coo_flat_kernel(const IndexType num_entries,
@@ -110,7 +184,7 @@ spmv_coo_flat_kernel(const IndexType num_entries,
     const IndexType warp_lane   = threadIdx.x / WARP_SIZE;                   // warp index within the CTA
 
     const IndexType begin = warp_id * interval_size + thread_lane;           // thread's offset into I,J,V
-    const IndexType end   = min(begin + interval_size, num_entries);        // end of thread's work
+    const IndexType end   = min(begin + interval_size, num_entries);         // end of thread's work
 
     if(begin >= end){ return; }                                              // warp has no work to do 
 
@@ -132,7 +206,7 @@ spmv_coo_flat_kernel(const IndexType num_entries,
         }
 
         // segmented reduction in shared memory
-        segreduce_warp(idx, val);
+        segscan_warp(idx, val);
 
         if( thread_lane == 31 ) {
             carry_idx[warp_lane] = idx[threadIdx.x];                         // last thread in warp saves its results
@@ -186,7 +260,7 @@ spmv_coo_reduce_update_kernel(const IndexType num_warps,
 
         __syncthreads();
 
-        segreduce_block(rows, vals);
+        segscan_block(rows, vals);
 
         if (rows[threadIdx.x] != rows[threadIdx.x + 1])
             y[rows[threadIdx.x]] += vals[threadIdx.x];
@@ -207,7 +281,7 @@ spmv_coo_reduce_update_kernel(const IndexType num_warps,
 
         __syncthreads();
    
-        segreduce_block(rows, vals);
+        segscan_block(rows, vals);
 
         if (i < num_warps)
             if (rows[threadIdx.x] != rows[threadIdx.x + 1])
@@ -275,7 +349,7 @@ spmv_coo_flat_atomic_kernel(const IndexType num_entries,
         }
 
         // segmented scan in shared memory
-        segreduce_warp(idx, val);
+        segscan_warp(idx, val);
 
         if( thread_lane == 31 ) {
             carry_idx[warp_lane] = idx[threadIdx.x];                         // last thread in warp saves its results
