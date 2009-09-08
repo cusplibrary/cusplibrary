@@ -99,19 +99,21 @@ void cg(LinearOperator A,
 
     //cudaThreadSynchronize();
 
-    // MFLOPs excludes CUDA BLAS operations
+    // MFLOPs excludes BLAS operations
     //double elapsed = ((double) (clock() - start)) / CLOCKS_PER_SEC;
     //double MFLOPs = 2* ((double) i * (double) A.num_entries)/ (1e6 * elapsed);
     //printf("-iteration completed in %lfms  ( > %6.2lf MFLOPs )\n",1000*elapsed, MFLOPs );
 
-    if (verbose){
+    if (verbose)
+    {
+        ValueType r_rel = sqrt(r2) / r_norm; // relative residual
         if(r2 <= stop_tol)
-            printf("[CG] converged to %f relative residual in %d iterations\n", sqrt(r2)/r_norm, i);
+            std::cout << "[CG] converged to " << r_rel << " relative residual in " << i << " iterations" << std::endl;
         else
-            printf("[CG] failed to converge within %d iterations (achieved %f relative residual)\n",max_iter,sqrt(r2)/r_norm);
+            std::cout << "[CG] failed to converge within " << i << " iterations (achieved " << r_rel << " relative residual)" << std::endl;;
     }
 
-    // Free all the arrays we allocated
+    // deallocate workspace
     cusp::delete_array<ValueType, MemorySpace>(y);
     cusp::delete_array<ValueType, MemorySpace>(r);
     cusp::delete_array<ValueType, MemorySpace>(p);
