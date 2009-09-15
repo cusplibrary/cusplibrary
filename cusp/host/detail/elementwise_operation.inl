@@ -17,24 +17,27 @@
 
 #pragma once
 
-#include <cusp/csr_matrix.h>
-
-
 namespace cusp
 {
 
 namespace host
 {
 
+namespace detail
+{
+
 template <typename IndexType, typename ValueType, class BinaryOperator>
 void elementwise_operation(      cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& C,
                            const cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& A,
                            const cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& B,
-                           BinaryOperator op);
+                           BinaryOperator op)
+{
+
+}
+
+} // end namespace host
 
 } // end namespace host
 
 } // end namespace cusp
-
-#include <cusp/host/detail/elementwise_operation.inl>
 
