@@ -126,11 +126,10 @@ void convert_matrix(      cusp::ell_matrix<IndexType,ValueType,cusp::host_memory
 template <typename IndexType, typename ValueType>
 void convert_matrix(      cusp::hyb_matrix<IndexType,ValueType,cusp::host_memory>& dst,
                     const cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& src,
-                    const float ratio = 0.35,
-                    const IndexType alignment = 16)
+                    const float relative_speed = 3.0,  const IndexType breakeven_threshold = 4096)
 {
-    const IndexType num_entries_per_row = cusp::host::compute_optimal_entries_per_row(src, ratio);
-    cusp::host::csr_to_hyb(dst, src, num_entries_per_row, alignment);
+    const IndexType num_entries_per_row = cusp::host::compute_optimal_entries_per_row(src, relative_speed, breakeven_threshold);
+    cusp::host::csr_to_hyb(dst, src, num_entries_per_row);
 }
 
 template <typename IndexType, typename ValueType, class Orientation>
