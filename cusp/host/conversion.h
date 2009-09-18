@@ -103,7 +103,7 @@ void csr_to_coo(      cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& d
     cusp::allocate_matrix(dst, src.num_rows, src.num_cols, src.num_entries);
     
     for(IndexType i = 0; i < src.num_rows; i++){
-        for(IndexType jj = src.row_offsets[i]; jj < src.row_offsets[i+1]; jj++){
+        for(IndexType jj = src.row_offsets[i]; jj < src.row_offsets[i + 1]; jj++){
             dst.row_indices[jj] = i;
         }
     }

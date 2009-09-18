@@ -149,23 +149,30 @@ void load_matrix_market_file(cusp::coo_matrix<IndexType,ValueType,cusp::host_mem
         IndexType num_entries_read = 0;
 
         // read file contents
-        if (banner.type == "pattern"){
+        if (banner.type == "pattern")
+        {
             while(num_entries_read < coo.num_entries && !file.eof()){
                 file >> coo.row_indices[num_entries_read];
                 file >> coo.column_indices[num_entries_read];
                 num_entries_read++;
             }
             std::fill(coo.values, coo.values + coo.num_entries, 1.0);
-        } else if (banner.type == "real" || banner.type == "integer") {
+        } 
+        else if (banner.type == "real" || banner.type == "integer")
+        {
             while(num_entries_read < coo.num_entries && !file.eof()){
                 file >> coo.row_indices[num_entries_read];
                 file >> coo.column_indices[num_entries_read];
                 file >> coo.values[num_entries_read];
                 num_entries_read++;
             }
-        } else if (banner.type == "complex") {
+        } 
+        else if (banner.type == "complex")
+        {
             throw cusp::io_exception("complex MatrixMarket data type is not supported");
-        } else {
+        }
+        else
+        {
             throw cusp::io_exception("invalid MatrixMarket data type");
         }
 
