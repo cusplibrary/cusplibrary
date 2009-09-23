@@ -10,9 +10,59 @@
 #include <cusp/host/spmv.h>
 #include <cusp/device/spmv.h>
 
+#include "bytes_per_spmv.h"
 #include "timer.h"
+#include "gallery.h"
 
-std::map<std::string, std::string> args;
+typedef std::map<std::string, std::string> ArgumentMap;
+ArgumentMap args;
+
+
+void usage(int argc, char** argv)
+{
+    std::cout << "Usage:\n";
+    std::cout << "\t" << argv[0] << "\n";
+    std::cout << "\t" << argv[0] << " my_matrix.mtx\n";
+    std::cout << "\t" << argv[0] << " my_matrix.mtx --device=1\n";
+    std::cout << "\t" << argv[0] << " my_matrix.mtx --value_type=double\n";
+    std::cout << "Note: my_matrix.mtx must be real-valued sparse matrix in the MatrixMarket file format.\n"; 
+    std::cout << "      If no matrix file is provided then a simple example is created.\n";  
+}
+
+
+void set_device(int device_id)
+{
+    cudaSetDevice(device_id);
+}
+
+
+void list_devices(void)
+{
+    int deviceCount;
+    CUDA_SAFE_CALL(cudaGetDeviceCount(&deviceCount));
+    if (deviceCount == 0)
+        std::cout << "There is no device supporting CUDA" << std::endl;
+
+    for (int dev = 0; dev < deviceCount; ++dev) {
+        cudaDeviceProp deviceProp;
+        CUDA_SAFE_CALL(cudaGetDeviceProperties(&deviceProp, dev));
+
+        if (dev == 0) {
+            if (deviceProp.major == 9999 && deviceProp.minor == 9999)
+                std::cout << "There is no device supporting CUDA." << std::endl;
+            else if (deviceCount == 1)
+                std::cout << "There is 1 device supporting CUDA" << std:: endl;
+            else
+                std::cout << "There are " << deviceCount <<  " devices supporting CUDA" << std:: endl;
+        }
+
+        std::cout << "\nDevice " << dev << ": \"" << deviceProp.name << "\"" << std::endl;
+        std::cout << "  Major revision number:                         " << deviceProp.major << std::endl;
+        std::cout << "  Minor revision number:                         " << deviceProp.minor << std::endl;
+        std::cout << "  Total amount of global memory:                 " << deviceProp.totalGlobalMem << " bytes" << std::endl;
+    }
+    std::cout << std::endl;
+}
 
 
 template <typename T>
@@ -55,12 +105,11 @@ void test(std::string name, HostMatrix& host_matrix, double seconds = 3.0, size_
     }
     TestMatrix test_matrix;
     cusp::convert_matrix(test_matrix, host_test_matrix);
-    cusp::deallocate_matrix(host_test_matrix);
 
     // create host input (x) and output (y) vectors
     ValueType * host_x = cusp::new_array<ValueType, cusp::host_memory>(N);
     ValueType * host_y = cusp::new_array<ValueType, cusp::host_memory>(M);
-    for(IndexType i = 0; i < N; i++) host_x[i] = 1.0; //.5; //1.0/3.0; //rand() % 100; //(int(i % 21) - 10)
+    for(IndexType i = 0; i < N; i++) host_x[i] = (int(i % 21) - 10);
     for(IndexType i = 0; i < M; i++) host_y[i] = 0;
 
     // create test input (x) and output (y) vectors
@@ -100,12 +149,12 @@ void test(std::string name, HostMatrix& host_matrix, double seconds = 3.0, size_
     double msec_per_iteration = t.milliseconds_elapsed() / (double) num_iterations;
     double sec_per_iteration = msec_per_iteration / 1000.0;
     double GFLOPs = (sec_per_iteration == 0) ? 0 : (2.0 * (double) host_matrix.num_entries / sec_per_iteration) / 1e9;
-    double GBYTEs = 0.0;
-    //double GBYTEs = (sec_per_iteration == 0) ? 0 : ((double) bytes_per_spmv(sp_host) / sec_per_iteration) / 1e9;
-    
-    printf("\t%s: %8.4f ms ( %5.2f GFLOP/s %5.1f GB/s) [L2 error %.10f]\n", name.c_str(), msec_per_iteration, GFLOPs, GBYTEs, error); 
+    double GBYTEs = (sec_per_iteration == 0) ? 0 : ((double) bytes_per_spmv(host_test_matrix) / sec_per_iteration) / 1e9;
+   
+    printf("\t%s: %8.4f ms ( %5.2f GFLOP/s %5.1f GB/s) [L2 error %.8f]\n", name.c_str(), msec_per_iteration, GFLOPs, GBYTEs, error); 
     
     // clean up our work space
+    cusp::deallocate_matrix(host_test_matrix);
     cusp::delete_array<ValueType, cusp::host_memory>(host_x);
     cusp::delete_array<ValueType, cusp::host_memory>(host_y);
     cusp::delete_array<ValueType, MemorySpace>(test_x);
@@ -126,7 +175,11 @@ std::string process_args(int argc, char ** argv)
         if (arg.substr(0,2) == "--")
         {   
             std::string::size_type n = arg.find('=',2);
-            args[arg.substr(2,n)] = arg.substr(n);
+
+            if (n == std::string::npos)
+                args[arg.substr(2)] = std::string();              // (key)
+            else
+                args[arg.substr(2, n - 2)] = arg.substr(n + 1);   // (key,value)
         }
         else
         {
@@ -137,25 +190,68 @@ std::string process_args(int argc, char ** argv)
     return filename;
 }
 
+
+template <typename IndexType, typename ValueType>
+void test_all_formats(std::string& filename)
+{
+    int device_id  = args.count("device") ? atoi(args["device"].c_str()) :  0;
+    set_device(device_id);
+    list_devices();
+
+    std::cout << "Running on Device " << device_id << "\n\n";
+    
+    // load a matrix stored in MatrixMarket format
+    cusp::csr_matrix<IndexType, ValueType, cusp::host_memory> host_matrix;
+
+    if (filename == "")
+    {
+        std::cout << "Generated matrix (laplace_2d) ";
+        laplacian_5pt(host_matrix, 1024);
+    }
+    else
+    {
+        cusp::load_matrix_market_file(host_matrix, filename);
+        std::cout << "Read matrix (" << filename << ") ";
+    }
+        
+    std::cout << "with shape ("  << host_matrix.num_rows << "," << host_matrix.num_cols << ") and "
+              << host_matrix.num_entries << " entries" << "\n\n";
+
+    test< cusp::coo_matrix<IndexType, ValueType, cusp::device_memory>, cusp::coo_matrix<IndexType, ValueType, cusp::host_memory> >("coo", host_matrix);
+    test< cusp::csr_matrix<IndexType, ValueType, cusp::device_memory>, cusp::csr_matrix<IndexType, ValueType, cusp::host_memory> >("csr", host_matrix);
+    test< cusp::dia_matrix<IndexType, ValueType, cusp::device_memory>, cusp::dia_matrix<IndexType, ValueType, cusp::host_memory> >("dia", host_matrix);
+    test< cusp::ell_matrix<IndexType, ValueType, cusp::device_memory>, cusp::ell_matrix<IndexType, ValueType, cusp::host_memory> >("ell", host_matrix);
+    test< cusp::hyb_matrix<IndexType, ValueType, cusp::device_memory>, cusp::hyb_matrix<IndexType, ValueType, cusp::host_memory> >("hyb", host_matrix);
+
+    cusp::deallocate_matrix(host_matrix);
+}
+
 int main(int argc, char** argv)
 {
     std::string filename = process_args(argc, argv);
 
-    // load a matrix stored in MatrixMarket format
-    cusp::csr_matrix<int, float, cusp::host_memory> host_matrix;
-    cusp::load_matrix_market_file(host_matrix, filename);
-   
-    std::cout << "Read matrix (" << filename << ") with shape ("
-              << host_matrix.num_rows << "," << host_matrix.num_cols << ") and "
-              << host_matrix.num_entries << " entries" << std::endl;
+    if (args.count("help")) usage(argc, argv);
 
-    test< cusp::coo_matrix<int, float, cusp::device_memory>, cusp::coo_matrix<int, float, cusp::host_memory> >("coo", host_matrix);
-    test< cusp::csr_matrix<int, float, cusp::device_memory>, cusp::csr_matrix<int, float, cusp::host_memory> >("csr", host_matrix);
-    test< cusp::dia_matrix<int, float, cusp::device_memory>, cusp::dia_matrix<int, float, cusp::host_memory> >("dia", host_matrix);
-    test< cusp::ell_matrix<int, float, cusp::device_memory>, cusp::ell_matrix<int, float, cusp::host_memory> >("ell", host_matrix);
-    test< cusp::hyb_matrix<int, float, cusp::device_memory>, cusp::hyb_matrix<int, float, cusp::host_memory> >("hyb", host_matrix);
+    // select ValueType
+    std::string value_type = args.count("value_type") ? args["value_type"] : "float";
+    std::cout << "\nComputing SpMV with \'" << value_type << "\' values.\n\n";
 
-    cusp::deallocate_matrix(host_matrix);
+    if (value_type == "float")
+    {
+        test_all_formats<int,float>(filename);
+    }
+    else if (value_type == "double")
+    {
+#if defined(CUDA_NO_SM_13_DOUBLE_INTRINSICS)
+        std::cerr << "ERROR: Support for \'double\' requires SM 1.3 or greater (recompile with --arch=sm_13)\n\n";
+#else
+        test_all_formats<int,double>(filename);
+#endif
+    }
+    else
+    {
+        std::cerr << "ERROR: Unsupported type \'" << value_type << "\'\n\n";
+    }
 
     return 0;
 }
