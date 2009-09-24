@@ -41,7 +41,7 @@ void spmv_tex(const csr_matrix<IndexType,ValueType,cusp::device_memory>& csr,
               const ValueType * x, 
                     ValueType * y)
 { 
-    spmv_csr_vector(csr, x, y);
+    spmv_csr_vector_tex(csr, x, y);
 }
 
 

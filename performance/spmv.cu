@@ -130,7 +130,7 @@ void test(std::string name, HostMatrix& host_matrix, double seconds = 3.0, size_
    
     // warmup
     timer time_one_iteration;
-    cusp::device::spmv(test_matrix, test_x, test_y);  // TODO generalize this
+    cusp::device::spmv_tex(test_matrix, test_x, test_y);  // TODO generalize this
     cudaThreadSynchronize();
     double estimated_time = time_one_iteration.seconds_elapsed();
     
@@ -144,7 +144,7 @@ void test(std::string name, HostMatrix& host_matrix, double seconds = 3.0, size_
     // time several SpMV iterations
     timer t;
     for(size_t i = 0; i < num_iterations; i++)
-        cusp::device::spmv(test_matrix, test_x, test_y);  // TODO generalize this
+        cusp::device::spmv_tex(test_matrix, test_x, test_y);  // TODO generalize this
     cudaThreadSynchronize();
     double msec_per_iteration = t.milliseconds_elapsed() / (double) num_iterations;
     double sec_per_iteration = msec_per_iteration / 1000.0;

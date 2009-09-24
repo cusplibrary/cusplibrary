@@ -40,7 +40,7 @@ void spmv_tex(const coo_matrix<IndexType,ValueType,cusp::device_memory>& coo,
               const ValueType * x, 
                     ValueType * y)
 { 
-    spmv_coo_flat(coo, x, y);
+    spmv_coo_flat_tex(coo, x, y);
 }
 
 
