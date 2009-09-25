@@ -107,7 +107,7 @@ void spmv_csr_scalar_tex(const csr_matrix<IndexType,ValueType,cusp::device_memor
     
     const dim3 grid = make_large_grid(csr.num_rows, BLOCK_SIZE);
     
-    binx(x);
+    bind_x(x);
 
     spmv_csr_scalar_kernel<IndexType, ValueType, true> <<<grid, BLOCK_SIZE>>> 
         (csr.num_rows, csr.row_offsets, csr.column_indices, csr.values, x, y);   

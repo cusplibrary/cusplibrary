@@ -91,9 +91,9 @@ spmv_dia_kernel(const IndexType num_rows,
 }
 
 template <typename IndexType, typename ValueType>
-void spmv(const cusp::dia_matrix<IndexType,ValueType,cusp::device_memory>& dia, 
-          const ValueType * x, 
-                ValueType * y)
+void spmv_dia(const cusp::dia_matrix<IndexType,ValueType,cusp::device_memory>& dia, 
+              const ValueType * x, 
+                    ValueType * y)
 {
     const unsigned int BLOCK_SIZE = 256;
     const dim3 grid = make_large_grid(dia.num_rows, BLOCK_SIZE);
@@ -110,9 +110,9 @@ void spmv(const cusp::dia_matrix<IndexType,ValueType,cusp::device_memory>& dia,
 }
 
 template <typename IndexType, typename ValueType>
-void spmv_tex(const cusp::dia_matrix<IndexType,ValueType,cusp::device_memory>& dia, 
-              const ValueType * x, 
-                    ValueType * y)
+void spmv_dia_tex(const cusp::dia_matrix<IndexType,ValueType,cusp::device_memory>& dia, 
+                  const ValueType * x, 
+                        ValueType * y)
 {
     const unsigned int BLOCK_SIZE = 256;
     const dim3 grid = make_large_grid(dia.num_rows, BLOCK_SIZE);
@@ -130,6 +130,23 @@ void spmv_tex(const cusp::dia_matrix<IndexType,ValueType,cusp::device_memory>& d
     }
 
     unbind_x(x);
+}
+
+
+template <typename IndexType, typename ValueType>
+void spmv(const cusp::dia_matrix<IndexType,ValueType,cusp::device_memory>& dia, 
+          const ValueType * x, 
+                ValueType * y)
+{
+    spmv_dia(dia, x, y);
+}
+
+template <typename IndexType, typename ValueType>
+void spmv_tex(const cusp::dia_matrix<IndexType,ValueType,cusp::device_memory>& dia, 
+              const ValueType * x, 
+                    ValueType * y)
+{
+    spmv_dia_tex(dia, x, y);
 }
 
 } // end namespace device

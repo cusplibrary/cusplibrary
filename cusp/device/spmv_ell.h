@@ -69,9 +69,9 @@ spmv_ell_kernel(const IndexType num_rows,
 }
 
 template <typename IndexType, typename ValueType>
-void spmv(const cusp::ell_matrix<IndexType,ValueType,cusp::device_memory>& ell, 
-          const ValueType * x, 
-                ValueType * y)
+void spmv_ell(const cusp::ell_matrix<IndexType,ValueType,cusp::device_memory>& ell, 
+              const ValueType * x, 
+                    ValueType * y)
 {
     const unsigned int BLOCK_SIZE = 256;
     const dim3 grid = make_large_grid(ell.num_rows, BLOCK_SIZE);
@@ -83,9 +83,9 @@ void spmv(const cusp::ell_matrix<IndexType,ValueType,cusp::device_memory>& ell,
 }
 
 template <typename IndexType, typename ValueType>
-void spmv_tex(const cusp::ell_matrix<IndexType,ValueType,cusp::device_memory>& ell, 
-              const ValueType * x, 
-                    ValueType * y)
+void spmv_ell_tex(const cusp::ell_matrix<IndexType,ValueType,cusp::device_memory>& ell, 
+                  const ValueType * x, 
+                        ValueType * y)
 {
     const unsigned int BLOCK_SIZE = 256;
     const dim3 grid = make_large_grid(ell.num_rows, BLOCK_SIZE);
@@ -98,6 +98,22 @@ void spmv_tex(const cusp::ell_matrix<IndexType,ValueType,cusp::device_memory>& e
          x, y);
 
     unbind_x(x);
+}
+
+template <typename IndexType, typename ValueType>
+void spmv(const cusp::ell_matrix<IndexType,ValueType,cusp::device_memory>& ell, 
+          const ValueType * x, 
+                ValueType * y)
+{
+    spmv_ell(ell, x, y);
+}
+
+template <typename IndexType, typename ValueType>
+void spmv_tex(const cusp::ell_matrix<IndexType,ValueType,cusp::device_memory>& ell, 
+              const ValueType * x, 
+                    ValueType * y)
+{
+    spmv_ell_tex(ell, x, y);
 }
 
 
