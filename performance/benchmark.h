@@ -17,7 +17,7 @@ float check_spmv(HostMatrix& host_matrix, TestMatrix& test_matrix, TestKernel te
     // create host input (x) and output (y) vectors
     ValueType * host_x = cusp::new_array<ValueType, cusp::host_memory>(N);
     ValueType * host_y = cusp::new_array<ValueType, cusp::host_memory>(M);
-    for(IndexType i = 0; i < N; i++) host_x[i] = (int(i % 21) - 10);
+    for(IndexType i = 0; i < N; i++) host_x[i] = (rand() % 21) - 10; //(int(i % 21) - 10);
     for(IndexType i = 0; i < M; i++) host_y[i] = 0;
    
     // create test input (x) and output (y) vectors
@@ -103,7 +103,7 @@ void test_spmv(std::string         kernel_name,
     float GFLOPs = (time == 0) ? 0 : (2 * host_matrix.num_entries / time) / 1e9;
     float GBYTEs = (time == 0) ? 0 : (gbyte / time)                       / 1e9;
  
-    printf("\t%-20s: %8.4f ms ( %5.2f GFLOP/s %5.1f GB/s) [L2 error %.8f]\n", kernel_name.c_str(), 1e3 * time, GFLOPs, GBYTEs, error); 
+    printf("\t%-20s: %8.4f ms ( %5.2f GFLOP/s %5.1f GB/s) [L2 error %f]\n", kernel_name.c_str(), 1e3 * time, GFLOPs, GBYTEs, error); 
 }
 
 
@@ -170,7 +170,7 @@ void test_dia(HostMatrix& host_matrix)
     }
     catch (cusp::format_conversion_exception)
     {
-        std::cout << "no DIA for you" << std::endl;
+        std::cout << "\tRefusing to convert to DIA format" << std::endl;
         return;
     }
 
@@ -200,7 +200,7 @@ void test_ell(HostMatrix& host_matrix)
     }
     catch (cusp::format_conversion_exception)
     {
-        std::cout << "no ELL for you" << std::endl;
+        std::cout << "\tRefusing to convert to ELL format" << std::endl;
         return;
     }
 
