@@ -1,7 +1,7 @@
 #pragma once
 
-#include <functional>
-#include <iterator>
+#include <cusp/vector.h>
+#include <thrust/iterator/iterator_traits.h>
 
 #include <unittest/exceptions.h>
 #include <unittest/util.h>
@@ -12,14 +12,13 @@
 #define ASSERT_GEQUAL(X,Y)       unittest::assert_gequal((X),(Y), __FILE__,  __LINE__)
 #define ASSERT_ALMOST_EQUAL(X,Y) unittest::assert_almost_equal((X),(Y), __FILE__, __LINE__)
 #define KNOWN_FAILURE            { unittest::UnitTestKnownFailure f; f << "[" << __FILE__ ":" << __LINE__ << "]"; throw f;}
-
+                    
 #define ASSERT_EQUAL_RANGES(X,Y,Z)  unittest::assert_equal((X),(Y),(Z), __FILE__,  __LINE__)
 
 #define ASSERT_THROWS(X,Y)                                                         \
     {   bool thrown = false; try { X; } catch (Y) { thrown = true; }                  \
         if (!thrown) { unittest::UnitTestFailure f; f << "[" << __FILE__ << ":" << __LINE__ << "] did not throw " << #Y; throw f; } \
     }
-
 
 
 namespace unittest
@@ -138,7 +137,7 @@ void assert_equal(ForwardIterator first1, ForwardIterator last1, ForwardIterator
     size_t i = 0;
     size_t mismatches = 0;
     
-    typedef typename std::iterator_traits<ForwardIterator>::value_type InputType;
+    typedef typename thrust::iterator_traits<ForwardIterator>::value_type InputType;
 
     unittest::UnitTestFailure f;
     f << "[" << filename << ":" << lineno << "] ";
@@ -172,8 +171,8 @@ template <typename ForwardIterator>
 void assert_equal(ForwardIterator first1, ForwardIterator last1, ForwardIterator first2,
                   const std::string& filename = "unknown", int lineno = -1)
 {
-    typedef typename std::iterator_traits<ForwardIterator>::value_type InputType;
-    assert_equal(first1, last1, first2, std::equal_to<InputType>(), filename, lineno);
+    typedef typename thrust::iterator_traits<ForwardIterator>::value_type InputType;
+    assert_equal(first1, last1, first2, thrust::equal_to<InputType>(), filename, lineno);
 }
 
 
@@ -182,8 +181,41 @@ void assert_almost_equal(ForwardIterator first1, ForwardIterator last1, ForwardI
                          const std::string& filename = "unknown", int lineno = -1,
                          const double a_tol = DEFAULT_ABSOLUTE_TOL, const double r_tol = DEFAULT_RELATIVE_TOL)
 {
-    typedef typename std::iterator_traits<ForwardIterator>::value_type InputType;
+    typedef typename thrust::iterator_traits<ForwardIterator>::value_type InputType;
     assert_equal(first1, last1, first2, almost_equal_to<InputType>(a_tol, r_tol), filename, lineno);
 }
+
+
+template <typename T1, typename Alloc1,
+          typename T2, typename Alloc2>
+void assert_equal(const cusp::vector<T1,Alloc1>& A,
+                  const cusp::vector<T2,Alloc2>& B,
+                  const std::string& filename = "unknown", int lineno = -1)
+{
+    if(A.size() != B.size())
+        throw unittest::UnitTestError("Sequences have different sizes");
+
+    thrust::host_vector<T1> h_A(A.begin(), A.end());
+    thrust::host_vector<T2> h_B(B.begin(), B.end());
+    
+    assert_equal(h_A.begin(), h_A.end(), h_B.begin(), filename, lineno);
+}
+
+template <typename T1, typename Alloc1,
+          typename T2, typename Alloc2>
+void assert_almost_equal(const cusp::vector<T1,Alloc1>& A,
+                         const cusp::vector<T2,Alloc2>& B,
+                         const std::string& filename = "unknown", int lineno = -1,
+                         const double a_tol = DEFAULT_ABSOLUTE_TOL, const double r_tol = DEFAULT_RELATIVE_TOL)
+{
+    if(A.size() != B.size())
+        throw unittest::UnitTestError("Sequences have different sizes");
+    
+    thrust::host_vector<T1> h_A(A.begin(), A.end());
+    thrust::host_vector<T2> h_B(B.begin(), B.end());
+    
+    assert_almost_equal(h_A.begin(), h_A.end(), h_B.begin(), filename, lineno, a_tol, r_tol);
+}
+
 
 }; //end namespace unittest

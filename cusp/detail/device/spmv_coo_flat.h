@@ -20,12 +20,15 @@
 
 #include <cusp/coo_matrix.h>
 #include <cusp/memory.h>
-#include <cusp/device/common.h>
-#include <cusp/device/utils.h>
-#include <cusp/device/texture.h>
-#include <cusp/device/spmv_coo_serial.h>
+#include <cusp/detail/device/common.h>
+#include <cusp/detail/device/utils.h>
+#include <cusp/detail/device/texture.h>
+#include <cusp/detail/device/spmv_coo_serial.h>
 
 namespace cusp
+{
+
+namespace detail
 {
 
 namespace device
@@ -349,4 +352,7 @@ void spmv_coo_flat_tex(const coo_matrix<IndexType,ValueType,cusp::device_memory>
 
 } // end namespace device
 
+} // end namespace detail
+
 } // end namespace cusp
+

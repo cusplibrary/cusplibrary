@@ -26,6 +26,9 @@
 namespace cusp
 {
 
+namespace detail
+{
+
 namespace host
 {
 
@@ -102,6 +105,8 @@ IndexType compute_optimal_entries_per_row(const cusp::csr_matrix<IndexType,Value
 }
 
 } // end namespace host
+
+} // end namespace detail
 
 } // end namespace cusp
 

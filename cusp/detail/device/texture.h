@@ -15,11 +15,10 @@
  */
 
 
-
 #pragma once
 
 #include <cuda.h>
-#include <cusp/device/utils.h>
+#include <cusp/detail/device/utils.h>
 
 
 /*

@@ -17,8 +17,8 @@
 
 #pragma once
 
-#include <cusp/host/spmv.h>
-#include <cusp/device/spmv.h>
+#include <cusp/detail/host/spmv.h>
+#include <cusp/detail/device/spmv.h>
 
 namespace cusp
 {
@@ -49,12 +49,12 @@ struct default_linear_operator : public MatrixType
 
     template <typename ValueType>
     void spmv(const ValueType * x, ValueType * y, cusp::host_memory){
-        cusp::host::spmv(*this, x, y);
+        cusp::detail::host::spmv(*this, x, y);
     }
     
     template <typename ValueType>
     void spmv(const ValueType * x, ValueType * y, cusp::device_memory){
-        cusp::device::spmv(*this, x, y);
+        cusp::detail::device::spmv(*this, x, y);
     }
 
     template <typename ValueType>

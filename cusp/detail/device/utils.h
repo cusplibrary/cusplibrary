@@ -61,6 +61,9 @@
 namespace cusp
 {
 
+namespace detail
+{    
+
 namespace device
 {    
 
@@ -151,6 +154,8 @@ inline dim3 make_small_grid(const unsigned int num_threads, const unsigned int b
 }
 
 } // end namespace device
+
+} // end namespace detail
 
 } // end namespace cusp
 

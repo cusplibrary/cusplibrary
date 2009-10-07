@@ -17,8 +17,8 @@
 
 #pragma once
 
-#include <cusp/host/elementwise_operation.h>
-#include <cusp/device/elementwise_operation.h>
+#include <cusp/detail/host/elementwise_operation.h>
+#include <cusp/detail/device/elementwise_operation.h>
 
 #include <thrust/functional.h>
 
@@ -30,16 +30,16 @@ namespace dispatch
 
 template <class MatrixType, class BinaryOperator>
 void elementwise_operation(MatrixType& C, const MatrixType& A, const MatrixType& B, BinaryOperator op,
-                           cusp::host_memory)
+                           cusp::host)
 {
-    cusp::host::elementwise_operation(C, A, B, op);
+    cusp::detail::host::elementwise_operation(C, A, B, op);
 }
 
 template <class MatrixType, class BinaryOperator>
 void elementwise_operation(MatrixType& C, const MatrixType& A, const MatrixType& B, BinaryOperator op,
-                           cusp::device_memory)
+                           cusp::device)
 {
-    cusp::device::elementwise_operation(C, A, B, op);
+    cusp::detail::device::elementwise_operation(C, A, B, op);
 }
 
 } // end namespace dispatch

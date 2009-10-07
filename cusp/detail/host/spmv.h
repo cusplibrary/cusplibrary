@@ -26,6 +26,9 @@
 namespace cusp
 {
 
+namespace detail
+{
+
 namespace host
 {
 
@@ -177,6 +180,8 @@ void spmv(const cusp::hyb_matrix<IndexType, ValueType, cusp::host_memory>& hyb,
 
 
 } // end namespace host
+
+} // end namespace detail
 
 } // end namespace cusp
 

@@ -15,14 +15,16 @@
  */
 
 
-
 #pragma once
 
 #include <cusp/hyb_matrix.h>
-#include <cusp/device/spmv_ell.h>
-#include <cusp/device/spmv_coo.h>
+#include <cusp/detail/device/spmv_ell.h>
+#include <cusp/detail/device/spmv_coo.h>
 
 namespace cusp
+{
+
+namespace detail
 {
 
 namespace device
@@ -35,8 +37,8 @@ void spmv_hyb(const cusp::hyb_matrix<IndexType, ValueType, cusp::device_memory>&
               const ValueType * x, 
                     ValueType * y)
 {
-    cusp::device::spmv(hyb.ell, x, y);
-    cusp::device::spmv(hyb.coo, x, y);
+    cusp::detail::device::spmv(hyb.ell, x, y);
+    cusp::detail::device::spmv(hyb.coo, x, y);
 }
 
 template <typename IndexType, typename ValueType>
@@ -44,8 +46,8 @@ void spmv_hyb_tex(const cusp::hyb_matrix<IndexType, ValueType, cusp::device_memo
                   const ValueType * x, 
                         ValueType * y)
 {
-    cusp::device::spmv_tex(hyb.ell, x, y);
-    cusp::device::spmv_tex(hyb.coo, x, y);
+    cusp::detail::device::spmv_tex(hyb.ell, x, y);
+    cusp::detail::device::spmv_tex(hyb.coo, x, y);
 }
 
     
@@ -67,6 +69,8 @@ void spmv_tex(const cusp::hyb_matrix<IndexType, ValueType, cusp::device_memory>&
 
 
 } // end namespace device
+
+} // end namespace detail
 
 } // end namespace cusp
 

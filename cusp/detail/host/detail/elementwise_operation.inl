@@ -15,36 +15,34 @@
  */
 
 
-
 #pragma once
-
-#include <cusp/device/spmv_coo_flat.h>
 
 namespace cusp
 {
 
-namespace device
+namespace detail
 {
 
+namespace host
+{
 
-template <typename IndexType, typename ValueType>
-void spmv(const coo_matrix<IndexType,ValueType,cusp::device_memory>& coo, 
-          const ValueType * x, 
-                ValueType * y)
-{ 
-    spmv_coo_flat(coo, x, y);
+namespace detail
+{
+
+template <typename IndexType, typename ValueType, class BinaryOperator>
+void elementwise_operation(      cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& C,
+                           const cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& A,
+                           const cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& B,
+                           BinaryOperator op)
+{
+
 }
 
-template <typename IndexType, typename ValueType>
-void spmv_tex(const coo_matrix<IndexType,ValueType,cusp::device_memory>& coo, 
-              const ValueType * x, 
-                    ValueType * y)
-{ 
-    spmv_coo_flat_tex(coo, x, y);
-}
+} // end namespace detail
 
+} // end namespace host
 
-} // end namespace device
+} // end namespace detail
 
 } // end namespace cusp
 

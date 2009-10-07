@@ -23,6 +23,9 @@
 namespace cusp
 {
 
+namespace detail
+{
+
 namespace device
 {
 
@@ -56,6 +59,8 @@ void spmv_coo_serial_device(const coo_matrix<IndexType,ValueType,cusp::device_me
 }
 
 } // end namespace device
+
+} // end namespace detail
 
 } // end namespace cusp
 

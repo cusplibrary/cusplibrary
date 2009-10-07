@@ -27,10 +27,13 @@
 #include <cusp/hyb_matrix.h>
 #include <cusp/dense_matrix.h>
 
-#include <cusp/host/conversion_utils.h>
+#include <cusp/detail/host/conversion_utils.h>
 
 
 namespace cusp
+{
+
+namespace detail
 {
 
 namespace host
@@ -419,6 +422,8 @@ void dense_to_csr(      cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>&
 
 
 } // end namespace host
+
+} // end namespace detail
 
 } // end namespace cusp
 

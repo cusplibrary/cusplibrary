@@ -17,27 +17,31 @@
 
 #pragma once
 
-namespace cusp
-{
+#include <cusp/csr_matrix.h>
 
-namespace host
+
+namespace cusp
 {
 
 namespace detail
 {
 
-template <typename IndexType, typename ValueType, class BinaryOperator>
-void elementwise_operation(      cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& C,
-                           const cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& A,
-                           const cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& B,
-                           BinaryOperator op)
+namespace device
 {
 
+template <typename IndexType, typename ValueType, class BinaryOperator>
+void elementwise_operation(      cusp::csr_matrix<IndexType,ValueType,cusp::device_memory>& C,
+                           const cusp::csr_matrix<IndexType,ValueType,cusp::device_memory>& A,
+                           const cusp::csr_matrix<IndexType,ValueType,cusp::device_memory>& B,
+                           BinaryOperator op)
+{
+    std::cout << "calling device elementwise_operation" << std::endl;
 }
 
-} // end namespace host
 
-} // end namespace host
+} // end namespace device
+
+} // end namespace detail
 
 } // end namespace cusp
 

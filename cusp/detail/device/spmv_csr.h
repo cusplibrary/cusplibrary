@@ -15,28 +15,42 @@
  */
 
 
+
 #pragma once
 
-#include <cusp/csr_matrix.h>
-
+#include <cusp/detail/device/spmv_csr_scalar.h>
+#include <cusp/detail/device/spmv_csr_vector.h>
 
 namespace cusp
+{
+
+namespace detail
 {
 
 namespace device
 {
 
-template <typename IndexType, typename ValueType, class BinaryOperator>
-void elementwise_operation(      cusp::csr_matrix<IndexType,ValueType,cusp::device_memory>& C,
-                           const cusp::csr_matrix<IndexType,ValueType,cusp::device_memory>& A,
-                           const cusp::csr_matrix<IndexType,ValueType,cusp::device_memory>& B,
-                           BinaryOperator op)
-{
-    std::cout << "calling device elementwise_operation" << std::endl;
+
+template <typename IndexType, typename ValueType>
+void spmv(const csr_matrix<IndexType,ValueType,cusp::device_memory>& csr, 
+          const ValueType * x, 
+                ValueType * y)
+{ 
+    spmv_csr_vector(csr, x, y);
+}
+
+template <typename IndexType, typename ValueType>
+void spmv_tex(const csr_matrix<IndexType,ValueType,cusp::device_memory>& csr, 
+              const ValueType * x, 
+                    ValueType * y)
+{ 
+    spmv_csr_vector_tex(csr, x, y);
 }
 
 
 } // end namespace device
+
+} // end namespace detail
 
 } // end namespace cusp
 

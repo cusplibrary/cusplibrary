@@ -15,17 +15,19 @@
  */
 
 
-
 #pragma once
 
 #include <cusp/ell_matrix.h>
 #include <cusp/memory.h>
-#include <cusp/device/utils.h>
-#include <cusp/device/texture.h>
+#include <cusp/detail/device/utils.h>
+#include <cusp/detail/device/texture.h>
 
 // SpMV kernel for the ELLPACK/ITPACK matrix format.
 
 namespace cusp
+{
+
+namespace detail
 {
 
 namespace device
@@ -118,6 +120,8 @@ void spmv_tex(const cusp::ell_matrix<IndexType,ValueType,cusp::device_memory>& e
 
 
 } // end namespace device
+
+} // end namespace detail
 
 } // end namespace cusp
 
