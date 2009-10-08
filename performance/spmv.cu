@@ -7,8 +7,8 @@
 #include <cmath>
 #include <limits>
 
-#include <cusp/host/spmv.h>
-#include <cusp/device/spmv.h>
+#include <cusp/detail/host/spmv.h>
+#include <cusp/detail/device/spmv.h>
 
 #include "bytes_per_spmv.h"
 #include "timer.h"
