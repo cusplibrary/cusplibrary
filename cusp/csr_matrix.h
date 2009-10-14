@@ -17,111 +17,101 @@
 
 #pragma once
 
-#include <cusp/memory.h>
+#include <cusp/vector.h>
 #include <cusp/matrix_shape.h>
 
 namespace cusp
 {
-    // Definition //
-    template<typename IndexType, class MemorySpace>
-    struct csr_pattern : public matrix_shape<IndexType>
+
+    template<typename IndexType, class SpaceOrAlloc>
+    class csr_pattern : public matrix_shape<IndexType>
     {
+        public:
         typedef typename matrix_shape<IndexType>::index_type index_type;
-        typedef index_type * index_pointer;
-        typedef MemorySpace memory_space;
+
+        typedef typename cusp::standard_memory_allocator<IndexType, SpaceOrAlloc>::type index_allocator_type;
+        typedef typename cusp::allocator_space<index_allocator_type>::type memory_space;
+        typedef typename cusp::csr_pattern<IndexType, SpaceOrAlloc> pattern_type;
         
         index_type num_entries;
 
-        index_pointer row_offsets;
-        index_pointer column_indices;
-    };
+        cusp::vector<IndexType, index_allocator_type> row_offsets;
+        cusp::vector<IndexType, index_allocator_type> column_indices;
+    
+        csr_pattern()
+            : matrix_shape<IndexType>() {}
+    
+        csr_pattern(IndexType num_rows, IndexType num_cols, IndexType num_entries)
+            : row_offsets(num_rows + 1), column_indices(num_entries),
+              num_entries(num_entries),
+              matrix_shape<IndexType>(num_rows, num_cols) {}
+        
+        template <typename IndexType2, typename SpaceOrAlloc2>
+        csr_pattern(const csr_pattern<IndexType2,SpaceOrAlloc2>& pattern)
+            : row_offsets(pattern.row_offsets), column_indices(pattern.column_indices),
+              num_entries(pattern.num_entries),
+              matrix_shape<IndexType>(pattern) {}
 
+        void resize(IndexType num_rows, IndexType num_cols, IndexType num_entries)
+        {
+            row_offsets.resize(num_rows + 1);
+            column_indices.resize(num_entries);
 
-    template <typename IndexType, typename ValueType, class MemorySpace>
-    struct csr_matrix : public csr_pattern<IndexType,MemorySpace>
+            this->num_rows    = num_rows;
+            this->num_cols    = num_cols;
+            this->num_entries = num_entries;
+        }
+        
+        void swap(csr_pattern& pattern)
+        {
+            row_offsets.swap(pattern.row_offsets);
+            column_indices.swap(pattern.column_indices);
+
+            thrust::swap(num_entries, pattern.num_entries);
+            
+            matrix_shape<IndexType>::swap(pattern);
+        }
+    }; // class csr_pattern
+
+    template <typename IndexType, typename ValueType, class SpaceOrAlloc>
+    struct csr_matrix : public csr_pattern<IndexType, SpaceOrAlloc>
     {
-        typedef csr_pattern<IndexType,MemorySpace> pattern_type;
-
+        public:
+        typedef typename cusp::standard_memory_allocator<ValueType, SpaceOrAlloc>::type value_allocator_type;
+        typedef typename cusp::csr_matrix<IndexType, ValueType, SpaceOrAlloc> matrix_type;
+    
         typedef ValueType value_type;
-        typedef value_type * value_pointer;
-
-        value_pointer values;
-    };
-   
-
-    // Memory Management //
-    template<typename IndexType, class MemorySpace>
-    void allocate_pattern(csr_pattern<IndexType, MemorySpace>& pattern,
-                          IndexType num_rows, IndexType num_cols, IndexType num_entries)
-    {
-        pattern.num_rows    = num_rows;
-        pattern.num_cols    = num_cols;
-        pattern.num_entries = num_entries;
-
-        pattern.row_offsets    = cusp::new_array<IndexType,MemorySpace>(num_rows + 1);
-        pattern.column_indices = cusp::new_array<IndexType,MemorySpace>(num_entries);
-    }
-
-    template<typename IndexType, class MemorySpace1, class MemorySpace2>
-    void allocate_pattern_like(      csr_pattern<IndexType,MemorySpace1>& pattern,
-                               const csr_pattern<IndexType,MemorySpace2>& example)
-    {
-        allocate_pattern(pattern, example.num_rows, example.num_cols, example.num_entries);
-    }
     
-    template<typename IndexType, typename ValueType, class MemorySpace>
-    void allocate_matrix(csr_matrix<IndexType,ValueType,MemorySpace>& matrix,
-                         IndexType num_rows, IndexType num_cols, IndexType num_entries)
-    {
-        allocate_pattern<IndexType,MemorySpace>(matrix, num_rows, num_cols, num_entries);
-        matrix.values = cusp::new_array<ValueType,MemorySpace>(num_entries);
-    }
+        cusp::vector<ValueType, value_allocator_type> values;
     
-    template<typename IndexType, typename ValueType, class MemorySpace1, class MemorySpace2>
-    void allocate_matrix_like(      csr_matrix<IndexType,ValueType,MemorySpace1>& matrix,
-                              const csr_matrix<IndexType,ValueType,MemorySpace2>& example)
-    {
-        allocate_matrix(matrix, example.num_rows, example.num_cols, example.num_entries);
-    }
+        // construct empty matrix
+        csr_matrix()
+            : csr_pattern<IndexType,SpaceOrAlloc>() {}
+    
+        // construct matrix with given shape and number of entries
+        csr_matrix(IndexType num_rows, IndexType num_cols, IndexType num_entries)
+            : values(num_entries),
+              csr_pattern<IndexType,SpaceOrAlloc>(num_rows, num_cols, num_entries) {}
+    
+        // construct from another csr_matrix
+        template <typename IndexType2, typename ValueType2, typename SpaceOrAlloc2>
+        csr_matrix(const csr_matrix<IndexType2, ValueType2, SpaceOrAlloc2>& matrix)
+            : values(matrix.values),
+              csr_pattern<IndexType,SpaceOrAlloc>(matrix) {}
+        
+        void resize(IndexType num_rows, IndexType num_cols, IndexType num_entries)
+        {
+            values.resize(num_entries);
+            csr_pattern<IndexType,SpaceOrAlloc>::resize(num_rows, num_cols, num_entries);
+        }
 
-    template<typename IndexType, class MemorySpace>
-    void deallocate_pattern(csr_pattern<IndexType, MemorySpace>& pattern)
-    {
-        cusp::delete_array<IndexType,MemorySpace>(pattern.row_offsets);
-        cusp::delete_array<IndexType,MemorySpace>(pattern.column_indices);
+        void swap(csr_matrix& matrix)
+        {
+            values.swap(matrix.values);
 
-        pattern.num_rows       = 0;
-        pattern.num_cols       = 0;
-        pattern.num_entries    = 0;
-        pattern.row_offsets    = 0;
-        pattern.column_indices = 0;
-    }
-
-    template<typename IndexType, typename ValueType, class MemorySpace>
-    void deallocate_matrix(csr_matrix<IndexType,ValueType,MemorySpace>& matrix)
-    {
-        cusp::delete_array<ValueType,MemorySpace>(matrix.values);
-        matrix.values = 0;
-        deallocate_pattern(matrix);
-    }
-
-    template<typename IndexType, class MemorySpace1, class MemorySpace2>
-    void memcpy_pattern(      csr_pattern<IndexType, MemorySpace1>& dst,
-                        const csr_pattern<IndexType, MemorySpace2>& src)
-    {
-        dst.num_rows    = src.num_rows;
-        dst.num_cols    = src.num_cols;
-        dst.num_entries = src.num_entries;
-        cusp::memcpy_array<IndexType,MemorySpace1,MemorySpace2>(dst.row_offsets,    src.row_offsets,    dst.num_rows + 1);
-        cusp::memcpy_array<IndexType,MemorySpace1,MemorySpace2>(dst.column_indices, src.column_indices, dst.num_entries);
-    }
-
-    template<typename IndexType, typename ValueType, class MemorySpace1, class MemorySpace2>
-    void memcpy_matrix(      csr_matrix<IndexType,ValueType,MemorySpace1>& dst,
-                       const csr_matrix<IndexType,ValueType,MemorySpace2>& src)
-    {
-        cusp::memcpy_pattern<IndexType,MemorySpace1,MemorySpace2>(dst, src);
-        cusp::memcpy_array<ValueType,MemorySpace1,MemorySpace2>(dst.values, src.values, dst.num_entries);
-    }
-
+            csr_pattern<IndexType,SpaceOrAlloc>::swap(matrix);
+        }
+    }; // class csr_matrix
+            
 } // end namespace cusp
+

@@ -17,111 +17,101 @@
 
 #pragma once
 
-#include <cusp/memory.h>
+#include <cusp/vector.h>
 #include <cusp/matrix_shape.h>
 
 namespace cusp
 {
-    // Definition //
-    template<typename IndexType, class MemorySpace>
-    struct coo_pattern : public matrix_shape<IndexType>
+
+    template<typename IndexType, class SpaceOrAlloc>
+    class coo_pattern : public matrix_shape<IndexType>
     {
+        public:
         typedef typename matrix_shape<IndexType>::index_type index_type;
-        typedef index_type * index_pointer;
-        typedef MemorySpace memory_space;
-        
+
+        typedef typename cusp::standard_memory_allocator<IndexType, SpaceOrAlloc>::type index_allocator_type;
+        typedef typename cusp::allocator_space<index_allocator_type>::type memory_space;
+        typedef typename cusp::coo_pattern<IndexType, SpaceOrAlloc> pattern_type;
+
         index_type num_entries;
 
-        index_pointer row_indices;
-        index_pointer column_indices;
-    };
+        cusp::vector<IndexType, index_allocator_type> row_indices;
+        cusp::vector<IndexType, index_allocator_type> column_indices;
 
+        coo_pattern()
+            : matrix_shape<IndexType>() {}
 
-    template <typename IndexType, typename ValueType, class MemorySpace>
-    struct coo_matrix : public coo_pattern<IndexType,MemorySpace>
+        coo_pattern(IndexType num_rows, IndexType num_cols, IndexType num_entries)
+            : row_indices(num_entries), column_indices(num_entries),
+              num_entries(num_entries),
+              matrix_shape<IndexType>(num_rows, num_cols) {}
+
+        template <typename IndexType2, typename SpaceOrAlloc2>
+        coo_pattern(const coo_pattern<IndexType2,SpaceOrAlloc2>& pattern)
+            : row_indices(pattern.row_indices), column_indices(pattern.column_indices),
+              num_entries(pattern.num_entries),
+              matrix_shape<IndexType>(pattern) {}
+        
+        void resize(IndexType num_rows, IndexType num_cols, IndexType num_entries)
+        {
+            row_indices.resize(num_entries);
+            column_indices.resize(num_entries);
+
+            this->num_rows    = num_rows;
+            this->num_cols    = num_cols;
+            this->num_entries = num_entries;
+        }
+        
+        void swap(coo_pattern& pattern)
+        {
+            row_indices.swap(pattern.row_indices);
+            column_indices.swap(pattern.column_indices);
+
+            thrust::swap(num_entries, pattern.num_entries);
+            
+            matrix_shape<IndexType>::swap(pattern);
+        }
+    }; // class coo_pattern
+
+    template <typename IndexType, typename ValueType, class SpaceOrAlloc>
+    struct coo_matrix : public coo_pattern<IndexType, SpaceOrAlloc>
     {
-        typedef coo_pattern<IndexType,MemorySpace> pattern_type;
-
-        typedef ValueType value_type;
-        typedef value_type * value_pointer;
-
-        value_pointer values;
-    };
-   
-
-    // Memory Management //
-    template<typename IndexType, class MemorySpace>
-    void allocate_pattern(coo_pattern<IndexType, MemorySpace>& pattern,
-                          IndexType num_rows, IndexType num_cols, IndexType num_entries)
-    {
-        pattern.num_rows    = num_rows;
-        pattern.num_cols    = num_cols;
-        pattern.num_entries = num_entries;
-
-        pattern.row_indices    = cusp::new_array<IndexType,MemorySpace>(num_entries);
-        pattern.column_indices = cusp::new_array<IndexType,MemorySpace>(num_entries);
-    }
-
-    template<typename IndexType, class MemorySpace1, class MemorySpace2>
-    void allocate_pattern_like(      coo_pattern<IndexType,MemorySpace1>& pattern,
-                               const coo_pattern<IndexType,MemorySpace2>& example)
-    {
-        allocate_pattern(pattern, example.num_rows, example.num_cols, example.num_entries);
-    }
-
-    template<typename IndexType, typename ValueType, class MemorySpace>
-    void allocate_matrix(coo_matrix<IndexType,ValueType,MemorySpace>& matrix,
-                         IndexType num_rows, IndexType num_cols, IndexType num_entries)
-    {
-        allocate_pattern<IndexType,MemorySpace>(matrix, num_rows, num_cols, num_entries);
-        matrix.values = cusp::new_array<ValueType,MemorySpace>(num_entries);
-    }
+        public:
+        typedef typename cusp::standard_memory_allocator<ValueType, SpaceOrAlloc>::type value_allocator_type;
+        typedef typename cusp::coo_matrix<IndexType, ValueType, SpaceOrAlloc> matrix_type;
     
-    template<typename IndexType, typename ValueType, class MemorySpace1, class MemorySpace2>
-    void allocate_matrix_like(      coo_matrix<IndexType,ValueType,MemorySpace1>& matrix,
-                              const coo_matrix<IndexType,ValueType,MemorySpace2>& example)
-    {
-        allocate_matrix(matrix, example.num_rows, example.num_cols, example.num_entries);
-    }
+        typedef ValueType value_type;
+    
+        cusp::vector<ValueType, value_allocator_type> values;
+    
+        // construct empty matrix
+        coo_matrix()
+            : coo_pattern<IndexType,SpaceOrAlloc>() {}
+    
+        // construct matrix with given shape and number of entries
+        coo_matrix(IndexType num_rows, IndexType num_cols, IndexType num_entries)
+            : values(num_entries),
+              coo_pattern<IndexType,SpaceOrAlloc>(num_rows, num_cols, num_entries) {}
+    
+        // construct from another coo_matrix
+        template <typename IndexType2, typename ValueType2, typename SpaceOrAlloc2>
+        coo_matrix(const coo_matrix<IndexType2, ValueType2, SpaceOrAlloc2>& matrix)
+            : values(matrix.values),
+              coo_pattern<IndexType,SpaceOrAlloc>(matrix) {}
 
-    template<typename IndexType, class MemorySpace>
-    void deallocate_pattern(coo_pattern<IndexType, MemorySpace>& pattern)
-    {
-        cusp::delete_array<IndexType,MemorySpace>(pattern.row_indices);
-        cusp::delete_array<IndexType,MemorySpace>(pattern.column_indices);
+        void resize(IndexType num_rows, IndexType num_cols, IndexType num_entries)
+        {
+            values.resize(num_entries);
+            coo_pattern<IndexType,SpaceOrAlloc>::resize(num_rows, num_cols, num_entries);
+        }
 
-        pattern.num_rows       = 0;
-        pattern.num_cols       = 0;
-        pattern.num_entries    = 0;
-        pattern.row_indices    = 0;
-        pattern.column_indices = 0;
-    }
+        void swap(coo_matrix& matrix)
+        {
+            coo_pattern<IndexType,SpaceOrAlloc>::swap(matrix);
+            values.swap(matrix.values);
+        }
 
-    template<typename IndexType, typename ValueType, class MemorySpace>
-    void deallocate_matrix(coo_matrix<IndexType,ValueType,MemorySpace>& matrix)
-    {
-        cusp::delete_array<ValueType,MemorySpace>(matrix.values);
-        matrix.values = 0;
-        deallocate_pattern(matrix);
-    }
-
-    template<typename IndexType, class MemorySpace1, class MemorySpace2>
-    void memcpy_pattern(      coo_pattern<IndexType, MemorySpace1>& dst,
-                        const coo_pattern<IndexType, MemorySpace2>& src)
-    {
-        dst.num_rows    = src.num_rows;
-        dst.num_cols    = src.num_cols;
-        dst.num_entries = src.num_entries;
-        cusp::memcpy_array<IndexType,MemorySpace1,MemorySpace2>(dst.row_indices,    src.row_indices,    dst.num_entries);
-        cusp::memcpy_array<IndexType,MemorySpace1,MemorySpace2>(dst.column_indices, src.column_indices, dst.num_entries);
-    }
-
-    template<typename IndexType, typename ValueType, class MemorySpace1, class MemorySpace2>
-    void memcpy_matrix(      coo_matrix<IndexType,ValueType,MemorySpace1>& dst,
-                       const coo_matrix<IndexType,ValueType,MemorySpace2>& src)
-    {
-        cusp::memcpy_pattern<IndexType,MemorySpace1,MemorySpace2>(dst, src);
-        cusp::memcpy_array<ValueType,MemorySpace1,MemorySpace2>(dst.values, src.values, dst.num_entries);
-    }
+    }; // class coo_matrix
 
 } // end namespace cusp
+

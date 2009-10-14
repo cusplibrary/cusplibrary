@@ -14,19 +14,16 @@ void TestConjugateGradient(void)
     //cusp::load_matrix_market_file(csr, "data/laplacian/7pt_10x10x10.mtx");
     //cusp::load_matrix_market_file(csr, "data/laplacian/3pt_100.mtx");
 
-    float * x = cusp::new_array<float, MemorySpace>(A.num_rows);
-    float * b = cusp::new_array<float, MemorySpace>(A.num_rows);
+    cusp::vector<float, MemorySpace> x(A.num_rows, 0.0f);
+    cusp::vector<float, MemorySpace> b(A.num_rows);
 
-    for(int i = 0; i < A.num_rows; i++){
-        cusp::set_array_element<MemorySpace>(x, i, 0.0f);
-        cusp::set_array_element<MemorySpace>(b, i, float(i % 2));
-    }
+    // initialize RHS
+    for(int i = 0; i < A.num_rows; i++)
+        b[i] = float(i % 2);
         
-    cusp::krylov::cg(cusp::make_linear_operator(A), x, b);
-
-    cusp::delete_array<float, MemorySpace>(x);
-    cusp::delete_array<float, MemorySpace>(b);
-    cusp::deallocate_matrix(A);
+    cusp::krylov::cg(cusp::make_linear_operator(A), 
+                     thrust::raw_pointer_cast(&x[0]), 
+                     thrust::raw_pointer_cast(&b[0]));
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestConjugateGradient);
 

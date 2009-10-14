@@ -17,19 +17,16 @@
 #pragma once
 
 #include <cusp/csr_matrix.h>
-#include <cusp/memory.h>
+
 #include <cusp/detail/device/utils.h>
 #include <cusp/detail/device/texture.h>
 
 namespace cusp
 {
-
 namespace detail
 {
-
 namespace device
 {
-
 
 ////////////////////////////////////////////////////////////////////////
 // CSR SpMV kernels based on a scalar model (one thread per row)
@@ -57,22 +54,22 @@ spmv_csr_scalar_kernel(const IndexType num_rows,
     // row index
     const IndexType row = large_grid_thread_id();
     
-    if(row < num_rows){     
+    if(row < num_rows)
+    {
         const IndexType row_start = Ap[row];
         const IndexType row_end   = Ap[row+1];
         
         ValueType sum = y[row];
     
-        for (IndexType jj = row_start; jj < row_end; jj++){             
+        for (IndexType jj = row_start; jj < row_end; jj++)
             sum += Ax[jj] * fetch_x<UseCache>(Aj[jj], x);       
-        }
 
         y[row] = sum;
     }
 }
 
 template <typename IndexType, typename ValueType>
-void spmv_csr_scalar(const csr_matrix<IndexType,ValueType,cusp::device_memory>& csr, 
+void spmv_csr_scalar(const csr_matrix<IndexType,ValueType,cusp::device>& csr, 
                      const ValueType * x, 
                            ValueType * y)
 {
@@ -80,12 +77,16 @@ void spmv_csr_scalar(const csr_matrix<IndexType,ValueType,cusp::device_memory>& 
     
     const dim3 grid = make_large_grid(csr.num_rows, BLOCK_SIZE);
 
+    const IndexType * Ap = thrust::raw_pointer_cast(&csr.row_offsets[0]);
+    const IndexType * Aj = thrust::raw_pointer_cast(&csr.column_indices[0]);
+    const ValueType * Ax = thrust::raw_pointer_cast(&csr.values[0]);
+
     spmv_csr_scalar_kernel<IndexType, ValueType, false> <<<grid, BLOCK_SIZE>>> 
-        (csr.num_rows, csr.row_offsets, csr.column_indices, csr.values, x, y);   
+        (csr.num_rows, Ap, Aj, Ax, x, y);   
 }
 
 template <typename IndexType, typename ValueType>
-void spmv_csr_scalar_tex(const csr_matrix<IndexType,ValueType,cusp::device_memory>& csr, 
+void spmv_csr_scalar_tex(const csr_matrix<IndexType,ValueType,cusp::device>& csr, 
                          const ValueType * x, 
                                ValueType * y)
 {
@@ -93,17 +94,19 @@ void spmv_csr_scalar_tex(const csr_matrix<IndexType,ValueType,cusp::device_memor
     
     const dim3 grid = make_large_grid(csr.num_rows, BLOCK_SIZE);
     
+    const IndexType * Ap = thrust::raw_pointer_cast(&csr.row_offsets[0]);
+    const IndexType * Aj = thrust::raw_pointer_cast(&csr.column_indices[0]);
+    const ValueType * Ax = thrust::raw_pointer_cast(&csr.values[0]);
+    
     bind_x(x);
 
     spmv_csr_scalar_kernel<IndexType, ValueType, true> <<<grid, BLOCK_SIZE>>> 
-        (csr.num_rows, csr.row_offsets, csr.column_indices, csr.values, x, y);   
+        (csr.num_rows, Ap, Aj, Ax, x, y);   
 
     unbind_x(x);
 }
 
 } // end namespace device
-
 } // end namespace detail
-
 } // end namespace cusp
 

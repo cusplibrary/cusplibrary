@@ -21,6 +21,10 @@ extensions = ['*.cu', '*.cpp']
 for ext in extensions:
   sources.extend(env.Glob(ext, strings = True))
 
+#sources = ['csr_matrix.cu', 'coo_matrix.cu', 'ell_matrix.cu', 'hyb_matrix.cu', 'dia_matrix.cu', 'dense_matrix.cu',
+#           'arithmetic.cu', 'blas.cu', 'convert.cu', 'equal.cu', 'io.cu', 'linear_operator.cu', 'print.cu', 
+#           'vector.cu', 'testframework.cpp', 'utest.cpp', 'unittest_tester.cu']
+
 # add the directory containing this file to the include path
 this_file = inspect.currentframe().f_code.co_filename
 this_dir = os.path.dirname(this_file)

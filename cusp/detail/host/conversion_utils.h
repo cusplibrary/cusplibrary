@@ -21,6 +21,7 @@
 #include <numeric>
 #include <vector>
 
+#include <cusp/vector.h>
 #include <cusp/csr_matrix.h>
 
 namespace cusp
@@ -33,7 +34,7 @@ namespace host
 {
 
 template <typename IndexType, typename ValueType>
-IndexType count_diagonals(const cusp::csr_matrix<IndexType, ValueType, cusp::host_memory> & csr)
+IndexType count_diagonals(const cusp::csr_matrix<IndexType, ValueType, cusp::host> & csr)
 {
     std::vector<IndexType> occupied_diagonals(csr.num_rows + csr.num_cols, char(0));
 
@@ -49,7 +50,7 @@ IndexType count_diagonals(const cusp::csr_matrix<IndexType, ValueType, cusp::hos
 }
 
 template <typename IndexType, typename ValueType>
-IndexType compute_max_entries_per_row(const cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& csr)
+IndexType compute_max_entries_per_row(const cusp::csr_matrix<IndexType,ValueType,cusp::host>& csr)
 {
     IndexType max_entries_per_row = 0;
     for(IndexType i = 0; i < csr.num_rows; i++)
@@ -73,7 +74,7 @@ IndexType compute_max_entries_per_row(const cusp::csr_matrix<IndexType,ValueType
 //! @param breakeven_threshold  Minimum threshold at which ELL is faster than COO
 ////////////////////////////////////////////////////////////////////////////////
 template <typename IndexType, typename ValueType>
-IndexType compute_optimal_entries_per_row(const cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& csr,
+IndexType compute_optimal_entries_per_row(const cusp::csr_matrix<IndexType,ValueType,cusp::host>& csr,
                                           float relative_speed = 3.0, IndexType breakeven_threshold = 4096)
 {
     // compute maximum row length
@@ -82,8 +83,7 @@ IndexType compute_optimal_entries_per_row(const cusp::csr_matrix<IndexType,Value
         max_cols_per_row = std::max(max_cols_per_row, csr.row_offsets[i+1] - csr.row_offsets[i]); 
 
     // compute distribution of nnz per row
-    IndexType * histogram = new_host_array<IndexType>(max_cols_per_row + 1);
-    std::fill(histogram, histogram + max_cols_per_row + 1, 0);
+    std::vector<IndexType> histogram(max_cols_per_row + 1, 0);
     for(IndexType i = 0; i < csr.num_rows; i++)
         histogram[csr.row_offsets[i+1] - csr.row_offsets[i]]++;
 
@@ -98,8 +98,6 @@ IndexType compute_optimal_entries_per_row(const cusp::csr_matrix<IndexType,Value
             break;
         }
     }
-
-    delete_host_array(histogram);
 
     return num_cols_per_row;
 }

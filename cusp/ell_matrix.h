@@ -17,123 +17,108 @@
 
 #pragma once
 
-#include <limits>
-
-#include <cusp/memory.h>
+#include <cusp/vector.h>
 #include <cusp/matrix_shape.h>
 
 namespace cusp
 {
-    // Definition //
-    template<typename IndexType, class MemorySpace>
-    struct ell_pattern : public matrix_shape<IndexType>
+
+    template<typename IndexType, class SpaceOrAlloc>
+    class ell_pattern : public matrix_shape<IndexType>
     {
+        public:
         typedef typename matrix_shape<IndexType>::index_type index_type;
-        typedef index_type * index_pointer;
-        typedef MemorySpace memory_space;
-       
+
+        typedef typename cusp::standard_memory_allocator<IndexType, SpaceOrAlloc>::type index_allocator_type;
+        typedef typename cusp::allocator_space<index_allocator_type>::type memory_space;
+        typedef typename cusp::ell_pattern<IndexType, SpaceOrAlloc> pattern_type;
+
         const static index_type invalid_index = static_cast<IndexType>(-1);
 
         index_type num_entries;
         index_type num_entries_per_row;
         index_type stride;
 
-        index_pointer column_indices;
-    };
+        cusp::vector<IndexType, index_allocator_type> column_indices;
 
+        ell_pattern()
+            : matrix_shape<IndexType>(0,0) {}
+                   
+        ell_pattern(IndexType num_rows, IndexType num_cols, IndexType num_entries, IndexType num_entries_per_row, IndexType stride)
+            : column_indices(num_entries_per_row * stride),
+              num_entries(num_entries), num_entries_per_row(num_entries_per_row), stride(stride),
+              matrix_shape<IndexType>(num_rows, num_cols) {}
 
-    template <typename IndexType, typename ValueType, class MemorySpace>
-    struct ell_matrix : public ell_pattern<IndexType,MemorySpace>
+        template <typename IndexType2, typename SpaceOrAlloc2>
+        ell_pattern(const ell_pattern<IndexType2,SpaceOrAlloc2>& pattern)
+            : column_indices(pattern.column_indices),
+              num_entries(pattern.num_entries), num_entries_per_row(pattern.num_entries_per_row), stride(pattern.stride),
+              matrix_shape<IndexType>(pattern) {}
+
+        void resize(IndexType num_rows, IndexType num_cols, IndexType num_entries,
+                    IndexType num_entries_per_row, IndexType stride)
+        {
+            column_indices.resize(num_entries_per_row * stride);
+
+            this->num_rows            = num_rows;
+            this->num_cols            = num_cols;
+            this->num_entries         = num_entries;
+            this->num_entries_per_row = num_entries_per_row;
+            this->stride              = stride;
+        }
+
+        void swap(ell_pattern& pattern)
+        {
+            column_indices.swap(pattern.column_indices);
+
+            thrust::swap(num_entries,         pattern.num_entries);
+            thrust::swap(num_entries_per_row, pattern.num_entries_per_row);
+            thrust::swap(stride,              pattern.stride);
+            
+            matrix_shape<IndexType>::swap(pattern);
+        }
+    }; // class ell_pattern
+
+    template <typename IndexType, typename ValueType, class SpaceOrAlloc>
+    struct ell_matrix : public ell_pattern<IndexType, SpaceOrAlloc>
     {
-        typedef ell_pattern<IndexType,MemorySpace> pattern_type;
-
-        typedef ValueType value_type;
-        typedef value_type * value_pointer;
-
-        value_pointer values;
-    };
-   
-
-    // Memory Management //
-    template<typename IndexType, class MemorySpace>
-    void allocate_pattern(ell_pattern<IndexType, MemorySpace>& pattern,
-                          const IndexType num_rows, const IndexType num_cols, const IndexType num_entries,
-                          const IndexType num_entries_per_row, const IndexType stride)
-    {
-        pattern.num_rows            = num_rows;
-        pattern.num_cols            = num_cols;
-        pattern.num_entries         = num_entries;;
-        pattern.num_entries_per_row = num_entries_per_row;
-        pattern.stride              = stride;
-
-        pattern.column_indices = cusp::new_array<IndexType,MemorySpace>(stride * num_entries_per_row);
-    }
+        public:
+        typedef typename cusp::standard_memory_allocator<ValueType, SpaceOrAlloc>::type value_allocator_type;
+        typedef typename cusp::ell_matrix<IndexType, ValueType, SpaceOrAlloc> matrix_type;
     
-    template<typename IndexType, class MemorySpace1, class MemorySpace2>
-    void allocate_pattern_like(      ell_pattern<IndexType,MemorySpace1>& pattern,
-                               const ell_pattern<IndexType,MemorySpace2>& example)
-    {
-        allocate_pattern(pattern, example.num_rows, example.num_cols, example.num_entries, 
-                                  example.num_entries_per_row, example.stride);
-    }
+        typedef ValueType value_type;
+    
+        cusp::vector<ValueType, value_allocator_type> values;
+    
+        // construct empty matrix
+        ell_matrix()
+            : ell_pattern<IndexType,SpaceOrAlloc>() {}
+    
+        // construct matrix with given shape and number of entries
+        ell_matrix(IndexType num_rows, IndexType num_cols, IndexType num_entries, IndexType num_entries_per_row, IndexType stride)
+            : values(num_entries_per_row * stride),
+              ell_pattern<IndexType,SpaceOrAlloc>(num_rows, num_cols, num_entries, num_entries_per_row, stride) {}
+    
+        // construct from another ell_matrix
+        template <typename IndexType2, typename ValueType2, typename SpaceOrAlloc2>
+        ell_matrix(const ell_matrix<IndexType2, ValueType2, SpaceOrAlloc2>& matrix)
+            : values(matrix.values),
+              ell_pattern<IndexType,SpaceOrAlloc>(matrix) {}
+        
+        void resize(IndexType num_rows, IndexType num_cols, IndexType num_entries,
+                    IndexType num_entries_per_row, IndexType stride)
+        {
+            values.resize(num_entries_per_row * stride);
+            ell_pattern<IndexType,SpaceOrAlloc>::resize(num_rows, num_cols, num_entries,
+                                                        num_entries_per_row, stride);
+        }
 
-    template<typename IndexType, typename ValueType, class MemorySpace>
-    void allocate_matrix(ell_matrix<IndexType,ValueType,MemorySpace>& matrix,
-                         const IndexType num_rows, const IndexType num_cols, const IndexType num_entries,
-                         const IndexType num_entries_per_row, const IndexType stride)
-    {
-        allocate_pattern<IndexType,MemorySpace>(matrix, num_rows, num_cols, num_entries, num_entries_per_row, stride);
-        matrix.values = cusp::new_array<ValueType,MemorySpace>(stride * num_entries_per_row);
-    }
-
-    template<typename IndexType, typename ValueType, class MemorySpace1, class MemorySpace2>
-    void allocate_matrix_like(       ell_matrix<IndexType,ValueType,MemorySpace1>& matrix,
-                               const ell_matrix<IndexType,ValueType,MemorySpace2>& example)
-    {
-        allocate_matrix(matrix, example.num_rows, example.num_cols, example.num_entries, 
-                                example.num_entries_per_row, example.stride);
-    }
-    template<typename IndexType, class MemorySpace>
-    void deallocate_pattern(ell_pattern<IndexType, MemorySpace>& pattern)
-    {
-        cusp::delete_array<IndexType,MemorySpace>(pattern.column_indices);
-
-        pattern.num_rows            = 0;
-        pattern.num_cols            = 0;
-        pattern.num_entries         = 0;
-        pattern.num_entries_per_row = 0;
-        pattern.stride              = 0;
-
-        pattern.column_indices = 0;
-    }
-
-    template<typename IndexType, typename ValueType, class MemorySpace>
-    void deallocate_matrix(ell_matrix<IndexType,ValueType,MemorySpace>& matrix)
-    {
-        cusp::delete_array<ValueType,MemorySpace>(matrix.values);
-        matrix.values = 0;
-        deallocate_pattern(matrix);
-    }
-
-    template<typename IndexType, class MemorySpace1, class MemorySpace2>
-    void memcpy_pattern(      ell_pattern<IndexType, MemorySpace1>& dst,
-                        const ell_pattern<IndexType, MemorySpace2>& src)
-    {
-        dst.num_rows            = src.num_rows;
-        dst.num_cols            = src.num_cols;
-        dst.num_entries         = src.num_entries;
-        dst.num_entries_per_row = src.num_entries_per_row;
-        dst.stride              = src.stride;
-
-        cusp::memcpy_array<IndexType,MemorySpace1,MemorySpace2>(dst.column_indices, src.column_indices, dst.num_entries_per_row * dst.stride);
-    }
-
-    template<typename IndexType, typename ValueType, class MemorySpace1, class MemorySpace2>
-    void memcpy_matrix(      ell_matrix<IndexType,ValueType,MemorySpace1>& dst,
-                       const ell_matrix<IndexType,ValueType,MemorySpace2>& src)
-    {
-        cusp::memcpy_pattern<IndexType,MemorySpace1,MemorySpace2>(dst, src);
-        cusp::memcpy_array<ValueType,MemorySpace1,MemorySpace2>(dst.values, src.values, dst.num_entries_per_row * dst.stride);
-    }
+        void swap(ell_matrix& matrix)
+        {
+            ell_pattern<IndexType,SpaceOrAlloc>::swap(matrix);
+            values.swap(matrix.values);
+        }
+    }; // class ell_matrix
 
 } // end namespace cusp
+

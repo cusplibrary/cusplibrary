@@ -27,11 +27,12 @@ namespace cusp
 {
 
 template <typename IndexType, typename ValueType>
-void print_matrix(const cusp::coo_matrix<IndexType, ValueType, cusp::host_memory>& coo)
+void print_matrix(const cusp::coo_matrix<IndexType, ValueType, cusp::host>& coo)
 {
     std::cout << "coo_matrix <" << coo.num_rows << ", " << coo.num_cols << "> with " << coo.num_entries << " entries\n";
 
-    for(IndexType n = 0; n < coo.num_entries; n++){
+    for(IndexType n = 0; n < coo.num_entries; n++)
+    {
         std::cout << " " << std::setw(12) << coo.row_indices[n];
         std::cout << " " << std::setw(12) << coo.column_indices[n];
         std::cout << " " << std::setw(12) << coo.values[n] << "\n";
@@ -39,11 +40,12 @@ void print_matrix(const cusp::coo_matrix<IndexType, ValueType, cusp::host_memory
 }
 
 template <typename IndexType, typename ValueType>
-void print_matrix(const cusp::csr_matrix<IndexType, ValueType, cusp::host_memory>& csr)
+void print_matrix(const cusp::csr_matrix<IndexType, ValueType, cusp::host>& csr)
 {
     std::cout << "csr_matrix <" << csr.num_rows << ", " << csr.num_cols << "> with " << csr.num_entries << " entries\n";
 
-    for(IndexType i = 0; i < csr.num_rows; i++){
+    for(IndexType i = 0; i < csr.num_rows; i++)
+    {
         for(IndexType jj = csr.row_offsets[i]; jj < csr.row_offsets[i+1]; jj++){
             std::cout << " " << std::setw(12) << i;
             std::cout << " " << std::setw(12) << csr.column_indices[jj];
@@ -53,16 +55,20 @@ void print_matrix(const cusp::csr_matrix<IndexType, ValueType, cusp::host_memory
 }
 
 template <typename ValueType, class Orientation>
-void print_matrix(const cusp::dense_matrix<ValueType, cusp::host_memory, Orientation>& dense)
+void print_matrix(const cusp::dense_matrix<ValueType, cusp::host, Orientation>& dense)
 {
     std::cout << "dense_matrix <" << dense.num_rows << ", " << dense.num_cols << ">\n";
 
-    for(size_t i = 0; i < dense.num_rows; i++){
-        for(size_t j = 0; j < dense.num_cols; j++){
+    for(size_t i = 0; i < dense.num_rows; i++)
+    {
+        for(size_t j = 0; j < dense.num_cols; j++)
+        {
             std::cout << std::setw(12) << dense(i,j);
         }
+
         std::cout << "\n";
     }
 }
 
 } // end namespace cusp
+

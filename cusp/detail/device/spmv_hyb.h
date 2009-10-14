@@ -18,22 +18,20 @@
 #pragma once
 
 #include <cusp/hyb_matrix.h>
+
 #include <cusp/detail/device/spmv_ell.h>
 #include <cusp/detail/device/spmv_coo.h>
 
 namespace cusp
 {
-
 namespace detail
 {
-
 namespace device
 {
 
-
 // SpMV kernels for the hybrid ELL/COO matrix format.
 template <typename IndexType, typename ValueType>
-void spmv_hyb(const cusp::hyb_matrix<IndexType, ValueType, cusp::device_memory>& hyb, 
+void spmv_hyb(const cusp::hyb_matrix<IndexType, ValueType, cusp::device>& hyb, 
               const ValueType * x, 
                     ValueType * y)
 {
@@ -42,7 +40,7 @@ void spmv_hyb(const cusp::hyb_matrix<IndexType, ValueType, cusp::device_memory>&
 }
 
 template <typename IndexType, typename ValueType>
-void spmv_hyb_tex(const cusp::hyb_matrix<IndexType, ValueType, cusp::device_memory>& hyb, 
+void spmv_hyb_tex(const cusp::hyb_matrix<IndexType, ValueType, cusp::device>& hyb, 
                   const ValueType * x, 
                         ValueType * y)
 {
@@ -52,7 +50,7 @@ void spmv_hyb_tex(const cusp::hyb_matrix<IndexType, ValueType, cusp::device_memo
 
     
 template <typename IndexType, typename ValueType>
-void spmv(const cusp::hyb_matrix<IndexType, ValueType, cusp::device_memory>& hyb, 
+void spmv(const cusp::hyb_matrix<IndexType, ValueType, cusp::device>& hyb, 
           const ValueType * x, 
                 ValueType * y)
 {
@@ -60,17 +58,14 @@ void spmv(const cusp::hyb_matrix<IndexType, ValueType, cusp::device_memory>& hyb
 }
 
 template <typename IndexType, typename ValueType>
-void spmv_tex(const cusp::hyb_matrix<IndexType, ValueType, cusp::device_memory>& hyb, 
+void spmv_tex(const cusp::hyb_matrix<IndexType, ValueType, cusp::device>& hyb, 
               const ValueType * x, 
                     ValueType * y)
 {
     spmv_hyb_tex(hyb, x, y);
 }
 
-
 } // end namespace device
-
 } // end namespace detail
-
 } // end namespace cusp
 

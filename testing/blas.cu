@@ -6,69 +6,50 @@
 template <class MemorySpace>
 void TestAxpy(void)
 {
-    float * x = cusp::new_array<float, MemorySpace>(6);
-    float * y = cusp::new_array<float, MemorySpace>(6);
+    cusp::vector<float, MemorySpace> x(6);
+    cusp::vector<float, MemorySpace> y(6);
 
-    cusp::set_array_element<MemorySpace>(x, 0,  7.0f);
-    cusp::set_array_element<MemorySpace>(x, 1,  5.0f);
-    cusp::set_array_element<MemorySpace>(x, 2,  4.0f);
-    cusp::set_array_element<MemorySpace>(x, 3, -3.0f);
-    cusp::set_array_element<MemorySpace>(x, 4,  0.0f);
-    cusp::set_array_element<MemorySpace>(x, 5,  4.0f);
+    x[0] =  7.0f;   y[0] =  0.0f; 
+    x[1] =  5.0f;   y[1] = -2.0f;
+    x[2] =  4.0f;   y[2] =  0.0f;
+    x[3] = -3.0f;   y[3] =  5.0f;
+    x[4] =  0.0f;   y[4] =  6.0f;
+    x[5] =  4.0f;   y[5] =  1.0f;
 
-    cusp::set_array_element<MemorySpace>(y, 0,  0.0f);
-    cusp::set_array_element<MemorySpace>(y, 1, -2.0f);
-    cusp::set_array_element<MemorySpace>(y, 2,  0.0f);
-    cusp::set_array_element<MemorySpace>(y, 3,  5.0f);
-    cusp::set_array_element<MemorySpace>(y, 4,  6.0f);
-    cusp::set_array_element<MemorySpace>(y, 5,  1.0f);
+    cusp::blas<MemorySpace>::axpy(6, 2.0f, thrust::raw_pointer_cast(&x[0]), 
+                                           thrust::raw_pointer_cast(&y[0]));
 
-    cusp::blas<MemorySpace>::axpy(6, 2.0f, x, y);
-
-    ASSERT_EQUAL(cusp::get_array_element<MemorySpace>(y, 0),  14.0);
-    ASSERT_EQUAL(cusp::get_array_element<MemorySpace>(y, 1),   8.0);
-    ASSERT_EQUAL(cusp::get_array_element<MemorySpace>(y, 2),   8.0);
-    ASSERT_EQUAL(cusp::get_array_element<MemorySpace>(y, 3),  -1.0);
-    ASSERT_EQUAL(cusp::get_array_element<MemorySpace>(y, 4),   6.0);
-    ASSERT_EQUAL(cusp::get_array_element<MemorySpace>(y, 5),   9.0);
-
-    cusp::delete_array<float, MemorySpace>(x);
-    cusp::delete_array<float, MemorySpace>(y);
+    ASSERT_EQUAL(y[0],  14.0);
+    ASSERT_EQUAL(y[1],   8.0);
+    ASSERT_EQUAL(y[2],   8.0);
+    ASSERT_EQUAL(y[3],  -1.0);
+    ASSERT_EQUAL(y[4],   6.0);
+    ASSERT_EQUAL(y[5],   9.0);
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestAxpy);
-
 
 template <class MemorySpace>
 void TestCopy(void)
 {
-    float * x = cusp::new_array<float, MemorySpace>(6);
-    float * y = cusp::new_array<float, MemorySpace>(6);
+    cusp::vector<float, MemorySpace> x(6);
+    cusp::vector<float, MemorySpace> y(6);
 
-    cusp::set_array_element<MemorySpace>(x, 0,  7.0f);
-    cusp::set_array_element<MemorySpace>(x, 1,  5.0f);
-    cusp::set_array_element<MemorySpace>(x, 2,  4.0f);
-    cusp::set_array_element<MemorySpace>(x, 3, -3.0f);
-    cusp::set_array_element<MemorySpace>(x, 4,  0.0f);
-    cusp::set_array_element<MemorySpace>(x, 5,  4.0f);
+    x[0] =  7.0f;   y[0] =  0.0f; 
+    x[1] =  5.0f;   y[1] = -2.0f;
+    x[2] =  4.0f;   y[2] =  0.0f;
+    x[3] = -3.0f;   y[3] =  5.0f;
+    x[4] =  0.0f;   y[4] =  6.0f;
+    x[5] =  4.0f;   y[5] =  1.0f;
 
-    cusp::set_array_element<MemorySpace>(y, 0,  0.0f);
-    cusp::set_array_element<MemorySpace>(y, 1, -2.0f);
-    cusp::set_array_element<MemorySpace>(y, 2,  0.0f);
-    cusp::set_array_element<MemorySpace>(y, 3,  5.0f);
-    cusp::set_array_element<MemorySpace>(y, 4,  6.0f);
-    cusp::set_array_element<MemorySpace>(y, 5,  1.0f);
+    cusp::blas<MemorySpace>::copy(6, thrust::raw_pointer_cast(&x[0]), 
+                                     thrust::raw_pointer_cast(&y[0]));
 
-    cusp::blas<MemorySpace>::copy(6, x, y);
-
-    ASSERT_EQUAL(cusp::get_array_element<MemorySpace>(y, 0),  7.0f);
-    ASSERT_EQUAL(cusp::get_array_element<MemorySpace>(y, 1),  5.0f);
-    ASSERT_EQUAL(cusp::get_array_element<MemorySpace>(y, 2),  4.0f);
-    ASSERT_EQUAL(cusp::get_array_element<MemorySpace>(y, 3), -3.0f);
-    ASSERT_EQUAL(cusp::get_array_element<MemorySpace>(y, 4),  0.0f);
-    ASSERT_EQUAL(cusp::get_array_element<MemorySpace>(y, 5),  4.0f);
-
-    cusp::delete_array<float, MemorySpace>(x);
-    cusp::delete_array<float, MemorySpace>(y);
+    y[0] =  7.0f;
+    y[1] =  5.0f;
+    y[2] =  4.0f;
+    y[3] = -3.0f;
+    y[4] =  0.0f;
+    y[5] =  4.0f;
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestCopy);
 
@@ -76,27 +57,20 @@ DECLARE_HOST_DEVICE_UNITTEST(TestCopy);
 template <class MemorySpace>
 void TestDot(void)
 {
-    float * x = cusp::new_array<float, MemorySpace>(6);
-    float * y = cusp::new_array<float, MemorySpace>(6);
+    cusp::vector<float, MemorySpace> x(6);
+    cusp::vector<float, MemorySpace> y(6);
 
-    cusp::set_array_element<MemorySpace>(x, 0,  7.0f);
-    cusp::set_array_element<MemorySpace>(x, 1,  5.0f);
-    cusp::set_array_element<MemorySpace>(x, 2,  4.0f);
-    cusp::set_array_element<MemorySpace>(x, 3, -3.0f);
-    cusp::set_array_element<MemorySpace>(x, 4,  0.0f);
-    cusp::set_array_element<MemorySpace>(x, 5,  4.0f);
+    x[0] =  7.0f;   y[0] =  0.0f; 
+    x[1] =  5.0f;   y[1] = -2.0f;
+    x[2] =  4.0f;   y[2] =  0.0f;
+    x[3] = -3.0f;   y[3] =  5.0f;
+    x[4] =  0.0f;   y[4] =  6.0f;
+    x[5] =  4.0f;   y[5] =  1.0f;
 
-    cusp::set_array_element<MemorySpace>(y, 0,  0.0f);
-    cusp::set_array_element<MemorySpace>(y, 1, -2.0f);
-    cusp::set_array_element<MemorySpace>(y, 2,  0.0f);
-    cusp::set_array_element<MemorySpace>(y, 3,  5.0f);
-    cusp::set_array_element<MemorySpace>(y, 4,  6.0f);
-    cusp::set_array_element<MemorySpace>(y, 5,  1.0f);
+    float result = cusp::blas<MemorySpace>::dot(6, thrust::raw_pointer_cast(&x[0]), 
+                                                   thrust::raw_pointer_cast(&y[0]));
 
-    ASSERT_EQUAL(cusp::blas<MemorySpace>::dot(6, x, y), -21.0f);
-    
-    cusp::delete_array<float, MemorySpace>(x);
-    cusp::delete_array<float, MemorySpace>(y);
+    ASSERT_EQUAL(result, -21.0f);
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestDot);
 
@@ -104,25 +78,23 @@ DECLARE_HOST_DEVICE_UNITTEST(TestDot);
 template <class MemorySpace>
 void TestFill(void)
 {
-    float * x = cusp::new_array<float, MemorySpace>(6);
+    cusp::vector<float, MemorySpace> x(6);
 
-    cusp::set_array_element<MemorySpace>(x, 0,  7.0f);
-    cusp::set_array_element<MemorySpace>(x, 1,  5.0f);
-    cusp::set_array_element<MemorySpace>(x, 2,  4.0f);
-    cusp::set_array_element<MemorySpace>(x, 3, -3.0f);
-    cusp::set_array_element<MemorySpace>(x, 4,  0.0f);
-    cusp::set_array_element<MemorySpace>(x, 5,  4.0f);
+    x[0] =  7.0f;
+    x[1] =  5.0f;
+    x[2] =  4.0f;
+    x[3] = -3.0f;
+    x[4] =  0.0f;
+    x[5] =  4.0f;
 
-    cusp::blas<MemorySpace>::fill(6, 1.0f, x);
+    cusp::blas<MemorySpace>::fill(6, 1.0f, thrust::raw_pointer_cast(&x[0]));
 
-    ASSERT_EQUAL(cusp::get_array_element<MemorySpace>(x, 0),  1.0f);
-    ASSERT_EQUAL(cusp::get_array_element<MemorySpace>(x, 1),  1.0f);
-    ASSERT_EQUAL(cusp::get_array_element<MemorySpace>(x, 2),  1.0f);
-    ASSERT_EQUAL(cusp::get_array_element<MemorySpace>(x, 3),  1.0f);
-    ASSERT_EQUAL(cusp::get_array_element<MemorySpace>(x, 4),  1.0f);
-    ASSERT_EQUAL(cusp::get_array_element<MemorySpace>(x, 5),  1.0f);
-
-    cusp::delete_array<float, MemorySpace>(x);
+    ASSERT_EQUAL(x[0], 1.0);
+    ASSERT_EQUAL(x[1], 1.0);
+    ASSERT_EQUAL(x[2], 1.0);
+    ASSERT_EQUAL(x[3], 1.0);
+    ASSERT_EQUAL(x[4], 1.0);
+    ASSERT_EQUAL(x[5], 1.0);
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestFill);
 
@@ -130,18 +102,18 @@ DECLARE_HOST_DEVICE_UNITTEST(TestFill);
 template <class MemorySpace>
 void TestNrm2(void)
 {
-    float * x = cusp::new_array<float, MemorySpace>(6);
-    
-    cusp::set_array_element<MemorySpace>(x, 0,  7.0f);
-    cusp::set_array_element<MemorySpace>(x, 1,  5.0f);
-    cusp::set_array_element<MemorySpace>(x, 2,  4.0f);
-    cusp::set_array_element<MemorySpace>(x, 3, -3.0f);
-    cusp::set_array_element<MemorySpace>(x, 4,  0.0f);
-    cusp::set_array_element<MemorySpace>(x, 5,  1.0f);
+    cusp::vector<float, MemorySpace> x(6);
 
-    ASSERT_EQUAL(cusp::blas<MemorySpace>::nrm2(6, x), 10.0f);
+    x[0] =  7.0f;
+    x[1] =  5.0f;
+    x[2] =  4.0f;
+    x[3] = -3.0f;
+    x[4] =  0.0f;
+    x[5] =  1.0f;
 
-    cusp::delete_array<float, MemorySpace>(x);
+    float result = cusp::blas<MemorySpace>::nrm2(6, thrust::raw_pointer_cast(&x[0]));
+
+    ASSERT_EQUAL(result, 10.0f);
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestNrm2);
 
@@ -149,25 +121,23 @@ DECLARE_HOST_DEVICE_UNITTEST(TestNrm2);
 template <class MemorySpace>
 void TestScal(void)
 {
-    float * x = cusp::new_array<float, MemorySpace>(6);
+    cusp::vector<float, MemorySpace> x(6);
 
-    cusp::set_array_element<MemorySpace>(x, 0,  7.0f);
-    cusp::set_array_element<MemorySpace>(x, 1,  5.0f);
-    cusp::set_array_element<MemorySpace>(x, 2,  4.0f);
-    cusp::set_array_element<MemorySpace>(x, 3, -3.0f);
-    cusp::set_array_element<MemorySpace>(x, 4,  0.0f);
-    cusp::set_array_element<MemorySpace>(x, 5,  4.0f);
+    x[0] =  7.0f;
+    x[1] =  5.0f;
+    x[2] =  4.0f;
+    x[3] = -3.0f;
+    x[4] =  0.0f;
+    x[5] =  4.0f;
 
-    cusp::blas<MemorySpace>::scal(6, 2.0f, x);
+    cusp::blas<MemorySpace>::scal(6, 2.0f, thrust::raw_pointer_cast(&x[0]));
 
-    ASSERT_EQUAL(cusp::get_array_element<MemorySpace>(x, 0),  14.0);
-    ASSERT_EQUAL(cusp::get_array_element<MemorySpace>(x, 1),  10.0);
-    ASSERT_EQUAL(cusp::get_array_element<MemorySpace>(x, 2),   8.0);
-    ASSERT_EQUAL(cusp::get_array_element<MemorySpace>(x, 3),  -6.0);
-    ASSERT_EQUAL(cusp::get_array_element<MemorySpace>(x, 4),   0.0);
-    ASSERT_EQUAL(cusp::get_array_element<MemorySpace>(x, 5),   8.0);
-
-    cusp::delete_array<float, MemorySpace>(x);
+    ASSERT_EQUAL(x[0], 14.0);
+    ASSERT_EQUAL(x[1], 10.0);
+    ASSERT_EQUAL(x[2],  8.0);
+    ASSERT_EQUAL(x[3], -6.0);
+    ASSERT_EQUAL(x[4],  0.0);
+    ASSERT_EQUAL(x[5],  8.0);
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestScal);
 

@@ -21,12 +21,25 @@ namespace cusp
 {
 
     template<typename IndexType>
-    struct matrix_shape
+    class matrix_shape
     {
-        typedef IndexType index_type;
+        public:
+            typedef IndexType index_type;
 
-        index_type num_rows;
-        index_type num_cols;
+            index_type num_rows;
+            index_type num_cols;
+            
+            matrix_shape()
+                : num_rows(0), num_cols(0) {}
+
+            matrix_shape(IndexType rows, IndexType cols)
+                : num_rows(rows), num_cols(cols) {}
+
+            void swap(matrix_shape& shape)
+            {
+                thrust::swap(num_rows, shape.num_rows);
+                thrust::swap(num_cols, shape.num_cols);
+            }
     };
 
 } // end namespace cusp

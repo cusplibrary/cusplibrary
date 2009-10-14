@@ -17,7 +17,7 @@
 
 #pragma once
 
-#include <cusp/memory.h>
+#include <cusp/vector.h>
 
 #include <thrust/copy.h>
 #include <thrust/fill.h>
@@ -74,14 +74,14 @@ namespace detail
         struct pointer_wrapper {};
 
     template <>
-        struct pointer_wrapper<cusp::host_memory> 
+        struct pointer_wrapper<cusp::host> 
         {
             template <typename ValueType>
                 static ValueType * wrap_ptr(ValueType * ptr) { return ptr; }
         };
     
     template <>
-        struct pointer_wrapper<cusp::device_memory> 
+        struct pointer_wrapper<cusp::device> 
         {
             template <typename ValueType>
                 static thrust::device_ptr<ValueType> wrap_ptr(ValueType * ptr) { return thrust::device_ptr<ValueType>(ptr); }

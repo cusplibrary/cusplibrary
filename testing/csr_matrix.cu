@@ -1,146 +1,150 @@
 #include <unittest/unittest.h>
 #include <cusp/csr_matrix.h>
 
-void TestAllocateCsrPattern(void)
+template <class Space>
+void TestCsrPatternBasicConstructor(void)
 {
-    cusp::csr_pattern<int, cusp::host_memory> pattern;
+    cusp::csr_pattern<int, Space> pattern(3, 2, 6);
 
-    cusp::allocate_pattern(pattern, 10, 10, 100);
-    
-    ASSERT_EQUAL(pattern.num_rows,       10);
-    ASSERT_EQUAL(pattern.num_cols,       10);
-    ASSERT_EQUAL(pattern.num_entries,    100);
-    
-    cusp::deallocate_pattern(pattern);
-
-    ASSERT_EQUAL(pattern.num_rows,       0);
-    ASSERT_EQUAL(pattern.num_cols,       0);
-    ASSERT_EQUAL(pattern.num_entries,    0);
-    ASSERT_EQUAL(pattern.row_offsets,    (void *) 0);
-    ASSERT_EQUAL(pattern.column_indices, (void *) 0);
+    ASSERT_EQUAL(pattern.num_rows,              3);
+    ASSERT_EQUAL(pattern.num_cols,              2);
+    ASSERT_EQUAL(pattern.num_entries,           6);
+    ASSERT_EQUAL(pattern.row_offsets.size(),    4);
+    ASSERT_EQUAL(pattern.column_indices.size(), 6);
 }
-DECLARE_UNITTEST(TestAllocateCsrPattern);
+DECLARE_HOST_DEVICE_UNITTEST(TestCsrPatternBasicConstructor);
 
-
-void TestAllocateCsrPatternLike(void)
+template <class Space>
+void TestCsrPatternCopyConstructor(void)
 {
-    cusp::csr_pattern<int, cusp::host_memory> pattern;
-    cusp::csr_pattern<int, cusp::host_memory> example;
+    cusp::csr_pattern<int, Space> pattern(3, 2, 6);
 
-    cusp::allocate_pattern(example, 10, 10, 100);
-    cusp::allocate_pattern_like(pattern, example);
+    pattern.row_offsets[0] = 0;
+    pattern.row_offsets[1] = 2;
+    pattern.row_offsets[2] = 4;
+    pattern.row_offsets[3] = 6;
     
-    ASSERT_EQUAL(pattern.num_rows,       10);
-    ASSERT_EQUAL(pattern.num_cols,       10);
-    ASSERT_EQUAL(pattern.num_entries,    100);
+    pattern.column_indices[0] = 0;
+    pattern.column_indices[1] = 1;
+    pattern.column_indices[2] = 0;
+    pattern.column_indices[3] = 1;
+    pattern.column_indices[4] = 0;
+    pattern.column_indices[5] = 1;
 
-    cusp::deallocate_pattern(pattern);
-    cusp::deallocate_pattern(example);
-}
-DECLARE_UNITTEST(TestAllocateCsrPatternLike);
-
-
-template <class MemorySpace>
-void TestAllocateCsrMatrix(void)
-{
-    cusp::csr_matrix<int, float, MemorySpace> matrix;
-
-    cusp::allocate_matrix(matrix, 10, 10, 100);
+    cusp::csr_pattern<int, Space> copy_of_pattern(pattern);
     
-    ASSERT_EQUAL(matrix.num_rows,       10);
-    ASSERT_EQUAL(matrix.num_cols,       10);
-    ASSERT_EQUAL(matrix.num_entries,    100);
-    
-    cusp::deallocate_matrix(matrix);
-
-    ASSERT_EQUAL(matrix.num_rows,       0);
-    ASSERT_EQUAL(matrix.num_cols,       0);
-    ASSERT_EQUAL(matrix.num_entries,    0);
-    ASSERT_EQUAL(matrix.row_offsets,    (void *) 0);
-    ASSERT_EQUAL(matrix.column_indices, (void *) 0);
-    ASSERT_EQUAL(matrix.values,         (void *) 0);
-}
-DECLARE_HOST_DEVICE_UNITTEST(TestAllocateCsrMatrix);
-
-
-void TestAllocateCsrMatrixLike(void)
-{
-    cusp::csr_matrix<int, float, cusp::host_memory> matrix;
-    cusp::csr_matrix<int, float, cusp::host_memory> example;
-    
-    cusp::allocate_matrix(example, 10, 10, 100);
-    cusp::allocate_matrix_like(matrix, example);
-    
-    ASSERT_EQUAL(matrix.num_rows,       10);
-    ASSERT_EQUAL(matrix.num_cols,       10);
-    ASSERT_EQUAL(matrix.num_entries,    100);
-    
-    cusp::deallocate_matrix(matrix);
-    cusp::deallocate_matrix(example);
-}
-DECLARE_UNITTEST(TestAllocateCsrMatrixLike);
-
-
-void TestMemcpyCsrMatrix(void)
-{
-    cusp::csr_matrix<int, float, cusp::host_memory> h1;
-    cusp::csr_matrix<int, float, cusp::host_memory> h2;
-    cusp::csr_matrix<int, float, cusp::device_memory> d1;
-    cusp::csr_matrix<int, float, cusp::device_memory> d2;
-
-    cusp::allocate_matrix(h1, 2, 2, 4);
-    cusp::allocate_matrix(h2, 2, 2, 4);
-    cusp::allocate_matrix(d1, 2, 2, 4);
-    cusp::allocate_matrix(d2, 2, 2, 4);
-
-    // initialize host matrix
-    h1.row_offsets[0] = 0;
-    h1.row_offsets[1] = 2;
-    h1.row_offsets[2] = 4;
-    
-    h1.column_indices[0] = 0;   h1.values[0] = 10; 
-    h1.column_indices[1] = 1;   h1.values[1] = 11;
-    h1.column_indices[2] = 0;   h1.values[2] = 12;
-    h1.column_indices[3] = 1;   h1.values[3] = 13;
-
-    // memcpy h1 -> d1 -> d2 -> h2
-    cusp::memcpy_matrix(d1, h1);
-    cusp::memcpy_matrix(d2, d1);
-    cusp::memcpy_matrix(h2, d2);
-
-    // compare h1 and h2
-    ASSERT_EQUAL(h1.num_rows,    h2.num_rows);
-    ASSERT_EQUAL(h1.num_cols,    h2.num_cols);
-    ASSERT_EQUAL(h1.num_entries, h2.num_entries);
-    ASSERT_EQUAL_RANGES(h1.row_offsets, h1.row_offsets + 3, h2.row_offsets);
-    ASSERT_EQUAL_RANGES(h1.column_indices, h1.column_indices + 4, h2.column_indices);
-    ASSERT_EQUAL_RANGES(h1.values, h1.values + 4, h2.values);
-
-    // change h2
-    h1.row_offsets[0] = 0;
-    h1.row_offsets[1] = 0;
-    h1.row_offsets[2] = 0;
-    
-    h1.column_indices[0] = 0;   h1.values[0] = 0; 
-    h1.column_indices[1] = 0;   h1.values[1] = 0;
-    h1.column_indices[2] = 0;   h1.values[2] = 0;
-    h1.column_indices[3] = 0;   h1.values[3] = 0;
+    ASSERT_EQUAL(copy_of_pattern.num_rows,              3);
+    ASSERT_EQUAL(copy_of_pattern.num_cols,              2);
+    ASSERT_EQUAL(copy_of_pattern.num_entries,           6);
+    ASSERT_EQUAL(copy_of_pattern.row_offsets.size(),    4);
+    ASSERT_EQUAL(copy_of_pattern.column_indices.size(), 6);
    
-    // memcpy h2 -> h1
-    cusp::memcpy_matrix(h2, h1);
-    
-    // compare h1 and h2 again
-    ASSERT_EQUAL(h1.num_rows,    h2.num_rows);
-    ASSERT_EQUAL(h1.num_cols,    h2.num_cols);
-    ASSERT_EQUAL(h1.num_entries, h2.num_entries);
-    ASSERT_EQUAL_RANGES(h1.row_offsets, h1.row_offsets + 3, h2.row_offsets);
-    ASSERT_EQUAL_RANGES(h1.column_indices, h1.column_indices + 4, h2.column_indices);
-    ASSERT_EQUAL_RANGES(h1.values, h1.values + 4, h2.values);
-
-    cusp::deallocate_matrix(h1);
-    cusp::deallocate_matrix(h2);
-    cusp::deallocate_matrix(d1);
-    cusp::deallocate_matrix(d2);
+    ASSERT_EQUAL(copy_of_pattern.row_offsets,    pattern.row_offsets);
+    ASSERT_EQUAL(copy_of_pattern.column_indices, pattern.column_indices);
 }
-DECLARE_UNITTEST(TestMemcpyCsrMatrix);
+DECLARE_HOST_DEVICE_UNITTEST(TestCsrPatternCopyConstructor);
+
+template <class Space>
+void TestCsrMatrixBasicConstructor(void)
+{
+    cusp::csr_matrix<int, float, Space> matrix(3, 2, 6);
+
+    ASSERT_EQUAL(matrix.num_rows,              3);
+    ASSERT_EQUAL(matrix.num_cols,              2);
+    ASSERT_EQUAL(matrix.num_entries,           6);
+    ASSERT_EQUAL(matrix.row_offsets.size(),    4);
+    ASSERT_EQUAL(matrix.column_indices.size(), 6);
+    ASSERT_EQUAL(matrix.values.size(),         6);
+}
+DECLARE_HOST_DEVICE_UNITTEST(TestCsrMatrixBasicConstructor);
+
+template <class Space>
+void TestCsrMatrixCopyConstructor(void)
+{
+    cusp::csr_matrix<int, float, Space> matrix(3, 2, 6);
+
+    matrix.row_offsets[0] = 0;
+    matrix.row_offsets[1] = 2;
+    matrix.row_offsets[2] = 4;
+    matrix.row_offsets[3] = 6;
+    
+    matrix.column_indices[0] = 0;  matrix.values[0] = 0; 
+    matrix.column_indices[1] = 1;  matrix.values[1] = 1;
+    matrix.column_indices[2] = 0;  matrix.values[2] = 2;
+    matrix.column_indices[3] = 1;  matrix.values[3] = 3;
+    matrix.column_indices[4] = 0;  matrix.values[4] = 4;
+    matrix.column_indices[5] = 1;  matrix.values[5] = 5;
+
+    cusp::csr_matrix<int, float, Space> copy_of_matrix(matrix);
+    
+    ASSERT_EQUAL(copy_of_matrix.num_rows,              3);
+    ASSERT_EQUAL(copy_of_matrix.num_cols,              2);
+    ASSERT_EQUAL(copy_of_matrix.num_entries,           6);
+    ASSERT_EQUAL(copy_of_matrix.row_offsets.size(),    4);
+    ASSERT_EQUAL(copy_of_matrix.column_indices.size(), 6);
+    ASSERT_EQUAL(copy_of_matrix.values.size(),         6);
+   
+    ASSERT_EQUAL(copy_of_matrix.row_offsets,    matrix.row_offsets);
+    ASSERT_EQUAL(copy_of_matrix.column_indices, matrix.column_indices);
+    ASSERT_EQUAL(copy_of_matrix.values,         matrix.values);
+}
+DECLARE_HOST_DEVICE_UNITTEST(TestCsrMatrixCopyConstructor);
+
+template <class Space>
+void TestCsrMatrixResize(void)
+{
+    cusp::csr_matrix<int, float, Space> matrix;
+    
+    matrix.resize(3, 2, 6);
+
+    ASSERT_EQUAL(matrix.num_rows,              3);
+    ASSERT_EQUAL(matrix.num_cols,              2);
+    ASSERT_EQUAL(matrix.num_entries,           6);
+    ASSERT_EQUAL(matrix.row_offsets.size(),    4);
+    ASSERT_EQUAL(matrix.column_indices.size(), 6);
+    ASSERT_EQUAL(matrix.values.size(),         6);
+}
+DECLARE_HOST_DEVICE_UNITTEST(TestCsrMatrixResize);
+
+template <class Space>
+void TestCsrMatrixSwap(void)
+{
+    cusp::csr_matrix<int, float, Space> A(1, 2, 2);
+    cusp::csr_matrix<int, float, Space> B(3, 1, 3);
+  
+    A.row_offsets[0] = 0;
+    A.row_offsets[1] = 2;
+    
+    A.column_indices[0] = 0;  A.values[0] = 0;
+    A.column_indices[1] = 1;  A.values[1] = 1;
+    
+    B.row_offsets[0] = 0;
+    B.row_offsets[1] = 1;
+    B.row_offsets[2] = 2;
+    B.row_offsets[3] = 3;
+    
+    B.column_indices[0] = 0;  B.values[0] = 0;
+    B.column_indices[1] = 0;  B.values[1] = 1;
+    B.column_indices[2] = 0;  B.values[2] = 2;
+    
+    cusp::csr_matrix<int, float, Space> A_copy(A);
+    cusp::csr_matrix<int, float, Space> B_copy(B);
+
+    A.swap(B);
+
+    ASSERT_EQUAL(A.num_rows,              3);
+    ASSERT_EQUAL(A.num_cols,              1);
+    ASSERT_EQUAL(A.num_entries,           3);
+    ASSERT_EQUAL(A.row_offsets,    B_copy.row_offsets);
+    ASSERT_EQUAL(A.column_indices, B_copy.column_indices);
+    ASSERT_EQUAL(A.values,         B_copy.values);
+
+    ASSERT_EQUAL(B.num_rows,              1);
+    ASSERT_EQUAL(B.num_cols,              2);
+    ASSERT_EQUAL(B.num_entries,           2);
+    ASSERT_EQUAL(B.row_offsets,    A_copy.row_offsets);
+    ASSERT_EQUAL(B.column_indices, A_copy.column_indices);
+    ASSERT_EQUAL(B.values,         A_copy.values);
+}
+DECLARE_HOST_DEVICE_UNITTEST(TestCsrMatrixSwap);
 

@@ -17,7 +17,7 @@
 
 #pragma once
 
-#include <cusp/memory.h>
+#include <cusp/vector.h>
 #include <cusp/blas.h>
 
 #include <iostream>
@@ -47,24 +47,24 @@ void cg(LinearOperator A,
     const size_t N = A.num_rows;
 
     // allocate workspace
-    ValueType *y = cusp::new_array<ValueType,MemorySpace>(N);
-    ValueType *r = cusp::new_array<ValueType,MemorySpace>(N);
-    ValueType *p = cusp::new_array<ValueType,MemorySpace>(N);
+    cusp::vector<ValueType,MemorySpace> y(N);
+    cusp::vector<ValueType,MemorySpace> r(N);
+    cusp::vector<ValueType,MemorySpace> p(N);
         
     //clock_t start = clock();
     
     // y <- Ax
-    blas::fill(N, static_cast<ValueType>(0.0), y);
-    A(x, y);                                                 
+    blas::fill(N, static_cast<ValueType>(0.0), thrust::raw_pointer_cast(&y[0]));
+    A(x, thrust::raw_pointer_cast(&y[0]));                                                 
 
     // r <- b - A*x
-    blas::copy(N, b, r);
-    blas::axpy(N, static_cast<ValueType>(-1.0), y, r);
+    blas::copy(N, thrust::raw_pointer_cast(&b[0]), thrust::raw_pointer_cast(&r[0]));
+    blas::axpy(N, static_cast<ValueType>(-1.0), thrust::raw_pointer_cast(&y[0]), thrust::raw_pointer_cast(&r[0]));
    
     // p <- r
-    blas::copy(N, r, p);
+    blas::copy(N, thrust::raw_pointer_cast(&r[0]), thrust::raw_pointer_cast(&p[0]));
 		
-    ValueType r_norm = blas::nrm2(N, r);
+    ValueType r_norm = blas::nrm2(N, thrust::raw_pointer_cast(&r[0]));
     ValueType r2     = r_norm * r_norm;                     // <r,r>
 
     if (verbose)
@@ -76,24 +76,24 @@ void cg(LinearOperator A,
     while( i++ < max_iter && r2 > stop_tol )
     {
         // y <- Ap
-        blas::fill(N, static_cast<ValueType>(0.0), y);
-        A(p, y);  
+        blas::fill(N, static_cast<ValueType>(0.0), thrust::raw_pointer_cast(&y[0]));
+        A(thrust::raw_pointer_cast(&p[0]), thrust::raw_pointer_cast(&y[0]));  
 
         // alpha <- <r,r>/<Ap,p>
-        ValueType alpha =  r2 / blas::dot(N, p, y);
+        ValueType alpha =  r2 / blas::dot(N, thrust::raw_pointer_cast(&p[0]), thrust::raw_pointer_cast(&y[0]));
         // x <- x + alpha * p
-        blas::axpy(N,  alpha, p, x);
+        blas::axpy(N,  alpha, thrust::raw_pointer_cast(&p[0]), thrust::raw_pointer_cast(&x[0]));
         // r <- r - alpha * Ap		
-        blas::axpy(N, -alpha, y, r);
+        blas::axpy(N, -alpha, thrust::raw_pointer_cast(&y[0]), thrust::raw_pointer_cast(&r[0]));
 		
         // beta <- <r_{i+1},r_{i+1}>/<r,r> 
         ValueType r2_old = r2;
-        r2 = blas::nrm2(N, r); r2 *= r2;
+        r2 = blas::nrm2(N, thrust::raw_pointer_cast(&r[0])); r2 *= r2;
         ValueType beta = r2 / r2_old;                       
 		
         // p <- r + beta*p
-        blas::scal(N, beta, p);
-        blas::axpy(N, static_cast<ValueType>(1.0), r, p);
+        blas::scal(N, beta, thrust::raw_pointer_cast(&p[0]));
+        blas::axpy(N, static_cast<ValueType>(1.0), thrust::raw_pointer_cast(&r[0]), thrust::raw_pointer_cast(&p[0]));
     }
 	
 
@@ -113,10 +113,6 @@ void cg(LinearOperator A,
             std::cout << "[CG] failed to converge within " << i << " iterations (achieved " << r_rel << " relative residual)" << std::endl;;
     }
 
-    // deallocate workspace
-    cusp::delete_array<ValueType, MemorySpace>(y);
-    cusp::delete_array<ValueType, MemorySpace>(r);
-    cusp::delete_array<ValueType, MemorySpace>(p);
 }
 
 } // end namespace krylov

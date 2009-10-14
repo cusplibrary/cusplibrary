@@ -1,153 +1,142 @@
 #include <unittest/unittest.h>
 #include <cusp/ell_matrix.h>
 
-void TestAllocateEllPattern(void)
+template <class Space>
+void TestEllPatternBasicConstructor(void)
 {
-    cusp::ell_pattern<int, cusp::host_memory> pattern;
+    cusp::ell_pattern<int, Space> pattern(3, 2, 6, 2, 4);
 
-    cusp::allocate_pattern(pattern, 10, 10, 50, 5, 16);
-    
-    ASSERT_EQUAL(pattern.num_rows,            10);
-    ASSERT_EQUAL(pattern.num_cols,            10);
-    ASSERT_EQUAL(pattern.num_entries,         50);
-    ASSERT_EQUAL(pattern.num_entries_per_row,  5);
-    ASSERT_EQUAL(pattern.stride,              16);
-    
-    cusp::deallocate_pattern(pattern);
-
-    ASSERT_EQUAL(pattern.num_rows,             0);
-    ASSERT_EQUAL(pattern.num_cols,             0);
-    ASSERT_EQUAL(pattern.num_entries,          0);
-    ASSERT_EQUAL(pattern.num_entries_per_row,  0);
-    ASSERT_EQUAL(pattern.stride,               0);
-    ASSERT_EQUAL(pattern.column_indices, (void *) 0);
+    ASSERT_EQUAL(pattern.num_rows,              3);
+    ASSERT_EQUAL(pattern.num_cols,              2);
+    ASSERT_EQUAL(pattern.num_entries,           6);
+    ASSERT_EQUAL(pattern.num_entries_per_row,   2);
+    ASSERT_EQUAL(pattern.stride,                4);
+    ASSERT_EQUAL(pattern.column_indices.size(), 8);
 }
-DECLARE_UNITTEST(TestAllocateEllPattern);
+DECLARE_HOST_DEVICE_UNITTEST(TestEllPatternBasicConstructor);
 
-
-void TestAllocateEllPatternLike(void)
+template <class Space>
+void TestEllPatternCopyConstructor(void)
 {
-    cusp::ell_pattern<int, cusp::host_memory> pattern;
-    cusp::ell_pattern<int, cusp::host_memory> example;
+    cusp::ell_pattern<int, Space> pattern(3, 2, 6, 2, 4);
 
-    cusp::allocate_pattern(example, 10, 10, 50, 5, 16);
-    cusp::allocate_pattern_like(pattern, example);
+    pattern.column_indices[0] = 0;
+    pattern.column_indices[1] = 0;
+    pattern.column_indices[2] = 0;
+    pattern.column_indices[4] = 0;
+    pattern.column_indices[3] = 1;
+    pattern.column_indices[5] = 1;
+    pattern.column_indices[6] = 1;
+    pattern.column_indices[7] = 1;
+
+    cusp::ell_pattern<int, Space> copy_of_pattern(pattern);
     
-    ASSERT_EQUAL(pattern.num_rows,            10);
-    ASSERT_EQUAL(pattern.num_cols,            10);
-    ASSERT_EQUAL(pattern.num_entries,         50);
-    ASSERT_EQUAL(pattern.num_entries_per_row,  5);
-    ASSERT_EQUAL(pattern.stride,              16);
-    
-    cusp::deallocate_pattern(pattern);
-    cusp::deallocate_pattern(example);
-}
-DECLARE_UNITTEST(TestAllocateEllPatternLike);
-
-
-template <class MemorySpace>
-void TestAllocateEllMatrix(void)
-{
-    cusp::ell_matrix<int, float, MemorySpace> matrix;
-
-    cusp::allocate_matrix(matrix, 10, 10, 50, 5, 16);
-    
-    ASSERT_EQUAL(matrix.num_rows,             10);
-    ASSERT_EQUAL(matrix.num_cols,             10);
-    ASSERT_EQUAL(matrix.num_entries,          50);
-    ASSERT_EQUAL(matrix.num_entries_per_row,   5);
-    ASSERT_EQUAL(matrix.stride,               16);
-    
-    cusp::deallocate_matrix(matrix);
-
-    ASSERT_EQUAL(matrix.num_rows,             0);
-    ASSERT_EQUAL(matrix.num_cols,             0);
-    ASSERT_EQUAL(matrix.num_entries,          0);
-    ASSERT_EQUAL(matrix.num_entries_per_row,  0);
-    ASSERT_EQUAL(matrix.stride,               0);
-    ASSERT_EQUAL(matrix.column_indices, (void *) 0);
-    ASSERT_EQUAL(matrix.values,         (void *) 0);
-}
-DECLARE_HOST_DEVICE_UNITTEST(TestAllocateEllMatrix);
-
-
-void TestAllocateEllMatrixLike(void)
-{
-    cusp::ell_matrix<int, float, cusp::host_memory> pattern;
-    cusp::ell_matrix<int, float, cusp::host_memory> example;
-
-    cusp::allocate_matrix(example, 10, 10, 50, 5, 16);
-    cusp::allocate_matrix_like(pattern, example);
-    
-    ASSERT_EQUAL(pattern.num_rows,            10);
-    ASSERT_EQUAL(pattern.num_cols,            10);
-    ASSERT_EQUAL(pattern.num_entries,         50);
-    ASSERT_EQUAL(pattern.num_entries_per_row,  5);
-    ASSERT_EQUAL(pattern.stride,              16);
-    
-    cusp::deallocate_matrix(pattern);
-    cusp::deallocate_matrix(example);
-}
-DECLARE_UNITTEST(TestAllocateEllMatrixLike);
-
-
-void TestMemcpyEllMatrix(void)
-{
-    cusp::ell_matrix<int, float, cusp::host_memory> h1;
-    cusp::ell_matrix<int, float, cusp::host_memory> h2;
-    cusp::ell_matrix<int, float, cusp::device_memory> d1;
-    cusp::ell_matrix<int, float, cusp::device_memory> d2;
-
-    cusp::allocate_matrix(h1, 3, 3, 6, 2, 16);
-    cusp::allocate_matrix(h2, 3, 3, 6, 2, 16);
-    cusp::allocate_matrix(d1, 3, 3, 6, 2, 16);
-    cusp::allocate_matrix(d2, 3, 3, 6, 2, 16);
-
-    // initialize host matrix
-    std::fill(h1.column_indices, h1.column_indices + (2 * 16), 0);
-    std::fill(h1.values,         h1.values         + (2 * 16), 0);
-
-    h1.column_indices[ 0] = 0;   h1.values[ 0] = 10; 
-    h1.column_indices[ 1] = 1;   h1.values[ 1] = 11;
-    h1.column_indices[ 2] = 0;   h1.values[ 2] = 12;
-    h1.column_indices[16] = 1;   h1.values[16] = 13;
-    h1.column_indices[17] = 0;   h1.values[17] = 14;
-    h1.column_indices[18] = 1;   h1.values[18] = 15;
-
-    // memcpy h1 -> d1 -> d2 -> h2
-    cusp::memcpy_matrix(d1, h1);
-    cusp::memcpy_matrix(d2, d1);
-    cusp::memcpy_matrix(h2, d2);
-
-    // compare h1 and h2
-    ASSERT_EQUAL(h1.num_rows,    h2.num_rows);
-    ASSERT_EQUAL(h1.num_cols,    h2.num_cols);
-    ASSERT_EQUAL(h1.num_entries, h2.num_entries);
-    ASSERT_EQUAL_RANGES(h1.column_indices, h1.column_indices + (2 * 16), h2.column_indices);
-    ASSERT_EQUAL_RANGES(h1.values,         h1.values         + (2 * 16), h2.values);
-
-    // change h2
-    h1.column_indices[ 0] = 1;   h1.values[ 0] = 20; 
-    h1.column_indices[ 1] = 2;   h1.values[ 1] = 21;
-    h1.column_indices[ 2] = 1;   h1.values[ 2] = 22;
-    h1.column_indices[16] = 2;   h1.values[16] = 23;
-    h1.column_indices[17] = 1;   h1.values[17] = 24;
-    h1.column_indices[18] = 2;   h1.values[18] = 25;
+    ASSERT_EQUAL(copy_of_pattern.num_rows,              3);
+    ASSERT_EQUAL(copy_of_pattern.num_cols,              2);
+    ASSERT_EQUAL(copy_of_pattern.num_entries,           6);
+    ASSERT_EQUAL(copy_of_pattern.num_entries_per_row,   2);
+    ASSERT_EQUAL(copy_of_pattern.stride,                4);
+    ASSERT_EQUAL(copy_of_pattern.column_indices.size(), 8);
    
-    // memcpy h2 -> h1
-    cusp::memcpy_matrix(h2, h1);
-    
-    // compare h1 and h2 again
-    ASSERT_EQUAL(h1.num_rows,    h2.num_rows);
-    ASSERT_EQUAL(h1.num_cols,    h2.num_cols);
-    ASSERT_EQUAL(h1.num_entries, h2.num_entries);
-    ASSERT_EQUAL_RANGES(h1.column_indices, h1.column_indices + (2 * 16), h2.column_indices);
-    ASSERT_EQUAL_RANGES(h1.values,         h1.values         + (2 * 16), h2.values);
-
-    cusp::deallocate_matrix(h1);
-    cusp::deallocate_matrix(h2);
-    cusp::deallocate_matrix(d1);
-    cusp::deallocate_matrix(d2);
+    ASSERT_EQUAL(copy_of_pattern.column_indices, pattern.column_indices);
 }
-DECLARE_UNITTEST(TestMemcpyEllMatrix);
+DECLARE_HOST_DEVICE_UNITTEST(TestEllPatternCopyConstructor);
+
+template <class Space>
+void TestEllMatrixBasicConstructor(void)
+{
+    cusp::ell_matrix<int, float, Space> matrix(3, 2, 6, 2, 4);
+
+    ASSERT_EQUAL(matrix.num_rows,              3);
+    ASSERT_EQUAL(matrix.num_cols,              2);
+    ASSERT_EQUAL(matrix.num_entries,           6);
+    ASSERT_EQUAL(matrix.num_entries_per_row,   2);
+    ASSERT_EQUAL(matrix.stride,                4);
+    ASSERT_EQUAL(matrix.column_indices.size(), 8);
+    ASSERT_EQUAL(matrix.values.size(),         8);
+}
+DECLARE_HOST_DEVICE_UNITTEST(TestEllMatrixBasicConstructor);
+
+template <class Space>
+void TestEllMatrixCopyConstructor(void)
+{
+    cusp::ell_matrix<int, float, Space> matrix(3, 2, 6, 2, 4);
+
+    matrix.column_indices[0] = 0;  matrix.values[0] = 0; 
+    matrix.column_indices[1] = 0;  matrix.values[1] = 1;
+    matrix.column_indices[2] = 0;  matrix.values[2] = 2;
+    matrix.column_indices[3] = 0;  matrix.values[4] = 3;
+    matrix.column_indices[4] = 1;  matrix.values[3] = 4;
+    matrix.column_indices[5] = 1;  matrix.values[5] = 5;
+    matrix.column_indices[6] = 1;  matrix.values[6] = 6;
+    matrix.column_indices[7] = 1;  matrix.values[7] = 7;
+
+    cusp::ell_matrix<int, float, Space> copy_of_matrix(matrix);
+    
+    ASSERT_EQUAL(copy_of_matrix.num_rows,              3);
+    ASSERT_EQUAL(copy_of_matrix.num_cols,              2);
+    ASSERT_EQUAL(copy_of_matrix.num_entries,           6);
+    ASSERT_EQUAL(copy_of_matrix.num_entries_per_row,   2);
+    ASSERT_EQUAL(copy_of_matrix.stride,                4);
+    ASSERT_EQUAL(copy_of_matrix.column_indices.size(), 8);
+    ASSERT_EQUAL(copy_of_matrix.values.size(),         8);
+   
+    ASSERT_EQUAL(copy_of_matrix.column_indices, matrix.column_indices);
+    ASSERT_EQUAL(copy_of_matrix.values,         matrix.values);
+}
+DECLARE_HOST_DEVICE_UNITTEST(TestEllMatrixCopyConstructor);
+
+template <class Space>
+void TestEllMatrixSwap(void)
+{
+    cusp::ell_matrix<int, float, Space> A(1, 2, 2, 2, 1);
+    cusp::ell_matrix<int, float, Space> B(3, 1, 3, 1, 3);
+
+    A.column_indices[0] = 0;  A.values[0] = 0; 
+    A.column_indices[1] = 1;  A.values[1] = 1;
+    
+    B.column_indices[0] = 0;  B.values[0] = 0; 
+    B.column_indices[1] = 0;  B.values[1] = 1;
+    B.column_indices[2] = 0;  B.values[2] = 2;
+    
+    cusp::ell_matrix<int, float, Space> A_copy(A);
+    cusp::ell_matrix<int, float, Space> B_copy(B);
+
+    A.swap(B);
+
+    ASSERT_EQUAL(A.num_rows,              3);
+    ASSERT_EQUAL(A.num_cols,              1);
+    ASSERT_EQUAL(A.num_entries,           3);
+    ASSERT_EQUAL(A.num_entries_per_row,   1);
+    ASSERT_EQUAL(A.stride,                3);
+    ASSERT_EQUAL(A.column_indices, B_copy.column_indices);
+    ASSERT_EQUAL(A.values,         B_copy.values);
+    
+    ASSERT_EQUAL(B.num_rows,              1);
+    ASSERT_EQUAL(B.num_cols,              2);
+    ASSERT_EQUAL(B.num_entries,           2);
+    ASSERT_EQUAL(B.num_entries_per_row,   2);
+    ASSERT_EQUAL(B.stride,                1);
+    ASSERT_EQUAL(B.column_indices, A_copy.column_indices);
+    ASSERT_EQUAL(B.values,         A_copy.values);
+
+}
+DECLARE_HOST_DEVICE_UNITTEST(TestEllMatrixSwap);
+
+template <class Space>
+void TestEllMatrixResize(void)
+{
+    cusp::ell_matrix<int, float, Space> matrix;
+    
+    matrix.resize(3, 2, 6, 2, 4);
+
+    ASSERT_EQUAL(matrix.num_rows,              3);
+    ASSERT_EQUAL(matrix.num_cols,              2);
+    ASSERT_EQUAL(matrix.num_entries,           6);
+    ASSERT_EQUAL(matrix.num_entries_per_row,   2);
+    ASSERT_EQUAL(matrix.stride,                4);
+    ASSERT_EQUAL(matrix.column_indices.size(), 8);
+    ASSERT_EQUAL(matrix.values.size(),         8);
+}
+DECLARE_HOST_DEVICE_UNITTEST(TestEllMatrixResize);
 

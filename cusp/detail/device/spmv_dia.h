@@ -18,19 +18,16 @@
 #pragma once
 
 #include <cusp/dia_matrix.h>
-#include <cusp/memory.h>
+
 #include <cusp/detail/device/utils.h>
 #include <cusp/detail/device/texture.h>
 
 namespace cusp
 {
-
 namespace detail
 {
-
 namespace device
 {
-
 
 ////////////////////////////////////////////////////////////////////////
 // DIA SpMV kernels 
@@ -59,7 +56,7 @@ spmv_dia_kernel(const IndexType num_rows,
                 const IndexType num_cols, 
                 const IndexType num_diagonals,
                 const IndexType stride,
-                const int       * diagonal_offsets,
+                const IndexType * diagonal_offsets,
                 const ValueType * values,
                 const ValueType * x, 
                       ValueType * y)
@@ -78,7 +75,8 @@ spmv_dia_kernel(const IndexType num_rows,
     ValueType sum = y[row];
     values += row;
 
-    for(IndexType n = 0; n < num_diagonals; n++){
+    for(IndexType n = 0; n < num_diagonals; n++)
+    {
         const int col = row + offsets[n];
 
         if(col >= 0 && col < num_cols){
@@ -93,41 +91,51 @@ spmv_dia_kernel(const IndexType num_rows,
 }
 
 template <typename IndexType, typename ValueType>
-void spmv_dia(const cusp::dia_matrix<IndexType,ValueType,cusp::device_memory>& dia, 
+void spmv_dia(const cusp::dia_matrix<IndexType,ValueType,cusp::device>& dia, 
               const ValueType * x, 
                     ValueType * y)
 {
     const unsigned int BLOCK_SIZE = 256;
     const dim3 grid = make_large_grid(dia.num_rows, BLOCK_SIZE);
+    
+    const IndexType * diagonal_offsets = thrust::raw_pointer_cast(&dia.diagonal_offsets[0]);
+    const ValueType * values           = thrust::raw_pointer_cast(&dia.values[0]);
   
     // the dia_kernel only handles BLOCK_SIZE diagonals at a time
-    for(unsigned int base = 0; base < dia.num_diagonals; base += BLOCK_SIZE){
+    for(unsigned int base = 0; base < dia.num_diagonals; base += BLOCK_SIZE)
+    {
         IndexType num_diagonals = std::min(dia.num_diagonals - base, BLOCK_SIZE);
+
         spmv_dia_kernel<IndexType, ValueType, BLOCK_SIZE, false> <<<grid, BLOCK_SIZE>>>
             (dia.num_rows, dia.num_cols, num_diagonals, dia.stride,
-             dia.diagonal_offsets + base,
-             dia.values + base * dia.stride,
+             diagonal_offsets + base,
+             values + base * dia.stride,
              x, y);
     }
 }
 
 template <typename IndexType, typename ValueType>
-void spmv_dia_tex(const cusp::dia_matrix<IndexType,ValueType,cusp::device_memory>& dia, 
+void spmv_dia_tex(const cusp::dia_matrix<IndexType,ValueType,cusp::device>& dia, 
                   const ValueType * x, 
                         ValueType * y)
 {
     const unsigned int BLOCK_SIZE = 256;
     const dim3 grid = make_large_grid(dia.num_rows, BLOCK_SIZE);
-    
+
+    const IndexType * diagonal_offsets = thrust::raw_pointer_cast(&dia.diagonal_offsets[0]);
+    const ValueType * values           = thrust::raw_pointer_cast(&dia.values[0]);
+
     bind_x(x);
   
     // the dia_kernel only handles BLOCK_SIZE diagonals at a time
-    for(unsigned int base = 0; base < dia.num_diagonals; base += BLOCK_SIZE){
+    for(unsigned int base = 0; base < dia.num_diagonals; base += BLOCK_SIZE)
+    {
         IndexType num_diagonals = std::min(dia.num_diagonals - base, BLOCK_SIZE);
+
         spmv_dia_kernel<IndexType, ValueType, BLOCK_SIZE, true> <<<grid, BLOCK_SIZE>>>
             (dia.num_rows, dia.num_cols, num_diagonals, dia.stride,
-             dia.diagonal_offsets + base,
-             dia.values + base * dia.stride,
+             diagonal_offsets + base,
+             values + base * dia.stride,
              x, y);
     }
 
@@ -136,7 +144,7 @@ void spmv_dia_tex(const cusp::dia_matrix<IndexType,ValueType,cusp::device_memory
 
 
 template <typename IndexType, typename ValueType>
-void spmv(const cusp::dia_matrix<IndexType,ValueType,cusp::device_memory>& dia, 
+void spmv(const cusp::dia_matrix<IndexType,ValueType,cusp::device>& dia, 
           const ValueType * x, 
                 ValueType * y)
 {
@@ -144,7 +152,7 @@ void spmv(const cusp::dia_matrix<IndexType,ValueType,cusp::device_memory>& dia,
 }
 
 template <typename IndexType, typename ValueType>
-void spmv_tex(const cusp::dia_matrix<IndexType,ValueType,cusp::device_memory>& dia, 
+void spmv_tex(const cusp::dia_matrix<IndexType,ValueType,cusp::device>& dia, 
               const ValueType * x, 
                     ValueType * y)
 {
@@ -152,8 +160,6 @@ void spmv_tex(const cusp::dia_matrix<IndexType,ValueType,cusp::device_memory>& d
 }
 
 } // end namespace device
-
 } // end namespace detail
-
 } // end namespace cusp
 

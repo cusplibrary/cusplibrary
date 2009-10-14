@@ -13,43 +13,20 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-
-
-
-#pragma once
-
-#include <cusp/detail/device/spmv_coo_flat.h>
+    
+#include <cusp/detail/dispatch/convert.h>
 
 namespace cusp
 {
 
-namespace detail
+template <class DestinationType, class SourceType>
+void convert(DestinationType& dst, const SourceType& src)
 {
+    typedef typename DestinationType::memory_space destination_space;
+    typedef typename SourceType::memory_space      source_space;
 
-namespace device
-{
-
-
-template <typename IndexType, typename ValueType>
-void spmv(const coo_matrix<IndexType,ValueType,cusp::device>& coo, 
-          const ValueType * x, 
-                ValueType * y)
-{ 
-    spmv_coo_flat(coo, x, y);
+    cusp::detail::dispatch::convert(dst, src, destination_space(), source_space());
 }
-
-template <typename IndexType, typename ValueType>
-void spmv_tex(const coo_matrix<IndexType,ValueType,cusp::device>& coo, 
-              const ValueType * x, 
-                    ValueType * y)
-{ 
-    spmv_coo_flat_tex(coo, x, y);
-}
-
-
-} // end namespace device
-
-} // end namespace detail
 
 } // end namespace cusp
 

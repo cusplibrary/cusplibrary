@@ -32,7 +32,7 @@ namespace device
 
 
 template <typename IndexType, typename ValueType>
-void spmv(const csr_matrix<IndexType,ValueType,cusp::device_memory>& csr, 
+void spmv(const csr_matrix<IndexType,ValueType,cusp::device>& csr, 
           const ValueType * x, 
                 ValueType * y)
 { 
@@ -40,7 +40,7 @@ void spmv(const csr_matrix<IndexType,ValueType,cusp::device_memory>& csr,
 }
 
 template <typename IndexType, typename ValueType>
-void spmv_tex(const csr_matrix<IndexType,ValueType,cusp::device_memory>& csr, 
+void spmv_tex(const csr_matrix<IndexType,ValueType,cusp::device>& csr, 
               const ValueType * x, 
                     ValueType * y)
 { 

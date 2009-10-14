@@ -18,8 +18,9 @@
 
 #pragma once
 
+#include <cusp/memory.h> // TODO REMOVE
+
 #include <cusp/coo_matrix.h>
-#include <cusp/memory.h>
 #include <cusp/detail/device/common.h>
 #include <cusp/detail/device/utils.h>
 #include <cusp/detail/device/texture.h>
@@ -277,10 +278,14 @@ spmv_coo_reduce_update_kernel(const IndexType num_warps,
 
 
 template <typename IndexType, typename ValueType, bool UseCache>
-void __spmv_coo_flat(const coo_matrix<IndexType,ValueType,cusp::device_memory>& d_coo, 
+void __spmv_coo_flat(const coo_matrix<IndexType,ValueType,cusp::device>& d_coo, 
                      const ValueType * d_x, 
                            ValueType * d_y)
 {
+    const IndexType * I = thrust::raw_pointer_cast(&d_coo.row_indices[0]);
+    const IndexType * J = thrust::raw_pointer_cast(&d_coo.column_indices[0]);
+    const ValueType * V = thrust::raw_pointer_cast(&d_coo.values[0]);
+
     if(d_coo.num_entries == 0)
     {
         // empty matrix
@@ -290,7 +295,7 @@ void __spmv_coo_flat(const coo_matrix<IndexType,ValueType,cusp::device_memory>& 
     {
         // small matrix
         spmv_coo_serial_kernel<IndexType,ValueType> <<<1,1>>>
-            (d_coo.num_entries, d_coo.row_indices, d_coo.column_indices, d_coo.values, d_x, d_y);
+            (d_coo.num_entries, I, J, V, d_x, d_y);
         return;
     }
 
@@ -313,27 +318,27 @@ void __spmv_coo_flat(const coo_matrix<IndexType,ValueType,cusp::device_memory>& 
     if (UseCache)
         bind_x(d_x);
 
+    // TODO replace with device_array<T>
     IndexType * temp_rows = cusp::new_device_array<IndexType>(active_warps);
     ValueType * temp_vals = cusp::new_device_array<ValueType>(active_warps);
 
     spmv_coo_flat_kernel<IndexType, ValueType, BLOCK_SIZE, UseCache> <<<num_blocks, BLOCK_SIZE>>>
-        (tail, interval_size, d_coo.row_indices, d_coo.column_indices, d_coo.values, d_x, d_y, temp_rows, temp_vals);
+        (tail, interval_size, I, J, V, d_x, d_y, temp_rows, temp_vals);
 
     spmv_coo_serial_kernel<IndexType,ValueType> <<<1,1>>>
-        (d_coo.num_entries - tail, d_coo.row_indices + tail, d_coo.column_indices + tail, d_coo.values + tail, d_x, d_y);
+        (d_coo.num_entries - tail, I + tail, J + tail, V + tail, d_x, d_y);
 
     spmv_coo_reduce_update_kernel<IndexType, ValueType, 512> <<<1, 512>>> (active_warps, temp_rows, temp_vals, d_y);
 
     cusp::delete_device_array(temp_rows);
     cusp::delete_device_array(temp_vals);
 
-
     if (UseCache)
         unbind_x(d_x);
 }
 
 template <typename IndexType, typename ValueType>
-void spmv_coo_flat(const coo_matrix<IndexType,ValueType,cusp::device_memory>& d_coo, 
+void spmv_coo_flat(const coo_matrix<IndexType,ValueType,cusp::device>& d_coo, 
                    const ValueType * d_x, 
                          ValueType * d_y)
 { 
@@ -342,7 +347,7 @@ void spmv_coo_flat(const coo_matrix<IndexType,ValueType,cusp::device_memory>& d_
 
 
 template <typename IndexType, typename ValueType>
-void spmv_coo_flat_tex(const coo_matrix<IndexType,ValueType,cusp::device_memory>& d_coo, 
+void spmv_coo_flat_tex(const coo_matrix<IndexType,ValueType,cusp::device>& d_coo, 
                        const ValueType * d_x, 
                              ValueType * d_y)
 { 

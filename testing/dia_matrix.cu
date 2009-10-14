@@ -1,118 +1,118 @@
 #include <unittest/unittest.h>
 #include <cusp/dia_matrix.h>
 
-template <class MemorySpace>
-void TestAllocateDiaMatrix(void)
+template <class Space>
+void TestDiaMatrixBasicConstructor(void)
 {
-    cusp::dia_matrix<int, float, MemorySpace> matrix;
+    cusp::dia_matrix<int, float, Space> matrix(4, 4, 7, 3, 4);
 
-    cusp::allocate_matrix(matrix, 10, 10, 100, 19, 32);
-    
-    ASSERT_EQUAL(matrix.num_rows,       10);
-    ASSERT_EQUAL(matrix.num_cols,       10);
-    ASSERT_EQUAL(matrix.num_entries,    100);
-    ASSERT_EQUAL(matrix.num_diagonals,  19);
-    ASSERT_EQUAL(matrix.stride,         32);
-    
-    cusp::deallocate_matrix(matrix);
-
-    ASSERT_EQUAL(matrix.num_rows,       0);
-    ASSERT_EQUAL(matrix.num_cols,       0);
-    ASSERT_EQUAL(matrix.num_entries,    0);
-    ASSERT_EQUAL(matrix.num_diagonals,  0);
-    ASSERT_EQUAL(matrix.stride,         0);
-    ASSERT_EQUAL(matrix.diagonal_offsets, (void *) 0);
-    ASSERT_EQUAL(matrix.values,           (void *) 0);
+    ASSERT_EQUAL(matrix.num_rows,              4);
+    ASSERT_EQUAL(matrix.num_cols,              4);
+    ASSERT_EQUAL(matrix.num_entries,           7);
+    ASSERT_EQUAL(matrix.num_diagonals,         3);
+    ASSERT_EQUAL(matrix.stride,                4);
+    ASSERT_EQUAL(matrix.diagonal_offsets.size(),  3);
+    ASSERT_EQUAL(matrix.values.size(),           12);
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestAllocateDiaMatrix);
+DECLARE_HOST_DEVICE_UNITTEST(TestDiaMatrixBasicConstructor);
 
-
-void TestAllocateDiaMatrixLike(void)
+template <class Space>
+void TestDiaMatrixCopyConstructor(void)
 {
-    cusp::dia_matrix<int, float, cusp::host_memory> example;
-    cusp::dia_matrix<int, float, cusp::host_memory> matrix;
+    cusp::dia_matrix<int, float, Space> matrix(4, 4, 7, 3, 4);
 
-    cusp::allocate_matrix(example, 10, 10, 100, 19, 32);
-    cusp::allocate_matrix_like(matrix, example);
+    matrix.diagonal_offsets[0] = -2;
+    matrix.diagonal_offsets[1] =  0;
+    matrix.diagonal_offsets[2] =  1;
+
+    matrix.values[ 0] =  0; 
+    matrix.values[ 1] =  0; 
+    matrix.values[ 2] = 13; 
+    matrix.values[ 3] = 16; 
+    matrix.values[ 4] = 10; 
+    matrix.values[ 5] =  0; 
+    matrix.values[ 6] = 14; 
+    matrix.values[ 7] =  0; 
+    matrix.values[ 8] = 11; 
+    matrix.values[ 9] = 12; 
+    matrix.values[10] = 15; 
+    matrix.values[11] =  0; 
     
-    ASSERT_EQUAL(matrix.num_rows,       10);
-    ASSERT_EQUAL(matrix.num_cols,       10);
-    ASSERT_EQUAL(matrix.num_entries,    100);
-    ASSERT_EQUAL(matrix.num_diagonals,  19);
-    ASSERT_EQUAL(matrix.stride,         32);
-    
-    cusp::deallocate_matrix(example);
-    cusp::deallocate_matrix(matrix);
+    cusp::dia_matrix<int, float, Space> copy_of_matrix(matrix);
+
+    ASSERT_EQUAL(copy_of_matrix.num_rows,              4);
+    ASSERT_EQUAL(copy_of_matrix.num_cols,              4);
+    ASSERT_EQUAL(copy_of_matrix.num_entries,           7);
+    ASSERT_EQUAL(copy_of_matrix.num_diagonals,         3);
+    ASSERT_EQUAL(copy_of_matrix.stride,                4);
+    ASSERT_EQUAL(copy_of_matrix.diagonal_offsets.size(),  3);
+    ASSERT_EQUAL(copy_of_matrix.values.size(),           12);
+
+    ASSERT_EQUAL(copy_of_matrix.diagonal_offsets, matrix.diagonal_offsets);
+    ASSERT_EQUAL(copy_of_matrix.values,           matrix.values);
 }
-DECLARE_UNITTEST(TestAllocateDiaMatrixLike);
+DECLARE_HOST_DEVICE_UNITTEST(TestDiaMatrixCopyConstructor);
 
-
-void TestMemcpyDiaMatrix(void)
+template <class Space>
+void TestDiaMatrixResize(void)
 {
-    cusp::dia_matrix<int, float, cusp::host_memory> h1;
-    cusp::dia_matrix<int, float, cusp::host_memory> h2;
-    cusp::dia_matrix<int, float, cusp::device_memory> d1;
-    cusp::dia_matrix<int, float, cusp::device_memory> d2;
-
-    cusp::allocate_matrix(h1, 2, 2, 4, 3, 2);
-    cusp::allocate_matrix(h2, 2, 2, 4, 3, 2);
-    cusp::allocate_matrix(d1, 2, 2, 4, 3, 2);
-    cusp::allocate_matrix(d2, 2, 2, 4, 3, 2);
-
-    // initialize host matrix
-    h1.diagonal_offsets[0] = -1;
-    h1.diagonal_offsets[1] =  0;
-    h1.diagonal_offsets[2] =  1;
-
-    h1.values[0] =  0; 
-    h1.values[1] = 12;
-    h1.values[2] = 10;
-    h1.values[3] = 13;
-    h1.values[4] = 11;
-    h1.values[5] =  0;
-
-    // memcpy h1 -> d1 -> d2 -> h2
-    cusp::memcpy_matrix(d1, h1);
-    cusp::memcpy_matrix(d2, d1);
-    cusp::memcpy_matrix(h2, d2);
-
-    // compare h1 and h2
-    ASSERT_EQUAL(h1.num_rows,    h2.num_rows);
-    ASSERT_EQUAL(h1.num_cols,    h2.num_cols);
-    ASSERT_EQUAL(h1.num_entries, h2.num_entries);
-    ASSERT_EQUAL(h1.num_diagonals, h2.num_diagonals);
-    ASSERT_EQUAL(h1.stride,        h2.stride);
-    ASSERT_EQUAL_RANGES(h1.diagonal_offsets, h1.diagonal_offsets + 3, h2.diagonal_offsets);
-    ASSERT_EQUAL_RANGES(h1.values,           h1.values + 6,           h2.values);
-
-    // change h2
-    h2.diagonal_offsets[0] = -1;
-    h2.diagonal_offsets[1] =  0;
-    h2.diagonal_offsets[2] =  1;
-
-    h2.values[0] =  0; 
-    h2.values[1] = 12;
-    h2.values[2] = 10;
-    h2.values[3] = 13;
-    h2.values[3] = 11;
-    h2.values[3] =  0;
-   
-    // memcpy h2 -> h1
-    cusp::memcpy_matrix(h2, h1);
+    cusp::dia_matrix<int, float, Space> matrix;
     
-    // compare h1 and h2 again
-    ASSERT_EQUAL(h1.num_rows,    h2.num_rows);
-    ASSERT_EQUAL(h1.num_cols,    h2.num_cols);
-    ASSERT_EQUAL(h1.num_entries, h2.num_entries);
-    ASSERT_EQUAL(h1.num_diagonals, h2.num_diagonals);
-    ASSERT_EQUAL(h1.stride,        h2.stride);
-    ASSERT_EQUAL_RANGES(h1.diagonal_offsets, h1.diagonal_offsets + 3, h2.diagonal_offsets);
-    ASSERT_EQUAL_RANGES(h1.values,           h1.values + 6,           h2.values);
+    matrix.resize(4, 4, 7, 3, 4);
 
-    cusp::deallocate_matrix(h1);
-    cusp::deallocate_matrix(h2);
-    cusp::deallocate_matrix(d1);
-    cusp::deallocate_matrix(d2);
+    ASSERT_EQUAL(matrix.num_rows,              4);
+    ASSERT_EQUAL(matrix.num_cols,              4);
+    ASSERT_EQUAL(matrix.num_entries,           7);
+    ASSERT_EQUAL(matrix.num_diagonals,         3);
+    ASSERT_EQUAL(matrix.stride,                4);
+    ASSERT_EQUAL(matrix.diagonal_offsets.size(),  3);
+    ASSERT_EQUAL(matrix.values.size(),           12);
 }
-DECLARE_UNITTEST(TestMemcpyDiaMatrix);
+DECLARE_HOST_DEVICE_UNITTEST(TestDiaMatrixResize);
+
+template <class Space>
+void TestDiaMatrixSwap(void)
+{
+    cusp::dia_matrix<int, float, Space> A(2, 2, 4, 3, 2);
+    cusp::dia_matrix<int, float, Space> B(1, 3, 2, 2, 1);
+
+    A.diagonal_offsets[0] = -1;
+    A.diagonal_offsets[1] =  0;
+    A.diagonal_offsets[2] =  1;
+
+    A.values[0] = 10;
+    A.values[1] =  0;
+    A.values[2] = 20;
+    A.values[3] = 30;
+    A.values[4] = 40;
+    A.values[5] = 40;
+
+    B.diagonal_offsets[0] = 1;
+    B.diagonal_offsets[1] = 2;
+
+    B.values[0] = 10;
+    B.values[1] = 20;
+    
+    cusp::dia_matrix<int, float, Space> A_copy(A);
+    cusp::dia_matrix<int, float, Space> B_copy(B);
+
+    A.swap(B);
+
+    ASSERT_EQUAL(A.num_rows,         B_copy.num_rows);
+    ASSERT_EQUAL(A.num_cols,         B_copy.num_cols);
+    ASSERT_EQUAL(A.num_entries,      B_copy.num_entries);
+    ASSERT_EQUAL(A.num_diagonals,    B_copy.num_diagonals);
+    ASSERT_EQUAL(A.stride,           B_copy.stride);
+    ASSERT_EQUAL(A.diagonal_offsets, B_copy.diagonal_offsets);
+    ASSERT_EQUAL(A.values,           B_copy.values);
+    
+    ASSERT_EQUAL(B.num_rows,         A_copy.num_rows);
+    ASSERT_EQUAL(B.num_cols,         A_copy.num_cols);
+    ASSERT_EQUAL(B.num_entries,      A_copy.num_entries);
+    ASSERT_EQUAL(B.num_diagonals,    A_copy.num_diagonals);
+    ASSERT_EQUAL(B.stride,           A_copy.stride);
+    ASSERT_EQUAL(B.diagonal_offsets, A_copy.diagonal_offsets);
+    ASSERT_EQUAL(B.values,           A_copy.values);
+}
+DECLARE_HOST_DEVICE_UNITTEST(TestDiaMatrixSwap);
 

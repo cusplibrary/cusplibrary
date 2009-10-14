@@ -17,75 +17,71 @@
 
 #pragma once
 
-#include <cusp/memory.h>
-#include <cusp/matrix_shape.h>
 #include <cusp/ell_matrix.h>
 #include <cusp/coo_matrix.h>
 
 namespace cusp
 {
-    // Definition //
-    template <typename IndexType, typename ValueType, class MemorySpace>
-    struct hyb_matrix : public matrix_shape<IndexType>
+
+    template <typename IndexType, typename ValueType, class SpaceOrAlloc>
+    class hyb_matrix : public matrix_shape<IndexType>
     {
+        public:
         typedef IndexType   index_type;
         typedef ValueType   value_type;
-        typedef MemorySpace memory_space;
-   
+
+        typedef typename cusp::standard_memory_allocator<IndexType, SpaceOrAlloc>::type index_allocator_type;
+        typedef typename cusp::standard_memory_allocator<ValueType, SpaceOrAlloc>::type value_allocator_type;
+        typedef typename cusp::allocator_space<index_allocator_type>::type memory_space;
+
         index_type num_entries;
 
-        cusp::ell_matrix<IndexType,ValueType,MemorySpace> ell;
-        cusp::coo_matrix<IndexType,ValueType,MemorySpace> coo;
-    };
-   
+        cusp::ell_matrix<IndexType,ValueType,SpaceOrAlloc> ell;
+        cusp::coo_matrix<IndexType,ValueType,SpaceOrAlloc> coo;
 
-    // Memory Management //
-    template<typename IndexType, typename ValueType, class MemorySpace>
-    void allocate_matrix(hyb_matrix<IndexType,ValueType,MemorySpace>& matrix,
-                         const IndexType num_rows, const IndexType num_cols,
-                         const IndexType num_ell_entries, const IndexType num_coo_entries,
-                         const IndexType num_entries_per_row, const IndexType stride)
-    {
-        matrix.num_rows    = num_rows;
-        matrix.num_cols    = num_cols;
-        matrix.num_entries = num_ell_entries + num_coo_entries;
+        hyb_matrix()
+            : matrix_shape<IndexType>(),
+              num_entries(0),  
+              ell(), coo() {}
+
+        hyb_matrix(IndexType num_rows, IndexType num_cols,
+                   IndexType num_ell_entries, IndexType num_coo_entries,
+                   IndexType num_entries_per_row, IndexType stride)
+            : matrix_shape<IndexType>(num_rows, num_cols), num_entries(num_ell_entries + num_coo_entries),
+              ell(num_rows, num_cols, num_ell_entries, num_entries_per_row, stride),
+              coo(num_rows, num_cols, num_coo_entries) {}
+
+        // construct from another coo_matrix
+        template <typename IndexType2, typename ValueType2, typename SpaceOrAlloc2>
+        hyb_matrix(const hyb_matrix<IndexType2, ValueType2, SpaceOrAlloc2>& matrix)
+            : matrix_shape<IndexType>(matrix),
+              num_entries(matrix.num_entries),
+              ell(matrix.ell),
+              coo(matrix.coo) {}
         
-        cusp::allocate_matrix(matrix.ell, num_rows, num_cols, num_ell_entries, num_entries_per_row, stride);
-        cusp::allocate_matrix(matrix.coo, num_rows, num_cols, num_coo_entries);
-    }
+        void resize(IndexType num_rows, IndexType num_cols,
+                    IndexType num_ell_entries, IndexType num_coo_entries,
+                    IndexType num_entries_per_row, IndexType stride)
+        {
+            ell.resize(num_rows, num_cols, num_ell_entries, num_entries_per_row, stride);
+            coo.resize(num_rows, num_cols, num_coo_entries);
 
+            this->num_rows    = num_rows;
+            this->num_cols    = num_cols;
+            this->num_entries = num_ell_entries + num_coo_entries;
+        }
 
-    template<typename IndexType, typename ValueType, class MemorySpace1, class MemorySpace2>
-    void allocate_matrix_like(      hyb_matrix<IndexType,ValueType,MemorySpace1>& matrix,
-                              const hyb_matrix<IndexType,ValueType,MemorySpace2>& example)
-    {
-        cusp::allocate_matrix(matrix, example.num_rows, example.num_cols,
-                                      example.ell.num_entries, example.coo.num_entries,
-                                      example.ell.num_entries_per_row, example.ell.stride);
-    }
+        void swap(hyb_matrix& matrix)
+        {
+            ell.swap(matrix.ell);
+            coo.swap(matrix.coo);
 
+            thrust::swap(num_entries, matrix.num_entries);
+            
+            matrix_shape<IndexType>::swap(matrix);
+        }
 
-    template<typename IndexType, typename ValueType, class MemorySpace>
-    void deallocate_matrix(hyb_matrix<IndexType,ValueType,MemorySpace>& matrix)
-    {
-        cusp::deallocate_matrix(matrix.ell);
-        cusp::deallocate_matrix(matrix.coo);
-        
-        matrix.num_rows    = 0;
-        matrix.num_cols    = 0;
-        matrix.num_entries = 0;
-    }
-
-    template<typename IndexType, typename ValueType, class MemorySpace1, class MemorySpace2>
-    void memcpy_matrix(      hyb_matrix<IndexType,ValueType,MemorySpace1>& dst,
-                       const hyb_matrix<IndexType,ValueType,MemorySpace2>& src)
-    {
-        dst.num_rows    = src.num_rows;
-        dst.num_cols    = src.num_cols;
-        dst.num_entries = src.num_entries;
-
-        cusp::memcpy_matrix(dst.ell, src.ell);
-        cusp::memcpy_matrix(dst.coo, src.coo);
-    }
+    }; // class hyb_matrix
 
 } // end namespace cusp
+

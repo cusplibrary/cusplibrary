@@ -18,20 +18,17 @@
 #pragma once
 
 #include <cusp/csr_matrix.h>
-#include <cusp/memory.h>
+
 #include <cusp/detail/device/common.h>
 #include <cusp/detail/device/utils.h>
 #include <cusp/detail/device/texture.h>
 
 namespace cusp
 {
-
 namespace detail
 {
-
 namespace device
 {
-
 
 //////////////////////////////////////////////////////////////////////////////
 // CSR SpMV kernels based on a vector model (one warp per row)
@@ -71,7 +68,8 @@ spmv_csr_vector_kernel(const IndexType num_rows,
     const IndexType warp_lane   = threadIdx.x / WARP_SIZE;                // warp index within the CTA
     const IndexType num_warps   = (BLOCK_SIZE / WARP_SIZE) * gridDim.x;   // total number of active warps
 
-    for(IndexType row = warp_id; row < num_rows; row += num_warps){
+    for(IndexType row = warp_id; row < num_rows; row += num_warps)
+    {
         // use two threads to fetch Ap[row] and Ap[row+1]
         // this is considerably faster than the straightforward version
         if(thread_lane < 2)
@@ -112,43 +110,47 @@ spmv_csr_vector_kernel(const IndexType num_rows,
 }
 
 template <typename IndexType, typename ValueType>
-void spmv_csr_vector(const cusp::csr_matrix<IndexType,ValueType,cusp::device_memory>& d_csr, 
-                     const ValueType * d_x, 
-                           ValueType * d_y)
+void spmv_csr_vector(const cusp::csr_matrix<IndexType,ValueType,cusp::device>& csr, 
+                     const ValueType * x, 
+                           ValueType * y)
 {
     const unsigned int BLOCK_SIZE = 128;
     const unsigned int WARPS_PER_BLOCK = BLOCK_SIZE / WARP_SIZE;
     const unsigned int MAX_BLOCKS = MAX_THREADS / BLOCK_SIZE;
-    const unsigned int NUM_BLOCKS = std::min(MAX_BLOCKS, DIVIDE_INTO(d_csr.num_rows, WARPS_PER_BLOCK));
+    const unsigned int NUM_BLOCKS = std::min(MAX_BLOCKS, DIVIDE_INTO(csr.num_rows, WARPS_PER_BLOCK));
+    
+    const IndexType * Ap = thrust::raw_pointer_cast(&csr.row_offsets[0]);
+    const IndexType * Aj = thrust::raw_pointer_cast(&csr.column_indices[0]);
+    const ValueType * Ax = thrust::raw_pointer_cast(&csr.values[0]);
     
     spmv_csr_vector_kernel<IndexType, ValueType, BLOCK_SIZE, false> <<<NUM_BLOCKS, BLOCK_SIZE>>> 
-        (d_csr.num_rows, d_csr.row_offsets, d_csr.column_indices, d_csr.values, d_x, d_y);	
+        (csr.num_rows, Ap, Aj, Ax, x, y);   
 
 }
 
 template <typename IndexType, typename ValueType>
-void spmv_csr_vector_tex(const csr_matrix<IndexType,ValueType,cusp::device_memory>& d_csr, 
-                         const ValueType * d_x, 
-                               ValueType * d_y)
+void spmv_csr_vector_tex(const csr_matrix<IndexType,ValueType,cusp::device>& csr, 
+                         const ValueType * x, 
+                               ValueType * y)
 {
     const unsigned int BLOCK_SIZE = 128;
     const unsigned int WARPS_PER_BLOCK = BLOCK_SIZE / WARP_SIZE;
     const unsigned int MAX_BLOCKS = MAX_THREADS / BLOCK_SIZE;
-    const unsigned int NUM_BLOCKS = std::min(MAX_BLOCKS, DIVIDE_INTO(d_csr.num_rows, WARPS_PER_BLOCK));
+    const unsigned int NUM_BLOCKS = std::min(MAX_BLOCKS, DIVIDE_INTO(csr.num_rows, WARPS_PER_BLOCK));
     
-    bind_x(d_x);
+    const IndexType * Ap = thrust::raw_pointer_cast(&csr.row_offsets[0]);
+    const IndexType * Aj = thrust::raw_pointer_cast(&csr.column_indices[0]);
+    const ValueType * Ax = thrust::raw_pointer_cast(&csr.values[0]);
+    
+    bind_x(x);
     
     spmv_csr_vector_kernel<IndexType,ValueType, BLOCK_SIZE, true> <<<NUM_BLOCKS, BLOCK_SIZE>>> 
-        (d_csr.num_rows, d_csr.row_offsets, d_csr.column_indices, d_csr.values, d_x, d_y);	
+        (csr.num_rows, Ap, Aj, Ax, x, y);   
 
-    unbind_x(d_x);
+    unbind_x(x);
 }
 
-
 } // end namespace device
-
 } // end namespace detail
-
 } // end namespace cusp
-
 

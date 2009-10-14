@@ -30,9 +30,9 @@ namespace device
 {
 
 template <typename IndexType, typename ValueType, class BinaryOperator>
-void elementwise_operation(      cusp::csr_matrix<IndexType,ValueType,cusp::device_memory>& C,
-                           const cusp::csr_matrix<IndexType,ValueType,cusp::device_memory>& A,
-                           const cusp::csr_matrix<IndexType,ValueType,cusp::device_memory>& B,
+void elementwise_operation(      cusp::csr_matrix<IndexType,ValueType,cusp::device>& C,
+                           const cusp::csr_matrix<IndexType,ValueType,cusp::device>& A,
+                           const cusp::csr_matrix<IndexType,ValueType,cusp::device>& B,
                            BinaryOperator op)
 {
     std::cout << "calling device elementwise_operation" << std::endl;

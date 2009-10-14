@@ -30,9 +30,9 @@ namespace detail
 {
 
 template <typename IndexType, typename ValueType, class BinaryOperator>
-void elementwise_operation(      cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& C,
-                           const cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& A,
-                           const cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& B,
+void elementwise_operation(      cusp::csr_matrix<IndexType,ValueType,cusp::host>& C,
+                           const cusp::csr_matrix<IndexType,ValueType,cusp::host>& A,
+                           const cusp::csr_matrix<IndexType,ValueType,cusp::host>& B,
                            BinaryOperator op)
 {
 

@@ -101,8 +101,8 @@ TEST##UnitTest TEST##Instance
 
 // Macro to create host and device versions of a unit test
 #define DECLARE_HOST_DEVICE_UNITTEST(VTEST)                                                                            \
-void VTEST##Host(void)   {  VTEST< cusp::host_memory >();   }   \
-void VTEST##Device(void) {  VTEST< cusp::device_memory >(); }   \
+void VTEST##Host(void)   {  VTEST< cusp::host >();   }   \
+void VTEST##Device(void) {  VTEST< cusp::device >(); }   \
 DECLARE_UNITTEST(VTEST##Host);                                                                                    \
 DECLARE_UNITTEST(VTEST##Device);
 
