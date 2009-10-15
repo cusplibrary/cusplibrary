@@ -18,39 +18,32 @@
 
 #pragma once
 
-#include <cusp/detail/device/spmv_csr_scalar.h>
-#include <cusp/detail/device/spmv_csr_vector.h>
+#include <cusp/detail/device/spmv/coo_flat.h>
 
 namespace cusp
 {
-
 namespace detail
 {
-
 namespace device
 {
 
-
 template <typename IndexType, typename ValueType>
-void spmv(const csr_matrix<IndexType,ValueType,cusp::device>& csr, 
+void spmv(const coo_matrix<IndexType,ValueType,cusp::device>& coo, 
           const ValueType * x, 
                 ValueType * y)
 { 
-    spmv_csr_vector(csr, x, y);
+    spmv_coo_flat(coo, x, y);
 }
 
 template <typename IndexType, typename ValueType>
-void spmv_tex(const csr_matrix<IndexType,ValueType,cusp::device>& csr, 
+void spmv_tex(const coo_matrix<IndexType,ValueType,cusp::device>& coo, 
               const ValueType * x, 
                     ValueType * y)
 { 
-    spmv_csr_vector_tex(csr, x, y);
+    spmv_coo_flat_tex(coo, x, y);
 }
 
-
 } // end namespace device
-
 } // end namespace detail
-
 } // end namespace cusp
 

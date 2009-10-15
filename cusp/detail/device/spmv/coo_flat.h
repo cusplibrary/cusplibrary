@@ -24,14 +24,12 @@
 #include <cusp/detail/device/common.h>
 #include <cusp/detail/device/utils.h>
 #include <cusp/detail/device/texture.h>
-#include <cusp/detail/device/spmv_coo_serial.h>
+#include <cusp/detail/device/spmv/coo_serial.h>
 
 namespace cusp
 {
-
 namespace detail
 {
-
 namespace device
 {
 
@@ -356,8 +354,6 @@ void spmv_coo_flat_tex(const coo_matrix<IndexType,ValueType,cusp::device>& d_coo
 
 
 } // end namespace device
-
 } // end namespace detail
-
 } // end namespace cusp
 

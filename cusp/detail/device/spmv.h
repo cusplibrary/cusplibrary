@@ -17,9 +17,9 @@
 
 #pragma once
 
-#include <cusp/detail/device/spmv_coo.h>
-#include <cusp/detail/device/spmv_csr.h>
-#include <cusp/detail/device/spmv_dia.h>
-#include <cusp/detail/device/spmv_ell.h>
-#include <cusp/detail/device/spmv_hyb.h>
+#include <cusp/detail/device/spmv/coo.h>
+#include <cusp/detail/device/spmv/csr.h>
+#include <cusp/detail/device/spmv/dia.h>
+#include <cusp/detail/device/spmv/ell.h>
+#include <cusp/detail/device/spmv/hyb.h>
 

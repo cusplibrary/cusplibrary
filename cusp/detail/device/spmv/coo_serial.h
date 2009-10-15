@@ -22,10 +22,8 @@
 
 namespace cusp
 {
-
 namespace detail
 {
-
 namespace device
 {
 
@@ -43,7 +41,8 @@ spmv_coo_serial_kernel(const IndexType num_nonzeros,
                        const ValueType * x, 
                              ValueType * y)
 {
-    for(IndexType n = 0; n < num_nonzeros; n++){
+    for(IndexType n = 0; n < num_nonzeros; n++)
+    {
         y[I[n]] += V[n] * x[J[n]];
     }
 }
@@ -59,8 +58,6 @@ void spmv_coo_serial_device(const coo_matrix<IndexType,ValueType,cusp::device_me
 }
 
 } // end namespace device
-
 } // end namespace detail
-
 } // end namespace cusp
 
