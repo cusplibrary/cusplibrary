@@ -22,13 +22,8 @@
 #include <cuda.h>
 #include <cmath>
 
-
-//macro to enforce intrawarp sychronization during emulation
-#ifdef __DEVICE_EMULATION__
-#define EMUSYNC __syncthreads()
-#else
-#define EMUSYNC
-#endif
+// ceil(x/y) for integers, used to determine # of blocks/warps etc.
+#define DIVIDE_INTO(x,y) ((x + y - 1)/y)
 
 #  define CUDA_SAFE_CALL_NO_SYNC( call) do {                                 \
     cudaError err = call;                                                    \
@@ -48,26 +43,12 @@
     } } while (0)
 
 
-
-// ceil(x/y) for integers, used to determine # of blocks/warps etc.
-#define DIVIDE_INTO(x,y) ((x + y - 1)/y)
-
-//#define small_grid_thread_id(void) ((blockDim.x * blockIdx.x + threadIdx.x))
-//#define large_grid_thread_id(void) ((blockDim.x * (blockIdx.x + blockIdx.y*gridDim.x) + threadIdx.x))
-#define small_grid_thread_id(void) ((__umul24(blockDim.x, blockIdx.x) + threadIdx.x))
-#define large_grid_thread_id(void) ((__umul24(blockDim.x,blockIdx.x + __umul24(blockIdx.y,gridDim.x)) + threadIdx.x))
-
-
 namespace cusp
 {
-
 namespace detail
 {    
-
 namespace device
 {    
-
-
 
 #if !defined(CUDA_NO_SM_11_ATOMIC_INTRINSICS)
 //
@@ -108,54 +89,7 @@ static __inline__ __device__ double atomicAdd(double *addr, double val)
 }
 #endif // !defined(CUDA_NO_SM_13_DOUBLE_INTRINSICS)
 
-
-
-/*
- *  For a given number of blocks, return a 2D grid large enough to contain them
- */
-inline dim3 make_large_grid(const unsigned int num_blocks){
-    if (num_blocks <= 65535){
-        return dim3(num_blocks);
-    } else {
-        unsigned int side = (unsigned int) ceil(sqrt((double)num_blocks));
-        return dim3(side,side);
-    }
-}
-
-inline dim3 make_large_grid(const unsigned int num_threads, const unsigned int blocksize){
-    const unsigned int num_blocks = DIVIDE_INTO(num_threads, blocksize);
-    if (num_blocks <= 65535){
-        //fits in a 1D grid
-        return dim3(num_blocks);
-    } else {
-        //2D grid is required
-        const unsigned int side = (unsigned int) ceil(sqrt((double)num_blocks));
-        return dim3(side,side);
-    }
-}
-
-inline dim3 make_small_grid(const unsigned int num_blocks){
-    if (num_blocks <= 65535){
-        return dim3(num_blocks);
-    } else {
-        fprintf(stderr,"Requested size exceedes 1D grid dimensions\n");
-        return dim3(0);
-    }
-}
-
-inline dim3 make_small_grid(const unsigned int num_threads, const unsigned int blocksize){
-    const unsigned int num_blocks = DIVIDE_INTO(num_threads, blocksize);
-    if (num_blocks <= 65535){
-        return dim3(num_blocks);
-    } else {
-        fprintf(stderr,"Requested size exceedes 1D grid dimensions\n");
-        return dim3(0);
-    }
-}
-
 } // end namespace device
-
 } // end namespace detail
-
 } // end namespace cusp
 

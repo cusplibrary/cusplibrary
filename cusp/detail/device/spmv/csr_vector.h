@@ -84,11 +84,11 @@ spmv_csr_vector_kernel(const IndexType num_rows,
 
         // reduce local sums to row sum (ASSUME: warpsize 32)
         sdata[threadIdx.x] = sum;
-        sdata[threadIdx.x] = sum = sum + sdata[threadIdx.x + 16]; EMUSYNC; 
-        sdata[threadIdx.x] = sum = sum + sdata[threadIdx.x +  8]; EMUSYNC;
-        sdata[threadIdx.x] = sum = sum + sdata[threadIdx.x +  4]; EMUSYNC;
-        sdata[threadIdx.x] = sum = sum + sdata[threadIdx.x +  2]; EMUSYNC;
-        sdata[threadIdx.x] = sum = sum + sdata[threadIdx.x +  1]; EMUSYNC;
+        sdata[threadIdx.x] = sum = sum + sdata[threadIdx.x + 16];
+        sdata[threadIdx.x] = sum = sum + sdata[threadIdx.x +  8];
+        sdata[threadIdx.x] = sum = sum + sdata[threadIdx.x +  4];
+        sdata[threadIdx.x] = sum = sum + sdata[threadIdx.x +  2];
+        sdata[threadIdx.x] = sum = sum + sdata[threadIdx.x +  1];
        
 //// Alternative method (slightly slower)
 //        // compute local sum
@@ -97,11 +97,11 @@ spmv_csr_vector_kernel(const IndexType num_rows,
 //            sdata[threadIdx.x] += Ax[jj] * fetch_x<UseCache>(Aj[jj], x);
 //
 //        // reduce local sums to row sum (ASSUME: warpsize 32)
-//        sdata[threadIdx.x] += sdata[threadIdx.x + 16]; EMUSYNC;
-//        sdata[threadIdx.x] += sdata[threadIdx.x +  8]; EMUSYNC;
-//        sdata[threadIdx.x] += sdata[threadIdx.x +  4]; EMUSYNC;
-//        sdata[threadIdx.x] += sdata[threadIdx.x +  2]; EMUSYNC;
-//        sdata[threadIdx.x] += sdata[threadIdx.x +  1]; EMUSYNC;
+//        sdata[threadIdx.x] += sdata[threadIdx.x + 16];
+//        sdata[threadIdx.x] += sdata[threadIdx.x +  8];
+//        sdata[threadIdx.x] += sdata[threadIdx.x +  4];
+//        sdata[threadIdx.x] += sdata[threadIdx.x +  2];
+//        sdata[threadIdx.x] += sdata[threadIdx.x +  1];
 
         // first thread writes warp result
         if (thread_lane == 0)
