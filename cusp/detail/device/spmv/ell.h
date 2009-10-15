@@ -19,6 +19,7 @@
 
 #include <cusp/ell_matrix.h>
 
+#include <cusp/detail/device/common.h>
 #include <cusp/detail/device/utils.h>
 #include <cusp/detail/device/texture.h>
 
@@ -42,32 +43,55 @@ spmv_ell_kernel(const IndexType num_rows,
                 const ValueType * x, 
                       ValueType * y)
 {
-    const IndexType row = large_grid_thread_id();
-
-    if(row >= num_rows){ return; }
-
-    ValueType sum = y[row];
-
-    Aj += row;
-    Ax += row;
-    
     const IndexType invalid_index = cusp::ell_matrix<IndexType, ValueType, cusp::device>::invalid_index;
 
-    for(IndexType n = 0; n < num_cols_per_row; n++)
-    {
-        const IndexType col = *Aj;
+    const IndexType thread_id = blockDim.x * blockIdx.x + threadIdx.x;
+    const IndexType grid_size = gridDim.x * blockDim.x;
 
-        if (col != invalid_index)
+    for(IndexType row = thread_id; row < num_rows; row += grid_size)
+    {
+        ValueType sum = y[row];
+
+        IndexType offset = row;
+
+        for(IndexType n = 0; n < num_cols_per_row; n++)
         {
-            const ValueType A_ij = *Ax;
-            sum += A_ij * fetch_x<UseCache>(col, x);
+            const IndexType col = Aj[offset];
+
+            if (col != invalid_index)
+            {
+                const ValueType A_ij = Ax[offset];
+                sum += A_ij * fetch_x<UseCache>(col, x);
+            }
+
+            offset += stride;
         }
 
-        Aj += stride;
-        Ax += stride;
+        y[row] = sum;
     }
+}
 
-    y[row] = sum;
+
+template <bool UseCache, typename IndexType, typename ValueType>
+void __spmv_ell(const cusp::ell_matrix<IndexType,ValueType,cusp::device>& ell, 
+                const ValueType * x, 
+                      ValueType * y)
+{
+    const unsigned int BLOCK_SIZE = 256;
+    const unsigned int MAX_BLOCKS = MAX_THREADS / BLOCK_SIZE;
+    const unsigned int NUM_BLOCKS = std::min(MAX_BLOCKS, DIVIDE_INTO(ell.num_rows, BLOCK_SIZE));
+    
+    if (UseCache)
+        bind_x(x);
+
+    spmv_ell_kernel<IndexType,ValueType,UseCache> <<<NUM_BLOCKS, BLOCK_SIZE>>>
+        (ell.num_rows, ell.num_cols, ell.num_entries_per_row, ell.stride,
+         thrust::raw_pointer_cast(&ell.column_indices[0]), 
+         thrust::raw_pointer_cast(&ell.values[0]),
+         x, y);
+
+    if (UseCache)
+        unbind_x(x);
 }
 
 template <typename IndexType, typename ValueType>
@@ -75,14 +99,7 @@ void spmv_ell(const cusp::ell_matrix<IndexType,ValueType,cusp::device>& ell,
               const ValueType * x, 
                     ValueType * y)
 {
-    const unsigned int BLOCK_SIZE = 256;
-    const dim3 grid = make_large_grid(ell.num_rows, BLOCK_SIZE);
-   
-    spmv_ell_kernel<IndexType,ValueType,false> <<<grid, BLOCK_SIZE>>>
-        (ell.num_rows, ell.num_cols, ell.num_entries_per_row, ell.stride,
-         thrust::raw_pointer_cast(&ell.column_indices[0]), 
-         thrust::raw_pointer_cast(&ell.values[0]),
-         x, y);
+    __spmv_ell<false>(ell, x, y);
 }
 
 template <typename IndexType, typename ValueType>
@@ -90,18 +107,7 @@ void spmv_ell_tex(const cusp::ell_matrix<IndexType,ValueType,cusp::device>& ell,
                   const ValueType * x, 
                         ValueType * y)
 {
-    const unsigned int BLOCK_SIZE = 256;
-    const dim3 grid = make_large_grid(ell.num_rows, BLOCK_SIZE);
-  
-    bind_x(x);
-
-    spmv_ell_kernel<IndexType,ValueType,true> <<<grid, BLOCK_SIZE>>>
-        (ell.num_rows, ell.num_cols, ell.num_entries_per_row, ell.stride,
-         thrust::raw_pointer_cast(&ell.column_indices[0]), 
-         thrust::raw_pointer_cast(&ell.values[0]),
-         x, y);
-
-    unbind_x(x);
+    __spmv_ell<true>(ell, x, y);
 }
 
 template <typename IndexType, typename ValueType>
