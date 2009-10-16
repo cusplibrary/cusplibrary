@@ -21,6 +21,8 @@
 #include <cusp/detail/device/utils.h>
 #include <cusp/detail/device/texture.h>
 
+#include <thrust/experimental/arch.h>
+
 namespace cusp
 {
 namespace detail
@@ -75,14 +77,13 @@ void __spmv_csr_scalar(const csr_matrix<IndexType,ValueType,cusp::device>& csr,
 {
     const unsigned int BLOCK_SIZE = 256;
     const unsigned int MAX_BLOCKS = MAX_THREADS / BLOCK_SIZE;
+//    const unsigned int MAX_BLOCKS = thrust::experimental::arch::max_active_blocks(spmv_csr_scalar_kernel<IndexType, ValueType, UseCache>, BLOCK_SIZE, (size_t) 0);
     const unsigned int NUM_BLOCKS = std::min(MAX_BLOCKS, DIVIDE_INTO(csr.num_rows, BLOCK_SIZE));
     
     if (UseCache)
         bind_x(x);
 
-    bind_x(x);
-
-    spmv_csr_scalar_kernel<IndexType, ValueType, true> <<<NUM_BLOCKS, BLOCK_SIZE>>> 
+    spmv_csr_scalar_kernel<IndexType, ValueType, UseCache> <<<NUM_BLOCKS, BLOCK_SIZE>>> 
         (csr.num_rows,
          thrust::raw_pointer_cast(&csr.row_offsets[0]),
          thrust::raw_pointer_cast(&csr.column_indices[0]),

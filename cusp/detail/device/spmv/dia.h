@@ -23,6 +23,8 @@
 #include <cusp/detail/device/utils.h>
 #include <cusp/detail/device/texture.h>
 
+#include <thrust/experimental/arch.h>
+
 namespace cusp
 {
 namespace detail
@@ -105,8 +107,9 @@ void __spmv_dia(const cusp::dia_matrix<IndexType,ValueType,cusp::device>& dia,
 {
     const unsigned int BLOCK_SIZE = 256;
     const unsigned int MAX_BLOCKS = MAX_THREADS / BLOCK_SIZE;
+//    const unsigned int MAX_BLOCKS = thrust::experimental::arch::max_active_blocks(spmv_dia_kernel<IndexType, ValueType, BLOCK_SIZE, UseCache>, BLOCK_SIZE, (size_t) 0);
     const unsigned int NUM_BLOCKS = std::min(MAX_BLOCKS, DIVIDE_INTO(dia.num_rows, BLOCK_SIZE));
-    
+   
     if (UseCache)
         bind_x(x);
   
