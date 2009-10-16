@@ -301,7 +301,7 @@ void __spmv_coo_flat(const coo_matrix<IndexType,ValueType,cusp::device>& d_coo,
 
     //TODO Determine optimal BLOCK_SIZE and MAX_BLOCKS
     const unsigned int BLOCK_SIZE = 256;
-    const unsigned int MAX_BLOCKS = MAX_THREADS / BLOCK_SIZE;
+    const unsigned int MAX_BLOCKS = MAX_THREADS / (2 * BLOCK_SIZE);
 //    const unsigned int MAX_BLOCKS = thrust::experimental::arch::max_active_blocks(spmv_coo_flat_kernel<IndexType, ValueType, BLOCK_SIZE, UseCache>, BLOCK_SIZE, (size_t) 0);
     const unsigned int WARPS_PER_BLOCK = BLOCK_SIZE / WARP_SIZE;
 
