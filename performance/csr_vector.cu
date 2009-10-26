@@ -11,6 +11,11 @@
 #include <cusp/detail/device/spmv.h>
 #include "timer.h"
 
+const size_t N = 160 * 1000; // for alignment
+const size_t num_iterations = 100;
+const size_t max_diagonals  = 32;
+
+
 
 template <bool UseCache, unsigned int THREADS_PER_VECTOR, typename IndexType, typename ValueType>
 void perform_spmv(const cusp::csr_matrix<IndexType,ValueType,cusp::device>& csr, 
@@ -39,21 +44,20 @@ void perform_spmv(const cusp::csr_matrix<IndexType,ValueType,cusp::device>& csr,
 }
  
 template <typename IndexType, typename ValueType, unsigned int ThreadsPerVector>
-void benchmark_csr_vector(size_t num_iterations = 100)
+void benchmark_csr_vector()
 {
-    std::cout << ThreadsPerVector << "\t| ";
+    printf("%4d,", (int) ThreadsPerVector);
 
-    const IndexType N = 16 * 1000; // for alignment
 
     cusp::vector<ValueType, cusp::device> x(N);
     cusp::vector<ValueType, cusp::device> y(N);
 
-    for(IndexType D = 1; D < 64; D += 2)
+    for(IndexType D = 1; D <= max_diagonals; D++)
     {
         // create banded matrix with D diagonals
-        const IndexType NNZ = N + (D-1) * N - D*D;
+        const IndexType NNZ = N * D - (D * (D - 1)) / 2;
         cusp::dia_matrix<IndexType, ValueType, cusp::host> dia(N, N, NNZ, D, N);
-        thrust::sequence(dia.diagonal_offsets.begin(), dia.diagonal_offsets.end(), -D);
+        thrust::sequence(dia.diagonal_offsets.begin(), dia.diagonal_offsets.end());
         thrust::fill(dia.values.begin(), dia.values.end(), 1);
 
         // convert to CSR
@@ -70,7 +74,7 @@ void benchmark_csr_vector(size_t num_iterations = 100)
         float sec_per_iteration = t.seconds_elapsed() / num_iterations;
         float gflops = (NNZ/sec_per_iteration) / 1e9;
 
-        printf("%4.1f ", gflops);
+        printf("%4.1f,", gflops);
     }
 
     std::cout << std::endl;
@@ -79,6 +83,12 @@ void benchmark_csr_vector(size_t num_iterations = 100)
 
 int main(int argc, char** argv)
 {
+    printf("# of diagonals vary along rows, # of threads per vector varies along column\n");
+    printf("    ,");
+    for(size_t D = 1; D <= max_diagonals; D++)
+        printf("%4d,", (int) D);
+    std::cout << std::endl;
+
     benchmark_csr_vector<int, float,  2>();
     benchmark_csr_vector<int, float,  4>();
     benchmark_csr_vector<int, float,  8>();
