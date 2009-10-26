@@ -35,6 +35,9 @@ namespace cusp
         typedef typename cusp::standard_memory_allocator<IndexType, SpaceOrAlloc>::type index_allocator_type;
         typedef typename cusp::standard_memory_allocator<ValueType, SpaceOrAlloc>::type value_allocator_type;
         typedef typename cusp::allocator_space<index_allocator_type>::type memory_space;
+        
+        template<typename SpaceOrAlloc2>
+        struct rebind { typedef dia_matrix<IndexType, ValueType, SpaceOrAlloc2> type; };
 
         index_type num_entries;
         index_type num_diagonals;

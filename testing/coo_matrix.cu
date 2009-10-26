@@ -130,3 +130,27 @@ void TestCooMatrixSwap(void)
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestCooMatrixSwap);
 
+void TestCooPatternRebind(void)
+{
+    typedef cusp::coo_pattern<int, cusp::host>      HostPattern;
+    typedef HostPattern::rebind<cusp::device>::type DevicePattern;
+
+    HostPattern   h_pattern(10,10,100);
+    DevicePattern d_pattern(h_pattern);
+
+    ASSERT_EQUAL(h_pattern.num_entries, d_pattern.num_entries);
+}
+DECLARE_UNITTEST(TestCooPatternRebind);
+
+void TestCooMatrixRebind(void)
+{
+    typedef cusp::coo_matrix<int, float, cusp::host> HostMatrix;
+    typedef HostMatrix::rebind<cusp::device>::type   DeviceMatrix;
+
+    HostMatrix   h_matrix(10,10,100);
+    DeviceMatrix d_matrix(h_matrix);
+
+    ASSERT_EQUAL(h_matrix.num_entries, d_matrix.num_entries);
+}
+DECLARE_UNITTEST(TestCooMatrixRebind);
+

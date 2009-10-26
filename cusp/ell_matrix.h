@@ -34,6 +34,9 @@ namespace cusp
         typedef typename cusp::ell_pattern<IndexType, SpaceOrAlloc> pattern_type;
 
         const static index_type invalid_index = static_cast<IndexType>(-1);
+        
+        template<typename SpaceOrAlloc2>
+        struct rebind { typedef ell_pattern<IndexType, SpaceOrAlloc2> type; };
 
         index_type num_entries;
         index_type num_entries_per_row;
@@ -88,6 +91,9 @@ namespace cusp
     
         typedef ValueType value_type;
     
+        template<typename SpaceOrAlloc2>
+        struct rebind { typedef ell_matrix<IndexType, ValueType, SpaceOrAlloc2> type; };
+
         cusp::vector<ValueType, value_allocator_type> values;
     
         // construct empty matrix

@@ -34,6 +34,9 @@ namespace cusp
         typedef typename cusp::standard_memory_allocator<ValueType, SpaceOrAlloc>::type value_allocator_type;
         typedef typename cusp::allocator_space<index_allocator_type>::type memory_space;
 
+        template<typename SpaceOrAlloc2>
+        struct rebind { typedef hyb_matrix<IndexType, ValueType, SpaceOrAlloc2> type; };
+
         index_type num_entries;
 
         cusp::ell_matrix<IndexType,ValueType,SpaceOrAlloc> ell;

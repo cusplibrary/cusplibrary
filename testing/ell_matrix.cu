@@ -140,3 +140,27 @@ void TestEllMatrixResize(void)
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestEllMatrixResize);
 
+void TestEllPatternRebind(void)
+{
+    typedef cusp::ell_pattern<int, cusp::host>      HostPattern;
+    typedef HostPattern::rebind<cusp::device>::type DevicePattern;
+
+    HostPattern   h_pattern(10,10,100,10,10);
+    DevicePattern d_pattern(h_pattern);
+
+    ASSERT_EQUAL(h_pattern.num_entries, d_pattern.num_entries);
+}
+DECLARE_UNITTEST(TestEllPatternRebind);
+
+void TestEllMatrixRebind(void)
+{
+    typedef cusp::ell_matrix<int, float, cusp::host> HostMatrix;
+    typedef HostMatrix::rebind<cusp::device>::type   DeviceMatrix;
+
+    HostMatrix   h_matrix(10,10,100,10,10);
+    DeviceMatrix d_matrix(h_matrix);
+
+    ASSERT_EQUAL(h_matrix.num_entries, d_matrix.num_entries);
+}
+DECLARE_UNITTEST(TestEllMatrixRebind);
+

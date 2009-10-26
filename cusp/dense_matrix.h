@@ -53,6 +53,9 @@ namespace cusp
 
         typedef Orientation orientation;
         
+        template<typename SpaceOrAlloc2>
+        struct rebind { typedef dense_matrix<ValueType, SpaceOrAlloc2, Orientation> type; };
+        
         index_type num_entries;
 
         cusp::vector<ValueType, value_allocator_type> values;

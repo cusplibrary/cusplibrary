@@ -32,6 +32,9 @@ namespace cusp
         typedef typename cusp::standard_memory_allocator<IndexType, SpaceOrAlloc>::type index_allocator_type;
         typedef typename cusp::allocator_space<index_allocator_type>::type memory_space;
         typedef typename cusp::coo_pattern<IndexType, SpaceOrAlloc> pattern_type;
+        
+        template<typename SpaceOrAlloc2>
+        struct rebind { typedef coo_pattern<IndexType, SpaceOrAlloc2> type; };
 
         index_type num_entries;
 
@@ -81,6 +84,9 @@ namespace cusp
         typedef typename cusp::coo_matrix<IndexType, ValueType, SpaceOrAlloc> matrix_type;
     
         typedef ValueType value_type;
+        
+        template<typename SpaceOrAlloc2>
+        struct rebind { typedef coo_matrix<IndexType, ValueType, SpaceOrAlloc2> type; };
     
         cusp::vector<ValueType, value_allocator_type> values;
     

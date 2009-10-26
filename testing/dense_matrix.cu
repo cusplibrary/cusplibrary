@@ -128,3 +128,15 @@ void TestDenseMatrixSwap(void)
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestDenseMatrixSwap);
 
+void TestDenseMatrixRebind(void)
+{
+    typedef cusp::dense_matrix<float, cusp::host>  HostMatrix;
+    typedef HostMatrix::rebind<cusp::device>::type DeviceMatrix;
+
+    HostMatrix   h_matrix(10,10);
+    DeviceMatrix d_matrix(h_matrix);
+
+    ASSERT_EQUAL(h_matrix.num_entries, d_matrix.num_entries);
+}
+DECLARE_UNITTEST(TestDenseMatrixRebind);
+

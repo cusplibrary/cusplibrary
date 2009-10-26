@@ -74,16 +74,26 @@ namespace cusp
             typedef typename Parent::value_type value_type;
 
             vector(void) : Parent() {}
+            
+            explicit vector(size_type n)
+                : Parent()
+            {
+                if(n > 0)
+                {
+                    Parent::mBegin = Parent::mAllocator.allocate(n);
+                    Parent::mSize  = Parent::mCapacity = n;
+                }
+            }
 
-            explicit vector(size_type n, const value_type &value = value_type()) 
+            vector(size_type n, const value_type &value) 
                 : Parent(n, value) {}
     
             vector(const vector &v)
-                :Parent(v) {}
+                : Parent(v) {}
 
             template<typename OtherT, typename OtherAlloc>
                 vector(const vector<OtherT,OtherAlloc> &v)
-                :Parent(v) {}
+                : Parent(v) {}
 
             template<typename OtherT, typename OtherAlloc>
                 vector &operator=(const vector<OtherT,OtherAlloc> &v)
@@ -91,7 +101,7 @@ namespace cusp
 
             template<typename OtherT, typename OtherAlloc>
                 vector(const std::vector<OtherT,OtherAlloc> &v)
-                :Parent(v) {}
+                : Parent(v) {}
 
             template<typename OtherT, typename OtherAlloc>
                 vector &operator=(const std::vector<OtherT,OtherAlloc> &v)
@@ -99,7 +109,7 @@ namespace cusp
 
             template<typename InputIterator>
                 vector(InputIterator first, InputIterator last)
-                :Parent(first, last) {}
+                : Parent(first, last) {}
     };
 
 } // end namespace cusp
