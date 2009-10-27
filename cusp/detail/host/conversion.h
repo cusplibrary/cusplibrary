@@ -29,13 +29,10 @@
 
 #include <cusp/detail/host/conversion_utils.h>
 
-
 namespace cusp
 {
-
 namespace detail
 {
-
 namespace host
 {
 
@@ -52,12 +49,12 @@ void coo_to_csr(      cusp::csr_matrix<IndexType,ValueType,cusp::host>& dst,
     //compute number of non-zero entries per row of A 
     std::fill(dst.row_offsets.begin(), dst.row_offsets.end(), 0);
 
-    for (IndexType n = 0; n < src.num_entries; n++){            
+    for (IndexType n = 0; n < src.num_entries; n++)
         dst.row_offsets[src.row_indices[n]]++;
-    }
 
     //cumsum the num_entries per row to get dst.row_offsets[]
-    for(IndexType i = 0, cumsum = 0; i < src.num_rows; i++){     
+    for(IndexType i = 0, cumsum = 0; i < src.num_rows; i++)
+    {
         IndexType temp = dst.row_offsets[i];
         dst.row_offsets[i] = cumsum;
         cumsum += temp;
@@ -65,7 +62,8 @@ void coo_to_csr(      cusp::csr_matrix<IndexType,ValueType,cusp::host>& dst,
     dst.row_offsets[src.num_rows] = src.num_entries; 
 
     //write Aj,Ax into dst.column_indices,dst.values
-    for(IndexType n = 0; n < src.num_entries; n++){
+    for(IndexType n = 0; n < src.num_entries; n++)
+    {
         IndexType row  = src.row_indices[n];
         IndexType dest = dst.row_offsets[row];
 
@@ -75,7 +73,8 @@ void coo_to_csr(      cusp::csr_matrix<IndexType,ValueType,cusp::host>& dst,
         dst.row_offsets[row]++;
     }
 
-    for(IndexType i = 0, last = 0; i <= src.num_rows; i++){
+    for(IndexType i = 0, last = 0; i <= src.num_rows; i++)
+    {
         IndexType temp = dst.row_offsets[i];
         dst.row_offsets[i]  = last;
         last   = temp;
@@ -232,8 +231,8 @@ void csr_to_hyb(      cusp::hyb_matrix<IndexType, ValueType,cusp::host>& hyb,
 
 template <typename IndexType, typename ValueType>
 void csr_to_ell(      cusp::ell_matrix<IndexType,ValueType,cusp::host>&  ell,
-                 const cusp::csr_matrix<IndexType,ValueType,cusp::host>&  csr,
-                 const IndexType num_entries_per_row, const IndexType alignment = 16)
+                const cusp::csr_matrix<IndexType,ValueType,cusp::host>&  csr,
+                const IndexType num_entries_per_row, const IndexType alignment = 16)
 {
     // Constructs an ELL matrix with 'num_entries_per_row' consisting of the first
     // 'num_entries_per_row' entries in each row of the CSR matrix.
@@ -282,10 +281,8 @@ void dia_to_csr(      cusp::csr_matrix<IndexType,ValueType,cusp::host>& dst,
         const IndexType M = std::min(src.num_rows - i_start, src.num_cols - j_start);
 
         for(IndexType m = 0; m < M; m++)
-        {
             if(src.values[base + m] != 0)
                 num_entries++;
-        }
     }
 
     dst.resize(src.num_rows, src.num_cols, num_entries);
@@ -444,10 +441,7 @@ void dense_to_csr(      cusp::csr_matrix<IndexType,ValueType,cusp::host>& dst,
     dst.row_offsets[src.num_rows] = num_entries;
 }
 
-
 } // end namespace host
-
 } // end namespace detail
-
 } // end namespace cusp
 

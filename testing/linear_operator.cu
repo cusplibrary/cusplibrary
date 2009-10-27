@@ -5,9 +5,8 @@
 #include <cusp/vector.h>
 #include <cusp/linear_operator.h>
 
-
-template <class HostMatrix, class TestMatrix>
-void _TestMakeLinearOperator(HostMatrix host_matrix, TestMatrix test_matrix)
+template <class TestMatrix>
+void _TestMakeLinearOperator(TestMatrix test_matrix)
 {
     typedef typename TestMatrix::memory_space MemorySpace;
 
@@ -22,9 +21,7 @@ void _TestMakeLinearOperator(HostMatrix host_matrix, TestMatrix test_matrix)
     csr.column_indices[2] = 0;   csr.values[2] = 12.0f;
     csr.column_indices[3] = 1;   csr.values[3] = 13.0f;
     
-    cusp::convert(host_matrix, csr);
-
-    test_matrix = host_matrix;
+    cusp::convert(test_matrix, csr);
 
     // allocate vectors
     cusp::vector<float, MemorySpace> x(2);
@@ -45,26 +42,26 @@ void _TestMakeLinearOperator(HostMatrix host_matrix, TestMatrix test_matrix)
 
 template <class MemorySpace>
 void TestCooLinearOperator(void)
-{   _TestMakeLinearOperator(cusp::coo_matrix<int, float, cusp::host>(), cusp::coo_matrix<int, float, MemorySpace>());  }
+{   _TestMakeLinearOperator(cusp::coo_matrix<int, float, MemorySpace>());  }
 DECLARE_HOST_DEVICE_UNITTEST(TestCooLinearOperator);
 
 template <class MemorySpace>
 void TestCsrLinearOperator(void)
-{   _TestMakeLinearOperator(cusp::csr_matrix<int, float, cusp::host>(), cusp::csr_matrix<int, float, MemorySpace>());  }
+{   _TestMakeLinearOperator(cusp::csr_matrix<int, float, MemorySpace>());  }
 DECLARE_HOST_DEVICE_UNITTEST(TestCsrLinearOperator);
 
 template <class MemorySpace>
 void TestDiaLinearOperator(void)
-{   _TestMakeLinearOperator(cusp::dia_matrix<int, float, cusp::host>(), cusp::dia_matrix<int, float, MemorySpace>());  }
+{   _TestMakeLinearOperator(cusp::dia_matrix<int, float, MemorySpace>());  }
 DECLARE_HOST_DEVICE_UNITTEST(TestDiaLinearOperator);
 
 template <class MemorySpace>
 void TestEllLinearOperator(void)
-{   _TestMakeLinearOperator(cusp::ell_matrix<int, float, cusp::host>(), cusp::ell_matrix<int, float, MemorySpace>());  }
+{   _TestMakeLinearOperator(cusp::ell_matrix<int, float, MemorySpace>());  }
 DECLARE_HOST_DEVICE_UNITTEST(TestEllLinearOperator);
 
 template <class MemorySpace>
 void TestHybLinearOperator(void)
-{   _TestMakeLinearOperator(cusp::hyb_matrix<int, float, cusp::host>(), cusp::hyb_matrix<int, float, MemorySpace>());  }
+{   _TestMakeLinearOperator(cusp::hyb_matrix<int, float, MemorySpace>());  }
 DECLARE_HOST_DEVICE_UNITTEST(TestHybLinearOperator);
 
