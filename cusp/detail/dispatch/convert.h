@@ -40,7 +40,14 @@ void convert(DestinationType& dst, const SourceType& src, cusp::host, cusp::host
 template <class DestinationType, class SourceType>
 void convert(DestinationType& dst, const SourceType& src, cusp::device, cusp::host)
 {
-    std::cout << "host to device conversion" << std::endl;
+    // convert on host and transfer to device
+    typedef typename DestinationType::template rebind<cusp::host>::type HostDestinationType;
+    
+    HostDestinationType tmp;
+
+    cusp::detail::host::convert(tmp, src);
+
+    dst = tmp;
 }
 
 /////////////////////////
@@ -49,7 +56,12 @@ void convert(DestinationType& dst, const SourceType& src, cusp::device, cusp::ho
 template <class DestinationType, class SourceType>
 void convert(DestinationType& dst, const SourceType& src, cusp::host, cusp::device)
 {
-    std::cout << "device to host conversion" << std::endl;
+    // transfer to host and transfer to device
+    typedef typename SourceType::template rebind<cusp::host>::type HostSourceType;
+    
+    HostSourceType tmp = src;
+
+    cusp::detail::host::convert(dst, tmp);
 }
 
 ///////////////////////////
@@ -58,7 +70,17 @@ void convert(DestinationType& dst, const SourceType& src, cusp::host, cusp::devi
 template <class DestinationType, class SourceType>
 void convert(DestinationType& dst, const SourceType& src, cusp::device, cusp::device)
 {
-    std::cout << "device to device conversion" << std::endl;
+    // transfer to host, convert on host, and transfer back to device
+    typedef typename SourceType::template rebind<cusp::host>::type      HostSourceType;
+    typedef typename DestinationType::template rebind<cusp::host>::type HostDestinationType;
+
+    HostSourceType tmp1(src);
+
+    HostDestinationType tmp2;
+
+    cusp::detail::host::convert(tmp2, tmp1);
+
+    dst = tmp2;
 }
 
 } // end namespace dispatch

@@ -8,8 +8,8 @@
 #include <cusp/hyb_matrix.h>
 #include <cusp/dense_matrix.h>
 
-template <typename IndexType, typename ValueType>
-void initialize_conversion_example(cusp::csr_matrix<IndexType, ValueType, cusp::host> & csr)
+template <typename IndexType, typename ValueType, typename Space>
+void initialize_conversion_example(cusp::csr_matrix<IndexType, ValueType, Space> & csr)
 {
     csr.resize(4, 4, 7);
 
@@ -28,8 +28,8 @@ void initialize_conversion_example(cusp::csr_matrix<IndexType, ValueType, cusp::
     csr.column_indices[6] = 1;   csr.values[6] = 16;
 }
 
-template <typename IndexType, typename ValueType>
-void initialize_conversion_example(cusp::coo_matrix<IndexType, ValueType, cusp::host> & coo)
+template <typename IndexType, typename ValueType, typename Space>
+void initialize_conversion_example(cusp::coo_matrix<IndexType, ValueType, Space> & coo)
 {
     coo.resize(4, 4, 7);
 
@@ -42,8 +42,8 @@ void initialize_conversion_example(cusp::coo_matrix<IndexType, ValueType, cusp::
     coo.row_indices[6] = 3;  coo.column_indices[6] = 1;  coo.values[6] = 16;
 }
 
-template <typename IndexType, typename ValueType>
-void initialize_conversion_example(cusp::dia_matrix<IndexType, ValueType, cusp::host> & dia)
+template <typename IndexType, typename ValueType, typename Space>
+void initialize_conversion_example(cusp::dia_matrix<IndexType, ValueType, Space> & dia)
 {
     dia.resize(4, 4, 7, 3, 4);
 
@@ -65,13 +65,12 @@ void initialize_conversion_example(cusp::dia_matrix<IndexType, ValueType, cusp::
     dia.values[11] =  0; 
 }
 
-
-template <typename IndexType, typename ValueType>
-void initialize_conversion_example(cusp::ell_matrix<IndexType, ValueType, cusp::host> & ell)
+template <typename IndexType, typename ValueType, typename Space>
+void initialize_conversion_example(cusp::ell_matrix<IndexType, ValueType, Space> & ell)
 {
     ell.resize(4, 4, 7, 3, 4);
 
-    const int X = cusp::ell_matrix<int, float, cusp::host>::invalid_index;
+    const int X = cusp::ell_matrix<IndexType, ValueType, Space>::invalid_index;
 
     ell.column_indices[ 0] =  0;  ell.values[ 0] = 10; 
     ell.column_indices[ 1] =  2;  ell.values[ 1] = 12;
@@ -89,8 +88,8 @@ void initialize_conversion_example(cusp::ell_matrix<IndexType, ValueType, cusp::
     ell.column_indices[11] =  X;  ell.values[11] =  0;
 }
 
-template <typename IndexType, typename ValueType>
-void initialize_conversion_example(cusp::hyb_matrix<IndexType, ValueType, cusp::host> & hyb)
+template <typename IndexType, typename ValueType, typename Space>
+void initialize_conversion_example(cusp::hyb_matrix<IndexType, ValueType, Space> & hyb)
 {
     hyb.resize(4, 4, 4, 3, 1, 4); 
 
@@ -104,8 +103,8 @@ void initialize_conversion_example(cusp::hyb_matrix<IndexType, ValueType, cusp::
     hyb.coo.row_indices[2] = 2; hyb.coo.column_indices[2] = 3; hyb.coo.values[2] = 15;
 }
 
-template <typename ValueType, class Orientation>
-void initialize_conversion_example(cusp::dense_matrix<ValueType, cusp::host, Orientation> & dense)
+template <typename ValueType, typename Space, class Orientation>
+void initialize_conversion_example(cusp::dense_matrix<ValueType, Space, Orientation> & dense)
 {
     dense.resize(4, 4);
 
@@ -115,8 +114,8 @@ void initialize_conversion_example(cusp::dense_matrix<ValueType, cusp::host, Ori
     dense(3,0) =  0;  dense(3,1) = 16;  dense(3,2) =  0;  dense(3,3) =  0;
 }
 
-template <typename IndexType, typename ValueType>
-void compare_conversion_example(const cusp::coo_matrix<IndexType, ValueType, cusp::host> & coo)
+template <typename IndexType, typename ValueType, typename Space>
+void compare_conversion_example(const cusp::coo_matrix<IndexType, ValueType, Space> & coo)
 {
     ASSERT_EQUAL(coo.num_rows,    4);
     ASSERT_EQUAL(coo.num_cols,    4);
@@ -147,8 +146,8 @@ void compare_conversion_example(const cusp::coo_matrix<IndexType, ValueType, cus
     ASSERT_EQUAL(coo.values[6], 16);
 }
 
-template <typename IndexType, typename ValueType>
-void compare_conversion_example(const cusp::csr_matrix<IndexType, ValueType, cusp::host> & csr)
+template <typename IndexType, typename ValueType, typename Space>
+void compare_conversion_example(const cusp::csr_matrix<IndexType, ValueType, Space> & csr)
 {
     ASSERT_EQUAL(csr.num_rows,    4);
     ASSERT_EQUAL(csr.num_cols,    4);
@@ -178,8 +177,8 @@ void compare_conversion_example(const cusp::csr_matrix<IndexType, ValueType, cus
 }
 
 
-template <typename ValueType, class Orientation>
-void compare_conversion_example(const cusp::dense_matrix<ValueType, cusp::host, Orientation> & dense)
+template <typename ValueType, typename Space, class Orientation>
+void compare_conversion_example(const cusp::dense_matrix<ValueType, Space, Orientation> & dense)
 {
     ASSERT_EQUAL(dense.num_rows,    4);
     ASSERT_EQUAL(dense.num_cols,    4);
@@ -207,14 +206,47 @@ void compare_conversion_example(const cusp::dense_matrix<ValueType, cusp::host, 
 
 
 
-template <class MatrixType1, class MatrixType2>
-void TestConversion(MatrixType1 dst, MatrixType2 src)
+template <class HostDestinationType, class HostSourceType>
+void TestConversion(HostDestinationType dst, HostSourceType src)
 {
-    initialize_conversion_example(src);
+    typedef typename HostSourceType::template rebind<cusp::device>::type      DeviceSourceType;
+    typedef typename HostDestinationType::template rebind<cusp::device>::type DeviceDestinationType;
+
+    {
+        // test host->host
+        HostSourceType      src;
+        HostDestinationType dst;
+        initialize_conversion_example(src);
+        cusp::convert(dst, src);
+        compare_conversion_example(dst);
+    }
     
-    cusp::convert(dst, src);
+    {
+        // test host->device
+        HostSourceType        src;
+        DeviceDestinationType dst;
+        initialize_conversion_example(src);
+        cusp::convert(dst, src);
+        compare_conversion_example(dst);
+    }
     
-    compare_conversion_example(dst);
+    {
+        // test device->host
+        DeviceSourceType    src;
+        HostDestinationType dst;
+        initialize_conversion_example(src);
+        cusp::convert(dst, src);
+        compare_conversion_example(dst);
+    }
+    
+    {
+        // test device->device
+        DeviceSourceType      src;
+        DeviceDestinationType dst;
+        initialize_conversion_example(src);
+        cusp::convert(dst, src);
+        compare_conversion_example(dst);
+    }
 }
 
 /////////////////////
