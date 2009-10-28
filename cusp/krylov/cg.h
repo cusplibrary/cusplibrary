@@ -55,15 +55,15 @@ void cg(LinearOperator A,
     //clock_t start = clock();
     
     // y <- Ax
-    blas::fill(y.begin(), y.end(), 0);
+    blas::fill(y, 0);
     A(thrust::raw_pointer_cast(&x[0]), thrust::raw_pointer_cast(&y[0]));                                                 
 
     // r <- b - A*x
-    blas::copy(b.begin(), b.end(), r.begin());
-    blas::axpy(y.begin(), y.end(), r.begin(), static_cast<ValueType>(-1.0));
+    blas::copy(b, r);
+    blas::axpy(y, r, static_cast<ValueType>(-1.0));
    
     // p <- r
-    blas::copy(r.begin(), r.end(), p.begin());
+    blas::copy(r, p);
 		
     ValueType r_norm = blas::nrm2(r.begin(), r.end());
     ValueType r2     = r_norm * r_norm;                     // <r,r>
@@ -77,24 +77,24 @@ void cg(LinearOperator A,
     while( i++ < max_iter && r2 > stop_tol )
     {
         // y <- Ap
-        blas::fill(y.begin(), y.end(), 0);
+        blas::fill(y, 0);
         A(thrust::raw_pointer_cast(&p[0]), thrust::raw_pointer_cast(&y[0]));  
 
         // alpha <- <r,r>/<Ap,p>
-        ValueType alpha =  r2 / blas::dot(p.begin(), p.end(), y.begin());
+        ValueType alpha =  r2 / blas::dot(p, y);
         // x <- x + alpha * p
-        blas::axpy(p.begin(), p.end(), x.begin(), alpha);
+        blas::axpy(p, x, alpha);
         // r <- r - alpha * Ap		
-        blas::axpy(y.begin(), y.end(), r.begin(), -alpha);
+        blas::axpy(y, r, -alpha);
 		
         // beta <- <r_{i+1},r_{i+1}>/<r,r> 
         ValueType r2_old = r2;
-        r2 = blas::nrm2(r.begin(), r.end()); r2 *= r2;
+        r2 = blas::nrm2(r); r2 *= r2;
         ValueType beta = r2 / r2_old;                       
 		
         // p <- r + beta*p
-        blas::scal(p.begin(), p.end(), beta);
-        blas::axpy(r.begin(), r.end(), p.begin(), static_cast<ValueType>(1.0));
+        blas::scal(p, beta);
+        blas::axpy(r, p, static_cast<ValueType>(1.0));
     }
 	
 
