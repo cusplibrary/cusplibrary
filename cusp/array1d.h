@@ -29,12 +29,8 @@
 
 namespace cusp
 {
-    using thrust::host_vector;
-    using thrust::device_vector;
-
     typedef thrust::device_space_tag device_memory;
     typedef thrust::host_space_tag   host_memory;
-
     
     template<typename T, typename Space> 
     struct standard_memory_allocator
@@ -63,7 +59,7 @@ namespace cusp
 
 
     template <typename T, typename Space>
-    class vector : public thrust::detail::vector_base<T, typename standard_memory_allocator<T, Space>::type>
+    class array1d : public thrust::detail::vector_base<T, typename standard_memory_allocator<T, Space>::type>
     {
         private:
             typedef typename standard_memory_allocator<T, Space>::type Alloc;
@@ -73,9 +69,9 @@ namespace cusp
             typedef typename Parent::size_type  size_type;
             typedef typename Parent::value_type value_type;
 
-            vector(void) : Parent() {}
+            array1d(void) : Parent() {}
             
-            explicit vector(size_type n)
+            explicit array1d(size_type n)
                 : Parent()
             {
                 if(n > 0)
@@ -85,30 +81,30 @@ namespace cusp
                 }
             }
 
-            vector(size_type n, const value_type &value) 
+            array1d(size_type n, const value_type &value) 
                 : Parent(n, value) {}
     
-            vector(const vector &v)
+            array1d(const array1d &v)
                 : Parent(v) {}
 
             template<typename OtherT, typename OtherAlloc>
-                vector(const vector<OtherT,OtherAlloc> &v)
+                array1d(const array1d<OtherT,OtherAlloc> &v)
                 : Parent(v) {}
 
             template<typename OtherT, typename OtherAlloc>
-                vector &operator=(const vector<OtherT,OtherAlloc> &v)
+                array1d &operator=(const array1d<OtherT,OtherAlloc> &v)
                 { Parent::operator=(v); return *this; }
 
             template<typename OtherT, typename OtherAlloc>
-                vector(const std::vector<OtherT,OtherAlloc> &v)
+                array1d(const std::vector<OtherT,OtherAlloc> &v)
                 : Parent(v) {}
 
             template<typename OtherT, typename OtherAlloc>
-                vector &operator=(const std::vector<OtherT,OtherAlloc> &v)
+                array1d &operator=(const std::vector<OtherT,OtherAlloc> &v)
                 { Parent::operator=(v); return *this;}
 
             template<typename InputIterator>
-                vector(InputIterator first, InputIterator last)
+                array1d(InputIterator first, InputIterator last)
                 : Parent(first, last) {}
     };
 

@@ -49,8 +49,8 @@ void benchmark_csr_vector()
     printf("%4d,", (int) ThreadsPerVector);
 
 
-    cusp::vector<ValueType, cusp::device_memory> x(N);
-    cusp::vector<ValueType, cusp::device_memory> y(N);
+    cusp::array1d<ValueType, cusp::device_memory> x(N);
+    cusp::array1d<ValueType, cusp::device_memory> y(N);
 
     for(IndexType D = 1; D <= max_diagonals; D++)
     {

@@ -6,8 +6,8 @@
 template <class MemorySpace>
 void TestAxpy(void)
 {
-    cusp::vector<float, MemorySpace> x(6);
-    cusp::vector<float, MemorySpace> y(6);
+    cusp::array1d<float, MemorySpace> x(6);
+    cusp::array1d<float, MemorySpace> y(6);
 
     x[0] =  7.0f;   y[0] =  0.0f; 
     x[1] =  5.0f;   y[1] = -2.0f;
@@ -33,8 +33,8 @@ DECLARE_HOST_DEVICE_UNITTEST(TestAxpy);
 template <class MemorySpace>
 void TestCopy(void)
 {
-    cusp::vector<float, MemorySpace> x(6);
-    cusp::vector<float, MemorySpace> y(6);
+    cusp::array1d<float, MemorySpace> x(6);
+    cusp::array1d<float, MemorySpace> y(6);
 
     x[0] =  7.0f;   y[0] =  0.0f; 
     x[1] =  5.0f;   y[1] = -2.0f;
@@ -59,8 +59,8 @@ DECLARE_HOST_DEVICE_UNITTEST(TestCopy);
 template <class MemorySpace>
 void TestDot(void)
 {
-    cusp::vector<float, MemorySpace> x(6);
-    cusp::vector<float, MemorySpace> y(6);
+    cusp::array1d<float, MemorySpace> x(6);
+    cusp::array1d<float, MemorySpace> y(6);
 
     x[0] =  7.0f;   y[0] =  0.0f; 
     x[1] =  5.0f;   y[1] = -2.0f;
@@ -80,7 +80,7 @@ DECLARE_HOST_DEVICE_UNITTEST(TestDot);
 template <class MemorySpace>
 void TestFill(void)
 {
-    cusp::vector<float, MemorySpace> x(6);
+    cusp::array1d<float, MemorySpace> x(6);
 
     x[0] =  7.0f;
     x[1] =  5.0f;
@@ -104,7 +104,7 @@ DECLARE_HOST_DEVICE_UNITTEST(TestFill);
 template <class MemorySpace>
 void TestNrm2(void)
 {
-    cusp::vector<float, MemorySpace> x(6);
+    cusp::array1d<float, MemorySpace> x(6);
 
     x[0] =  7.0f;
     x[1] =  5.0f;
@@ -123,7 +123,7 @@ DECLARE_HOST_DEVICE_UNITTEST(TestNrm2);
 template <class MemorySpace>
 void TestScal(void)
 {
-    cusp::vector<float, MemorySpace> x(6);
+    cusp::array1d<float, MemorySpace> x(6);
 
     x[0] =  7.0f;
     x[1] =  5.0f;

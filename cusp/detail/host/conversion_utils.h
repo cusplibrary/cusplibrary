@@ -21,7 +21,7 @@
 #include <numeric>
 #include <vector>
 
-#include <cusp/vector.h>
+#include <cusp/array1d.h>
 #include <cusp/csr_matrix.h>
 
 namespace cusp

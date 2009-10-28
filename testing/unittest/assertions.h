@@ -1,6 +1,6 @@
 #pragma once
 
-#include <cusp/vector.h>
+#include <cusp/array1d.h>
 #include <thrust/iterator/iterator_traits.h>
 
 #include <unittest/exceptions.h>
@@ -188,8 +188,8 @@ void assert_almost_equal(ForwardIterator first1, ForwardIterator last1, ForwardI
 
 template <typename T1, typename Alloc1,
           typename T2, typename Alloc2>
-void assert_equal(const cusp::vector<T1,Alloc1>& A,
-                  const cusp::vector<T2,Alloc2>& B,
+void assert_equal(const cusp::array1d<T1,Alloc1>& A,
+                  const cusp::array1d<T2,Alloc2>& B,
                   const std::string& filename = "unknown", int lineno = -1)
 {
     if(A.size() != B.size())
@@ -203,8 +203,8 @@ void assert_equal(const cusp::vector<T1,Alloc1>& A,
 
 template <typename T1, typename Alloc1,
           typename T2, typename Alloc2>
-void assert_almost_equal(const cusp::vector<T1,Alloc1>& A,
-                         const cusp::vector<T2,Alloc2>& B,
+void assert_almost_equal(const cusp::array1d<T1,Alloc1>& A,
+                         const cusp::array1d<T2,Alloc2>& B,
                          const std::string& filename = "unknown", int lineno = -1,
                          const double a_tol = DEFAULT_ABSOLUTE_TOL, const double r_tol = DEFAULT_RELATIVE_TOL)
 {

@@ -17,7 +17,7 @@
 
 #pragma once
 
-#include <cusp/vector.h>
+#include <cusp/array1d.h>
 #include <cusp/matrix_shape.h>
 
 namespace cusp
@@ -58,7 +58,7 @@ namespace cusp
         
         index_type num_entries;
 
-        cusp::vector<ValueType, value_allocator_type> values;
+        cusp::array1d<ValueType, value_allocator_type> values;
        
         dense_matrix()
             : matrix_shape<index_type>(0,0),

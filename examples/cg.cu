@@ -15,8 +15,8 @@ int main(void)
     cusp::load_matrix_market_file(A, "../testing/data/laplacian/5pt_10x10.mtx");
 
     // allocate storage for solution (x) and right hand side (b)
-    cusp::vector<float, MemorySpace> x(A.num_rows, 0);
-    cusp::vector<float, MemorySpace> b(A.num_rows);
+    cusp::array1d<float, MemorySpace> x(A.num_rows, 0);
+    cusp::array1d<float, MemorySpace> b(A.num_rows);
 
     // initialize right hand side
     for(int i = 0; i < A.num_rows; i++)

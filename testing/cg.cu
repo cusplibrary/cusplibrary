@@ -14,8 +14,8 @@ void TestConjugateGradient(void)
     //cusp::load_matrix_market_file(csr, "data/laplacian/7pt_10x10x10.mtx");
     //cusp::load_matrix_market_file(csr, "data/laplacian/3pt_100.mtx");
 
-    cusp::vector<float, MemorySpace> x(A.num_rows, 0.0f);
-    cusp::vector<float, MemorySpace> b(A.num_rows);
+    cusp::array1d<float, MemorySpace> x(A.num_rows, 0.0f);
+    cusp::array1d<float, MemorySpace> b(A.num_rows);
 
     // initialize RHS
     for(int i = 0; i < A.num_rows; i++)

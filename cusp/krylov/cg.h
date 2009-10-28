@@ -17,7 +17,7 @@
 
 #pragma once
 
-#include <cusp/vector.h>
+#include <cusp/array1d.h>
 #include <cusp/blas.h>
 
 #include <iostream>
@@ -48,9 +48,9 @@ void cg(LinearOperator A,
     const size_t N = A.num_rows;
 
     // allocate workspace
-    cusp::vector<ValueType,MemorySpace> y(N);
-    cusp::vector<ValueType,MemorySpace> r(N);
-    cusp::vector<ValueType,MemorySpace> p(N);
+    cusp::array1d<ValueType,MemorySpace> y(N);
+    cusp::array1d<ValueType,MemorySpace> r(N);
+    cusp::array1d<ValueType,MemorySpace> p(N);
         
     //clock_t start = clock();
     

@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
     
-#include <cusp/vector.h>
+#include <cusp/array1d.h>
 
 #include <cusp/detail/host/convert.h>
 

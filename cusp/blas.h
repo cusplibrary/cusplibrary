@@ -17,7 +17,7 @@
 
 #pragma once
 
-#include <cusp/vector.h>
+#include <cusp/array1d.h>
 
 #include <thrust/copy.h>
 #include <thrust/fill.h>

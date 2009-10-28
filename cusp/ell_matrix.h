@@ -17,7 +17,7 @@
 
 #pragma once
 
-#include <cusp/vector.h>
+#include <cusp/array1d.h>
 #include <cusp/matrix_shape.h>
 
 namespace cusp
@@ -42,7 +42,7 @@ namespace cusp
         index_type num_entries_per_row;
         index_type stride;
 
-        cusp::vector<IndexType, index_allocator_type> column_indices;
+        cusp::array1d<IndexType, index_allocator_type> column_indices;
 
         ell_pattern()
             : matrix_shape<IndexType>(0,0) {}
@@ -94,7 +94,7 @@ namespace cusp
         template<typename SpaceOrAlloc2>
         struct rebind { typedef ell_matrix<IndexType, ValueType, SpaceOrAlloc2> type; };
 
-        cusp::vector<ValueType, value_allocator_type> values;
+        cusp::array1d<ValueType, value_allocator_type> values;
     
         // construct empty matrix
         ell_matrix()

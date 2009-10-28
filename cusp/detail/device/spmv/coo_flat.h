@@ -317,8 +317,8 @@ void __spmv_coo_flat(const coo_matrix<IndexType,ValueType,cusp::device_memory>& 
     if (UseCache)
         bind_x(d_x);
 
-    cusp::device_vector<IndexType> temp_rows(active_warps);
-    cusp::device_vector<ValueType> temp_vals(active_warps);
+    cusp::array1d<IndexType,cusp::device_memory> temp_rows(active_warps);
+    cusp::array1d<ValueType,cusp::device_memory> temp_vals(active_warps);
 
     spmv_coo_flat_kernel<IndexType, ValueType, BLOCK_SIZE, UseCache> <<<num_blocks, BLOCK_SIZE>>>
         (tail, interval_size, I, J, V, d_x, d_y,

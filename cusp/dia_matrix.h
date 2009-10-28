@@ -17,7 +17,7 @@
 
 #pragma once
 
-#include <cusp/vector.h>
+#include <cusp/array1d.h>
 #include <cusp/matrix_shape.h>
 
 namespace cusp
@@ -43,8 +43,8 @@ namespace cusp
         index_type num_diagonals;
         index_type stride;
 
-        cusp::vector<IndexType, index_allocator_type> diagonal_offsets;
-        cusp::vector<ValueType, value_allocator_type> values;
+        cusp::array1d<IndexType, index_allocator_type> diagonal_offsets;
+        cusp::array1d<ValueType, value_allocator_type> values;
             
         dia_matrix()
             : matrix_shape<IndexType>(),

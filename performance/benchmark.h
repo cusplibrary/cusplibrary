@@ -17,21 +17,21 @@ float check_spmv(HostMatrix& host_matrix, TestMatrix& test_matrix, TestKernel te
     const IndexType N = host_matrix.num_cols;
 
     // create host input (x) and output (y) vectors
-    cusp::host_vector<ValueType> host_x(N);
-    cusp::host_vector<ValueType> host_y(M);
+    cusp::array1d<ValueType,cusp::host_memory> host_x(N);
+    cusp::array1d<ValueType,cusp::host_memory> host_y(M);
     for(IndexType i = 0; i < N; i++) host_x[i] = (rand() % 21) - 10; //(int(i % 21) - 10);
     for(IndexType i = 0; i < M; i++) host_y[i] = 0;
    
     // create test input (x) and output (y) vectors
-    cusp::vector<ValueType, MemorySpace> test_x(host_x.begin(), host_x.end());
-    cusp::vector<ValueType, MemorySpace> test_y(host_y.begin(), host_y.end());
+    cusp::array1d<ValueType, MemorySpace> test_x(host_x.begin(), host_x.end());
+    cusp::array1d<ValueType, MemorySpace> test_y(host_y.begin(), host_y.end());
 
     // compute SpMV on host and device
     cusp::detail::host::spmv(host_matrix, thrust::raw_pointer_cast(&host_x[0]), thrust::raw_pointer_cast(&host_y[0]));
     test_spmv(test_matrix, thrust::raw_pointer_cast(&test_x[0]), thrust::raw_pointer_cast(&test_y[0]));
 
     // compare results
-    cusp::host_vector<ValueType> test_y_copy(test_y.begin(), test_y.end());
+    cusp::array1d<ValueType,cusp::host_memory> test_y_copy(test_y.begin(), test_y.end());
     double error = l2_error(M, thrust::raw_pointer_cast(&test_y_copy[0]), thrust::raw_pointer_cast(&host_y[0]));
     
     return error;
@@ -49,8 +49,8 @@ float time_spmv(TestMatrix& test_matrix, TestKernel test_spmv, double seconds = 
     const IndexType N = test_matrix.num_cols;
 
     // create test input (x) and output (y) vectors
-    cusp::vector<ValueType, MemorySpace> test_x(N);
-    cusp::vector<ValueType, MemorySpace> test_y(M);
+    cusp::array1d<ValueType, MemorySpace> test_x(N);
+    cusp::array1d<ValueType, MemorySpace> test_y(M);
 
     // warmup
     timer time_one_iteration;

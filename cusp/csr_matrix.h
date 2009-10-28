@@ -17,7 +17,7 @@
 
 #pragma once
 
-#include <cusp/vector.h>
+#include <cusp/array1d.h>
 #include <cusp/matrix_shape.h>
 
 namespace cusp
@@ -38,8 +38,8 @@ namespace cusp
 
         index_type num_entries;
 
-        cusp::vector<IndexType, index_allocator_type> row_offsets;
-        cusp::vector<IndexType, index_allocator_type> column_indices;
+        cusp::array1d<IndexType, index_allocator_type> row_offsets;
+        cusp::array1d<IndexType, index_allocator_type> column_indices;
     
         csr_pattern()
             : matrix_shape<IndexType>() {}
@@ -88,7 +88,7 @@ namespace cusp
         template<typename SpaceOrAlloc2>
         struct rebind { typedef csr_matrix<IndexType, ValueType, SpaceOrAlloc2> type; };
     
-        cusp::vector<ValueType, value_allocator_type> values;
+        cusp::array1d<ValueType, value_allocator_type> values;
     
         // construct empty matrix
         csr_matrix()

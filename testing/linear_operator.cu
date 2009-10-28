@@ -2,7 +2,7 @@
 
 #include <cusp/csr_matrix.h>
 #include <cusp/convert.h>
-#include <cusp/vector.h>
+#include <cusp/array1d.h>
 #include <cusp/linear_operator.h>
 
 template <class TestMatrix>
@@ -24,8 +24,8 @@ void _TestMakeLinearOperator(TestMatrix test_matrix)
     cusp::convert(test_matrix, csr);
 
     // allocate vectors
-    cusp::vector<float, MemorySpace> x(2);
-    cusp::vector<float, MemorySpace> y(2);
+    cusp::array1d<float, MemorySpace> x(2);
+    cusp::array1d<float, MemorySpace> y(2);
     
     x[0] = 1.0f;
     x[1] = 2.0f;

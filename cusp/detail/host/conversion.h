@@ -121,7 +121,7 @@ void csr_to_dia(       cusp::dia_matrix<IndexType,ValueType,cusp::host_memory>& 
     // compute number of occupied diagonals and enumerate them
     IndexType num_diagonals = 0;
 
-    cusp::host_vector<IndexType> diag_map(csr.num_rows + csr.num_cols, 0);
+    cusp::array1d<IndexType,cusp::host_memory> diag_map(csr.num_rows + csr.num_cols, 0);
 
     for(IndexType i = 0; i < csr.num_rows; i++)
     {
