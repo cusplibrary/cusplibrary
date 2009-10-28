@@ -18,8 +18,6 @@
 
 #pragma once
 
-#include <cusp/memory.h> // TODO REMOVE
-
 #include <cusp/coo_matrix.h>
 #include <cusp/detail/device/common.h>
 #include <cusp/detail/device/utils.h>
@@ -278,24 +276,24 @@ spmv_coo_reduce_update_kernel(const IndexType num_warps,
 
 
 template <typename IndexType, typename ValueType, bool UseCache>
-void __spmv_coo_flat(const coo_matrix<IndexType,ValueType,cusp::device>& d_coo, 
+void __spmv_coo_flat(const coo_matrix<IndexType,ValueType,cusp::device>& coo, 
                      const ValueType * d_x, 
                            ValueType * d_y)
 {
-    const IndexType * I = thrust::raw_pointer_cast(&d_coo.row_indices[0]);
-    const IndexType * J = thrust::raw_pointer_cast(&d_coo.column_indices[0]);
-    const ValueType * V = thrust::raw_pointer_cast(&d_coo.values[0]);
+    const IndexType * I = thrust::raw_pointer_cast(&coo.row_indices[0]);
+    const IndexType * J = thrust::raw_pointer_cast(&coo.column_indices[0]);
+    const ValueType * V = thrust::raw_pointer_cast(&coo.values[0]);
 
-    if(d_coo.num_entries == 0)
+    if(coo.num_entries == 0)
     {
         // empty matrix
         return;
     }
-    else if (d_coo.num_entries < WARP_SIZE)
+    else if (coo.num_entries < WARP_SIZE)
     {
         // small matrix
         spmv_coo_serial_kernel<IndexType,ValueType> <<<1,1>>>
-            (d_coo.num_entries, I, J, V, d_x, d_y);
+            (coo.num_entries, I, J, V, d_x, d_y);
         return;
     }
 
@@ -305,7 +303,7 @@ void __spmv_coo_flat(const coo_matrix<IndexType,ValueType,cusp::device>& d_coo,
 //    const unsigned int MAX_BLOCKS = thrust::experimental::arch::max_active_blocks(spmv_coo_flat_kernel<IndexType, ValueType, BLOCK_SIZE, UseCache>, BLOCK_SIZE, (size_t) 0);
     const unsigned int WARPS_PER_BLOCK = BLOCK_SIZE / WARP_SIZE;
 
-    const unsigned int num_units  = d_coo.num_entries / WARP_SIZE; 
+    const unsigned int num_units  = coo.num_entries / WARP_SIZE; 
     const unsigned int num_warps  = std::min(num_units, WARPS_PER_BLOCK * MAX_BLOCKS);
     const unsigned int num_blocks = DIVIDE_INTO(num_warps, WARPS_PER_BLOCK);
     const unsigned int num_iters  = DIVIDE_INTO(num_units, num_warps);
@@ -319,40 +317,38 @@ void __spmv_coo_flat(const coo_matrix<IndexType,ValueType,cusp::device>& d_coo,
     if (UseCache)
         bind_x(d_x);
 
-    // TODO replace with device_array<T>
-    IndexType * temp_rows = cusp::new_device_array<IndexType>(active_warps);
-    ValueType * temp_vals = cusp::new_device_array<ValueType>(active_warps);
+    cusp::device_vector<IndexType> temp_rows(active_warps);
+    cusp::device_vector<ValueType> temp_vals(active_warps);
 
     spmv_coo_flat_kernel<IndexType, ValueType, BLOCK_SIZE, UseCache> <<<num_blocks, BLOCK_SIZE>>>
-        (tail, interval_size, I, J, V, d_x, d_y, temp_rows, temp_vals);
+        (tail, interval_size, I, J, V, d_x, d_y,
+         thrust::raw_pointer_cast(&temp_rows[0]), thrust::raw_pointer_cast(&temp_vals[0]));
 
     spmv_coo_serial_kernel<IndexType,ValueType> <<<1,1>>>
-        (d_coo.num_entries - tail, I + tail, J + tail, V + tail, d_x, d_y);
+        (coo.num_entries - tail, I + tail, J + tail, V + tail, d_x, d_y);
 
-    spmv_coo_reduce_update_kernel<IndexType, ValueType, 512> <<<1, 512>>> (active_warps, temp_rows, temp_vals, d_y);
-
-    cusp::delete_device_array(temp_rows);
-    cusp::delete_device_array(temp_vals);
+    spmv_coo_reduce_update_kernel<IndexType, ValueType, 512> <<<1, 512>>>
+        (active_warps, thrust::raw_pointer_cast(&temp_rows[0]), thrust::raw_pointer_cast(&temp_vals[0]), d_y);
 
     if (UseCache)
         unbind_x(d_x);
 }
 
 template <typename IndexType, typename ValueType>
-void spmv_coo_flat(const coo_matrix<IndexType,ValueType,cusp::device>& d_coo, 
+void spmv_coo_flat(const coo_matrix<IndexType,ValueType,cusp::device>& coo, 
                    const ValueType * d_x, 
                          ValueType * d_y)
 { 
-    __spmv_coo_flat<IndexType, ValueType, false>(d_coo, d_x, d_y);
+    __spmv_coo_flat<IndexType, ValueType, false>(coo, d_x, d_y);
 }
 
 
 template <typename IndexType, typename ValueType>
-void spmv_coo_flat_tex(const coo_matrix<IndexType,ValueType,cusp::device>& d_coo, 
+void spmv_coo_flat_tex(const coo_matrix<IndexType,ValueType,cusp::device>& coo, 
                        const ValueType * d_x, 
                              ValueType * d_y)
 { 
-    __spmv_coo_flat<IndexType, ValueType, true>(d_coo, d_x, d_y);
+    __spmv_coo_flat<IndexType, ValueType, true>(coo, d_x, d_y);
 }
 
 
