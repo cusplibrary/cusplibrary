@@ -51,8 +51,8 @@ DECLARE_UNITTEST(TestDeviceVector);
 
 void TestVector(void)
 {
-    cusp::vector<int, cusp::host>   h_vec1(4, 13);
-    cusp::vector<int, cusp::device> d_vec1(4, 13);
+    cusp::vector<int, cusp::host_memory>   h_vec1(4, 13);
+    cusp::vector<int, cusp::device_memory> d_vec1(4, 13);
     
     ASSERT_EQUAL(h_vec1, d_vec1);
 

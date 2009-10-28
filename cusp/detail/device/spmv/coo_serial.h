@@ -49,7 +49,7 @@ spmv_coo_serial_kernel(const IndexType num_nonzeros,
 
 
 template <typename IndexType, typename ValueType>
-void spmv_coo_serial_device(const coo_matrix<IndexType,ValueType,cusp::device>& coo, 
+void spmv_coo_serial_device(const coo_matrix<IndexType,ValueType,cusp::device_memory>& coo, 
                             const ValueType * d_x, 
                                   ValueType * d_y)
 {

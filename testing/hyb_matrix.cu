@@ -160,8 +160,8 @@ DECLARE_HOST_DEVICE_UNITTEST(TestHybMatrixSwap);
 
 void TestHybMatrixRebind(void)
 {
-    typedef cusp::hyb_matrix<int, float, cusp::host> HostMatrix;
-    typedef HostMatrix::rebind<cusp::device>::type   DeviceMatrix;
+    typedef cusp::hyb_matrix<int, float, cusp::host_memory> HostMatrix;
+    typedef HostMatrix::rebind<cusp::device_memory>::type   DeviceMatrix;
 
     HostMatrix   h_matrix(10,10,50,50,5,10);
     DeviceMatrix d_matrix(h_matrix);

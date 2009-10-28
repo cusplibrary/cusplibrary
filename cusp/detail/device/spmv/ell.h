@@ -45,7 +45,7 @@ spmv_ell_kernel(const IndexType num_rows,
                 const ValueType * x, 
                       ValueType * y)
 {
-    const IndexType invalid_index = cusp::ell_matrix<IndexType, ValueType, cusp::device>::invalid_index;
+    const IndexType invalid_index = cusp::ell_matrix<IndexType, ValueType, cusp::device_memory>::invalid_index;
 
     const IndexType thread_id = blockDim.x * blockIdx.x + threadIdx.x;
     const IndexType grid_size = gridDim.x * blockDim.x;
@@ -75,7 +75,7 @@ spmv_ell_kernel(const IndexType num_rows,
 
 
 template <bool UseCache, typename IndexType, typename ValueType>
-void __spmv_ell(const cusp::ell_matrix<IndexType,ValueType,cusp::device>& ell, 
+void __spmv_ell(const cusp::ell_matrix<IndexType,ValueType,cusp::device_memory>& ell, 
                 const ValueType * x, 
                       ValueType * y)
 {
@@ -98,7 +98,7 @@ void __spmv_ell(const cusp::ell_matrix<IndexType,ValueType,cusp::device>& ell,
 }
 
 template <typename IndexType, typename ValueType>
-void spmv_ell(const cusp::ell_matrix<IndexType,ValueType,cusp::device>& ell, 
+void spmv_ell(const cusp::ell_matrix<IndexType,ValueType,cusp::device_memory>& ell, 
               const ValueType * x, 
                     ValueType * y)
 {
@@ -106,7 +106,7 @@ void spmv_ell(const cusp::ell_matrix<IndexType,ValueType,cusp::device>& ell,
 }
 
 template <typename IndexType, typename ValueType>
-void spmv_ell_tex(const cusp::ell_matrix<IndexType,ValueType,cusp::device>& ell, 
+void spmv_ell_tex(const cusp::ell_matrix<IndexType,ValueType,cusp::device_memory>& ell, 
                   const ValueType * x, 
                         ValueType * y)
 {
@@ -114,7 +114,7 @@ void spmv_ell_tex(const cusp::ell_matrix<IndexType,ValueType,cusp::device>& ell,
 }
 
 template <typename IndexType, typename ValueType>
-void spmv(const cusp::ell_matrix<IndexType,ValueType,cusp::device>& ell, 
+void spmv(const cusp::ell_matrix<IndexType,ValueType,cusp::device_memory>& ell, 
           const ValueType * x, 
                 ValueType * y)
 {
@@ -122,7 +122,7 @@ void spmv(const cusp::ell_matrix<IndexType,ValueType,cusp::device>& ell,
 }
 
 template <typename IndexType, typename ValueType>
-void spmv_tex(const cusp::ell_matrix<IndexType,ValueType,cusp::device>& ell, 
+void spmv_tex(const cusp::ell_matrix<IndexType,ValueType,cusp::device_memory>& ell, 
               const ValueType * x, 
                     ValueType * y)
 {

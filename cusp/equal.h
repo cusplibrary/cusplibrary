@@ -23,8 +23,8 @@ namespace cusp
 {
 
 template <typename ValueType1, class Orientation1, typename ValueType2,  class Orientation2>
-bool equal(const cusp::dense_matrix<ValueType1, cusp::host, Orientation1>& A,
-           const cusp::dense_matrix<ValueType2, cusp::host, Orientation2>& B)
+bool equal(const cusp::dense_matrix<ValueType1, cusp::host_memory, Orientation1>& A,
+           const cusp::dense_matrix<ValueType2, cusp::host_memory, Orientation2>& B)
 {
     if (A.num_rows != B.num_rows || A.num_cols != B.num_cols)
         return false;

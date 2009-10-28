@@ -32,8 +32,8 @@ namespace cusp
     using thrust::host_vector;
     using thrust::device_vector;
 
-    typedef thrust::device_space_tag device;
-    typedef thrust::host_space_tag   host;
+    typedef thrust::device_space_tag device_memory;
+    typedef thrust::host_space_tag   host_memory;
 
     
     template<typename T, typename Space> 
@@ -43,13 +43,13 @@ namespace cusp
     };        
 
     template<typename T>
-    struct standard_memory_allocator<T, cusp::device>
+    struct standard_memory_allocator<T, cusp::device_memory>
     {
         typedef thrust::device_malloc_allocator<T> type;
     };
 
     template<typename T>
-    struct standard_memory_allocator<T, cusp::host>
+    struct standard_memory_allocator<T, cusp::host_memory>
     {
         typedef std::allocator<T> type;
     };

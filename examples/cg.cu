@@ -4,7 +4,7 @@
 #include <cusp/krylov/cg.h>
 
 // where to perform the computation
-typedef cusp::device MemorySpace;
+typedef cusp::device_memory MemorySpace;
 
 int main(void)
 {

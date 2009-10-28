@@ -29,7 +29,7 @@ namespace dispatch
 // Host to Host Path //
 ///////////////////////
 template <class DestinationType, class SourceType>
-void convert(DestinationType& dst, const SourceType& src, cusp::host, cusp::host)
+void convert(DestinationType& dst, const SourceType& src, cusp::host_memory, cusp::host_memory)
 {
     cusp::detail::host::convert(dst, src);
 }
@@ -38,10 +38,10 @@ void convert(DestinationType& dst, const SourceType& src, cusp::host, cusp::host
 // Host to Device Path //
 /////////////////////////
 template <class DestinationType, class SourceType>
-void convert(DestinationType& dst, const SourceType& src, cusp::device, cusp::host)
+void convert(DestinationType& dst, const SourceType& src, cusp::device_memory, cusp::host_memory)
 {
     // convert on host and transfer to device
-    typedef typename DestinationType::template rebind<cusp::host>::type HostDestinationType;
+    typedef typename DestinationType::template rebind<cusp::host_memory>::type HostDestinationType;
     
     HostDestinationType tmp;
 
@@ -54,10 +54,10 @@ void convert(DestinationType& dst, const SourceType& src, cusp::device, cusp::ho
 // Device to Host Path //
 /////////////////////////
 template <class DestinationType, class SourceType>
-void convert(DestinationType& dst, const SourceType& src, cusp::host, cusp::device)
+void convert(DestinationType& dst, const SourceType& src, cusp::host_memory, cusp::device_memory)
 {
     // transfer to host and transfer to device
-    typedef typename SourceType::template rebind<cusp::host>::type HostSourceType;
+    typedef typename SourceType::template rebind<cusp::host_memory>::type HostSourceType;
     
     HostSourceType tmp = src;
 
@@ -68,11 +68,11 @@ void convert(DestinationType& dst, const SourceType& src, cusp::host, cusp::devi
 // Device to Device Path //
 ///////////////////////////
 template <class DestinationType, class SourceType>
-void convert(DestinationType& dst, const SourceType& src, cusp::device, cusp::device)
+void convert(DestinationType& dst, const SourceType& src, cusp::device_memory, cusp::device_memory)
 {
     // transfer to host, convert on host, and transfer back to device
-    typedef typename SourceType::template rebind<cusp::host>::type      HostSourceType;
-    typedef typename DestinationType::template rebind<cusp::host>::type HostDestinationType;
+    typedef typename SourceType::template rebind<cusp::host_memory>::type      HostSourceType;
+    typedef typename DestinationType::template rebind<cusp::host_memory>::type HostDestinationType;
 
     HostSourceType tmp1(src);
 

@@ -118,8 +118,8 @@ DECLARE_HOST_DEVICE_UNITTEST(TestDiaMatrixSwap);
 
 void TestDiaMatrixRebind(void)
 {
-    typedef cusp::dia_matrix<int, float, cusp::host> HostMatrix;
-    typedef HostMatrix::rebind<cusp::device>::type   DeviceMatrix;
+    typedef cusp::dia_matrix<int, float, cusp::host_memory> HostMatrix;
+    typedef HostMatrix::rebind<cusp::device_memory>::type   DeviceMatrix;
 
     HostMatrix   h_matrix(10,10,100,19,10);
     DeviceMatrix d_matrix(h_matrix);

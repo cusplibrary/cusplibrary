@@ -51,7 +51,7 @@ void spmv_coo(const IndexType num_rows,
 
 
 template <typename IndexType, typename ValueType>
-void spmv(const cusp::coo_matrix<IndexType, ValueType, cusp::host>& coo, 
+void spmv(const cusp::coo_matrix<IndexType, ValueType, cusp::host_memory>& coo, 
           const ValueType * x,  
                 ValueType * y)
 {
@@ -88,7 +88,7 @@ void spmv_csr(const IndexType num_rows,
 }
 
 template <typename IndexType, typename ValueType>
-void spmv(const cusp::csr_matrix<IndexType, ValueType, cusp::host>& csr, 
+void spmv(const cusp::csr_matrix<IndexType, ValueType, cusp::host_memory>& csr, 
           const ValueType * x,  
                 ValueType * y)
 {
@@ -129,7 +129,7 @@ void spmv_dia(const IndexType num_rows,
 }
 
 template <typename IndexType, typename ValueType>
-void spmv(const dia_matrix<IndexType, ValueType, cusp::host>& dia, 
+void spmv(const dia_matrix<IndexType, ValueType, cusp::host_memory>& dia, 
           const ValueType * x,  
                 ValueType * y)
 {
@@ -150,7 +150,7 @@ void spmv_ell(const IndexType num_rows,
               const ValueType * x,
                     ValueType * y)
 {
-    const IndexType invalid_index = cusp::ell_matrix<IndexType, ValueType, cusp::host>::invalid_index;
+    const IndexType invalid_index = cusp::ell_matrix<IndexType, ValueType, cusp::host_memory>::invalid_index;
 
     for(IndexType n = 0; n < num_entries_per_row; n++)
     {
@@ -166,7 +166,7 @@ void spmv_ell(const IndexType num_rows,
 }
 
 template <typename IndexType, typename ValueType>
-void spmv(const cusp::ell_matrix<IndexType, ValueType, cusp::host>& ell, 
+void spmv(const cusp::ell_matrix<IndexType, ValueType, cusp::host_memory>& ell, 
           const ValueType * x,  
                 ValueType * y)
 {
@@ -178,7 +178,7 @@ void spmv(const cusp::ell_matrix<IndexType, ValueType, cusp::host>& ell,
 
 // hyb_matrix
 template <typename IndexType, typename ValueType>
-void spmv(const cusp::hyb_matrix<IndexType, ValueType, cusp::host>& hyb, 
+void spmv(const cusp::hyb_matrix<IndexType, ValueType, cusp::host_memory>& hyb, 
           const ValueType * x,  
                 ValueType * y)
 {

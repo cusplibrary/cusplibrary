@@ -27,7 +27,7 @@ namespace cusp
 {
 
 template <typename IndexType, typename ValueType>
-void print_matrix(const cusp::coo_matrix<IndexType, ValueType, cusp::host>& coo)
+void print_matrix(const cusp::coo_matrix<IndexType, ValueType, cusp::host_memory>& coo)
 {
     std::cout << "coo_matrix <" << coo.num_rows << ", " << coo.num_cols << "> with " << coo.num_entries << " entries\n";
 
@@ -40,7 +40,7 @@ void print_matrix(const cusp::coo_matrix<IndexType, ValueType, cusp::host>& coo)
 }
 
 template <typename IndexType, typename ValueType>
-void print_matrix(const cusp::csr_matrix<IndexType, ValueType, cusp::host>& csr)
+void print_matrix(const cusp::csr_matrix<IndexType, ValueType, cusp::host_memory>& csr)
 {
     std::cout << "csr_matrix <" << csr.num_rows << ", " << csr.num_cols << "> with " << csr.num_entries << " entries\n";
 
@@ -55,7 +55,7 @@ void print_matrix(const cusp::csr_matrix<IndexType, ValueType, cusp::host>& csr)
 }
 
 template <typename ValueType, class Orientation>
-void print_matrix(const cusp::dense_matrix<ValueType, cusp::host, Orientation>& dense)
+void print_matrix(const cusp::dense_matrix<ValueType, cusp::host_memory, Orientation>& dense)
 {
     std::cout << "dense_matrix <" << dense.num_rows << ", " << dense.num_cols << ">\n";
 

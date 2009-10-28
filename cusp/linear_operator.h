@@ -48,13 +48,13 @@ struct default_linear_operator : public MatrixType
     default_linear_operator(MatrixType& _matrix) : MatrixType(_matrix) {}
 
     template <typename ValueType>
-    void spmv(const ValueType * x, ValueType * y, cusp::host)
+    void spmv(const ValueType * x, ValueType * y, cusp::host_memory)
     {
         cusp::detail::host::spmv(*this, x, y);
     }
     
     template <typename ValueType>
-    void spmv(const ValueType * x, ValueType * y, cusp::device)
+    void spmv(const ValueType * x, ValueType * y, cusp::device_memory)
     {
         cusp::detail::device::spmv(*this, x, y);
     }

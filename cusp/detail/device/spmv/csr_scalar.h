@@ -71,7 +71,7 @@ spmv_csr_scalar_kernel(const IndexType num_rows,
 
     
 template <bool UseCache, typename IndexType, typename ValueType>
-void __spmv_csr_scalar(const csr_matrix<IndexType,ValueType,cusp::device>& csr, 
+void __spmv_csr_scalar(const csr_matrix<IndexType,ValueType,cusp::device_memory>& csr, 
                        const ValueType * x, 
                              ValueType * y)
 {
@@ -95,7 +95,7 @@ void __spmv_csr_scalar(const csr_matrix<IndexType,ValueType,cusp::device>& csr,
 }
 
 template <typename IndexType, typename ValueType>
-void spmv_csr_scalar(const csr_matrix<IndexType,ValueType,cusp::device>& csr, 
+void spmv_csr_scalar(const csr_matrix<IndexType,ValueType,cusp::device_memory>& csr, 
                      const ValueType * x, 
                            ValueType * y)
 {
@@ -103,7 +103,7 @@ void spmv_csr_scalar(const csr_matrix<IndexType,ValueType,cusp::device>& csr,
 }
 
 template <typename IndexType, typename ValueType>
-void spmv_csr_scalar_tex(const csr_matrix<IndexType,ValueType,cusp::device>& csr, 
+void spmv_csr_scalar_tex(const csr_matrix<IndexType,ValueType,cusp::device_memory>& csr, 
                          const ValueType * x, 
                                ValueType * y)
 {

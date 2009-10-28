@@ -34,7 +34,7 @@ namespace host
 {
 
 template <typename IndexType, typename ValueType>
-IndexType count_diagonals(const cusp::csr_matrix<IndexType, ValueType, cusp::host> & csr)
+IndexType count_diagonals(const cusp::csr_matrix<IndexType, ValueType, cusp::host_memory> & csr)
 {
     std::vector<IndexType> occupied_diagonals(csr.num_rows + csr.num_cols, char(0));
 
@@ -50,7 +50,7 @@ IndexType count_diagonals(const cusp::csr_matrix<IndexType, ValueType, cusp::hos
 }
 
 template <typename IndexType, typename ValueType>
-IndexType compute_max_entries_per_row(const cusp::csr_matrix<IndexType,ValueType,cusp::host>& csr)
+IndexType compute_max_entries_per_row(const cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& csr)
 {
     IndexType max_entries_per_row = 0;
     for(IndexType i = 0; i < csr.num_rows; i++)
@@ -74,7 +74,7 @@ IndexType compute_max_entries_per_row(const cusp::csr_matrix<IndexType,ValueType
 //! @param breakeven_threshold  Minimum threshold at which ELL is faster than COO
 ////////////////////////////////////////////////////////////////////////////////
 template <typename IndexType, typename ValueType>
-IndexType compute_optimal_entries_per_row(const cusp::csr_matrix<IndexType,ValueType,cusp::host>& csr,
+IndexType compute_optimal_entries_per_row(const cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& csr,
                                           float relative_speed = 3.0, IndexType breakeven_threshold = 4096)
 {
     // compute maximum row length

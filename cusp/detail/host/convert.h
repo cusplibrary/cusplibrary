@@ -62,13 +62,13 @@ namespace host
 // COO //
 /////////
 template <typename IndexType, typename ValueType>
-void convert(      cusp::csr_matrix<IndexType,ValueType,cusp::host>& dst,
-             const cusp::coo_matrix<IndexType,ValueType,cusp::host>& src)
+void convert(      cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& dst,
+             const cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& src)
 {    cusp::detail::host::coo_to_csr(dst, src);    }
 
 template <typename IndexType, typename ValueType, class Orientation>
-void convert(      cusp::dense_matrix<ValueType,cusp::host,Orientation>& dst,
-             const cusp::coo_matrix<IndexType,ValueType,cusp::host>& src)
+void convert(      cusp::dense_matrix<ValueType,cusp::host_memory,Orientation>& dst,
+             const cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& src)
 {    cusp::detail::host::coo_to_dense(dst, src);    }
 
 
@@ -76,14 +76,14 @@ void convert(      cusp::dense_matrix<ValueType,cusp::host,Orientation>& dst,
 // CSR //
 /////////
 template <typename IndexType, typename ValueType>
-void convert(      cusp::coo_matrix<IndexType,ValueType,cusp::host>& dst,
-             const cusp::csr_matrix<IndexType,ValueType,cusp::host>& src)
+void convert(      cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& dst,
+             const cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& src)
 {    cusp::detail::host::csr_to_coo(dst, src);    }
 
 
 template <typename IndexType, typename ValueType>
-void convert(      cusp::dia_matrix<IndexType,ValueType,cusp::host>& dst,
-             const cusp::csr_matrix<IndexType,ValueType,cusp::host>& src,
+void convert(      cusp::dia_matrix<IndexType,ValueType,cusp::host_memory>& dst,
+             const cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& src,
              const float max_fill = 3.0,
              const IndexType alignment = 16)
 {
@@ -98,8 +98,8 @@ void convert(      cusp::dia_matrix<IndexType,ValueType,cusp::host>& dst,
 }
 
 template <typename IndexType, typename ValueType>
-void convert(      cusp::ell_matrix<IndexType,ValueType,cusp::host>& dst,
-             const cusp::csr_matrix<IndexType,ValueType,cusp::host>& src,
+void convert(      cusp::ell_matrix<IndexType,ValueType,cusp::host_memory>& dst,
+             const cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& src,
              const float max_fill = 3.0,
              const IndexType alignment = 16)
 {
@@ -113,8 +113,8 @@ void convert(      cusp::ell_matrix<IndexType,ValueType,cusp::host>& dst,
 }
 
 template <typename IndexType, typename ValueType>
-void convert(      cusp::hyb_matrix<IndexType,ValueType,cusp::host>& dst,
-             const cusp::csr_matrix<IndexType,ValueType,cusp::host>& src,
+void convert(      cusp::hyb_matrix<IndexType,ValueType,cusp::host_memory>& dst,
+             const cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& src,
              const float relative_speed = 3.0,  const IndexType breakeven_threshold = 4096)
 {
     const IndexType num_entries_per_row = cusp::detail::host::compute_optimal_entries_per_row(src, relative_speed, breakeven_threshold);
@@ -122,8 +122,8 @@ void convert(      cusp::hyb_matrix<IndexType,ValueType,cusp::host>& dst,
 }
 
 template <typename IndexType, typename ValueType, class Orientation>
-void convert(      cusp::dense_matrix<ValueType,cusp::host,Orientation>& dst,
-             const cusp::csr_matrix<IndexType,ValueType,cusp::host>& src)
+void convert(      cusp::dense_matrix<ValueType,cusp::host_memory,Orientation>& dst,
+             const cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& src)
 {    cusp::detail::host::csr_to_dense(dst, src);    }
 
 
@@ -131,8 +131,8 @@ void convert(      cusp::dense_matrix<ValueType,cusp::host,Orientation>& dst,
 // DIA //
 /////////
 template <typename IndexType, typename ValueType>
-void convert(      cusp::csr_matrix<IndexType,ValueType,cusp::host>& dst,
-             const cusp::dia_matrix<IndexType,ValueType,cusp::host>& src)
+void convert(      cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& dst,
+             const cusp::dia_matrix<IndexType,ValueType,cusp::host_memory>& src)
 {    cusp::detail::host::dia_to_csr(dst, src);    }
 
 
@@ -140,8 +140,8 @@ void convert(      cusp::csr_matrix<IndexType,ValueType,cusp::host>& dst,
 // ELL //
 /////////
 template <typename IndexType, typename ValueType>
-void convert(      cusp::csr_matrix<IndexType,ValueType,cusp::host>& dst,
-             const cusp::ell_matrix<IndexType,ValueType,cusp::host>& src)
+void convert(      cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& dst,
+             const cusp::ell_matrix<IndexType,ValueType,cusp::host_memory>& src)
 {    cusp::detail::host::ell_to_csr(dst, src);    }
 
 
@@ -149,8 +149,8 @@ void convert(      cusp::csr_matrix<IndexType,ValueType,cusp::host>& dst,
 // HYB //
 /////////
 template <typename IndexType, typename ValueType>
-void convert(      cusp::csr_matrix<IndexType,ValueType,cusp::host>& dst,
-             const cusp::hyb_matrix<IndexType,ValueType,cusp::host>& src)
+void convert(      cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& dst,
+             const cusp::hyb_matrix<IndexType,ValueType,cusp::host_memory>& src)
 {    cusp::detail::host::hyb_to_csr(dst, src);    }
 
 
@@ -158,13 +158,13 @@ void convert(      cusp::csr_matrix<IndexType,ValueType,cusp::host>& dst,
 // Dense //
 ///////////
 template <typename IndexType, typename ValueType, class Orientation>
-void convert(      cusp::coo_matrix<IndexType,ValueType,cusp::host>& dst,
-             const cusp::dense_matrix<ValueType,cusp::host,Orientation>& src)
+void convert(      cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& dst,
+             const cusp::dense_matrix<ValueType,cusp::host_memory,Orientation>& src)
 {    cusp::detail::host::dense_to_coo(dst, src);    }
 
 template <typename IndexType, typename ValueType, class Orientation>
-void convert(      cusp::csr_matrix<IndexType,ValueType,cusp::host>& dst,
-             const cusp::dense_matrix<ValueType,cusp::host,Orientation>& src)
+void convert(      cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& dst,
+             const cusp::dense_matrix<ValueType,cusp::host_memory,Orientation>& src)
 {    cusp::detail::host::dense_to_csr(dst, src);    }
 
 

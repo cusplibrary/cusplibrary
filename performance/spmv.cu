@@ -67,7 +67,7 @@ void test_all_formats(std::string& filename)
     std::cout << "Running on Device " << device_id << "\n\n";
     
     // load a matrix stored in MatrixMarket format
-    cusp::csr_matrix<IndexType, ValueType, cusp::host> host_matrix;
+    cusp::csr_matrix<IndexType, ValueType, cusp::host_memory> host_matrix;
 
     if (filename == "")
     {

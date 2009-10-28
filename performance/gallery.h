@@ -25,7 +25,7 @@
  * to the Laplacian operator on a regular N-by-N grid.
  */
 template <typename IndexType, typename ValueType>
-void laplacian_5pt(cusp::csr_matrix<IndexType,ValueType,cusp::host> &csr, const IndexType N)
+void laplacian_5pt(cusp::csr_matrix<IndexType,ValueType,cusp::host_memory> &csr, const IndexType N)
 {
     const IndexType num_rows = N*N;
     const IndexType num_cols = N*N;

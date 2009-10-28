@@ -41,8 +41,8 @@ namespace host
 /////////////////////
     
 template <typename IndexType, typename ValueType>
-void coo_to_csr(      cusp::csr_matrix<IndexType,ValueType,cusp::host>& dst,
-                const cusp::coo_matrix<IndexType,ValueType,cusp::host>& src)
+void coo_to_csr(      cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& dst,
+                const cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& src)
 {
     dst.resize(src.num_rows, src.num_cols, src.num_entries);
     
@@ -84,8 +84,8 @@ void coo_to_csr(      cusp::csr_matrix<IndexType,ValueType,cusp::host>& dst,
 }
 
 template <typename IndexType, typename ValueType, class Orientation>
-void coo_to_dense(      cusp::dense_matrix<ValueType,cusp::host,Orientation>& dst,
-                  const cusp::coo_matrix<IndexType,ValueType,cusp::host>& src)
+void coo_to_dense(      cusp::dense_matrix<ValueType,cusp::host_memory,Orientation>& dst,
+                  const cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& src)
 {
     dst.resize(src.num_rows, src.num_cols);
 
@@ -100,8 +100,8 @@ void coo_to_dense(      cusp::dense_matrix<ValueType,cusp::host,Orientation>& ds
 /////////////////////
 
 template <typename IndexType, typename ValueType>
-void csr_to_coo(      cusp::coo_matrix<IndexType,ValueType,cusp::host>& dst,
-                const cusp::csr_matrix<IndexType,ValueType,cusp::host>& src)
+void csr_to_coo(      cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& dst,
+                const cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& src)
 {
     dst.resize(src.num_rows, src.num_cols, src.num_entries);
     
@@ -114,8 +114,8 @@ void csr_to_coo(      cusp::coo_matrix<IndexType,ValueType,cusp::host>& dst,
 }
 
 template <typename IndexType, typename ValueType>
-void csr_to_dia(       cusp::dia_matrix<IndexType,ValueType,cusp::host>& dia,
-                 const cusp::csr_matrix<IndexType,ValueType,cusp::host>& csr,
+void csr_to_dia(       cusp::dia_matrix<IndexType,ValueType,cusp::host_memory>& dia,
+                 const cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& csr,
                  const IndexType alignment = 16)
 {
     // compute number of occupied diagonals and enumerate them
@@ -173,8 +173,8 @@ void csr_to_dia(       cusp::dia_matrix<IndexType,ValueType,cusp::host>& dia,
     
 
 template <typename IndexType, typename ValueType>
-void csr_to_hyb(      cusp::hyb_matrix<IndexType, ValueType,cusp::host>& hyb, 
-                const cusp::csr_matrix<IndexType,ValueType,cusp::host>&  csr,
+void csr_to_hyb(      cusp::hyb_matrix<IndexType, ValueType,cusp::host_memory>& hyb, 
+                const cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>&  csr,
                 const IndexType num_entries_per_row,
                 const IndexType alignment = 16)
 {
@@ -182,8 +182,8 @@ void csr_to_hyb(      cusp::hyb_matrix<IndexType, ValueType,cusp::host>& hyb,
     // Nonzero values that do not fit within the ELL structure are placed in the 
     // COO format portion of the HYB matrix.
     
-    cusp::ell_matrix<IndexType, ValueType, cusp::host> & ell = hyb.ell;
-    cusp::coo_matrix<IndexType, ValueType, cusp::host> & coo = hyb.coo;
+    cusp::ell_matrix<IndexType, ValueType, cusp::host_memory> & ell = hyb.ell;
+    cusp::coo_matrix<IndexType, ValueType, cusp::host_memory> & coo = hyb.coo;
 
     const IndexType stride = alignment * ((csr.num_rows + alignment - 1) / alignment);
 
@@ -198,7 +198,7 @@ void csr_to_hyb(      cusp::hyb_matrix<IndexType, ValueType,cusp::host>& hyb,
                num_ell_entries, num_coo_entries, 
                num_entries_per_row, stride);
 
-    const IndexType invalid_index = cusp::ell_matrix<IndexType, ValueType, cusp::host>::invalid_index;
+    const IndexType invalid_index = cusp::ell_matrix<IndexType, ValueType, cusp::host_memory>::invalid_index;
 
     // pad out ELL format with zeros
     std::fill(ell.column_indices.begin(), ell.column_indices.end(), invalid_index);
@@ -230,13 +230,13 @@ void csr_to_hyb(      cusp::hyb_matrix<IndexType, ValueType,cusp::host>& hyb,
 
 
 template <typename IndexType, typename ValueType>
-void csr_to_ell(      cusp::ell_matrix<IndexType,ValueType,cusp::host>&  ell,
-                const cusp::csr_matrix<IndexType,ValueType,cusp::host>&  csr,
+void csr_to_ell(      cusp::ell_matrix<IndexType,ValueType,cusp::host_memory>&  ell,
+                const cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>&  csr,
                 const IndexType num_entries_per_row, const IndexType alignment = 16)
 {
     // Constructs an ELL matrix with 'num_entries_per_row' consisting of the first
     // 'num_entries_per_row' entries in each row of the CSR matrix.
-    cusp::hyb_matrix<IndexType, ValueType, cusp::host> hyb;
+    cusp::hyb_matrix<IndexType, ValueType, cusp::host_memory> hyb;
 
     csr_to_hyb(hyb, csr, num_entries_per_row, alignment);
 
@@ -245,8 +245,8 @@ void csr_to_ell(      cusp::ell_matrix<IndexType,ValueType,cusp::host>&  ell,
 
     
 template <typename IndexType, typename ValueType, class Orientation>
-void csr_to_dense(      cusp::dense_matrix<ValueType,cusp::host,Orientation>& dst,
-                  const cusp::csr_matrix<IndexType,ValueType,cusp::host>& src)
+void csr_to_dense(      cusp::dense_matrix<ValueType,cusp::host_memory,Orientation>& dst,
+                  const cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& src)
 {
     dst.resize(src.num_rows, src.num_cols);
 
@@ -263,8 +263,8 @@ void csr_to_dense(      cusp::dense_matrix<ValueType,cusp::host,Orientation>& ds
 /////////////////////
 
 template <typename IndexType, typename ValueType>
-void dia_to_csr(      cusp::csr_matrix<IndexType,ValueType,cusp::host>& dst,
-                const cusp::dia_matrix<IndexType,ValueType,cusp::host>& src)
+void dia_to_csr(      cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& dst,
+                const cusp::dia_matrix<IndexType,ValueType,cusp::host_memory>& src)
 {
     IndexType num_entries = 0;
 
@@ -318,10 +318,10 @@ void dia_to_csr(      cusp::csr_matrix<IndexType,ValueType,cusp::host>& dst,
 /////////////////////
 
 template <typename IndexType, typename ValueType>
-void ell_to_csr(      cusp::csr_matrix<IndexType,ValueType,cusp::host>& dst,
-                const cusp::ell_matrix<IndexType,ValueType,cusp::host>& src)
+void ell_to_csr(      cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& dst,
+                const cusp::ell_matrix<IndexType,ValueType,cusp::host_memory>& src)
 {
-    const IndexType invalid_index = cusp::ell_matrix<IndexType, ValueType, cusp::host>::invalid_index;
+    const IndexType invalid_index = cusp::ell_matrix<IndexType, ValueType, cusp::host_memory>::invalid_index;
 
     dst.resize(src.num_rows, src.num_cols, src.num_entries);
 
@@ -351,11 +351,11 @@ void ell_to_csr(      cusp::csr_matrix<IndexType,ValueType,cusp::host>& dst,
 /////////////////////
 
 template <typename IndexType, typename ValueType>
-void hyb_to_csr(      cusp::csr_matrix<IndexType,ValueType,cusp::host>& dst,
-                const cusp::hyb_matrix<IndexType,ValueType,cusp::host>& src)
+void hyb_to_csr(      cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& dst,
+                const cusp::hyb_matrix<IndexType,ValueType,cusp::host_memory>& src)
 {
-    cusp::csr_matrix<IndexType,ValueType,cusp::host> ell_part;
-    cusp::csr_matrix<IndexType,ValueType,cusp::host> coo_part;
+    cusp::csr_matrix<IndexType,ValueType,cusp::host_memory> ell_part;
+    cusp::csr_matrix<IndexType,ValueType,cusp::host_memory> coo_part;
 
     ell_to_csr(ell_part, src.ell);
     coo_to_csr(coo_part, src.coo);
@@ -390,8 +390,8 @@ void hyb_to_csr(      cusp::csr_matrix<IndexType,ValueType,cusp::host>& dst,
 // Dense Conversions //
 ///////////////////////
 template <typename IndexType, typename ValueType, class Orientation>
-void dense_to_coo(      cusp::coo_matrix<IndexType,ValueType,cusp::host>& dst,
-                  const cusp::dense_matrix<ValueType,cusp::host,Orientation>& src)
+void dense_to_coo(      cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& dst,
+                  const cusp::dense_matrix<ValueType,cusp::host_memory,Orientation>& src)
 {
     IndexType nnz = src.num_entries - std::count(src.values.begin(), src.values.end(), ValueType(0));
 
@@ -415,8 +415,8 @@ void dense_to_coo(      cusp::coo_matrix<IndexType,ValueType,cusp::host>& dst,
 }
 
 template <typename IndexType, typename ValueType, class Orientation>
-void dense_to_csr(      cusp::csr_matrix<IndexType,ValueType,cusp::host>& dst,
-                  const cusp::dense_matrix<ValueType,cusp::host,Orientation>& src)
+void dense_to_csr(      cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& dst,
+                  const cusp::dense_matrix<ValueType,cusp::host_memory,Orientation>& src)
 {
     IndexType nnz = src.num_entries - std::count(src.values.begin(), src.values.end(), ValueType(0));
 

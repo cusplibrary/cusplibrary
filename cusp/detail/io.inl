@@ -113,7 +113,7 @@ inline void read_matrix_market_banner(matrix_market_banner& banner, const std::s
 }
 
 template <typename IndexType, typename ValueType>
-void load_matrix_market_file(cusp::coo_matrix<IndexType,ValueType,cusp::host>& coo, const std::string& filename)
+void load_matrix_market_file(cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& coo, const std::string& filename)
 {
     // read banner
     matrix_market_banner banner;
@@ -205,7 +205,7 @@ void load_matrix_market_file(cusp::coo_matrix<IndexType,ValueType,cusp::host>& c
 
             IndexType general_num_entries = coo.num_entries + off_diagonals;
             
-            cusp::coo_matrix<IndexType,ValueType,cusp::host> general(num_rows, num_cols, general_num_entries);
+            cusp::coo_matrix<IndexType,ValueType,cusp::host_memory> general(num_rows, num_cols, general_num_entries);
            
             if (banner.symmetry == "symmetric")
             {
@@ -263,7 +263,7 @@ void load_matrix_market_file(MatrixType& mtx, const std::string& filename)
     typedef typename MatrixType::index_type IndexType;
     typedef typename MatrixType::value_type ValueType;
 
-    cusp::coo_matrix<IndexType,ValueType,cusp::host> coo;
+    cusp::coo_matrix<IndexType,ValueType,cusp::host_memory> coo;
     cusp::load_matrix_market_file(coo, filename);
     cusp::convert(mtx, coo);
 }

@@ -8,15 +8,15 @@
 void TestLoadMatrixMarketFileCoordinateRealGeneral(void)
 {
     // load matrix
-    cusp::coo_matrix<int, float, cusp::host> coo;
+    cusp::coo_matrix<int, float, cusp::host_memory> coo;
     cusp::load_matrix_market_file(coo, "data/test/coordinate_real_general.mtx");
 
     // convert to dense_matrix
-    cusp::dense_matrix<float, cusp::host> D;
+    cusp::dense_matrix<float, cusp::host_memory> D;
     cusp::convert(D, coo);
 
     // expected result
-    cusp::dense_matrix<float, cusp::host> E(5, 5);
+    cusp::dense_matrix<float, cusp::host_memory> E(5, 5);
     E(0,0) =  1.000e+00; E(0,1) =  0.000e+00; E(0,2) =  0.000e+00; E(0,3) =  6.000e+00; E(0,4) =  0.000e+00;
     E(1,0) =  0.000e+00; E(1,1) =  1.050e+01; E(1,2) =  0.000e+00; E(1,3) =  0.000e+00; E(1,4) =  0.000e+00;
     E(2,0) =  0.000e+00; E(2,1) =  0.000e+00; E(2,2) =  2.500e-01; E(2,3) =  0.000e+00; E(2,4) =  0.000e+00;
@@ -30,15 +30,15 @@ DECLARE_UNITTEST(TestLoadMatrixMarketFileCoordinateRealGeneral);
 void TestLoadMatrixMarketFileCoordinatePatternSymmetric(void)
 {
     // load matrix
-    cusp::coo_matrix<int, float, cusp::host> coo;
+    cusp::coo_matrix<int, float, cusp::host_memory> coo;
     cusp::load_matrix_market_file(coo, "data/test/coordinate_pattern_symmetric.mtx");
 
     // convert to dense_matrix
-    cusp::dense_matrix<float, cusp::host> D;
+    cusp::dense_matrix<float, cusp::host_memory> D;
     cusp::convert(D, coo);
 
     // expected result
-    cusp::dense_matrix<float, cusp::host> E(5, 5);
+    cusp::dense_matrix<float, cusp::host_memory> E(5, 5);
     E(0,0) =  1.000e+00; E(0,1) =  0.000e+00; E(0,2) =  0.000e+00; E(0,3) =  0.000e+00; E(0,4) =  0.000e+00;
     E(1,0) =  0.000e+00; E(1,1) =  1.000e+00; E(1,2) =  0.000e+00; E(1,3) =  1.000e+00; E(1,4) =  0.000e+00;
     E(2,0) =  0.000e+00; E(2,1) =  0.000e+00; E(2,2) =  1.000e+00; E(2,3) =  0.000e+00; E(2,4) =  0.000e+00;
@@ -57,11 +57,11 @@ void TestLoadMatrixMarketFileToCsrMatrix(void)
     cusp::load_matrix_market_file(csr, "data/test/coordinate_real_general.mtx");
 
     // convert to dense_matrix
-    cusp::dense_matrix<float, cusp::host> D;
+    cusp::dense_matrix<float, cusp::host_memory> D;
     cusp::convert(D, csr);
 
     // expected result
-    cusp::dense_matrix<float, cusp::host> E(5, 5);
+    cusp::dense_matrix<float, cusp::host_memory> E(5, 5);
     E(0,0) =  1.000e+00; E(0,1) =  0.000e+00; E(0,2) =  0.000e+00; E(0,3) =  6.000e+00; E(0,4) =  0.000e+00;
     E(1,0) =  0.000e+00; E(1,1) =  1.050e+01; E(1,2) =  0.000e+00; E(1,3) =  0.000e+00; E(1,4) =  0.000e+00;
     E(2,0) =  0.000e+00; E(2,1) =  0.000e+00; E(2,2) =  2.500e-01; E(2,3) =  0.000e+00; E(2,4) =  0.000e+00;

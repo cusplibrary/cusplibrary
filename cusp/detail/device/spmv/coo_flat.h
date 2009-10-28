@@ -276,7 +276,7 @@ spmv_coo_reduce_update_kernel(const IndexType num_warps,
 
 
 template <typename IndexType, typename ValueType, bool UseCache>
-void __spmv_coo_flat(const coo_matrix<IndexType,ValueType,cusp::device>& coo, 
+void __spmv_coo_flat(const coo_matrix<IndexType,ValueType,cusp::device_memory>& coo, 
                      const ValueType * d_x, 
                            ValueType * d_y)
 {
@@ -335,7 +335,7 @@ void __spmv_coo_flat(const coo_matrix<IndexType,ValueType,cusp::device>& coo,
 }
 
 template <typename IndexType, typename ValueType>
-void spmv_coo_flat(const coo_matrix<IndexType,ValueType,cusp::device>& coo, 
+void spmv_coo_flat(const coo_matrix<IndexType,ValueType,cusp::device_memory>& coo, 
                    const ValueType * d_x, 
                          ValueType * d_y)
 { 
@@ -344,7 +344,7 @@ void spmv_coo_flat(const coo_matrix<IndexType,ValueType,cusp::device>& coo,
 
 
 template <typename IndexType, typename ValueType>
-void spmv_coo_flat_tex(const coo_matrix<IndexType,ValueType,cusp::device>& coo, 
+void spmv_coo_flat_tex(const coo_matrix<IndexType,ValueType,cusp::device_memory>& coo, 
                        const ValueType * d_x, 
                              ValueType * d_y)
 { 

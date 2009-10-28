@@ -10,7 +10,7 @@ void _TestMakeLinearOperator(TestMatrix test_matrix)
 {
     typedef typename TestMatrix::memory_space MemorySpace;
 
-    cusp::csr_matrix<int, float, cusp::host> csr(2, 2, 4);
+    cusp::csr_matrix<int, float, cusp::host_memory> csr(2, 2, 4);
     
     csr.row_offsets[0] = 0;
     csr.row_offsets[1] = 2;

@@ -28,7 +28,7 @@ namespace device
 {
 
 template <typename IndexType, typename ValueType>
-void spmv(const coo_matrix<IndexType,ValueType,cusp::device>& coo, 
+void spmv(const coo_matrix<IndexType,ValueType,cusp::device_memory>& coo, 
           const ValueType * x, 
                 ValueType * y)
 { 
@@ -36,7 +36,7 @@ void spmv(const coo_matrix<IndexType,ValueType,cusp::device>& coo,
 }
 
 template <typename IndexType, typename ValueType>
-void spmv_tex(const coo_matrix<IndexType,ValueType,cusp::device>& coo, 
+void spmv_tex(const coo_matrix<IndexType,ValueType,cusp::device_memory>& coo, 
               const ValueType * x, 
                     ValueType * y)
 { 

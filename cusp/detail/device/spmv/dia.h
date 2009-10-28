@@ -101,7 +101,7 @@ spmv_dia_kernel(const IndexType num_rows,
 
     
 template <bool UseCache, typename IndexType, typename ValueType>
-void __spmv_dia(const cusp::dia_matrix<IndexType,ValueType,cusp::device>& dia, 
+void __spmv_dia(const cusp::dia_matrix<IndexType,ValueType,cusp::device_memory>& dia, 
                 const ValueType * x, 
                       ValueType * y)
 {
@@ -130,7 +130,7 @@ void __spmv_dia(const cusp::dia_matrix<IndexType,ValueType,cusp::device>& dia,
 }
 
 template <typename IndexType, typename ValueType>
-void spmv_dia(const cusp::dia_matrix<IndexType,ValueType,cusp::device>& dia, 
+void spmv_dia(const cusp::dia_matrix<IndexType,ValueType,cusp::device_memory>& dia, 
               const ValueType * x, 
                     ValueType * y)
 {
@@ -138,7 +138,7 @@ void spmv_dia(const cusp::dia_matrix<IndexType,ValueType,cusp::device>& dia,
 }
 
 template <typename IndexType, typename ValueType>
-void spmv_dia_tex(const cusp::dia_matrix<IndexType,ValueType,cusp::device>& dia, 
+void spmv_dia_tex(const cusp::dia_matrix<IndexType,ValueType,cusp::device_memory>& dia, 
                   const ValueType * x, 
                         ValueType * y)
 {
@@ -147,7 +147,7 @@ void spmv_dia_tex(const cusp::dia_matrix<IndexType,ValueType,cusp::device>& dia,
 
 
 template <typename IndexType, typename ValueType>
-void spmv(const cusp::dia_matrix<IndexType,ValueType,cusp::device>& dia, 
+void spmv(const cusp::dia_matrix<IndexType,ValueType,cusp::device_memory>& dia, 
           const ValueType * x, 
                 ValueType * y)
 {
@@ -155,7 +155,7 @@ void spmv(const cusp::dia_matrix<IndexType,ValueType,cusp::device>& dia,
 }
 
 template <typename IndexType, typename ValueType>
-void spmv_tex(const cusp::dia_matrix<IndexType,ValueType,cusp::device>& dia, 
+void spmv_tex(const cusp::dia_matrix<IndexType,ValueType,cusp::device_memory>& dia, 
               const ValueType * x, 
                     ValueType * y)
 {

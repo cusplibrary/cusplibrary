@@ -209,8 +209,8 @@ void compare_conversion_example(const cusp::dense_matrix<ValueType, Space, Orien
 template <class HostDestinationType, class HostSourceType>
 void TestConversion(HostDestinationType dst, HostSourceType src)
 {
-    typedef typename HostSourceType::template rebind<cusp::device>::type      DeviceSourceType;
-    typedef typename HostDestinationType::template rebind<cusp::device>::type DeviceDestinationType;
+    typedef typename HostSourceType::template rebind<cusp::device_memory>::type      DeviceSourceType;
+    typedef typename HostDestinationType::template rebind<cusp::device_memory>::type DeviceDestinationType;
 
     {
         // test host->host
@@ -255,16 +255,16 @@ void TestConversion(HostDestinationType dst, HostSourceType src)
 
 void TestConvertCooToCsrMatrix(void)
 {
-    TestConversion(cusp::csr_matrix<int, float, cusp::host>(), 
-                   cusp::coo_matrix<int, float, cusp::host>());
+    TestConversion(cusp::csr_matrix<int, float, cusp::host_memory>(), 
+                   cusp::coo_matrix<int, float, cusp::host_memory>());
 }
     
 DECLARE_UNITTEST(TestConvertCooToCsrMatrix);
 
 void TestConvertCooToDenseMatrix(void)
 {
-    TestConversion(cusp::dense_matrix<float, cusp::host>(), 
-                   cusp::coo_matrix<int, float, cusp::host>());
+    TestConversion(cusp::dense_matrix<float, cusp::host_memory>(), 
+                   cusp::coo_matrix<int, float, cusp::host_memory>());
 }
 DECLARE_UNITTEST(TestConvertCooToDenseMatrix);
 
@@ -274,16 +274,16 @@ DECLARE_UNITTEST(TestConvertCooToDenseMatrix);
 
 void TestConvertCsrToCooMatrix(void)
 {
-    TestConversion(cusp::coo_matrix<int, float, cusp::host>(), 
-                   cusp::csr_matrix<int, float, cusp::host>());
+    TestConversion(cusp::coo_matrix<int, float, cusp::host_memory>(), 
+                   cusp::csr_matrix<int, float, cusp::host_memory>());
 }
     
 DECLARE_UNITTEST(TestConvertCsrToCooMatrix);
 
 void TestConvertCsrToDiaMatrix(void)
 {
-    cusp::csr_matrix<int, float, cusp::host> csr;
-    cusp::dia_matrix<int, float, cusp::host> dia;
+    cusp::csr_matrix<int, float, cusp::host_memory> csr;
+    cusp::dia_matrix<int, float, cusp::host_memory> dia;
 
     // initialize host matrix
     initialize_conversion_example(csr);
@@ -321,8 +321,8 @@ DECLARE_UNITTEST(TestConvertCsrToDiaMatrix);
 
 void TestConvertCsrToEllMatrix(void)
 {
-    cusp::csr_matrix<int, float, cusp::host> csr;
-    cusp::ell_matrix<int, float, cusp::host> ell;
+    cusp::csr_matrix<int, float, cusp::host_memory> csr;
+    cusp::ell_matrix<int, float, cusp::host_memory> ell;
 
     // initialize host matrix
     initialize_conversion_example(csr);
@@ -331,7 +331,7 @@ void TestConvertCsrToEllMatrix(void)
 
     cusp::detail::host::convert(ell, csr, 3.0, 4);
 
-    const int X = cusp::ell_matrix<int, float, cusp::host>::invalid_index;
+    const int X = cusp::ell_matrix<int, float, cusp::host_memory>::invalid_index;
 
     // compare csr and dia
     ASSERT_EQUAL(ell.num_rows,    csr.num_rows);
@@ -357,8 +357,8 @@ DECLARE_UNITTEST(TestConvertCsrToEllMatrix);
 
 void TestConvertCsrToHybMatrix(void)
 {
-    cusp::csr_matrix<int, float, cusp::host> csr;
-    cusp::hyb_matrix<int, float, cusp::host> hyb;
+    cusp::csr_matrix<int, float, cusp::host_memory> csr;
+    cusp::hyb_matrix<int, float, cusp::host_memory> hyb;
 
     // initialize host matrix
     initialize_conversion_example(csr);
@@ -391,8 +391,8 @@ DECLARE_UNITTEST(TestConvertCsrToHybMatrix);
 
 void TestConvertCsrToDenseMatrix(void)
 {
-    TestConversion(cusp::dense_matrix<float, cusp::host>(), 
-                   cusp::csr_matrix<int, float, cusp::host>());
+    TestConversion(cusp::dense_matrix<float, cusp::host_memory>(), 
+                   cusp::csr_matrix<int, float, cusp::host_memory>());
 }
 DECLARE_UNITTEST(TestConvertCsrToDenseMatrix);
 
@@ -402,8 +402,8 @@ DECLARE_UNITTEST(TestConvertCsrToDenseMatrix);
 
 void TestConvertDiaToCsrMatrix(void)
 {
-    TestConversion(cusp::csr_matrix<int, float, cusp::host>(), 
-                   cusp::dia_matrix<int, float, cusp::host>());
+    TestConversion(cusp::csr_matrix<int, float, cusp::host_memory>(), 
+                   cusp::dia_matrix<int, float, cusp::host_memory>());
 }
 DECLARE_UNITTEST(TestConvertDiaToCsrMatrix);
 
@@ -413,8 +413,8 @@ DECLARE_UNITTEST(TestConvertDiaToCsrMatrix);
 
 void TestConvertEllToCsrMatrix(void)
 {
-    TestConversion(cusp::csr_matrix<int, float, cusp::host>(), 
-                   cusp::ell_matrix<int, float, cusp::host>());
+    TestConversion(cusp::csr_matrix<int, float, cusp::host_memory>(), 
+                   cusp::ell_matrix<int, float, cusp::host_memory>());
 }
 DECLARE_UNITTEST(TestConvertEllToCsrMatrix);
 
@@ -424,8 +424,8 @@ DECLARE_UNITTEST(TestConvertEllToCsrMatrix);
 
 void TestConvertHybToCsrMatrix(void)
 {
-    TestConversion(cusp::csr_matrix<int, float, cusp::host>(), 
-                   cusp::hyb_matrix<int, float, cusp::host>());
+    TestConversion(cusp::csr_matrix<int, float, cusp::host_memory>(), 
+                   cusp::hyb_matrix<int, float, cusp::host_memory>());
 }
 DECLARE_UNITTEST(TestConvertHybToCsrMatrix);
 
@@ -435,15 +435,15 @@ DECLARE_UNITTEST(TestConvertHybToCsrMatrix);
 
 void TestConvertDenseToCsrMatrix(void)
 {
-    TestConversion(cusp::csr_matrix<int, float, cusp::host>(), 
-                   cusp::dense_matrix<float, cusp::host>());
+    TestConversion(cusp::csr_matrix<int, float, cusp::host_memory>(), 
+                   cusp::dense_matrix<float, cusp::host_memory>());
 }
 DECLARE_UNITTEST(TestConvertDenseToCsrMatrix);
 
 void TestConvertDenseToCooMatrix(void)
 {
-    TestConversion(cusp::coo_matrix<int, float, cusp::host>(), 
-                   cusp::dense_matrix<float, cusp::host>());
+    TestConversion(cusp::coo_matrix<int, float, cusp::host_memory>(), 
+                   cusp::dense_matrix<float, cusp::host_memory>());
 }
 DECLARE_UNITTEST(TestConvertDenseToCooMatrix);
 

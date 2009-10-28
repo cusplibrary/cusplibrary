@@ -7,7 +7,7 @@
 #include <cusp/hyb_matrix.h>
     
 template <typename IndexType, typename ValueType>
-size_t bytes_per_spmv(const cusp::dia_matrix<IndexType,ValueType,cusp::host>& mtx)
+size_t bytes_per_spmv(const cusp::dia_matrix<IndexType,ValueType,cusp::host_memory>& mtx)
 {
     // note: this neglects diag_offsets, which is < 1% of other parts
     size_t bytes = 0;
@@ -17,7 +17,7 @@ size_t bytes_per_spmv(const cusp::dia_matrix<IndexType,ValueType,cusp::host>& mt
 }
 
 template <typename IndexType, typename ValueType>
-size_t bytes_per_spmv(const cusp::ell_matrix<IndexType,ValueType,cusp::host>& mtx)
+size_t bytes_per_spmv(const cusp::ell_matrix<IndexType,ValueType,cusp::host_memory>& mtx)
 {
     size_t bytes = 0;
     bytes += 1*sizeof(ValueType) * mtx.num_rows * mtx.num_entries_per_row; // A[i,j] and padding
@@ -28,7 +28,7 @@ size_t bytes_per_spmv(const cusp::ell_matrix<IndexType,ValueType,cusp::host>& mt
 }
 
 template <typename IndexType, typename ValueType>
-size_t bytes_per_spmv(const cusp::csr_matrix<IndexType,ValueType,cusp::host>& mtx)
+size_t bytes_per_spmv(const cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& mtx)
 {
     size_t bytes = 0;
     bytes += 2*sizeof(IndexType) * mtx.num_rows;     // row pointer
@@ -39,7 +39,7 @@ size_t bytes_per_spmv(const cusp::csr_matrix<IndexType,ValueType,cusp::host>& mt
 }
 
 template <typename IndexType, typename ValueType>
-size_t bytes_per_spmv(const cusp::coo_matrix<IndexType,ValueType,cusp::host>& mtx)
+size_t bytes_per_spmv(const cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& mtx)
 {
     size_t bytes = 0;
     bytes += 2*sizeof(IndexType) * mtx.num_entries; // row and column indices
@@ -55,7 +55,7 @@ size_t bytes_per_spmv(const cusp::coo_matrix<IndexType,ValueType,cusp::host>& mt
 }
 
 template <typename IndexType, typename ValueType>
-size_t bytes_per_spmv(const cusp::hyb_matrix<IndexType,ValueType,cusp::host>& mtx)
+size_t bytes_per_spmv(const cusp::hyb_matrix<IndexType,ValueType,cusp::host_memory>& mtx)
 {
     return bytes_per_spmv(mtx.ell) + bytes_per_spmv(mtx.coo);
 }

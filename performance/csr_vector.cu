@@ -18,7 +18,7 @@ const size_t max_diagonals  = 32;
 
 
 template <bool UseCache, unsigned int THREADS_PER_VECTOR, typename IndexType, typename ValueType>
-void perform_spmv(const cusp::csr_matrix<IndexType,ValueType,cusp::device>& csr, 
+void perform_spmv(const cusp::csr_matrix<IndexType,ValueType,cusp::device_memory>& csr, 
                   const ValueType * x, 
                         ValueType * y)
 {
@@ -49,21 +49,21 @@ void benchmark_csr_vector()
     printf("%4d,", (int) ThreadsPerVector);
 
 
-    cusp::vector<ValueType, cusp::device> x(N);
-    cusp::vector<ValueType, cusp::device> y(N);
+    cusp::vector<ValueType, cusp::device_memory> x(N);
+    cusp::vector<ValueType, cusp::device_memory> y(N);
 
     for(IndexType D = 1; D <= max_diagonals; D++)
     {
         // create banded matrix with D diagonals
         const IndexType NNZ = N * D - (D * (D - 1)) / 2;
-        cusp::dia_matrix<IndexType, ValueType, cusp::host> dia(N, N, NNZ, D, N);
+        cusp::dia_matrix<IndexType, ValueType, cusp::host_memory> dia(N, N, NNZ, D, N);
         thrust::sequence(dia.diagonal_offsets.begin(), dia.diagonal_offsets.end());
         thrust::fill(dia.values.begin(), dia.values.end(), 1);
 
         // convert to CSR
-        cusp::csr_matrix<IndexType, ValueType, cusp::host> h_csr;
+        cusp::csr_matrix<IndexType, ValueType, cusp::host_memory> h_csr;
         cusp::convert(h_csr, dia);
-        cusp::csr_matrix<IndexType, ValueType, cusp::device> d_csr(h_csr);
+        cusp::csr_matrix<IndexType, ValueType, cusp::device_memory> d_csr(h_csr);
     
         // time several SpMV iterations
         timer t;

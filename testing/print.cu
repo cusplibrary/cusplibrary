@@ -6,8 +6,8 @@
 
 void TestPrintMatrix(void)
 {
-    cusp::coo_matrix<int, float, cusp::host> coo;
-    cusp::dense_matrix<float, cusp::host> dense;
+    cusp::coo_matrix<int, float, cusp::host_memory> coo;
+    cusp::dense_matrix<float, cusp::host_memory> dense;
 
     // load matrix
     cusp::load_matrix_market_file(coo, "data/test/coordinate_real_general.mtx");
