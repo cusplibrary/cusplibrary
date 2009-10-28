@@ -1,10 +1,10 @@
 #include <unittest/unittest.h>
-#include <cusp/dense_matrix.h>
+#include <cusp/array2d.h>
 
 template <class Space>
 void TestDenseMatrixBasicConstructor(void)
 {
-    cusp::dense_matrix<float, Space> matrix(3, 2);
+    cusp::array2d<float, Space> matrix(3, 2);
 
     ASSERT_EQUAL(matrix.num_rows,       3);
     ASSERT_EQUAL(matrix.num_cols,       2);
@@ -16,7 +16,7 @@ DECLARE_HOST_DEVICE_UNITTEST(TestDenseMatrixBasicConstructor);
 template <class Space>
 void TestDenseMatrixCopyConstructor(void)
 {
-    cusp::dense_matrix<float, Space> matrix(3, 2);
+    cusp::array2d<float, Space> matrix(3, 2);
 
     matrix.values[0] = 0; 
     matrix.values[1] = 1; 
@@ -25,7 +25,7 @@ void TestDenseMatrixCopyConstructor(void)
     matrix.values[4] = 4; 
     matrix.values[5] = 5; 
     
-    cusp::dense_matrix<float, Space> copy_of_matrix(matrix);
+    cusp::array2d<float, Space> copy_of_matrix(matrix);
     
     ASSERT_EQUAL(matrix.num_rows,       3);
     ASSERT_EQUAL(matrix.num_cols,       2);
@@ -39,7 +39,7 @@ DECLARE_HOST_DEVICE_UNITTEST(TestDenseMatrixCopyConstructor);
 template <class Space>
 void TestDenseMatrixRowMajor(void)
 {
-    cusp::dense_matrix<float, Space, cusp::row_major> matrix(2,3);
+    cusp::array2d<float, Space, cusp::row_major> matrix(2,3);
 
     matrix(0,0) = 10;  matrix(0,1) = 20;  matrix(0,2) = 30; 
     matrix(1,0) = 40;  matrix(1,1) = 50;  matrix(1,2) = 60;
@@ -63,7 +63,7 @@ DECLARE_HOST_DEVICE_UNITTEST(TestDenseMatrixRowMajor);
 template <class Space>
 void TestDenseMatrixColumnMajor(void)
 {
-    cusp::dense_matrix<float, Space, cusp::column_major> matrix(2,3);
+    cusp::array2d<float, Space, cusp::column_major> matrix(2,3);
     
     matrix(0,0) = 10;  matrix(0,1) = 20;  matrix(0,2) = 30; 
     matrix(1,0) = 40;  matrix(1,1) = 50;  matrix(1,2) = 60;
@@ -87,7 +87,7 @@ DECLARE_HOST_DEVICE_UNITTEST(TestDenseMatrixColumnMajor);
 template <class Space>
 void TestDenseMatrixResize(void)
 {
-    cusp::dense_matrix<float, Space> matrix;
+    cusp::array2d<float, Space> matrix;
     
     matrix.resize(3, 2);
 
@@ -101,8 +101,8 @@ DECLARE_HOST_DEVICE_UNITTEST(TestDenseMatrixResize);
 template <class Space>
 void TestDenseMatrixSwap(void)
 {
-    cusp::dense_matrix<float, Space> A(2,2);
-    cusp::dense_matrix<float, Space> B(3,1);
+    cusp::array2d<float, Space> A(2,2);
+    cusp::array2d<float, Space> B(3,1);
     
     A(0,0) = 10;  A(0,1) = 20;
     A(1,0) = 30;  A(1,1) = 40;
@@ -111,8 +111,8 @@ void TestDenseMatrixSwap(void)
     B(1,0) = 60;
     B(2,0) = 70;
 
-    cusp::dense_matrix<float, Space> A_copy(A);
-    cusp::dense_matrix<float, Space> B_copy(B);
+    cusp::array2d<float, Space> A_copy(A);
+    cusp::array2d<float, Space> B_copy(B);
 
     A.swap(B);
 
@@ -130,7 +130,7 @@ DECLARE_HOST_DEVICE_UNITTEST(TestDenseMatrixSwap);
 
 void TestDenseMatrixRebind(void)
 {
-    typedef cusp::dense_matrix<float, cusp::host_memory>  HostMatrix;
+    typedef cusp::array2d<float, cusp::host_memory>  HostMatrix;
     typedef HostMatrix::rebind<cusp::device_memory>::type DeviceMatrix;
 
     HostMatrix   h_matrix(10,10);

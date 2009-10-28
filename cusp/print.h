@@ -17,7 +17,7 @@
 
 #pragma once
 
-#include <cusp/dense_matrix.h>
+#include <cusp/array2d.h>
 #include <cusp/coo_matrix.h>
 #include <cusp/csr_matrix.h>
 #include <iostream>
@@ -55,9 +55,9 @@ void print_matrix(const cusp::csr_matrix<IndexType, ValueType, cusp::host_memory
 }
 
 template <typename ValueType, class Orientation>
-void print_matrix(const cusp::dense_matrix<ValueType, cusp::host_memory, Orientation>& dense)
+void print_matrix(const cusp::array2d<ValueType, cusp::host_memory, Orientation>& dense)
 {
-    std::cout << "dense_matrix <" << dense.num_rows << ", " << dense.num_cols << ">\n";
+    std::cout << "array2d <" << dense.num_rows << ", " << dense.num_cols << ">\n";
 
     for(size_t i = 0; i < dense.num_rows; i++)
     {

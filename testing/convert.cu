@@ -6,7 +6,7 @@
 #include <cusp/dia_matrix.h>
 #include <cusp/ell_matrix.h>
 #include <cusp/hyb_matrix.h>
-#include <cusp/dense_matrix.h>
+#include <cusp/array2d.h>
 
 template <typename IndexType, typename ValueType, typename Space>
 void initialize_conversion_example(cusp::csr_matrix<IndexType, ValueType, Space> & csr)
@@ -104,7 +104,7 @@ void initialize_conversion_example(cusp::hyb_matrix<IndexType, ValueType, Space>
 }
 
 template <typename ValueType, typename Space, class Orientation>
-void initialize_conversion_example(cusp::dense_matrix<ValueType, Space, Orientation> & dense)
+void initialize_conversion_example(cusp::array2d<ValueType, Space, Orientation> & dense)
 {
     dense.resize(4, 4);
 
@@ -178,7 +178,7 @@ void compare_conversion_example(const cusp::csr_matrix<IndexType, ValueType, Spa
 
 
 template <typename ValueType, typename Space, class Orientation>
-void compare_conversion_example(const cusp::dense_matrix<ValueType, Space, Orientation> & dense)
+void compare_conversion_example(const cusp::array2d<ValueType, Space, Orientation> & dense)
 {
     ASSERT_EQUAL(dense.num_rows,    4);
     ASSERT_EQUAL(dense.num_cols,    4);
@@ -263,7 +263,7 @@ DECLARE_UNITTEST(TestConvertCooToCsrMatrix);
 
 void TestConvertCooToDenseMatrix(void)
 {
-    TestConversion(cusp::dense_matrix<float, cusp::host_memory>(), 
+    TestConversion(cusp::array2d<float, cusp::host_memory>(), 
                    cusp::coo_matrix<int, float, cusp::host_memory>());
 }
 DECLARE_UNITTEST(TestConvertCooToDenseMatrix);
@@ -391,7 +391,7 @@ DECLARE_UNITTEST(TestConvertCsrToHybMatrix);
 
 void TestConvertCsrToDenseMatrix(void)
 {
-    TestConversion(cusp::dense_matrix<float, cusp::host_memory>(), 
+    TestConversion(cusp::array2d<float, cusp::host_memory>(), 
                    cusp::csr_matrix<int, float, cusp::host_memory>());
 }
 DECLARE_UNITTEST(TestConvertCsrToDenseMatrix);
@@ -436,14 +436,14 @@ DECLARE_UNITTEST(TestConvertHybToCsrMatrix);
 void TestConvertDenseToCsrMatrix(void)
 {
     TestConversion(cusp::csr_matrix<int, float, cusp::host_memory>(), 
-                   cusp::dense_matrix<float, cusp::host_memory>());
+                   cusp::array2d<float, cusp::host_memory>());
 }
 DECLARE_UNITTEST(TestConvertDenseToCsrMatrix);
 
 void TestConvertDenseToCooMatrix(void)
 {
     TestConversion(cusp::coo_matrix<int, float, cusp::host_memory>(), 
-                   cusp::dense_matrix<float, cusp::host_memory>());
+                   cusp::array2d<float, cusp::host_memory>());
 }
 DECLARE_UNITTEST(TestConvertDenseToCooMatrix);
 

@@ -28,22 +28,26 @@ namespace cusp
     namespace detail
     {
         template <typename IndexType>
-        IndexType index_of(const IndexType& i,        const IndexType& j, 
-                           const IndexType& num_rows, const IndexType& num_cols,
-                           row_major){
-            return i * num_cols + j;
-        }
+        IndexType minor_dimension(IndexType num_rows, IndexType num_cols, row_major)    { return num_cols; }
+        
+        template <typename IndexType>
+        IndexType minor_dimension(IndexType num_rows, IndexType num_cols, column_major) { return num_rows; }
+
+        template <typename IndexType>
+        IndexType major_dimension(IndexType num_rows, IndexType num_cols, row_major)    { return num_rows; }
+        
+        template <typename IndexType>
+        IndexType major_dimension(IndexType num_rows, IndexType num_cols, column_major) { return num_cols; }
+
+        template <typename IndexType>
+        IndexType index_of(IndexType i, IndexType j, IndexType num_rows, IndexType num_cols, row_major)    { return i * num_cols + j; }
             
         template <typename IndexType>
-        IndexType index_of(const IndexType& i,        const IndexType& j, 
-                           const IndexType& num_rows, const IndexType& num_cols,
-                           column_major){
-            return j * num_rows + i;
-        }
+        IndexType index_of(IndexType i, IndexType j, IndexType num_rows, IndexType num_cols, column_major) { return j * num_rows + i; }
     }
 
     template<typename ValueType, class SpaceOrAlloc, class Orientation = cusp::row_major>
-    struct dense_matrix : public matrix_shape<size_t>
+    struct array2d : public matrix_shape<size_t>
     {
         public:
         typedef typename matrix_shape<size_t>::index_type index_type;
@@ -54,23 +58,23 @@ namespace cusp
         typedef Orientation orientation;
         
         template<typename SpaceOrAlloc2>
-        struct rebind { typedef dense_matrix<ValueType, SpaceOrAlloc2, Orientation> type; };
-        
+        struct rebind { typedef array2d<ValueType, SpaceOrAlloc2, Orientation> type; };
+       
         index_type num_entries;
 
         cusp::array1d<ValueType, value_allocator_type> values;
        
-        dense_matrix()
+        array2d()
             : matrix_shape<index_type>(0,0),
               num_entries(0) {}
 
-        dense_matrix(size_t num_rows, size_t num_cols)
+        array2d(size_t num_rows, size_t num_cols)
             : matrix_shape<index_type>(num_rows, num_cols),
               num_entries(num_rows * num_cols),
               values(num_rows * num_cols) {}
         
         template <typename ValueType2, typename SpaceOrAlloc2>
-        dense_matrix(const dense_matrix<ValueType2, SpaceOrAlloc2>& matrix)
+        array2d(const array2d<ValueType2, SpaceOrAlloc2>& matrix)
             : matrix_shape<index_type>(matrix),
               num_entries(matrix.num_entries),
               values(matrix.values) {}
@@ -94,7 +98,7 @@ namespace cusp
             this->num_entries = num_rows * num_cols;
         }
 
-        void swap(dense_matrix& matrix)
+        void swap(array2d& matrix)
         {
             values.swap(matrix.values);
 
@@ -103,7 +107,7 @@ namespace cusp
             matrix_shape<index_type>::swap(matrix);
         }
 
-    }; // class dense_matrix
+    }; // class array2d
 
 } // end namespace cusp
 

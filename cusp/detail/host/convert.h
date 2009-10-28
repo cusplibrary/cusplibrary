@@ -22,7 +22,7 @@
 #include <cusp/dia_matrix.h>
 #include <cusp/ell_matrix.h>
 #include <cusp/hyb_matrix.h>
-#include <cusp/dense_matrix.h>
+#include <cusp/array2d.h>
 
 #include <cusp/detail/host/conversion.h>
 #include <cusp/detail/host/conversion_utils.h>
@@ -67,7 +67,7 @@ void convert(      cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& dst,
 {    cusp::detail::host::coo_to_csr(dst, src);    }
 
 template <typename IndexType, typename ValueType, class Orientation>
-void convert(      cusp::dense_matrix<ValueType,cusp::host_memory,Orientation>& dst,
+void convert(      cusp::array2d<ValueType,cusp::host_memory,Orientation>& dst,
              const cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& src)
 {    cusp::detail::host::coo_to_dense(dst, src);    }
 
@@ -122,7 +122,7 @@ void convert(      cusp::hyb_matrix<IndexType,ValueType,cusp::host_memory>& dst,
 }
 
 template <typename IndexType, typename ValueType, class Orientation>
-void convert(      cusp::dense_matrix<ValueType,cusp::host_memory,Orientation>& dst,
+void convert(      cusp::array2d<ValueType,cusp::host_memory,Orientation>& dst,
              const cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& src)
 {    cusp::detail::host::csr_to_dense(dst, src);    }
 
@@ -159,12 +159,12 @@ void convert(      cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& dst,
 ///////////
 template <typename IndexType, typename ValueType, class Orientation>
 void convert(      cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& dst,
-             const cusp::dense_matrix<ValueType,cusp::host_memory,Orientation>& src)
+             const cusp::array2d<ValueType,cusp::host_memory,Orientation>& src)
 {    cusp::detail::host::dense_to_coo(dst, src);    }
 
 template <typename IndexType, typename ValueType, class Orientation>
 void convert(      cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& dst,
-             const cusp::dense_matrix<ValueType,cusp::host_memory,Orientation>& src)
+             const cusp::array2d<ValueType,cusp::host_memory,Orientation>& src)
 {    cusp::detail::host::dense_to_csr(dst, src);    }
 
 

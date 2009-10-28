@@ -7,12 +7,12 @@
 void TestPrintMatrix(void)
 {
     cusp::coo_matrix<int, float, cusp::host_memory> coo;
-    cusp::dense_matrix<float, cusp::host_memory> dense;
+    cusp::array2d<float, cusp::host_memory> dense;
 
     // load matrix
     cusp::load_matrix_market_file(coo, "data/test/coordinate_real_general.mtx");
 
-    // convert to dense_matrix
+    // convert to array2d
     cusp::convert(dense, coo);
 
     //cusp::print_matrix(coo);
