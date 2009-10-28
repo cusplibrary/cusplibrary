@@ -23,10 +23,10 @@ bool UnitTestDriver::run_tests(const std::vector<UnitTest *> &tests_to_run, cons
     std::cout << "Running " << tests_to_run.size() << " unit tests." << std::endl;
 
     
-    std::vector< std::pair<UnitTest *,unittest::UnitTestFailure> >      test_failures;
+    std::vector< std::pair<UnitTest *,unittest::UnitTestFailure>      > test_failures;
     std::vector< std::pair<UnitTest *,unittest::UnitTestKnownFailure> > test_known_failures;
-    std::vector< std::pair<UnitTest *,unittest::UnitTestError>   >      test_errors;
-    std::vector< UnitTest * >                                              test_exceptions;
+    std::vector< std::pair<UnitTest *,unittest::UnitTestError>        > test_errors;
+    std::vector< std::pair<UnitTest *,std::string>                    > test_exceptions;
     
     cudaError_t error = cudaGetLastError();
     if(error){
@@ -72,14 +72,24 @@ bool UnitTestDriver::run_tests(const std::vector<UnitTest *> &tests_to_run, cons
                 std::cout << "E";
             test_errors.push_back(std::make_pair(test,e));
         } 
-        catch (...){
+        catch (std::exception& e)
+        {
             any_failed = true;
             if (verbose)
-                std::cout << "[UNKNOWN EXCEPTION]";
+                std::cout << "[EXCEPTION]        ";
             else
-                std::cout << "U";
-            test_exceptions.push_back(test);
+                std::cout << "X";
+            std::ostringstream oss; oss << e.what();
+            test_exceptions.push_back(std::make_pair(test, oss.str()));
         }
+        //catch (...){
+        //    any_failed = true;
+        //    if (verbose)
+        //        std::cout << "[UNKNOWN EXCEPTION]";
+        //    else
+        //        std::cout << "U";
+        //    test_exceptions.push_back(test);
+        //}
            
         if (verbose)
             std::cout << " " << test->name << std::endl;
@@ -115,7 +125,8 @@ bool UnitTestDriver::run_tests(const std::vector<UnitTest *> &tests_to_run, cons
     }
     for(size_t i = 0; i < test_exceptions.size(); i++){
         std::cout << hline << std::endl;
-        std::cout << "UNKNOWN EXCEPTION: " << test_exceptions[i]->name << std::endl;
+        std::cout << "EXCEPTION: " << test_exceptions[i].first->name << std::endl;
+        std::cout << test_exceptions[i].second << std::endl;
     }
 
     std::cout << hline << std::endl;

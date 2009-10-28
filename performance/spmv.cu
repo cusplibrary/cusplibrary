@@ -76,7 +76,7 @@ void test_all_formats(std::string& filename)
     }
     else
     {
-        cusp::load_matrix_market_file(host_matrix, filename);
+        cusp::read_matrix_market_file(host_matrix, filename);
         std::cout << "Read matrix (" << filename << ") ";
     }
         

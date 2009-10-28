@@ -20,7 +20,10 @@ namespace cusp
 {
 
 template <typename MatrixType>
-void load_matrix_market_file(MatrixType& mtx, const std::string& filename);
+void read_matrix_market_file(MatrixType& mtx, const std::string& filename);
+
+template <typename MatrixType>
+void write_matrix_market_file(const MatrixType& mtx, const std::string& filename);
 
 } //end namespace cusp
 

@@ -39,7 +39,7 @@ namespace detail
 inline
 void tokenize(std::vector<std::string>& tokens,
               const std::string& str,
-              const std::string& delimiters = " ")
+              const std::string& delimiters = "\t ")
 {
     // Skip delimiters at beginning.
     std::string::size_type lastPos = str.find_first_not_of(delimiters, 0);
@@ -113,7 +113,7 @@ inline void read_matrix_market_banner(matrix_market_banner& banner, const std::s
 }
 
 template <typename IndexType, typename ValueType>
-void load_matrix_market_file(cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& coo, const std::string& filename)
+void read_matrix_market_file(cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& coo, const std::string& filename)
 {
     // read banner
     matrix_market_banner banner;
@@ -256,16 +256,47 @@ void load_matrix_market_file(cusp::coo_matrix<IndexType,ValueType,cusp::host_mem
                                coo.values.begin());
 }
 
+template <typename IndexType, typename ValueType>
+void write_matrix_market_file(const cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& coo, const std::string& filename)
+{
+    // read file contents line by line
+    std::ofstream file(filename.c_str());
+
+    if (!file)
+        throw cusp::io_exception(std::string("unable to open file name: [") + filename + std::string("] for writing"));
+
+    file << "%%MatrixMarket matrix coordinate real general\n";
+    file << "\t" << coo.num_rows << "\t" << coo.num_cols << "\t" << coo.num_entries << "\n";
+
+    for(IndexType i = 0; i < coo.num_entries; i++)
+    {
+        file << (coo.row_indices[i]    + 1) << " ";
+        file << (coo.column_indices[i] + 1) << " ";
+        file <<  coo.values[i]              << "\n";
+    }
+}
+
     
 template <typename MatrixType>
-void load_matrix_market_file(MatrixType& mtx, const std::string& filename)
+void read_matrix_market_file(MatrixType& mtx, const std::string& filename)
 {
     typedef typename MatrixType::index_type IndexType;
     typedef typename MatrixType::value_type ValueType;
 
     cusp::coo_matrix<IndexType,ValueType,cusp::host_memory> coo;
-    cusp::load_matrix_market_file(coo, filename);
+    cusp::read_matrix_market_file(coo, filename);
     cusp::convert(mtx, coo);
+}
+
+template <typename MatrixType>
+void write_matrix_market_file(const MatrixType& mtx, const std::string& filename)
+{
+    typedef typename MatrixType::index_type IndexType;
+    typedef typename MatrixType::value_type ValueType;
+
+    cusp::coo_matrix<IndexType,ValueType,cusp::host_memory> coo;
+    cusp::convert(coo, mtx);
+    cusp::write_matrix_market_file(coo, filename);
 }
 
 } //end namespace cusp

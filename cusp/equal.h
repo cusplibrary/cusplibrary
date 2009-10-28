@@ -30,7 +30,7 @@ bool equal(const cusp::array2d<ValueType1, cusp::host_memory, Orientation1>& A,
         return false;
 
     for(size_t i = 0; i < A.num_rows; i++)
-        for(size_t j = 0; j < B.num_rows; j++)
+        for(size_t j = 0; j < A.num_cols; j++)
             if(A(i,j) != B(i,j))
                 return false;
 
