@@ -21,9 +21,7 @@ void TestConjugateGradient(void)
     for(int i = 0; i < A.num_rows; i++)
         b[i] = float(i % 2);
         
-    cusp::krylov::cg(cusp::make_linear_operator(A), 
-                     thrust::raw_pointer_cast(&x[0]), 
-                     thrust::raw_pointer_cast(&b[0]));
+    cusp::krylov::cg(cusp::make_linear_operator(A), x, b);
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestConjugateGradient);
 

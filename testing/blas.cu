@@ -16,8 +16,9 @@ void TestAxpy(void)
     x[4] =  0.0f;   y[4] =  6.0f;
     x[5] =  4.0f;   y[5] =  1.0f;
 
-    cusp::blas<MemorySpace>::axpy(6, 2.0f, thrust::raw_pointer_cast(&x[0]), 
-                                           thrust::raw_pointer_cast(&y[0]));
+    cusp::blas::axpy(x.begin(), x.end(),
+                     y.begin(),
+                     2.0f);
 
     ASSERT_EQUAL(y[0],  14.0);
     ASSERT_EQUAL(y[1],   8.0);
@@ -27,6 +28,7 @@ void TestAxpy(void)
     ASSERT_EQUAL(y[5],   9.0);
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestAxpy);
+
 
 template <class MemorySpace>
 void TestCopy(void)
@@ -41,8 +43,8 @@ void TestCopy(void)
     x[4] =  0.0f;   y[4] =  6.0f;
     x[5] =  4.0f;   y[5] =  1.0f;
 
-    cusp::blas<MemorySpace>::copy(6, thrust::raw_pointer_cast(&x[0]), 
-                                     thrust::raw_pointer_cast(&y[0]));
+    cusp::blas::copy(x.begin(), x.end(),
+                     y.begin());
 
     y[0] =  7.0f;
     y[1] =  5.0f;
@@ -67,8 +69,8 @@ void TestDot(void)
     x[4] =  0.0f;   y[4] =  6.0f;
     x[5] =  4.0f;   y[5] =  1.0f;
 
-    float result = cusp::blas<MemorySpace>::dot(6, thrust::raw_pointer_cast(&x[0]), 
-                                                   thrust::raw_pointer_cast(&y[0]));
+    float result = cusp::blas::dot(x.begin(), x.end(),
+                                   y.begin());
 
     ASSERT_EQUAL(result, -21.0f);
 }
@@ -87,7 +89,7 @@ void TestFill(void)
     x[4] =  0.0f;
     x[5] =  4.0f;
 
-    cusp::blas<MemorySpace>::fill(6, 1.0f, thrust::raw_pointer_cast(&x[0]));
+    cusp::blas::fill(x.begin(), x.end(), 1.0f);
 
     ASSERT_EQUAL(x[0], 1.0);
     ASSERT_EQUAL(x[1], 1.0);
@@ -111,7 +113,7 @@ void TestNrm2(void)
     x[4] =  0.0f;
     x[5] =  1.0f;
 
-    float result = cusp::blas<MemorySpace>::nrm2(6, thrust::raw_pointer_cast(&x[0]));
+    float result = cusp::blas::nrm2(x.begin(), x.end());
 
     ASSERT_EQUAL(result, 10.0f);
 }
@@ -130,7 +132,7 @@ void TestScal(void)
     x[4] =  0.0f;
     x[5] =  4.0f;
 
-    cusp::blas<MemorySpace>::scal(6, 2.0f, thrust::raw_pointer_cast(&x[0]));
+    cusp::blas::scal(x.begin(), x.end(), 2.0f);
 
     ASSERT_EQUAL(x[0], 14.0);
     ASSERT_EQUAL(x[1], 10.0);

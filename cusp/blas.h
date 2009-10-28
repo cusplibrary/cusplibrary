@@ -29,6 +29,8 @@
 
 namespace cusp
 {
+namespace blas
+{
 
 namespace detail
 {
@@ -68,64 +70,70 @@ namespace detail
                 }
         };
 
-
-    // dispatch different host/device pointer wrappers
-    template <class MemorySpace>
-        struct pointer_wrapper {};
-
-    template <>
-        struct pointer_wrapper<cusp::host> 
-        {
-            template <typename ValueType>
-                static ValueType * wrap_ptr(ValueType * ptr) { return ptr; }
-        };
-    
-    template <>
-        struct pointer_wrapper<cusp::device> 
-        {
-            template <typename ValueType>
-                static thrust::device_ptr<ValueType> wrap_ptr(ValueType * ptr) { return thrust::device_ptr<ValueType>(ptr); }
-        };
 } // end namespace detail
 
 
-template <class MemorySpace>
-struct blas : public detail::pointer_wrapper<MemorySpace>
+template <typename ForwardIterator, typename ScalarType>
+void axpy(ForwardIterator first1,
+          ForwardIterator last1,
+          ForwardIterator first2,
+          ScalarType alpha)
 {
-    template <typename ValueType>
-        static void axpy(const size_t n, const ValueType alpha, const ValueType * x, ValueType * y) {
-            thrust::transform(wrap_ptr(x), wrap_ptr(x + n), wrap_ptr(y), wrap_ptr(y), detail::scale_and_add<ValueType>(alpha));
-        }
-    
-    template <typename ValueType>
-        static void copy(const size_t n, const ValueType * x, ValueType * y) {
-            thrust::copy(wrap_ptr(x), wrap_ptr(x + n), wrap_ptr(y));
-        }
-    
-    template <typename ValueType>
-        static ValueType dot(const size_t n, const ValueType * x, const ValueType * y) {
-            const ValueType init = 0;
-            return thrust::inner_product(wrap_ptr(x), wrap_ptr(x + n), wrap_ptr(y), init);
-        }
-    
-    template <typename ValueType>
-        static void fill(const size_t n, const ValueType alpha, ValueType * x) {
-            thrust::fill(wrap_ptr(x), wrap_ptr(x + n), alpha);
-        }
-    
-    template <typename ValueType>
-        static ValueType nrm2(const size_t n, const ValueType * x) {
-            detail::square<ValueType> unary_op;
-            thrust::plus<ValueType>  binary_op;
-            const ValueType init = 0;
-            return std::sqrt( thrust::transform_reduce(wrap_ptr(x), wrap_ptr(x + n), unary_op, init, binary_op) );
-        }
-    
-    template <typename ValueType>
-        static void scal(const size_t n, const ValueType alpha, ValueType * x) {
-            thrust::transform(wrap_ptr(x), wrap_ptr(x + n), wrap_ptr(x), detail::scale<ValueType>(alpha));
-        }
-}; //end blas
+    thrust::transform(first1, last1, first2, first2, detail::scale_and_add<ScalarType>(alpha));
+}
 
+template <typename InputIterator,
+          typename ForwardIterator>
+void copy(InputIterator   first1,
+          InputIterator   last1,
+          ForwardIterator first2)
+{
+    thrust::copy(first1, last1, first2);
+}
 
+template <typename ForwardIterator>
+typename thrust::iterator_value<ForwardIterator>::type
+    dot(ForwardIterator first1,
+        ForwardIterator last1,
+        ForwardIterator first2)
+{
+    typedef typename thrust::iterator_value<ForwardIterator>::type OutputType;
+    return thrust::inner_product(first1, last1, first2, OutputType(0));
+}
+
+template <typename ForwardIterator,
+          typename ScalarType>
+void fill(ForwardIterator first,
+          ForwardIterator last,
+          ScalarType alpha)
+{
+    thrust::fill(first, last, alpha);
+}
+
+template <typename InputIterator>
+typename thrust::iterator_value<InputIterator>::type
+    nrm2(InputIterator first,
+         InputIterator last)
+{
+    typedef typename thrust::iterator_value<InputIterator>::type ValueType;
+
+    detail::square<ValueType> unary_op;
+    thrust::plus<ValueType>  binary_op;
+
+    ValueType init = 0;
+
+    return std::sqrt( thrust::transform_reduce(first, last, unary_op, init, binary_op) );
+}
+
+template <typename ForwardIterator,
+          typename ScalarType>
+void scal(ForwardIterator first,
+          ForwardIterator last,
+          ScalarType alpha)
+{
+    thrust::transform(first, last, first, detail::scale<ScalarType>(alpha));
+}
+
+} // end namespace blas
 } // end namespace cusp
+
