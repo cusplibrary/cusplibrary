@@ -38,34 +38,37 @@ namespace detail
         struct square
         {
             __host__ __device__
-                T operator()(const T& x) const { 
+                T operator()(T x)
+                { 
                     return x * x;
                 }
         };
     
     template <typename T>
-        struct scale
+        struct SCAL
         {
-            const T a;
+            T alpha;
 
-            scale(const T& _a) : a(_a) {}
+            SCAL(T _alpha) : alpha(_alpha) {}
 
             __host__ __device__
-                T operator()(const T& x) const { 
-                    return a * x;
+                T operator()(T x)
+                { 
+                    return alpha * x;
                 }
         };
 
     template <typename T>
-        struct scale_and_add
+        struct AXPY
         {
-            const T a;
+            T alpha;
 
-            scale_and_add(const T& _a) : a(_a) {}
+            AXPY(T _alpha) : alpha(_alpha) {}
 
             __host__ __device__
-                T operator()(const T& x, const T& y) const { 
-                    return a * x + y;
+                T operator()(T x, T y)
+                {
+                    return alpha * x + y;
                 }
         };
     
@@ -95,16 +98,16 @@ void axpy(ForwardIterator1 first1,
           ForwardIterator2 first2,
           ScalarType alpha)
 {
-    thrust::transform(first1, last1, first2, first2, detail::scale_and_add<ScalarType>(alpha));
+    thrust::transform(first1, last1, first2, first2, detail::AXPY<ScalarType>(alpha));
 }
 
 template <typename Array,
           typename ScalarType>
-void axpy(const Array& array1,
-                Array& array2,
+void axpy(const Array& x,
+                Array& y,
           ScalarType alpha)
 {
-    cusp::blas::axpy(array1.begin(), array1.end(), array2.begin(), alpha);
+    cusp::blas::axpy(x.begin(), x.end(), y.begin(), alpha);
 }
 
 
@@ -124,14 +127,15 @@ void axpby(InputIterator1 first1,
 
 template <typename Array,
           typename ScalarType>
-void axpby(const Array& array1,
-           const Array& array2,
-                 Array& array3,
+void axpby(const Array& x,
+           const Array& y,
+                 Array& z,
           ScalarType alpha,
           ScalarType beta)
 {
-    cusp::blas::axpby(array1.begin(), array1.end(), array2.begin(), array3.begin(), alpha, beta);
+    cusp::blas::axpby(x.begin(), x.end(), y.begin(), z.begin(), alpha, beta);
 }
+
 
 template <typename InputIterator,
           typename ForwardIterator>
@@ -144,10 +148,10 @@ void copy(InputIterator   first1,
 
 template <typename Array1,
           typename Array2>
-void copy(const Array1& array1,
-                Array2& array2)
+void copy(const Array1& x,
+                Array2& y)
 {
-    cusp::blas::copy(array1.begin(), array1.end(), array2.begin());
+    cusp::blas::copy(x.begin(), x.end(), y.begin());
 }
 
 
@@ -164,10 +168,10 @@ typename thrust::iterator_value<ForwardIterator>::type
 
 template <typename Array>
 typename Array::value_type
-    dot(const Array& array1,
-        const Array& array2)
+    dot(const Array& x,
+        const Array& y)
 {
-    return cusp::blas::dot(array1.begin(), array1.end(), array2.begin());
+    return cusp::blas::dot(x.begin(), x.end(), y.begin());
 }
 
 
@@ -182,10 +186,10 @@ void fill(ForwardIterator first,
 
 template <typename Array,
           typename ScalarType>
-void fill(Array& array,
+void fill(Array& x,
           ScalarType alpha)
 {
-    cusp::blas::fill(array.begin(), array.end(), alpha);
+    cusp::blas::fill(x.begin(), x.end(), alpha);
 }
 
 
@@ -197,7 +201,7 @@ typename thrust::iterator_value<InputIterator>::type
     typedef typename thrust::iterator_value<InputIterator>::type ValueType;
 
     detail::square<ValueType> unary_op;
-    thrust::plus<ValueType>  binary_op;
+    thrust::plus<ValueType>   binary_op;
 
     ValueType init = 0;
 
@@ -206,9 +210,9 @@ typename thrust::iterator_value<InputIterator>::type
 
 template <typename Array>
 typename Array::value_type
-    nrm2(Array& array)
+    nrm2(Array& x)
 {
-    return cusp::blas::nrm2(array.begin(), array.end());
+    return cusp::blas::nrm2(x.begin(), x.end());
 }
 
 
@@ -218,7 +222,7 @@ void scal(ForwardIterator first,
           ForwardIterator last,
           ScalarType alpha)
 {
-    thrust::transform(first, last, first, detail::scale<ScalarType>(alpha));
+    thrust::transform(first, last, first, detail::SCAL<ScalarType>(alpha));
 }
 
 template <typename Array,
