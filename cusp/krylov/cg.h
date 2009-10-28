@@ -59,8 +59,7 @@ void cg(LinearOperator A,
     A(thrust::raw_pointer_cast(&x[0]), thrust::raw_pointer_cast(&y[0]));                                                 
 
     // r <- b - A*x
-    blas::copy(b, r);
-    blas::axpy(y, r, static_cast<ValueType>(-1.0));
+    blas::axpby(b, y, r, static_cast<ValueType>(1.0), static_cast<ValueType>(-1.0));
    
     // p <- r
     blas::copy(r, p);
@@ -80,11 +79,11 @@ void cg(LinearOperator A,
         blas::fill(y, 0);
         A(thrust::raw_pointer_cast(&p[0]), thrust::raw_pointer_cast(&y[0]));  
 
-        // alpha <- <r,r>/<Ap,p>
-        ValueType alpha =  r2 / blas::dot(p, y);
+        // alpha <- <r,r>/<y,p>
+        ValueType alpha =  r2 / blas::dot(y, p);
         // x <- x + alpha * p
         blas::axpy(p, x, alpha);
-        // r <- r - alpha * Ap		
+        // r <- r - alpha * y		
         blas::axpy(y, r, -alpha);
 		
         // beta <- <r_{i+1},r_{i+1}>/<r,r> 
@@ -93,8 +92,7 @@ void cg(LinearOperator A,
         ValueType beta = r2 / r2_old;                       
 		
         // p <- r + beta*p
-        blas::scal(p, beta);
-        blas::axpy(r, p, static_cast<ValueType>(1.0));
+        blas::axpby(r, p, p, static_cast<ValueType>(1.0), beta);
     }
 	
 

@@ -22,12 +22,12 @@ namespace cusp
 namespace blas
 {
 
-template <typename ForwardIterator,
+template <typename ForwardIterator1,
           typename ForwardIterator2,
           typename ScalarType>
-void axpy(ForwardIterator first1,
-          ForwardIterator last1,
-          ForwardIterator first2,
+void axpy(ForwardIterator1 first1,
+          ForwardIterator1 last1,
+          ForwardIterator2 first2,
           ScalarType alpha);
 
 template <typename Array,
@@ -35,6 +35,26 @@ template <typename Array,
 void axpy(const Array& array1,
                 Array& array2,
           ScalarType alpha);
+
+
+template <typename InputIterator1,
+          typename InputIterator2,
+          typename OutputIterator,
+          typename ScalarType>
+void axpby(InputIterator1 first1,
+           InputIterator1 last1,
+           InputIterator2 first2,
+           OutputIterator output,
+           ScalarType alpha,
+           ScalarType beta);
+
+template <typename Array,
+          typename ScalarType>
+void axpby(const Array& array1,
+           const Array& array2,
+                 Array& array3,
+          ScalarType alpha,
+          ScalarType beta);
 
 
 template <typename InputIterator,

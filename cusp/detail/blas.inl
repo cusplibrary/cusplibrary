@@ -68,6 +68,21 @@ namespace detail
                     return a * x + y;
                 }
         };
+    
+    template <typename T>
+        struct AXPBY
+        {
+            T alpha;
+            T beta;
+
+            AXPBY(T _alpha, T _beta) : alpha(_alpha), beta(_beta) {}
+
+            __host__ __device__
+                T operator()(T x, T y)
+                { 
+                    return alpha * x + beta * y;
+                }
+        };
 
 } // end namespace detail
 
@@ -92,6 +107,31 @@ void axpy(const Array& array1,
     cusp::blas::axpy(array1.begin(), array1.end(), array2.begin(), alpha);
 }
 
+
+template <typename InputIterator1,
+          typename InputIterator2,
+          typename OutputIterator,
+          typename ScalarType>
+void axpby(InputIterator1 first1,
+           InputIterator1 last1,
+           InputIterator2 first2,
+           OutputIterator output,
+           ScalarType alpha,
+           ScalarType beta)
+{
+    thrust::transform(first1, last1, first2, output, detail::AXPBY<ScalarType>(alpha, beta));
+}
+
+template <typename Array,
+          typename ScalarType>
+void axpby(const Array& array1,
+           const Array& array2,
+                 Array& array3,
+          ScalarType alpha,
+          ScalarType beta)
+{
+    cusp::blas::axpby(array1.begin(), array1.end(), array2.begin(), array3.begin(), alpha, beta);
+}
 
 template <typename InputIterator,
           typename ForwardIterator>

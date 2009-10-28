@@ -6,33 +6,25 @@
 template <class MemorySpace>
 void TestAxpy(void)
 {
-    cusp::array1d<float, MemorySpace> x(6);
-    cusp::array1d<float, MemorySpace> y(6);
+    cusp::array1d<float, MemorySpace> x(4);
+    cusp::array1d<float, MemorySpace> y(4);
 
     x[0] =  7.0f;   y[0] =  0.0f; 
     x[1] =  5.0f;   y[1] = -2.0f;
     x[2] =  4.0f;   y[2] =  0.0f;
     x[3] = -3.0f;   y[3] =  5.0f;
-    x[4] =  0.0f;   y[4] =  6.0f;
-    x[5] =  4.0f;   y[5] =  1.0f;
 
-    cusp::blas::axpy(x.begin(), x.end(),
-                     y.begin(),
-                     2.0f);
+    cusp::blas::axpy(x.begin(), x.end(), y.begin(), 2.0f);
 
     ASSERT_EQUAL(y[0],  14.0);
     ASSERT_EQUAL(y[1],   8.0);
     ASSERT_EQUAL(y[2],   8.0);
     ASSERT_EQUAL(y[3],  -1.0);
-    ASSERT_EQUAL(y[4],   6.0);
-    ASSERT_EQUAL(y[5],   9.0);
     
     x[0] =  7.0f;   y[0] =  0.0f; 
     x[1] =  5.0f;   y[1] = -2.0f;
     x[2] =  4.0f;   y[2] =  0.0f;
     x[3] = -3.0f;   y[3] =  5.0f;
-    x[4] =  0.0f;   y[4] =  6.0f;
-    x[5] =  4.0f;   y[5] =  1.0f;
 
     cusp::blas::axpy(x, y, 2.0f);
     
@@ -40,24 +32,54 @@ void TestAxpy(void)
     ASSERT_EQUAL(y[1],   8.0);
     ASSERT_EQUAL(y[2],   8.0);
     ASSERT_EQUAL(y[3],  -1.0);
-    ASSERT_EQUAL(y[4],   6.0);
-    ASSERT_EQUAL(y[5],   9.0);
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestAxpy);
 
 
 template <class MemorySpace>
-void TestCopy(void)
+void TestAxpby(void)
 {
-    cusp::array1d<float, MemorySpace> x(6);
-    cusp::array1d<float, MemorySpace> y(6);
+    cusp::array1d<float, MemorySpace> x(4);
+    cusp::array1d<float, MemorySpace> y(4);
+    cusp::array1d<float, MemorySpace> z(4,0);
 
     x[0] =  7.0f;   y[0] =  0.0f; 
     x[1] =  5.0f;   y[1] = -2.0f;
     x[2] =  4.0f;   y[2] =  0.0f;
     x[3] = -3.0f;   y[3] =  5.0f;
-    x[4] =  0.0f;   y[4] =  6.0f;
-    x[5] =  4.0f;   y[5] =  1.0f;
+
+    cusp::blas::axpby(x.begin(), x.end(), y.begin(), z.begin(), 2.0f, 1.0f);
+
+    ASSERT_EQUAL(z[0],  14.0);
+    ASSERT_EQUAL(z[1],   8.0);
+    ASSERT_EQUAL(z[2],   8.0);
+    ASSERT_EQUAL(z[3],  -1.0);
+   
+    z[0] = 0.0f;
+    z[1] = 0.0f;
+    z[2] = 0.0f;
+    z[3] = 0.0f;
+
+    cusp::blas::axpby(x, y, z, 2.0f, 1.0f);
+    
+    ASSERT_EQUAL(z[0],  14.0);
+    ASSERT_EQUAL(z[1],   8.0);
+    ASSERT_EQUAL(z[2],   8.0);
+    ASSERT_EQUAL(z[3],  -1.0);
+}
+DECLARE_HOST_DEVICE_UNITTEST(TestAxpby);
+
+
+template <class MemorySpace>
+void TestCopy(void)
+{
+    cusp::array1d<float, MemorySpace> x(4);
+    cusp::array1d<float, MemorySpace> y(4);
+
+    x[0] =  7.0f;   y[0] =  0.0f; 
+    x[1] =  5.0f;   y[1] = -2.0f;
+    x[2] =  4.0f;   y[2] =  0.0f;
+    x[3] = -3.0f;   y[3] =  5.0f;
 
     cusp::blas::copy(x.begin(), x.end(), y.begin());
 
@@ -67,8 +89,6 @@ void TestCopy(void)
     x[1] =  5.0f;   y[1] = -2.0f;
     x[2] =  4.0f;   y[2] =  0.0f;
     x[3] = -3.0f;   y[3] =  5.0f;
-    x[4] =  0.0f;   y[4] =  6.0f;
-    x[5] =  4.0f;   y[5] =  1.0f;
 
     cusp::blas::copy(x, y);
 
