@@ -114,72 +114,15 @@ void initialize_conversion_example(cusp::array2d<ValueType, Space, Orientation> 
     dense(3,0) =  0;  dense(3,1) = 16;  dense(3,2) =  0;  dense(3,3) =  0;
 }
 
-template <typename IndexType, typename ValueType, typename Space>
-void compare_conversion_example(const cusp::coo_matrix<IndexType, ValueType, Space> & coo)
+template <typename MatrixType>
+void verify_conversion_example(const MatrixType& matrix)
 {
-    ASSERT_EQUAL(coo.num_rows,    4);
-    ASSERT_EQUAL(coo.num_cols,    4);
-    ASSERT_EQUAL(coo.num_entries, 7);
+    typedef typename MatrixType::value_type ValueType;
 
-    ASSERT_EQUAL(coo.row_indices[0], 0);
-    ASSERT_EQUAL(coo.row_indices[1], 0);
-    ASSERT_EQUAL(coo.row_indices[2], 1);
-    ASSERT_EQUAL(coo.row_indices[3], 2);
-    ASSERT_EQUAL(coo.row_indices[4], 2);
-    ASSERT_EQUAL(coo.row_indices[5], 2);
-    ASSERT_EQUAL(coo.row_indices[6], 3);
+    cusp::array2d<ValueType, cusp::host_memory> dense;
+   
+    cusp::convert(dense, matrix);
 
-    ASSERT_EQUAL(coo.column_indices[0], 0);
-    ASSERT_EQUAL(coo.column_indices[1], 1);
-    ASSERT_EQUAL(coo.column_indices[2], 2);
-    ASSERT_EQUAL(coo.column_indices[3], 0);
-    ASSERT_EQUAL(coo.column_indices[4], 2);
-    ASSERT_EQUAL(coo.column_indices[5], 3);
-    ASSERT_EQUAL(coo.column_indices[6], 1);
-
-    ASSERT_EQUAL(coo.values[0], 10);
-    ASSERT_EQUAL(coo.values[1], 11);
-    ASSERT_EQUAL(coo.values[2], 12);
-    ASSERT_EQUAL(coo.values[3], 13);
-    ASSERT_EQUAL(coo.values[4], 14);
-    ASSERT_EQUAL(coo.values[5], 15);
-    ASSERT_EQUAL(coo.values[6], 16);
-}
-
-template <typename IndexType, typename ValueType, typename Space>
-void compare_conversion_example(const cusp::csr_matrix<IndexType, ValueType, Space> & csr)
-{
-    ASSERT_EQUAL(csr.num_rows,    4);
-    ASSERT_EQUAL(csr.num_cols,    4);
-    ASSERT_EQUAL(csr.num_entries, 7);
-
-    ASSERT_EQUAL(csr.row_offsets[0], 0);
-    ASSERT_EQUAL(csr.row_offsets[1], 2);
-    ASSERT_EQUAL(csr.row_offsets[2], 3);
-    ASSERT_EQUAL(csr.row_offsets[3], 6);
-    ASSERT_EQUAL(csr.row_offsets[4], 7);
-
-    ASSERT_EQUAL(csr.column_indices[0], 0);
-    ASSERT_EQUAL(csr.column_indices[1], 1);
-    ASSERT_EQUAL(csr.column_indices[2], 2);
-    ASSERT_EQUAL(csr.column_indices[3], 0);
-    ASSERT_EQUAL(csr.column_indices[4], 2);
-    ASSERT_EQUAL(csr.column_indices[5], 3);
-    ASSERT_EQUAL(csr.column_indices[6], 1);
-
-    ASSERT_EQUAL(csr.values[0], 10);
-    ASSERT_EQUAL(csr.values[1], 11);
-    ASSERT_EQUAL(csr.values[2], 12);
-    ASSERT_EQUAL(csr.values[3], 13);
-    ASSERT_EQUAL(csr.values[4], 14);
-    ASSERT_EQUAL(csr.values[5], 15);
-    ASSERT_EQUAL(csr.values[6], 16);
-}
-
-
-template <typename ValueType, typename Space, class Orientation>
-void compare_conversion_example(const cusp::array2d<ValueType, Space, Orientation> & dense)
-{
     ASSERT_EQUAL(dense.num_rows,    4);
     ASSERT_EQUAL(dense.num_cols,    4);
     ASSERT_EQUAL(dense.num_entries, 16);
@@ -203,9 +146,6 @@ void compare_conversion_example(const cusp::array2d<ValueType, Space, Orientatio
 }
 
 
-
-
-
 template <class HostDestinationType, class HostSourceType>
 void TestConversion(HostDestinationType dst, HostSourceType src)
 {
@@ -218,7 +158,7 @@ void TestConversion(HostDestinationType dst, HostSourceType src)
         HostDestinationType dst;
         initialize_conversion_example(src);
         cusp::convert(dst, src);
-        compare_conversion_example(dst);
+        verify_conversion_example(dst);
     }
     
     {
@@ -227,7 +167,7 @@ void TestConversion(HostDestinationType dst, HostSourceType src)
         DeviceDestinationType dst;
         initialize_conversion_example(src);
         cusp::convert(dst, src);
-        compare_conversion_example(dst);
+        verify_conversion_example(dst);
     }
     
     {
@@ -236,7 +176,7 @@ void TestConversion(HostDestinationType dst, HostSourceType src)
         HostDestinationType dst;
         initialize_conversion_example(src);
         cusp::convert(dst, src);
-        compare_conversion_example(dst);
+        verify_conversion_example(dst);
     }
     
     {
@@ -245,41 +185,70 @@ void TestConversion(HostDestinationType dst, HostSourceType src)
         DeviceDestinationType dst;
         initialize_conversion_example(src);
         cusp::convert(dst, src);
-        compare_conversion_example(dst);
+        verify_conversion_example(dst);
     }
 }
 
-/////////////////////
-// COO Conversions //
-/////////////////////
 
-void TestConvertCooToCsrMatrix(void)
+template <typename DestinationMatrixType>
+void TestConversionTo(DestinationMatrixType dst)
 {
-    TestConversion(cusp::csr_matrix<int, float, cusp::host_memory>(), 
+    TestConversion(DestinationMatrixType(), 
                    cusp::coo_matrix<int, float, cusp::host_memory>());
-}
-    
-DECLARE_UNITTEST(TestConvertCooToCsrMatrix);
-
-void TestConvertCooToDenseMatrix(void)
-{
-    TestConversion(cusp::array2d<float, cusp::host_memory>(), 
-                   cusp::coo_matrix<int, float, cusp::host_memory>());
-}
-DECLARE_UNITTEST(TestConvertCooToDenseMatrix);
-
-///////////////////////
-//// CSR Conversions //
-///////////////////////
-
-void TestConvertCsrToCooMatrix(void)
-{
-    TestConversion(cusp::coo_matrix<int, float, cusp::host_memory>(), 
+    TestConversion(DestinationMatrixType(), 
                    cusp::csr_matrix<int, float, cusp::host_memory>());
+    TestConversion(DestinationMatrixType(), 
+                   cusp::dia_matrix<int, float, cusp::host_memory>());
+    TestConversion(DestinationMatrixType(), 
+                   cusp::ell_matrix<int, float, cusp::host_memory>());
+    TestConversion(DestinationMatrixType(), 
+                   cusp::hyb_matrix<int, float, cusp::host_memory>());
+    TestConversion(DestinationMatrixType(), 
+                   cusp::array2d<float, cusp::host_memory>());
 }
-    
-DECLARE_UNITTEST(TestConvertCsrToCooMatrix);
 
+///////////////////////////
+// Main Conversion Tests //
+///////////////////////////
+void TestConversionToCooMatrix(void)
+{
+    TestConversionTo(cusp::coo_matrix<int, float, cusp::host_memory>());
+}
+DECLARE_UNITTEST(TestConversionToCooMatrix);
+
+void TestConversionToCsrMatrix(void)
+{
+    TestConversionTo(cusp::csr_matrix<int, float, cusp::host_memory>());
+}
+DECLARE_UNITTEST(TestConversionToCsrMatrix);
+
+void TestConversionToDiaMatrix(void)
+{
+    TestConversionTo(cusp::dia_matrix<int, float, cusp::host_memory>());
+}
+DECLARE_UNITTEST(TestConversionToDiaMatrix);
+
+void TestConversionToEllMatrix(void)
+{
+    TestConversionTo(cusp::ell_matrix<int, float, cusp::host_memory>());
+}
+DECLARE_UNITTEST(TestConversionToEllMatrix);
+
+void TestConversionToHybMatrix(void)
+{
+    TestConversionTo(cusp::hyb_matrix<int, float, cusp::host_memory>());
+}
+DECLARE_UNITTEST(TestConversionToHybMatrix);
+
+void TestConversionToArray(void)
+{
+    TestConversionTo(cusp::array2d<float, cusp::host_memory>());
+}
+DECLARE_UNITTEST(TestConversionToArray);
+
+//////////////////////////////
+// Special Conversion Tests //
+//////////////////////////////
 void TestConvertCsrToDiaMatrix(void)
 {
     cusp::csr_matrix<int, float, cusp::host_memory> csr;
@@ -354,96 +323,4 @@ void TestConvertCsrToEllMatrix(void)
     ASSERT_EQUAL(ell.column_indices[11],  X);  ASSERT_EQUAL(ell.values[11],  0);
 }
 DECLARE_UNITTEST(TestConvertCsrToEllMatrix);
-
-void TestConvertCsrToHybMatrix(void)
-{
-    cusp::csr_matrix<int, float, cusp::host_memory> csr;
-    cusp::hyb_matrix<int, float, cusp::host_memory> hyb;
-
-    // initialize host matrix
-    initialize_conversion_example(csr);
-
-    cusp::detail::host::convert(hyb, csr, 1.0, 4);
-
-    // compare csr and hyb
-    ASSERT_EQUAL(csr.num_rows,    hyb.num_rows);
-    ASSERT_EQUAL(csr.num_cols,    hyb.num_cols);
-    ASSERT_EQUAL(csr.num_entries, hyb.num_entries);
-    
-    ASSERT_EQUAL(hyb.ell.num_rows,            4);
-    ASSERT_EQUAL(hyb.ell.num_cols,            4);
-    ASSERT_EQUAL(hyb.ell.num_entries,         4);
-    ASSERT_EQUAL(hyb.ell.num_entries_per_row, 1);
-    ASSERT_EQUAL(hyb.ell.column_indices[0], 0);  ASSERT_EQUAL(hyb.ell.values[0], 10); 
-    ASSERT_EQUAL(hyb.ell.column_indices[1], 2);  ASSERT_EQUAL(hyb.ell.values[1], 12);
-    ASSERT_EQUAL(hyb.ell.column_indices[2], 0);  ASSERT_EQUAL(hyb.ell.values[2], 13);
-    ASSERT_EQUAL(hyb.ell.column_indices[3], 1);  ASSERT_EQUAL(hyb.ell.values[3], 16);
-   
-    ASSERT_EQUAL(hyb.coo.num_rows,            4);
-    ASSERT_EQUAL(hyb.coo.num_cols,            4);
-    ASSERT_EQUAL(hyb.coo.num_entries,         3);
-
-    ASSERT_EQUAL(hyb.coo.row_indices[0], 0); ASSERT_EQUAL(hyb.coo.column_indices[0], 1); ASSERT_EQUAL(hyb.coo.values[0], 11); 
-    ASSERT_EQUAL(hyb.coo.row_indices[1], 2); ASSERT_EQUAL(hyb.coo.column_indices[1], 2); ASSERT_EQUAL(hyb.coo.values[1], 14);
-    ASSERT_EQUAL(hyb.coo.row_indices[2], 2); ASSERT_EQUAL(hyb.coo.column_indices[2], 3); ASSERT_EQUAL(hyb.coo.values[2], 15);
-}
-DECLARE_UNITTEST(TestConvertCsrToHybMatrix);
-
-void TestConvertCsrToDenseMatrix(void)
-{
-    TestConversion(cusp::array2d<float, cusp::host_memory>(), 
-                   cusp::csr_matrix<int, float, cusp::host_memory>());
-}
-DECLARE_UNITTEST(TestConvertCsrToDenseMatrix);
-
-///////////////////////
-//// DIA Conversions //
-///////////////////////
-
-void TestConvertDiaToCsrMatrix(void)
-{
-    TestConversion(cusp::csr_matrix<int, float, cusp::host_memory>(), 
-                   cusp::dia_matrix<int, float, cusp::host_memory>());
-}
-DECLARE_UNITTEST(TestConvertDiaToCsrMatrix);
-
-///////////////////////
-//// ELL Conversions //
-///////////////////////
-
-void TestConvertEllToCsrMatrix(void)
-{
-    TestConversion(cusp::csr_matrix<int, float, cusp::host_memory>(), 
-                   cusp::ell_matrix<int, float, cusp::host_memory>());
-}
-DECLARE_UNITTEST(TestConvertEllToCsrMatrix);
-
-///////////////////////
-//// HYB Conversions //
-///////////////////////
-
-void TestConvertHybToCsrMatrix(void)
-{
-    TestConversion(cusp::csr_matrix<int, float, cusp::host_memory>(), 
-                   cusp::hyb_matrix<int, float, cusp::host_memory>());
-}
-DECLARE_UNITTEST(TestConvertHybToCsrMatrix);
-
-/////////////////////////
-//// Dense Conversions //
-/////////////////////////
-
-void TestConvertDenseToCsrMatrix(void)
-{
-    TestConversion(cusp::csr_matrix<int, float, cusp::host_memory>(), 
-                   cusp::array2d<float, cusp::host_memory>());
-}
-DECLARE_UNITTEST(TestConvertDenseToCsrMatrix);
-
-void TestConvertDenseToCooMatrix(void)
-{
-    TestConversion(cusp::coo_matrix<int, float, cusp::host_memory>(), 
-                   cusp::array2d<float, cusp::host_memory>());
-}
-DECLARE_UNITTEST(TestConvertDenseToCooMatrix);
 

@@ -42,49 +42,24 @@ namespace cusp
         cusp::ell_matrix<IndexType,ValueType,SpaceOrAlloc> ell;
         cusp::coo_matrix<IndexType,ValueType,SpaceOrAlloc> coo;
 
-        hyb_matrix()
-            : matrix_shape<IndexType>(),
-              num_entries(0),  
-              ell(), coo() {}
+        hyb_matrix();
 
         hyb_matrix(IndexType num_rows, IndexType num_cols,
                    IndexType num_ell_entries, IndexType num_coo_entries,
-                   IndexType num_entries_per_row, IndexType stride)
-            : matrix_shape<IndexType>(num_rows, num_cols), num_entries(num_ell_entries + num_coo_entries),
-              ell(num_rows, num_cols, num_ell_entries, num_entries_per_row, stride),
-              coo(num_rows, num_cols, num_coo_entries) {}
+                   IndexType num_entries_per_row, IndexType stride);
 
         // construct from another coo_matrix
         template <typename IndexType2, typename ValueType2, typename SpaceOrAlloc2>
-        hyb_matrix(const hyb_matrix<IndexType2, ValueType2, SpaceOrAlloc2>& matrix)
-            : matrix_shape<IndexType>(matrix),
-              num_entries(matrix.num_entries),
-              ell(matrix.ell),
-              coo(matrix.coo) {}
+        hyb_matrix(const hyb_matrix<IndexType2, ValueType2, SpaceOrAlloc2>& matrix);
         
         void resize(IndexType num_rows, IndexType num_cols,
                     IndexType num_ell_entries, IndexType num_coo_entries,
-                    IndexType num_entries_per_row, IndexType stride)
-        {
-            ell.resize(num_rows, num_cols, num_ell_entries, num_entries_per_row, stride);
-            coo.resize(num_rows, num_cols, num_coo_entries);
+                    IndexType num_entries_per_row, IndexType stride);
 
-            this->num_rows    = num_rows;
-            this->num_cols    = num_cols;
-            this->num_entries = num_ell_entries + num_coo_entries;
-        }
-
-        void swap(hyb_matrix& matrix)
-        {
-            ell.swap(matrix.ell);
-            coo.swap(matrix.coo);
-
-            thrust::swap(num_entries, matrix.num_entries);
-            
-            matrix_shape<IndexType>::swap(matrix);
-        }
-
+        void swap(hyb_matrix& matrix);
     }; // class hyb_matrix
 
 } // end namespace cusp
+
+#include <cusp/detail/hyb_matrix.inl>
 

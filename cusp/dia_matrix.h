@@ -46,47 +46,21 @@ namespace cusp
         cusp::array1d<IndexType, index_allocator_type> diagonal_offsets;
         cusp::array1d<ValueType, value_allocator_type> values;
             
-        dia_matrix()
-            : matrix_shape<IndexType>(),
-              num_entries(0), num_diagonals(0), stride(0) {}
+        dia_matrix();
 
         dia_matrix(IndexType num_rows, IndexType num_cols, IndexType num_entries,
-                   IndexType num_diagonals, IndexType stride)
-            : matrix_shape<IndexType>(num_rows, num_cols),
-              num_entries(num_entries), num_diagonals(num_diagonals), stride(stride),
-              diagonal_offsets(num_diagonals), values(num_diagonals * stride) {}
+                   IndexType num_diagonals, IndexType stride);
         
         template <typename IndexType2, typename ValueType2, typename SpaceOrAlloc2>
-        dia_matrix(const dia_matrix<IndexType2, ValueType2, SpaceOrAlloc2>& matrix)
-            : matrix_shape<IndexType>(matrix),
-              num_entries(matrix.num_entries), num_diagonals(matrix.num_diagonals), stride(matrix.stride),
-              diagonal_offsets(matrix.diagonal_offsets), values(matrix.values) {}
+        dia_matrix(const dia_matrix<IndexType2, ValueType2, SpaceOrAlloc2>& matrix);
         
         void resize(IndexType num_rows, IndexType num_cols, IndexType num_entries,
-                    IndexType num_diagonals, IndexType stride)
-        {
-            diagonal_offsets.resize(num_diagonals);
-            values.resize(num_diagonals * stride);
+                    IndexType num_diagonals, IndexType stride);
 
-            this->num_rows      = num_rows;
-            this->num_cols      = num_cols;
-            this->num_entries   = num_entries;
-            this->num_diagonals = num_diagonals;
-            this->stride        = stride;
-        }
-
-        void swap(dia_matrix& matrix)
-        {
-            diagonal_offsets.swap(matrix.diagonal_offsets);
-            values.swap(matrix.values);
-
-            thrust::swap(num_entries,   matrix.num_entries);
-            thrust::swap(num_diagonals, matrix.num_diagonals);
-            thrust::swap(stride,        matrix.stride);
-            
-            matrix_shape<IndexType>::swap(matrix);
-        }
+        void swap(dia_matrix& matrix);
     }; // class dia_matrix
     
 } // end namespace cusp
+
+#include <cusp/detail/dia_matrix.inl>
 

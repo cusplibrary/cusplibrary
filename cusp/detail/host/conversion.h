@@ -84,7 +84,7 @@ void coo_to_csr(      cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& d
 }
 
 template <typename IndexType, typename ValueType, class Orientation>
-void coo_to_dense(      cusp::array2d<ValueType,cusp::host_memory,Orientation>& dst,
+void coo_to_array(      cusp::array2d<ValueType,cusp::host_memory,Orientation>& dst,
                   const cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& src)
 {
     dst.resize(src.num_rows, src.num_cols);
@@ -245,7 +245,7 @@ void csr_to_ell(      cusp::ell_matrix<IndexType,ValueType,cusp::host_memory>&  
 
     
 template <typename IndexType, typename ValueType, class Orientation>
-void csr_to_dense(      cusp::array2d<ValueType,cusp::host_memory,Orientation>& dst,
+void csr_to_array(      cusp::array2d<ValueType,cusp::host_memory,Orientation>& dst,
                   const cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& src)
 {
     dst.resize(src.num_rows, src.num_cols);
@@ -390,7 +390,7 @@ void hyb_to_csr(      cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& d
 // Dense Conversions //
 ///////////////////////
 template <typename IndexType, typename ValueType, class Orientation>
-void dense_to_coo(      cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& dst,
+void array_to_coo(      cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& dst,
                   const cusp::array2d<ValueType,cusp::host_memory,Orientation>& src)
 {
     IndexType nnz = src.num_entries - std::count(src.values.begin(), src.values.end(), ValueType(0));
@@ -415,7 +415,7 @@ void dense_to_coo(      cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>&
 }
 
 template <typename IndexType, typename ValueType, class Orientation>
-void dense_to_csr(      cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& dst,
+void array_to_csr(      cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& dst,
                   const cusp::array2d<ValueType,cusp::host_memory,Orientation>& src)
 {
     IndexType nnz = src.num_entries - std::count(src.values.begin(), src.values.end(), ValueType(0));

@@ -39,48 +39,72 @@ namespace host
 {
 
 // Host Conversion Functions
-// COO
-//  - CSR
-//  - Dense
-// CSR
-//  - COO
-//  - DIA
-//  - ELL
-//  - HYB
-//  - Dense
-// DIA
-//  - CSR
-// ELL
-//  - CSR
-// HYB
-//  - CSR
-// Dense
-//  - COO
-//  - CSR
+// COO <- CSR
+//     <- Array
+// CSR <- COO
+//     <- DIA
+//     <- ELL
+//     <- HYB
+//     <- Array
+// DIA <- CSR
+// ELL <- CSR
+// HYB <- CSR
+// Array <- COO
+//       <- CSR
 
 /////////
 // COO //
-/////////
-template <typename IndexType, typename ValueType>
-void convert(      cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& dst,
-             const cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& src)
-{    cusp::detail::host::coo_to_csr(dst, src);    }
-
-template <typename IndexType, typename ValueType, class Orientation>
-void convert(      cusp::array2d<ValueType,cusp::host_memory,Orientation>& dst,
-             const cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& src)
-{    cusp::detail::host::coo_to_dense(dst, src);    }
-
-
-/////////
-// CSR //
 /////////
 template <typename IndexType, typename ValueType>
 void convert(      cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& dst,
              const cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& src)
 {    cusp::detail::host::csr_to_coo(dst, src);    }
 
+template <typename IndexType, typename ValueType, class Orientation>
+void convert(      cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& dst,
+             const cusp::array2d<ValueType,cusp::host_memory,Orientation>& src)
+{    cusp::detail::host::array_to_coo(dst, src);    }
 
+template <typename IndexType, typename ValueType, class MatrixType>
+void convert(      cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& dst,
+             const MatrixType& src)
+{
+    cusp::csr_matrix<IndexType,ValueType,cusp::host_memory> csr;
+    cusp::convert(csr, src);
+    cusp::convert(dst, csr);
+}
+
+/////////
+// CSR //
+/////////
+template <typename IndexType, typename ValueType>
+void convert(      cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& dst,
+             const cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& src)
+{    cusp::detail::host::coo_to_csr(dst, src);    }
+
+template <typename IndexType, typename ValueType>
+void convert(      cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& dst,
+             const cusp::dia_matrix<IndexType,ValueType,cusp::host_memory>& src)
+{    cusp::detail::host::dia_to_csr(dst, src);    }
+
+template <typename IndexType, typename ValueType>
+void convert(      cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& dst,
+             const cusp::ell_matrix<IndexType,ValueType,cusp::host_memory>& src)
+{    cusp::detail::host::ell_to_csr(dst, src);    }
+
+template <typename IndexType, typename ValueType>
+void convert(      cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& dst,
+             const cusp::hyb_matrix<IndexType,ValueType,cusp::host_memory>& src)
+{    cusp::detail::host::hyb_to_csr(dst, src);    }
+
+template <typename IndexType, typename ValueType, class Orientation>
+void convert(      cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& dst,
+             const cusp::array2d<ValueType,cusp::host_memory,Orientation>& src)
+{    cusp::detail::host::array_to_csr(dst, src);    }
+
+/////////
+// DIA //
+/////////
 template <typename IndexType, typename ValueType>
 void convert(      cusp::dia_matrix<IndexType,ValueType,cusp::host_memory>& dst,
              const cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& src,
@@ -97,6 +121,18 @@ void convert(      cusp::dia_matrix<IndexType,ValueType,cusp::host_memory>& dst,
     cusp::detail::host::csr_to_dia(dst, src, alignment);
 }
 
+template <typename IndexType, typename ValueType, class MatrixType>
+void convert(      cusp::dia_matrix<IndexType,ValueType,cusp::host_memory>& dst,
+             const MatrixType& src)
+{
+    cusp::csr_matrix<IndexType,ValueType,cusp::host_memory> csr;
+    cusp::convert(csr, src);
+    cusp::convert(dst, csr);
+}
+
+/////////
+// ELL //
+/////////
 template <typename IndexType, typename ValueType>
 void convert(      cusp::ell_matrix<IndexType,ValueType,cusp::host_memory>& dst,
              const cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& src,
@@ -112,6 +148,18 @@ void convert(      cusp::ell_matrix<IndexType,ValueType,cusp::host_memory>& dst,
     cusp::detail::host::csr_to_ell(dst, src, max_entries_per_row, alignment);
 }
 
+template <typename IndexType, typename ValueType, class MatrixType>
+void convert(      cusp::ell_matrix<IndexType,ValueType,cusp::host_memory>& dst,
+             const MatrixType& src)
+{
+    cusp::csr_matrix<IndexType,ValueType,cusp::host_memory> csr;
+    cusp::convert(csr, src);
+    cusp::convert(dst, csr);
+}
+
+/////////
+// HYB //
+/////////
 template <typename IndexType, typename ValueType>
 void convert(      cusp::hyb_matrix<IndexType,ValueType,cusp::host_memory>& dst,
              const cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& src,
@@ -121,79 +169,76 @@ void convert(      cusp::hyb_matrix<IndexType,ValueType,cusp::host_memory>& dst,
     cusp::detail::host::csr_to_hyb(dst, src, num_entries_per_row);
 }
 
+template <typename IndexType, typename ValueType, class MatrixType>
+void convert(      cusp::hyb_matrix<IndexType,ValueType,cusp::host_memory>& dst,
+             const MatrixType& src)
+{
+    cusp::csr_matrix<IndexType,ValueType,cusp::host_memory> csr;
+    cusp::convert(csr, src);
+    cusp::convert(dst, csr);
+}
+
+///////////
+// Array //
+///////////
 template <typename IndexType, typename ValueType, class Orientation>
 void convert(      cusp::array2d<ValueType,cusp::host_memory,Orientation>& dst,
              const cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& src)
-{    cusp::detail::host::csr_to_dense(dst, src);    }
-
-
-/////////
-// DIA //
-/////////
-template <typename IndexType, typename ValueType>
-void convert(      cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& dst,
-             const cusp::dia_matrix<IndexType,ValueType,cusp::host_memory>& src)
-{    cusp::detail::host::dia_to_csr(dst, src);    }
-
-
-/////////
-// ELL //
-/////////
-template <typename IndexType, typename ValueType>
-void convert(      cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& dst,
-             const cusp::ell_matrix<IndexType,ValueType,cusp::host_memory>& src)
-{    cusp::detail::host::ell_to_csr(dst, src);    }
-
-
-/////////
-// HYB //
-/////////
-template <typename IndexType, typename ValueType>
-void convert(      cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& dst,
-             const cusp::hyb_matrix<IndexType,ValueType,cusp::host_memory>& src)
-{    cusp::detail::host::hyb_to_csr(dst, src);    }
-
-
-///////////
-// Dense //
-///////////
-template <typename IndexType, typename ValueType, class Orientation>
-void convert(      cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& dst,
-             const cusp::array2d<ValueType,cusp::host_memory,Orientation>& src)
-{    cusp::detail::host::dense_to_coo(dst, src);    }
+{    cusp::detail::host::csr_to_array(dst, src);    }
 
 template <typename IndexType, typename ValueType, class Orientation>
-void convert(      cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& dst,
-             const cusp::array2d<ValueType,cusp::host_memory,Orientation>& src)
-{    cusp::detail::host::dense_to_csr(dst, src);    }
+void convert(      cusp::array2d<ValueType,cusp::host_memory,Orientation>& dst,
+             const cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& src)
+{    cusp::detail::host::coo_to_array(dst, src);    }
+
+template <typename ValueType, class Orientation, class MatrixType>
+void convert(      cusp::array2d<ValueType,cusp::host_memory,Orientation>& dst,
+             const MatrixType& src)
+{
+    typedef typename MatrixType::index_type IndexType;
+    cusp::csr_matrix<IndexType,ValueType,cusp::host_memory> csr;
+    cusp::convert(csr, src);
+    cusp::convert(dst, csr);
+}
 
 
 //////////////////////////
 // No Format Conversion //
 //////////////////////////
-template <typename IndexType, typename ValueType, class MemorySpace1, class MemorySpace2>
-void convert(      cusp::coo_matrix<IndexType,ValueType,MemorySpace1>& dst,
-             const cusp::coo_matrix<IndexType,ValueType,MemorySpace2>& src)
+template <typename IndexType1, typename ValueType1,
+          typename IndexType2, typename ValueType2>
+void convert(      cusp::coo_matrix<IndexType1,ValueType1,cusp::host_memory>& dst,
+             const cusp::coo_matrix<IndexType2,ValueType2,cusp::host_memory>& src)
 {    dst = src;    }
 
-template <typename IndexType, typename ValueType, class MemorySpace1, class MemorySpace2>
-void convert(      cusp::csr_matrix<IndexType,ValueType,MemorySpace1>& dst,
-             const cusp::csr_matrix<IndexType,ValueType,MemorySpace2>& src)
+template <typename IndexType1, typename ValueType1,
+          typename IndexType2, typename ValueType2>
+void convert(      cusp::csr_matrix<IndexType1,ValueType1,cusp::host_memory>& dst,
+             const cusp::csr_matrix<IndexType2,ValueType2,cusp::host_memory>& src)
 {    dst = src;    }
 
-template <typename IndexType, typename ValueType, class MemorySpace1, class MemorySpace2>
-void convert(      cusp::dia_matrix<IndexType,ValueType,MemorySpace1>& dst,
-             const cusp::dia_matrix<IndexType,ValueType,MemorySpace2>& src)
+template <typename IndexType1, typename ValueType1,
+          typename IndexType2, typename ValueType2>
+void convert(      cusp::dia_matrix<IndexType1,ValueType1,cusp::host_memory>& dst,
+             const cusp::dia_matrix<IndexType2,ValueType2,cusp::host_memory>& src)
 {    dst = src;    }
 
-template <typename IndexType, typename ValueType, class MemorySpace1, class MemorySpace2>
-void convert(      cusp::ell_matrix<IndexType,ValueType,MemorySpace1>& dst,
-             const cusp::ell_matrix<IndexType,ValueType,MemorySpace2>& src)
+template <typename IndexType1, typename ValueType1,
+          typename IndexType2, typename ValueType2>
+void convert(      cusp::ell_matrix<IndexType1,ValueType1,cusp::host_memory>& dst,
+             const cusp::ell_matrix<IndexType2,ValueType2,cusp::host_memory>& src)
 {    dst = src;    }
 
-template <typename IndexType, typename ValueType, class MemorySpace1, class MemorySpace2>
-void convert(      cusp::hyb_matrix<IndexType,ValueType,MemorySpace1>& dst,
-             const cusp::hyb_matrix<IndexType,ValueType,MemorySpace2>& src)
+template <typename IndexType1, typename ValueType1,
+          typename IndexType2, typename ValueType2>
+void convert(      cusp::hyb_matrix<IndexType1,ValueType1,cusp::host_memory>& dst,
+             const cusp::hyb_matrix<IndexType2,ValueType2,cusp::host_memory>& src)
+{    dst = src;    }
+
+template <typename ValueType1, typename Orientation1,
+          typename ValueType2, typename Orientation2>
+void convert(      cusp::array2d<ValueType1,cusp::host_memory,Orientation1>& dst,
+             const cusp::array2d<ValueType2,cusp::host_memory,Orientation2>& src)
 {    dst = src;    }
 
 

@@ -41,39 +41,16 @@ namespace cusp
         cusp::array1d<IndexType, index_allocator_type> row_offsets;
         cusp::array1d<IndexType, index_allocator_type> column_indices;
     
-        csr_pattern()
-            : matrix_shape<IndexType>() {}
+        csr_pattern();
     
-        csr_pattern(IndexType num_rows, IndexType num_cols, IndexType num_entries)
-            : row_offsets(num_rows + 1), column_indices(num_entries),
-              num_entries(num_entries),
-              matrix_shape<IndexType>(num_rows, num_cols) {}
+        csr_pattern(IndexType num_rows, IndexType num_cols, IndexType num_entries);
         
         template <typename IndexType2, typename SpaceOrAlloc2>
-        csr_pattern(const csr_pattern<IndexType2,SpaceOrAlloc2>& pattern)
-            : row_offsets(pattern.row_offsets), column_indices(pattern.column_indices),
-              num_entries(pattern.num_entries),
-              matrix_shape<IndexType>(pattern) {}
+        csr_pattern(const csr_pattern<IndexType2,SpaceOrAlloc2>& pattern);
 
-        void resize(IndexType num_rows, IndexType num_cols, IndexType num_entries)
-        {
-            row_offsets.resize(num_rows + 1);
-            column_indices.resize(num_entries);
-
-            this->num_rows    = num_rows;
-            this->num_cols    = num_cols;
-            this->num_entries = num_entries;
-        }
+        void resize(IndexType num_rows, IndexType num_cols, IndexType num_entries);
         
-        void swap(csr_pattern& pattern)
-        {
-            row_offsets.swap(pattern.row_offsets);
-            column_indices.swap(pattern.column_indices);
-
-            thrust::swap(num_entries, pattern.num_entries);
-            
-            matrix_shape<IndexType>::swap(pattern);
-        }
+        void swap(csr_pattern& pattern);
     }; // class csr_pattern
 
     template <typename IndexType, typename ValueType, class SpaceOrAlloc>
@@ -91,33 +68,21 @@ namespace cusp
         cusp::array1d<ValueType, value_allocator_type> values;
     
         // construct empty matrix
-        csr_matrix()
-            : csr_pattern<IndexType,SpaceOrAlloc>() {}
+        csr_matrix();
     
         // construct matrix with given shape and number of entries
-        csr_matrix(IndexType num_rows, IndexType num_cols, IndexType num_entries)
-            : values(num_entries),
-              csr_pattern<IndexType,SpaceOrAlloc>(num_rows, num_cols, num_entries) {}
+        csr_matrix(IndexType num_rows, IndexType num_cols, IndexType num_entries);
     
         // construct from another csr_matrix
         template <typename IndexType2, typename ValueType2, typename SpaceOrAlloc2>
-        csr_matrix(const csr_matrix<IndexType2, ValueType2, SpaceOrAlloc2>& matrix)
-            : values(matrix.values),
-              csr_pattern<IndexType,SpaceOrAlloc>(matrix) {}
+        csr_matrix(const csr_matrix<IndexType2, ValueType2, SpaceOrAlloc2>& matrix);
         
-        void resize(IndexType num_rows, IndexType num_cols, IndexType num_entries)
-        {
-            values.resize(num_entries);
-            csr_pattern<IndexType,SpaceOrAlloc>::resize(num_rows, num_cols, num_entries);
-        }
+        void resize(IndexType num_rows, IndexType num_cols, IndexType num_entries);
 
-        void swap(csr_matrix& matrix)
-        {
-            values.swap(matrix.values);
-
-            csr_pattern<IndexType,SpaceOrAlloc>::swap(matrix);
-        }
+        void swap(csr_matrix& matrix);
     }; // class csr_matrix
             
 } // end namespace cusp
+
+#include <cusp/detail/csr_matrix.inl>
 

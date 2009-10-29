@@ -51,6 +51,7 @@ namespace cusp
     {
         public:
         typedef typename matrix_shape<size_t>::index_type index_type;
+        typedef ValueType value_type;
         
         typedef typename cusp::standard_memory_allocator<ValueType, SpaceOrAlloc>::type value_allocator_type;
         typedef typename cusp::allocator_space<value_allocator_type>::type memory_space;

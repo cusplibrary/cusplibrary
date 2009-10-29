@@ -44,42 +44,18 @@ namespace cusp
 
         cusp::array1d<IndexType, index_allocator_type> column_indices;
 
-        ell_pattern()
-            : matrix_shape<IndexType>(0,0) {}
+        ell_pattern();
                    
-        ell_pattern(IndexType num_rows, IndexType num_cols, IndexType num_entries, IndexType num_entries_per_row, IndexType stride)
-            : column_indices(num_entries_per_row * stride),
-              num_entries(num_entries), num_entries_per_row(num_entries_per_row), stride(stride),
-              matrix_shape<IndexType>(num_rows, num_cols) {}
+        ell_pattern(IndexType num_rows, IndexType num_cols, IndexType num_entries,
+                    IndexType num_entries_per_row, IndexType stride);
 
         template <typename IndexType2, typename SpaceOrAlloc2>
-        ell_pattern(const ell_pattern<IndexType2,SpaceOrAlloc2>& pattern)
-            : column_indices(pattern.column_indices),
-              num_entries(pattern.num_entries), num_entries_per_row(pattern.num_entries_per_row), stride(pattern.stride),
-              matrix_shape<IndexType>(pattern) {}
+        ell_pattern(const ell_pattern<IndexType2,SpaceOrAlloc2>& pattern);
 
         void resize(IndexType num_rows, IndexType num_cols, IndexType num_entries,
-                    IndexType num_entries_per_row, IndexType stride)
-        {
-            column_indices.resize(num_entries_per_row * stride);
+                    IndexType num_entries_per_row, IndexType stride);
 
-            this->num_rows            = num_rows;
-            this->num_cols            = num_cols;
-            this->num_entries         = num_entries;
-            this->num_entries_per_row = num_entries_per_row;
-            this->stride              = stride;
-        }
-
-        void swap(ell_pattern& pattern)
-        {
-            column_indices.swap(pattern.column_indices);
-
-            thrust::swap(num_entries,         pattern.num_entries);
-            thrust::swap(num_entries_per_row, pattern.num_entries_per_row);
-            thrust::swap(stride,              pattern.stride);
-            
-            matrix_shape<IndexType>::swap(pattern);
-        }
+        void swap(ell_pattern& pattern);
     }; // class ell_pattern
 
     template <typename IndexType, typename ValueType, class SpaceOrAlloc>
@@ -97,34 +73,23 @@ namespace cusp
         cusp::array1d<ValueType, value_allocator_type> values;
     
         // construct empty matrix
-        ell_matrix()
-            : ell_pattern<IndexType,SpaceOrAlloc>() {}
+        ell_matrix();
     
         // construct matrix with given shape and number of entries
-        ell_matrix(IndexType num_rows, IndexType num_cols, IndexType num_entries, IndexType num_entries_per_row, IndexType stride)
-            : values(num_entries_per_row * stride),
-              ell_pattern<IndexType,SpaceOrAlloc>(num_rows, num_cols, num_entries, num_entries_per_row, stride) {}
+        ell_matrix(IndexType num_rows, IndexType num_cols, IndexType num_entries,
+                   IndexType num_entries_per_row, IndexType stride);
     
         // construct from another ell_matrix
         template <typename IndexType2, typename ValueType2, typename SpaceOrAlloc2>
-        ell_matrix(const ell_matrix<IndexType2, ValueType2, SpaceOrAlloc2>& matrix)
-            : values(matrix.values),
-              ell_pattern<IndexType,SpaceOrAlloc>(matrix) {}
+        ell_matrix(const ell_matrix<IndexType2, ValueType2, SpaceOrAlloc2>& matrix);
         
         void resize(IndexType num_rows, IndexType num_cols, IndexType num_entries,
-                    IndexType num_entries_per_row, IndexType stride)
-        {
-            values.resize(num_entries_per_row * stride);
-            ell_pattern<IndexType,SpaceOrAlloc>::resize(num_rows, num_cols, num_entries,
-                                                        num_entries_per_row, stride);
-        }
+                    IndexType num_entries_per_row, IndexType stride);
 
-        void swap(ell_matrix& matrix)
-        {
-            ell_pattern<IndexType,SpaceOrAlloc>::swap(matrix);
-            values.swap(matrix.values);
-        }
+        void swap(ell_matrix& matrix);
     }; // class ell_matrix
 
 } // end namespace cusp
+
+#include <cusp/detail/ell_matrix.inl>
 
