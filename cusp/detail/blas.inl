@@ -101,10 +101,11 @@ void axpy(ForwardIterator1 first1,
     thrust::transform(first1, last1, first2, first2, detail::AXPY<ScalarType>(alpha));
 }
 
-template <typename Array,
+template <typename Array1,
+          typename Array2,
           typename ScalarType>
-void axpy(const Array& x,
-                Array& y,
+void axpy(const Array1& x,
+                Array2& y,
           ScalarType alpha)
 {
     cusp::blas::axpy(x.begin(), x.end(), y.begin(), alpha);
@@ -125,11 +126,13 @@ void axpby(InputIterator1 first1,
     thrust::transform(first1, last1, first2, output, detail::AXPBY<ScalarType>(alpha, beta));
 }
 
-template <typename Array,
+template <typename Array1,
+          typename Array2,
+          typename Array3,
           typename ScalarType>
-void axpby(const Array& x,
-           const Array& y,
-                 Array& z,
+void axpby(const Array1& x,
+           const Array2& y,
+                 Array3& z,
           ScalarType alpha,
           ScalarType beta)
 {
@@ -155,21 +158,24 @@ void copy(const Array1& x,
 }
 
 
-
-template <typename ForwardIterator>
-typename thrust::iterator_value<ForwardIterator>::type
-    dot(ForwardIterator first1,
-        ForwardIterator last1,
-        ForwardIterator first2)
+// TODO properly harmonize heterogenous types
+template <typename InputIterator1,
+          typename InputIterator2>
+typename thrust::iterator_value<InputIterator1>::type
+    dot(InputIterator1 first1,
+        InputIterator1 last1,
+        InputIterator2 first2)
 {
-    typedef typename thrust::iterator_value<ForwardIterator>::type OutputType;
+    typedef typename thrust::iterator_value<InputIterator1>::type OutputType;
     return thrust::inner_product(first1, last1, first2, OutputType(0));
 }
 
-template <typename Array>
-typename Array::value_type
-    dot(const Array& x,
-        const Array& y)
+// TODO properly harmonize heterogenous types
+template <typename Array1,
+          typename Array2>
+typename Array1::value_type
+    dot(const Array1& x,
+        const Array2& y)
 {
     return cusp::blas::dot(x.begin(), x.end(), y.begin());
 }

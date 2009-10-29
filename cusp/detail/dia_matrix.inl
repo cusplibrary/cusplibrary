@@ -14,6 +14,8 @@
  *  limitations under the License.
  */
 
+#include <cusp/convert.h>
+
 namespace cusp
 {
 
@@ -36,7 +38,7 @@ dia_matrix<IndexType,ValueType,SpaceOrAlloc>
           num_entries(num_entries), num_diagonals(num_diagonals), stride(stride),
           diagonal_offsets(num_diagonals), values(num_diagonals * stride) {}
 
-// construct from another matrix
+// construct from another dia_matrix
 template <typename IndexType, typename ValueType, class SpaceOrAlloc>
 template <typename IndexType2, typename ValueType2, typename SpaceOrAlloc2>
 dia_matrix<IndexType,ValueType,SpaceOrAlloc>
@@ -44,6 +46,15 @@ dia_matrix<IndexType,ValueType,SpaceOrAlloc>
         : matrix_shape<IndexType>(matrix),
           num_entries(matrix.num_entries), num_diagonals(matrix.num_diagonals), stride(matrix.stride),
           diagonal_offsets(matrix.diagonal_offsets), values(matrix.values) {}
+
+// construct from a different matrix format
+template <typename IndexType, typename ValueType, class SpaceOrAlloc>
+template <typename MatrixType>
+dia_matrix<IndexType,ValueType,SpaceOrAlloc>
+    ::dia_matrix(const MatrixType& matrix)
+    {
+        cusp::convert(*this, matrix);
+    }
 
 //////////////////////
 // Member Functions //
@@ -79,6 +90,36 @@ template <typename IndexType, typename ValueType, class SpaceOrAlloc>
         thrust::swap(num_diagonals, matrix.num_diagonals);
         thrust::swap(stride,        matrix.stride);
         matrix_shape<IndexType>::swap(matrix);
+    }
+
+template <typename IndexType, typename ValueType, class SpaceOrAlloc>
+template <typename IndexType2, typename ValueType2, typename SpaceOrAlloc2>
+    dia_matrix<IndexType,ValueType,SpaceOrAlloc>&
+    dia_matrix<IndexType,ValueType,SpaceOrAlloc>
+    ::operator=(const dia_matrix<IndexType2, ValueType2, SpaceOrAlloc2>& matrix)
+    {
+        // TODO use coo_pattern::operator= or coo_pattern::assign()
+        this->values           = matrix.values;
+        this->diagonal_offsets = matrix.diagonal_offsets;
+        this->num_diagonals    = matrix.num_diagonals;
+        this->stride           = matrix.stride;
+        this->num_entries      = matrix.num_entries;
+        this->num_rows         = matrix.num_rows;
+        this->num_cols         = matrix.num_cols;
+
+        return *this;
+    }
+
+
+template <typename IndexType, typename ValueType, class SpaceOrAlloc>
+template <typename MatrixType>
+    dia_matrix<IndexType,ValueType,SpaceOrAlloc>&
+    dia_matrix<IndexType,ValueType,SpaceOrAlloc>
+    ::operator=(const MatrixType& matrix)
+    {
+        cusp::convert(*this, matrix);
+        
+        return *this;
     }
 
 } // end namespace cusp

@@ -53,7 +53,7 @@ namespace cusp
         typedef typename matrix_shape<size_t>::index_type index_type;
         typedef ValueType value_type;
         
-        typedef typename cusp::standard_memory_allocator<ValueType, SpaceOrAlloc>::type value_allocator_type;
+        typedef typename cusp::choose_memory_allocator<ValueType, SpaceOrAlloc>::type value_allocator_type;
         typedef typename cusp::allocator_space<value_allocator_type>::type memory_space;
 
         typedef Orientation orientation;
@@ -65,20 +65,19 @@ namespace cusp
 
         cusp::array1d<ValueType, value_allocator_type> values;
        
-        array2d()
-            : matrix_shape<index_type>(0,0),
-              num_entries(0) {}
+        // construct empty matrix
+        array2d();
 
-        array2d(size_t num_rows, size_t num_cols)
-            : matrix_shape<index_type>(num_rows, num_cols),
-              num_entries(num_rows * num_cols),
-              values(num_rows * num_cols) {}
+        // construct matrix with given shape and number of entries
+        array2d(size_t num_rows, size_t num_cols);
         
+        // construct from another array2d (with the same Orientation)
         template <typename ValueType2, typename SpaceOrAlloc2>
-        array2d(const array2d<ValueType2, SpaceOrAlloc2>& matrix)
-            : matrix_shape<index_type>(matrix),
-              num_entries(matrix.num_entries),
-              values(matrix.values) {}
+        array2d(const array2d<ValueType2, SpaceOrAlloc2, Orientation>& matrix);
+        
+        // construct from a different matrix format
+        template <typename MatrixType>
+        array2d(const MatrixType& matrix);
         
         typename value_allocator_type::reference operator()(const index_type i, const index_type j)
         { 
@@ -90,25 +89,18 @@ namespace cusp
             return values[detail::index_of(i, j, num_rows, num_cols, orientation())];
         }
         
-        void resize(index_type num_rows, index_type num_cols)
-        {
-            values.resize(num_rows * num_cols);
+        void resize(index_type num_rows, index_type num_cols);
 
-            this->num_rows    = num_rows;
-            this->num_cols    = num_cols;
-            this->num_entries = num_rows * num_cols;
-        }
+        void swap(array2d& matrix);
+        
+        template <typename ValueType2, typename SpaceOrAlloc2>
+        array2d& operator=(const array2d<ValueType2, SpaceOrAlloc2, Orientation>& matrix);
 
-        void swap(array2d& matrix)
-        {
-            values.swap(matrix.values);
-
-            thrust::swap(num_entries, matrix.num_entries);
-            
-            matrix_shape<index_type>::swap(matrix);
-        }
-
+        template <typename MatrixType>
+        array2d& operator=(const MatrixType& matrix);
     }; // class array2d
 
 } // end namespace cusp
+
+#include <cusp/detail/array2d.inl>
 

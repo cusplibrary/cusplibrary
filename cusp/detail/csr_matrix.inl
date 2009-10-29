@@ -14,6 +14,8 @@
  *  limitations under the License.
  */
 
+#include <cusp/convert.h>
+
 namespace cusp
 {
 
@@ -62,6 +64,15 @@ csr_matrix<IndexType,ValueType,SpaceOrAlloc>
         : values(matrix.values),
           csr_pattern<IndexType,SpaceOrAlloc>(matrix) {}
 
+// construct from a different matrix format
+template <typename IndexType, typename ValueType, class SpaceOrAlloc>
+template <typename MatrixType>
+csr_matrix<IndexType,ValueType,SpaceOrAlloc>
+    ::csr_matrix(const MatrixType& matrix)
+    {
+        cusp::convert(*this, matrix);
+    }
+
 //////////////////////
 // Member Functions //
 //////////////////////
@@ -109,5 +120,34 @@ template <typename IndexType, typename ValueType, class SpaceOrAlloc>
         values.swap(matrix.values);
     }
 
+template <typename IndexType, typename ValueType, class SpaceOrAlloc>
+template <typename IndexType2, typename ValueType2, typename SpaceOrAlloc2>
+    csr_matrix<IndexType,ValueType,SpaceOrAlloc>&
+    csr_matrix<IndexType,ValueType,SpaceOrAlloc>
+    ::operator=(const csr_matrix<IndexType2, ValueType2, SpaceOrAlloc2>& matrix)
+    {
+        // TODO use csr_pattern::operator= or csr_pattern::assign()
+        
+        this->values         = matrix.values;
+        this->row_offsets    = matrix.row_offsets;
+        this->column_indices = matrix.column_indices;
+        this->num_entries    = matrix.num_entries;
+        this->num_rows       = matrix.num_rows;
+        this->num_cols       = matrix.num_cols;
+
+        return *this;
+    }
+
+
+template <typename IndexType, typename ValueType, class SpaceOrAlloc>
+template <typename MatrixType>
+    csr_matrix<IndexType,ValueType,SpaceOrAlloc>&
+    csr_matrix<IndexType,ValueType,SpaceOrAlloc>
+    ::operator=(const MatrixType& matrix)
+    {
+        cusp::convert(*this, matrix);
+        
+        return *this;
+    }
 } // end namespace cusp
 

@@ -32,8 +32,8 @@ namespace cusp
         typedef IndexType index_type;
         typedef ValueType value_type;
 
-        typedef typename cusp::standard_memory_allocator<IndexType, SpaceOrAlloc>::type index_allocator_type;
-        typedef typename cusp::standard_memory_allocator<ValueType, SpaceOrAlloc>::type value_allocator_type;
+        typedef typename cusp::choose_memory_allocator<IndexType, SpaceOrAlloc>::type index_allocator_type;
+        typedef typename cusp::choose_memory_allocator<ValueType, SpaceOrAlloc>::type value_allocator_type;
         typedef typename cusp::allocator_space<index_allocator_type>::type memory_space;
         
         template<typename SpaceOrAlloc2>
@@ -46,18 +46,31 @@ namespace cusp
         cusp::array1d<IndexType, index_allocator_type> diagonal_offsets;
         cusp::array1d<ValueType, value_allocator_type> values;
             
+        // construct empty matrix
         dia_matrix();
 
+        // construct matrix with given shape and number of entries
         dia_matrix(IndexType num_rows, IndexType num_cols, IndexType num_entries,
                    IndexType num_diagonals, IndexType stride);
         
+        // construct from another dia_matrix
         template <typename IndexType2, typename ValueType2, typename SpaceOrAlloc2>
         dia_matrix(const dia_matrix<IndexType2, ValueType2, SpaceOrAlloc2>& matrix);
         
+        // construct from a different matrix format
+        template <typename MatrixType>
+        dia_matrix(const MatrixType& matrix);
+
         void resize(IndexType num_rows, IndexType num_cols, IndexType num_entries,
                     IndexType num_diagonals, IndexType stride);
 
         void swap(dia_matrix& matrix);
+        
+        template <typename IndexType2, typename ValueType2, typename SpaceOrAlloc2>
+        dia_matrix& operator=(const dia_matrix<IndexType2, ValueType2, SpaceOrAlloc2>& matrix);
+
+        template <typename MatrixType>
+        dia_matrix& operator=(const MatrixType& matrix);
     }; // class dia_matrix
     
 } // end namespace cusp

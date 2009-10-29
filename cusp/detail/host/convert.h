@@ -51,6 +51,7 @@ namespace host
 // HYB <- CSR
 // Array <- COO
 //       <- CSR
+//       <- Array (different Orientation)
 
 /////////
 // COO //
@@ -191,6 +192,12 @@ void convert(      cusp::array2d<ValueType,cusp::host_memory,Orientation>& dst,
              const cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& src)
 {    cusp::detail::host::coo_to_array(dst, src);    }
 
+template <typename ValueType1, class Orientation1,
+          typename ValueType2, class Orientation2>
+void convert(      cusp::array2d<ValueType1,cusp::host_memory,Orientation1>& dst,
+             const cusp::array2d<ValueType2,cusp::host_memory,Orientation2>& src)
+{    cusp::detail::host::array_to_array(dst, src);   }
+
 template <typename ValueType, class Orientation, class MatrixType>
 void convert(      cusp::array2d<ValueType,cusp::host_memory,Orientation>& dst,
              const MatrixType& src)
@@ -236,9 +243,9 @@ void convert(      cusp::hyb_matrix<IndexType1,ValueType1,cusp::host_memory>& ds
 {    dst = src;    }
 
 template <typename ValueType1, typename Orientation1,
-          typename ValueType2, typename Orientation2>
+          typename ValueType2>
 void convert(      cusp::array2d<ValueType1,cusp::host_memory,Orientation1>& dst,
-             const cusp::array2d<ValueType2,cusp::host_memory,Orientation2>& src)
+             const cusp::array2d<ValueType2,cusp::host_memory,Orientation1>& src)
 {    dst = src;    }
 
 

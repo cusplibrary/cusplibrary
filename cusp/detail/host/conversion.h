@@ -173,8 +173,8 @@ void csr_to_dia(       cusp::dia_matrix<IndexType,ValueType,cusp::host_memory>& 
     
 
 template <typename IndexType, typename ValueType>
-void csr_to_hyb(      cusp::hyb_matrix<IndexType, ValueType,cusp::host_memory>& hyb, 
-                const cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>&  csr,
+void csr_to_hyb(      cusp::hyb_matrix<IndexType,ValueType,cusp::host_memory>& hyb, 
+                const cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& csr,
                 const IndexType num_entries_per_row,
                 const IndexType alignment = 16)
 {
@@ -389,6 +389,19 @@ void hyb_to_csr(      cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& d
 ///////////////////////
 // Dense Conversions //
 ///////////////////////
+template <typename ValueType1, class Orientation1,
+          typename ValueType2, class Orientation2>
+void array_to_array(      cusp::array2d<ValueType1,cusp::host_memory,Orientation1>& dst,
+                    const cusp::array2d<ValueType2,cusp::host_memory,Orientation2>& src)
+{
+    dst.resize(src.num_rows, src.num_cols);
+
+    for(size_t i = 0; i < src.num_rows; i++)
+        for(size_t j = 0; j < src.num_cols; j++)
+            dst(i,j) = src(i,j);
+}
+
+
 template <typename IndexType, typename ValueType, class Orientation>
 void array_to_coo(      cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& dst,
                   const cusp::array2d<ValueType,cusp::host_memory,Orientation>& src)

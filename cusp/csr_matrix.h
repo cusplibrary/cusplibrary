@@ -29,7 +29,7 @@ namespace cusp
         public:
         typedef typename matrix_shape<IndexType>::index_type index_type;
 
-        typedef typename cusp::standard_memory_allocator<IndexType, SpaceOrAlloc>::type index_allocator_type;
+        typedef typename cusp::choose_memory_allocator<IndexType, SpaceOrAlloc>::type index_allocator_type;
         typedef typename cusp::allocator_space<index_allocator_type>::type memory_space;
         typedef typename cusp::csr_pattern<IndexType, SpaceOrAlloc> pattern_type;
        
@@ -54,10 +54,10 @@ namespace cusp
     }; // class csr_pattern
 
     template <typename IndexType, typename ValueType, class SpaceOrAlloc>
-    struct csr_matrix : public csr_pattern<IndexType, SpaceOrAlloc>
+    class csr_matrix : public csr_pattern<IndexType, SpaceOrAlloc>
     {
         public:
-        typedef typename cusp::standard_memory_allocator<ValueType, SpaceOrAlloc>::type value_allocator_type;
+        typedef typename cusp::choose_memory_allocator<ValueType, SpaceOrAlloc>::type value_allocator_type;
         typedef typename cusp::csr_matrix<IndexType, ValueType, SpaceOrAlloc> matrix_type;
     
         typedef ValueType value_type;
@@ -77,9 +77,19 @@ namespace cusp
         template <typename IndexType2, typename ValueType2, typename SpaceOrAlloc2>
         csr_matrix(const csr_matrix<IndexType2, ValueType2, SpaceOrAlloc2>& matrix);
         
+        // construct from a different matrix format
+        template <typename MatrixType>
+        csr_matrix(const MatrixType& matrix);
+        
         void resize(IndexType num_rows, IndexType num_cols, IndexType num_entries);
 
         void swap(csr_matrix& matrix);
+        
+        template <typename IndexType2, typename ValueType2, typename SpaceOrAlloc2>
+        csr_matrix& operator=(const csr_matrix<IndexType2, ValueType2, SpaceOrAlloc2>& matrix);
+
+        template <typename MatrixType>
+        csr_matrix& operator=(const MatrixType& matrix);
     }; // class csr_matrix
             
 } // end namespace cusp

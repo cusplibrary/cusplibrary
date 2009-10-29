@@ -48,7 +48,6 @@ void benchmark_csr_vector()
 {
     printf("%4d,", (int) ThreadsPerVector);
 
-
     cusp::array1d<ValueType, cusp::device_memory> x(N);
     cusp::array1d<ValueType, cusp::device_memory> y(N);
 
@@ -61,14 +60,12 @@ void benchmark_csr_vector()
         thrust::fill(dia.values.begin(), dia.values.end(), 1);
 
         // convert to CSR
-        cusp::csr_matrix<IndexType, ValueType, cusp::host_memory> h_csr;
-        cusp::convert(h_csr, dia);
-        cusp::csr_matrix<IndexType, ValueType, cusp::device_memory> d_csr(h_csr);
+        cusp::csr_matrix<IndexType, ValueType, cusp::device_memory> csr(dia);
     
         // time several SpMV iterations
         timer t;
         for(size_t i = 0; i < num_iterations; i++)
-            perform_spmv<true, ThreadsPerVector>(d_csr, thrust::raw_pointer_cast(&x[0]), thrust::raw_pointer_cast(&y[0]));
+            perform_spmv<true, ThreadsPerVector>(csr, thrust::raw_pointer_cast(&x[0]), thrust::raw_pointer_cast(&y[0]));
         cudaThreadSynchronize();
 
         float sec_per_iteration = t.seconds_elapsed() / num_iterations;

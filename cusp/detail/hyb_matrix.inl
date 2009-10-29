@@ -49,6 +49,15 @@ hyb_matrix<IndexType,ValueType,SpaceOrAlloc>
           ell(matrix.ell),
           coo(matrix.coo) {}
 
+// construct from a different matrix format
+template <typename IndexType, typename ValueType, class SpaceOrAlloc>
+template <typename MatrixType>
+hyb_matrix<IndexType,ValueType,SpaceOrAlloc>
+    ::hyb_matrix(const MatrixType& matrix)
+    {
+        cusp::convert(*this, matrix);
+    }
+
 //////////////////////
 // Member Functions //
 //////////////////////
@@ -81,6 +90,32 @@ template <typename IndexType, typename ValueType, class SpaceOrAlloc>
         thrust::swap(num_entries, matrix.num_entries);
 
         matrix_shape<IndexType>::swap(matrix);
+    }
+
+template <typename IndexType, typename ValueType, class SpaceOrAlloc>
+template <typename IndexType2, typename ValueType2, typename SpaceOrAlloc2>
+    hyb_matrix<IndexType,ValueType,SpaceOrAlloc>&
+    hyb_matrix<IndexType,ValueType,SpaceOrAlloc>
+    ::operator=(const hyb_matrix<IndexType2, ValueType2, SpaceOrAlloc2>& matrix)
+    {
+        this->ell         = matrix.ell;
+        this->coo         = matrix.coo;
+        this->num_entries = matrix.num_entries;
+        this->num_rows    = matrix.num_rows;
+        this->num_cols    = matrix.num_cols;
+
+        return *this;
+    }
+
+template <typename IndexType, typename ValueType, class SpaceOrAlloc>
+template <typename MatrixType>
+    hyb_matrix<IndexType,ValueType,SpaceOrAlloc>&
+    hyb_matrix<IndexType,ValueType,SpaceOrAlloc>
+    ::operator=(const MatrixType& matrix)
+    {
+        cusp::convert(*this, matrix);
+        
+        return *this;
     }
 
 } // end namespace cusp

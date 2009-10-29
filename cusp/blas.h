@@ -30,10 +30,11 @@ void axpy(ForwardIterator1 first1,
           ForwardIterator2 first2,
           ScalarType alpha);
 
-template <typename Array,
+template <typename Array1,
+          typename Array2,
           typename ScalarType>
-void axpy(const Array& array1,
-                Array& array2,
+void axpy(const Array1& x,
+                Array2& y,
           ScalarType alpha);
 
 
@@ -48,11 +49,13 @@ void axpby(InputIterator1 first1,
            ScalarType alpha,
            ScalarType beta);
 
-template <typename Array,
+template <typename Array1,
+          typename Array2,
+          typename Array3,
           typename ScalarType>
-void axpby(const Array& array1,
-           const Array& array2,
-                 Array& array3,
+void axpby(const Array1& x,
+           const Array2& y,
+                 Array3& z,
           ScalarType alpha,
           ScalarType beta);
 
@@ -69,16 +72,18 @@ void copy(const Array1& array1,
                 Array2& array2);
 
 
-template <typename ForwardIterator>
-typename thrust::iterator_value<ForwardIterator>::type
-    dot(ForwardIterator first1,
-        ForwardIterator last1,
-        ForwardIterator first2);
+template <typename InputIterator1,
+          typename InputIterator2>
+typename thrust::iterator_value<InputIterator1>::type
+    dot(InputIterator1 first1,
+        InputIterator1 last1,
+        InputIterator2 first2);
 
-template <typename Array>
-typename Array::value_type
-    dot(const Array& array1,
-        const Array& array2);
+template <typename Array1,
+          typename Array2>
+typename Array1::value_type
+    dot(const Array1& x,
+        const Array2& y);
 
 
 template <typename ForwardIterator,

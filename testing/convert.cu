@@ -1,12 +1,7 @@
 #include <unittest/unittest.h>
 #include <cusp/convert.h>
 
-#include <cusp/coo_matrix.h>
-#include <cusp/csr_matrix.h>
-#include <cusp/dia_matrix.h>
-#include <cusp/ell_matrix.h>
-#include <cusp/hyb_matrix.h>
-#include <cusp/array2d.h>
+#include <cusp/print.h>
 
 template <typename IndexType, typename ValueType, typename Space>
 void initialize_conversion_example(cusp::csr_matrix<IndexType, ValueType, Space> & csr)
@@ -119,10 +114,8 @@ void verify_conversion_example(const MatrixType& matrix)
 {
     typedef typename MatrixType::value_type ValueType;
 
-    cusp::array2d<ValueType, cusp::host_memory> dense;
+    cusp::array2d<ValueType, cusp::host_memory> dense(matrix);
    
-    cusp::convert(dense, matrix);
-
     ASSERT_EQUAL(dense.num_rows,    4);
     ASSERT_EQUAL(dense.num_cols,    4);
     ASSERT_EQUAL(dense.num_entries, 16);
@@ -155,10 +148,22 @@ void TestConversion(HostDestinationType dst, HostSourceType src)
     {
         // test host->host
         HostSourceType      src;
-        HostDestinationType dst;
         initialize_conversion_example(src);
-        cusp::convert(dst, src);
-        verify_conversion_example(dst);
+
+        {
+            HostDestinationType dst(src);
+            verify_conversion_example(dst);
+        }
+        {
+            HostDestinationType dst;
+            dst = src;
+            verify_conversion_example(dst);
+        }
+        {
+            HostDestinationType dst;
+            cusp::convert(dst, src);
+            verify_conversion_example(dst);
+        }
     }
     
     {
@@ -204,7 +209,9 @@ void TestConversionTo(DestinationMatrixType dst)
     TestConversion(DestinationMatrixType(), 
                    cusp::hyb_matrix<int, float, cusp::host_memory>());
     TestConversion(DestinationMatrixType(), 
-                   cusp::array2d<float, cusp::host_memory>());
+                   cusp::array2d<float, cusp::host_memory, cusp::row_major>());
+    TestConversion(DestinationMatrixType(), 
+                   cusp::array2d<float, cusp::host_memory, cusp::column_major>());
 }
 
 ///////////////////////////

@@ -31,24 +31,25 @@ namespace cusp
 {
     typedef thrust::device_space_tag device_memory;
     typedef thrust::host_space_tag   host_memory;
+
+     template<typename T, typename SpaceOrAllocator>
+     struct choose_memory_allocator
+        : thrust::detail::eval_if<
+            thrust::detail::is_convertible<SpaceOrAllocator, host_memory>::value,
     
-    template<typename T, typename Space> 
-    struct standard_memory_allocator
-    {
-        typedef Space type; // ASSUME Space is an allocator
-    };        
-
-    template<typename T>
-    struct standard_memory_allocator<T, cusp::device_memory>
-    {
-        typedef thrust::device_malloc_allocator<T> type;
-    };
-
-    template<typename T>
-    struct standard_memory_allocator<T, cusp::host_memory>
-    {
-        typedef std::allocator<T> type;
-    };
+            thrust::detail::identity_< std::allocator<T> >,
+    
+            // XXX add backend-specific allocators here?
+    
+            thrust::detail::eval_if<
+              thrust::detail::is_convertible<SpaceOrAllocator, device_memory>::value,
+    
+              thrust::detail::identity_< thrust::device_malloc_allocator<T> >,
+    
+              thrust::detail::identity_< SpaceOrAllocator >
+            >
+          >
+    {};
 
     template <typename Alloc>
     struct allocator_space
@@ -58,11 +59,11 @@ namespace cusp
 
 
 
-    template <typename T, typename Space>
-    class array1d : public thrust::detail::vector_base<T, typename standard_memory_allocator<T, Space>::type>
+    template <typename T, typename SpaceOrAllocator>
+    class array1d : public thrust::detail::vector_base<T, typename choose_memory_allocator<T, SpaceOrAllocator>::type>
     {
         private:
-            typedef typename standard_memory_allocator<T, Space>::type Alloc;
+            typedef typename choose_memory_allocator<T, SpaceOrAllocator>::type Alloc;
             typedef typename thrust::detail::vector_base<T,Alloc> Parent;
 
         public:

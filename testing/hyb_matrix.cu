@@ -46,8 +46,8 @@ void TestHybMatrixCopyConstructor(void)
     matrix.ell.column_indices[5] = 1;  matrix.ell.values[5] = 4;
 
     matrix.coo.row_indices[0] = 0;  matrix.coo.column_indices[0] = 2;  matrix.coo.values[0] = 5;
-    matrix.coo.row_indices[0] = 0;  matrix.coo.column_indices[0] = 3;  matrix.coo.values[0] = 6;
-    matrix.coo.row_indices[0] = 1;  matrix.coo.column_indices[0] = 3;  matrix.coo.values[0] = 7;
+    matrix.coo.row_indices[1] = 0;  matrix.coo.column_indices[1] = 3;  matrix.coo.values[1] = 6;
+    matrix.coo.row_indices[2] = 1;  matrix.coo.column_indices[2] = 3;  matrix.coo.values[2] = 7;
 
     cusp::hyb_matrix<int, float, Space> copy_of_matrix(matrix);
     

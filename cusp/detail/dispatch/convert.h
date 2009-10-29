@@ -59,7 +59,7 @@ void convert(DestinationType& dst, const SourceType& src, cusp::host_memory, cus
     // transfer to host and transfer to device
     typedef typename SourceType::template rebind<cusp::host_memory>::type HostSourceType;
     
-    HostSourceType tmp = src;
+    HostSourceType tmp(src);
 
     cusp::detail::host::convert(dst, tmp);
 }
