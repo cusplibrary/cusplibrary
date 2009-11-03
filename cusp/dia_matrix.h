@@ -18,13 +18,17 @@
 #pragma once
 
 #include <cusp/array1d.h>
-#include <cusp/matrix_shape.h>
+#include <cusp/detail/matrix_base.h>
 
 namespace cusp
 {
 
+    // Forward definitions
+    struct column_major;
+    template<typename ValueType, class SpaceOrAlloc, class Orientation> class array2d;
+
     template <typename IndexType, typename ValueType, class SpaceOrAlloc>
-    class dia_matrix : public matrix_shape<IndexType>
+    class dia_matrix : public detail::matrix_base<IndexType>
     {
         public:
 
@@ -39,19 +43,15 @@ namespace cusp
         template<typename SpaceOrAlloc2>
         struct rebind { typedef dia_matrix<IndexType, ValueType, SpaceOrAlloc2> type; };
 
-        index_type num_entries;
-        index_type num_diagonals;
-        index_type stride;
-
-        cusp::array1d<IndexType, index_allocator_type> diagonal_offsets;
-        cusp::array1d<ValueType, value_allocator_type> values;
+        cusp::array1d<IndexType, index_allocator_type>                     diagonal_offsets;
+        cusp::array2d<ValueType, value_allocator_type, cusp::column_major> values;
             
         // construct empty matrix
         dia_matrix();
 
         // construct matrix with given shape and number of entries
         dia_matrix(IndexType num_rows, IndexType num_cols, IndexType num_entries,
-                   IndexType num_diagonals, IndexType stride);
+                   IndexType num_diagonals, IndexType alignment = 16);
         
         // construct from another dia_matrix
         template <typename IndexType2, typename ValueType2, typename SpaceOrAlloc2>
@@ -62,7 +62,7 @@ namespace cusp
         dia_matrix(const MatrixType& matrix);
 
         void resize(IndexType num_rows, IndexType num_cols, IndexType num_entries,
-                    IndexType num_diagonals, IndexType stride);
+                    IndexType num_diagonals, IndexType alignment = 16);
 
         void swap(dia_matrix& matrix);
         
@@ -74,6 +74,8 @@ namespace cusp
     }; // class dia_matrix
     
 } // end namespace cusp
+
+#include <cusp/array2d.h>
 
 #include <cusp/detail/dia_matrix.inl>
 

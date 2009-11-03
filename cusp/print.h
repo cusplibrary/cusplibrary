@@ -20,7 +20,6 @@
 #include <cusp/array2d.h>
 #include <cusp/coo_matrix.h>
 #include <cusp/csr_matrix.h>
-#include <cusp/convert.h>
 
 #include <iostream>
 #include <iomanip>
@@ -75,8 +74,7 @@ void print_matrix(const cusp::array2d<ValueType, cusp::host_memory, Orientation>
 template <typename MatrixType>
 void print_matrix(const MatrixType& matrix)
 {
-    cusp::coo_matrix<int, float, cusp::host_memory> coo;
-    cusp::convert(coo, matrix);    
+    cusp::coo_matrix<int, float, cusp::host_memory> coo(matrix);
     print_matrix(coo);
 }
 

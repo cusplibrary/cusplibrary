@@ -133,8 +133,11 @@ void spmv(const dia_matrix<IndexType, ValueType, cusp::host_memory>& dia,
           const ValueType * x,  
                 ValueType * y)
 {
-    spmv_dia(dia.num_rows, dia.num_cols, dia.num_diagonals, dia.stride,
-             &dia.diagonal_offsets[0], &dia.values[0], 
+    IndexType num_diagonals = dia.values.num_cols;
+    IndexType stride        = dia.values.num_rows;
+
+    spmv_dia(dia.num_rows, dia.num_cols, num_diagonals, stride,
+             &dia.diagonal_offsets[0], &dia.values.values[0], 
              x, y);
 }
 
@@ -170,8 +173,11 @@ void spmv(const cusp::ell_matrix<IndexType, ValueType, cusp::host_memory>& ell,
           const ValueType * x,  
                 ValueType * y)
 {
-    spmv_ell(ell.num_rows, ell.num_cols, ell.num_entries_per_row, ell.stride,
-             &ell.column_indices[0], &ell.values[0],
+    const IndexType stride              = ell.column_indices.num_rows;
+    const IndexType num_entries_per_row = ell.column_indices.num_cols;
+
+    spmv_ell(ell.num_rows, ell.num_cols, num_entries_per_row, stride,
+             &ell.column_indices.values[0], &ell.values.values[0],
              x, y);
 }
 

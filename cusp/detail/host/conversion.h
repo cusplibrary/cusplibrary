@@ -138,11 +138,8 @@ void csr_to_dia(       cusp::dia_matrix<IndexType,ValueType,cusp::host_memory>& 
     }
    
 
-    // length of each diagonal in memory
-    IndexType stride = alignment * ((csr.num_rows + alignment - 1) / alignment);
-   
     // allocate DIA structure
-    dia.resize(csr.num_rows, csr.num_cols, csr.num_entries, num_diagonals, stride);
+    dia.resize(csr.num_rows, csr.num_cols, csr.num_entries, num_diagonals, alignment);
 
     // fill in diagonal_offsets array
     for(IndexType n = 0, diag = 0; n < csr.num_rows + csr.num_cols; n++)
@@ -156,7 +153,7 @@ void csr_to_dia(       cusp::dia_matrix<IndexType,ValueType,cusp::host_memory>& 
     }
 
     // fill in values array
-    std::fill(dia.values.begin(), dia.values.end(), 0);
+    std::fill(dia.values.values.begin(), dia.values.values.end(), 0);
 
     for(IndexType i = 0; i < csr.num_rows; i++)
     {
@@ -166,7 +163,7 @@ void csr_to_dia(       cusp::dia_matrix<IndexType,ValueType,cusp::host_memory>& 
             IndexType map_index = (csr.num_rows - i) + j; //offset shifted by + num_rows
             IndexType diag = diag_map[map_index];
         
-            dia.values[diag * dia.stride + i] = csr.values[jj];
+            dia.values(i, diag) = csr.values[jj];
         }
     }
 }
@@ -185,8 +182,6 @@ void csr_to_hyb(      cusp::hyb_matrix<IndexType,ValueType,cusp::host_memory>& h
     cusp::ell_matrix<IndexType, ValueType, cusp::host_memory> & ell = hyb.ell;
     cusp::coo_matrix<IndexType, ValueType, cusp::host_memory> & coo = hyb.coo;
 
-    const IndexType stride = alignment * ((csr.num_rows + alignment - 1) / alignment);
-
     // compute number of nonzeros in the ELL and COO portions
     IndexType num_ell_entries = 0;
     for(IndexType i = 0; i < csr.num_rows; i++)
@@ -196,13 +191,13 @@ void csr_to_hyb(      cusp::hyb_matrix<IndexType,ValueType,cusp::host_memory>& h
 
     hyb.resize(csr.num_rows, csr.num_cols, 
                num_ell_entries, num_coo_entries, 
-               num_entries_per_row, stride);
+               num_entries_per_row, alignment);
 
     const IndexType invalid_index = cusp::ell_matrix<IndexType, ValueType, cusp::host_memory>::invalid_index;
 
     // pad out ELL format with zeros
-    std::fill(ell.column_indices.begin(), ell.column_indices.end(), invalid_index);
-    std::fill(ell.values.begin(),         ell.values.end(),         0);
+    std::fill(ell.column_indices.values.begin(), ell.column_indices.values.end(), invalid_index);
+    std::fill(ell.values.values.begin(),         ell.values.values.end(),         0);
 
     for(IndexType i = 0, coo_nnz = 0; i < csr.num_rows; i++)
     {
@@ -210,10 +205,10 @@ void csr_to_hyb(      cusp::hyb_matrix<IndexType,ValueType,cusp::host_memory>& h
         IndexType jj = csr.row_offsets[i];
 
         // copy up to num_cols_per_row values of row i into the ELL
-        while(jj < csr.row_offsets[i+1] && n < ell.num_entries_per_row)
+        while(jj < csr.row_offsets[i+1] && n < num_entries_per_row)
         {
-            ell.column_indices[ell.stride * n + i] = csr.column_indices[jj];
-            ell.values[ell.stride * n + i]         = csr.values[jj];
+            ell.column_indices(i,n) = csr.column_indices[jj];
+            ell.values(i,n)         = csr.values[jj];
             jj++, n++;
         }
 
@@ -267,21 +262,17 @@ void dia_to_csr(      cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& d
                 const cusp::dia_matrix<IndexType,ValueType,cusp::host_memory>& src)
 {
     IndexType num_entries = 0;
+    IndexType num_diagonals = src.diagonal_offsets.size();
 
-    for(IndexType n = 0; n < src.num_diagonals; n++)
+    for(IndexType n = 0; n < num_diagonals; n++)
     {
         const IndexType k = src.diagonal_offsets[n];  //diagonal offset
 
-        const IndexType i_start = std::max((IndexType) 0, -k);
-        const IndexType j_start = std::max((IndexType) 0,  k);
+        const IndexType row_start = std::max((IndexType) 0, -k);
+        const IndexType row_end   = std::max(src.num_rows, src.num_cols - k);
         
-        const IndexType base = n * src.stride + i_start;
-
-        //number of elements to process
-        const IndexType M = std::min(src.num_rows - i_start, src.num_cols - j_start);
-
-        for(IndexType m = 0; m < M; m++)
-            if(src.values[base + m] != 0)
+        for(IndexType m = row_start; m < row_end; m++)
+            if(src.values(m,n) != 0)
                 num_entries++;
     }
 
@@ -292,13 +283,13 @@ void dia_to_csr(      cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& d
 
     for(IndexType i = 0; i < src.num_rows; i++)
     {
-        for(IndexType n = 0; n < src.num_diagonals; n++)
+        for(IndexType n = 0; n < num_diagonals; n++)
         {
             const IndexType j = i + src.diagonal_offsets[n];
 
             if(j >= 0 && j < src.num_cols)
             {
-                const ValueType value = src.values[n * src.stride + i];
+                const ValueType value = src.values(i, n);
 
                 if (value != 0)
                 {
@@ -328,12 +319,14 @@ void ell_to_csr(      cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& d
     IndexType num_entries = 0;
     dst.row_offsets[0] = 0;
 
+    const IndexType num_entries_per_row = src.column_indices.num_cols;
+
     for(IndexType i = 0; i < src.num_rows; i++)
     {
-        for(IndexType n = 0; n < src.num_entries_per_row; n++)
+        for(IndexType n = 0; n < num_entries_per_row; n++)
         {
-            const IndexType j = src.column_indices[src.stride * n + i];
-            const IndexType v = src.values[src.stride * n + i];
+            const IndexType j = src.column_indices(i,n);
+            const IndexType v = src.values(i,n);
             if(j != invalid_index)
             {
                 dst.column_indices[num_entries] = j;

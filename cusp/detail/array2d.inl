@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-#include <cusp/convert.h>
+#include <cusp/detail/convert.h>
 
 namespace cusp
 {
@@ -26,16 +26,13 @@ namespace cusp
 // construct empty matrix
 template<typename ValueType, class SpaceOrAlloc, class Orientation>
 array2d<ValueType,SpaceOrAlloc,Orientation>
-    ::array2d()
-        : matrix_shape<index_type>(0,0),
-          num_entries(0) {}
+    ::array2d() {}
 
 // construct matrix with given shape and number of entries
 template<typename ValueType, class SpaceOrAlloc, class Orientation>
 array2d<ValueType,SpaceOrAlloc,Orientation>
     ::array2d(size_t num_rows, size_t num_cols)
-        : matrix_shape<index_type>(num_rows, num_cols),
-          num_entries(num_rows * num_cols),
+        : detail::matrix_base<index_type>(num_rows, num_cols, num_rows * num_cols),
           values(num_rows * num_cols) {}
 
 // construct from another array2d
@@ -43,8 +40,7 @@ template<typename ValueType, class SpaceOrAlloc, class Orientation>
 template <typename ValueType2, typename SpaceOrAlloc2>
 array2d<ValueType,SpaceOrAlloc,Orientation>
     ::array2d(const array2d<ValueType2, SpaceOrAlloc2, Orientation>& matrix)
-        : matrix_shape<index_type>(matrix),
-          num_entries(matrix.num_entries),
+        : detail::matrix_base<index_type>(matrix),
           values(matrix.values) {}
 
 // construct from a different matrix format
@@ -53,7 +49,7 @@ template <typename MatrixType>
 array2d<ValueType,SpaceOrAlloc,Orientation>
     ::array2d(const MatrixType& matrix)
     {
-        cusp::convert(*this, matrix);
+        cusp::detail::convert(*this, matrix);
     }
 
 //////////////////////
@@ -65,11 +61,11 @@ template<typename ValueType, class SpaceOrAlloc, class Orientation>
     array2d<ValueType,SpaceOrAlloc,Orientation>
     ::resize(index_type num_rows, index_type num_cols)
 {
-    values.resize(num_rows * num_cols);
-
     this->num_rows    = num_rows;
     this->num_cols    = num_cols;
     this->num_entries = num_rows * num_cols;
+
+    values.resize(num_rows * num_cols);
 }
 
 template<typename ValueType, class SpaceOrAlloc, class Orientation>
@@ -77,11 +73,9 @@ template<typename ValueType, class SpaceOrAlloc, class Orientation>
     array2d<ValueType,SpaceOrAlloc,Orientation>
     ::swap(array2d<ValueType,SpaceOrAlloc,Orientation> & matrix)
 {
-    values.swap(matrix.values);
+    detail::matrix_base<index_type>::swap(matrix);
 
-    thrust::swap(num_entries, matrix.num_entries);
-    
-    matrix_shape<index_type>::swap(matrix);
+    values.swap(matrix.values);
 }
 
 template <typename ValueType, class SpaceOrAlloc, class Orientation>
@@ -90,10 +84,10 @@ template <typename ValueType2, typename SpaceOrAlloc2>
     array2d<ValueType,SpaceOrAlloc,Orientation>
     ::operator=(const array2d<ValueType2, SpaceOrAlloc2, Orientation>& matrix)
     {
-        this->values           = matrix.values;
-        this->num_entries      = matrix.num_entries;
-        this->num_rows         = matrix.num_rows;
-        this->num_cols         = matrix.num_cols;
+        this->num_rows    = matrix.num_rows;
+        this->num_cols    = matrix.num_cols;
+        this->num_entries = matrix.num_entries;
+        this->values      = matrix.values;
 
         return *this;
     }
@@ -104,10 +98,30 @@ template <typename MatrixType>
     array2d<ValueType,SpaceOrAlloc,Orientation>
     ::operator=(const MatrixType& matrix)
     {
-        cusp::convert(*this, matrix);
+        cusp::detail::convert(*this, matrix);
         
         return *this;
     }
 
+template<typename ValueType1, typename SpaceOrAlloc1, typename Orientation1,
+         typename ValueType2, typename SpaceOrAlloc2>
+bool operator==(const array2d<ValueType1,SpaceOrAlloc1,Orientation1>& lhs,
+                const array2d<ValueType2,SpaceOrAlloc2,Orientation1>& rhs)
+{
+    // TODO generalize to mixed orientations
+    if (lhs.num_rows != rhs.num_rows || lhs.num_cols != rhs.num_cols)
+        return false;
+
+    return lhs.values == rhs.values;
+}
+
+template<typename ValueType1, typename SpaceOrAlloc1, typename Orientation1,
+         typename ValueType2, typename SpaceOrAlloc2>
+bool operator!=(const array2d<ValueType1,SpaceOrAlloc1,Orientation1>& lhs,
+                const array2d<ValueType2,SpaceOrAlloc2,Orientation1>& rhs)
+{
+    return !(lhs == rhs);
+}
+    
 } // end namespace cusp
 

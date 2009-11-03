@@ -17,7 +17,7 @@
 
 #pragma once
 
-#include <cusp/matrix_shape.h>
+#include <cusp/detail/matrix_base.h>
 
 namespace cusp
 {
@@ -26,11 +26,11 @@ namespace cusp
     template <typename IndexType, typename ValueType, class SpaceOrAlloc> class coo_matrix;
 
     template <typename IndexType, typename ValueType, class SpaceOrAlloc>
-    class hyb_matrix : public matrix_shape<IndexType>
+    class hyb_matrix : public detail::matrix_base<IndexType>
     {
         public:
-        typedef IndexType   index_type;
-        typedef ValueType   value_type;
+        typedef IndexType index_type;
+        typedef ValueType value_type;
 
         typedef typename cusp::choose_memory_allocator<IndexType, SpaceOrAlloc>::type index_allocator_type;
         typedef typename cusp::choose_memory_allocator<ValueType, SpaceOrAlloc>::type value_allocator_type;
@@ -38,8 +38,6 @@ namespace cusp
 
         template<typename SpaceOrAlloc2>
         struct rebind { typedef hyb_matrix<IndexType, ValueType, SpaceOrAlloc2> type; };
-
-        index_type num_entries;
 
         cusp::ell_matrix<IndexType,ValueType,SpaceOrAlloc> ell;
         cusp::coo_matrix<IndexType,ValueType,SpaceOrAlloc> coo;
@@ -50,7 +48,7 @@ namespace cusp
         // construct matrix with given shape and number of entries
         hyb_matrix(IndexType num_rows, IndexType num_cols,
                    IndexType num_ell_entries, IndexType num_coo_entries,
-                   IndexType num_entries_per_row, IndexType stride);
+                   IndexType num_entries_per_row, IndexType alignment = 16);
 
         // construct from another hyb_matrix
         template <typename IndexType2, typename ValueType2, typename SpaceOrAlloc2>
@@ -62,7 +60,7 @@ namespace cusp
         
         void resize(IndexType num_rows, IndexType num_cols,
                     IndexType num_ell_entries, IndexType num_coo_entries,
-                    IndexType num_entries_per_row, IndexType stride);
+                    IndexType num_entries_per_row, IndexType alignment = 16);
 
         void swap(hyb_matrix& matrix);
         

@@ -1,7 +1,6 @@
 #include <unittest/unittest.h>
 
 #include <cusp/csr_matrix.h>
-#include <cusp/convert.h>
 #include <cusp/array1d.h>
 #include <cusp/linear_operator.h>
 
@@ -21,7 +20,7 @@ void _TestMakeLinearOperator(TestMatrix test_matrix)
     csr.column_indices[2] = 0;   csr.values[2] = 12.0f;
     csr.column_indices[3] = 1;   csr.values[3] = 13.0f;
     
-    cusp::convert(test_matrix, csr);
+    test_matrix = csr;
 
     // allocate vectors
     cusp::array1d<float, MemorySpace> x(2);

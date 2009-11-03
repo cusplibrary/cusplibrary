@@ -17,17 +17,19 @@
 
 #pragma once
 
-#include <cusp/array1d.h>
-#include <cusp/matrix_shape.h>
+#include <cusp/detail/matrix_base.h>
 
 namespace cusp
 {
+    // Forward definitions
+    struct column_major;
+    template<typename ValueType, class SpaceOrAlloc, class Orientation> class array2d;
 
     template<typename IndexType, class SpaceOrAlloc>
-    class ell_pattern : public matrix_shape<IndexType>
+    class ell_pattern : public detail::matrix_base<IndexType>
     {
         public:
-        typedef typename matrix_shape<IndexType>::index_type index_type;
+        typedef IndexType index_type;
 
         typedef typename cusp::choose_memory_allocator<IndexType, SpaceOrAlloc>::type index_allocator_type;
         typedef typename cusp::allocator_space<index_allocator_type>::type memory_space;
@@ -38,22 +40,18 @@ namespace cusp
         template<typename SpaceOrAlloc2>
         struct rebind { typedef ell_pattern<IndexType, SpaceOrAlloc2> type; };
 
-        index_type num_entries;
-        index_type num_entries_per_row;
-        index_type stride;
-
-        cusp::array1d<IndexType, index_allocator_type> column_indices;
+        cusp::array2d<IndexType, index_allocator_type, cusp::column_major> column_indices;
 
         ell_pattern();
                    
         ell_pattern(IndexType num_rows, IndexType num_cols, IndexType num_entries,
-                    IndexType num_entries_per_row, IndexType stride);
+                    IndexType num_entries_per_row, IndexType alignment = 16);
 
         template <typename IndexType2, typename SpaceOrAlloc2>
         ell_pattern(const ell_pattern<IndexType2,SpaceOrAlloc2>& pattern);
 
         void resize(IndexType num_rows, IndexType num_cols, IndexType num_entries,
-                    IndexType num_entries_per_row, IndexType stride);
+                    IndexType num_entries_per_row, IndexType alignment = 16);
 
         void swap(ell_pattern& pattern);
     }; // class ell_pattern
@@ -70,14 +68,14 @@ namespace cusp
         template<typename SpaceOrAlloc2>
         struct rebind { typedef ell_matrix<IndexType, ValueType, SpaceOrAlloc2> type; };
 
-        cusp::array1d<ValueType, value_allocator_type> values;
+        cusp::array2d<ValueType, value_allocator_type, cusp::column_major> values;
     
         // construct empty matrix
         ell_matrix();
     
         // construct matrix with given shape and number of entries
         ell_matrix(IndexType num_rows, IndexType num_cols, IndexType num_entries,
-                   IndexType num_entries_per_row, IndexType stride);
+                   IndexType num_entries_per_row, IndexType alignment = 16);
     
         // construct from another ell_matrix
         template <typename IndexType2, typename ValueType2, typename SpaceOrAlloc2>
@@ -88,7 +86,7 @@ namespace cusp
         ell_matrix(const MatrixType& matrix);
         
         void resize(IndexType num_rows, IndexType num_cols, IndexType num_entries,
-                    IndexType num_entries_per_row, IndexType stride);
+                    IndexType num_entries_per_row, IndexType alignment = 16);
 
         void swap(ell_matrix& matrix);
         
@@ -100,6 +98,8 @@ namespace cusp
     }; // class ell_matrix
 
 } // end namespace cusp
+
+#include <cusp/array2d.h>
 
 #include <cusp/detail/ell_matrix.inl>
 

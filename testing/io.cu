@@ -1,9 +1,10 @@
 #include <unittest/unittest.h>
 
 #include <cusp/io.h>
+
+#include <cusp/coo_matrix.h>
+#include <cusp/csr_matrix.h>
 #include <cusp/array2d.h>
-#include <cusp/convert.h>
-#include <cusp/equal.h>
 
 #include <stdio.h>
 
@@ -14,8 +15,7 @@ void TestReadMatrixMarketFileCoordinateRealGeneral(void)
     cusp::read_matrix_market_file(coo, "data/test/coordinate_real_general.mtx");
 
     // convert to array2d
-    cusp::array2d<float, cusp::host_memory> D;
-    cusp::convert(D, coo);
+    cusp::array2d<float, cusp::host_memory> D(coo);
 
     // expected result
     cusp::array2d<float, cusp::host_memory> E(5, 5);
@@ -25,7 +25,7 @@ void TestReadMatrixMarketFileCoordinateRealGeneral(void)
     E(3,0) =  0.000e+00; E(3,1) =  2.505e+02; E(3,2) =  0.000e+00; E(3,3) = -2.500e+02; E(3,4) =  3.875e+01;
     E(4,0) =  0.000e+00; E(4,1) =  0.000e+00; E(4,2) =  0.000e+00; E(4,3) =  0.000e+00; E(4,4) =  1.200e+01;
 
-    ASSERT_EQUAL(cusp::equal(D,E), true);
+    ASSERT_EQUAL(D == E, true);
 }
 DECLARE_UNITTEST(TestReadMatrixMarketFileCoordinateRealGeneral);
 
@@ -36,8 +36,7 @@ void TestReadMatrixMarketFileCoordinatePatternSymmetric(void)
     cusp::read_matrix_market_file(coo, "data/test/coordinate_pattern_symmetric.mtx");
 
     // convert to array2d
-    cusp::array2d<float, cusp::host_memory> D;
-    cusp::convert(D, coo);
+    cusp::array2d<float, cusp::host_memory> D(coo);
 
     // expected result
     cusp::array2d<float, cusp::host_memory> E(5, 5);
@@ -47,7 +46,7 @@ void TestReadMatrixMarketFileCoordinatePatternSymmetric(void)
     E(3,0) =  0.000e+00; E(3,1) =  1.000e+00; E(3,2) =  0.000e+00; E(3,3) =  1.000e+00; E(3,4) =  1.000e+00;
     E(4,0) =  0.000e+00; E(4,1) =  0.000e+00; E(4,2) =  0.000e+00; E(4,3) =  1.000e+00; E(4,4) =  1.000e+00;
 
-    ASSERT_EQUAL(cusp::equal(D,E), true);
+    ASSERT_EQUAL(D == E, true);
 }
 DECLARE_UNITTEST(TestReadMatrixMarketFileCoordinatePatternSymmetric);
 
@@ -59,8 +58,7 @@ void TestReadMatrixMarketFileToCsrMatrix(void)
     cusp::read_matrix_market_file(csr, "data/test/coordinate_real_general.mtx");
 
     // convert to array2d
-    cusp::array2d<float, cusp::host_memory> D;
-    cusp::convert(D, csr);
+    cusp::array2d<float, cusp::host_memory> D(csr);
 
     // expected result
     cusp::array2d<float, cusp::host_memory> E(5, 5);
@@ -70,7 +68,7 @@ void TestReadMatrixMarketFileToCsrMatrix(void)
     E(3,0) =  0.000e+00; E(3,1) =  2.505e+02; E(3,2) =  0.000e+00; E(3,3) = -2.500e+02; E(3,4) =  3.875e+01;
     E(4,0) =  0.000e+00; E(4,1) =  0.000e+00; E(4,2) =  0.000e+00; E(4,3) =  0.000e+00; E(4,4) =  1.200e+01;
 
-    ASSERT_EQUAL(cusp::equal(D,E), true);
+    ASSERT_EQUAL(D == E, true);
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestReadMatrixMarketFileToCsrMatrix);
 
@@ -85,8 +83,7 @@ void TestWriteMatrixMarketFileCoordinateRealGeneral(void)
     E(3,0) =  0.000e+00; E(3,1) =  2.505e+02; E(3,2) =  0.000e+00;
 
     // convert to coo
-    cusp::coo_matrix<int, float, MemorySpace> coo;
-    cusp::convert(coo, E);
+    cusp::coo_matrix<int, float, MemorySpace> coo(E);
    
     // write coo to file
     cusp::write_matrix_market_file(coo, "temp_92038423749283.mtx");
@@ -97,9 +94,8 @@ void TestWriteMatrixMarketFileCoordinateRealGeneral(void)
     remove("temp_92038423749283.mtx");    
     
     // compare to initial matrix
-    cusp::array2d<float, cusp::host_memory> D;
-    cusp::convert(D, coo);
-    ASSERT_EQUAL(cusp::equal(D, E), true);
+    cusp::array2d<float, cusp::host_memory> D(coo);
+    ASSERT_EQUAL(D == E, true);
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestWriteMatrixMarketFileCoordinateRealGeneral);
 

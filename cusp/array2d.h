@@ -18,7 +18,7 @@
 #pragma once
 
 #include <cusp/array1d.h>
-#include <cusp/matrix_shape.h>
+#include <cusp/detail/matrix_base.h>
 
 namespace cusp
 {
@@ -47,10 +47,10 @@ namespace cusp
     }
 
     template<typename ValueType, class SpaceOrAlloc, class Orientation = cusp::row_major>
-    struct array2d : public matrix_shape<size_t>
+    struct array2d : public detail::matrix_base<size_t>
     {
         public:
-        typedef typename matrix_shape<size_t>::index_type index_type;
+        typedef size_t    index_type;
         typedef ValueType value_type;
         
         typedef typename cusp::choose_memory_allocator<ValueType, SpaceOrAlloc>::type value_allocator_type;
@@ -61,8 +61,6 @@ namespace cusp
         template<typename SpaceOrAlloc2>
         struct rebind { typedef array2d<ValueType, SpaceOrAlloc2, Orientation> type; };
        
-        index_type num_entries;
-
         cusp::array1d<ValueType, value_allocator_type> values;
        
         // construct empty matrix
@@ -98,6 +96,7 @@ namespace cusp
 
         template <typename MatrixType>
         array2d& operator=(const MatrixType& matrix);
+
     }; // class array2d
 
 } // end namespace cusp

@@ -14,28 +14,19 @@
  *  limitations under the License.
  */
 
-
 #pragma once
-
-#include <cusp/array2d.h>
 
 namespace cusp
 {
-
-template <typename ValueType1, class Orientation1, typename ValueType2,  class Orientation2>
-bool equal(const cusp::array2d<ValueType1, cusp::host_memory, Orientation1>& A,
-           const cusp::array2d<ValueType2, cusp::host_memory, Orientation2>& B)
+namespace detail
 {
-    if (A.num_rows != B.num_rows || A.num_cols != B.num_cols)
-        return false;
 
-    for(size_t i = 0; i < A.num_rows; i++)
-        for(size_t j = 0; j < A.num_cols; j++)
-            if(A(i,j) != B(i,j))
-                return false;
-
-    return true;
+template <typename IntegralType>
+IntegralType round_up(IntegralType n, IntegralType k)
+{
+    return k * ((n + k - 1) / k);
 }
 
+} // end namespace detail
 } // end namespace cusp
 

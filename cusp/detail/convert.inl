@@ -18,6 +18,8 @@
 
 namespace cusp
 {
+namespace detail
+{
 
 template <class DestinationType, class SourceType>
 void convert(DestinationType& dst, const SourceType& src)
@@ -28,5 +30,6 @@ void convert(DestinationType& dst, const SourceType& src)
     cusp::detail::dispatch::convert(dst, src, destination_space(), source_space());
 }
 
+} // end namespace detail
 } // end namespace cusp
 

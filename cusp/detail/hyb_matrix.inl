@@ -24,19 +24,16 @@ namespace cusp
 // construct empty matrix
 template <typename IndexType, typename ValueType, class SpaceOrAlloc>
 hyb_matrix<IndexType,ValueType,SpaceOrAlloc>
-    ::hyb_matrix()
-        : num_entries(0),  
-          ell(), coo() {}
+    ::hyb_matrix() {}
 
 // construct matrix with given shape and number of entries
 template <typename IndexType, typename ValueType, class SpaceOrAlloc>
 hyb_matrix<IndexType,ValueType,SpaceOrAlloc>
     ::hyb_matrix(IndexType num_rows, IndexType num_cols,
                  IndexType num_ell_entries, IndexType num_coo_entries,
-                 IndexType num_entries_per_row, IndexType stride)
-        : matrix_shape<IndexType>(num_rows, num_cols),
-          num_entries(num_ell_entries + num_coo_entries),
-          ell(num_rows, num_cols, num_ell_entries, num_entries_per_row, stride),
+                 IndexType num_entries_per_row, IndexType alignment)
+        : detail::matrix_base<IndexType>(num_rows, num_cols, num_ell_entries + num_coo_entries),
+          ell(num_rows, num_cols, num_ell_entries, num_entries_per_row, alignment),
           coo(num_rows, num_cols, num_coo_entries) {}
 
 // construct from another matrix
@@ -44,8 +41,7 @@ template <typename IndexType, typename ValueType, class SpaceOrAlloc>
 template <typename IndexType2, typename ValueType2, typename SpaceOrAlloc2>
 hyb_matrix<IndexType,ValueType,SpaceOrAlloc>
     ::hyb_matrix(const hyb_matrix<IndexType2, ValueType2, SpaceOrAlloc2>& matrix)
-        : matrix_shape<IndexType>(matrix),
-          num_entries(matrix.num_entries),
+        : detail::matrix_base<IndexType>(matrix),
           ell(matrix.ell),
           coo(matrix.coo) {}
 
@@ -55,7 +51,7 @@ template <typename MatrixType>
 hyb_matrix<IndexType,ValueType,SpaceOrAlloc>
     ::hyb_matrix(const MatrixType& matrix)
     {
-        cusp::convert(*this, matrix);
+        cusp::detail::convert(*this, matrix);
     }
 
 //////////////////////
@@ -68,14 +64,14 @@ template <typename IndexType, typename ValueType, class SpaceOrAlloc>
     hyb_matrix<IndexType,ValueType,SpaceOrAlloc>
     ::resize(IndexType num_rows, IndexType num_cols,
              IndexType num_ell_entries, IndexType num_coo_entries,
-             IndexType num_entries_per_row, IndexType stride)
+             IndexType num_entries_per_row, IndexType alignment)
     {
-            ell.resize(num_rows, num_cols, num_ell_entries, num_entries_per_row, stride);
-            coo.resize(num_rows, num_cols, num_coo_entries);
-
             this->num_rows    = num_rows;
             this->num_cols    = num_cols;
             this->num_entries = num_ell_entries + num_coo_entries;
+
+            ell.resize(num_rows, num_cols, num_ell_entries, num_entries_per_row, alignment);
+            coo.resize(num_rows, num_cols, num_coo_entries);
     }
 
 // swap matrix contents
@@ -84,12 +80,10 @@ template <typename IndexType, typename ValueType, class SpaceOrAlloc>
     hyb_matrix<IndexType,ValueType,SpaceOrAlloc>
     ::swap(hyb_matrix& matrix)
     {
+        detail::matrix_base<IndexType>::swap(matrix);
+
         ell.swap(matrix.ell);
         coo.swap(matrix.coo);
-
-        thrust::swap(num_entries, matrix.num_entries);
-
-        matrix_shape<IndexType>::swap(matrix);
     }
 
 template <typename IndexType, typename ValueType, class SpaceOrAlloc>
@@ -98,11 +92,11 @@ template <typename IndexType2, typename ValueType2, typename SpaceOrAlloc2>
     hyb_matrix<IndexType,ValueType,SpaceOrAlloc>
     ::operator=(const hyb_matrix<IndexType2, ValueType2, SpaceOrAlloc2>& matrix)
     {
-        this->ell         = matrix.ell;
-        this->coo         = matrix.coo;
-        this->num_entries = matrix.num_entries;
         this->num_rows    = matrix.num_rows;
         this->num_cols    = matrix.num_cols;
+        this->num_entries = matrix.num_entries;
+        this->ell         = matrix.ell;
+        this->coo         = matrix.coo;
 
         return *this;
     }
@@ -113,7 +107,7 @@ template <typename MatrixType>
     hyb_matrix<IndexType,ValueType,SpaceOrAlloc>
     ::operator=(const MatrixType& matrix)
     {
-        cusp::convert(*this, matrix);
+        cusp::detail::convert(*this, matrix);
         
         return *this;
     }

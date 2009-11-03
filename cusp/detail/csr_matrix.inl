@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-#include <cusp/convert.h>
+#include <cusp/detail/convert.h>
 
 namespace cusp
 {
@@ -26,8 +26,7 @@ namespace cusp
 // construct empty matrix
 template<typename IndexType, class SpaceOrAlloc>
 csr_pattern<IndexType,SpaceOrAlloc>
-    ::csr_pattern()
-        : num_entries(0) {}
+    ::csr_pattern() {}
 
 template <typename IndexType, typename ValueType, class SpaceOrAlloc>
 csr_matrix<IndexType,ValueType,SpaceOrAlloc>
@@ -38,31 +37,29 @@ csr_matrix<IndexType,ValueType,SpaceOrAlloc>
 template<typename IndexType, class SpaceOrAlloc>
 csr_pattern<IndexType,SpaceOrAlloc>
     :: csr_pattern(IndexType num_rows, IndexType num_cols, IndexType num_entries)
-        : row_offsets(num_rows + 1), column_indices(num_entries),
-          num_entries(num_entries),
-          matrix_shape<IndexType>(num_rows, num_cols) {}
+        : detail::matrix_base<IndexType>(num_rows, num_cols, num_entries),
+          row_offsets(num_rows + 1), column_indices(num_entries) {}
 
 template <typename IndexType, typename ValueType, class SpaceOrAlloc>
 csr_matrix<IndexType,ValueType,SpaceOrAlloc>
     ::csr_matrix(IndexType num_rows, IndexType num_cols, IndexType num_entries)
-        : values(num_entries),
-          csr_pattern<IndexType,SpaceOrAlloc>(num_rows, num_cols, num_entries) {}
+        : csr_pattern<IndexType,SpaceOrAlloc>(num_rows, num_cols, num_entries),
+          values(num_entries) {}
 
 // construct from another matrix
 template<typename IndexType, class SpaceOrAlloc>
 template <typename IndexType2, typename SpaceOrAlloc2>
 csr_pattern<IndexType,SpaceOrAlloc>
     :: csr_pattern(const csr_pattern<IndexType2,SpaceOrAlloc2>& pattern)
-        : row_offsets(pattern.row_offsets), column_indices(pattern.column_indices),
-          num_entries(pattern.num_entries),
-          matrix_shape<IndexType>(pattern) {}
+        : detail::matrix_base<IndexType>(pattern),
+          row_offsets(pattern.row_offsets), column_indices(pattern.column_indices) {}
 
 template <typename IndexType, typename ValueType, class SpaceOrAlloc>
 template <typename IndexType2, typename ValueType2, typename SpaceOrAlloc2>
 csr_matrix<IndexType,ValueType,SpaceOrAlloc>
     ::csr_matrix(const csr_matrix<IndexType2, ValueType2, SpaceOrAlloc2>& matrix)
-        : values(matrix.values),
-          csr_pattern<IndexType,SpaceOrAlloc>(matrix) {}
+        : csr_pattern<IndexType,SpaceOrAlloc>(matrix),
+          values(matrix.values) {}
 
 // construct from a different matrix format
 template <typename IndexType, typename ValueType, class SpaceOrAlloc>
@@ -70,7 +67,7 @@ template <typename MatrixType>
 csr_matrix<IndexType,ValueType,SpaceOrAlloc>
     ::csr_matrix(const MatrixType& matrix)
     {
-        cusp::convert(*this, matrix);
+        cusp::detail::convert(*this, matrix);
     }
 
 //////////////////////
@@ -83,11 +80,12 @@ template <typename IndexType, class SpaceOrAlloc>
     csr_pattern<IndexType,SpaceOrAlloc>
     ::resize(IndexType num_rows, IndexType num_cols, IndexType num_entries)
     {
-        row_offsets.resize(num_rows + 1);
-        column_indices.resize(num_entries);
         this->num_rows    = num_rows;
         this->num_cols    = num_cols;
         this->num_entries = num_entries;
+
+        row_offsets.resize(num_rows + 1);
+        column_indices.resize(num_entries);
     }
 
 template <typename IndexType, typename ValueType, class SpaceOrAlloc>
@@ -95,8 +93,8 @@ template <typename IndexType, typename ValueType, class SpaceOrAlloc>
     csr_matrix<IndexType,ValueType,SpaceOrAlloc>
     ::resize(IndexType num_rows, IndexType num_cols, IndexType num_entries)
     {
-        values.resize(num_entries);
         csr_pattern<IndexType,SpaceOrAlloc>::resize(num_rows, num_cols, num_entries);
+        values.resize(num_entries);
     }
 
 // swap matrix contents
@@ -105,10 +103,9 @@ template <typename IndexType, class SpaceOrAlloc>
     csr_pattern<IndexType,SpaceOrAlloc>
     ::swap(csr_pattern& pattern)
     {
+        detail::matrix_base<IndexType>::swap(pattern);
         row_offsets.swap(pattern.row_offsets);
         column_indices.swap(pattern.column_indices);
-        thrust::swap(num_entries, pattern.num_entries);
-        matrix_shape<IndexType>::swap(pattern);
     }
 
 template <typename IndexType, typename ValueType, class SpaceOrAlloc>
@@ -127,13 +124,12 @@ template <typename IndexType2, typename ValueType2, typename SpaceOrAlloc2>
     ::operator=(const csr_matrix<IndexType2, ValueType2, SpaceOrAlloc2>& matrix)
     {
         // TODO use csr_pattern::operator= or csr_pattern::assign()
-        
-        this->values         = matrix.values;
-        this->row_offsets    = matrix.row_offsets;
-        this->column_indices = matrix.column_indices;
-        this->num_entries    = matrix.num_entries;
         this->num_rows       = matrix.num_rows;
         this->num_cols       = matrix.num_cols;
+        this->num_entries    = matrix.num_entries;
+        this->row_offsets    = matrix.row_offsets;
+        this->column_indices = matrix.column_indices;
+        this->values         = matrix.values;
 
         return *this;
     }
@@ -145,7 +141,7 @@ template <typename MatrixType>
     csr_matrix<IndexType,ValueType,SpaceOrAlloc>
     ::operator=(const MatrixType& matrix)
     {
-        cusp::convert(*this, matrix);
+        cusp::detail::convert(*this, matrix);
         
         return *this;
     }

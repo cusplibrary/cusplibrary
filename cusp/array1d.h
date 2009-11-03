@@ -64,9 +64,9 @@ namespace cusp
     {
         private:
             typedef typename choose_memory_allocator<T, SpaceOrAllocator>::type Alloc;
-            typedef typename thrust::detail::vector_base<T,Alloc> Parent;
 
         public:
+            typedef typename thrust::detail::vector_base<T,Alloc> Parent;
             typedef typename Parent::size_type  size_type;
             typedef typename Parent::value_type value_type;
 
@@ -110,4 +110,6 @@ namespace cusp
     };
 
 } // end namespace cusp
+
+#include <cusp/detail/array1d.inl>
 

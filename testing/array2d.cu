@@ -2,7 +2,7 @@
 #include <cusp/array2d.h>
 
 template <class Space>
-void TestDenseMatrixBasicConstructor(void)
+void TestArray2dBasicConstructor(void)
 {
     cusp::array2d<float, Space> matrix(3, 2);
 
@@ -11,10 +11,10 @@ void TestDenseMatrixBasicConstructor(void)
     ASSERT_EQUAL(matrix.num_entries,    6);
     ASSERT_EQUAL(matrix.values.size(),  6);
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestDenseMatrixBasicConstructor);
+DECLARE_HOST_DEVICE_UNITTEST(TestArray2dBasicConstructor);
 
 template <class Space>
-void TestDenseMatrixCopyConstructor(void)
+void TestArray2dCopyConstructor(void)
 {
     cusp::array2d<float, Space> matrix(3, 2);
 
@@ -34,10 +34,10 @@ void TestDenseMatrixCopyConstructor(void)
 
     ASSERT_EQUAL(copy_of_matrix.values, matrix.values);
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestDenseMatrixCopyConstructor);
+DECLARE_HOST_DEVICE_UNITTEST(TestArray2dCopyConstructor);
 
 template <class Space>
-void TestDenseMatrixRowMajor(void)
+void TestArray2dRowMajor(void)
 {
     cusp::array2d<float, Space, cusp::row_major> matrix(2,3);
 
@@ -58,10 +58,10 @@ void TestDenseMatrixRowMajor(void)
     ASSERT_EQUAL(matrix.values[4], 50);
     ASSERT_EQUAL(matrix.values[5], 60);
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestDenseMatrixRowMajor);
+DECLARE_HOST_DEVICE_UNITTEST(TestArray2dRowMajor);
 
 template <class Space>
-void TestDenseMatrixColumnMajor(void)
+void TestArray2dColumnMajor(void)
 {
     cusp::array2d<float, Space, cusp::column_major> matrix(2,3);
     
@@ -82,10 +82,10 @@ void TestDenseMatrixColumnMajor(void)
     ASSERT_EQUAL(matrix.values[4], 30);
     ASSERT_EQUAL(matrix.values[5], 60);
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestDenseMatrixColumnMajor);
+DECLARE_HOST_DEVICE_UNITTEST(TestArray2dColumnMajor);
 
 template <class Space>
-void TestDenseMatrixResize(void)
+void TestArray2dResize(void)
 {
     cusp::array2d<float, Space> matrix;
     
@@ -96,10 +96,10 @@ void TestDenseMatrixResize(void)
     ASSERT_EQUAL(matrix.num_entries,    6);
     ASSERT_EQUAL(matrix.values.size(),  6);
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestDenseMatrixResize);
+DECLARE_HOST_DEVICE_UNITTEST(TestArray2dResize);
 
 template <class Space>
-void TestDenseMatrixSwap(void)
+void TestArray2dSwap(void)
 {
     cusp::array2d<float, Space> A(2,2);
     cusp::array2d<float, Space> B(3,1);
@@ -126,11 +126,11 @@ void TestDenseMatrixSwap(void)
     ASSERT_EQUAL(B.num_entries, A_copy.num_entries);
     ASSERT_EQUAL(B.values,      A_copy.values);
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestDenseMatrixSwap);
+DECLARE_HOST_DEVICE_UNITTEST(TestArray2dSwap);
 
-void TestDenseMatrixRebind(void)
+void TestArray2dRebind(void)
 {
-    typedef cusp::array2d<float, cusp::host_memory>  HostMatrix;
+    typedef cusp::array2d<float, cusp::host_memory>       HostMatrix;
     typedef HostMatrix::rebind<cusp::device_memory>::type DeviceMatrix;
 
     HostMatrix   h_matrix(10,10);
@@ -138,5 +138,51 @@ void TestDenseMatrixRebind(void)
 
     ASSERT_EQUAL(h_matrix.num_entries, d_matrix.num_entries);
 }
-DECLARE_UNITTEST(TestDenseMatrixRebind);
+DECLARE_UNITTEST(TestArray2dRebind);
+
+template <typename MemorySpace>
+void TestArray2dEquality(void)
+{
+    cusp::array2d<float, cusp::host_memory, cusp::row_major>    A(2,2);
+    cusp::array2d<float, cusp::host_memory, cusp::row_major>    B(2,3);
+    cusp::array2d<float, cusp::host_memory, cusp::column_major> C(2,3);
+    cusp::array2d<float, cusp::host_memory, cusp::column_major> D(2,2);
+
+    A(0,0) = 1;  A(0,1) = 2;  A(0,2) = 3;
+    A(1,0) = 4;  A(1,1) = 5;  A(1,2) = 6;
+    
+    B(0,0) = 1;  B(0,1) = 2;  B(0,2) = 3;
+    B(1,0) = 7;  B(1,1) = 5;  B(1,2) = 6;
+    
+    C(0,0) = 1;  C(0,1) = 2;  C(0,2) = 3;
+    C(1,0) = 4;  C(1,1) = 5;  C(1,2) = 6;
+    
+    D(0,0) = 1;  D(0,1) = 2;
+    D(1,0) = 4;  D(1,1) = 5;
+
+    ASSERT_EQUAL(A == A, true);
+    ASSERT_EQUAL(B == B, true);
+    ASSERT_EQUAL(C == C, true);
+    ASSERT_EQUAL(D == D, true);
+    
+    ASSERT_EQUAL(A != A, false);
+    ASSERT_EQUAL(B != B, false);
+    ASSERT_EQUAL(C != C, false);
+    ASSERT_EQUAL(D != D, false);
+
+    ASSERT_EQUAL(A == B, false);
+//    ASSERT_EQUAL(A == C,  true);
+//    ASSERT_EQUAL(A == D, false);
+//    ASSERT_EQUAL(B == C, false);
+//    ASSERT_EQUAL(B == D, false);
+    ASSERT_EQUAL(C == D, false);
+    
+    ASSERT_EQUAL(A != B,  true);
+//    ASSERT_EQUAL(A != C, false);
+//    ASSERT_EQUAL(A != D,  true);
+//    ASSERT_EQUAL(B != C,  true);
+//    ASSERT_EQUAL(B != D,  true);
+    ASSERT_EQUAL(C != D,  true);
+}
+DECLARE_HOST_DEVICE_UNITTEST(TestArray2dEquality);
 

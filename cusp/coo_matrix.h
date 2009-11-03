@@ -18,16 +18,16 @@
 #pragma once
 
 #include <cusp/array1d.h>
-#include <cusp/matrix_shape.h>
+#include <cusp/detail/matrix_base.h>
 
 namespace cusp
 {
 
     template<typename IndexType, class SpaceOrAlloc>
-    class coo_pattern : public matrix_shape<IndexType>
+    class coo_pattern : public detail::matrix_base<IndexType>
     {
         public:
-        typedef typename matrix_shape<IndexType>::index_type index_type;
+        typedef IndexType index_type;
 
         typedef typename cusp::choose_memory_allocator<IndexType, SpaceOrAlloc>::type index_allocator_type;
         typedef typename cusp::allocator_space<index_allocator_type>::type memory_space;
@@ -35,8 +35,6 @@ namespace cusp
         
         template<typename SpaceOrAlloc2>
         struct rebind { typedef coo_pattern<IndexType, SpaceOrAlloc2> type; };
-
-        index_type num_entries;
 
         cusp::array1d<IndexType, index_allocator_type> row_indices;
         cusp::array1d<IndexType, index_allocator_type> column_indices;
@@ -57,10 +55,10 @@ namespace cusp
     class coo_matrix : public coo_pattern<IndexType, SpaceOrAlloc>
     {
         public:
+        typedef ValueType value_type;
+
         typedef typename cusp::choose_memory_allocator<ValueType, SpaceOrAlloc>::type value_allocator_type;
         typedef typename cusp::coo_matrix<IndexType, ValueType, SpaceOrAlloc> matrix_type;
-    
-        typedef ValueType value_type;
         
         template<typename SpaceOrAlloc2>
         struct rebind { typedef coo_matrix<IndexType, ValueType, SpaceOrAlloc2> type; };

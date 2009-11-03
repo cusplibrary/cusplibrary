@@ -35,9 +35,13 @@ namespace cusp
     };
 
 
+namespace detail
+{
+
     template <class DestinationType, class SourceType>
     void convert(DestinationType& dst, const SourceType& src);
 
+} // end namespace detail
 } // end namespace cusp
 
 #include <cusp/detail/convert.inl>

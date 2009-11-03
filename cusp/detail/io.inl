@@ -18,7 +18,6 @@
 #pragma once
 
 #include <cusp/coo_matrix.h>
-#include <cusp/convert.h>
 
 #include <thrust/sort.h>
 #include <thrust/iterator/zip_iterator.h>
@@ -285,7 +284,7 @@ void read_matrix_market_file(MatrixType& mtx, const std::string& filename)
 
     cusp::coo_matrix<IndexType,ValueType,cusp::host_memory> coo;
     cusp::read_matrix_market_file(coo, filename);
-    cusp::convert(mtx, coo);
+    mtx = coo;
 }
 
 template <typename MatrixType>
@@ -295,7 +294,7 @@ void write_matrix_market_file(const MatrixType& mtx, const std::string& filename
     typedef typename MatrixType::value_type ValueType;
 
     cusp::coo_matrix<IndexType,ValueType,cusp::host_memory> coo;
-    cusp::convert(coo, mtx);
+    coo = mtx;
     cusp::write_matrix_market_file(coo, filename);
 }
 

@@ -110,18 +110,20 @@ void __spmv_dia(const cusp::dia_matrix<IndexType,ValueType,cusp::device_memory>&
 //    const unsigned int MAX_BLOCKS = thrust::experimental::arch::max_active_blocks(spmv_dia_kernel<IndexType, ValueType, BLOCK_SIZE, UseCache>, BLOCK_SIZE, (size_t) 0);
     const unsigned int NUM_BLOCKS = std::min(MAX_BLOCKS, DIVIDE_INTO(dia.num_rows, BLOCK_SIZE));
    
+    const IndexType stride = dia.values.num_rows;
+
     if (UseCache)
         bind_x(x);
   
     // the dia_kernel only handles BLOCK_SIZE diagonals at a time
-    for(unsigned int base = 0; base < dia.num_diagonals; base += BLOCK_SIZE)
+    for(unsigned int base = 0; base < dia.values.num_cols; base += BLOCK_SIZE)
     {
-        IndexType num_diagonals = std::min(dia.num_diagonals - base, BLOCK_SIZE);
+        IndexType num_diagonals = std::min<unsigned int>(dia.values.num_cols - base, BLOCK_SIZE);
 
         spmv_dia_kernel<IndexType, ValueType, BLOCK_SIZE, UseCache> <<<NUM_BLOCKS, BLOCK_SIZE>>>
-            (dia.num_rows, dia.num_cols, num_diagonals, dia.stride,
+            (dia.num_rows, dia.num_cols, num_diagonals, stride,
              thrust::raw_pointer_cast(&dia.diagonal_offsets[0]) + base,
-             thrust::raw_pointer_cast(&dia.values[0]) + base * dia.stride,
+             thrust::raw_pointer_cast(&dia.values.values[0]) + base * stride,
              x, y);
     }
 
