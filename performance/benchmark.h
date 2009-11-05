@@ -106,8 +106,7 @@ void test_coo(HostMatrix& host_matrix)
     typedef typename HostMatrix::value_type ValueType;
 
     // convert HostMatrix to TestMatrix on host
-    cusp::coo_matrix<IndexType, ValueType, cusp::host_memory> test_matrix_on_host;
-    cusp::convert(test_matrix_on_host, host_matrix);
+    cusp::coo_matrix<IndexType, ValueType, cusp::host_memory> test_matrix_on_host(host_matrix);
 
     // transfer TestMatrix to device
     cusp::coo_matrix<IndexType, ValueType, cusp::device_memory> test_matrix_on_device(test_matrix_on_host);
@@ -123,8 +122,7 @@ void test_csr(HostMatrix& host_matrix)
     typedef typename HostMatrix::value_type ValueType;
 
     // convert HostMatrix to TestMatrix on host
-    cusp::csr_matrix<IndexType, ValueType, cusp::host_memory> test_matrix_on_host;
-    cusp::convert(test_matrix_on_host, host_matrix);
+    cusp::csr_matrix<IndexType, ValueType, cusp::host_memory> test_matrix_on_host(host_matrix);
 
     // transfer csr_matrix to device
     cusp::csr_matrix<IndexType, ValueType, cusp::device_memory> test_matrix_on_device(test_matrix_on_host);
@@ -146,7 +144,7 @@ void test_dia(HostMatrix& host_matrix)
 
     try
     {
-        cusp::convert(test_matrix_on_host, host_matrix);
+        test_matrix_on_host = host_matrix;
     }
     catch (cusp::format_conversion_exception)
     {
@@ -172,7 +170,7 @@ void test_ell(HostMatrix& host_matrix)
 
     try
     {
-        cusp::convert(test_matrix_on_host, host_matrix);
+        test_matrix_on_host = host_matrix;
     }
     catch (cusp::format_conversion_exception)
     {
@@ -194,8 +192,7 @@ void test_hyb(HostMatrix& host_matrix)
     typedef typename HostMatrix::value_type ValueType;
 
     // convert HostMatrix to TestMatrix on host
-    cusp::hyb_matrix<IndexType, ValueType, cusp::host_memory> test_matrix_on_host;
-    cusp::convert(test_matrix_on_host, host_matrix);
+    cusp::hyb_matrix<IndexType, ValueType, cusp::host_memory> test_matrix_on_host(host_matrix);
 
     // transfer TestMatrix to device
     cusp::hyb_matrix<IndexType, ValueType, cusp::device_memory> test_matrix_on_device(test_matrix_on_host);

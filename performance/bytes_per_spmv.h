@@ -20,7 +20,7 @@ template <typename IndexType, typename ValueType>
 size_t bytes_per_spmv(const cusp::ell_matrix<IndexType,ValueType,cusp::host_memory>& mtx)
 {
     size_t bytes = 0;
-    bytes += 1*sizeof(ValueType) * mtx.num_rows * mtx.num_entries_per_row; // A[i,j] and padding
+    bytes += 1*sizeof(ValueType) * mtx.num_rows * mtx.values.num_cols; // A[i,j] and padding
     bytes += 1*sizeof(IndexType) * mtx.num_entries;  // column index
     bytes += 1*sizeof(ValueType) * mtx.num_entries;  // x[j]
     bytes += 2*sizeof(ValueType) * mtx.num_rows;     // y[i] = y[i] + ...

@@ -1,5 +1,6 @@
 #include <cusp/csr_matrix.h>
 #include <cusp/io.h>
+#include <cusp/gallery/poisson.h>
 
 #include <iostream>
 #include <string>
@@ -12,7 +13,6 @@
 
 #include "bytes_per_spmv.h"
 #include "timer.h"
-#include "gallery.h"
 #include "utility.h"
 #include "benchmark.h"
 
@@ -71,8 +71,8 @@ void test_all_formats(std::string& filename)
 
     if (filename == "")
     {
-        std::cout << "Generated matrix (laplace_2d) ";
-        laplacian_5pt(host_matrix, 512);
+        std::cout << "Generated matrix (poisson5pt) ";
+        cusp::gallery::poisson5pt(host_matrix, 512, 512);
     }
     else
     {

@@ -1,6 +1,5 @@
 #include <cusp/dia_matrix.h>
 #include <cusp/csr_matrix.h>
-#include <cusp/convert.h>
 #include <cusp/io.h>
 
 #include <thrust/sequence.h>
@@ -57,7 +56,7 @@ void benchmark_csr_vector()
         const IndexType NNZ = N * D - (D * (D - 1)) / 2;
         cusp::dia_matrix<IndexType, ValueType, cusp::host_memory> dia(N, N, NNZ, D, N);
         thrust::sequence(dia.diagonal_offsets.begin(), dia.diagonal_offsets.end());
-        thrust::fill(dia.values.begin(), dia.values.end(), 1);
+        thrust::fill(dia.values.values.begin(), dia.values.values.end(), 1);
 
         // convert to CSR
         cusp::csr_matrix<IndexType, ValueType, cusp::device_memory> csr(dia);
