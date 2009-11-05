@@ -17,6 +17,8 @@
 
 #pragma once
 
+#include <cusp/detail/config.h>
+
 #include <thrust/detail/vector_base.h>
 
 #include <thrust/host_vector.h>

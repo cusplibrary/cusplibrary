@@ -17,6 +17,8 @@
 
 #pragma once
 
+#include <cusp/detail/config.h>
+
 #include <cusp/detail/host/spmv.h>
 #include <cusp/detail/device/spmv.h>
 

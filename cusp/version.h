@@ -14,21 +14,19 @@
  *  limitations under the License.
  */
 
-
 #pragma once
 
 #include <cusp/detail/config.h>
 
-namespace cusp
-{
+//  This is the only cusp header that is guaranteed to 
+//  change with every cusp release.
+//
+//  CUSP_VERSION % 100 is the sub-minor version
+//  CUSP_VERSION / 100 % 1000 is the minor version
+//  CUSP_VERSION / 100000 is the major version
 
-template <typename MatrixType>
-void read_matrix_market_file(MatrixType& mtx, const std::string& filename);
-
-template <typename MatrixType>
-void write_matrix_market_file(const MatrixType& mtx, const std::string& filename);
-
-} //end namespace cusp
-
-#include <cusp/detail/io.inl>
+#define CUSP_VERSION 100
+#define CUSP_MAJOR_VERSION     (CUSP_VERSION / 100000)
+#define CUSP_MINOR_VERSION     (CUSP_VERSION / 100 % 1000)
+#define CUSP_SUBMINOR_VERSION  (CUSP_VERSION % 100)
 

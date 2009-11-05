@@ -17,6 +17,8 @@
 
 #pragma once
 
+#include <cusp/detail/config.h>
+
 namespace cusp
 {
 namespace blas

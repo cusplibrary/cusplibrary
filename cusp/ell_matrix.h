@@ -17,6 +17,8 @@
 
 #pragma once
 
+#include <cusp/detail/config.h>
+
 #include <cusp/detail/matrix_base.h>
 
 namespace cusp

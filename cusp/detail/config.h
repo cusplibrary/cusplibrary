@@ -14,21 +14,11 @@
  *  limitations under the License.
  */
 
+/*! \file config.h
+ *  \brief Defines platform configuration.
+ */
 
 #pragma once
 
-#include <cusp/detail/config.h>
-
-namespace cusp
-{
-
-template <typename MatrixType>
-void read_matrix_market_file(MatrixType& mtx, const std::string& filename);
-
-template <typename MatrixType>
-void write_matrix_market_file(const MatrixType& mtx, const std::string& filename);
-
-} //end namespace cusp
-
-#include <cusp/detail/io.inl>
+#include <thrust/detail/config.h>
 
