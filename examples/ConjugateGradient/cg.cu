@@ -8,11 +8,11 @@ typedef cusp::device_memory MemorySpace;
 
 int main(void)
 {
-    // create an empty sparse matrix structure (CSR format)
-    cusp::csr_matrix<int, float, MemorySpace> A;
+    // create an empty sparse matrix structure (HYB format)
+    cusp::hyb_matrix<int, float, MemorySpace> A;
 
     // load a matrix stored in MatrixMarket format
-    cusp::read_matrix_market_file(A, "../testing/data/laplacian/5pt_10x10.mtx");
+    cusp::read_matrix_market_file(A, "5pt_10x10.mtx");
 
     // allocate storage for solution (x) and right hand side (b)
     cusp::array1d<float, MemorySpace> x(A.num_rows, 0);
