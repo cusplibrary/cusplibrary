@@ -120,9 +120,9 @@ void __spmv_csr_vector(const csr_matrix<IndexType,ValueType,cusp::device_memory>
                        const ValueType * x, 
                              ValueType * y)
 {
+    const unsigned int THREADS_PER_BLOCK  = 128;
     const unsigned int THREADS_PER_VECTOR = 32;
-    const unsigned int VECTORS_PER_BLOCK  =  4;
-    const unsigned int THREADS_PER_BLOCK  = VECTORS_PER_BLOCK * THREADS_PER_VECTOR;
+    const unsigned int VECTORS_PER_BLOCK  = THREADS_PER_BLOCK / THREADS_PER_VECTOR;
 
     //const unsigned int MAX_BLOCKS = MAX_THREADS / THREADS_PER_BLOCK;
     const unsigned int MAX_BLOCKS = thrust::experimental::arch::max_active_blocks(spmv_csr_vector_kernel<IndexType, ValueType, VECTORS_PER_BLOCK, THREADS_PER_VECTOR, UseCache>, THREADS_PER_BLOCK, (size_t) 0);
