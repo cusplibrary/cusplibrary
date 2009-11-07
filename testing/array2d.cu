@@ -148,8 +148,8 @@ void TestArray2dEquality(void)
     cusp::array2d<float, cusp::host_memory, cusp::column_major> C(2,3);
     cusp::array2d<float, cusp::host_memory, cusp::column_major> D(2,2);
 
-    A(0,0) = 1;  A(0,1) = 2;  A(0,2) = 3;
-    A(1,0) = 4;  A(1,1) = 5;  A(1,2) = 6;
+    A(0,0) = 1;  A(0,1) = 2;
+    A(1,0) = 4;  A(1,1) = 5;
     
     B(0,0) = 1;  B(0,1) = 2;  B(0,2) = 3;
     B(1,0) = 7;  B(1,1) = 5;  B(1,2) = 6;
