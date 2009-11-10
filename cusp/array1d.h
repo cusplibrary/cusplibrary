@@ -72,6 +72,8 @@ namespace cusp
             typedef typename Parent::size_type  size_type;
             typedef typename Parent::value_type value_type;
 
+            typedef typename allocator_space<Alloc>::type memory_space;
+
             array1d(void) : Parent() {}
             
             explicit array1d(size_type n)

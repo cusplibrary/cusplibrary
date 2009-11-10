@@ -1,7 +1,6 @@
 #include <unittest/unittest.h>
 
 #include <cusp/gallery/poisson.h>
-#include <cusp/linear_operator.h>
 #include <cusp/csr_matrix.h>
 #include <cusp/krylov/cg.h>
 
@@ -15,7 +14,7 @@ void TestConjugateGradient(void)
     cusp::array1d<float, MemorySpace> x(A.num_rows, 0.0f);
     cusp::array1d<float, MemorySpace> b(A.num_rows, 1.0f);
 
-    cusp::krylov::cg(cusp::make_linear_operator(A), x, b, 1e-5, 100);
+    cusp::krylov::cg(A, x, b, 1e-5, 100);
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestConjugateGradient);
 

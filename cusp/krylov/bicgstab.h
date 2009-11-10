@@ -21,6 +21,7 @@
 
 #include <cusp/array1d.h>
 #include <cusp/blas.h>
+#include <cusp/spblas.h>
 
 #include <iostream>
 
@@ -63,7 +64,7 @@ void bicgstab(LinearOperator A,
 
     // y <- Ax
     blas::fill(y, 0);
-    A(thrust::raw_pointer_cast(&x[0]), thrust::raw_pointer_cast(&y[0]));
+    cusp::spblas::spmv(A, x, y);
 
     // r <- b - A*x
     blas::axpby(b, y, r, static_cast<ValueType>(1.0), static_cast<ValueType>(-1.0));
@@ -94,7 +95,7 @@ void bicgstab(LinearOperator A,
 
         // AMp = A*Mp
         blas::fill(AMp, 0);
-        A(thrust::raw_pointer_cast(&Mp[0]), thrust::raw_pointer_cast(&AMp[0]));
+        cusp::spblas::spmv(A, Mp, AMp);
 
         // alpha = (r_j, r_star) / (A*M*p, r_star)
         ValueType alpha = r_r_star_old / blas::dotc(r_star, AMp);
@@ -107,7 +108,7 @@ void bicgstab(LinearOperator A,
         
         // AMs = A*Ms
         blas::fill(AMs, 0);
-        A(thrust::raw_pointer_cast(&Ms[0]), thrust::raw_pointer_cast(&AMs[0]));
+        cusp::spblas::spmv(A, Ms, AMs);
 
         // omega = (AMs, s) / (AMs, AMs)
         ValueType omega = blas::dotc(AMs, s) / blas::dotc(AMs, AMs); // TODO optimize denominator

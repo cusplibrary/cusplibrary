@@ -21,6 +21,7 @@
 
 #include <cusp/array1d.h>
 #include <cusp/blas.h>
+#include <cusp/spblas.h>
 
 #include <iostream>
 
@@ -33,17 +34,17 @@ namespace krylov
 
 // TODO use ||b - A * x|| < tol * ||b|| stopping criterion
 
-template <class LinearOperator,
-          class Vector>
-void cg(LinearOperator A,
-              Vector& x,
-        const Vector& b,
+template <class MatrixType,
+          class VectorType>
+void cg(const MatrixType& A,
+              VectorType& x,
+        const VectorType& b,
         const float tol = 1e-5,
         const size_t max_iter = 1000,
         const int verbose  = 0)
 {
-    typedef typename LinearOperator::value_type   ValueType;
-    typedef typename LinearOperator::memory_space MemorySpace;
+    typedef typename MatrixType::value_type   ValueType;
+    typedef typename MatrixType::memory_space MemorySpace;
 
     assert(A.num_rows == A.num_cols);        // sanity check
 
@@ -58,7 +59,7 @@ void cg(LinearOperator A,
     
     // y <- Ax
     blas::fill(y, 0);
-    A(thrust::raw_pointer_cast(&x[0]), thrust::raw_pointer_cast(&y[0]));                                                 
+    cusp::spblas::spmv(A, x, y);
 
     // r <- b - A*x
     blas::axpby(b, y, r, static_cast<ValueType>(1.0), static_cast<ValueType>(-1.0));
@@ -79,7 +80,7 @@ void cg(LinearOperator A,
     {
         // y <- Ap
         blas::fill(y, 0);
-        A(thrust::raw_pointer_cast(&p[0]), thrust::raw_pointer_cast(&y[0]));  
+        cusp::spblas::spmv(A, x, y);
 
         // alpha <- <r,r>/<y,p>
         ValueType alpha =  r2 / blas::dot(y, p);
