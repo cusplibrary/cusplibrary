@@ -80,7 +80,7 @@ void cg(const MatrixType& A,
     {
         // y <- Ap
         blas::fill(y, 0);
-        cusp::spblas::spmv(A, x, y);
+        cusp::spblas::spmv(A, p, y);
 
         // alpha <- <r,r>/<y,p>
         ValueType alpha =  r2 / blas::dot(y, p);

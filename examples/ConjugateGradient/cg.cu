@@ -1,6 +1,5 @@
 #include <cusp/csr_matrix.h>
 #include <cusp/io.h>
-#include <cusp/linear_operator.h>
 #include <cusp/krylov/cg.h>
 
 // where to perform the computation
@@ -23,7 +22,7 @@ int main(void)
         b[i] = i % 2;
    
     // obtain a linear operator from matrix A and call CG
-    cusp::krylov::cg(cusp::make_linear_operator(A), x, b, 1e-5f, 1000, 1);
+    cusp::krylov::cg(A, x, b, 1e-5f, 1000, 1);
 
     return 0;
 }
