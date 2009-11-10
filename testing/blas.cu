@@ -32,6 +32,10 @@ void TestAxpy(void)
     ASSERT_EQUAL(y[1],   8.0);
     ASSERT_EQUAL(y[2],   8.0);
     ASSERT_EQUAL(y[3],  -1.0);
+
+    // test size checking
+    cusp::array1d<float, MemorySpace> w(3);
+    ASSERT_THROWS(cusp::blas::axpy(x, w, 1.0f), cusp::invalid_input_exception);
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestAxpy);
 
@@ -66,6 +70,10 @@ void TestAxpby(void)
     ASSERT_EQUAL(z[1],   8.0);
     ASSERT_EQUAL(z[2],   8.0);
     ASSERT_EQUAL(z[3],  -1.0);
+    
+    // test size checking
+    cusp::array1d<float, MemorySpace> w(3);
+    ASSERT_THROWS(cusp::blas::axpby(x, y, w, 2.0f, 1.0f), cusp::invalid_input_exception);
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestAxpby);
 
@@ -93,6 +101,10 @@ void TestCopy(void)
     cusp::blas::copy(x, y);
 
     ASSERT_EQUAL(x, y);
+    
+    // test size checking
+    cusp::array1d<float, MemorySpace> w(3);
+    ASSERT_THROWS(cusp::blas::copy(w, x), cusp::invalid_input_exception);
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestCopy);
 
@@ -113,8 +125,37 @@ void TestDot(void)
     ASSERT_EQUAL(cusp::blas::dot(x.begin(), x.end(), y.begin()), -21.0f);
     
     ASSERT_EQUAL(cusp::blas::dot(x, y), -21.0f);
+    
+    // test size checking
+    cusp::array1d<float, MemorySpace> w(3);
+    ASSERT_THROWS(cusp::blas::dot(x, w), cusp::invalid_input_exception);
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestDot);
+
+
+template <class MemorySpace>
+void TestDotc(void)
+{
+    // TODO test complex types
+    cusp::array1d<float, MemorySpace> x(6);
+    cusp::array1d<float, MemorySpace> y(6);
+
+    x[0] =  7.0f;   y[0] =  0.0f; 
+    x[1] =  5.0f;   y[1] = -2.0f;
+    x[2] =  4.0f;   y[2] =  0.0f;
+    x[3] = -3.0f;   y[3] =  5.0f;
+    x[4] =  0.0f;   y[4] =  6.0f;
+    x[5] =  4.0f;   y[5] =  1.0f;
+
+    ASSERT_EQUAL(cusp::blas::dotc(x.begin(), x.end(), y.begin()), -21.0f);
+    
+    ASSERT_EQUAL(cusp::blas::dotc(x, y), -21.0f);
+    
+    // test size checking
+    cusp::array1d<float, MemorySpace> w(3);
+    ASSERT_THROWS(cusp::blas::dotc(x, w), cusp::invalid_input_exception);
+}
+DECLARE_HOST_DEVICE_UNITTEST(TestDotc);
 
 
 template <class MemorySpace>

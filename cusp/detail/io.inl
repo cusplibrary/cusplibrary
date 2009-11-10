@@ -18,6 +18,7 @@
 #pragma once
 
 #include <cusp/coo_matrix.h>
+#include <cusp/exception.h>
 
 #include <thrust/sort.h>
 #include <thrust/iterator/zip_iterator.h>
@@ -27,7 +28,6 @@
 #include <sstream>
 #include <iostream>
 #include <fstream>
-#include <stdexcept>
 
 namespace cusp
 {
@@ -58,17 +58,6 @@ void tokenize(std::vector<std::string>& tokens,
 
 } // end namespace detail
 
-
-    class io_exception : public std::exception
-    {
-        public:
-            io_exception(const std::string _msg) : msg(_msg) {}
-            ~io_exception() throw() {}
-            const char* what() const throw() { return msg.c_str(); }
-
-        private:
-            std::string msg;
-    };
 
 
 

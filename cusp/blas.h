@@ -88,6 +88,20 @@ typename Array1::value_type
         const Array2& y);
 
 
+template <typename InputIterator1,
+          typename InputIterator2>
+typename thrust::iterator_value<InputIterator1>::type
+    dotc(InputIterator1 first1,
+         InputIterator1 last1,
+         InputIterator2 first2);
+
+template <typename Array1,
+          typename Array2>
+typename Array1::value_type
+    dotc(const Array1& x,
+         const Array2& y);
+
+
 template <typename ForwardIterator,
           typename ScalarType>
 void fill(ForwardIterator first,

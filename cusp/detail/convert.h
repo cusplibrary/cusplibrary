@@ -17,24 +17,8 @@
 
 #pragma once
 
-#include <string>
-#include <stdexcept>
-
 namespace cusp
 {
-
-    class format_conversion_exception : public std::exception
-    {
-        public:
-            format_conversion_exception(const std::string _msg) : msg(_msg) {}
-            ~format_conversion_exception() throw() {}
-            const char* what() const throw() { return msg.c_str(); }
-
-        private:
-            std::string msg;
-    };
-
-
 namespace detail
 {
 

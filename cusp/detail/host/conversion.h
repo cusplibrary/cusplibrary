@@ -27,6 +27,8 @@
 #include <cusp/hyb_matrix.h>
 #include <cusp/array2d.h>
 
+#include <cusp/exception.h>
+
 #include <cusp/detail/host/conversion_utils.h>
 
 namespace cusp

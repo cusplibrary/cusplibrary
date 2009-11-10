@@ -19,12 +19,16 @@
 
 #include <cusp/array1d.h>
 
+#include <cusp/exception.h>
+
 #include <thrust/copy.h>
 #include <thrust/fill.h>
 #include <thrust/functional.h>
 #include <thrust/transform.h>
 #include <thrust/transform_reduce.h>
 #include <thrust/inner_product.h>
+
+#include <thrust/iterator/transform_iterator.h>
 
 namespace cusp
 {
@@ -33,9 +37,29 @@ namespace blas
 
 namespace detail
 {
+    template <typename T1, typename MemorySpace1,
+              typename T2, typename MemorySpace2>
+    void assert_same_dimensions(const cusp::array1d<T1, MemorySpace1>& array1,
+                                const cusp::array1d<T2, MemorySpace2>& array2)
+    {
+        if(array1.size() != array2.size())
+            throw cusp::invalid_input_exception("array dimensions do not match");
+    }
+    
+    template <typename T1, typename MemorySpace1,
+              typename T2, typename MemorySpace2,
+              typename T3, typename MemorySpace3>
+    void assert_same_dimensions(const cusp::array1d<T1, MemorySpace1>& array1,
+                                const cusp::array1d<T2, MemorySpace2>& array2,
+                                const cusp::array1d<T3, MemorySpace3>& array3)
+    {
+        assert_same_dimensions(array1, array2);
+        assert_same_dimensions(array2, array3);
+    }
+
     // square<T> computes the square of a number f(x) -> x*x
     template <typename T>
-        struct square
+        struct square : public thrust::unary_function<T,T>
         {
             __host__ __device__
                 T operator()(T x)
@@ -44,8 +68,20 @@ namespace detail
                 }
         };
     
+    // conjugate<T> computes the complex conjugate of a number f(a + b * i) -> a - b * i
     template <typename T>
-        struct SCAL
+        struct conjugate : public thrust::unary_function<T,T>
+        {
+            __host__ __device__
+                T operator()(T x)
+                { 
+                    // TODO actually handle complex numbers
+                    return x;
+                }
+        };
+    
+    template <typename T>
+        struct SCAL : public thrust::unary_function<T,T>
         {
             T alpha;
 
@@ -57,9 +93,10 @@ namespace detail
                     return alpha * x;
                 }
         };
+    
 
     template <typename T>
-        struct AXPY
+        struct AXPY : public thrust::binary_function<T,T,T>
         {
             T alpha;
 
@@ -73,7 +110,7 @@ namespace detail
         };
     
     template <typename T>
-        struct AXPBY
+        struct AXPBY : public thrust::binary_function<T,T,T>
         {
             T alpha;
             T beta;
@@ -108,6 +145,7 @@ void axpy(const Array1& x,
                 Array2& y,
           ScalarType alpha)
 {
+    detail::assert_same_dimensions(x, y);
     cusp::blas::axpy(x.begin(), x.end(), y.begin(), alpha);
 }
 
@@ -136,6 +174,7 @@ void axpby(const Array1& x,
           ScalarType alpha,
           ScalarType beta)
 {
+    detail::assert_same_dimensions(x, y, z);
     cusp::blas::axpby(x.begin(), x.end(), y.begin(), z.begin(), alpha, beta);
 }
 
@@ -154,6 +193,7 @@ template <typename Array1,
 void copy(const Array1& x,
                 Array2& y)
 {
+    detail::assert_same_dimensions(x, y);
     cusp::blas::copy(x.begin(), x.end(), y.begin());
 }
 
@@ -177,8 +217,36 @@ typename Array1::value_type
     dot(const Array1& x,
         const Array2& y)
 {
+    detail::assert_same_dimensions(x, y);
     return cusp::blas::dot(x.begin(), x.end(), y.begin());
 }
+
+// TODO properly harmonize heterogenous types
+template <typename InputIterator1,
+          typename InputIterator2>
+typename thrust::iterator_value<InputIterator1>::type
+    dotc(InputIterator1 first1,
+         InputIterator1 last1,
+         InputIterator2 first2)
+{
+    typedef typename thrust::iterator_value<InputIterator1>::type OutputType;
+    return thrust::inner_product(thrust::make_transform_iterator(first1, detail::conjugate<OutputType>()),
+                                 thrust::make_transform_iterator(last1,  detail::conjugate<OutputType>()),
+                                 first2,
+                                 OutputType(0));
+}
+
+// TODO properly harmonize heterogenous types
+template <typename Array1,
+          typename Array2>
+typename Array1::value_type
+    dotc(const Array1& x,
+         const Array2& y)
+{
+    detail::assert_same_dimensions(x, y);
+    return cusp::blas::dotc(x.begin(), x.end(), y.begin());
+}
+
 
 
 template <typename ForwardIterator,
