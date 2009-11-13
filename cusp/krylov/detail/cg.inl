@@ -58,6 +58,7 @@ void cg(const MatrixType& A,
 
     // allocate workspace
     cusp::array1d<ValueType,MemorySpace> y(N);
+    cusp::array1d<ValueType,MemorySpace> z(N);
     cusp::array1d<ValueType,MemorySpace> r(N);
     cusp::array1d<ValueType,MemorySpace> p(N);
         
@@ -73,11 +74,16 @@ void cg(const MatrixType& A,
     // r <- b - A*x
     blas::axpby(b, y, r, static_cast<ValueType>(1.0), static_cast<ValueType>(-1.0));
    
-    // p <- r
+    // z <- M*r
+    blas::copy(r, z); // TODO replace with preconditioner
+
+    // p <- z
     blas::copy(r, p);
 		
     ValueType r_norm = blas::nrm2(r.begin(), r.end());
-    ValueType r2     = r_norm * r_norm;                     // <r,r>
+
+    // rz = <r^H, z>
+    ValueType rz = blas::dotc(r, z);
 
     if (verbose)
         std::cout << "[CG] initial residual norm " << r_norm << std::endl;
@@ -102,23 +108,27 @@ void cg(const MatrixType& A,
 
         // y <- Ap
         blas::fill(y, 0);
-        cusp::spblas::spmv(A, p, y);
-
+        cusp::spblas::spmv(A, p, y);  // TODO convert into one SpMV
+        
         // alpha <- <r,r>/<y,p>
-        ValueType alpha =  r2 / blas::dot(y, p);
+        ValueType alpha =  rz / blas::dotc(y, p);
         // x <- x + alpha * p
         blas::axpy(p, x, alpha);
         // r <- r - alpha * y		
         blas::axpy(y, r, -alpha);
+        // z <- M*r
+        blas::copy(r, z); // TODO replace with preconditioner
 		
-        ValueType r2_old = r2;
-
         // r2 = <r,r>
         r_norm = blas::nrm2(r);
-        r2 = r_norm * r_norm;
+        
+        ValueType rz_old = rz;
+
+        // rz = <r^H, z>
+        rz = blas::dotc(r, z);
 
         // beta <- <r_{i+1},r_{i+1}>/<r,r> 
-        ValueType beta = r2 / r2_old;                       
+        ValueType beta = rz / rz_old;
 		
         // p <- r + beta*p
         blas::axpby(r, p, p, static_cast<ValueType>(1.0), beta);
