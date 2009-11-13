@@ -57,9 +57,36 @@ template <typename Array1,
           typename ScalarType>
 void axpby(const Array1& x,
            const Array2& y,
-                 Array3& z,
+                 Array3& output,
           ScalarType alpha,
           ScalarType beta);
+
+
+template <typename InputIterator1,
+          typename InputIterator2,
+          typename InputIterator3,
+          typename OutputIterator,
+          typename ScalarType>
+void axpbypcz(InputIterator1 first1,
+              InputIterator1 last1,
+              InputIterator2 first2,
+              InputIterator3 first3,
+              OutputIterator output,
+              ScalarType alpha,
+              ScalarType beta,
+              ScalarType gamma);
+
+template <typename Array1,
+          typename Array2,
+          typename Array3,
+          typename ScalarType>
+void axpbypcz(const Array1& x,
+              const Array2& y,
+              const Array2& z,
+                    Array3& output,
+              ScalarType alpha,
+              ScalarType beta,
+              ScalarType gamma);
 
 
 template <typename InputIterator,

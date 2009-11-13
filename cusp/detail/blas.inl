@@ -56,6 +56,20 @@ namespace detail
         assert_same_dimensions(array1, array2);
         assert_same_dimensions(array2, array3);
     }
+    
+    template <typename T1, typename MemorySpace1,
+              typename T2, typename MemorySpace2,
+              typename T3, typename MemorySpace3,
+              typename T4, typename MemorySpace4>
+    void assert_same_dimensions(const cusp::array1d<T1, MemorySpace1>& array1,
+                                const cusp::array1d<T2, MemorySpace2>& array2,
+                                const cusp::array1d<T3, MemorySpace3>& array3,
+                                const cusp::array1d<T4, MemorySpace4>& array4)
+    {
+        assert_same_dimensions(array1, array2);
+        assert_same_dimensions(array2, array3);
+        assert_same_dimensions(array3, array4);
+    }
 
     // square<T> computes the square of a number f(x) -> x*x
     template <typename T>
@@ -123,6 +137,26 @@ namespace detail
                     return alpha * x + beta * y;
                 }
         };
+    
+    template <typename T>
+        struct AXPBYPCZ
+        {
+            T alpha;
+            T beta;
+            T gamma;
+
+            AXPBYPCZ(T _alpha, T _beta, T _gamma)
+                : alpha(_alpha), beta(_beta), gamma(_gamma) {}
+
+            template <typename Tuple>
+            __host__ __device__
+                void operator()(Tuple t)
+                { 
+                    thrust::get<3>(t) = alpha * thrust::get<0>(t) +
+                                        beta  * thrust::get<1>(t) +
+                                        gamma * thrust::get<2>(t);
+                }
+        };
 
 } // end namespace detail
 
@@ -178,6 +212,41 @@ void axpby(const Array1& x,
     cusp::blas::axpby(x.begin(), x.end(), y.begin(), z.begin(), alpha, beta);
 }
 
+template <typename InputIterator1,
+          typename InputIterator2,
+          typename InputIterator3,
+          typename OutputIterator,
+          typename ScalarType>
+void axpbypcz(InputIterator1 first1,
+              InputIterator1 last1,
+              InputIterator2 first2,
+              InputIterator3 first3,
+              OutputIterator output,
+              ScalarType alpha,
+              ScalarType beta,
+              ScalarType gamma)
+{
+    size_t N = last1 - first1;
+    thrust::for_each(thrust::make_zip_iterator(thrust::make_tuple(first1, first2, first3, output)),
+                     thrust::make_zip_iterator(thrust::make_tuple(first1, first2, first3, output)) + N,
+                     detail::AXPBYPCZ<ScalarType>(alpha, beta, gamma));
+}
+
+template <typename Array1,
+          typename Array2,
+          typename Array3,
+          typename ScalarType>
+void axpbypcz(const Array1& x,
+              const Array2& y,
+              const Array2& z,
+                    Array3& output,
+              ScalarType alpha,
+              ScalarType beta,
+              ScalarType gamma)
+{
+    detail::assert_same_dimensions(x, y, z, output);
+    cusp::blas::axpbypcz(x.begin(), x.end(), y.begin(), z.begin(), output.begin(), alpha, beta, gamma);
+}
 
 template <typename InputIterator,
           typename ForwardIterator>

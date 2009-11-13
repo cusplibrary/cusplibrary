@@ -79,6 +79,45 @@ DECLARE_HOST_DEVICE_UNITTEST(TestAxpby);
 
 
 template <class MemorySpace>
+void TestAxpbypcz(void)
+{
+    cusp::array1d<float, MemorySpace> x(4);
+    cusp::array1d<float, MemorySpace> y(4);
+    cusp::array1d<float, MemorySpace> z(4);
+    cusp::array1d<float, MemorySpace> w(4,0);
+
+    x[0] =  7.0f;   y[0] =  0.0f;   z[0] =  1.0f;  
+    x[1] =  5.0f;   y[1] = -2.0f;   z[1] =  0.0f;
+    x[2] =  4.0f;   y[2] =  0.0f;   z[2] =  3.0f;
+    x[3] = -3.0f;   y[3] =  5.0f;   z[3] = -2.0f;
+
+    cusp::blas::axpbypcz(x.begin(), x.end(), y.begin(), z.begin(), w.begin(), 2.0f, 1.0f, 3.0f);
+
+    ASSERT_EQUAL(w[0],  17.0);
+    ASSERT_EQUAL(w[1],   8.0);
+    ASSERT_EQUAL(w[2],  17.0);
+    ASSERT_EQUAL(w[3],  -7.0);
+   
+    w[0] = 0.0f;
+    w[1] = 0.0f;
+    w[2] = 0.0f;
+    w[3] = 0.0f;
+
+    cusp::blas::axpbypcz(x, y, z, w, 2.0f, 1.0f, 3.0f);
+    
+    ASSERT_EQUAL(w[0],  17.0);
+    ASSERT_EQUAL(w[1],   8.0);
+    ASSERT_EQUAL(w[2],  17.0);
+    ASSERT_EQUAL(w[3],  -7.0);
+    
+    // test size checking
+    cusp::array1d<float, MemorySpace> output(3);
+    ASSERT_THROWS(cusp::blas::axpbypcz(x, y, z, output, 2.0f, 1.0f, 3.0f), cusp::invalid_input_exception);
+}
+DECLARE_HOST_DEVICE_UNITTEST(TestAxpbypcz);
+
+
+template <class MemorySpace>
 void TestCopy(void)
 {
     cusp::array1d<float, MemorySpace> x(4);

@@ -77,7 +77,7 @@ void bicgstab(LinearOperator A,
 
     // r_norm < || r ||
     ValueType r_norm_initial = blas::nrm2(r);
-    ValueType r_norm = r_norm_initial;
+    ValueType r_norm         = r_norm_initial;
 
     ValueType r_r_star_old = blas::dotc(r_star, r);
 
@@ -114,8 +114,7 @@ void bicgstab(LinearOperator A,
         ValueType omega = blas::dotc(AMs, s) / blas::dotc(AMs, AMs); // TODO optimize denominator
         
         // x_{j+1} = x_j + alpha*M*p_j + omega*M*s_j
-        blas::axpy(Mp, x, alpha);
-        blas::axpy(Ms, x, omega);  // TODO fuse into one operation
+        blas::axpbypcz(x, Mp, Ms, x, static_cast<ValueType>(1.0), alpha, omega);
 
         // r_{j+1} = s_j - omega*A*M*s
         blas::axpby(s, AMs, r, static_cast<ValueType>(1.0), -omega);
@@ -126,8 +125,7 @@ void bicgstab(LinearOperator A,
         r_r_star_old = r_r_star_new;
 
         // p_{j+1} = r_{j+1} + beta*(p_j - omega*A*M*p)
-        blas::axpby(r, p, p, static_cast<ValueType>(1.0), beta);
-        blas::axpy(AMp, p, -beta * omega);
+        blas::axpbypcz(r, p, AMp, p, static_cast<ValueType>(1.0), beta, -beta*omega);
 
         i++;
 
