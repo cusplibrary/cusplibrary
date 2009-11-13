@@ -80,6 +80,10 @@ namespace cusp
         // construct from a different matrix format
         template <typename MatrixType>
         coo_matrix(const MatrixType& matrix);
+   
+        // sparse matrix-vector multiplication
+        template <typename VectorType1, typename VectorType2>
+        void operator()(const VectorType1& x, VectorType2& y) const;
 
         void resize(IndexType num_rows, IndexType num_cols, IndexType num_entries);
 

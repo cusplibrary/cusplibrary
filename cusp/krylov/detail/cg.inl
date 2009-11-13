@@ -86,14 +86,14 @@ void cg(LinearOperator& A,
    
     // y <- Ax
     blas::fill(y, 0);                  // TODO remove when SpMV implements y <- A*x 
-    cusp::spblas::spmv(A, x, y);
+    A(x, y);
 
     // r <- b - A*x
     blas::axpby(b, y, r, static_cast<ValueType>(1.0), static_cast<ValueType>(-1.0));
    
     // z <- M*r
     blas::fill(z, 0);                  // TODO remove when SpMV implements y <- A*x
-    cusp::spblas::spmv(M, r, z);
+    M(r, z);
 
     // p <- z
     blas::copy(r, p);
@@ -126,7 +126,7 @@ void cg(LinearOperator& A,
 
         // y <- Ap
         blas::fill(y, 0);                  // TODO remove when SpMV implements y <- A*x 
-        cusp::spblas::spmv(A, p, y);
+        A(p, y);
         
         // alpha <- <r,r>/<y,p>
         ValueType alpha =  rz / blas::dotc(y, p);
@@ -136,7 +136,7 @@ void cg(LinearOperator& A,
         blas::axpy(y, r, -alpha);
         // z <- M*r
         blas::fill(z, 0);                  // TODO remove when SpMV implements y <- A*x
-        cusp::spblas::spmv(M, r, z);
+        M(r, z);
 		
         // r2 = <r,r>
         r_norm = blas::nrm2(r);
