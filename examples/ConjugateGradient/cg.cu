@@ -15,14 +15,18 @@ int main(void)
 
     // allocate storage for solution (x) and right hand side (b)
     cusp::array1d<float, MemorySpace> x(A.num_rows, 0);
-    cusp::array1d<float, MemorySpace> b(A.num_rows);
+    cusp::array1d<float, MemorySpace> b(A.num_rows, 1);
 
-    // initialize right hand side
-    for(int i = 0; i < A.num_rows; i++)
-        b[i] = i % 2;
-   
+    // set stopping criteria:
+    //        tolerance = 1e-6
+    //  iteration_limit = 100
+    cusp::default_stopping_criteria stopping_criteria(1e-6, 100);
+
+    // set verbose flag
+    bool verbose = true;
+
     // obtain a linear operator from matrix A and call CG
-    cusp::krylov::cg(A, x, b, 1e-5f, 1000, 1);
+    cusp::krylov::cg(A, x, b, stopping_criteria, verbose);
 
     return 0;
 }

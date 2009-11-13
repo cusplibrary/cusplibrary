@@ -353,7 +353,7 @@ typename thrust::iterator_value<InputIterator>::type
 
 template <typename Array>
 typename Array::value_type
-    nrm2(Array& x)
+    nrm2(const Array& x)
 {
     return cusp::blas::nrm2(x.begin(), x.end());
 }

@@ -22,6 +22,7 @@
 #include <cusp/array1d.h>
 #include <cusp/blas.h>
 #include <cusp/spblas.h>
+#include <cusp/stopping_criteria.h>
 
 #include <iostream>
 
@@ -33,12 +34,12 @@ namespace krylov
 {
 
 template <class LinearOperator,
-          class Vector>
+          class Vector,
+          class StoppingCriteria>
 void bicgstab(LinearOperator A,
                     Vector& x,
               const Vector& b,
-              const float tol = 1e-5,
-              const size_t max_iter = 1000,
+              StoppingCriteria stopping_criteria,
               const int verbose  = 0)
 {
     typedef typename LinearOperator::value_type   ValueType;
@@ -60,8 +61,10 @@ void bicgstab(LinearOperator A,
     cusp::array1d<ValueType,MemorySpace>  Ms(N);
     cusp::array1d<ValueType,MemorySpace> AMs(N);
 
-    // TODO fuse r = b - A*x into a single SpMV
+    // initialize the stopping criteria
+    stopping_criteria.initialize(A, x, b);
 
+    // TODO fuse r = b - A*x into a single SpMV
     // y <- Ax
     blas::fill(y, 0);
     cusp::spblas::spmv(A, x, y);
@@ -75,21 +78,32 @@ void bicgstab(LinearOperator A,
     // r_star <- r
     blas::copy(r, r_star);
 
-    // r_norm < || r ||
-    ValueType r_norm_initial = blas::nrm2(r);
-    ValueType r_norm         = r_norm_initial;
+    // r_norm <- || r ||
+    ValueType r_norm = blas::nrm2(r);
 
     ValueType r_r_star_old = blas::dotc(r_star, r);
 
     if (verbose)
         std::cout << "[BiCGstab] initial residual norm " << r_norm << std::endl;
 
-    ValueType stop_tol = r_norm_initial * tol;
+    size_t iteration_number = 0;
 
-    size_t i = 0;
-
-    while( i++ < max_iter && r_norm > stop_tol )
+    while (true)
     {
+        if (stopping_criteria.has_converged(A, x, b, r_norm))
+        {
+            if (verbose)
+                    std::cout << "[BiCGstab] converged in " << iteration_number << " iterations (achieved " << r_norm << " residual)" << std::endl;
+            break;
+        }
+        
+        if (stopping_criteria.has_reached_iteration_limit(iteration_number))
+        {
+            if (verbose)
+                    std::cout << "[BiCGstab] failed to converge within " << iteration_number << " iterations (achieved " << r_norm << " residual)" << std::endl;;
+            break;
+        }
+
         // Mp = M*p
         blas::copy(p, Mp); // TODO apply preconditioner, identity for now
 
@@ -127,27 +141,19 @@ void bicgstab(LinearOperator A,
         // p_{j+1} = r_{j+1} + beta*(p_j - omega*A*M*p)
         blas::axpbypcz(r, p, AMp, p, static_cast<ValueType>(1.0), beta, -beta*omega);
 
-        i++;
-
         r_norm = blas::nrm2(r);
+
+        iteration_number++;
     }
+}
 
-
-    //cudaThreadSynchronize();
-
-    // MFLOPs excludes BLAS operations
-    //double elapsed = ((double) (clock() - start)) / CLOCKS_PER_SEC;
-    //double MFLOPs = 2* ((double) i * (double) A.num_entries)/ (1e6 * elapsed);
-    //printf("-iteration completed in %lfms  ( > %6.2lf MFLOPs )\n",1000*elapsed, MFLOPs );
-
-    if (verbose)
-    {
-        ValueType r_rel = r_norm / r_norm_initial; // relative residual
-        if(r_norm <= stop_tol)
-            std::cout << "[BiCGstab] converged to " << r_rel << " relative residual in " << i << " iterations" << std::endl;
-        else
-            std::cout << "[BiCGstab] failed to converge within " << i << " iterations (achieved " << r_rel << " relative residual)" << std::endl;;
-    }
+template <class LinearOperator,
+          class Vector>
+void bicgstab(LinearOperator A,
+                    Vector& x,
+              const Vector& b)
+{
+    return bicgstab(A, x, b, cusp::default_stopping_criteria());
 }
 
 } // end namespace krylov

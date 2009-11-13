@@ -22,6 +22,7 @@
 #include <cusp/array1d.h>
 #include <cusp/blas.h>
 #include <cusp/spblas.h>
+#include <cusp/stopping_criteria.h>
 
 #include <iostream>
 
@@ -32,15 +33,13 @@ namespace cusp
 namespace krylov
 {
 
-// TODO use ||b - A * x|| < tol * ||b|| stopping criterion
-
 template <class MatrixType,
-          class VectorType>
+          class VectorType,
+          class StoppingCriteria>
 void cg(const MatrixType& A,
               VectorType& x,
         const VectorType& b,
-        const float tol = 1e-5,
-        const size_t max_iter = 1000,
+        StoppingCriteria stopping_criteria,
         const int verbose  = 0)
 {
     typedef typename MatrixType::value_type   ValueType;
@@ -56,7 +55,10 @@ void cg(const MatrixType& A,
     cusp::array1d<ValueType,MemorySpace> p(N);
         
     //clock_t start = clock();
-    
+
+    // initialize the stopping criteria
+    stopping_criteria.initialize(A, x, b);
+   
     // y <- Ax
     blas::fill(y, 0);
     cusp::spblas::spmv(A, x, y);
@@ -73,11 +75,24 @@ void cg(const MatrixType& A,
     if (verbose)
         std::cout << "[CG] initial residual norm " << r_norm << std::endl;
 
-    ValueType stop_tol = r2*tol*tol;
+    size_t iteration_number = 0;
 
-    size_t i = 0;
-    while( i++ < max_iter && r2 > stop_tol )
+    while (true)
     {
+        if (stopping_criteria.has_converged(A, x, b, r_norm))
+        {
+            if (verbose)
+                    std::cout << "[CG] converged in " << iteration_number << " iterations (achieved " << r_norm << " residual)" << std::endl;
+            break;
+        }
+        
+        if (stopping_criteria.has_reached_iteration_limit(iteration_number))
+        {
+            if (verbose)
+                    std::cout << "[CG] failed to converge within " << iteration_number << " iterations (achieved " << r_norm << " residual)" << std::endl;;
+            break;
+        }
+
         // y <- Ap
         blas::fill(y, 0);
         cusp::spblas::spmv(A, p, y);
@@ -89,15 +104,20 @@ void cg(const MatrixType& A,
         // r <- r - alpha * y		
         blas::axpy(y, r, -alpha);
 		
-        // beta <- <r_{i+1},r_{i+1}>/<r,r> 
         ValueType r2_old = r2;
-        r2 = blas::nrm2(r); r2 *= r2;
+
+        // r2 = <r,r>
+        r_norm = blas::nrm2(r);
+        r2 = r_norm * r_norm;
+
+        // beta <- <r_{i+1},r_{i+1}>/<r,r> 
         ValueType beta = r2 / r2_old;                       
 		
         // p <- r + beta*p
         blas::axpby(r, p, p, static_cast<ValueType>(1.0), beta);
+
+        iteration_number++;
     }
-	
 
     //cudaThreadSynchronize();
 
@@ -105,16 +125,15 @@ void cg(const MatrixType& A,
     //double elapsed = ((double) (clock() - start)) / CLOCKS_PER_SEC;
     //double MFLOPs = 2* ((double) i * (double) A.num_entries)/ (1e6 * elapsed);
     //printf("-iteration completed in %lfms  ( > %6.2lf MFLOPs )\n",1000*elapsed, MFLOPs );
+}
 
-    if (verbose)
-    {
-        ValueType r_rel = sqrt(r2) / r_norm; // relative residual
-        if(r2 <= stop_tol)
-            std::cout << "[CG] converged to " << r_rel << " relative residual in " << i << " iterations" << std::endl;
-        else
-            std::cout << "[CG] failed to converge within " << i << " iterations (achieved " << r_rel << " relative residual)" << std::endl;;
-    }
-
+template <class MatrixType,
+          class VectorType>
+void cg(const MatrixType& A,
+              VectorType& x,
+        const VectorType& b)
+{
+    return cg(A, x, b, cusp::default_stopping_criteria());
 }
 
 } // end namespace krylov
