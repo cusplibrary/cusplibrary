@@ -2,7 +2,6 @@
 
 #include <cusp/csr_matrix.h>
 #include <cusp/array1d.h>
-#include <cusp/spblas.h>
 
 template <class TestMatrix>
 void _TestSparseSpMV(TestMatrix test_matrix)
@@ -32,7 +31,7 @@ void _TestSparseSpMV(TestMatrix test_matrix)
     y[0] = 100.0f;
     y[1] = 100.0f;
 
-    cusp::spblas::spmv(test_matrix, x, y);
+    test_matrix(x, y);
 
     ASSERT_EQUAL(y[0], 132.0f);
     ASSERT_EQUAL(y[1], 138.0f);

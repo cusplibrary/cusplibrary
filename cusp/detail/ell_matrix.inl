@@ -17,7 +17,7 @@
 #include <cusp/detail/convert.h>
 #include <cusp/detail/utils.h>
 
-#include <cusp/spblas.h>
+#include <cusp/detail/spmv.h>
 
 namespace cusp
 {
@@ -86,7 +86,7 @@ template <typename VectorType1, typename VectorType2>
     ell_matrix<IndexType,ValueType,SpaceOrAlloc>
     ::operator()(const VectorType1& x, VectorType2& y) const
     {
-        cusp::spblas::spmv(*this, x, y);
+        cusp::detail::spmv(*this, x, y);
     }
 
 // resize matrix shape and storage

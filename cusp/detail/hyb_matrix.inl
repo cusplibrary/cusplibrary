@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-#include <cusp/spblas.h>
+#include <cusp/detail/spmv.h>
 
 namespace cusp
 {
@@ -67,7 +67,7 @@ template <typename VectorType1, typename VectorType2>
     hyb_matrix<IndexType,ValueType,SpaceOrAlloc>
     ::operator()(const VectorType1& x, VectorType2& y) const
     {
-        cusp::spblas::spmv(*this, x, y);
+        cusp::detail::spmv(*this, x, y);
     }
 
 // resize matrix shape and storage

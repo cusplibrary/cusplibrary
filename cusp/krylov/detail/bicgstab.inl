@@ -17,7 +17,6 @@
 
 #include <cusp/array1d.h>
 #include <cusp/blas.h>
-#include <cusp/spblas.h>
 #include <cusp/stopping_criteria.h>
 #include <cusp/linear_operator.h>
 
