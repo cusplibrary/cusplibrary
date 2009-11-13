@@ -19,6 +19,7 @@
 #include <cusp/blas.h>
 #include <cusp/spblas.h>
 #include <cusp/stopping_criteria.h>
+#include <cusp/linear_operator.h>
 
 #include <iostream>
 
@@ -31,20 +32,38 @@ namespace krylov
 
 template <class LinearOperator,
           class Vector>
-void bicgstab(LinearOperator A,
-                    Vector& x,
-              const Vector& b)
+void bicgstab(LinearOperator& A,
+              Vector& x,
+              Vector& b)
 {
     return bicgstab(A, x, b, cusp::default_stopping_criteria());
 }
 
 template <class LinearOperator,
-          class Vector,
+          class VectorType,
           class StoppingCriteria>
-void bicgstab(LinearOperator A,
-                    Vector& x,
-              const Vector& b,
-              StoppingCriteria stopping_criteria,
+void bicgstab(LinearOperator& A,
+              VectorType& x,
+              VectorType& b,
+              StoppingCriteria& stopping_criteria)
+{
+    typedef typename LinearOperator::value_type   ValueType;
+    typedef typename LinearOperator::memory_space MemorySpace;
+
+    cusp::identity_operator<ValueType,MemorySpace> M(A.num_rows, A.num_cols);
+
+    return bicgstab(A, x, b, stopping_criteria, M);
+}
+
+template <class LinearOperator,
+          class Vector,
+          class StoppingCriteria,
+          class Preconditioner>
+void bicgstab(LinearOperator& A,
+              Vector& x,
+              Vector& b,
+              StoppingCriteria& stopping_criteria,
+              Preconditioner& M,
               const int verbose)
 {
     typedef typename LinearOperator::value_type   ValueType;
@@ -69,9 +88,8 @@ void bicgstab(LinearOperator A,
     // initialize the stopping criteria
     stopping_criteria.initialize(A, x, b);
 
-    // TODO fuse r = b - A*x into a single SpMV
     // y <- Ax
-    blas::fill(y, 0);
+    blas::fill(y, 0);                  // TODO remove when SpMV implements y <- A*x 
     cusp::spblas::spmv(A, x, y);
 
     // r <- b - A*x
@@ -110,10 +128,11 @@ void bicgstab(LinearOperator A,
         }
 
         // Mp = M*p
-        blas::copy(p, Mp); // TODO apply preconditioner, identity for now
+        blas::fill(Mp, 0);                  // TODO remove when SpMV implements y <- A*x
+        cusp::spblas::spmv(M, p, Mp);
 
         // AMp = A*Mp
-        blas::fill(AMp, 0);
+        blas::fill(AMp, 0);                 // TODO remove when SpMV implements y <- A*x
         cusp::spblas::spmv(A, Mp, AMp);
 
         // alpha = (r_j, r_star) / (A*M*p, r_star)
@@ -123,10 +142,11 @@ void bicgstab(LinearOperator A,
         blas::axpby(r, AMp, s, static_cast<ValueType>(1.0), static_cast<ValueType>(-alpha));
 
         // Ms = M*s_j
-        blas::copy(s, Ms); // TODO apply preconditioner, identity for now
+        blas::fill(Ms, 0);                  // TODO remove when SpMV implements y <- A*x
+        cusp::spblas::spmv(M, s, Ms);
         
         // AMs = A*Ms
-        blas::fill(AMs, 0);
+        blas::fill(AMs, 0);                 // TODO remove when SpMV implements y <- A*x
         cusp::spblas::spmv(A, Ms, AMs);
 
         // omega = (AMs, s) / (AMs, AMs)

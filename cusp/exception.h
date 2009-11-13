@@ -33,6 +33,13 @@ namespace cusp
         protected:
             std::string message;
     };
+    
+    class not_implemented_exception : public exception
+    {
+        public:
+            template <typename MessageType>
+            not_implemented_exception(const MessageType& message) : exception(message) {}
+    };
 
     class io_exception : public exception
     {

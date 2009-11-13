@@ -22,6 +22,8 @@
 
 #include <cusp/detail/dispatch/spblas.h>
 
+#include <cusp/linear_operator.h>
+
 namespace cusp
 {
 namespace spblas
@@ -42,6 +44,20 @@ namespace detail
     
 } // end namespace detail
 
+
+// TODO remove this when matrices implement A(x,y)
+template <typename ValueType,
+          typename MemorySpace,
+          typename VectorType1,
+          typename VectorType2>
+void spmv(const cusp::identity_operator<ValueType, MemorySpace>& A,
+          const VectorType1& x,
+                VectorType2& y)
+{
+    detail::assert_compatible_dimensions(A, x, y);
+
+    A(x, y);
+}
 
 template <typename MatrixType,
           typename VectorType1,

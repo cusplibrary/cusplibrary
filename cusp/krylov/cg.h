@@ -24,19 +24,29 @@ namespace cusp
 namespace krylov
 {
 
-template <class MatrixType,
+template <class LinearOperator,
           class VectorType>
-void cg(const MatrixType& A,
-              VectorType& x,
-        const VectorType& b);
+void cg(LinearOperator& A,
+        VectorType& x,
+        VectorType& b);
 
-template <class MatrixType,
+template <class LinearOperator,
           class VectorType,
           class StoppingCriteria>
-void cg(const MatrixType& A,
-              VectorType& x,
-        const VectorType& b,
-        StoppingCriteria stopping_criteria,
+void cg(LinearOperator& A,
+        VectorType& x,
+        VectorType& b,
+        StoppingCriteria& stopping_criteria);
+
+template <class LinearOperator,
+          class VectorType,
+          class StoppingCriteria,
+          class Preconditioner>
+void cg(LinearOperator& A,
+        VectorType& x,
+        VectorType& b,
+        StoppingCriteria& stopping_criteria,
+        Preconditioner& M,
         const int verbose = 0);
 
 } // end namespace krylov

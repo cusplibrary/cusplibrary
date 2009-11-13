@@ -26,17 +26,27 @@ namespace krylov
 
 template <class LinearOperator,
           class Vector>
-void bicgstab(LinearOperator A,
-                    Vector& x,
-              const Vector& b);
+void bicgstab(LinearOperator& A,
+              Vector& x,
+              Vector& b);
+
+template <class LinearOperator,
+          class VectorType,
+          class StoppingCriteria>
+void bicgstab(LinearOperator& A,
+              VectorType& x,
+              VectorType& b,
+              StoppingCriteria& stopping_criteria);
 
 template <class LinearOperator,
           class Vector,
-          class StoppingCriteria>
-void bicgstab(LinearOperator A,
-                    Vector& x,
-              const Vector& b,
-              StoppingCriteria stopping_criteria,
+          class StoppingCriteria,
+          class Preconditioner>
+void bicgstab(LinearOperator& A,
+              Vector& x,
+              Vector& b,
+              StoppingCriteria& stopping_criteria,
+              Preconditioner& M,
               const int verbose = 0);
 
 } // end namespace krylov

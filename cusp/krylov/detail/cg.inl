@@ -19,6 +19,7 @@
 #include <cusp/blas.h>
 #include <cusp/spblas.h>
 #include <cusp/stopping_criteria.h>
+#include <cusp/linear_operator.h>
 
 #include <iostream>
 
@@ -29,28 +30,44 @@ namespace cusp
 namespace krylov
 {
 
-    
-template <class MatrixType,
+template <class LinearOperator,
           class VectorType>
-void cg(const MatrixType& A,
-              VectorType& x,
-        const VectorType& b)
+void cg(LinearOperator& A,
+        VectorType& x,
+        VectorType& b)
 {
     return cg(A, x, b, cusp::default_stopping_criteria());
 }
 
-
-template <class MatrixType,
+template <class LinearOperator,
           class VectorType,
           class StoppingCriteria>
-void cg(const MatrixType& A,
-              VectorType& x,
-        const VectorType& b,
-        StoppingCriteria stopping_criteria,
+void cg(LinearOperator& A,
+        VectorType& x,
+        VectorType& b,
+        StoppingCriteria& stopping_criteria)
+{
+    typedef typename LinearOperator::value_type   ValueType;
+    typedef typename LinearOperator::memory_space MemorySpace;
+
+    cusp::identity_operator<ValueType,MemorySpace> M(A.num_rows, A.num_cols);
+
+    return cg(A, x, b, stopping_criteria, M);
+}
+
+template <class LinearOperator,
+          class VectorType,
+          class StoppingCriteria,
+          class Preconditioner>
+void cg(LinearOperator& A,
+        VectorType& x,
+        VectorType& b,
+        StoppingCriteria& stopping_criteria,
+        Preconditioner& M,
         const int verbose)
 {
-    typedef typename MatrixType::value_type   ValueType;
-    typedef typename MatrixType::memory_space MemorySpace;
+    typedef typename LinearOperator::value_type   ValueType;
+    typedef typename LinearOperator::memory_space MemorySpace;
 
     assert(A.num_rows == A.num_cols);        // sanity check
 
@@ -68,14 +85,15 @@ void cg(const MatrixType& A,
     stopping_criteria.initialize(A, x, b);
    
     // y <- Ax
-    blas::fill(y, 0);
+    blas::fill(y, 0);                  // TODO remove when SpMV implements y <- A*x 
     cusp::spblas::spmv(A, x, y);
 
     // r <- b - A*x
     blas::axpby(b, y, r, static_cast<ValueType>(1.0), static_cast<ValueType>(-1.0));
    
     // z <- M*r
-    blas::copy(r, z); // TODO replace with preconditioner
+    blas::fill(z, 0);                  // TODO remove when SpMV implements y <- A*x
+    cusp::spblas::spmv(M, r, z);
 
     // p <- z
     blas::copy(r, p);
@@ -107,8 +125,8 @@ void cg(const MatrixType& A,
         }
 
         // y <- Ap
-        blas::fill(y, 0);
-        cusp::spblas::spmv(A, p, y);  // TODO convert into one SpMV
+        blas::fill(y, 0);                  // TODO remove when SpMV implements y <- A*x 
+        cusp::spblas::spmv(A, p, y);
         
         // alpha <- <r,r>/<y,p>
         ValueType alpha =  rz / blas::dotc(y, p);
@@ -117,7 +135,8 @@ void cg(const MatrixType& A,
         // r <- r - alpha * y		
         blas::axpy(y, r, -alpha);
         // z <- M*r
-        blas::copy(r, z); // TODO replace with preconditioner
+        blas::fill(z, 0);                  // TODO remove when SpMV implements y <- A*x
+        cusp::spblas::spmv(M, r, z);
 		
         // r2 = <r,r>
         r_norm = blas::nrm2(r);
