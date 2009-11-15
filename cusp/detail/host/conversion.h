@@ -328,7 +328,8 @@ void ell_to_csr(      cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& d
         for(IndexType n = 0; n < num_entries_per_row; n++)
         {
             const IndexType j = src.column_indices(i,n);
-            const IndexType v = src.values(i,n);
+            const ValueType v = src.values(i,n);
+
             if(j != invalid_index)
             {
                 dst.column_indices[num_entries] = j;
