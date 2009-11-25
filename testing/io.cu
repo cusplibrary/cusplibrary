@@ -50,6 +50,26 @@ void TestReadMatrixMarketFileCoordinatePatternSymmetric(void)
 }
 DECLARE_UNITTEST(TestReadMatrixMarketFileCoordinatePatternSymmetric);
 
+void TestReadMatrixMarketFileArrayRealGeneral(void)
+{
+    // load matrix
+    cusp::coo_matrix<int, float, cusp::host_memory> coo;
+    cusp::read_matrix_market_file(coo, "data/test/array_real_general.mtx");
+
+    // convert to array2d
+    cusp::array2d<float, cusp::host_memory> D(coo);
+
+    // expected result
+    cusp::array2d<float, cusp::host_memory> E(4, 3);
+    E(0,0) =  1.0; E(0,1) =  5.0; E(0,2) =  9.0;
+    E(1,0) =  2.0; E(1,1) =  6.0; E(1,2) = 10.0;
+    E(2,0) =  3.0; E(2,1) =  7.0; E(2,2) = 11.0;
+    E(3,0) =  4.0; E(3,1) =  8.0; E(3,2) = 12.0;
+
+    ASSERT_EQUAL(D == E, true);
+}
+DECLARE_UNITTEST(TestReadMatrixMarketFileArrayRealGeneral);
+
 template <typename MemorySpace>
 void TestReadMatrixMarketFileToCsrMatrix(void)
 {

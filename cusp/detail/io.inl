@@ -120,7 +120,58 @@ void read_matrix_market_file(cusp::coo_matrix<IndexType,ValueType,cusp::host_mem
         std::getline(file, line);
     } while (line[0] == '%');
 
-    if (banner.storage == "coordinate")
+    if (banner.storage == "array")
+    {
+        // dense format
+        std::vector<std::string> tokens;
+        detail::tokenize(tokens, line); 
+
+        if (tokens.size() != 2)
+            throw cusp::io_exception("invalid MatrixMarket array format");
+
+        IndexType num_rows, num_cols;
+
+        std::istringstream(tokens[0]) >> num_rows;
+        std::istringstream(tokens[1]) >> num_cols;
+  
+        cusp::array2d<ValueType,cusp::host_memory,cusp::column_major> dense(num_rows, num_cols);
+
+        IndexType num_entries = num_rows * num_cols;
+
+        IndexType num_entries_read = 0;
+            
+        // read file contents
+        if (banner.type == "pattern")
+        {
+            throw cusp::not_implemented_exception("pattern array MatrixMarket format is not supported");
+        } 
+        else if (banner.type == "real" || banner.type == "integer")
+        {
+            while(num_entries_read < num_entries && !file.eof())
+            {
+                file >> dense.values[num_entries_read];
+                num_entries_read++;
+            }
+        } 
+        else if (banner.type == "complex")
+        {
+            throw cusp::not_implemented_exception("complex MatrixMarket data type is not supported");
+        }
+        else
+        {
+            throw cusp::io_exception("invalid MatrixMarket data type");
+        }
+
+        if(num_entries_read != num_entries)
+            throw cusp::io_exception("unexpected EOF while reading MatrixMarket entries");
+        
+        if (banner.symmetry != "general")
+            throw cusp::not_implemented_exception("only general array symmetric MatrixMarket format is supported");
+
+        // convert to coo
+        coo = dense;
+    }
+    else if (banner.storage == "coordinate")
     {
         // line contains [num_rows num_columns num_entries]
         std::vector<std::string> tokens;
@@ -163,7 +214,7 @@ void read_matrix_market_file(cusp::coo_matrix<IndexType,ValueType,cusp::host_mem
         } 
         else if (banner.type == "complex")
         {
-            throw cusp::io_exception("complex MatrixMarket data type is not supported");
+            throw cusp::not_implemented_exception("complex MatrixMarket data type is not supported");
         }
         else
         {
@@ -219,29 +270,29 @@ void read_matrix_market_file(cusp::coo_matrix<IndexType,ValueType,cusp::host_mem
             } 
             else if (banner.symmetry == "hermitian")
             {
-                throw cusp::io_exception("MatrixMarket I/O does not currently support hermitian matrices");
+                throw cusp::not_implemented_exception("MatrixMarket I/O does not currently support hermitian matrices");
                 //TODO
             } 
             else if (banner.symmetry == "skew-symmetric")
             {
                 //TODO
-                throw cusp::io_exception("MatrixMarket I/O does not currently support skew-symmetric matrices");
+                throw cusp::not_implemented_exception("MatrixMarket I/O does not currently support skew-symmetric matrices");
             }
 
             // store full matrix in coo
             coo.swap(general);
         } // if (banner.symmetry != "general")
+    
+        // sort indices by (row,column)
+        thrust::stable_sort_by_key(thrust::make_zip_iterator(thrust::make_tuple(coo.row_indices.begin(), coo.column_indices.begin())),
+                                   thrust::make_zip_iterator(thrust::make_tuple(coo.row_indices.end(),   coo.column_indices.end())),
+                                   coo.values.begin());
     } 
     else 
     {
-        // dense format
-        throw cusp::io_exception("MatrixMarket I/O currently only supports coordinate format");
+        // should never happen
+        throw cusp::io_exception("invalid MatrixMarket storage format [" + banner.storage + "]");
     }
-
-    // sort indices by (row,column)
-    thrust::stable_sort_by_key(thrust::make_zip_iterator(thrust::make_tuple(coo.row_indices.begin(), coo.column_indices.begin())),
-                               thrust::make_zip_iterator(thrust::make_tuple(coo.row_indices.end(),   coo.column_indices.end())),
-                               coo.values.begin());
 }
 
 template <typename IndexType, typename ValueType>
