@@ -12,7 +12,6 @@
 #include <cusp/detail/device/spmv.h>
 
 #include "bytes_per_spmv.h"
-#include "timer.h"
 #include "utility.h"
 #include "benchmark.h"
 

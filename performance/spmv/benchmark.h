@@ -6,6 +6,8 @@
 
 #include "bytes_per_spmv.h"
 
+#include "../timer.h"
+
 template <typename HostMatrix, typename TestMatrix, typename TestKernel>
 float check_spmv(HostMatrix& host_matrix, TestMatrix& test_matrix, TestKernel test_spmv)
 {

@@ -8,7 +8,7 @@
 #include <iostream>
 
 #include <cusp/detail/device/spmv.h>
-#include "timer.h"
+#include "../timer.h"
 
 const size_t N = 160 * 1000; // for alignment
 const size_t num_iterations = 100;
