@@ -90,7 +90,7 @@ spmv_csr_vector_kernel(const IndexType num_rows,
         
         // accumulate local sums
         for(IndexType jj = row_start + thread_lane; jj < row_end; jj += THREADS_PER_VECTOR)
-            sum += Ax[jj] * fetch_x<UseCache>(Aj[jj], x);
+            sum += Ax[jj] * x[Aj[jj]]; //TODO what's wrong with this? fetch_x<UseCache>(Aj[jj], x);
 
         // store local sum in shared memory
         sdata[threadIdx.x] = sum;
