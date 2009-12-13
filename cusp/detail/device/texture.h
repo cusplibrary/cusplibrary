@@ -49,16 +49,21 @@ __inline__ __device__ float fetch_x(const int& i, const float * x)
         return x[i];
 }
 
-#if !defined(CUDA_NO_SM_13_DOUBLE_INTRINSICS)
 template <bool UseCache>
 __inline__ __device__ double fetch_x(const int& i, const double * x)
 {
-    if (UseCache){
+    if (UseCache)
+    {
+#if CUDA_ARCH >= 1030
         int2 v = tex1Dfetch(tex_x_double, i);
         return __hiloint2double(v.y, v.x);
-    } else {
+#else
+        return 1.0;
+#endif
+    }
+    else
+    {
         return x[i];
     }
 }
-#endif // !defined(CUDA_NO_SM_13_DOUBLE_INTRINSICS)
 

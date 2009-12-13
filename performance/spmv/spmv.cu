@@ -105,11 +105,14 @@ int main(int argc, char** argv)
     }
     else if (value_type == "double")
     {
-#if defined(CUDA_NO_SM_13_DOUBLE_INTRINSICS)
-        std::cerr << "ERROR: Support for \'double\' requires SM 1.3 or greater (recompile with --arch=sm_13)\n\n";
-#else
-        test_all_formats<int,double>(filename);
-#endif
+        int current_device = -1;
+        cudaDeviceProp properties;
+        cudaGetDevice(&current_device);
+        cudaGetDeviceProperties(&properties, current_device);
+        if (properties.major == 1 && properties.minor < 3)
+            std::cerr << "ERROR: Support for \'double\' requires Compute Capability 1.3 or greater\n\n";
+        else
+            test_all_formats<int,double>(filename);
     }
     else
     {

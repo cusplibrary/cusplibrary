@@ -31,7 +31,7 @@ void _TestSparseSpMV(TestMatrix test_matrix)
     y[0] = 100.0f;
     y[1] = 100.0f;
 
-    test_matrix(x, y);
+    test_matrix.multiply(x, y);
 
     ASSERT_EQUAL(y[0], 132.0f);
     ASSERT_EQUAL(y[1], 138.0f);

@@ -17,8 +17,8 @@ void TestLinearOperator(void)
     cusp::linear_operator<float, MemorySpace> A(4,4);
 
     // linear_operator throws exceptions
-    ASSERT_THROWS(A(x, y),                cusp::not_implemented_exception);
-    ASSERT_THROWS(A(x, y, z, 1.0f, 2.0f), cusp::not_implemented_exception);
+    ASSERT_THROWS(A.multiply(x, y),                cusp::not_implemented_exception);
+    ASSERT_THROWS(A.multiply(x, y, z, 1.0f, 2.0f), cusp::not_implemented_exception);
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestLinearOperator);
 
@@ -36,14 +36,14 @@ void TestIdentityOperator(void)
 
     cusp::identity_operator<float, MemorySpace> A(4,4);
 
-    A(x, z);
+    A.multiply(x, z);
 
     ASSERT_EQUAL(z[0],  7.0f);
     ASSERT_EQUAL(z[1],  5.0f);
     ASSERT_EQUAL(z[2],  4.0f);
     ASSERT_EQUAL(z[3], -3.0f);
 
-    A(x, y, z, 1.0f, 2.0f);
+    A.multiply(x, y, z, 1.0f, 2.0f);
     
     ASSERT_EQUAL(z[0],  7.0f);
     ASSERT_EQUAL(z[1],  1.0f);

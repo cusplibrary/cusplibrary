@@ -66,7 +66,7 @@ template <typename IndexType, typename ValueType, class SpaceOrAlloc>
 template <typename VectorType1, typename VectorType2>
     void
     dia_matrix<IndexType,ValueType,SpaceOrAlloc>
-    ::operator()(const VectorType1& x, VectorType2& y) const
+    ::multiply(const VectorType1& x, VectorType2& y) const
     {
         cusp::detail::spmv(*this, x, y);
     }

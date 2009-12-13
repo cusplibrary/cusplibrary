@@ -83,7 +83,7 @@ namespace cusp
         
         // sparse matrix-vector multiplication
         template <typename VectorType1, typename VectorType2>
-        void operator()(const VectorType1& x, VectorType2& y) const;
+        void multiply(const VectorType1& x, VectorType2& y) const;
         
         void resize(IndexType num_rows, IndexType num_cols, IndexType num_entries);
 

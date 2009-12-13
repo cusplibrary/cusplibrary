@@ -55,7 +55,7 @@ void benchmark_cusp_spmv(cusp::csr_matrix<IndexType, ValueType, cusp::host_memor
     cusp::array1d<ValueType,cusp::device_memory> y(A.num_rows, 0);
     
     // warm up
-    A(x, y);
+    A.multiply(x, y);
 
     // benchmark SpMV
     timer t;
@@ -63,7 +63,7 @@ void benchmark_cusp_spmv(cusp::csr_matrix<IndexType, ValueType, cusp::host_memor
     const size_t num_iterations = 500;
 
     for(size_t i = 0; i < num_iterations; i++)
-        A(x, y);
+        A.multiply(x, y);
 
     float time = t.seconds_elapsed() / num_iterations;
     float GFLOPs = (time == 0) ? 0 : (2 * A.num_entries / time) / 1e9;
@@ -151,7 +151,7 @@ int main(void)
         std::cout << "\n----------- benchmarking CG -----------\n";
         // compute residual
         cusp::array1d<ValueType, cusp::host_memory> r(A.num_rows,0);
-        A(x,r);
+        A.multiply(x,r);
         cusp::blas::axpy(b, r, ValueType(-1.0));
 
         ValueType residual_norm = cusp::blas::nrm2(r);
