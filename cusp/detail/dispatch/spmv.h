@@ -55,7 +55,11 @@ void spmv(const MatrixType& A,
           cusp::device_memory,
           cusp::device_memory)
 {
+#ifdef CUSP_USE_TEXTURE_MEMORY    
     cusp::detail::device::spmv_tex(A, thrust::raw_pointer_cast(&x[0]), thrust::raw_pointer_cast(&y[0]));
+#else
+    cusp::detail::device::spmv(A, thrust::raw_pointer_cast(&x[0]), thrust::raw_pointer_cast(&y[0]));
+#endif
 }
 
 } // end namespace dispatch
