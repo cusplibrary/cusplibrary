@@ -1,6 +1,6 @@
 #include <unittest/unittest.h>
 
-#include <cusp/io.h>
+#include <cusp/io/matrix_market.h>
 
 #include <cusp/coo_matrix.h>
 #include <cusp/csr_matrix.h>
@@ -12,7 +12,7 @@ void TestReadMatrixMarketFileCoordinateRealGeneral(void)
 {
     // load matrix
     cusp::coo_matrix<int, float, cusp::host_memory> coo;
-    cusp::read_matrix_market_file(coo, "data/test/coordinate_real_general.mtx");
+    cusp::io::read_matrix_market_file(coo, "data/test/coordinate_real_general.mtx");
 
     // convert to array2d
     cusp::array2d<float, cusp::host_memory> D(coo);
@@ -33,7 +33,7 @@ void TestReadMatrixMarketFileCoordinatePatternSymmetric(void)
 {
     // load matrix
     cusp::coo_matrix<int, float, cusp::host_memory> coo;
-    cusp::read_matrix_market_file(coo, "data/test/coordinate_pattern_symmetric.mtx");
+    cusp::io::read_matrix_market_file(coo, "data/test/coordinate_pattern_symmetric.mtx");
 
     // convert to array2d
     cusp::array2d<float, cusp::host_memory> D(coo);
@@ -54,7 +54,7 @@ void TestReadMatrixMarketFileArrayRealGeneral(void)
 {
     // load matrix
     cusp::coo_matrix<int, float, cusp::host_memory> coo;
-    cusp::read_matrix_market_file(coo, "data/test/array_real_general.mtx");
+    cusp::io::read_matrix_market_file(coo, "data/test/array_real_general.mtx");
 
     // convert to array2d
     cusp::array2d<float, cusp::host_memory> D(coo);
@@ -75,7 +75,7 @@ void TestReadMatrixMarketFileToCsrMatrix(void)
 {
     // load matrix
     cusp::coo_matrix<int, float, MemorySpace> csr;
-    cusp::read_matrix_market_file(csr, "data/test/coordinate_real_general.mtx");
+    cusp::io::read_matrix_market_file(csr, "data/test/coordinate_real_general.mtx");
 
     // convert to array2d
     cusp::array2d<float, cusp::host_memory> D(csr);
@@ -106,10 +106,10 @@ void TestWriteMatrixMarketFileCoordinateRealGeneral(void)
     cusp::coo_matrix<int, float, MemorySpace> coo(E);
    
     // write coo to file
-    cusp::write_matrix_market_file(coo, "temp_92038423749283.mtx");
+    cusp::io::write_matrix_market_file(coo, "temp_92038423749283.mtx");
     
     // read file back
-    cusp::read_matrix_market_file(coo, "temp_92038423749283.mtx");
+    cusp::io::read_matrix_market_file(coo, "temp_92038423749283.mtx");
 
     remove("temp_92038423749283.mtx");    
     

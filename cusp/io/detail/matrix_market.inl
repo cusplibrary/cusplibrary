@@ -31,6 +31,8 @@
 
 namespace cusp
 {
+namespace io
+{
 
 namespace detail
 {
@@ -323,7 +325,7 @@ void read_matrix_market_file(MatrixType& mtx, const std::string& filename)
     typedef typename MatrixType::value_type ValueType;
 
     cusp::coo_matrix<IndexType,ValueType,cusp::host_memory> coo;
-    cusp::read_matrix_market_file(coo, filename);
+    cusp::io::read_matrix_market_file(coo, filename);
     mtx = coo;
 }
 
@@ -335,8 +337,9 @@ void write_matrix_market_file(const MatrixType& mtx, const std::string& filename
 
     cusp::coo_matrix<IndexType,ValueType,cusp::host_memory> coo;
     coo = mtx;
-    cusp::write_matrix_market_file(coo, filename);
+    cusp::io::write_matrix_market_file(coo, filename);
 }
 
+} //end namespace io
 } //end namespace cusp
 

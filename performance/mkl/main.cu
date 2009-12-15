@@ -1,7 +1,7 @@
 #include <cusp/gallery/poisson.h>
 #include <cusp/krylov/cg.h>
 #include <cusp/csr_matrix.h>
-#include <cusp/io.h>
+#include <cusp/io/matrix_market.h>
 #include <cusp/blas.h>
 
 #include <iostream>
@@ -136,7 +136,7 @@ int main(void)
     cusp::array1d<ValueType, cusp::host_memory> x;
     cusp::array1d<ValueType, cusp::host_memory> b;
 
-    cusp::read_matrix_market_file(A, "A.mtx");
+    cusp::io::read_matrix_market_file(A, "A.mtx");
     { cusp::array2d<ValueType, cusp::host_memory> temp; cusp::read_matrix_market_file(temp, "x.mtx"); temp.values.swap(x); }
     { cusp::array2d<ValueType, cusp::host_memory> temp; cusp::read_matrix_market_file(temp, "b.mtx"); temp.values.swap(b); }
     

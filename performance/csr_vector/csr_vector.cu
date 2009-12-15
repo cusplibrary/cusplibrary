@@ -1,6 +1,5 @@
 #include <cusp/dia_matrix.h>
 #include <cusp/csr_matrix.h>
-#include <cusp/io.h>
 
 #include <thrust/sequence.h>
 #include <thrust/fill.h>

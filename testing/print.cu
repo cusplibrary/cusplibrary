@@ -1,7 +1,7 @@
 #include <unittest/unittest.h>
 
-#include <cusp/io.h>
 #include <cusp/print.h>
+#include <cusp/io/matrix_market.h>
 
 void TestPrintMatrix(void)
 {
@@ -9,7 +9,7 @@ void TestPrintMatrix(void)
     cusp::array2d<float, cusp::host_memory> arr;
 
     // load matrix
-    cusp::read_matrix_market_file(coo, "data/test/coordinate_real_general.mtx");
+    cusp::io::read_matrix_market_file(coo, "data/test/coordinate_real_general.mtx");
 
     // convert to array2d
     arr = coo;

@@ -21,6 +21,8 @@
 
 namespace cusp
 {
+namespace io
+{
 
 template <typename MatrixType>
 void read_matrix_market_file(MatrixType& mtx, const std::string& filename);
@@ -28,7 +30,8 @@ void read_matrix_market_file(MatrixType& mtx, const std::string& filename);
 template <typename MatrixType>
 void write_matrix_market_file(const MatrixType& mtx, const std::string& filename);
 
+} //end namespace io
 } //end namespace cusp
 
-#include <cusp/detail/io.inl>
+#include <cusp/io/detail/matrix_market.inl>
 

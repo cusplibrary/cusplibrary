@@ -1,5 +1,5 @@
 #include <cusp/csr_matrix.h>
-#include <cusp/io.h>
+#include <cusp/io/matrix_market.h>
 #include <cusp/krylov/cg.h>
 
 // where to perform the computation
@@ -14,7 +14,7 @@ int main(void)
     cusp::hyb_matrix<int, ValueType, MemorySpace> A;
 
     // load a matrix stored in MatrixMarket format
-    cusp::read_matrix_market_file(A, "5pt_10x10.mtx");
+    cusp::io::read_matrix_market_file(A, "5pt_10x10.mtx");
 
     // allocate storage for solution (x) and right hand side (b)
     cusp::array1d<ValueType, MemorySpace> x(A.num_rows, 0);

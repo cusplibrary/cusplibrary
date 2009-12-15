@@ -1,5 +1,5 @@
 #include <cusp/csr_matrix.h>
-#include <cusp/io.h>
+#include <cusp/io/matrix_market.h>
 #include <cusp/gallery/poisson.h>
 
 #include <iostream>
@@ -75,7 +75,7 @@ void test_all_formats(std::string& filename)
     }
     else
     {
-        cusp::read_matrix_market_file(host_matrix, filename);
+        cusp::io::read_matrix_market_file(host_matrix, filename);
         std::cout << "Read matrix (" << filename << ") ";
     }
         
