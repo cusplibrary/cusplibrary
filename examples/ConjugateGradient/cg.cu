@@ -1,4 +1,4 @@
-#include <cusp/csr_matrix.h>
+#include <cusp/hyb_matrix.h>
 #include <cusp/io/matrix_market.h>
 #include <cusp/krylov/cg.h>
 
