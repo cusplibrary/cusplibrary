@@ -14,6 +14,9 @@
  *  limitations under the License.
  */
 
+/*! \file dia_matrix.h
+ *  \brief Diagonal matrix format.
+ */
 
 #pragma once
 
@@ -25,10 +28,62 @@
 namespace cusp
 {
 
+/*! \addtogroup container_classes Container Classes 
+ *  \addtogroup sparse_matrix_formats Sparse Matrices
+ *  \ingroup container_classes
+ *  \{
+ */
+
     // Forward definitions
     struct column_major;
     template<typename ValueType, class SpaceOrAlloc, class Orientation> class array2d;
 
+/*! \p dia_matrix : Diagonal matrix format
+ *
+ * \tparam IndexType Type used for matrix indices (e.g. \c int).
+ * \tparam ValueType Type used for matrix values (e.g. \c float).
+ * \tparam SpaceOrAlloc Either a memory space such as \c cusp::host_memory or 
+ *         \c cusp::device_memory or a specific memory allocator type such as
+ *         \c thrust::device_malloc_allocator<T>.
+ *
+ * \note The diagonal offsets should not contain duplicate entries.
+ *
+ *  The following code snippet demonstrates how to create a 4-by-3
+ *  \p dia_matrix on the host with 3 diagonals (6 total nonzeros)
+ *  and then copies the matrix to the device.
+ *
+ *  \code
+ *  #include <cusp/dia_matrix.h>
+ *  ...
+ *
+ *  // allocate storage for (4,4) matrix with 3 diagonals
+ *  cusp::dia_matrix<int,float,cusp::host_memory> A(4,4,6,3);
+ *
+ *  // initialize diagonal offsets
+ *  A.diagonal_offsets[0] = -2;
+ *  A.diagonal_offsets[1] =  0;
+ *  A.diagonal_offsets[2] =  1;
+ *
+ *  // initialize nonzero values
+ *  A.values(2,0) = 40;  // first diagonal
+ *  A.values(3,0) = 60;
+ *  A.values(0,1) = 10;  // second diagonal
+ *  A.values(1,1) =  0;
+ *  A.values(2,1) = 50;
+ *  A.values(0,2) = 20;  // third diagonal
+ *  A.values(1,2) = 30;
+ *
+ *  // A now represents the following matrix
+ *  //    [10 20  0]
+ *  //    [ 0  0 30]
+ *  //    [40  0 50]
+ *  //    [ 0 60  0]
+ *
+ *  // copy to the device
+ *  cusp::dia_matrix<int,float,cusp::device_memory> B = A;
+ *  \endcode
+ *
+ */
     template <typename IndexType, typename ValueType, class SpaceOrAlloc>
     class dia_matrix : public detail::matrix_base<IndexType>
     {
@@ -45,39 +100,80 @@ namespace cusp
         template<typename SpaceOrAlloc2>
         struct rebind { typedef dia_matrix<IndexType, ValueType, SpaceOrAlloc2> type; };
 
-        cusp::array1d<IndexType, index_allocator_type>                     diagonal_offsets;
+        /*! Storage for the diagonal offsets.
+         */
+        cusp::array1d<IndexType, index_allocator_type> diagonal_offsets;
+        
+        /*! Storage for the nonzero entries of the DIA data structure.
+         */
         cusp::array2d<ValueType, value_allocator_type, cusp::column_major> values;
             
-        // construct empty matrix
+        /*! Construct an empty \p dia_matrix.
+         */
         dia_matrix();
 
-        // construct matrix with given shape and number of entries
+        /*! Construct a \p dia_matrix with a specific shape, number of nonzero entries,
+         *  and number of occupied diagonals.
+         *
+         *  \param num_rows Number of rows.
+         *  \param num_cols Number of columns.
+         *  \param num_entries Number of nonzero matrix entries.
+         *  \param num_diagonals Number of occupied diagonals.
+         *  \param alignment Amount of padding used to align the data structure (default 16).
+         */
         dia_matrix(IndexType num_rows, IndexType num_cols, IndexType num_entries,
                    IndexType num_diagonals, IndexType alignment = 16);
         
-        // construct from another dia_matrix
+        /*! Construct a \p dia_matrix from another \p dia_matrix.
+         *
+         *  \param matrix Another \p dia_matrix.
+         */
         template <typename IndexType2, typename ValueType2, typename SpaceOrAlloc2>
         dia_matrix(const dia_matrix<IndexType2, ValueType2, SpaceOrAlloc2>& matrix);
         
-        // construct from a different matrix format
+        /*! Construct a \p dia_matrix from another matrix format.
+         *
+         *  \param matrix Another sparse or dense matrix.
+         */
         template <typename MatrixType>
         dia_matrix(const MatrixType& matrix);
         
-        // sparse matrix-vector multiplication
+        /*! Implements sparse matrix-vector multiplication
+         *
+         * Computes the \c y = A * \c x where \c x and \c y are
+         * column vectors and A represents this matrix.
+         *
+         *  \param x Input vector.
+         *  \param y Output vector.
+         */
         template <typename VectorType1, typename VectorType2>
         void multiply(const VectorType1& x, VectorType2& y) const;
 
         void resize(IndexType num_rows, IndexType num_cols, IndexType num_entries,
                     IndexType num_diagonals, IndexType alignment = 16);
 
+        /*! Swap the contents of two \p dia_matrix objects.
+         *
+         *  \param matrix Another \p dia_matrix with the same IndexType and ValueType.
+         */
         void swap(dia_matrix& matrix);
         
+        /*! Assignment from another \p dia_matrix.
+         *
+         *  \param matrix Another \p dia_matrix with possibly different IndexType and ValueType.
+         */
         template <typename IndexType2, typename ValueType2, typename SpaceOrAlloc2>
         dia_matrix& operator=(const dia_matrix<IndexType2, ValueType2, SpaceOrAlloc2>& matrix);
 
+        /*! Assignment from another matrix format.
+         *
+         *  \param matrix Another sparse or dense matrix.
+         */
         template <typename MatrixType>
         dia_matrix& operator=(const MatrixType& matrix);
     }; // class dia_matrix
+/*! \}
+ */
     
 } // end namespace cusp
 
