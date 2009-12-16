@@ -25,8 +25,8 @@ namespace cusp
     class exception : public std::exception
     {
         public:
-            template <typename MessageType>
-            exception(const MessageType& message) : message(message) {}
+            exception(const exception& exception_) : message(exception_.message) {}
+            exception(const std::string& message_) : message(message_) {}
             ~exception() throw() {}
             const char* what() const throw() { return message.c_str(); }
 

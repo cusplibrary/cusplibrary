@@ -95,7 +95,7 @@ void cg(LinearOperator& A,
     M.multiply(r, z);
 
     // p <- z
-    blas::copy(r, p);
+    blas::copy(z, p);
 		
     ValueType r_norm = blas::nrm2(r.begin(), r.end());
 
@@ -127,7 +127,7 @@ void cg(LinearOperator& A,
         blas::fill(y, 0);                  // TODO remove when SpMV implements y <- A*x 
         A.multiply(p, y);
         
-        // alpha <- <r,r>/<y,p>
+        // alpha <- <r,z>/<y,p>
         ValueType alpha =  rz / blas::dotc(y, p);
         // x <- x + alpha * p
         blas::axpy(p, x, alpha);
@@ -149,7 +149,7 @@ void cg(LinearOperator& A,
         ValueType beta = rz / rz_old;
 		
         // p <- r + beta*p
-        blas::axpby(r, p, p, static_cast<ValueType>(1.0), beta);
+        blas::axpby(z, p, p, static_cast<ValueType>(1.0), beta);
 
         iteration_number++;
     }

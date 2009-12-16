@@ -37,17 +37,19 @@ namespace cusp
     class csr_pattern : public detail::matrix_base<IndexType>
     {
         public:
-        typedef IndexType index_type;
-
         typedef typename cusp::choose_memory_allocator<IndexType, SpaceOrAlloc>::type index_allocator_type;
         typedef typename cusp::allocator_space<index_allocator_type>::type memory_space;
         typedef typename cusp::csr_pattern<IndexType, SpaceOrAlloc> pattern_type;
+        
+        typedef IndexType index_type;
+
+        typedef cusp::array1d<IndexType, index_allocator_type> IndexContainer;
        
         template<typename SpaceOrAlloc2>
         struct rebind { typedef csr_pattern<IndexType, SpaceOrAlloc2> type; };
 
-        cusp::array1d<IndexType, index_allocator_type> row_offsets;
-        cusp::array1d<IndexType, index_allocator_type> column_indices;
+        IndexContainer row_offsets;
+        IndexContainer column_indices;
     
         csr_pattern();
     
@@ -117,12 +119,15 @@ namespace cusp
     
         typedef ValueType value_type;
         
+        typedef cusp::array1d<ValueType, value_allocator_type> ValueContainer;
+        
         template<typename SpaceOrAlloc2>
         struct rebind { typedef csr_matrix<IndexType, ValueType, SpaceOrAlloc2> type; };
+        
     
         /*! Storage for the nonzero entries of the CSR data structure.
          */
-        cusp::array1d<ValueType, value_allocator_type> values;
+        ValueContainer values;
     
         /*! Construct an empty \p csr_matrix.
          */
