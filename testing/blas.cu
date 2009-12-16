@@ -118,6 +118,44 @@ DECLARE_HOST_DEVICE_UNITTEST(TestAxpbypcz);
 
 
 template <class MemorySpace>
+void TestXmy(void)
+{
+    cusp::array1d<float, MemorySpace> x(4);
+    cusp::array1d<float, MemorySpace> y(4);
+    cusp::array1d<float, MemorySpace> z(4,0);
+
+    x[0] =  7.0f;   y[0] =  0.0f;
+    x[1] =  5.0f;   y[1] = -2.0f;
+    x[2] =  4.0f;   y[2] =  0.0f;
+    x[3] = -3.0f;   y[3] =  5.0f;
+
+    cusp::blas::xmy(x.begin(), x.end(), y.begin(), z.begin());
+
+    ASSERT_EQUAL(z[0],   0.0f);
+    ASSERT_EQUAL(z[1], -10.0f);
+    ASSERT_EQUAL(z[2],   0.0f);
+    ASSERT_EQUAL(z[3], -15.0f);
+   
+    z[0] = 0.0f;
+    z[1] = 0.0f;
+    z[2] = 0.0f;
+    z[3] = 0.0f;
+
+    cusp::blas::xmy(x, y, z);
+    
+    ASSERT_EQUAL(z[0],   0.0f);
+    ASSERT_EQUAL(z[1], -10.0f);
+    ASSERT_EQUAL(z[2],   0.0f);
+    ASSERT_EQUAL(z[3], -15.0f);
+    
+    // test size checking
+    cusp::array1d<float, MemorySpace> output(3);
+    ASSERT_THROWS(cusp::blas::xmy(x, y, output), cusp::invalid_input_exception);
+}
+DECLARE_HOST_DEVICE_UNITTEST(TestXmy);
+
+
+template <class MemorySpace>
 void TestCopy(void)
 {
     cusp::array1d<float, MemorySpace> x(4);

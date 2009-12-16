@@ -89,6 +89,23 @@ void axpbypcz(const Array1& x,
               ScalarType gamma);
 
 
+template <typename InputIterator1,
+          typename InputIterator2,
+          typename OutputIterator,
+          typename ScalarType>
+void xmy(InputIterator1 first1,
+         InputIterator1 last1,
+         InputIterator2 first2,
+         OutputIterator output);
+
+template <typename Array1,
+          typename Array2,
+          typename Array3>
+void xmy(const Array1& x,
+         const Array2& y,
+               Array3& output);
+
+
 template <typename InputIterator,
           typename ForwardIterator>
 void copy(InputIterator   first1,

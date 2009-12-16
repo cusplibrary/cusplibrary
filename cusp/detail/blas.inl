@@ -158,6 +158,16 @@ namespace detail
                 }
         };
 
+    template <typename T>
+        struct XMY : public thrust::binary_function<T,T,T>
+        {
+            __host__ __device__
+                T operator()(T x, T y)
+                { 
+                    return x * y;
+                }
+        };
+
 } // end namespace detail
 
 
@@ -246,6 +256,30 @@ void axpbypcz(const Array1& x,
 {
     detail::assert_same_dimensions(x, y, z, output);
     cusp::blas::axpbypcz(x.begin(), x.end(), y.begin(), z.begin(), output.begin(), alpha, beta, gamma);
+}
+    
+
+template <typename InputIterator1,
+          typename InputIterator2,
+          typename OutputIterator>
+void xmy(InputIterator1 first1,
+         InputIterator1 last1,
+         InputIterator2 first2,
+         OutputIterator output)
+{
+    typedef typename thrust::iterator_value<OutputIterator>::type ScalarType;
+    thrust::transform(first1, last1, first2, output, detail::XMY<ScalarType>());
+}
+
+template <typename Array1,
+          typename Array2,
+          typename Array3>
+void xmy(const Array1& x,
+         const Array2& y,
+               Array3& output)
+{
+    detail::assert_same_dimensions(x, y, output);
+    cusp::blas::xmy(x.begin(), x.end(), y.begin(), output.begin());
 }
 
 template <typename InputIterator,
