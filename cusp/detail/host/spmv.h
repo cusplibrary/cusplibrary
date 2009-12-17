@@ -1,20 +1,3 @@
-/*
- *  Copyright 2008-2009 NVIDIA Corporation
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- */
-
-
 #pragma once
 
 #include <cusp/coo_matrix.h>
@@ -22,6 +5,8 @@
 #include <cusp/dia_matrix.h>
 #include <cusp/ell_matrix.h>
 #include <cusp/hyb_matrix.h>
+
+#include <thrust/functional.h>
 
 namespace cusp
 {
@@ -31,7 +16,11 @@ namespace host
 {
 
 // coo_matrix
-template <typename IndexType, typename ValueType>
+template <typename IndexType,
+          typename ValueType,
+          typename UnaryFunction,
+          typename BinaryFunction1,
+          typename BinaryFunction2>
 void spmv_coo(const IndexType num_rows,
               const IndexType num_cols,
               const IndexType num_entries,
@@ -39,11 +28,22 @@ void spmv_coo(const IndexType num_rows,
 	          const IndexType * column_indices, 
 	          const ValueType * values,
 	          const ValueType * x,
-	                      ValueType * y)
+                    ValueType * y,
+              UnaryFunction   initialize,
+              BinaryFunction1 combine,
+              BinaryFunction2 reduce)
 {
+    for(IndexType i = 0; i < num_rows; i++)
+        y[i] = initialize(y[i]);
+
     for(IndexType n = 0; n < num_entries; n++)
     {
-        y[row_indices[n]] += values[n] * x[column_indices[n]];
+        const IndexType i   = row_indices[n];
+        const IndexType j   = column_indices[n];
+        const ValueType Aij = values[n];
+        const ValueType xj  = x[j];
+
+        y[i] = reduce(y[i], combine(Aij, xj));
     }
 }
 
@@ -55,35 +55,49 @@ void spmv(const cusp::coo_matrix<IndexType, ValueType, cusp::host_memory>& coo,
 {
     spmv_coo(coo.num_rows, coo.num_cols, coo.num_entries,
              &coo.row_indices[0], &coo.column_indices[0], &coo.values[0],
-             x, y);
+             x, y,
+             thrust::identity<ValueType>(), thrust::multiplies<ValueType>(), thrust::plus<ValueType>());
 }
 
+
 // csr_matrix
-template <typename IndexType, typename ValueType>
-void spmv_csr(const IndexType num_rows, 
+template <typename IndexType,
+          typename ValueType,
+          typename UnaryFunction,
+          typename BinaryFunction1,
+          typename BinaryFunction2>
+void spmv_csr(const IndexType num_rows,
               const IndexType num_cols,
-              const IndexType * row_offsets, 
-              const IndexType * column_indices, 
-              const ValueType * values, 
-              const ValueType * x,    
-                    ValueType * y)    
+              const IndexType * row_offsets,
+              const IndexType * column_indices,
+              const ValueType * values,
+              const ValueType * x,
+                    ValueType * y,
+              UnaryFunction   initialize,
+              BinaryFunction1 combine,
+              BinaryFunction2 reduce)
 {
-    for (IndexType i = 0; i < num_rows; i++)
+ 
+    for(IndexType i = 0; i < num_rows; i++)
     {
         const IndexType row_start = row_offsets[i];
         const IndexType row_end   = row_offsets[i+1];
-
-        ValueType sum = y[i];
-
+ 
+        ValueType accumulator = initialize(y[i]);
+ 
         for (IndexType jj = row_start; jj < row_end; jj++)
         {
-            const IndexType j = column_indices[jj];  //column index
-            sum += values[jj] * x[j];
+            const IndexType j   = column_indices[jj];
+            const ValueType Aij = values[jj];
+            const ValueType xj  = x[j];
+ 
+            accumulator = reduce(accumulator, combine(Aij, xj));
         }
-
-        y[i] = sum; 
+ 
+        y[i] = accumulator;
     }
 }
+
 
 template <typename IndexType, typename ValueType>
 void spmv(const cusp::csr_matrix<IndexType, ValueType, cusp::host_memory>& csr, 
@@ -92,29 +106,40 @@ void spmv(const cusp::csr_matrix<IndexType, ValueType, cusp::host_memory>& csr,
 {
     spmv_csr(csr.num_rows, csr.num_cols,
              &csr.row_offsets[0], &csr.column_indices[0], &csr.values[0],
-             x, y);
+             x, y,
+             thrust::identity<ValueType>(), thrust::multiplies<ValueType>(), thrust::plus<ValueType>());
 }
 
 
 // dia_matrix
-template <typename IndexType, typename OffsetType, typename ValueType>
+template <typename IndexType,
+          typename ValueType,
+          typename UnaryFunction,
+          typename BinaryFunction1,
+          typename BinaryFunction2>
 void spmv_dia(const IndexType num_rows,
               const IndexType num_cols,
               const IndexType num_diagonals,
               const IndexType stride,
-              const OffsetType * diagonal_offsets, 
+              const IndexType * diagonal_offsets, 
               const ValueType  * values, 
               const ValueType  * x,
-                    ValueType  * y)
+                    ValueType  * y,
+              UnaryFunction   initialize,
+              BinaryFunction1 combine,
+              BinaryFunction2 reduce)
 {
+    for(IndexType i = 0; i < num_rows; i++)
+        y[i] = initialize(y[i]);
+
     for(IndexType i = 0; i < num_diagonals; i++)
     {
-        const OffsetType k = diagonal_offsets[i];  //diagonal offset
+        const IndexType k = diagonal_offsets[i];
 
-        const IndexType i_start = std::max((OffsetType) 0, -k);
-        const IndexType j_start = std::max((OffsetType) 0,  k);
+        const IndexType i_start = std::max<IndexType>(0, -k);
+        const IndexType j_start = std::max<IndexType>(0,  k);
 
-        //number of elements to process
+        // number of elements to process in this diagonal
         const IndexType N = std::min(num_rows - i_start, num_cols - j_start);
 
         const ValueType * d_ = values + i*stride + i_start;
@@ -122,7 +147,7 @@ void spmv_dia(const IndexType num_rows,
               ValueType * y_ = y + i_start;
 
         for(IndexType n = 0; n < N; n++)
-            y_[n] += d_[n] * x_[n]; 
+            y_[n] = reduce(y_[n], combine(d_[n], x_[n]));
     }
 }
 
@@ -131,17 +156,22 @@ void spmv(const dia_matrix<IndexType, ValueType, cusp::host_memory>& dia,
           const ValueType * x,  
                 ValueType * y)
 {
-    IndexType num_diagonals = dia.values.num_cols;
-    IndexType stride        = dia.values.num_rows;
+    const IndexType num_diagonals = dia.values.num_cols;
+    const IndexType stride        = dia.values.num_rows;
 
     spmv_dia(dia.num_rows, dia.num_cols, num_diagonals, stride,
-             &dia.diagonal_offsets[0], &dia.values.values[0], 
-             x, y);
+             &dia.diagonal_offsets[0], &dia.values.values[0],
+             x, y,
+             thrust::identity<ValueType>(), thrust::multiplies<ValueType>(), thrust::plus<ValueType>());
 }
 
 
 // ell_matrix
-template <typename IndexType, typename ValueType>
+template <typename IndexType,
+          typename ValueType,
+          typename UnaryFunction,
+          typename BinaryFunction1,
+          typename BinaryFunction2>
 void spmv_ell(const IndexType num_rows,
               const IndexType num_cols,
               const IndexType num_entries_per_row,
@@ -149,9 +179,15 @@ void spmv_ell(const IndexType num_rows,
               const IndexType * column_indices, 
               const ValueType * values, 
               const ValueType * x,
-                    ValueType * y)
+                    ValueType * y,
+              UnaryFunction   initialize,
+              BinaryFunction1 combine,
+              BinaryFunction2 reduce)
 {
     const IndexType invalid_index = cusp::ell_matrix<IndexType, ValueType, cusp::host_memory>::invalid_index;
+    
+    for(IndexType i = 0; i < num_rows; i++)
+        y[i] = initialize(y[i]);
 
     for(IndexType n = 0; n < num_entries_per_row; n++)
     {
@@ -160,8 +196,12 @@ void spmv_ell(const IndexType num_rows,
 
         for(IndexType i = 0; i < num_rows; i++)
         {
-            if (Aj_n[i] != invalid_index)
-                y[i] += Ax_n[i] * x[Aj_n[i]];
+            const IndexType j   = Aj_n[i];
+            const ValueType Aij = Ax_n[i];
+            const ValueType xj  = x[j];
+
+            if (j != invalid_index)
+                y[i] = reduce(y[i], combine(Aij, xj));
         }
     }
 }
@@ -176,7 +216,8 @@ void spmv(const cusp::ell_matrix<IndexType, ValueType, cusp::host_memory>& ell,
 
     spmv_ell(ell.num_rows, ell.num_cols, num_entries_per_row, stride,
              &ell.column_indices.values[0], &ell.values.values[0],
-             x, y);
+             x, y,
+             thrust::identity<ValueType>(), thrust::multiplies<ValueType>(), thrust::plus<ValueType>());
 }
 
 
@@ -189,7 +230,6 @@ void spmv(const cusp::hyb_matrix<IndexType, ValueType, cusp::host_memory>& hyb,
     spmv(hyb.ell, x, y);
     spmv(hyb.coo, x, y);
 }
-
 
 } // end namespace host
 } // end namespace detail
