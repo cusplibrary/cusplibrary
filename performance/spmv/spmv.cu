@@ -82,6 +82,10 @@ void test_all_formats(std::string& filename)
     std::cout << "with shape ("  << host_matrix.num_rows << "," << host_matrix.num_cols << ") and "
               << host_matrix.num_entries << " entries" << "\n\n";
     
+    FILE * fid = fopen(BENCHMARK_OUTPUT_FILE_NAME, "a");
+    fprintf(fid, "file=%s rows=%d cols=%d nonzeros=%d\n", filename.c_str(), host_matrix.num_rows, host_matrix.num_cols, host_matrix.num_entries);
+    fclose(fid);
+    
     test_coo(host_matrix);
     test_csr(host_matrix);
     test_dia(host_matrix);

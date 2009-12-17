@@ -8,6 +8,8 @@
 
 #include "../timer.h"
 
+const char * BENCHMARK_OUTPUT_FILE_NAME = "benchmark_output.log";
+
 template <typename HostMatrix, typename TestMatrix, typename TestKernel>
 float check_spmv(HostMatrix& host_matrix, TestMatrix& test_matrix, TestKernel test_spmv)
 {
@@ -93,7 +95,12 @@ void test_spmv(std::string         kernel_name,
     float GFLOPs = (time == 0) ? 0 : (2 * host_matrix.num_entries / time) / 1e9;
     float GBYTEs = (time == 0) ? 0 : (gbyte / time)                       / 1e9;
  
-    printf("\t%-20s: %8.4f ms ( %5.2f GFLOP/s %5.1f GB/s) [L2 error %f]\n", kernel_name.c_str(), 1e3 * time, GFLOPs, GBYTEs, error); 
+    printf("\t%-20s: %8.4f ms ( %5.2f GFLOP/s %5.1f GB/s) [L2 error %f]\n", kernel_name.c_str(), 1e3 * time, GFLOPs, GBYTEs, error);
+
+    //record results to file
+    FILE * fid = fopen(BENCHMARK_OUTPUT_FILE_NAME, "a");
+    fprintf(fid, "kernel=%s gflops=%f gbytes=%f msec=%f\n", kernel_name.c_str(), GFLOPs, GBYTEs, 1e3 * time);
+    fclose(fid);
 }
 
 
