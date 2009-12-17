@@ -18,8 +18,9 @@
 #pragma once
 
 #include <cuda.h>
-#include <cusp/detail/device/utils.h>
 
+#include <cusp/exception.h>
+#include <cusp/detail/device/utils.h>
 
 /*
  * These textures are (optionally) used to cache the 'x' vector in y += A*x
@@ -27,12 +28,22 @@
 texture<float,1> tex_x_float;
 texture<int2,1>  tex_x_double;
 
-// Use int2 to pull doubles through texture cache
 inline void bind_x(const float * x)
-{   CUDA_SAFE_CALL(cudaBindTexture(NULL, tex_x_float, x));   }
+{   
+    size_t offset = size_t(-1);
+    CUDA_SAFE_CALL(cudaBindTexture(&offset, tex_x_float, x));
+    if (offset != 0)
+        throw cusp::invalid_input_exception("memory is not aligned, refusing to use texture cache");
+}
 
+// Use int2 to pull doubles through texture cache
 inline void bind_x(const double * x)
-{   CUDA_SAFE_CALL(cudaBindTexture(NULL, tex_x_double, x));   }
+{   
+    size_t offset = size_t(-1);
+    CUDA_SAFE_CALL(cudaBindTexture(&offset, tex_x_double, x));
+    if (offset != 0)
+        throw cusp::invalid_input_exception("memory is not aligned, refusing to use texture cache");
+}
 
 inline void unbind_x(const float * x)
 {   CUDA_SAFE_CALL(cudaUnbindTexture(tex_x_float)); }
