@@ -84,14 +84,14 @@ void cg(LinearOperator& A,
     stopping_criteria.initialize(A, x, b);
    
     // y <- Ax
-    blas::fill(y, 0);                  // TODO remove when SpMV implements y <- A*x 
+    blas::fill(y, ValueType(0));                  // TODO remove when SpMV implements y <- A*x 
     A.multiply(x, y);
 
     // r <- b - A*x
-    blas::axpby(b, y, r, static_cast<ValueType>(1.0), static_cast<ValueType>(-1.0));
+    blas::axpby(b, y, r, ValueType(1), ValueType(-1));
    
     // z <- M*r
-    blas::fill(z, 0);                  // TODO remove when SpMV implements y <- A*x
+    blas::fill(z, ValueType(0));                  // TODO remove when SpMV implements y <- A*x
     M.multiply(r, z);
 
     // p <- z
@@ -124,7 +124,7 @@ void cg(LinearOperator& A,
         }
 
         // y <- Ap
-        blas::fill(y, 0);                  // TODO remove when SpMV implements y <- A*x 
+        blas::fill(y, ValueType(0));                  // TODO remove when SpMV implements y <- A*x 
         A.multiply(p, y);
         
         // alpha <- <r,z>/<y,p>
@@ -134,7 +134,7 @@ void cg(LinearOperator& A,
         // r <- r - alpha * y		
         blas::axpy(y, r, -alpha);
         // z <- M*r
-        blas::fill(z, 0);                  // TODO remove when SpMV implements y <- A*x
+        blas::fill(z, ValueType(0));                  // TODO remove when SpMV implements y <- A*x
         M.multiply(r, z);
 		
         // r2 = <r,r>
@@ -149,7 +149,7 @@ void cg(LinearOperator& A,
         ValueType beta = rz / rz_old;
 		
         // p <- r + beta*p
-        blas::axpby(z, p, p, static_cast<ValueType>(1.0), beta);
+        blas::axpby(z, p, p, ValueType(1), beta);
 
         iteration_number++;
     }

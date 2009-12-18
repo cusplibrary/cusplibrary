@@ -202,7 +202,7 @@ void read_matrix_market_file(cusp::coo_matrix<IndexType,ValueType,cusp::host_mem
                 num_entries_read++;
             }
 
-            std::fill(coo.values.begin(), coo.values.end(), 1.0);
+            std::fill(coo.values.begin(), coo.values.end(), ValueType(1));
         } 
         else if (banner.type == "real" || banner.type == "integer")
         {

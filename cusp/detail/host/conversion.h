@@ -49,7 +49,7 @@ void coo_to_csr(      cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& d
     dst.resize(src.num_rows, src.num_cols, src.num_entries);
     
     //compute number of non-zero entries per row of A 
-    std::fill(dst.row_offsets.begin(), dst.row_offsets.end(), 0);
+    std::fill(dst.row_offsets.begin(), dst.row_offsets.end(), IndexType(0));
 
     for (IndexType n = 0; n < src.num_entries; n++)
         dst.row_offsets[src.row_indices[n]]++;
@@ -91,7 +91,7 @@ void coo_to_array(      cusp::array2d<ValueType,cusp::host_memory,Orientation>& 
 {
     dst.resize(src.num_rows, src.num_cols);
 
-    std::fill(dst.values.begin(), dst.values.end(), 0);
+    std::fill(dst.values.begin(), dst.values.end(), ValueType(0));
 
     for(IndexType n = 0; n < src.num_entries; n++)
         dst(src.row_indices[n], src.column_indices[n]) += src.values[n]; //sum duplicates
@@ -155,7 +155,7 @@ void csr_to_dia(       cusp::dia_matrix<IndexType,ValueType,cusp::host_memory>& 
     }
 
     // fill in values array
-    std::fill(dia.values.values.begin(), dia.values.values.end(), 0);
+    std::fill(dia.values.values.begin(), dia.values.values.end(), ValueType(0));
 
     for(IndexType i = 0; i < csr.num_rows; i++)
     {
@@ -199,7 +199,7 @@ void csr_to_hyb(      cusp::hyb_matrix<IndexType,ValueType,cusp::host_memory>& h
 
     // pad out ELL format with zeros
     std::fill(ell.column_indices.values.begin(), ell.column_indices.values.end(), invalid_index);
-    std::fill(ell.values.values.begin(),         ell.values.values.end(),         0);
+    std::fill(ell.values.values.begin(),         ell.values.values.end(),         ValueType(0));
 
     for(IndexType i = 0, coo_nnz = 0; i < csr.num_rows; i++)
     {
@@ -247,7 +247,7 @@ void csr_to_array(      cusp::array2d<ValueType,cusp::host_memory,Orientation>& 
 {
     dst.resize(src.num_rows, src.num_cols);
 
-    std::fill(dst.values.begin(), dst.values.end(), 0);
+    std::fill(dst.values.begin(), dst.values.end(), ValueType(0));
 
     for(IndexType i = 0; i < src.num_rows; i++)
         for(IndexType jj = src.row_offsets[i]; jj < src.row_offsets[i+1]; jj++)

@@ -88,11 +88,11 @@ void bicgstab(LinearOperator& A,
     stopping_criteria.initialize(A, x, b);
 
     // y <- Ax
-    blas::fill(y, 0);                  // TODO remove when SpMV implements y <- A*x 
+    blas::fill(y, ValueType(0));                  // TODO remove when SpMV implements y <- A*x 
     A.multiply(x, y);
 
     // r <- b - A*x
-    blas::axpby(b, y, r, static_cast<ValueType>(1.0), static_cast<ValueType>(-1.0));
+    blas::axpby(b, y, r, ValueType(1), ValueType(-1));
 
     // p <- r
     blas::copy(r, p);
@@ -127,35 +127,35 @@ void bicgstab(LinearOperator& A,
         }
 
         // Mp = M*p
-        blas::fill(Mp, 0);                  // TODO remove when SpMV implements y <- A*x
+        blas::fill(Mp, ValueType(0));                  // TODO remove when SpMV implements y <- A*x
         M.multiply(p, Mp);
 
         // AMp = A*Mp
-        blas::fill(AMp, 0);                 // TODO remove when SpMV implements y <- A*x
+        blas::fill(AMp, ValueType(0));                 // TODO remove when SpMV implements y <- A*x
         A.multiply(Mp, AMp);
 
         // alpha = (r_j, r_star) / (A*M*p, r_star)
         ValueType alpha = r_r_star_old / blas::dotc(r_star, AMp);
         
         // s_j = r_j - alpha * AMp
-        blas::axpby(r, AMp, s, static_cast<ValueType>(1.0), static_cast<ValueType>(-alpha));
+        blas::axpby(r, AMp, s, ValueType(1), ValueType(-alpha));
 
         // Ms = M*s_j
-        blas::fill(Ms, 0);                  // TODO remove when SpMV implements y <- A*x
+        blas::fill(Ms, ValueType(0));                  // TODO remove when SpMV implements y <- A*x
         M.multiply(s, Ms);
         
         // AMs = A*Ms
-        blas::fill(AMs, 0);                 // TODO remove when SpMV implements y <- A*x
+        blas::fill(AMs, ValueType(0));                 // TODO remove when SpMV implements y <- A*x
         A.multiply(Ms, AMs);
 
         // omega = (AMs, s) / (AMs, AMs)
         ValueType omega = blas::dotc(AMs, s) / blas::dotc(AMs, AMs); // TODO optimize denominator
         
         // x_{j+1} = x_j + alpha*M*p_j + omega*M*s_j
-        blas::axpbypcz(x, Mp, Ms, x, static_cast<ValueType>(1.0), alpha, omega);
+        blas::axpbypcz(x, Mp, Ms, x, ValueType(1), alpha, omega);
 
         // r_{j+1} = s_j - omega*A*M*s
-        blas::axpby(s, AMs, r, static_cast<ValueType>(1.0), -omega);
+        blas::axpby(s, AMs, r, ValueType(1), -omega);
 
         // beta_j = (r_{j+1}, r_star) / (r_j, r_star) * (alpha/omega)
         ValueType r_r_star_new = blas::dotc(r_star, r);
@@ -163,7 +163,7 @@ void bicgstab(LinearOperator& A,
         r_r_star_old = r_r_star_new;
 
         // p_{j+1} = r_{j+1} + beta*(p_j - omega*A*M*p)
-        blas::axpbypcz(r, p, AMp, p, static_cast<ValueType>(1.0), beta, -beta*omega);
+        blas::axpbypcz(r, p, AMp, p, ValueType(1), beta, -beta*omega);
 
         r_norm = blas::nrm2(r);
 
