@@ -63,7 +63,7 @@ __inline__ __device__ float fetch_x(const int& i, const float * x)
 template <bool UseCache>
 __inline__ __device__ double fetch_x(const int& i, const double * x)
 {
-#if __CUDA_ARCH__ >= 1030
+#if __CUDA_ARCH__ >= 130
     // double requires Compute Capability 1.3 or greater
     if (UseCache)
     {
