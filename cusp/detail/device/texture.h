@@ -63,18 +63,19 @@ __inline__ __device__ float fetch_x(const int& i, const float * x)
 template <bool UseCache>
 __inline__ __device__ double fetch_x(const int& i, const double * x)
 {
+#if __CUDA_ARCH__ >= 1030
+    // double requires Compute Capability 1.3 or greater
     if (UseCache)
     {
-#if CUDA_ARCH >= 1030
         int2 v = tex1Dfetch(tex_x_double, i);
         return __hiloint2double(v.y, v.x);
-#else
-        return 1.0;
-#endif
     }
     else
     {
         return x[i];
     }
+#else
+    return 1.0/0.0; // should never be called
+#endif
 }
 
