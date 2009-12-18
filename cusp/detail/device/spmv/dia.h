@@ -64,7 +64,7 @@ spmv_dia_kernel(const IndexType num_rows,
                 const ValueType * x, 
                       ValueType * y)
 {
-    __shared__ int offsets[BLOCK_SIZE];
+    __shared__ IndexType offsets[BLOCK_SIZE];
     
     const IndexType thread_id = blockDim.x * blockIdx.x + threadIdx.x;
     const IndexType grid_size = gridDim.x * blockDim.x;
@@ -75,7 +75,6 @@ spmv_dia_kernel(const IndexType num_rows,
 
     __syncthreads();
 
-
     for(IndexType row = thread_id; row < num_rows; row += grid_size)
     {
         ValueType sum = y[row];
@@ -84,7 +83,7 @@ spmv_dia_kernel(const IndexType num_rows,
 
         for(IndexType n = 0; n < num_diagonals; n++)
         {
-            const int col = row + offsets[n];
+            const IndexType col = row + offsets[n];
     
             if(col >= 0 && col < num_cols)
             {
@@ -107,7 +106,7 @@ void __spmv_dia(const cusp::dia_matrix<IndexType,ValueType,cusp::device_memory>&
 {
     const unsigned int BLOCK_SIZE = 256;
     const unsigned int MAX_BLOCKS = MAX_THREADS / BLOCK_SIZE;
-//    const unsigned int MAX_BLOCKS = thrust::experimental::arch::max_active_blocks(spmv_dia_kernel<IndexType, ValueType, BLOCK_SIZE, UseCache>, BLOCK_SIZE, (size_t) 0);
+//    const unsigned int MAX_BLOCKS = thrust::experimental::arch::max_active_blocks(spmv_dia_kernel<IndexType, ValueType, BLOCK_SIZE, UseCache>, BLOCK_SIZE, (size_t) sizeof(IndexType) * BLOCK_SIZE);
     const unsigned int NUM_BLOCKS = std::min(MAX_BLOCKS, DIVIDE_INTO(dia.num_rows, BLOCK_SIZE));
    
     const IndexType stride = dia.values.num_rows;

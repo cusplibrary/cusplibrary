@@ -52,7 +52,7 @@ def run_tests(value_type):
         cmd = binary_filename 
         cmd += ' ' + matrix_filename                  # e.g. pwtk.mtx
         cmd += ' --device=' + device_id               # e.g. 0 or 1
-        cmd += ' --value_type' + value_type           # e.g. float or double
+        cmd += ' --value_type=' + value_type          # e.g. float or double
 
         # execute the benchmark on this file
         os.system(cmd)
