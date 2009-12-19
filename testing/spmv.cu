@@ -1,5 +1,7 @@
 #include <unittest/unittest.h>
 
+#define CUSP_USE_TEXTURE_MEMORY
+
 #include <cusp/csr_matrix.h>
 #include <cusp/array1d.h>
 #include <cusp/gallery/poisson.h>

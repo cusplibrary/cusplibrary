@@ -14,7 +14,6 @@
  *  limitations under the License.
  */
 
-
 #pragma once
 
 #include <cuda.h>
@@ -22,40 +21,65 @@
 #include <cusp/exception.h>
 #include <cusp/detail/device/utils.h>
 
-/*
- * These textures are (optionally) used to cache the 'x' vector in y += A*x
- */
+#ifdef CUSP_USE_TEXTURE_MEMORY    
+// These textures are (optionally) used to cache the 'x' vector in y += A*x
 texture<float,1> tex_x_float;
 texture<int2,1>  tex_x_double;
+#endif
 
 inline void bind_x(const float * x)
 {   
+#ifdef CUSP_USE_TEXTURE_MEMORY    
     size_t offset = size_t(-1);
     CUDA_SAFE_CALL(cudaBindTexture(&offset, tex_x_float, x));
     if (offset != 0)
         throw cusp::invalid_input_exception("memory is not aligned, refusing to use texture cache");
+#else
+    throw cusp::runtime_exception("texture support was not enabled");
+#endif
 }
 
 // Use int2 to pull doubles through texture cache
 inline void bind_x(const double * x)
 {   
+#ifdef CUSP_USE_TEXTURE_MEMORY    
     size_t offset = size_t(-1);
     CUDA_SAFE_CALL(cudaBindTexture(&offset, tex_x_double, x));
     if (offset != 0)
         throw cusp::invalid_input_exception("memory is not aligned, refusing to use texture cache");
+#else
+    throw cusp::runtime_exception("texture support was not enabled");
+#endif
 }
 
+
+// Note: x is unused, but distinguishes the two unbind functions
 inline void unbind_x(const float * x)
-{   CUDA_SAFE_CALL(cudaUnbindTexture(tex_x_float)); }
+{
+#ifdef CUSP_USE_TEXTURE_MEMORY
+    CUDA_SAFE_CALL(cudaUnbindTexture(tex_x_float));
+#else
+    throw cusp::runtime_exception("texture support was not enabled");
+#endif
+}
 inline void unbind_x(const double * x)
-{   CUDA_SAFE_CALL(cudaUnbindTexture(tex_x_double)); }
-// Note: x is unused, but distinguishes the two functions
+{
+#ifdef CUSP_USE_TEXTURE_MEMORY
+    CUDA_SAFE_CALL(cudaUnbindTexture(tex_x_double));
+#else
+    throw cusp::runtime_exception("texture support was not enabled");
+#endif
+}
 
 template <bool UseCache>
 __inline__ __device__ float fetch_x(const int& i, const float * x)
 {
     if (UseCache)
+#ifdef CUSP_USE_TEXTURE_MEMORY
         return tex1Dfetch(tex_x_float, i);
+#else
+        return 1.0/0.0; // should never be called
+#endif
     else
         return x[i];
 }
@@ -67,8 +91,12 @@ __inline__ __device__ double fetch_x(const int& i, const double * x)
     // double requires Compute Capability 1.3 or greater
     if (UseCache)
     {
+#ifdef CUSP_USE_TEXTURE_MEMORY
         int2 v = tex1Dfetch(tex_x_double, i);
         return __hiloint2double(v.y, v.x);
+#else
+        return 1.0/0.0; // should never be called
+#endif // CUSP_USE_TEXTURE_MEMORY
     }
     else
     {

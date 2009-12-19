@@ -61,6 +61,13 @@ namespace cusp
             template <typename MessageType>
             format_conversion_exception(const MessageType& message) : exception(message) {}
     };
+    
+    class runtime_exception : public exception
+    {
+        public:
+            template <typename MessageType>
+            runtime_exception(const MessageType& message) : exception(message) {}
+    };
 
 } // end namespace cusp
 
