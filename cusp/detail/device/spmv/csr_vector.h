@@ -64,8 +64,8 @@ spmv_csr_vector_kernel(const IndexType num_rows,
                        const ValueType * x, 
                              ValueType * y)
 {
-    __shared__ ValueType sdata[(VECTORS_PER_BLOCK + 1) * THREADS_PER_VECTOR];      // padded to avoid reduction conditionals
-    __shared__ IndexType ptrs[VECTORS_PER_BLOCK][2];
+    __shared__ volatile ValueType sdata[(VECTORS_PER_BLOCK + 1) * THREADS_PER_VECTOR];      // padded to avoid reduction conditionals
+    __shared__ volatile IndexType ptrs[VECTORS_PER_BLOCK][2];
     
     const IndexType THREADS_PER_BLOCK = VECTORS_PER_BLOCK * THREADS_PER_VECTOR;
 
