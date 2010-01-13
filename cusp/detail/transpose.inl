@@ -16,6 +16,7 @@
 
 
 #include <cusp/coo_matrix.h>
+#include <cusp/detail/format_utils.h>
 
 #include <thrust/gather.h>
 #include <thrust/sequence.h>
@@ -49,7 +50,7 @@ void transpose(const cusp::coo_matrix<IndexType,ValueType,SpaceOrAlloc>& A,
 
     At.swap(temp);
 }
- 
+
 } // end namespace detail
 
 template <typename MatrixType>
