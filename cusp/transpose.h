@@ -22,8 +22,8 @@
 namespace cusp
 {
 
-template <typename MatrixType>
-void transpose(const MatrixType& A, MatrixType& At);
+template <typename MatrixType1, typename MatrixType2>
+void transpose(const MatrixType1& A, MatrixType2& At);
 
 } // end namespace cusp
 

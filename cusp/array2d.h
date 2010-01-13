@@ -30,21 +30,43 @@ namespace cusp
     namespace detail
     {
         template <typename IndexType>
+        __host__ __device__
         IndexType minor_dimension(IndexType num_rows, IndexType num_cols, row_major)    { return num_cols; }
         
         template <typename IndexType>
+        __host__ __device__
         IndexType minor_dimension(IndexType num_rows, IndexType num_cols, column_major) { return num_rows; }
 
         template <typename IndexType>
+        __host__ __device__
         IndexType major_dimension(IndexType num_rows, IndexType num_cols, row_major)    { return num_rows; }
         
         template <typename IndexType>
+        __host__ __device__
         IndexType major_dimension(IndexType num_rows, IndexType num_cols, column_major) { return num_cols; }
 
         template <typename IndexType>
+        __host__ __device__
+        IndexType linear_index_to_row_index(IndexType linear_index, IndexType num_rows, IndexType num_cols, row_major)    { return linear_index / num_cols; }
+            
+        template <typename IndexType>
+        __host__ __device__
+        IndexType linear_index_to_col_index(IndexType linear_index, IndexType num_rows, IndexType num_cols, row_major)    { return linear_index % num_cols; }
+        
+        template <typename IndexType>
+        __host__ __device__
+        IndexType linear_index_to_row_index(IndexType linear_index, IndexType num_rows, IndexType num_cols, column_major)    { return linear_index % num_rows; }
+            
+        template <typename IndexType>
+        __host__ __device__
+        IndexType linear_index_to_col_index(IndexType linear_index, IndexType num_rows, IndexType num_cols, column_major)    { return linear_index / num_rows; }
+
+        template <typename IndexType>
+        __host__ __device__
         IndexType index_of(IndexType i, IndexType j, IndexType num_rows, IndexType num_cols, row_major)    { return i * num_cols + j; }
             
         template <typename IndexType>
+        __host__ __device__
         IndexType index_of(IndexType i, IndexType j, IndexType num_rows, IndexType num_cols, column_major) { return j * num_rows + i; }
     }
 

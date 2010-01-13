@@ -47,28 +47,16 @@ void verify_result(const MatrixType& matrix)
 }
 
 
-template <class HostMatrixType>
-void TestTranspose(HostMatrixType mtx)
+template <class MatrixType>
+void TestTranspose(MatrixType mtx)
 {
-    typedef typename HostMatrixType::template rebind<cusp::device_memory>::type DeviceMatrixType;
+    MatrixType A, At;
 
-    {
-        HostMatrixType A;
-        HostMatrixType At;
-        
-        initialize_matrix(A);
-        cusp::transpose(A, At);
-        verify_result(At);
-    }
+    initialize_matrix(A);
     
-    {
-        DeviceMatrixType A;
-        DeviceMatrixType At;
-        
-        initialize_matrix(A);
-        cusp::transpose(A, At);
-        verify_result(At);
-    }
+    cusp::transpose(A, At);
+
+    verify_result(At);
 }
 
 
@@ -76,9 +64,46 @@ void TestTranspose(HostMatrixType mtx)
 ///////////////////////
 // Instantiate Tests //
 ///////////////////////
+template <class Space>
+void TestTransposeArray2d(void)
+{
+    TestTranspose(cusp::array2d<float, Space, cusp::row_major>());
+    TestTranspose(cusp::array2d<float, Space, cusp::column_major>());
+}
+DECLARE_HOST_DEVICE_UNITTEST(TestTransposeArray2d);
+
+template <class Space>
 void TestTransposeCooMatrix(void)
 {
-    TestTranspose(cusp::coo_matrix<int, float, cusp::host_memory>());
+    TestTranspose(cusp::coo_matrix<int, float, Space>());
 }
-DECLARE_UNITTEST(TestTransposeCooMatrix);
+DECLARE_HOST_DEVICE_UNITTEST(TestTransposeCooMatrix);
+
+template <class Space>
+void TestTransposeCsrMatrix(void)
+{
+    TestTranspose(cusp::csr_matrix<int, float, Space>());
+}
+DECLARE_HOST_DEVICE_UNITTEST(TestTransposeCsrMatrix);
+
+template <class Space>
+void TestTransposeDiaMatrix(void)
+{
+    TestTranspose(cusp::dia_matrix<int, float, Space>());
+}
+DECLARE_HOST_DEVICE_UNITTEST(TestTransposeDiaMatrix);
+
+template <class Space>
+void TestTransposeEllMatrix(void)
+{
+    TestTranspose(cusp::ell_matrix<int, float, Space>());
+}
+DECLARE_HOST_DEVICE_UNITTEST(TestTransposeEllMatrix);
+
+template <class Space>
+void TestTransposeHybMatrix(void)
+{
+    TestTranspose(cusp::hyb_matrix<int, float, Space>());
+}
+DECLARE_HOST_DEVICE_UNITTEST(TestTransposeHybMatrix);
 
