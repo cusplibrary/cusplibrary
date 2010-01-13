@@ -26,30 +26,45 @@ namespace cusp
 namespace detail
 {
 
-template <typename IndexType, typename ValueType, typename SpaceOrAlloc,
-          typename ArrayType>
-void expand_row_offsets(const cusp::csr_matrix<IndexType,ValueType,SpaceOrAlloc>& A, ArrayType& output)
+template <typename OffsetArray, typename IndexArray>
+void offsets_to_indices(const OffsetArray& offsets, IndexArray& indices)
 {
-    output.resize(A.num_entries);
+    typedef typename OffsetArray::value_type OffsetType;
 
-    // compute the row index for each matrix entry
-    thrust::upper_bound(A.row_offsets.begin() + 1, A.row_offsets.end(),
-                        thrust::counting_iterator<IndexType>(0), thrust::counting_iterator<IndexType>(A.num_entries),
-                        output.begin());
+    // convert compressed row offsets into uncompressed row indices
+    thrust::upper_bound(offsets.begin() + 1,
+                        offsets.end(),
+                        thrust::counting_iterator<OffsetType>(0),
+                        thrust::counting_iterator<OffsetType>(indices.size()),
+                        indices.begin());
 }
+
+template <typename IndexArray, typename OffsetArray>
+void indices_to_offsets(const IndexArray& indices, OffsetArray& offsets)
+{
+    typedef typename OffsetArray::value_type OffsetType;
+
+    // convert uncompressed row indices into compressed row offsets
+    thrust::lower_bound(indices.begin(),
+                        indices.end(),
+                        thrust::counting_iterator<OffsetType>(0),
+                        thrust::counting_iterator<OffsetType>(offsets.size()),
+                        offsets.begin());
+}
+
 
 template <typename IndexType, typename ValueType, typename SpaceOrAlloc,
           typename ArrayType>
 void extract_diagonal(const cusp::csr_matrix<IndexType,ValueType,SpaceOrAlloc>& A, ArrayType& output)
 {
-    output.resize(thrust::min(A.num_rows,A.num_cols));
+    output.resize(thrust::min(A.num_rows, A.num_cols));
 
     // initialize output to zero
     thrust::fill(output.begin(), output.end(), ValueType(0));
 
     // first expand the compressed row offsets into row indices
-    cusp::array1d<IndexType,SpaceOrAlloc> row_indices;
-    expand_row_offsets(A, row_indices);
+    cusp::array1d<IndexType,SpaceOrAlloc> row_indices(A.num_entries);
+    offsets_to_indices(A.row_offsets, row_indices);
 
     // determine which matrix entries correspond to the matrix diagonal
     cusp::array1d<unsigned int,SpaceOrAlloc> is_diagonal(A.num_entries);

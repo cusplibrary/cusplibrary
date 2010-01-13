@@ -4,18 +4,17 @@
 #include <cusp/detail/format_utils.h>
 
 template <class Space>
-void TestCsrExpandRowOffsets(void)
+void TestOffsetsToIndices(void)
 {
-    cusp::csr_matrix<int, float, Space> matrix(7, 1, 10);
-
-    matrix.row_offsets[0] =  0;
-    matrix.row_offsets[1] =  0;
-    matrix.row_offsets[2] =  0;
-    matrix.row_offsets[3] =  1;
-    matrix.row_offsets[4] =  1;
-    matrix.row_offsets[5] =  2;
-    matrix.row_offsets[6] =  5;
-    matrix.row_offsets[7] = 10;
+    cusp::array1d<int, Space> offsets(8);
+    offsets[0] =  0;
+    offsets[1] =  0;
+    offsets[2] =  0;
+    offsets[3] =  1;
+    offsets[4] =  1;
+    offsets[5] =  2;
+    offsets[6] =  5;
+    offsets[7] = 10;
     
     cusp::array1d<int, Space> expected(10);
     expected[0] = 2;
@@ -29,13 +28,45 @@ void TestCsrExpandRowOffsets(void)
     expected[8] = 6;
     expected[9] = 6;
 
-    cusp::array1d<int, Space> output(10);
-    cusp::detail::expand_row_offsets(matrix, output);
+    cusp::array1d<int, Space> indices(10);
+    cusp::detail::offsets_to_indices(offsets, indices);
 
-    ASSERT_EQUAL(output, expected);
+    ASSERT_EQUAL(indices, expected);
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestCsrExpandRowOffsets);
+DECLARE_HOST_DEVICE_UNITTEST(TestOffsetsToIndices);
 
+
+template <class Space>
+void TestIndicesToOffsets(void)
+{
+    cusp::array1d<int, Space> indices(10);
+    indices[0] = 2;
+    indices[1] = 4;
+    indices[2] = 5;
+    indices[3] = 5;
+    indices[4] = 5;
+    indices[5] = 6;
+    indices[6] = 6;
+    indices[7] = 6;
+    indices[8] = 6;
+    indices[9] = 6;
+
+    cusp::array1d<int, Space> expected(8);
+    expected[0] =  0;
+    expected[1] =  0;
+    expected[2] =  0;
+    expected[3] =  1;
+    expected[4] =  1;
+    expected[5] =  2;
+    expected[6] =  5;
+    expected[7] = 10;
+
+    cusp::array1d<int, Space> offsets(8);
+    cusp::detail::indices_to_offsets(indices, offsets);
+
+    ASSERT_EQUAL(offsets, expected);
+}
+DECLARE_HOST_DEVICE_UNITTEST(TestIndicesToOffsets);
 
 template <class Space>
 void TestCsrExtractDiagonal(void)
