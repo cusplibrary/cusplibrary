@@ -17,6 +17,7 @@
 #include <cusp/array1d.h>
 
 #include <cusp/detail/host/convert.h>
+#include <cusp/detail/device/convert.h>
 
 namespace cusp
 {
@@ -70,17 +71,7 @@ void convert(DestinationType& dst, const SourceType& src, cusp::host_memory, cus
 template <class DestinationType, class SourceType>
 void convert(DestinationType& dst, const SourceType& src, cusp::device_memory, cusp::device_memory)
 {
-    // transfer to host, convert on host, and transfer back to device
-    typedef typename SourceType::template rebind<cusp::host_memory>::type      HostSourceType;
-    typedef typename DestinationType::template rebind<cusp::host_memory>::type HostDestinationType;
-
-    HostSourceType tmp1(src);
-
-    HostDestinationType tmp2;
-
-    cusp::detail::host::convert(tmp2, tmp1);
-
-    dst = tmp2;
+    cusp::detail::device::convert(dst, src);
 }
 
 } // end namespace dispatch

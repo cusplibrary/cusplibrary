@@ -208,47 +208,6 @@ void convert(      cusp::array2d<ValueType,cusp::host_memory,Orientation>& dst,
     cusp::detail::convert(dst, csr);
 }
 
-
-//////////////////////////
-// No Format Conversion //
-//////////////////////////
-template <typename IndexType1, typename ValueType1,
-          typename IndexType2, typename ValueType2>
-void convert(      cusp::coo_matrix<IndexType1,ValueType1,cusp::host_memory>& dst,
-             const cusp::coo_matrix<IndexType2,ValueType2,cusp::host_memory>& src)
-{    dst = src;    }
-
-template <typename IndexType1, typename ValueType1,
-          typename IndexType2, typename ValueType2>
-void convert(      cusp::csr_matrix<IndexType1,ValueType1,cusp::host_memory>& dst,
-             const cusp::csr_matrix<IndexType2,ValueType2,cusp::host_memory>& src)
-{    dst = src;    }
-
-template <typename IndexType1, typename ValueType1,
-          typename IndexType2, typename ValueType2>
-void convert(      cusp::dia_matrix<IndexType1,ValueType1,cusp::host_memory>& dst,
-             const cusp::dia_matrix<IndexType2,ValueType2,cusp::host_memory>& src)
-{    dst = src;    }
-
-template <typename IndexType1, typename ValueType1,
-          typename IndexType2, typename ValueType2>
-void convert(      cusp::ell_matrix<IndexType1,ValueType1,cusp::host_memory>& dst,
-             const cusp::ell_matrix<IndexType2,ValueType2,cusp::host_memory>& src)
-{    dst = src;    }
-
-template <typename IndexType1, typename ValueType1,
-          typename IndexType2, typename ValueType2>
-void convert(      cusp::hyb_matrix<IndexType1,ValueType1,cusp::host_memory>& dst,
-             const cusp::hyb_matrix<IndexType2,ValueType2,cusp::host_memory>& src)
-{    dst = src;    }
-
-template <typename ValueType1, typename Orientation1,
-          typename ValueType2>
-void convert(      cusp::array2d<ValueType1,cusp::host_memory,Orientation1>& dst,
-             const cusp::array2d<ValueType2,cusp::host_memory,Orientation1>& src)
-{    dst = src;    }
-
-
 } // end namespace host
 } // end namespace detail
 } // end namespace cusp

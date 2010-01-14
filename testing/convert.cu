@@ -144,36 +144,27 @@ void verify_conversion_example(const MatrixType& matrix)
 }
 
 
-template <class HostDestinationType, class HostSourceType>
-void TestConversion(HostDestinationType dst, HostSourceType src)
+template <class DestinationType, class HostSourceType>
+void TestConversion(DestinationType dst, HostSourceType src)
 {
-    typedef typename HostSourceType::template rebind<cusp::device_memory>::type      DeviceSourceType;
-    typedef typename HostDestinationType::template rebind<cusp::device_memory>::type DeviceDestinationType;
-
-    {
-        HostSourceType      src;
-        initialize_conversion_example(src);
-
-        // test host->host
-        {  HostDestinationType dst(src);              verify_conversion_example(dst);   }
-        {  HostDestinationType dst;       dst = src;  verify_conversion_example(dst);   }
-        
-        // test host->device
-        {  DeviceDestinationType dst(src);              verify_conversion_example(dst);   }
-        {  DeviceDestinationType dst;       dst = src;  verify_conversion_example(dst);   }
-    }
+    typedef typename HostSourceType::template rebind<cusp::device_memory>::type DeviceSourceType;
     
     {
-        DeviceSourceType      src;
+        HostSourceType src;
+
         initialize_conversion_example(src);
 
-        // test device->host
-        {  HostDestinationType dst(src);              verify_conversion_example(dst);   }
-        {  HostDestinationType dst;       dst = src;  verify_conversion_example(dst);   }
-        
-        // test device->device
-        {  DeviceDestinationType dst(src);              verify_conversion_example(dst);   }
-        {  DeviceDestinationType dst;       dst = src;  verify_conversion_example(dst);   }
+        {  DestinationType dst(src);              verify_conversion_example(dst);   }
+        {  DestinationType dst;       dst = src;  verify_conversion_example(dst);   }
+    }
+
+    {
+        DeviceSourceType src;
+
+        initialize_conversion_example(src);
+
+        {  DestinationType dst(src);              verify_conversion_example(dst);   }
+        {  DestinationType dst;       dst = src;  verify_conversion_example(dst);   }
     }
     
 }
@@ -201,41 +192,48 @@ void TestConversionTo(DestinationMatrixType dst)
 ///////////////////////////
 // Main Conversion Tests //
 ///////////////////////////
+template <class Space>
 void TestConversionToCooMatrix(void)
 {
-    TestConversionTo(cusp::coo_matrix<int, float, cusp::host_memory>());
+    TestConversionTo(cusp::coo_matrix<int, float, Space>());
 }
-DECLARE_UNITTEST(TestConversionToCooMatrix);
+DECLARE_HOST_DEVICE_UNITTEST(TestConversionToCooMatrix);
 
+template <class Space>
 void TestConversionToCsrMatrix(void)
 {
-    TestConversionTo(cusp::csr_matrix<int, float, cusp::host_memory>());
+    TestConversionTo(cusp::csr_matrix<int, float, Space>());
 }
-DECLARE_UNITTEST(TestConversionToCsrMatrix);
+DECLARE_HOST_DEVICE_UNITTEST(TestConversionToCsrMatrix);
 
+template <class Space>
 void TestConversionToDiaMatrix(void)
 {
-    TestConversionTo(cusp::dia_matrix<int, float, cusp::host_memory>());
+    TestConversionTo(cusp::dia_matrix<int, float, Space>());
 }
-DECLARE_UNITTEST(TestConversionToDiaMatrix);
+DECLARE_HOST_DEVICE_UNITTEST(TestConversionToDiaMatrix);
 
+template <class Space>
 void TestConversionToEllMatrix(void)
 {
-    TestConversionTo(cusp::ell_matrix<int, float, cusp::host_memory>());
+    TestConversionTo(cusp::ell_matrix<int, float, Space>());
 }
-DECLARE_UNITTEST(TestConversionToEllMatrix);
+DECLARE_HOST_DEVICE_UNITTEST(TestConversionToEllMatrix);
 
+template <class Space>
 void TestConversionToHybMatrix(void)
 {
-    TestConversionTo(cusp::hyb_matrix<int, float, cusp::host_memory>());
+    TestConversionTo(cusp::hyb_matrix<int, float, Space>());
 }
-DECLARE_UNITTEST(TestConversionToHybMatrix);
+DECLARE_HOST_DEVICE_UNITTEST(TestConversionToHybMatrix);
 
-void TestConversionToArray(void)
+template <class Space>
+void TestConversionToArray2d(void)
 {
-    TestConversionTo(cusp::array2d<float, cusp::host_memory>());
+    TestConversionTo(cusp::array2d<float, Space, cusp::row_major>());
+    TestConversionTo(cusp::array2d<float, Space, cusp::column_major>());
 }
-DECLARE_UNITTEST(TestConversionToArray);
+DECLARE_HOST_DEVICE_UNITTEST(TestConversionToArray2d);
 
 //////////////////////////////
 // Special Conversion Tests //
