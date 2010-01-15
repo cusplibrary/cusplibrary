@@ -1,7 +1,20 @@
-#include <unittest/unittest.h>
-#include <cusp/coo_matrix.h>
+/*
+ *  Copyright 2008-2009 NVIDIA Corporation
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 
-#include <cusp/print.h>
+#include <cusp/coo_matrix.h>
 
 #include <cusp/detail/format_utils.h>
 
@@ -12,6 +25,11 @@
 #include <thrust/sort.h>
 #include <thrust/transform.h>
 #include <thrust/unique.h>
+
+namespace cusp
+{
+namespace detail
+{
 
 template <typename IndexType, typename ValueType, typename SpaceOrAlloc>
 void matrix_multiply(const cusp::coo_matrix<IndexType,ValueType,SpaceOrAlloc>& A,
@@ -150,71 +168,17 @@ void matrix_multiply(const cusp::array2d<ValueType,SpaceOrAlloc>& A,
     }
 }
 
+} // end namespace detail
 
-template <typename SparseMatrixType, typename DenseMatrixType>
-void _TestMatrixMultiply(SparseMatrixType test, DenseMatrixType A, DenseMatrixType B)
+template <typename LinearOperator,
+          typename MatrixOrVector1,
+          typename MatrixOrVector2>
+void multiply(const LinearOperator&  A,
+              const MatrixOrVector1& B,
+                    MatrixOrVector2& C)
 {
-    DenseMatrixType C;
-    matrix_multiply(A, B, C);
-
-    SparseMatrixType _A(A), _B(B), _C;
-    matrix_multiply(_A, _B, _C);
-
-//    std::cout << "expected" << std::endl;
-//    cusp::print_matrix(C);
-//
-//    std::cout << "result" << std::endl;
-//    cusp::print_matrix(DenseMatrixType(_C));
-
-    ASSERT_EQUAL(C == DenseMatrixType(_C), true);
+    cusp::detail::matrix_multiply(A, B, C);
 }
 
-template <class Space>
-void TestMatrixMultiply(void)
-{
-    cusp::array2d<float,cusp::host_memory> A(3,2);
-    A(0,0) = 1.0; A(0,1) = 2.0;
-    A(1,0) = 3.0; A(1,1) = 0.0;
-    A(2,0) = 5.0; A(2,1) = 6.0;
-    
-    cusp::array2d<float,cusp::host_memory> B(2,4);
-    B(0,0) = 0.0; B(0,1) = 2.0; B(0,2) = 3.0; B(0,3) = 4.0;
-    B(1,0) = 5.0; B(1,1) = 0.0; B(1,2) = 0.0; B(1,3) = 8.0;
-
-    cusp::array2d<float,cusp::host_memory> C(2,2);
-    C(0,0) = 0.0; C(0,1) = 0.0;
-    C(1,0) = 3.0; C(1,1) = 5.0;
-    
-    cusp::array2d<float,cusp::host_memory> D(2,1);
-    D(0,0) = 2.0;
-    D(1,0) = 3.0;
-    
-    cusp::array2d<float,cusp::host_memory> E(2,2);
-    E(0,0) = 0.0; E(0,1) = 0.0;
-    E(1,0) = 0.0; E(1,1) = 0.0;
-    
-    cusp::array2d<float,cusp::host_memory> F(2,3);
-    F(0,0) = 0.0; F(0,1) = 1.5; F(0,2) = 3.0;
-    F(1,0) = 0.5; F(1,1) = 0.0; F(1,2) = 0.0;
-   
-    _TestMatrixMultiply(cusp::coo_matrix<int, float, Space>(), A, B);
-    _TestMatrixMultiply(cusp::coo_matrix<int, float, Space>(), A, C);
-    _TestMatrixMultiply(cusp::coo_matrix<int, float, Space>(), A, D);
-    _TestMatrixMultiply(cusp::coo_matrix<int, float, Space>(), A, E);
-    _TestMatrixMultiply(cusp::coo_matrix<int, float, Space>(), A, F);
-    
-    _TestMatrixMultiply(cusp::coo_matrix<int, float, Space>(), C, C);
-    _TestMatrixMultiply(cusp::coo_matrix<int, float, Space>(), C, D);
-    _TestMatrixMultiply(cusp::coo_matrix<int, float, Space>(), C, E);
-    _TestMatrixMultiply(cusp::coo_matrix<int, float, Space>(), C, F);
-
-    _TestMatrixMultiply(cusp::coo_matrix<int, float, Space>(), E, B);
-    _TestMatrixMultiply(cusp::coo_matrix<int, float, Space>(), E, C);
-    _TestMatrixMultiply(cusp::coo_matrix<int, float, Space>(), E, D);
-    _TestMatrixMultiply(cusp::coo_matrix<int, float, Space>(), E, E);
-    _TestMatrixMultiply(cusp::coo_matrix<int, float, Space>(), E, F);
-    
-    _TestMatrixMultiply(cusp::coo_matrix<int, float, Space>(), F, A);
-}
-DECLARE_HOST_DEVICE_UNITTEST(TestMatrixMultiply);
+} // end namespace cusp
 

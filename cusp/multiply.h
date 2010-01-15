@@ -17,23 +17,19 @@
 
 #pragma once
 
+#include <cusp/detail/config.h>
+
 namespace cusp
 {
-namespace detail
-{
 
-template <typename OffsetArray, typename IndexArray>
-void offsets_to_indices(const OffsetArray& offsets, IndexArray& indices);
+template <typename LinearOperator,
+          typename MatrixOrVector1,
+          typename MatrixOrVector2>
+void multiply(const LinearOperator&  A,
+              const MatrixOrVector1& B,
+                    MatrixOrVector2& C);
 
-template <typename IndexArray, typename OffsetArray>
-void indices_to_offsets(const IndexArray& indices, OffsetArray& offsets);
-    
-template <typename IndexType, typename ValueType, typename SpaceOrAlloc,
-          typename ArrayType>
-void extract_diagonal(const cusp::csr_matrix<IndexType,ValueType,SpaceOrAlloc>& A, ArrayType& output);
-
-} // end namespace detail
 } // end namespace cusp
 
-#include <cusp/detail/format_utils.inl>
+#include <cusp/detail/multiply.inl>
 
