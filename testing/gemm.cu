@@ -28,10 +28,7 @@ void matrix_multiply(const cusp::coo_matrix<IndexType,ValueType,SpaceOrAlloc>& A
         return;
     }
 
-    // compute row offsets for A and B
-    cusp::array1d<IndexType,MemorySpace> A_row_offsets(A.num_rows + 1);
-    cusp::detail::indices_to_offsets(A.row_indices, A_row_offsets);
-
+    // compute row offsets for B
     cusp::array1d<IndexType,MemorySpace> B_row_offsets(B.num_rows + 1);
     cusp::detail::indices_to_offsets(B.row_indices, B_row_offsets);
 
@@ -39,46 +36,46 @@ void matrix_multiply(const cusp::coo_matrix<IndexType,ValueType,SpaceOrAlloc>& A
     cusp::array1d<IndexType,MemorySpace> B_row_lengths(B.num_rows);
     thrust::transform(B_row_offsets.begin() + 1, B_row_offsets.end(), B_row_offsets.begin(), B_row_lengths.begin(), thrust::minus<IndexType>());
 
-    // output counts for each element of A
-    cusp::array1d<IndexType,MemorySpace> output_count(A.num_entries);
-    thrust::gather(output_count.begin(), output_count.end(),
+    // for each element A(i,j) compute the number of nonzero elements in B(j,:)
+    cusp::array1d<IndexType,MemorySpace> segment_lengths(A.num_entries);
+    thrust::gather(segment_lengths.begin(), segment_lengths.end(),
                    A.column_indices.begin(),
                    B_row_lengths.begin());
     
     // output pointer
     cusp::array1d<IndexType,MemorySpace> output_ptr(A.num_entries + 1);
-    thrust::exclusive_scan(output_count.begin(), output_count.end(),
+    thrust::exclusive_scan(segment_lengths.begin(), segment_lengths.end(),
                            output_ptr.begin(),
                            IndexType(0));
-    output_ptr[A.num_entries] = output_ptr[A.num_entries - 1] + output_count[A.num_entries - 1]; // XXX is this necessary?
+    output_ptr[A.num_entries] = output_ptr[A.num_entries - 1] + segment_lengths[A.num_entries - 1]; // XXX is this necessary?
 
     IndexType coo_num_nonzeros = output_ptr[A.num_entries];
     
+    // enumerate the segments in the intermediate format corresponding to each entry A(i,j)
+    // XXX could be done with offset_to_index instead
+    cusp::array1d<IndexType,MemorySpace> segments(coo_num_nonzeros, 0);
+    thrust::scatter_if(thrust::counting_iterator<IndexType>(0), thrust::counting_iterator<IndexType>(A.num_entries),
+                       output_ptr.begin(), 
+                       segment_lengths.begin(),
+                       segments.begin());
+    thrust::inclusive_scan(segments.begin(), segments.end(), segments.begin(), thrust::maximum<IndexType>());
+   
     // compute gather locations of intermediate format
     cusp::array1d<IndexType,MemorySpace> gather_locations(coo_num_nonzeros, 1);
-    cusp::array1d<IndexType,MemorySpace> segments(coo_num_nonzeros, 0);
     {
         // TODO replace temp arrays with permutation_iterator
-        // TODO fuse scatters with zip_iterator
-        cusp::array1d<IndexType,MemorySpace> temp1(A.num_entries);  // output_count[Aj[n]]
-        cusp::array1d<IndexType,MemorySpace> temp2(A.num_entries);  // row_offsets[Aj[n]]
+        // TODO fuse two calls to scatter_if with zip_iterator
+        cusp::array1d<IndexType,MemorySpace> temp(A.num_entries);  // B_row_offsets[Aj[n]]
 
-        thrust::gather(temp1.begin(), temp1.end(),
-                       A.column_indices.begin(),    
-                       output_count.begin());
-        thrust::gather(temp2.begin(), temp2.end(),
+        thrust::gather(temp.begin(), temp.end(),
                        A.column_indices.begin(),    
                        B_row_offsets.begin());
-        thrust::scatter_if(temp2.begin(), temp2.end(),
+
+        thrust::scatter_if(temp.begin(), temp.end(),
                            output_ptr.begin(),
-                           temp1.begin(),
+                           segment_lengths.begin(),
                            gather_locations.begin());
-        thrust::scatter_if(thrust::counting_iterator<IndexType>(0), thrust::counting_iterator<IndexType>(A.num_entries),
-                           output_ptr.begin(), 
-                           temp1.begin(),
-                           segments.begin());
     }
-    thrust::inclusive_scan(segments.begin(), segments.end(), segments.begin(), thrust::maximum<IndexType>());
     thrust::experimental::inclusive_segmented_scan(gather_locations.begin(), gather_locations.end(),
                                                    segments.begin(),
                                                    gather_locations.begin());
@@ -130,36 +127,6 @@ void matrix_multiply(const cusp::coo_matrix<IndexType,ValueType,SpaceOrAlloc>& A
     C.row_indices    = I;
     C.column_indices = J;
     C.values         = V;
-
-//    std::cout << "\nA_row_offsets" << std::endl;
-//    cusp::print_matrix(A_row_offsets);
-//
-//    std::cout << "B_row_offsets" << std::endl;
-//    cusp::print_matrix(B_row_offsets);
-//    
-//    std::cout << "B_row_lengths" << std::endl;
-//    cusp::print_matrix(B_row_lengths);
-//    
-//    std::cout << "output_count" << std::endl;
-//    cusp::print_matrix(output_count);
-//    
-//    std::cout << "output_ptr" << std::endl;
-//    cusp::print_matrix(output_ptr);
-//
-//    std::cout << "segments" << std::endl;
-//    cusp::print_matrix(segments);
-//    
-//    std::cout << "gather_locations" << std::endl;
-//    cusp::print_matrix(gather_locations);
-//    
-//    std::cout << "I" << std::endl;
-//    cusp::print_matrix(I);
-//    
-//    std::cout << "J" << std::endl;
-//    cusp::print_matrix(J);
-//    
-//    std::cout << "V" << std::endl;
-//    cusp::print_matrix(V);
 }
 
 template <typename ValueType, typename SpaceOrAlloc>
