@@ -19,6 +19,9 @@
  */
 
 #include <cusp/csr_matrix.h>
+#include <cusp/coo_matrix.h>
+#include <cusp/ell_matrix.h>
+#include <cusp/hyb_matrix.h>
 #include <cusp/blas.h>
 #include <cusp/detail/format_utils.h>
 
@@ -49,6 +52,49 @@ template <typename ValueType, typename MemorySpace>
     {
         // extract the main diagonal
         cusp::detail::extract_diagonal(A, diagonal_reciprocals);
+
+        // invert the entries
+        thrust::transform(diagonal_reciprocals.begin(), diagonal_reciprocals.end(),
+                          diagonal_reciprocals.begin(), detail::reciprocal<ValueType>());
+    }
+        
+template <typename ValueType, typename MemorySpace>
+    template<typename IndexType, typename ValueType2, class SpaceOrAlloc>
+    diagonal<ValueType, MemorySpace>
+    ::diagonal(const cusp::coo_matrix<IndexType, ValueType2, SpaceOrAlloc>& A)
+    : diagonal_reciprocals(thrust::min(A.num_rows,A.num_cols), IndexType(0))
+    {
+        // extract the main diagonal
+        cusp::detail::extract_diagonal(A, diagonal_reciprocals);
+
+        // invert the entries
+        thrust::transform(diagonal_reciprocals.begin(), diagonal_reciprocals.end(),
+                          diagonal_reciprocals.begin(), detail::reciprocal<ValueType>());
+    }
+        
+template <typename ValueType, typename MemorySpace>
+    template<typename IndexType, typename ValueType2, class SpaceOrAlloc>
+    diagonal<ValueType, MemorySpace>
+    ::diagonal(const cusp::ell_matrix<IndexType, ValueType2, SpaceOrAlloc>& A)
+    : diagonal_reciprocals(thrust::min(A.num_rows,A.num_cols), IndexType(0))
+    {
+        // extract the main diagonal
+        cusp::detail::extract_diagonal(A, diagonal_reciprocals);
+
+        // invert the entries
+        thrust::transform(diagonal_reciprocals.begin(), diagonal_reciprocals.end(),
+                          diagonal_reciprocals.begin(), detail::reciprocal<ValueType>());
+    }
+        
+template <typename ValueType, typename MemorySpace>
+    template<typename IndexType, typename ValueType2, class SpaceOrAlloc>
+    diagonal<ValueType, MemorySpace>
+    ::diagonal(const cusp::hyb_matrix<IndexType, ValueType2, SpaceOrAlloc>& A)
+    : diagonal_reciprocals(thrust::min(A.num_rows,A.num_cols), IndexType(0))
+    {
+        // extract the main diagonal
+        cusp::detail::extract_diagonal(A.coo, diagonal_reciprocals);
+        cusp::detail::extract_diagonal(A.ell, diagonal_reciprocals);
 
         // invert the entries
         thrust::transform(diagonal_reciprocals.begin(), diagonal_reciprocals.end(),
