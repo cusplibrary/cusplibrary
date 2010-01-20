@@ -16,12 +16,9 @@
 
 #pragma once
 
-#include <cusp/csr_matrix.h>
-
 #include <cusp/detail/device/utils.h>
-#include <cusp/detail/device/texture.h>
 
-#include <thrust/functional.h>
+#include <thrust/iterator/iterator_traits.h>
 #include <thrust/experimental/arch.h>
 
 namespace cusp
@@ -30,96 +27,81 @@ namespace detail
 {
 namespace device
 {
+namespace cuda
+{
 
-////////////////////////////////////////////////////////////////////////
-// CSR SpMV kernels based on a scalar model (one thread per row)
-///////////////////////////////////////////////////////////////////////
-//
-// spmv_csr_scalar_device
-//   Straightforward translation of standard CSR SpMV to CUDA
-//   where each thread computes y[i] += A[i,:] * x 
-//   (the dot product of the i-th row of A with the x vector)
-//
-// spmv_csr_scalar_tex_device
-//   Same as spmv_csr_scalar_device, except x is accessed via texture cache.
-//
-
-template <bool UseCache,
-          typename IndexType,
-          typename ValueType,
+template <typename SizeType,
+          typename IndexIterator,
+          typename ValueIterator,
           typename UnaryFunction,
           typename BinaryFunction1,
           typename BinaryFunction2>
 __global__
-void spmv_csr_scalar_kernel(const IndexType num_rows,
-                            const IndexType * Ap, 
-                            const IndexType * Aj, 
-                            const ValueType * Ax, 
-                            const ValueType * x, 
-                                  ValueType * y,
+void spmv_csr_scalar_kernel(SizeType num_rows,
+                            IndexIterator row_offsets,
+                            IndexIterator column_indices,
+                            ValueIterator values,
+                            ValueIterator x, 
+                            ValueIterator y,
                             UnaryFunction   initialize,
                             BinaryFunction1 combine,
                             BinaryFunction2 reduce)
 {
-    const IndexType thread_id = blockDim.x * blockIdx.x + threadIdx.x;
-    const IndexType grid_size = gridDim.x * blockDim.x;
+    typedef typename thrust::iterator_value<IndexIterator>::type IndexType;
+    typedef typename thrust::iterator_value<ValueIterator>::type ValueType;
 
-    for(IndexType row = thread_id; row < num_rows; row += grid_size)
+    const SizeType thread_id = blockDim.x * blockIdx.x + threadIdx.x;
+    const SizeType grid_size = gridDim.x * blockDim.x;
+
+    for(SizeType i = thread_id; i < num_rows; i += grid_size)
     {
-        const IndexType row_start = Ap[row];
-        const IndexType row_end   = Ap[row+1];
-        
-        ValueType sum = initialize(y[row]);
+        IndexIterator r0 = row_offsets; r0 += i;      IndexType row_start = thrust::detail::device::dereference(r0); // row_offsets[i]
+        IndexIterator r1 = row_offsets; r1 += i + 1;  IndexType row_end   = thrust::detail::device::dereference(r1); // row_offsets[i + 1]
+
+        ValueIterator y0 = y; y0 += i;  ValueType sum = initialize(thrust::detail::device::dereference(y0));         // initialize(y[i])
     
         for (IndexType jj = row_start; jj < row_end; jj++)
-            sum = reduce(sum, combine(Ax[jj], fetch_x<UseCache>(Aj[jj], x)));       
+        {
+            IndexIterator c0 = column_indices; c0 += jj;  IndexType j    = thrust::detail::device::dereference(c0);  // j    = column_indices[jj]
+            ValueIterator v0 = values;         v0 += jj;  ValueType A_ij = thrust::detail::device::dereference(v0);  // A_ij = values[jj]
+            ValueIterator x0 = x;              x0 += j;   ValueType x_j  = thrust::detail::device::dereference(x0);  // x_j  = x[j]
 
-        y[row] = sum;
+            sum = reduce(sum, combine(A_ij, x_j));                                                                   // sum += A_ij * x_j
+        }
+
+        thrust::detail::device::dereference(y0) = sum;                                                               // y[i] = sum
     }
 }
 
     
-template <bool UseCache, typename IndexType, typename ValueType>
-void __spmv_csr_scalar(const csr_matrix<IndexType,ValueType,cusp::device_memory>& csr, 
-                       const ValueType * x, 
-                             ValueType * y)
+template <typename SizeType,
+          typename IndexIterator,
+          typename ValueIterator,
+          typename UnaryFunction,
+          typename BinaryFunction1,
+          typename BinaryFunction2>
+void spmv_csr_scalar(SizeType num_rows,
+                     IndexIterator row_offsets,
+                     IndexIterator column_indices,
+                     ValueIterator values,
+                     ValueIterator x, 
+                     ValueIterator y,
+                     UnaryFunction   initialize,
+                     BinaryFunction1 combine,
+                     BinaryFunction2 reduce)
 {
-    const unsigned int BLOCK_SIZE = 256;
-    const unsigned int MAX_BLOCKS = MAX_THREADS / BLOCK_SIZE;
-//    const unsigned int MAX_BLOCKS = thrust::experimental::arch::max_active_blocks(spmv_csr_scalar_kernel<IndexType, ValueType, UseCache>, BLOCK_SIZE, (size_t) 0);
-    const unsigned int NUM_BLOCKS = std::min(MAX_BLOCKS, DIVIDE_INTO(csr.num_rows, BLOCK_SIZE));
+    const SizeType block_size = 256;
+    const SizeType max_blocks = thrust::experimental::arch::max_active_blocks(spmv_csr_scalar_kernel<SizeType, IndexIterator, ValueIterator, UnaryFunction, BinaryFunction1, BinaryFunction2>, block_size, (size_t) 0);
+    const SizeType num_blocks = std::min(max_blocks, DIVIDE_INTO(num_rows, block_size));
     
-    if (UseCache)
-        bind_x(x);
-
-    spmv_csr_scalar_kernel<UseCache> <<<NUM_BLOCKS, BLOCK_SIZE>>> 
-        (csr.num_rows,
-         thrust::raw_pointer_cast(&csr.row_offsets[0]),
-         thrust::raw_pointer_cast(&csr.column_indices[0]),
-         thrust::raw_pointer_cast(&csr.values[0]),
+    spmv_csr_scalar_kernel<<<num_blocks, block_size>>> 
+        (num_rows,
+         row_offsets, column_indices, values,
          x, y,
-         thrust::identity<ValueType>(), thrust::multiplies<ValueType>(), thrust::plus<ValueType>());
-
-    if (UseCache)
-        unbind_x(x);
+         initialize, combine, reduce);
 }
 
-template <typename IndexType, typename ValueType>
-void spmv_csr_scalar(const csr_matrix<IndexType,ValueType,cusp::device_memory>& csr, 
-                     const ValueType * x, 
-                           ValueType * y)
-{
-    __spmv_csr_scalar<false>(csr, x, y);
-}
-
-template <typename IndexType, typename ValueType>
-void spmv_csr_scalar_tex(const csr_matrix<IndexType,ValueType,cusp::device_memory>& csr, 
-                         const ValueType * x, 
-                               ValueType * y)
-{
-    __spmv_csr_scalar<true>(csr, x, y);
-}
-
+} // end namespace cuda
 } // end namespace device
 } // end namespace detail
 } // end namespace cusp
