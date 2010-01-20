@@ -30,25 +30,31 @@ namespace device
 namespace cuda
 {
 
+    
 template <typename SizeType,
           typename IndexIterator,
           typename ValueIterator,
+          typename InputIterator,
+          typename OutputIterator,
           typename UnaryFunction,
           typename BinaryFunction1,
           typename BinaryFunction2>
 __global__
-void spmv_csr_scalar_kernel(SizeType num_rows,
-                            IndexIterator row_offsets,
-                            IndexIterator column_indices,
-                            ValueIterator values,
-                            ValueIterator x, 
-                            ValueIterator y,
+void spmv_csr_scalar_kernel(SizeType        num_rows,
+                            IndexIterator   row_offsets,
+                            IndexIterator   column_indices,
+                            ValueIterator   values,
+                            InputIterator   x, 
+                            InputIterator   y,
+                            OutputIterator  z,
                             UnaryFunction   initialize,
                             BinaryFunction1 combine,
                             BinaryFunction2 reduce)
 {
     typedef typename thrust::iterator_value<IndexIterator>::type IndexType;
     typedef typename thrust::iterator_value<ValueIterator>::type ValueType;
+    typedef typename thrust::iterator_value<InputIterator>::type InputType;
+    typedef typename thrust::iterator_value<OutputIterator>::type OutputType;
 
     const SizeType thread_id = blockDim.x * blockIdx.x + threadIdx.x;
     const SizeType grid_size = gridDim.x * blockDim.x;
@@ -58,18 +64,18 @@ void spmv_csr_scalar_kernel(SizeType num_rows,
         IndexIterator r0 = row_offsets; r0 += i;      IndexType row_start = thrust::detail::device::dereference(r0); // row_offsets[i]
         IndexIterator r1 = row_offsets; r1 += i + 1;  IndexType row_end   = thrust::detail::device::dereference(r1); // row_offsets[i + 1]
 
-        ValueIterator y0 = y; y0 += i;  ValueType sum = initialize(thrust::detail::device::dereference(y0));         // initialize(y[i])
+        InputIterator y0 = y; y0 += i;  OutputType sum = initialize(thrust::detail::device::dereference(y0));        // initialize(y[i])
     
         for (IndexType jj = row_start; jj < row_end; jj++)
         {
             IndexIterator c0 = column_indices; c0 += jj;  IndexType j    = thrust::detail::device::dereference(c0);  // j    = column_indices[jj]
             ValueIterator v0 = values;         v0 += jj;  ValueType A_ij = thrust::detail::device::dereference(v0);  // A_ij = values[jj]
-            ValueIterator x0 = x;              x0 += j;   ValueType x_j  = thrust::detail::device::dereference(x0);  // x_j  = x[j]
+            InputIterator x0 = x;              x0 += j;   InputType x_j  = thrust::detail::device::dereference(x0);  // x_j  = x[j]
 
             sum = reduce(sum, combine(A_ij, x_j));                                                                   // sum += A_ij * x_j
         }
 
-        thrust::detail::device::dereference(y0) = sum;                                                               // y[i] = sum
+        OutputIterator z0 = z; z0 += i;  thrust::detail::device::dereference(z0) = sum;                               // z[i] = sum
     }
 }
 
@@ -77,27 +83,30 @@ void spmv_csr_scalar_kernel(SizeType num_rows,
 template <typename SizeType,
           typename IndexIterator,
           typename ValueIterator,
+          typename InputIterator,
+          typename OutputIterator,
           typename UnaryFunction,
           typename BinaryFunction1,
           typename BinaryFunction2>
-void spmv_csr_scalar(SizeType num_rows,
-                     IndexIterator row_offsets,
-                     IndexIterator column_indices,
-                     ValueIterator values,
-                     ValueIterator x, 
-                     ValueIterator y,
+void spmv_csr_scalar(SizeType        num_rows,
+                     IndexIterator   row_offsets,
+                     IndexIterator   column_indices,
+                     ValueIterator   values,
+                     InputIterator   x, 
+                     InputIterator   y,
+                     OutputIterator  z,
                      UnaryFunction   initialize,
                      BinaryFunction1 combine,
                      BinaryFunction2 reduce)
 {
     const SizeType block_size = 256;
-    const SizeType max_blocks = thrust::experimental::arch::max_active_blocks(spmv_csr_scalar_kernel<SizeType, IndexIterator, ValueIterator, UnaryFunction, BinaryFunction1, BinaryFunction2>, block_size, (size_t) 0);
+    const SizeType max_blocks = thrust::experimental::arch::max_active_blocks(spmv_csr_scalar_kernel<SizeType, IndexIterator, ValueIterator, InputIterator, OutputIterator, UnaryFunction, BinaryFunction1, BinaryFunction2>, block_size, (size_t) 0);
     const SizeType num_blocks = std::min(max_blocks, DIVIDE_INTO(num_rows, block_size));
     
     spmv_csr_scalar_kernel<<<num_blocks, block_size>>> 
         (num_rows,
          row_offsets, column_indices, values,
-         x, y,
+         x, y, z,
          initialize, combine, reduce);
 }
 

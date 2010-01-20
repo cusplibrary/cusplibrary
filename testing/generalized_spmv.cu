@@ -36,7 +36,7 @@ void TestCsrGeneralizedSpMV(void)
     cusp::detail::device::cuda::spmv_csr_scalar
         (test_matrix.num_rows,
          test_matrix.row_offsets.begin(), test_matrix.column_indices.begin(), test_matrix.values.begin(),
-         x.begin(), y.begin(),
+         x.begin(), y.begin(), y.begin(),
          thrust::identity<float>(), thrust::multiplies<float>(), thrust::plus<float>());
                                                
     ASSERT_EQUAL(y[0], 183.0f);
