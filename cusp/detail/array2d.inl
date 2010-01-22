@@ -31,7 +31,7 @@ array2d<ValueType,SpaceOrAlloc,Orientation>
 // construct matrix with given shape and number of entries
 template<typename ValueType, class SpaceOrAlloc, class Orientation>
 array2d<ValueType,SpaceOrAlloc,Orientation>
-    ::array2d(size_t num_rows, size_t num_cols)
+    ::array2d(int num_rows, int num_cols)
         : detail::matrix_base<index_type>(num_rows, num_cols, num_rows * num_cols),
           values(num_rows * num_cols) {}
 

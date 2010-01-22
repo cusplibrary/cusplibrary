@@ -14,24 +14,29 @@
  *  limitations under the License.
  */
 
-#include <cusp/detail/dispatch/multiply.h>
+
+/*! \file functional.h
+ *  \brief Defines templated functors and traits analogous to what
+ *         is found in stl and boost's functional.
+ */
+
+#pragma once
+
+#include <cusp/detail/config.h>
+
+#include <thrust/functional.h>
 
 namespace cusp
 {
-
-template <typename LinearOperator,
-          typename MatrixOrVector1,
-          typename MatrixOrVector2>
-void multiply(const LinearOperator&  A,
-              const MatrixOrVector1& B,
-                    MatrixOrVector2& C)
+namespace detail
 {
-    cusp::detail::dispatch::multiply
-        (A, B, C,
-         typename LinearOperator::memory_space(),
-         typename MatrixOrVector1::memory_space(),
-         typename MatrixOrVector2::memory_space());
-}
 
+template<typename T>
+  struct zero_function : public thrust::unary_function<T,T>
+{
+  __host__ __device__ T operator()(const T &x) const {return T(0);}
+}; // end minus
+
+} // end namespace detail
 } // end namespace cusp
 

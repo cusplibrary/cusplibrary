@@ -7,7 +7,7 @@
 #include <cusp/gallery/poisson.h>
 
 template <class TestMatrix>
-void _TestSpMV(TestMatrix test_matrix)
+void TestSpMV()
 {
     typedef typename TestMatrix::memory_space MemorySpace;
 
@@ -20,7 +20,7 @@ void _TestSpMV(TestMatrix test_matrix)
     A(4,0) =  0; A(4,1) =  0; A(4,2) = 27; A(4,3) =  0;
 
     // convert to desired format
-    test_matrix = A;
+    TestMatrix test_matrix = A;
 
     // allocate vectors
     cusp::array1d<float, MemorySpace> x(4);
@@ -41,35 +41,11 @@ void _TestSpMV(TestMatrix test_matrix)
     ASSERT_EQUAL(y[3], 510.0f);
     ASSERT_EQUAL(y[4], 131.0f);
 }
-
-template <class MemorySpace>
-void TestCooSpMV(void)
-{   _TestSpMV(cusp::coo_matrix<int, float, MemorySpace>());  }
-DECLARE_HOST_DEVICE_UNITTEST(TestCooSpMV);
-
-template <class MemorySpace>
-void TestCsrSpMV(void)
-{   _TestSpMV(cusp::csr_matrix<int, float, MemorySpace>());  }
-DECLARE_HOST_DEVICE_UNITTEST(TestCsrSpMV);
-
-template <class MemorySpace>
-void TestDiaSpMV(void)
-{   _TestSpMV(cusp::dia_matrix<int, float, MemorySpace>());  }
-DECLARE_HOST_DEVICE_UNITTEST(TestDiaSpMV);
-
-template <class MemorySpace>
-void TestEllSpMV(void)
-{   _TestSpMV(cusp::ell_matrix<int, float, MemorySpace>());  }
-DECLARE_HOST_DEVICE_UNITTEST(TestEllSpMV);
-
-template <class MemorySpace>
-void TestHybSpMV(void)
-{   _TestSpMV(cusp::hyb_matrix<int, float, MemorySpace>());  }
-DECLARE_HOST_DEVICE_UNITTEST(TestHybSpMV);
+DECLARE_SPARSE_MATRIX_UNITTEST(TestSpMV);
 
 
 template <class TestMatrix>
-void _TestSpMVTextureCache(TestMatrix test_matrix)
+void TestSpMVTextureCache()
 {
     typedef typename TestMatrix::memory_space MemorySpace;
 
@@ -84,7 +60,7 @@ void _TestSpMVTextureCache(TestMatrix test_matrix)
         A(4,0) =  0; A(4,1) =  0; A(4,2) = 27; A(4,3) =  0;
 
         // convert to desired format
-        test_matrix = A;
+        TestMatrix test_matrix = A;
 
         // allocate vectors
         cusp::array1d<float, MemorySpace> x(4);
@@ -110,6 +86,7 @@ void _TestSpMVTextureCache(TestMatrix test_matrix)
     
     // test with unaligned memory
     {
+        TestMatrix test_matrix;
         cusp::gallery::poisson5pt(test_matrix, 10, 10);
 
         // allocate vectors
@@ -121,24 +98,5 @@ void _TestSpMVTextureCache(TestMatrix test_matrix)
 
     }
 }
-
-void TestCooSpMVTextureCache(void)
-{   _TestSpMVTextureCache(cusp::coo_matrix<int, float, cusp::device_memory>());  }
-DECLARE_UNITTEST(TestCooSpMVTextureCache);
-
-void TestCsrSpMVTextureCache(void)
-{   _TestSpMVTextureCache(cusp::csr_matrix<int, float, cusp::device_memory>());  }
-DECLARE_UNITTEST(TestCsrSpMVTextureCache);
-
-void TestDiaSpMVTextureCache(void)
-{   _TestSpMVTextureCache(cusp::dia_matrix<int, float, cusp::device_memory>());  }
-DECLARE_UNITTEST(TestDiaSpMVTextureCache);
-
-void TestEllSpMVTextureCache(void)
-{   _TestSpMVTextureCache(cusp::ell_matrix<int, float, cusp::device_memory>());  }
-DECLARE_UNITTEST(TestEllSpMVTextureCache);
-
-void TestHybSpMVTextureCache(void)
-{   _TestSpMVTextureCache(cusp::hyb_matrix<int, float, cusp::device_memory>());  }
-DECLARE_UNITTEST(TestHybSpMVTextureCache);
+DECLARE_DEVICE_SPARSE_MATRIX_UNITTEST(TestSpMVTextureCache);
 

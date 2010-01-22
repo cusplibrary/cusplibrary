@@ -71,10 +71,10 @@ namespace cusp
     }
 
     template<typename ValueType, class SpaceOrAlloc, class Orientation = cusp::row_major>
-    struct array2d : public detail::matrix_base<size_t>
+    struct array2d : public detail::matrix_base<int>
     {
         public:
-        typedef size_t    index_type;
+        typedef int       index_type;
         typedef ValueType value_type;
         
         typedef typename cusp::choose_memory_allocator<ValueType, SpaceOrAlloc>::type value_allocator_type;
@@ -91,7 +91,7 @@ namespace cusp
         array2d();
 
         // construct matrix with given shape and number of entries
-        array2d(size_t num_rows, size_t num_cols);
+        array2d(int num_rows, int num_cols);
         
         // construct from another array2d (with the same Orientation)
         template <typename ValueType2, typename SpaceOrAlloc2>
