@@ -7,6 +7,7 @@
 #include <cusp/hyb_matrix.h>
 
 #include <thrust/functional.h>
+#include <cusp/detail/functional.h>
 
 namespace cusp
 {
@@ -56,7 +57,7 @@ void spmv(const cusp::coo_matrix<IndexType, ValueType, cusp::host_memory>& coo,
     spmv_coo(coo.num_rows, coo.num_cols, coo.num_entries,
              &coo.row_indices[0], &coo.column_indices[0], &coo.values[0],
              x, y,
-             thrust::identity<ValueType>(), thrust::multiplies<ValueType>(), thrust::plus<ValueType>());
+             cusp::detail::zero_function<ValueType>(), thrust::multiplies<ValueType>(), thrust::plus<ValueType>());
 }
 
 
@@ -107,7 +108,7 @@ void spmv(const cusp::csr_matrix<IndexType, ValueType, cusp::host_memory>& csr,
     spmv_csr(csr.num_rows, csr.num_cols,
              &csr.row_offsets[0], &csr.column_indices[0], &csr.values[0],
              x, y,
-             thrust::identity<ValueType>(), thrust::multiplies<ValueType>(), thrust::plus<ValueType>());
+             cusp::detail::zero_function<ValueType>(), thrust::multiplies<ValueType>(), thrust::plus<ValueType>());
 }
 
 
@@ -162,7 +163,7 @@ void spmv(const dia_matrix<IndexType, ValueType, cusp::host_memory>& dia,
     spmv_dia(dia.num_rows, dia.num_cols, num_diagonals, stride,
              &dia.diagonal_offsets[0], &dia.values.values[0],
              x, y,
-             thrust::identity<ValueType>(), thrust::multiplies<ValueType>(), thrust::plus<ValueType>());
+             cusp::detail::zero_function<ValueType>(), thrust::multiplies<ValueType>(), thrust::plus<ValueType>());
 }
 
 
@@ -217,7 +218,7 @@ void spmv(const cusp::ell_matrix<IndexType, ValueType, cusp::host_memory>& ell,
     spmv_ell(ell.num_rows, ell.num_cols, num_entries_per_row, stride,
              &ell.column_indices.values[0], &ell.values.values[0],
              x, y,
-             thrust::identity<ValueType>(), thrust::multiplies<ValueType>(), thrust::plus<ValueType>());
+             cusp::detail::zero_function<ValueType>(), thrust::multiplies<ValueType>(), thrust::plus<ValueType>());
 }
 
 
@@ -227,8 +228,17 @@ void spmv(const cusp::hyb_matrix<IndexType, ValueType, cusp::host_memory>& hyb,
           const ValueType * x,  
                 ValueType * y)
 {
-    spmv(hyb.ell, x, y);
-    spmv(hyb.coo, x, y);
+    const IndexType stride              = hyb.ell.column_indices.num_rows;
+    const IndexType num_entries_per_row = hyb.ell.column_indices.num_cols;
+
+    spmv_ell(hyb.ell.num_rows, hyb.ell.num_cols, num_entries_per_row, stride,
+             &hyb.ell.column_indices.values[0], &hyb.ell.values.values[0],
+             x, y,
+             cusp::detail::zero_function<ValueType>(), thrust::multiplies<ValueType>(), thrust::plus<ValueType>());
+    spmv_coo(hyb.coo.num_rows, hyb.coo.num_cols, hyb.coo.num_entries,
+             &hyb.coo.row_indices[0], &hyb.coo.column_indices[0], &hyb.coo.values[0],
+             x, y,
+             thrust::identity<ValueType>(), thrust::multiplies<ValueType>(), thrust::plus<ValueType>());
 }
 
 } // end namespace host

@@ -111,7 +111,7 @@ spmv_csr_vector_kernel(const IndexType num_rows,
 
         // first thread writes the result
         if (thread_lane == 0)
-            y[row] += sdata[threadIdx.x];
+            y[row] = sdata[threadIdx.x];
     }
 }
 

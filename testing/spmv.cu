@@ -35,11 +35,11 @@ void TestSpMV()
 
     test_matrix.multiply(x, y);
 
-    ASSERT_EQUAL(y[0], 183.0f);
-    ASSERT_EQUAL(y[1],  74.0f);
-    ASSERT_EQUAL(y[2], 325.0f);
-    ASSERT_EQUAL(y[3], 510.0f);
-    ASSERT_EQUAL(y[4], 131.0f);
+    ASSERT_EQUAL(y[0], 173.0f);
+    ASSERT_EQUAL(y[1],  54.0f);
+    ASSERT_EQUAL(y[2], 295.0f);
+    ASSERT_EQUAL(y[3], 470.0f);
+    ASSERT_EQUAL(y[4],  81.0f);
 }
 DECLARE_SPARSE_MATRIX_UNITTEST(TestSpMV);
 
@@ -77,11 +77,11 @@ void TestSpMVTextureCache()
                                        thrust::raw_pointer_cast(&x[0]),
                                        thrust::raw_pointer_cast(&y[0]));
 
-        ASSERT_EQUAL(y[0], 183.0f);
-        ASSERT_EQUAL(y[1],  74.0f);
-        ASSERT_EQUAL(y[2], 325.0f);
-        ASSERT_EQUAL(y[3], 510.0f);
-        ASSERT_EQUAL(y[4], 131.0f);
+        ASSERT_EQUAL(y[0], 173.0f);
+        ASSERT_EQUAL(y[1],  54.0f);
+        ASSERT_EQUAL(y[2], 295.0f);
+        ASSERT_EQUAL(y[3], 470.0f);
+        ASSERT_EQUAL(y[4],  81.0f);
     }
     
     // test with unaligned memory

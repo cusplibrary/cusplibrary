@@ -84,14 +84,12 @@ void cg(LinearOperator& A,
     stopping_criteria.initialize(A, x, b);
    
     // y <- Ax
-    blas::fill(y, ValueType(0));                  // TODO remove when SpMV implements y <- A*x 
     A.multiply(x, y);
 
     // r <- b - A*x
     blas::axpby(b, y, r, ValueType(1), ValueType(-1));
    
     // z <- M*r
-    blas::fill(z, ValueType(0));                  // TODO remove when SpMV implements y <- A*x
     M.multiply(r, z);
 
     // p <- z
@@ -124,7 +122,6 @@ void cg(LinearOperator& A,
         }
 
         // y <- Ap
-        blas::fill(y, ValueType(0));                  // TODO remove when SpMV implements y <- A*x 
         A.multiply(p, y);
         
         // alpha <- <r,z>/<y,p>
@@ -134,7 +131,6 @@ void cg(LinearOperator& A,
         // r <- r - alpha * y		
         blas::axpy(y, r, -alpha);
         // z <- M*r
-        blas::fill(z, ValueType(0));                  // TODO remove when SpMV implements y <- A*x
         M.multiply(r, z);
 		
         // r2 = <r,r>

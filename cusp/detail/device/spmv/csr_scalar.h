@@ -36,7 +36,7 @@ namespace device
 //
 // spmv_csr_scalar_device
 //   Straightforward translation of standard CSR SpMV to CUDA
-//   where each thread computes y[i] += A[i,:] * x 
+//   where each thread computes y[i] = A[i,:] * x 
 //   (the dot product of the i-th row of A with the x vector)
 //
 // spmv_csr_scalar_tex_device
@@ -60,7 +60,7 @@ spmv_csr_scalar_kernel(const IndexType num_rows,
         const IndexType row_start = Ap[row];
         const IndexType row_end   = Ap[row+1];
         
-        ValueType sum = y[row];
+        ValueType sum = 0;
     
         for (IndexType jj = row_start; jj < row_end; jj++)
             sum += Ax[jj] * fetch_x<UseCache>(Aj[jj], x);       

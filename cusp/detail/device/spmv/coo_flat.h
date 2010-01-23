@@ -26,6 +26,8 @@
 
 #include <thrust/experimental/arch.h>
 
+// Note: Unlike the other kernels this kernel implements y += A*x
+
 namespace cusp
 {
 namespace detail

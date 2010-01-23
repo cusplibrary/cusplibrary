@@ -52,7 +52,7 @@ spmv_ell_kernel(const IndexType num_rows,
 
     for(IndexType row = thread_id; row < num_rows; row += grid_size)
     {
-        ValueType sum = y[row];
+        ValueType sum = 0;
 
         IndexType offset = row;
 

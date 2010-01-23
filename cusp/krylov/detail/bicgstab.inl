@@ -88,7 +88,6 @@ void bicgstab(LinearOperator& A,
     stopping_criteria.initialize(A, x, b);
 
     // y <- Ax
-    blas::fill(y, ValueType(0));                  // TODO remove when SpMV implements y <- A*x 
     A.multiply(x, y);
 
     // r <- b - A*x
@@ -127,11 +126,9 @@ void bicgstab(LinearOperator& A,
         }
 
         // Mp = M*p
-        blas::fill(Mp, ValueType(0));                  // TODO remove when SpMV implements y <- A*x
         M.multiply(p, Mp);
 
         // AMp = A*Mp
-        blas::fill(AMp, ValueType(0));                 // TODO remove when SpMV implements y <- A*x
         A.multiply(Mp, AMp);
 
         // alpha = (r_j, r_star) / (A*M*p, r_star)
@@ -141,15 +138,13 @@ void bicgstab(LinearOperator& A,
         blas::axpby(r, AMp, s, ValueType(1), ValueType(-alpha));
 
         // Ms = M*s_j
-        blas::fill(Ms, ValueType(0));                  // TODO remove when SpMV implements y <- A*x
         M.multiply(s, Ms);
         
         // AMs = A*Ms
-        blas::fill(AMs, ValueType(0));                 // TODO remove when SpMV implements y <- A*x
         A.multiply(Ms, AMs);
 
         // omega = (AMs, s) / (AMs, AMs)
-        ValueType omega = blas::dotc(AMs, s) / blas::dotc(AMs, AMs); // TODO optimize denominator
+        ValueType omega = blas::dotc(AMs, s) / blas::dotc(AMs, AMs);
         
         // x_{j+1} = x_j + alpha*M*p_j + omega*M*s_j
         blas::axpbypcz(x, Mp, Ms, x, ValueType(1), alpha, omega);

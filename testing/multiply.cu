@@ -123,5 +123,5 @@ void TestSparseMatrixVectorMultiply()
     ASSERT_EQUAL(y[3], 470.0f);
     ASSERT_EQUAL(y[4],  81.0f);
 }
-DECLARE_HOST_SPARSE_MATRIX_UNITTEST(TestSparseMatrixVectorMultiply);
+DECLARE_SPARSE_MATRIX_UNITTEST(TestSparseMatrixVectorMultiply);
 

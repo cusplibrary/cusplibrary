@@ -32,6 +32,8 @@ namespace detail
 namespace device
 {
 
+// TODO make work for > BLOCKSIZE diagonals
+
 ////////////////////////////////////////////////////////////////////////
 // DIA SpMV kernels 
 ///////////////////////////////////////////////////////////////////////
@@ -69,32 +71,37 @@ spmv_dia_kernel(const IndexType num_rows,
     const IndexType thread_id = blockDim.x * blockIdx.x + threadIdx.x;
     const IndexType grid_size = gridDim.x * blockDim.x;
 
-    // load diagonal offsets into shared memory
-    if(threadIdx.x < num_diagonals)
-        offsets[threadIdx.x] = diagonal_offsets[threadIdx.x];
-
-    __syncthreads();
-
-    for(IndexType row = thread_id; row < num_rows; row += grid_size)
+    for(IndexType base = 0; base < num_diagonals; base += blockDim.x)
     {
-        ValueType sum = y[row];
+        const IndexType limit = min(blockDim.x, num_diagonals - base);
 
-        IndexType offset = row;
-
-        for(IndexType n = 0; n < num_diagonals; n++)
-        {
-            const IndexType col = row + offsets[n];
+        // load diagonal offsets into shared memory
+        if(threadIdx.x < limit)
+            offsets[threadIdx.x] = diagonal_offsets[base + threadIdx.x];
     
-            if(col >= 0 && col < num_cols)
+        __syncthreads();
+    
+        for(IndexType row = thread_id; row < num_rows; row += grid_size)
+        {
+            ValueType sum = 0;
+    
+            IndexType offset = row;
+    
+            for(IndexType n = 0; n < limit; n++)
             {
-                const ValueType A_ij = values[offset];
-                sum += A_ij * fetch_x<UseCache>(col, x);
+                const IndexType col = row + offsets[n];
+        
+                if(col >= 0 && col < num_cols)
+                {
+                    const ValueType A_ij = values[offset];
+                    sum += A_ij * fetch_x<UseCache>(col, x);
+                }
+        
+                offset += stride;
             }
     
-            offset += stride;
+            y[row] = sum;
         }
-
-        y[row] = sum;
     }
 }
 
@@ -109,22 +116,17 @@ void __spmv_dia(const cusp::dia_matrix<IndexType,ValueType,cusp::device_memory>&
 //    const unsigned int MAX_BLOCKS = thrust::experimental::arch::max_active_blocks(spmv_dia_kernel<IndexType, ValueType, BLOCK_SIZE, UseCache>, BLOCK_SIZE, (size_t) sizeof(IndexType) * BLOCK_SIZE);
     const unsigned int NUM_BLOCKS = std::min(MAX_BLOCKS, DIVIDE_INTO(dia.num_rows, BLOCK_SIZE));
    
-    const IndexType stride = dia.values.num_rows;
+    const IndexType num_diagonals = dia.values.num_cols;
+    const IndexType stride        = dia.values.num_rows;
 
     if (UseCache)
         bind_x(x);
   
-    // the dia_kernel only handles BLOCK_SIZE diagonals at a time
-    for(unsigned int base = 0; base < dia.values.num_cols; base += BLOCK_SIZE)
-    {
-        IndexType num_diagonals = std::min<unsigned int>(dia.values.num_cols - base, BLOCK_SIZE);
-
-        spmv_dia_kernel<IndexType, ValueType, BLOCK_SIZE, UseCache> <<<NUM_BLOCKS, BLOCK_SIZE>>>
-            (dia.num_rows, dia.num_cols, num_diagonals, stride,
-             thrust::raw_pointer_cast(&dia.diagonal_offsets[0]) + base,
-             thrust::raw_pointer_cast(&dia.values.values[0]) + base * stride,
-             x, y);
-    }
+    spmv_dia_kernel<IndexType, ValueType, BLOCK_SIZE, UseCache> <<<NUM_BLOCKS, BLOCK_SIZE>>>
+        (dia.num_rows, dia.num_cols, num_diagonals, stride,
+         thrust::raw_pointer_cast(&dia.diagonal_offsets[0]),
+         thrust::raw_pointer_cast(&dia.values.values[0]),
+         x, y);
 
     if (UseCache)
         unbind_x(x);

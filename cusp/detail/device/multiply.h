@@ -20,6 +20,7 @@
 #include <cusp/array2d.h>
 
 #include <cusp/detail/generic/multiply.h>
+#include <cusp/detail/spmv.h>
 
 namespace cusp
 {
@@ -53,14 +54,67 @@ void multiply(const cusp::array2d<ValueType,SpaceOrAlloc>& A,
 //////////////////////////////////
 // Matrix-Vector Multiplication //
 //////////////////////////////////
-//template <typename IndexType,
-//          typename ValueType,
-//          typename SpaceOrAlloc,
-//          typename MatrixOrVector1,
-//          typename MatrixOrVector2>
-//void multiply(const cusp::csr_matrix<IndexType,ValueType,SpaceOrAlloc>& A,
-//              const MatrixOrVector1& B,
-//                    MatrixOrVector2& C);
+template <typename IndexType,
+          typename ValueType,
+          typename SpaceOrAlloc1,
+          typename SpaceOrAlloc2,
+          typename SpaceOrAlloc3>
+void multiply(const cusp::coo_matrix<IndexType,ValueType,SpaceOrAlloc1>& A,
+              const cusp::array1d<ValueType,SpaceOrAlloc2>& B,
+                    cusp::array1d<ValueType,SpaceOrAlloc3>& C)
+{
+    thrust::fill(C.begin(), C.end(), ValueType(0));
+    cusp::detail::device::spmv_coo_flat(A, thrust::raw_pointer_cast(&B[0]), thrust::raw_pointer_cast(&C[0]));
+}
+
+template <typename IndexType,
+          typename ValueType,
+          typename SpaceOrAlloc1,
+          typename SpaceOrAlloc2,
+          typename SpaceOrAlloc3>
+void multiply(const cusp::csr_matrix<IndexType,ValueType,SpaceOrAlloc1>& A,
+              const cusp::array1d<ValueType,SpaceOrAlloc2>& B,
+                    cusp::array1d<ValueType,SpaceOrAlloc3>& C)
+{
+    cusp::detail::device::spmv_csr_vector(A, thrust::raw_pointer_cast(&B[0]), thrust::raw_pointer_cast(&C[0]));
+}
+
+template <typename IndexType,
+          typename ValueType,
+          typename SpaceOrAlloc1,
+          typename SpaceOrAlloc2,
+          typename SpaceOrAlloc3>
+void multiply(const cusp::dia_matrix<IndexType,ValueType,SpaceOrAlloc1>& A,
+              const cusp::array1d<ValueType,SpaceOrAlloc2>& B,
+                    cusp::array1d<ValueType,SpaceOrAlloc3>& C)
+{
+    cusp::detail::device::spmv_dia(A, thrust::raw_pointer_cast(&B[0]), thrust::raw_pointer_cast(&C[0]));
+}
+
+template <typename IndexType,
+          typename ValueType,
+          typename SpaceOrAlloc1,
+          typename SpaceOrAlloc2,
+          typename SpaceOrAlloc3>
+void multiply(const cusp::ell_matrix<IndexType,ValueType,SpaceOrAlloc1>& A,
+              const cusp::array1d<ValueType,SpaceOrAlloc2>& B,
+                    cusp::array1d<ValueType,SpaceOrAlloc3>& C)
+{
+    cusp::detail::device::spmv_ell(A, thrust::raw_pointer_cast(&B[0]), thrust::raw_pointer_cast(&C[0]));
+}
+
+template <typename IndexType,
+          typename ValueType,
+          typename SpaceOrAlloc1,
+          typename SpaceOrAlloc2,
+          typename SpaceOrAlloc3>
+void multiply(const cusp::hyb_matrix<IndexType,ValueType,SpaceOrAlloc1>& A,
+              const cusp::array1d<ValueType,SpaceOrAlloc2>& B,
+                    cusp::array1d<ValueType,SpaceOrAlloc3>& C)
+{
+    cusp::detail::device::spmv_ell     (A.ell, thrust::raw_pointer_cast(&B[0]), thrust::raw_pointer_cast(&C[0]));
+    cusp::detail::device::spmv_coo_flat(A.coo, thrust::raw_pointer_cast(&B[0]), thrust::raw_pointer_cast(&C[0]));
+}
 
 } // end namespace device
 } // end namespace detail
