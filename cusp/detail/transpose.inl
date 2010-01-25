@@ -47,13 +47,14 @@ void transpose(const cusp::coo_matrix<IndexType1,ValueType1,SpaceOrAlloc1>& A,
 
     thrust::stable_sort_by_key(temp.row_indices.begin(), temp.row_indices.end(), permutation.begin());
 
-    thrust::gather(temp.column_indices.begin(), temp.column_indices.end(),
-                   permutation.begin(),
-                   A.row_indices.begin());
+    // XXX could be fused with a zip_iterator
+    thrust::next::gather(permutation.begin(), permutation.end(),
+                         A.row_indices.begin(),
+                         temp.column_indices.begin());
     
-    thrust::gather(temp.values.begin(), temp.values.end(),
-                   permutation.begin(),
-                   A.values.begin());
+    thrust::next::gather(permutation.begin(), permutation.end(),
+                         A.values.begin(),
+                         temp.values.begin());
 
     At.swap(temp);
 }
@@ -79,13 +80,14 @@ void transpose(const cusp::csr_matrix<IndexType1,ValueType1,SpaceOrAlloc1>& A,
     // compute row indices of A
     cusp::detail::offsets_to_indices(A.row_offsets, indices);
 
-    thrust::gather(temp.column_indices.begin(), temp.column_indices.end(),
-                   permutation.begin(),
-                   indices.begin());
+    // XXX could be fused with a zip_iterator
+    thrust::next::gather(permutation.begin(), permutation.end(),
+                         indices.begin(),
+                         temp.column_indices.begin());
     
-    thrust::gather(temp.values.begin(), temp.values.end(),
-                   permutation.begin(),
-                   A.values.begin());
+    thrust::next::gather(permutation.begin(), permutation.end(),
+                         A.values.begin(),
+                         temp.values.begin());
 
     At.swap(temp);
 }
@@ -118,15 +120,13 @@ void transpose(const cusp::array2d<ValueType1,SpaceOrAlloc1,SourceOrientation>& 
 {
     At.resize(A.num_cols, A.num_rows);
 
-    thrust::counting_iterator<size_t> indices(0);
+    thrust::counting_iterator<size_t> begin(0);
+    thrust::counting_iterator<size_t> end(A.values.size());
 
-    thrust::gather(At.values.begin(), At.values.end(),
-                   thrust::make_transform_iterator
-                        (
-                            indices,
-                            transpose_index<size_t, SourceOrientation, DestinationOrientation>(At.num_rows, At.num_cols)
-                        ),
-                   A.values.begin());
+    thrust::next::gather(thrust::make_transform_iterator(begin, transpose_index<size_t, SourceOrientation, DestinationOrientation>(At.num_rows, At.num_cols)),
+                         thrust::make_transform_iterator(end,   transpose_index<size_t, SourceOrientation, DestinationOrientation>(At.num_rows, At.num_cols)),
+                         A.values.begin(),
+                         At.values.begin());
 }
 
 
