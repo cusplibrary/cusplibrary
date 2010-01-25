@@ -26,6 +26,7 @@
 #include <thrust/sort.h>
 #include <thrust/transform.h>
 #include <thrust/unique.h>
+#include <thrust/iterator/permutation_iterator.h>
 
 namespace cusp
 {
@@ -85,20 +86,11 @@ void multiply(const cusp::coo_matrix<IndexType,ValueType,SpaceOrAlloc>& A,
    
     // compute gather locations of intermediate format
     cusp::array1d<IndexType,MemorySpace> gather_locations(coo_num_nonzeros, 1);
-    {
-        // TODO replace temp arrays with permutation_iterator
-        // TODO fuse two calls to scatter_if with zip_iterator
-        cusp::array1d<IndexType,MemorySpace> temp(A.num_entries);  // B_row_offsets[Aj[n]]
-
-        thrust::gather(temp.begin(), temp.end(),
-                       A.column_indices.begin(),    
-                       B_row_offsets.begin());
-
-        thrust::scatter_if(temp.begin(), temp.end(),
-                           output_ptr.begin(),
-                           segment_lengths.begin(),
-                           gather_locations.begin());
-    }
+    thrust::scatter_if(thrust::make_permutation_iterator(B_row_offsets.begin(), A.column_indices.begin()),
+                       thrust::make_permutation_iterator(B_row_offsets.begin(), A.column_indices.begin()) + A.num_entries,
+                       output_ptr.begin(),
+                       segment_lengths.begin(),
+                       gather_locations.begin());
     thrust::experimental::inclusive_segmented_scan(gather_locations.begin(), gather_locations.end(),
                                                    segments.begin(),
                                                    gather_locations.begin());
@@ -115,23 +107,16 @@ void multiply(const cusp::coo_matrix<IndexType,ValueType,SpaceOrAlloc>& A,
     thrust::gather(J.begin(), J.end(),
                    gather_locations.begin(),
                    B.column_indices.begin());
-    {
-        // TODO replace temp arrays with permutation_iterator
-        cusp::array1d<ValueType,MemorySpace> temp1(coo_num_nonzeros);  // A_values[segments[n]]
-        cusp::array1d<ValueType,MemorySpace> temp2(coo_num_nonzeros);  // B_values[gather_locations[n]]
 
-        thrust::gather(temp1.begin(), temp1.end(), segments.begin(),         A.values.begin());
-        thrust::gather(temp2.begin(), temp2.end(), gather_locations.begin(), B.values.begin());
-
-        thrust::transform(temp1.begin(), temp1.end(),
-                          temp2.begin(),
-                          V.begin(),
-                          thrust::multiplies<ValueType>());
-    }
+    thrust::transform(thrust::make_permutation_iterator(A.values.begin(), segments.begin()),
+                      thrust::make_permutation_iterator(A.values.begin(), segments.begin()) + coo_num_nonzeros,
+                      thrust::make_permutation_iterator(B.values.begin(), gather_locations.begin()),
+                      V.begin(),
+                      thrust::multiplies<ValueType>());
 
     // sort by (I,J)
     {
-        // TODO use explicit permuation array
+        // TODO use explicit permuation and temporary arrays for efficiency
         thrust::sort_by_key(J.begin(), J.end(), thrust::make_zip_iterator(thrust::make_tuple(I.begin(), V.begin())));
         thrust::sort_by_key(I.begin(), I.end(), thrust::make_zip_iterator(thrust::make_tuple(J.begin(), V.begin())));
     }
