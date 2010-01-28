@@ -19,6 +19,8 @@
 
 #include <cusp/detail/config.h>
 
+#include <string>
+
 namespace cusp
 {
 namespace io

@@ -40,7 +40,7 @@ namespace detail
 inline
 void tokenize(std::vector<std::string>& tokens,
               const std::string& str,
-              const std::string& delimiters = "\t ")
+              const std::string& delimiters = "\n\r\t ")
 {
     // Skip delimiters at beginning.
     std::string::size_type lastPos = str.find_first_not_of(delimiters, 0);
@@ -166,7 +166,7 @@ void read_matrix_market_file(cusp::coo_matrix<IndexType,ValueType,cusp::host_mem
 
         if(num_entries_read != num_entries)
             throw cusp::io_exception("unexpected EOF while reading MatrixMarket entries");
-        
+     
         if (banner.symmetry != "general")
             throw cusp::not_implemented_exception("only general array symmetric MatrixMarket format is supported");
 
@@ -225,6 +225,18 @@ void read_matrix_market_file(cusp::coo_matrix<IndexType,ValueType,cusp::host_mem
 
         if(num_entries_read != coo.num_entries)
             throw cusp::io_exception("unexpected EOF while reading MatrixMarket entries");
+
+
+        // check validity of row and column index data
+        IndexType min_row_index = *std::min_element(coo.row_indices.begin(), coo.row_indices.end());
+        IndexType max_row_index = *std::max_element(coo.row_indices.begin(), coo.row_indices.end());
+        IndexType min_col_index = *std::min_element(coo.column_indices.begin(), coo.column_indices.end());
+        IndexType max_col_index = *std::max_element(coo.column_indices.begin(), coo.column_indices.end());
+
+        if (min_row_index < 1)            throw cusp::io_exception("found invalid row index (index < 1)");
+        if (min_col_index < 1)            throw cusp::io_exception("found invalid column index (index < 1)");
+        if (min_row_index > coo.num_rows) throw cusp::io_exception("found invalid row index (index > num_rows)");
+        if (min_col_index > coo.num_cols) throw cusp::io_exception("found invalid column index (index > num_columns)");
 
 
         // convert base-1 indices to base-0
