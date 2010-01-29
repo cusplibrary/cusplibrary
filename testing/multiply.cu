@@ -1,6 +1,7 @@
 #include <unittest/unittest.h>
 
 #include <cusp/multiply.h>
+#include <cusp/linear_operator.h>
 #include <cusp/coo_matrix.h>
 #include <cusp/print.h>
 #include <cusp/gallery/poisson.h>
@@ -124,4 +125,27 @@ void TestSparseMatrixVectorMultiply()
     ASSERT_EQUAL(y[4],  81.0f);
 }
 DECLARE_SPARSE_MATRIX_UNITTEST(TestSparseMatrixVectorMultiply);
+
+
+template <class MemorySpace>
+void TestMultiplyIdentityOperator(void)
+{
+    cusp::array1d<float, MemorySpace> x(4);
+    cusp::array1d<float, MemorySpace> y(4);
+
+    x[0] =  7.0f;   y[0] =  0.0f; 
+    x[1] =  5.0f;   y[1] = -2.0f;
+    x[2] =  4.0f;   y[2] =  0.0f;
+    x[3] = -3.0f;   y[3] =  5.0f;
+
+    cusp::identity_operator<float, MemorySpace> A(4,4);
+    
+    cusp::multiply(A, x, y);
+
+    ASSERT_EQUAL(y[0],  7.0f);
+    ASSERT_EQUAL(y[1],  5.0f);
+    ASSERT_EQUAL(y[2],  4.0f);
+    ASSERT_EQUAL(y[3], -3.0f);
+}
+DECLARE_HOST_DEVICE_UNITTEST(TestMultiplyIdentityOperator);
 

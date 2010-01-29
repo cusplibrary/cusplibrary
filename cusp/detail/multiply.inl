@@ -16,8 +16,41 @@
 
 #include <cusp/detail/dispatch/multiply.h>
 
+#include <cusp/linear_operator.h>
+#include <thrust/detail/type_traits.h>
+
 namespace cusp
 {
+namespace detail
+{
+
+template <typename LinearOperator,
+          typename MatrixOrVector1,
+          typename MatrixOrVector2>
+void multiply(const LinearOperator&  A,
+              const MatrixOrVector1& B,
+                    MatrixOrVector2& C,
+              thrust::detail::true_type)
+{
+    A.multiply(B,C);
+}
+
+template <typename LinearOperator,
+          typename MatrixOrVector1,
+          typename MatrixOrVector2>
+void multiply(const LinearOperator&  A,
+              const MatrixOrVector1& B,
+                    MatrixOrVector2& C,
+              thrust::detail::false_type)
+{
+    cusp::detail::dispatch::multiply
+        (A, B, C,
+         typename LinearOperator::memory_space(),
+         typename MatrixOrVector1::memory_space(),
+         typename MatrixOrVector2::memory_space());
+}
+
+} // end namespace detail
 
 template <typename LinearOperator,
           typename MatrixOrVector1,
@@ -26,11 +59,11 @@ void multiply(const LinearOperator&  A,
               const MatrixOrVector1& B,
                     MatrixOrVector2& C)
 {
-    cusp::detail::dispatch::multiply
-        (A, B, C,
-         typename LinearOperator::memory_space(),
-         typename MatrixOrVector1::memory_space(),
-         typename MatrixOrVector2::memory_space());
+    typedef typename LinearOperator::value_type   ValueType;
+    typedef typename LinearOperator::memory_space MemorySpace;
+
+    cusp::detail::multiply(A, B, C,
+         typename thrust::detail::is_convertible< LinearOperator, typename cusp::linear_operator<ValueType, MemorySpace> >::type());
 }
 
 } // end namespace cusp
