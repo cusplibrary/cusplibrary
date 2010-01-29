@@ -32,7 +32,8 @@ void multiply(const LinearOperator&  A,
                     MatrixOrVector2& C,
               thrust::detail::true_type)
 {
-    A.multiply(B,C);
+    // invoke linear_operator multiplication method
+    A(B,C);
 }
 
 template <typename LinearOperator,

@@ -17,6 +17,7 @@
 
 #include <cusp/array1d.h>
 #include <cusp/blas.h>
+#include <cusp/multiply.h>
 #include <cusp/stopping_criteria.h>
 #include <cusp/linear_operator.h>
 
@@ -84,13 +85,13 @@ void cg(LinearOperator& A,
     stopping_criteria.initialize(A, x, b);
    
     // y <- Ax
-    A.multiply(x, y);
+    cusp::multiply(A, x, y);
 
     // r <- b - A*x
     blas::axpby(b, y, r, ValueType(1), ValueType(-1));
    
     // z <- M*r
-    M.multiply(r, z);
+    cusp::multiply(M, r, z);
 
     // p <- z
     blas::copy(z, p);
@@ -122,7 +123,7 @@ void cg(LinearOperator& A,
         }
 
         // y <- Ap
-        A.multiply(p, y);
+        cusp::multiply(A, p, y);
         
         // alpha <- <r,z>/<y,p>
         ValueType alpha =  rz / blas::dotc(y, p);
@@ -131,7 +132,7 @@ void cg(LinearOperator& A,
         // r <- r - alpha * y		
         blas::axpy(y, r, -alpha);
         // z <- M*r
-        M.multiply(r, z);
+        cusp::multiply(M, r, z);
 		
         // r2 = <r,r>
         r_norm = blas::nrm2(r);

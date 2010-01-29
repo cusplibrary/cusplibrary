@@ -138,17 +138,6 @@ namespace cusp
         template <typename MatrixType>
         dia_matrix(const MatrixType& matrix);
         
-        /*! Implements sparse matrix-vector multiplication
-         *
-         * Computes the \c y = A * \c x where \c x and \c y are
-         * column vectors and A represents this matrix.
-         *
-         *  \param x Input vector.
-         *  \param y Output vector.
-         */
-        template <typename VectorType1, typename VectorType2>
-        void multiply(const VectorType1& x, VectorType2& y) const;
-
         void resize(IndexType num_rows, IndexType num_cols, IndexType num_entries,
                     IndexType num_diagonals, IndexType alignment = 16);
 

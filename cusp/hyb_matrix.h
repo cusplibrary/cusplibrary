@@ -61,10 +61,6 @@ namespace cusp
         template <typename MatrixType>
         hyb_matrix(const MatrixType& matrix);
         
-        // sparse matrix-vector multiplication
-        template <typename VectorType1, typename VectorType2>
-        void multiply(const VectorType1& x, VectorType2& y) const;
-        
         void resize(IndexType num_rows, IndexType num_cols,
                     IndexType num_ell_entries, IndexType num_coo_entries,
                     IndexType num_entries_per_row, IndexType alignment = 16);
@@ -79,9 +75,6 @@ namespace cusp
     }; // class hyb_matrix
 
 } // end namespace cusp
-
-#include <cusp/ell_matrix.h>
-#include <cusp/coo_matrix.h>
 
 #include <cusp/detail/hyb_matrix.inl>
 

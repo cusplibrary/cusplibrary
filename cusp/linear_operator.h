@@ -46,17 +46,9 @@ class linear_operator
         : num_rows(num_rows), num_cols(num_cols), num_entries(num_entries) {}
 
     template <typename VectorType1, typename VectorType2>
-    void multiply(const VectorType1& x, VectorType2& y) const
+    void operator()(const VectorType1& x, VectorType2& y) const
     {
         throw cusp::not_implemented_exception("linear_operator does not implement y <- A*x");
-    }
-    
-    template <typename VectorType1, typename VectorType2, typename VectorType3,
-              typename ScalarType1, typename ScalarType2>
-    void multiply(const VectorType1& x,    const VectorType2& y, VectorType3& z,
-                  const ScalarType1 alpha, const ScalarType2 beta) const
-    {
-        throw cusp::not_implemented_exception("linear_operator does not implement z <- alpha A*x + beta y");
     }
 }; // linear_operator
 
@@ -77,17 +69,9 @@ class identity_operator : public linear_operator<ValueType,MemorySpace>
     
     template <typename VectorType1,
               typename VectorType2>
-    void multiply(const VectorType1& x, VectorType2& y) const
+    void operator()(const VectorType1& x, VectorType2& y) const
     {
         cusp::blas::copy(x, y);
-    }
-    
-    template <typename VectorType1, typename VectorType2, typename VectorType3,
-              typename ScalarType1, typename ScalarType2>
-    void multiply(const VectorType1& x,    const VectorType2& y, VectorType3& z,
-                  const ScalarType1 alpha, const ScalarType2 beta) const
-    {
-        cusp::blas::axpby(x, y, z, alpha, beta);
     }
 }; // identity_operator
 

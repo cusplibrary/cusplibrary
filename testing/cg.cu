@@ -2,6 +2,7 @@
 
 #include <cusp/gallery/poisson.h>
 #include <cusp/csr_matrix.h>
+#include <cusp/multiply.h>
 #include <cusp/krylov/cg.h>
 
 template <class MemorySpace>
@@ -20,7 +21,7 @@ void TestConjugateGradient(void)
 
     // check residual norm
     cusp::array1d<float, MemorySpace> residual(A.num_rows, 0.0f);
-    A.multiply(x, residual);
+    cusp::multiply(A, x, residual);
     cusp::blas::axpby(residual, b, residual, -1.0f, 1.0f);
 
     ASSERT_EQUAL(cusp::blas::nrm2(residual) < 1e-4 * cusp::blas::nrm2(b), true);

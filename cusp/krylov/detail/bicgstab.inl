@@ -17,6 +17,7 @@
 
 #include <cusp/array1d.h>
 #include <cusp/blas.h>
+#include <cusp/multiply.h>
 #include <cusp/stopping_criteria.h>
 #include <cusp/linear_operator.h>
 
@@ -88,7 +89,7 @@ void bicgstab(LinearOperator& A,
     stopping_criteria.initialize(A, x, b);
 
     // y <- Ax
-    A.multiply(x, y);
+    cusp::multiply(A, x, y);
 
     // r <- b - A*x
     blas::axpby(b, y, r, ValueType(1), ValueType(-1));
@@ -126,10 +127,10 @@ void bicgstab(LinearOperator& A,
         }
 
         // Mp = M*p
-        M.multiply(p, Mp);
+        cusp::multiply(M, p, Mp);
 
         // AMp = A*Mp
-        A.multiply(Mp, AMp);
+        cusp::multiply(A, Mp, AMp);
 
         // alpha = (r_j, r_star) / (A*M*p, r_star)
         ValueType alpha = r_r_star_old / blas::dotc(r_star, AMp);
@@ -138,10 +139,10 @@ void bicgstab(LinearOperator& A,
         blas::axpby(r, AMp, s, ValueType(1), ValueType(-alpha));
 
         // Ms = M*s_j
-        M.multiply(s, Ms);
+        cusp::multiply(M, s, Ms);
         
         // AMs = A*Ms
-        A.multiply(Ms, AMs);
+        cusp::multiply(A, Ms, AMs);
 
         // omega = (AMs, s) / (AMs, AMs)
         ValueType omega = blas::dotc(AMs, s) / blas::dotc(AMs, AMs);

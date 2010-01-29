@@ -16,8 +16,6 @@
 
 #include <cusp/detail/convert.h>
 
-#include <cusp/detail/spmv.h>
-
 namespace cusp
 {
 
@@ -75,16 +73,6 @@ csr_matrix<IndexType,ValueType,SpaceOrAlloc>
 //////////////////////
 // Member Functions //
 //////////////////////
-
-// sparse matrix-vector multiplication
-template <typename IndexType, typename ValueType, class SpaceOrAlloc>
-template <typename VectorType1, typename VectorType2>
-    void
-    csr_matrix<IndexType,ValueType,SpaceOrAlloc>
-    ::multiply(const VectorType1& x, VectorType2& y) const
-    {
-        cusp::detail::spmv(*this, x, y);
-    }
 
 // resize matrix shape and storage
 template <typename IndexType, class SpaceOrAlloc>
