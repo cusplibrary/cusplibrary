@@ -192,40 +192,12 @@ void TestConversionTo(DestinationMatrixType dst)
 ///////////////////////////
 // Main Conversion Tests //
 ///////////////////////////
-template <class Space>
-void TestConversionToCooMatrix(void)
+template <class SparseMatrix>
+void TestConversionTo(void)
 {
-    TestConversionTo(cusp::coo_matrix<int, float, Space>());
+    TestConversionTo(SparseMatrix());
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestConversionToCooMatrix);
-
-template <class Space>
-void TestConversionToCsrMatrix(void)
-{
-    TestConversionTo(cusp::csr_matrix<int, float, Space>());
-}
-DECLARE_HOST_DEVICE_UNITTEST(TestConversionToCsrMatrix);
-
-template <class Space>
-void TestConversionToDiaMatrix(void)
-{
-    TestConversionTo(cusp::dia_matrix<int, float, Space>());
-}
-DECLARE_HOST_DEVICE_UNITTEST(TestConversionToDiaMatrix);
-
-template <class Space>
-void TestConversionToEllMatrix(void)
-{
-    TestConversionTo(cusp::ell_matrix<int, float, Space>());
-}
-DECLARE_HOST_DEVICE_UNITTEST(TestConversionToEllMatrix);
-
-template <class Space>
-void TestConversionToHybMatrix(void)
-{
-    TestConversionTo(cusp::hyb_matrix<int, float, Space>());
-}
-DECLARE_HOST_DEVICE_UNITTEST(TestConversionToHybMatrix);
+DECLARE_SPARSE_MATRIX_UNITTEST(TestConversionTo);
 
 template <class Space>
 void TestConversionToArray2d(void)
@@ -238,7 +210,7 @@ DECLARE_HOST_DEVICE_UNITTEST(TestConversionToArray2d);
 //////////////////////////////
 // Special Conversion Tests //
 //////////////////////////////
-void TestConvertCsrToDiaMatrix(void)
+void TestConvertCsrToDiaMatrixHost(void)
 {
     cusp::csr_matrix<int, float, cusp::host_memory> csr;
     cusp::dia_matrix<int, float, cusp::host_memory> dia;
@@ -274,9 +246,9 @@ void TestConvertCsrToDiaMatrix(void)
     ASSERT_EQUAL(dia.values(2,2), 15.25);
     ASSERT_EQUAL(dia.values(3,2),  0.00);
 }
-DECLARE_UNITTEST(TestConvertCsrToDiaMatrix);
+DECLARE_UNITTEST(TestConvertCsrToDiaMatrixHost);
 
-void TestConvertCsrToEllMatrix(void)
+void TestConvertCsrToEllMatrixHost(void)
 {
     cusp::csr_matrix<int, float, cusp::host_memory> csr;
     cusp::ell_matrix<int, float, cusp::host_memory> ell;
@@ -311,5 +283,5 @@ void TestConvertCsrToEllMatrix(void)
     ASSERT_EQUAL(ell.column_indices.values[10],  3);  ASSERT_EQUAL(ell.values.values[10], 15.25);
     ASSERT_EQUAL(ell.column_indices.values[11],  X);  ASSERT_EQUAL(ell.values.values[11],  0.00);
 }
-DECLARE_UNITTEST(TestConvertCsrToEllMatrix);
+DECLARE_UNITTEST(TestConvertCsrToEllMatrixHost);
 

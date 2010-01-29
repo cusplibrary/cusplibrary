@@ -125,6 +125,7 @@ void VTEST##CsrMatrixDevice(void) {  VTEST< cusp::csr_matrix<int,float,cusp::dev
 void VTEST##DiaMatrixDevice(void) {  VTEST< cusp::dia_matrix<int,float,cusp::device_memory> >(); }   \
 void VTEST##EllMatrixDevice(void) {  VTEST< cusp::ell_matrix<int,float,cusp::device_memory> >(); }   \
 void VTEST##HybMatrixDevice(void) {  VTEST< cusp::hyb_matrix<int,float,cusp::device_memory> >(); }   \
+DECLARE_UNITTEST(VTEST##CooMatrixDevice);                                                            \
 DECLARE_UNITTEST(VTEST##CsrMatrixDevice);                                                            \
 DECLARE_UNITTEST(VTEST##DiaMatrixDevice);                                                            \
 DECLARE_UNITTEST(VTEST##EllMatrixDevice);                                                            \

@@ -72,38 +72,10 @@ void TestTransposeArray2d(void)
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestTransposeArray2d);
 
-template <class Space>
-void TestTransposeCooMatrix(void)
+template <class SparseMatrix>
+void TestTranspose(void)
 {
-    TestTranspose(cusp::coo_matrix<int, float, Space>());
+    TestTranspose(SparseMatrix());
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestTransposeCooMatrix);
-
-template <class Space>
-void TestTransposeCsrMatrix(void)
-{
-    TestTranspose(cusp::csr_matrix<int, float, Space>());
-}
-DECLARE_HOST_DEVICE_UNITTEST(TestTransposeCsrMatrix);
-
-template <class Space>
-void TestTransposeDiaMatrix(void)
-{
-    TestTranspose(cusp::dia_matrix<int, float, Space>());
-}
-DECLARE_HOST_DEVICE_UNITTEST(TestTransposeDiaMatrix);
-
-template <class Space>
-void TestTransposeEllMatrix(void)
-{
-    TestTranspose(cusp::ell_matrix<int, float, Space>());
-}
-DECLARE_HOST_DEVICE_UNITTEST(TestTransposeEllMatrix);
-
-template <class Space>
-void TestTransposeHybMatrix(void)
-{
-    TestTranspose(cusp::hyb_matrix<int, float, Space>());
-}
-DECLARE_HOST_DEVICE_UNITTEST(TestTransposeHybMatrix);
+DECLARE_SPARSE_MATRIX_UNITTEST(TestTranspose);
 
