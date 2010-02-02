@@ -36,7 +36,7 @@ void spmv_hyb(const cusp::hyb_matrix<IndexType, ValueType, cusp::device_memory>&
                     ValueType * y)
 {
     cusp::detail::device::spmv(hyb.ell, x, y);
-    cusp::detail::device::spmv(hyb.coo, x, y);
+    __spmv_coo_flat<IndexType, ValueType, false, false>(hyb.coo, x, y);
 }
 
 template <typename IndexType, typename ValueType>
@@ -45,7 +45,7 @@ void spmv_hyb_tex(const cusp::hyb_matrix<IndexType, ValueType, cusp::device_memo
                         ValueType * y)
 {
     cusp::detail::device::spmv_tex(hyb.ell, x, y);
-    cusp::detail::device::spmv_tex(hyb.coo, x, y);
+    __spmv_coo_flat<IndexType, ValueType, true, false>(hyb.coo, x, y);
 }
 
     

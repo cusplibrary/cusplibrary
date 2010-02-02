@@ -277,17 +277,16 @@ spmv_coo_reduce_update_kernel(const IndexType num_warps,
 }
 
 
-template <typename IndexType, typename ValueType, bool UseCache>
+template <typename IndexType, typename ValueType, bool UseCache, bool InitializeY>
 void __spmv_coo_flat(const coo_matrix<IndexType,ValueType,cusp::device_memory>& coo, 
                      const ValueType * d_x, 
-                           ValueType * d_y,
-                     const bool initialize_y = true)
+                           ValueType * d_y)
 {
     const IndexType * I = thrust::raw_pointer_cast(&coo.row_indices[0]);
     const IndexType * J = thrust::raw_pointer_cast(&coo.column_indices[0]);
     const ValueType * V = thrust::raw_pointer_cast(&coo.values[0]);
 
-    if (initialize_y)
+    if (InitializeY)
         thrust::fill(thrust::device_pointer_cast(d_y), thrust::device_pointer_cast(d_y) + coo.num_rows, ValueType(0));
 
     if(coo.num_entries == 0)
@@ -343,20 +342,18 @@ void __spmv_coo_flat(const coo_matrix<IndexType,ValueType,cusp::device_memory>& 
 template <typename IndexType, typename ValueType>
 void spmv_coo_flat(const coo_matrix<IndexType,ValueType,cusp::device_memory>& coo, 
                    const ValueType * d_x, 
-                         ValueType * d_y,
-                   const bool initialize_y = true)
+                         ValueType * d_y)
 { 
-    __spmv_coo_flat<IndexType, ValueType, false>(coo, d_x, d_y);
+    __spmv_coo_flat<IndexType, ValueType, false, true>(coo, d_x, d_y);
 }
 
 
 template <typename IndexType, typename ValueType>
 void spmv_coo_flat_tex(const coo_matrix<IndexType,ValueType,cusp::device_memory>& coo, 
                        const ValueType * d_x, 
-                             ValueType * d_y,
-                       const bool initialize_y = true)
+                             ValueType * d_y)
 { 
-    __spmv_coo_flat<IndexType, ValueType, true>(coo, d_x, d_y);
+    __spmv_coo_flat<IndexType, ValueType, true, true>(coo, d_x, d_y);
 }
 
 

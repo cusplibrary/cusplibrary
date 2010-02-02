@@ -63,11 +63,10 @@ void multiply(const cusp::coo_matrix<IndexType,ValueType,SpaceOrAlloc1>& A,
               const cusp::array1d<ValueType,SpaceOrAlloc2>& B,
                     cusp::array1d<ValueType,SpaceOrAlloc3>& C)
 {
-    thrust::fill(C.begin(), C.end(), ValueType(0));
 #ifdef CUSP_USE_TEXTURE_MEMORY    
-    cusp::detail::device::spmv_coo_flat_tex(A, thrust::raw_pointer_cast(&B[0]), thrust::raw_pointer_cast(&C[0]), true);
+    cusp::detail::device::spmv_coo_flat_tex(A, thrust::raw_pointer_cast(&B[0]), thrust::raw_pointer_cast(&C[0]));
 #else
-    cusp::detail::device::spmv_coo_flat(A, thrust::raw_pointer_cast(&B[0]), thrust::raw_pointer_cast(&C[0]), true);
+    cusp::detail::device::spmv_coo_flat(A, thrust::raw_pointer_cast(&B[0]), thrust::raw_pointer_cast(&C[0]));
 #endif    
 }
 
@@ -129,11 +128,9 @@ void multiply(const cusp::hyb_matrix<IndexType,ValueType,SpaceOrAlloc1>& A,
                     cusp::array1d<ValueType,SpaceOrAlloc3>& C)
 {
 #ifdef CUSP_USE_TEXTURE_MEMORY    
-    cusp::detail::device::spmv_ell_tex     (A.ell, thrust::raw_pointer_cast(&B[0]), thrust::raw_pointer_cast(&C[0]));
-    cusp::detail::device::spmv_coo_flat_tex(A.coo, thrust::raw_pointer_cast(&B[0]), thrust::raw_pointer_cast(&C[0]), false);
+    cusp::detail::device::spmv_tex(A, thrust::raw_pointer_cast(&B[0]), thrust::raw_pointer_cast(&C[0]));
 #else
-    cusp::detail::device::spmv_ell     (A.ell, thrust::raw_pointer_cast(&B[0]), thrust::raw_pointer_cast(&C[0]));
-    cusp::detail::device::spmv_coo_flat(A.coo, thrust::raw_pointer_cast(&B[0]), thrust::raw_pointer_cast(&C[0]), false);
+    cusp::detail::device::spmv(A, thrust::raw_pointer_cast(&B[0]), thrust::raw_pointer_cast(&C[0]));
 #endif    
 }
 

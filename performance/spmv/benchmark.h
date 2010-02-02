@@ -11,7 +11,7 @@
 const char * BENCHMARK_OUTPUT_FILE_NAME = "benchmark_output.log";
 
 template <typename HostMatrix, typename TestMatrix, typename TestKernel>
-float check_spmv(HostMatrix& host_matrix, TestMatrix& test_matrix, TestKernel test_spmv)
+float check_spmv(HostMatrix& host_matrix, TestMatrix& test_matrix, TestKernel test_kernel)
 {
     typedef typename TestMatrix::index_type   IndexType; // ASSUME same as HostMatrix::index_type
     typedef typename TestMatrix::value_type   ValueType; // ASSUME same as HostMatrix::value_type
@@ -32,7 +32,7 @@ float check_spmv(HostMatrix& host_matrix, TestMatrix& test_matrix, TestKernel te
 
     // compute SpMV on host and device
     cusp::detail::host::spmv(host_matrix, thrust::raw_pointer_cast(&host_x[0]), thrust::raw_pointer_cast(&host_y[0]));
-    test_spmv(test_matrix, thrust::raw_pointer_cast(&test_x[0]), thrust::raw_pointer_cast(&test_y[0]));
+    test_kernel(test_matrix, thrust::raw_pointer_cast(&test_x[0]), thrust::raw_pointer_cast(&test_y[0]));
 
     // compare results
     cusp::array1d<ValueType,cusp::host_memory> test_y_copy(test_y.begin(), test_y.end());
