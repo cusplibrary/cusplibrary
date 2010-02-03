@@ -61,9 +61,9 @@ struct compute_weights
 
 template <typename IndexType, typename ValueType, typename SpaceOrAlloc,
           typename ArrayType>
-void direct_interpolation(const cusp::coo_matrix<IndexType,ValueType,SpaceOrAlloc>& A,   // TODO make these const
-                          const cusp::coo_matrix<IndexType,ValueType,SpaceOrAlloc>& C,   // TODO make these const
-                          const ArrayType& cf_splitting,                                 // TODO make these const
+void direct_interpolation(const cusp::coo_matrix<IndexType,ValueType,SpaceOrAlloc>& A,
+                          const cusp::coo_matrix<IndexType,ValueType,SpaceOrAlloc>& C,
+                          const ArrayType& cf_splitting,                              
                           cusp::coo_matrix<IndexType,ValueType,SpaceOrAlloc>& P)
 {
     // dimensions of P
@@ -131,52 +131,81 @@ void direct_interpolation(const cusp::coo_matrix<IndexType,ValueType,SpaceOrAllo
                           P.values.begin(),
                           compute_weights<ValueType>());
     }
-
-//    std::cout << "P.num_rows    " << P.num_rows << std::endl;
-//    std::cout << "P.num_cols    " << P.num_cols << std::endl;
-//    std::cout << "P.num_entries " << P.num_entries << std::endl;
-//    std::cout << "P.row_indices ";
-//    cusp::print_matrix(P.row_indices);
-//    std::cout << "P.column_indices ";
-//    cusp::print_matrix(P.column_indices);
-//    std::cout << "P.values ";
-//    cusp::print_matrix(P.values);
 }
 
+template <typename IndexType, typename ValueType, typename Space>
+void _TestDirectInterpolation(const cusp::array2d<ValueType,Space>& A,
+                              const cusp::array1d<IndexType,Space>& S,
+                              const cusp::array2d<ValueType,Space>& expected)
+{
+    cusp::coo_matrix<IndexType,ValueType,Space> A_(A);
+    
+    cusp::coo_matrix<IndexType,ValueType,Space> P;
+
+    direct_interpolation(A_, A_, S, P);
+
+    cusp::array2d<ValueType, Space> result(P);
+
+    ASSERT_EQUAL_QUIET(result, expected);
+}
 
 template <class Space>
 void TestDirectInterpolation(void)
 {
-    cusp::array2d<float, Space> A(5,5);
-    A(0,0) =  2;  A(0,1) = -1;  A(0,2) =  0;  A(0,3) =  0;  A(0,4) =  0; 
-    A(1,0) = -1;  A(1,1) =  2;  A(1,2) = -1;  A(1,3) =  0;  A(1,4) =  0;
-    A(2,0) =  0;  A(2,1) = -1;  A(2,2) =  2;  A(2,3) = -1;  A(2,4) =  0;
-    A(3,0) =  0;  A(3,1) =  0;  A(3,2) = -1;  A(3,3) =  2;  A(3,4) = -1;
-    A(4,0) =  0;  A(4,1) =  0;  A(4,2) =  0;  A(4,3) = -1;  A(4,4) =  2;
+    // One-dimensional Poisson problem 
+    {
+        cusp::array2d<float, Space> A(5,5);
+        A(0,0) =  2;  A(0,1) = -1;  A(0,2) =  0;  A(0,3) =  0;  A(0,4) =  0; 
+        A(1,0) = -1;  A(1,1) =  2;  A(1,2) = -1;  A(1,3) =  0;  A(1,4) =  0;
+        A(2,0) =  0;  A(2,1) = -1;  A(2,2) =  2;  A(2,3) = -1;  A(2,4) =  0;
+        A(3,0) =  0;  A(3,1) =  0;  A(3,2) = -1;  A(3,3) =  2;  A(3,4) = -1;
+        A(4,0) =  0;  A(4,1) =  0;  A(4,2) =  0;  A(4,3) = -1;  A(4,4) =  2;
 
-    cusp::array1d<int, Space> cf_splitting(5);
-    cf_splitting[0] = 1;
-    cf_splitting[1] = 0;
-    cf_splitting[2] = 1;
-    cf_splitting[3] = 0;
-    cf_splitting[4] = 1;
+        cusp::array1d<int, Space> S(5);
+        S[0] = 1;
+        S[1] = 0;
+        S[2] = 1;
+        S[3] = 0;
+        S[4] = 1;
 
-    // expected result 
-    cusp::array2d<float, Space> E(5, 3);
-    E(0,0) = 1.0;  E(0,1) = 0.0;  E(0,2) = 0.0;
-    E(1,0) = 0.5;  E(1,1) = 0.5;  E(1,2) = 0.0;
-    E(2,0) = 0.0;  E(2,1) = 1.0;  E(2,2) = 0.0;
-    E(3,0) = 0.0;  E(3,1) = 0.5;  E(3,2) = 0.5;
-    E(4,0) = 0.0;  E(4,1) = 0.0;  E(4,2) = 1.0;
+        cusp::array2d<float, Space> P(5, 3);
+        P(0,0) = 1.0;  P(0,1) = 0.0;  P(0,2) = 0.0;
+        P(1,0) = 0.5;  P(1,1) = 0.5;  P(1,2) = 0.0;
+        P(2,0) = 0.0;  P(2,1) = 1.0;  P(2,2) = 0.0;
+        P(3,0) = 0.0;  P(3,1) = 0.5;  P(3,2) = 0.5;
+        P(4,0) = 0.0;  P(4,1) = 0.0;  P(4,2) = 1.0;
 
-    cusp::coo_matrix<int, float, Space> P_;
-    cusp::coo_matrix<int,float,Space> A_(A);
+        _TestDirectInterpolation(A,S,P);
+    }
+    
+    // Two-dimensional Poisson problem 
+    {
+        cusp::array2d<float, Space> A(6,6);
+        A(0,0) =  4;  A(0,1) = -1;  A(0,2) =  0;  A(0,3) = -1;  A(0,4) =  0;  A(0,5) =  0;  
+        A(1,0) = -1;  A(1,1) =  4;  A(1,2) = -1;  A(1,3) =  0;  A(1,4) = -1;  A(1,5) =  0;
+        A(2,0) =  0;  A(2,1) = -1;  A(2,2) =  4;  A(2,3) =  0;  A(2,4) =  0;  A(2,5) = -1;
+        A(3,0) = -1;  A(3,1) =  0;  A(3,2) =  0;  A(3,3) =  4;  A(3,4) = -1;  A(3,5) =  0;
+        A(4,0) =  0;  A(4,1) = -1;  A(4,2) =  0;  A(4,3) = -1;  A(4,4) =  4;  A(4,5) = -1;
+        A(5,0) =  0;  A(5,1) =  0;  A(5,2) = -1;  A(5,3) =  0;  A(5,4) = -1;  A(5,5) =  4;
 
-    direct_interpolation(A_, A_, cf_splitting, P_);
+        cusp::array1d<int, Space> S(6);
+        S[0] = 1;
+        S[1] = 0;
+        S[2] = 1;
+        S[3] = 0;
+        S[4] = 1;
+        S[5] = 0;
 
-    cusp::array2d<float, Space> P(P_);
+        cusp::array2d<float, Space> P(6, 3);
+        P(0,0) = 1.00;  P(0,1) = 0.00;  P(0,2) = 0.00;
+        P(1,0) = 0.25;  P(1,1) = 0.25;  P(1,2) = 0.25;
+        P(2,0) = 0.00;  P(2,1) = 1.00;  P(2,2) = 0.00;
+        P(3,0) = 0.25;  P(3,1) = 0.00;  P(3,2) = 0.25;
+        P(4,0) = 0.00;  P(4,1) = 0.00;  P(4,2) = 1.00;
+        P(5,0) = 0.00;  P(5,1) = 0.25;  P(5,2) = 0.25;
 
-    ASSERT_EQUAL_QUIET(P, E);
+        _TestDirectInterpolation(A,S,P);
+    }
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestDirectInterpolation);
 
