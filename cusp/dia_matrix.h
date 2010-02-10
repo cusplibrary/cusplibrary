@@ -42,9 +42,7 @@ namespace cusp
  *
  * \tparam IndexType Type used for matrix indices (e.g. \c int).
  * \tparam ValueType Type used for matrix values (e.g. \c float).
- * \tparam MemorySpace Either a memory space such as \c cusp::host_memory or 
- *         \c cusp::device_memory or a specific memory allocator type such as
- *         \c thrust::device_malloc_allocator<T>.
+ * \tparam MemorySpace A memory space (e.g. \c cusp::host_memory or cusp::device_memory)
  *
  * \note The diagonal offsets should not contain duplicate entries.
  *

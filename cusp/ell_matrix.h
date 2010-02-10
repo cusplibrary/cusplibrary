@@ -43,7 +43,6 @@ namespace cusp
         typedef IndexType   index_type;
         typedef MemorySpace memory_space;
 
-        typedef typename cusp::choose_memory_allocator<IndexType, MemorySpace>::type index_allocator_type;
         typedef typename cusp::ell_pattern<IndexType, MemorySpace> pattern_type;
 
         const static index_type invalid_index = static_cast<IndexType>(-1);
@@ -51,7 +50,7 @@ namespace cusp
         template<typename MemorySpace2>
         struct rebind { typedef ell_pattern<IndexType, MemorySpace2> type; };
 
-        cusp::array2d<IndexType, index_allocator_type, cusp::column_major> column_indices;
+        cusp::array2d<IndexType, MemorySpace, cusp::column_major> column_indices;
 
         ell_pattern();
                    
@@ -71,9 +70,7 @@ namespace cusp
  *
  * \tparam IndexType Type used for matrix indices (e.g. \c int).
  * \tparam ValueType Type used for matrix values (e.g. \c float).
- * \tparam MemorySpace Either a memory space such as \c cusp::host_memory or 
- *         \c cusp::device_memory or a specific memory allocator type such as
- *         \c thrust::device_malloc_allocator<T>.
+ * \tparam MemorySpace A memory space (e.g. \c cusp::host_memory or cusp::device_memory)
  *
  * \note The matrix entries must be sorted by column index.
  * \note The matrix entries within each row should be shifted to the left.
@@ -119,7 +116,6 @@ namespace cusp
     class ell_matrix : public ell_pattern<IndexType, MemorySpace>
     {
         public:
-        typedef typename cusp::choose_memory_allocator<ValueType, MemorySpace>::type value_allocator_type;
         typedef typename cusp::ell_matrix<IndexType, ValueType, MemorySpace> matrix_type;
     
         typedef ValueType value_type;
@@ -129,7 +125,7 @@ namespace cusp
 
         /*! Storage for the nonzero entries of the ELL data structure.
          */
-        cusp::array2d<ValueType, value_allocator_type, cusp::column_major> values;
+        cusp::array2d<ValueType, MemorySpace, cusp::column_major> values;
     
         /*! Construct an empty \p ell_matrix.
          */

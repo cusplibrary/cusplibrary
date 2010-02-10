@@ -37,9 +37,6 @@ namespace cusp
 
         typedef MemorySpace memory_space;
 
-        typedef typename cusp::choose_memory_allocator<IndexType, MemorySpace>::type index_allocator_type;
-        typedef typename cusp::choose_memory_allocator<ValueType, MemorySpace>::type value_allocator_type;
-
         template<typename MemorySpace2>
         struct rebind { typedef hyb_matrix<IndexType, ValueType, MemorySpace2> type; };
 
