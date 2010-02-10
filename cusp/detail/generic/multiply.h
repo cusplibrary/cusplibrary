@@ -29,16 +29,16 @@ namespace generic
 
 template <typename IndexType,
           typename ValueType,
-          typename SpaceOrAlloc>
-void multiply(const cusp::coo_matrix<IndexType,ValueType,SpaceOrAlloc>& A,
-              const cusp::coo_matrix<IndexType,ValueType,SpaceOrAlloc>& B,
-                    cusp::coo_matrix<IndexType,ValueType,SpaceOrAlloc>& C);
+          typename MemorySpace>
+void multiply(const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& A,
+              const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& B,
+                    cusp::coo_matrix<IndexType,ValueType,MemorySpace>& C);
 
 template <typename ValueType,
-          typename SpaceOrAlloc>
-void multiply(const cusp::array2d<ValueType,SpaceOrAlloc>& A,
-              const cusp::array2d<ValueType,SpaceOrAlloc>& B,
-                    cusp::array2d<ValueType,SpaceOrAlloc>& C);
+          typename MemorySpace>
+void multiply(const cusp::array2d<ValueType,MemorySpace>& A,
+              const cusp::array2d<ValueType,MemorySpace>& B,
+                    cusp::array2d<ValueType,MemorySpace>& C);
 
 } // end namespace generic
 } // end namespace detail

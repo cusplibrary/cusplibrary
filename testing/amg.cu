@@ -59,19 +59,19 @@ struct compute_weights
     }
 };
 
-template <typename IndexType, typename ValueType, typename SpaceOrAlloc,
+template <typename IndexType, typename ValueType, typename MemorySpace,
           typename ArrayType>
-void direct_interpolation(const cusp::coo_matrix<IndexType,ValueType,SpaceOrAlloc>& A,
-                          const cusp::coo_matrix<IndexType,ValueType,SpaceOrAlloc>& C,
+void direct_interpolation(const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& A,
+                          const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& C,
                           const ArrayType& cf_splitting,                              
-                          cusp::coo_matrix<IndexType,ValueType,SpaceOrAlloc>& P)
+                          cusp::coo_matrix<IndexType,ValueType,MemorySpace>& P)
 {
     // dimensions of P
     const IndexType num_rows = A.num_rows;
     const IndexType num_cols = thrust::count(cf_splitting.begin(), cf_splitting.end(), 1);
   
     // mark the strong edges that are retained in P (either F->C or C->C self loops)
-    cusp::array1d<IndexType,SpaceOrAlloc> stencil(C.num_entries);
+    cusp::array1d<IndexType,MemorySpace> stencil(C.num_entries);
     thrust::transform(thrust::make_zip_iterator(
                         thrust::make_tuple(C.row_indices.begin(),
                                            C.column_indices.begin(),
@@ -89,25 +89,25 @@ void direct_interpolation(const cusp::coo_matrix<IndexType,ValueType,SpaceOrAllo
     const IndexType num_entries = thrust::reduce(stencil.begin(), stencil.end());
 
     // sum the weights of the F nodes within each row
-    cusp::array1d<ValueType,SpaceOrAlloc> nu(A.num_rows);
+    cusp::array1d<ValueType,MemorySpace> nu(A.num_rows);
     {
         // nu = 1 / A * [F0F0F0]
         // scale C(i,j) by nu
-        cusp::array1d<ValueType,SpaceOrAlloc> F_nodes(A.num_rows);  // 1.0 for F nodes, 0.0 for C nodes
+        cusp::array1d<ValueType,MemorySpace> F_nodes(A.num_rows);  // 1.0 for F nodes, 0.0 for C nodes
         thrust::transform(cf_splitting.begin(), cf_splitting.end(), F_nodes.begin(), is_F_node<IndexType,ValueType>());
         cusp::multiply(A, F_nodes, nu);
     }
     
     // allocate storage for P
     {
-        cusp::coo_matrix<IndexType,ValueType,SpaceOrAlloc> temp(num_rows, num_cols, num_entries);
+        cusp::coo_matrix<IndexType,ValueType,MemorySpace> temp(num_rows, num_cols, num_entries);
         P.swap(temp);
     }
 
     // compute entries of P
     {
         // enumerate the C nodes
-        cusp::array1d<ValueType,SpaceOrAlloc> coarse_index_map(A.num_rows);
+        cusp::array1d<ValueType,MemorySpace> coarse_index_map(A.num_rows);
         thrust::exclusive_scan(cf_splitting.begin(), cf_splitting.end(), coarse_index_map.begin());
        
         // TODO merge these copy_if() with a zip_iterator

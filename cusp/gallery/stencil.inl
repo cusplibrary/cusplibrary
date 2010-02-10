@@ -137,10 +137,10 @@ struct fill_diagonal_entries
 
 template <typename IndexType,
           typename ValueType,
-          typename SpaceOrAlloc,
+          typename MemorySpace,
           typename StencilPoint,
           typename GridDimension>
-void generate_matrix_from_stencil(      cusp::dia_matrix<IndexType,ValueType,SpaceOrAlloc>& matrix,
+void generate_matrix_from_stencil(      cusp::dia_matrix<IndexType,ValueType,MemorySpace>& matrix,
                                   const cusp::array1d<StencilPoint,cusp::host_memory>& stencil,
                                   const GridDimension& grid)
 {

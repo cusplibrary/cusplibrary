@@ -48,8 +48,8 @@ struct process_nodes
     }
 };
 
-template <typename IndexType, typename ValueType, typename SpaceOrAlloc, typename ArrayType>
-size_t maximal_independent_set(const cusp::csr_matrix<IndexType,ValueType,SpaceOrAlloc>& A, ArrayType& stencil)
+template <typename IndexType, typename ValueType, typename MemorySpace, typename ArrayType>
+size_t maximal_independent_set(const cusp::csr_matrix<IndexType,ValueType,MemorySpace>& A, ArrayType& stencil)
 {
     typedef unsigned int RandomType;
     typedef unsigned int NodeStateType;
@@ -60,18 +60,18 @@ size_t maximal_independent_set(const cusp::csr_matrix<IndexType,ValueType,SpaceO
     // throw if A.num_rows != A.num_cols
     const IndexType N = A.num_rows;
 
-    cusp::array1d<RandomType,SpaceOrAlloc> random_values(N);
+    cusp::array1d<RandomType,MemorySpace> random_values(N);
     thrust::transform(thrust::counting_iterator<IndexType>(0), thrust::counting_iterator<IndexType>(N), 
                       random_values.begin(),
                       simple_hash());
 
-    cusp::array1d<NodeStateType,SpaceOrAlloc> states(N, 1);
+    cusp::array1d<NodeStateType,MemorySpace> states(N, 1);
     
     typedef typename thrust::tuple<NodeStateType,RandomType,IndexType> Tuple;
     
-    cusp::array1d<NodeStateType,SpaceOrAlloc> maximal_states(N);
-    cusp::array1d<RandomType,SpaceOrAlloc>    maximal_values(N);
-    cusp::array1d<IndexType,SpaceOrAlloc>     maximal_indices(N);
+    cusp::array1d<NodeStateType,MemorySpace> maximal_states(N);
+    cusp::array1d<RandomType,MemorySpace>    maximal_values(N);
+    cusp::array1d<IndexType,MemorySpace>     maximal_indices(N);
 
     size_t num_iterations = 0;
 

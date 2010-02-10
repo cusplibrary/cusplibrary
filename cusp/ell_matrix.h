@@ -34,22 +34,22 @@ namespace cusp
 
     // Forward definitions
     struct column_major;
-    template<typename ValueType, class SpaceOrAlloc, class Orientation> class array2d;
+    template<typename ValueType, class MemorySpace, class Orientation> class array2d;
 
-    template<typename IndexType, class SpaceOrAlloc>
+    template<typename IndexType, class MemorySpace>
     class ell_pattern : public detail::matrix_base<IndexType>
     {
         public:
-        typedef IndexType index_type;
+        typedef IndexType   index_type;
+        typedef MemorySpace memory_space;
 
-        typedef typename cusp::choose_memory_allocator<IndexType, SpaceOrAlloc>::type index_allocator_type;
-        typedef typename cusp::allocator_space<index_allocator_type>::type memory_space;
-        typedef typename cusp::ell_pattern<IndexType, SpaceOrAlloc> pattern_type;
+        typedef typename cusp::choose_memory_allocator<IndexType, MemorySpace>::type index_allocator_type;
+        typedef typename cusp::ell_pattern<IndexType, MemorySpace> pattern_type;
 
         const static index_type invalid_index = static_cast<IndexType>(-1);
         
-        template<typename SpaceOrAlloc2>
-        struct rebind { typedef ell_pattern<IndexType, SpaceOrAlloc2> type; };
+        template<typename MemorySpace2>
+        struct rebind { typedef ell_pattern<IndexType, MemorySpace2> type; };
 
         cusp::array2d<IndexType, index_allocator_type, cusp::column_major> column_indices;
 
@@ -58,8 +58,8 @@ namespace cusp
         ell_pattern(IndexType num_rows, IndexType num_cols, IndexType num_entries,
                     IndexType num_entries_per_row, IndexType alignment = 16);
 
-        template <typename IndexType2, typename SpaceOrAlloc2>
-        ell_pattern(const ell_pattern<IndexType2,SpaceOrAlloc2>& pattern);
+        template <typename IndexType2, typename MemorySpace2>
+        ell_pattern(const ell_pattern<IndexType2,MemorySpace2>& pattern);
 
         void resize(IndexType num_rows, IndexType num_cols, IndexType num_entries,
                     IndexType num_entries_per_row, IndexType alignment = 16);
@@ -71,7 +71,7 @@ namespace cusp
  *
  * \tparam IndexType Type used for matrix indices (e.g. \c int).
  * \tparam ValueType Type used for matrix values (e.g. \c float).
- * \tparam SpaceOrAlloc Either a memory space such as \c cusp::host_memory or 
+ * \tparam MemorySpace Either a memory space such as \c cusp::host_memory or 
  *         \c cusp::device_memory or a specific memory allocator type such as
  *         \c thrust::device_malloc_allocator<T>.
  *
@@ -115,17 +115,17 @@ namespace cusp
  *  \endcode
  *
  */
-    template <typename IndexType, typename ValueType, class SpaceOrAlloc>
-    class ell_matrix : public ell_pattern<IndexType, SpaceOrAlloc>
+    template <typename IndexType, typename ValueType, class MemorySpace>
+    class ell_matrix : public ell_pattern<IndexType, MemorySpace>
     {
         public:
-        typedef typename cusp::choose_memory_allocator<ValueType, SpaceOrAlloc>::type value_allocator_type;
-        typedef typename cusp::ell_matrix<IndexType, ValueType, SpaceOrAlloc> matrix_type;
+        typedef typename cusp::choose_memory_allocator<ValueType, MemorySpace>::type value_allocator_type;
+        typedef typename cusp::ell_matrix<IndexType, ValueType, MemorySpace> matrix_type;
     
         typedef ValueType value_type;
     
-        template<typename SpaceOrAlloc2>
-        struct rebind { typedef ell_matrix<IndexType, ValueType, SpaceOrAlloc2> type; };
+        template<typename MemorySpace2>
+        struct rebind { typedef ell_matrix<IndexType, ValueType, MemorySpace2> type; };
 
         /*! Storage for the nonzero entries of the ELL data structure.
          */
@@ -151,8 +151,8 @@ namespace cusp
          *
          *  \param matrix Another \p ell_matrix.
          */
-        template <typename IndexType2, typename ValueType2, typename SpaceOrAlloc2>
-        ell_matrix(const ell_matrix<IndexType2, ValueType2, SpaceOrAlloc2>& matrix);
+        template <typename IndexType2, typename ValueType2, typename MemorySpace2>
+        ell_matrix(const ell_matrix<IndexType2, ValueType2, MemorySpace2>& matrix);
         
         /*! Construct a \p ell_matrix from another matrix format.
          *
@@ -174,8 +174,8 @@ namespace cusp
          *
          *  \param matrix Another \p ell_matrix with possibly different IndexType and ValueType.
          */
-        template <typename IndexType2, typename ValueType2, typename SpaceOrAlloc2>
-        ell_matrix& operator=(const ell_matrix<IndexType2, ValueType2, SpaceOrAlloc2>& matrix);
+        template <typename IndexType2, typename ValueType2, typename MemorySpace2>
+        ell_matrix& operator=(const ell_matrix<IndexType2, ValueType2, MemorySpace2>& matrix);
 
         /*! Assignment from another matrix format.
          *

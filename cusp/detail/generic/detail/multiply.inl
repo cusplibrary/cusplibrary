@@ -37,17 +37,15 @@ namespace generic
 
 template <typename IndexType,
           typename ValueType,
-          typename SpaceOrAlloc>
-void multiply(const cusp::coo_matrix<IndexType,ValueType,SpaceOrAlloc>& A,
-              const cusp::coo_matrix<IndexType,ValueType,SpaceOrAlloc>& B,
-                    cusp::coo_matrix<IndexType,ValueType,SpaceOrAlloc>& C)
+          typename MemorySpace>
+void multiply(const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& A,
+              const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& B,
+                    cusp::coo_matrix<IndexType,ValueType,MemorySpace>& C)
 {
-    typedef typename cusp::coo_matrix<IndexType,ValueType,SpaceOrAlloc>::memory_space MemorySpace;
-
     // check whether matrices are empty
     if (A.num_entries == 0 || B.num_entries == 0)
     {
-        cusp::coo_matrix<IndexType,ValueType,SpaceOrAlloc> temp(A.num_rows, B.num_cols, 0);
+        cusp::coo_matrix<IndexType,ValueType,MemorySpace> temp(A.num_rows, B.num_cols, 0);
         C.swap(temp);
         return;
     }
@@ -143,10 +141,10 @@ void multiply(const cusp::coo_matrix<IndexType,ValueType,SpaceOrAlloc>& A,
 
 
 template <typename ValueType,
-          typename SpaceOrAlloc>
-void multiply(const cusp::array2d<ValueType,SpaceOrAlloc>& A,
-              const cusp::array2d<ValueType,SpaceOrAlloc>& B,
-                    cusp::array2d<ValueType,SpaceOrAlloc>& C)
+          typename MemorySpace>
+void multiply(const cusp::array2d<ValueType,MemorySpace>& A,
+              const cusp::array2d<ValueType,MemorySpace>& B,
+                    cusp::array2d<ValueType,MemorySpace>& C)
 {
     C.resize(A.num_rows, B.num_cols);
 

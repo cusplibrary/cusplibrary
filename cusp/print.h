@@ -57,8 +57,8 @@ void print_matrix(const cusp::csr_matrix<IndexType, ValueType, cusp::host_memory
     }
 }
 
-template <typename ValueType, typename SpaceOrAlloc, typename Orientation>
-void print_matrix(const cusp::array2d<ValueType, SpaceOrAlloc, Orientation>& dense)
+template <typename ValueType, typename MemorySpace, typename Orientation>
+void print_matrix(const cusp::array2d<ValueType, MemorySpace, Orientation>& dense)
 {
     std::cout << "array2d <" << dense.num_rows << ", " << dense.num_cols << ">\n";
 
@@ -73,8 +73,8 @@ void print_matrix(const cusp::array2d<ValueType, SpaceOrAlloc, Orientation>& den
     }
 }
 
-template <typename ValueType, typename SpaceOrAlloc>
-void print_matrix(const cusp::array1d<ValueType, SpaceOrAlloc>& dense)
+template <typename ValueType, typename MemorySpace>
+void print_matrix(const cusp::array1d<ValueType, MemorySpace>& dense)
 {
     std::cout << "array1d <" << dense.size() << ">\n";
 

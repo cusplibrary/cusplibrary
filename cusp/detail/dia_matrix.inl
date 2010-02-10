@@ -25,13 +25,13 @@ namespace cusp
 //////////////////
         
 // construct empty matrix
-template <typename IndexType, typename ValueType, class SpaceOrAlloc>
-dia_matrix<IndexType,ValueType,SpaceOrAlloc>
+template <typename IndexType, typename ValueType, class MemorySpace>
+dia_matrix<IndexType,ValueType,MemorySpace>
     ::dia_matrix() {}
 
 // construct matrix with given shape and number of entries
-template <typename IndexType, typename ValueType, class SpaceOrAlloc>
-dia_matrix<IndexType,ValueType,SpaceOrAlloc>
+template <typename IndexType, typename ValueType, class MemorySpace>
+dia_matrix<IndexType,ValueType,MemorySpace>
     ::dia_matrix(IndexType num_rows, IndexType num_cols, IndexType num_entries,
                  IndexType num_diagonals, IndexType alignment)
         : detail::matrix_base<IndexType>(num_rows, num_cols, num_entries),
@@ -39,17 +39,17 @@ dia_matrix<IndexType,ValueType,SpaceOrAlloc>
           values(detail::round_up(num_rows, alignment), num_diagonals) {}
 
 // construct from another dia_matrix
-template <typename IndexType, typename ValueType, class SpaceOrAlloc>
-template <typename IndexType2, typename ValueType2, typename SpaceOrAlloc2>
-dia_matrix<IndexType,ValueType,SpaceOrAlloc>
-    ::dia_matrix(const dia_matrix<IndexType2, ValueType2, SpaceOrAlloc2>& matrix)
+template <typename IndexType, typename ValueType, class MemorySpace>
+template <typename IndexType2, typename ValueType2, typename MemorySpace2>
+dia_matrix<IndexType,ValueType,MemorySpace>
+    ::dia_matrix(const dia_matrix<IndexType2, ValueType2, MemorySpace2>& matrix)
         : detail::matrix_base<IndexType>(matrix),
           diagonal_offsets(matrix.diagonal_offsets), values(matrix.values) {}
 
 // construct from a different matrix format
-template <typename IndexType, typename ValueType, class SpaceOrAlloc>
+template <typename IndexType, typename ValueType, class MemorySpace>
 template <typename MatrixType>
-dia_matrix<IndexType,ValueType,SpaceOrAlloc>
+dia_matrix<IndexType,ValueType,MemorySpace>
     ::dia_matrix(const MatrixType& matrix)
     {
         cusp::detail::convert(*this, matrix);
@@ -60,9 +60,9 @@ dia_matrix<IndexType,ValueType,SpaceOrAlloc>
 //////////////////////
 
 // resize matrix shape and storage
-template <typename IndexType, typename ValueType, class SpaceOrAlloc>
+template <typename IndexType, typename ValueType, class MemorySpace>
     void
-    dia_matrix<IndexType,ValueType,SpaceOrAlloc>
+    dia_matrix<IndexType,ValueType,MemorySpace>
     ::resize(IndexType num_rows, IndexType num_cols, IndexType num_entries,
              IndexType num_diagonals, IndexType alignment)
     {
@@ -75,9 +75,9 @@ template <typename IndexType, typename ValueType, class SpaceOrAlloc>
     }
 
 // swap matrix contents
-template <typename IndexType, typename ValueType, class SpaceOrAlloc>
+template <typename IndexType, typename ValueType, class MemorySpace>
     void
-    dia_matrix<IndexType,ValueType,SpaceOrAlloc>
+    dia_matrix<IndexType,ValueType,MemorySpace>
     ::swap(dia_matrix& matrix)
     {
         detail::matrix_base<IndexType>::swap(matrix);
@@ -87,11 +87,11 @@ template <typename IndexType, typename ValueType, class SpaceOrAlloc>
     }
 
 // copy another dia_matrix
-template <typename IndexType, typename ValueType, class SpaceOrAlloc>
-template <typename IndexType2, typename ValueType2, typename SpaceOrAlloc2>
-    dia_matrix<IndexType,ValueType,SpaceOrAlloc>&
-    dia_matrix<IndexType,ValueType,SpaceOrAlloc>
-    ::operator=(const dia_matrix<IndexType2, ValueType2, SpaceOrAlloc2>& matrix)
+template <typename IndexType, typename ValueType, class MemorySpace>
+template <typename IndexType2, typename ValueType2, typename MemorySpace2>
+    dia_matrix<IndexType,ValueType,MemorySpace>&
+    dia_matrix<IndexType,ValueType,MemorySpace>
+    ::operator=(const dia_matrix<IndexType2, ValueType2, MemorySpace2>& matrix)
     {
         this->num_rows         = matrix.num_rows;
         this->num_cols         = matrix.num_cols;
@@ -103,10 +103,10 @@ template <typename IndexType2, typename ValueType2, typename SpaceOrAlloc2>
     }
 
 // copy a matrix in a different format
-template <typename IndexType, typename ValueType, class SpaceOrAlloc>
+template <typename IndexType, typename ValueType, class MemorySpace>
 template <typename MatrixType>
-    dia_matrix<IndexType,ValueType,SpaceOrAlloc>&
-    dia_matrix<IndexType,ValueType,SpaceOrAlloc>
+    dia_matrix<IndexType,ValueType,MemorySpace>&
+    dia_matrix<IndexType,ValueType,MemorySpace>
     ::operator=(const MatrixType& matrix)
     {
         cusp::detail::convert(*this, matrix);

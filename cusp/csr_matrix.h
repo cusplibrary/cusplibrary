@@ -33,18 +33,19 @@ namespace cusp
  *  \ingroup container_classes
  *  \{
  */
-    template<typename IndexType, class SpaceOrAlloc>
+    template<typename IndexType, class MemorySpace>
     class csr_pattern : public detail::matrix_base<IndexType>
     {
         public:
-        typedef typename cusp::choose_memory_allocator<IndexType, SpaceOrAlloc>::type index_allocator_type;
-        typedef typename cusp::allocator_space<index_allocator_type>::type memory_space;
-        typedef typename cusp::csr_pattern<IndexType, SpaceOrAlloc> pattern_type;
+        typedef MemorySpace memory_space;
+
+        typedef typename cusp::choose_memory_allocator<IndexType, MemorySpace>::type index_allocator_type;
+        typedef typename cusp::csr_pattern<IndexType, MemorySpace> pattern_type;
         
         typedef IndexType index_type;
        
-        template<typename SpaceOrAlloc2>
-        struct rebind { typedef csr_pattern<IndexType, SpaceOrAlloc2> type; };
+        template<typename MemorySpace2>
+        struct rebind { typedef csr_pattern<IndexType, MemorySpace2> type; };
 
         cusp::array1d<IndexType, index_allocator_type> row_offsets;
         cusp::array1d<IndexType, index_allocator_type> column_indices;
@@ -53,8 +54,8 @@ namespace cusp
     
         csr_pattern(IndexType num_rows, IndexType num_cols, IndexType num_entries);
         
-        template <typename IndexType2, typename SpaceOrAlloc2>
-        csr_pattern(const csr_pattern<IndexType2,SpaceOrAlloc2>& pattern);
+        template <typename IndexType2, typename MemorySpace2>
+        csr_pattern(const csr_pattern<IndexType2,MemorySpace2>& pattern);
 
         void resize(IndexType num_rows, IndexType num_cols, IndexType num_entries);
         
@@ -66,7 +67,7 @@ namespace cusp
  *
  * \tparam IndexType Type used for matrix indices (e.g. \c int).
  * \tparam ValueType Type used for matrix values (e.g. \c float).
- * \tparam SpaceOrAlloc Either a memory space such as \c cusp::host_memory or 
+ * \tparam MemorySpace Either a memory space such as \c cusp::host_memory or 
  *         \c cusp::device_memory or a specific memory allocator type such as
  *         \c thrust::device_malloc_allocator<T>.
  *
@@ -108,17 +109,17 @@ namespace cusp
  *  \endcode
  *
  */
-    template <typename IndexType, typename ValueType, class SpaceOrAlloc>
-    class csr_matrix : public csr_pattern<IndexType, SpaceOrAlloc>
+    template <typename IndexType, typename ValueType, class MemorySpace>
+    class csr_matrix : public csr_pattern<IndexType, MemorySpace>
     {
         public:
-        typedef typename cusp::choose_memory_allocator<ValueType, SpaceOrAlloc>::type value_allocator_type;
-        typedef typename cusp::csr_matrix<IndexType, ValueType, SpaceOrAlloc> matrix_type;
+        typedef typename cusp::choose_memory_allocator<ValueType, MemorySpace>::type value_allocator_type;
+        typedef typename cusp::csr_matrix<IndexType, ValueType, MemorySpace> matrix_type;
     
         typedef ValueType value_type;
         
-        template<typename SpaceOrAlloc2>
-        struct rebind { typedef csr_matrix<IndexType, ValueType, SpaceOrAlloc2> type; };
+        template<typename MemorySpace2>
+        struct rebind { typedef csr_matrix<IndexType, ValueType, MemorySpace2> type; };
         
         /*! Storage for the nonzero entries of the CSR data structure.
          */
@@ -140,8 +141,8 @@ namespace cusp
          *
          *  \param matrix Another \p csr_matrix.
          */
-        template <typename IndexType2, typename ValueType2, typename SpaceOrAlloc2>
-        csr_matrix(const csr_matrix<IndexType2, ValueType2, SpaceOrAlloc2>& matrix);
+        template <typename IndexType2, typename ValueType2, typename MemorySpace2>
+        csr_matrix(const csr_matrix<IndexType2, ValueType2, MemorySpace2>& matrix);
         
         /*! Construct a \p csr_matrix from another matrix format.
          *
@@ -162,8 +163,8 @@ namespace cusp
          *
          *  \param matrix Another \p csr_matrix with possibly different IndexType and ValueType.
          */
-        template <typename IndexType2, typename ValueType2, typename SpaceOrAlloc2>
-        csr_matrix& operator=(const csr_matrix<IndexType2, ValueType2, SpaceOrAlloc2>& matrix);
+        template <typename IndexType2, typename ValueType2, typename MemorySpace2>
+        csr_matrix& operator=(const csr_matrix<IndexType2, ValueType2, MemorySpace2>& matrix);
 
         /*! Assignment from another matrix format.
          *

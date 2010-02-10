@@ -24,47 +24,47 @@ namespace cusp
 //////////////////
         
 // construct empty matrix
-template<typename IndexType, class SpaceOrAlloc>
-csr_pattern<IndexType,SpaceOrAlloc>
+template<typename IndexType, class MemorySpace>
+csr_pattern<IndexType,MemorySpace>
     ::csr_pattern() {}
 
-template <typename IndexType, typename ValueType, class SpaceOrAlloc>
-csr_matrix<IndexType,ValueType,SpaceOrAlloc>
+template <typename IndexType, typename ValueType, class MemorySpace>
+csr_matrix<IndexType,ValueType,MemorySpace>
     ::csr_matrix()
-        : csr_pattern<IndexType,SpaceOrAlloc>() {}
+        : csr_pattern<IndexType,MemorySpace>() {}
 
 // construct matrix with given shape and number of entries
-template<typename IndexType, class SpaceOrAlloc>
-csr_pattern<IndexType,SpaceOrAlloc>
+template<typename IndexType, class MemorySpace>
+csr_pattern<IndexType,MemorySpace>
     :: csr_pattern(IndexType num_rows, IndexType num_cols, IndexType num_entries)
         : detail::matrix_base<IndexType>(num_rows, num_cols, num_entries),
           row_offsets(num_rows + 1), column_indices(num_entries) {}
 
-template <typename IndexType, typename ValueType, class SpaceOrAlloc>
-csr_matrix<IndexType,ValueType,SpaceOrAlloc>
+template <typename IndexType, typename ValueType, class MemorySpace>
+csr_matrix<IndexType,ValueType,MemorySpace>
     ::csr_matrix(IndexType num_rows, IndexType num_cols, IndexType num_entries)
-        : csr_pattern<IndexType,SpaceOrAlloc>(num_rows, num_cols, num_entries),
+        : csr_pattern<IndexType,MemorySpace>(num_rows, num_cols, num_entries),
           values(num_entries) {}
 
 // construct from another matrix
-template<typename IndexType, class SpaceOrAlloc>
-template <typename IndexType2, typename SpaceOrAlloc2>
-csr_pattern<IndexType,SpaceOrAlloc>
-    :: csr_pattern(const csr_pattern<IndexType2,SpaceOrAlloc2>& pattern)
+template<typename IndexType, class MemorySpace>
+template <typename IndexType2, typename MemorySpace2>
+csr_pattern<IndexType,MemorySpace>
+    :: csr_pattern(const csr_pattern<IndexType2,MemorySpace2>& pattern)
         : detail::matrix_base<IndexType>(pattern),
           row_offsets(pattern.row_offsets), column_indices(pattern.column_indices) {}
 
-template <typename IndexType, typename ValueType, class SpaceOrAlloc>
-template <typename IndexType2, typename ValueType2, typename SpaceOrAlloc2>
-csr_matrix<IndexType,ValueType,SpaceOrAlloc>
-    ::csr_matrix(const csr_matrix<IndexType2, ValueType2, SpaceOrAlloc2>& matrix)
-        : csr_pattern<IndexType,SpaceOrAlloc>(matrix),
+template <typename IndexType, typename ValueType, class MemorySpace>
+template <typename IndexType2, typename ValueType2, typename MemorySpace2>
+csr_matrix<IndexType,ValueType,MemorySpace>
+    ::csr_matrix(const csr_matrix<IndexType2, ValueType2, MemorySpace2>& matrix)
+        : csr_pattern<IndexType,MemorySpace>(matrix),
           values(matrix.values) {}
 
 // construct from a different matrix format
-template <typename IndexType, typename ValueType, class SpaceOrAlloc>
+template <typename IndexType, typename ValueType, class MemorySpace>
 template <typename MatrixType>
-csr_matrix<IndexType,ValueType,SpaceOrAlloc>
+csr_matrix<IndexType,ValueType,MemorySpace>
     ::csr_matrix(const MatrixType& matrix)
     {
         cusp::detail::convert(*this, matrix);
@@ -75,9 +75,9 @@ csr_matrix<IndexType,ValueType,SpaceOrAlloc>
 //////////////////////
 
 // resize matrix shape and storage
-template <typename IndexType, class SpaceOrAlloc>
+template <typename IndexType, class MemorySpace>
     void
-    csr_pattern<IndexType,SpaceOrAlloc>
+    csr_pattern<IndexType,MemorySpace>
     ::resize(IndexType num_rows, IndexType num_cols, IndexType num_entries)
     {
         this->num_rows    = num_rows;
@@ -88,19 +88,19 @@ template <typename IndexType, class SpaceOrAlloc>
         column_indices.resize(num_entries);
     }
 
-template <typename IndexType, typename ValueType, class SpaceOrAlloc>
+template <typename IndexType, typename ValueType, class MemorySpace>
     void
-    csr_matrix<IndexType,ValueType,SpaceOrAlloc>
+    csr_matrix<IndexType,ValueType,MemorySpace>
     ::resize(IndexType num_rows, IndexType num_cols, IndexType num_entries)
     {
-        csr_pattern<IndexType,SpaceOrAlloc>::resize(num_rows, num_cols, num_entries);
+        csr_pattern<IndexType,MemorySpace>::resize(num_rows, num_cols, num_entries);
         values.resize(num_entries);
     }
 
 // swap matrix contents
-template <typename IndexType, class SpaceOrAlloc>
+template <typename IndexType, class MemorySpace>
     void
-    csr_pattern<IndexType,SpaceOrAlloc>
+    csr_pattern<IndexType,MemorySpace>
     ::swap(csr_pattern& pattern)
     {
         detail::matrix_base<IndexType>::swap(pattern);
@@ -108,20 +108,20 @@ template <typename IndexType, class SpaceOrAlloc>
         column_indices.swap(pattern.column_indices);
     }
 
-template <typename IndexType, typename ValueType, class SpaceOrAlloc>
+template <typename IndexType, typename ValueType, class MemorySpace>
     void
-    csr_matrix<IndexType,ValueType,SpaceOrAlloc>
+    csr_matrix<IndexType,ValueType,MemorySpace>
     ::swap(csr_matrix& matrix)
     {
-        csr_pattern<IndexType,SpaceOrAlloc>::swap(matrix);
+        csr_pattern<IndexType,MemorySpace>::swap(matrix);
         values.swap(matrix.values);
     }
 
-template <typename IndexType, typename ValueType, class SpaceOrAlloc>
-template <typename IndexType2, typename ValueType2, typename SpaceOrAlloc2>
-    csr_matrix<IndexType,ValueType,SpaceOrAlloc>&
-    csr_matrix<IndexType,ValueType,SpaceOrAlloc>
-    ::operator=(const csr_matrix<IndexType2, ValueType2, SpaceOrAlloc2>& matrix)
+template <typename IndexType, typename ValueType, class MemorySpace>
+template <typename IndexType2, typename ValueType2, typename MemorySpace2>
+    csr_matrix<IndexType,ValueType,MemorySpace>&
+    csr_matrix<IndexType,ValueType,MemorySpace>
+    ::operator=(const csr_matrix<IndexType2, ValueType2, MemorySpace2>& matrix)
     {
         // TODO use csr_pattern::operator= or csr_pattern::assign()
         this->num_rows       = matrix.num_rows;
@@ -135,10 +135,10 @@ template <typename IndexType2, typename ValueType2, typename SpaceOrAlloc2>
     }
 
 
-template <typename IndexType, typename ValueType, class SpaceOrAlloc>
+template <typename IndexType, typename ValueType, class MemorySpace>
 template <typename MatrixType>
-    csr_matrix<IndexType,ValueType,SpaceOrAlloc>&
-    csr_matrix<IndexType,ValueType,SpaceOrAlloc>
+    csr_matrix<IndexType,ValueType,MemorySpace>&
+    csr_matrix<IndexType,ValueType,MemorySpace>
     ::operator=(const MatrixType& matrix)
     {
         cusp::detail::convert(*this, matrix);

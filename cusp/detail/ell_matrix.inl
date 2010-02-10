@@ -25,49 +25,49 @@ namespace cusp
 //////////////////
         
 // construct empty matrix
-template<typename IndexType, class SpaceOrAlloc>
-ell_pattern<IndexType,SpaceOrAlloc>
+template<typename IndexType, class MemorySpace>
+ell_pattern<IndexType,MemorySpace>
     ::ell_pattern() {}
 
-template <typename IndexType, typename ValueType, class SpaceOrAlloc>
-ell_matrix<IndexType,ValueType,SpaceOrAlloc>
+template <typename IndexType, typename ValueType, class MemorySpace>
+ell_matrix<IndexType,ValueType,MemorySpace>
     ::ell_matrix()
-        : ell_pattern<IndexType,SpaceOrAlloc>() {}
+        : ell_pattern<IndexType,MemorySpace>() {}
 
 // construct matrix with given shape and number of entries
-template<typename IndexType, class SpaceOrAlloc>
-ell_pattern<IndexType,SpaceOrAlloc>
+template<typename IndexType, class MemorySpace>
+ell_pattern<IndexType,MemorySpace>
     ::ell_pattern(IndexType num_rows, IndexType num_cols, IndexType num_entries,
                   IndexType num_entries_per_row, IndexType alignment)
         : detail::matrix_base<IndexType>(num_rows, num_cols, num_entries),
           column_indices(detail::round_up(num_rows, alignment), num_entries_per_row) {}
 
-template <typename IndexType, typename ValueType, class SpaceOrAlloc>
-ell_matrix<IndexType,ValueType,SpaceOrAlloc>
+template <typename IndexType, typename ValueType, class MemorySpace>
+ell_matrix<IndexType,ValueType,MemorySpace>
     ::ell_matrix(IndexType num_rows, IndexType num_cols, IndexType num_entries,
                  IndexType num_entries_per_row, IndexType alignment)
-        : ell_pattern<IndexType,SpaceOrAlloc>(num_rows, num_cols, num_entries, num_entries_per_row, alignment),
+        : ell_pattern<IndexType,MemorySpace>(num_rows, num_cols, num_entries, num_entries_per_row, alignment),
           values(detail::round_up(num_rows, alignment), num_entries_per_row) {}
 
 // construct from another matrix
-template<typename IndexType, class SpaceOrAlloc>
-template <typename IndexType2, typename SpaceOrAlloc2>
-ell_pattern<IndexType,SpaceOrAlloc>
-    :: ell_pattern(const ell_pattern<IndexType2,SpaceOrAlloc2>& pattern)
+template<typename IndexType, class MemorySpace>
+template <typename IndexType2, typename MemorySpace2>
+ell_pattern<IndexType,MemorySpace>
+    :: ell_pattern(const ell_pattern<IndexType2,MemorySpace2>& pattern)
         : detail::matrix_base<IndexType>(pattern),
           column_indices(pattern.column_indices) {}
 
-template <typename IndexType, typename ValueType, class SpaceOrAlloc>
-template <typename IndexType2, typename ValueType2, typename SpaceOrAlloc2>
-ell_matrix<IndexType,ValueType,SpaceOrAlloc>
-    ::ell_matrix(const ell_matrix<IndexType2, ValueType2, SpaceOrAlloc2>& matrix)
-        : ell_pattern<IndexType,SpaceOrAlloc>(matrix),
+template <typename IndexType, typename ValueType, class MemorySpace>
+template <typename IndexType2, typename ValueType2, typename MemorySpace2>
+ell_matrix<IndexType,ValueType,MemorySpace>
+    ::ell_matrix(const ell_matrix<IndexType2, ValueType2, MemorySpace2>& matrix)
+        : ell_pattern<IndexType,MemorySpace>(matrix),
           values(matrix.values) {}
 
 // construct from a different matrix format
-template <typename IndexType, typename ValueType, class SpaceOrAlloc>
+template <typename IndexType, typename ValueType, class MemorySpace>
 template <typename MatrixType>
-ell_matrix<IndexType,ValueType,SpaceOrAlloc>
+ell_matrix<IndexType,ValueType,MemorySpace>
     ::ell_matrix(const MatrixType& matrix)
     {
         cusp::detail::convert(*this, matrix);
@@ -78,9 +78,9 @@ ell_matrix<IndexType,ValueType,SpaceOrAlloc>
 //////////////////////
 
 // resize matrix shape and storage
-template <typename IndexType, class SpaceOrAlloc>
+template <typename IndexType, class MemorySpace>
     void
-    ell_pattern<IndexType,SpaceOrAlloc>
+    ell_pattern<IndexType,MemorySpace>
     ::resize(IndexType num_rows, IndexType num_cols, IndexType num_entries,
              IndexType num_entries_per_row, IndexType alignment)
     {
@@ -91,22 +91,22 @@ template <typename IndexType, class SpaceOrAlloc>
         column_indices.resize(detail::round_up(num_rows, alignment), num_entries_per_row);
     }
 
-template <typename IndexType, typename ValueType, class SpaceOrAlloc>
+template <typename IndexType, typename ValueType, class MemorySpace>
     void
-    ell_matrix<IndexType,ValueType,SpaceOrAlloc>
+    ell_matrix<IndexType,ValueType,MemorySpace>
     ::resize(IndexType num_rows, IndexType num_cols, IndexType num_entries,
              IndexType num_entries_per_row, IndexType alignment)
     {
-        ell_pattern<IndexType,SpaceOrAlloc>::resize(num_rows, num_cols, num_entries,
+        ell_pattern<IndexType,MemorySpace>::resize(num_rows, num_cols, num_entries,
                                                     num_entries_per_row, alignment);
 
         values.resize(detail::round_up(num_rows, alignment), num_entries_per_row);
     }
 
 // swap matrix contents
-template <typename IndexType, class SpaceOrAlloc>
+template <typename IndexType, class MemorySpace>
     void
-    ell_pattern<IndexType,SpaceOrAlloc>
+    ell_pattern<IndexType,MemorySpace>
     ::swap(ell_pattern& pattern)
     {
         detail::matrix_base<IndexType>::swap(pattern);
@@ -114,20 +114,20 @@ template <typename IndexType, class SpaceOrAlloc>
         column_indices.swap(pattern.column_indices);
     }
 
-template <typename IndexType, typename ValueType, class SpaceOrAlloc>
+template <typename IndexType, typename ValueType, class MemorySpace>
     void
-    ell_matrix<IndexType,ValueType,SpaceOrAlloc>
+    ell_matrix<IndexType,ValueType,MemorySpace>
     ::swap(ell_matrix& matrix)
     {
-        ell_pattern<IndexType,SpaceOrAlloc>::swap(matrix);
+        ell_pattern<IndexType,MemorySpace>::swap(matrix);
         values.swap(matrix.values);
     }
 
-template <typename IndexType, typename ValueType, class SpaceOrAlloc>
-template <typename IndexType2, typename ValueType2, typename SpaceOrAlloc2>
-    ell_matrix<IndexType,ValueType,SpaceOrAlloc>&
-    ell_matrix<IndexType,ValueType,SpaceOrAlloc>
-    ::operator=(const ell_matrix<IndexType2, ValueType2, SpaceOrAlloc2>& matrix)
+template <typename IndexType, typename ValueType, class MemorySpace>
+template <typename IndexType2, typename ValueType2, typename MemorySpace2>
+    ell_matrix<IndexType,ValueType,MemorySpace>&
+    ell_matrix<IndexType,ValueType,MemorySpace>
+    ::operator=(const ell_matrix<IndexType2, ValueType2, MemorySpace2>& matrix)
     {
         // TODO use ell_pattern::operator= or ell_pattern::assign()
         this->num_rows            = matrix.num_rows;
@@ -139,10 +139,10 @@ template <typename IndexType2, typename ValueType2, typename SpaceOrAlloc2>
         return *this;
     }
 
-template <typename IndexType, typename ValueType, class SpaceOrAlloc>
+template <typename IndexType, typename ValueType, class MemorySpace>
 template <typename MatrixType>
-    ell_matrix<IndexType,ValueType,SpaceOrAlloc>&
-    ell_matrix<IndexType,ValueType,SpaceOrAlloc>
+    ell_matrix<IndexType,ValueType,MemorySpace>&
+    ell_matrix<IndexType,ValueType,MemorySpace>
     ::operator=(const MatrixType& matrix)
     {
         cusp::detail::convert(*this, matrix);

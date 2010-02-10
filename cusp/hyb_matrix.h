@@ -25,25 +25,26 @@
 namespace cusp
 {
     // Forward definitions
-    template <typename IndexType, typename ValueType, class SpaceOrAlloc> class ell_matrix;
-    template <typename IndexType, typename ValueType, class SpaceOrAlloc> class coo_matrix;
+    template <typename IndexType, typename ValueType, class MemorySpace> class ell_matrix;
+    template <typename IndexType, typename ValueType, class MemorySpace> class coo_matrix;
 
-    template <typename IndexType, typename ValueType, class SpaceOrAlloc>
+    template <typename IndexType, typename ValueType, class MemorySpace>
     class hyb_matrix : public detail::matrix_base<IndexType>
     {
         public:
         typedef IndexType index_type;
         typedef ValueType value_type;
 
-        typedef typename cusp::choose_memory_allocator<IndexType, SpaceOrAlloc>::type index_allocator_type;
-        typedef typename cusp::choose_memory_allocator<ValueType, SpaceOrAlloc>::type value_allocator_type;
-        typedef typename cusp::allocator_space<index_allocator_type>::type memory_space;
+        typedef MemorySpace memory_space;
 
-        template<typename SpaceOrAlloc2>
-        struct rebind { typedef hyb_matrix<IndexType, ValueType, SpaceOrAlloc2> type; };
+        typedef typename cusp::choose_memory_allocator<IndexType, MemorySpace>::type index_allocator_type;
+        typedef typename cusp::choose_memory_allocator<ValueType, MemorySpace>::type value_allocator_type;
 
-        cusp::ell_matrix<IndexType,ValueType,SpaceOrAlloc> ell;
-        cusp::coo_matrix<IndexType,ValueType,SpaceOrAlloc> coo;
+        template<typename MemorySpace2>
+        struct rebind { typedef hyb_matrix<IndexType, ValueType, MemorySpace2> type; };
+
+        cusp::ell_matrix<IndexType,ValueType,MemorySpace> ell;
+        cusp::coo_matrix<IndexType,ValueType,MemorySpace> coo;
 
         // construct empty matrix
         hyb_matrix();
@@ -54,8 +55,8 @@ namespace cusp
                    IndexType num_entries_per_row, IndexType alignment = 16);
 
         // construct from another hyb_matrix
-        template <typename IndexType2, typename ValueType2, typename SpaceOrAlloc2>
-        hyb_matrix(const hyb_matrix<IndexType2, ValueType2, SpaceOrAlloc2>& matrix);
+        template <typename IndexType2, typename ValueType2, typename MemorySpace2>
+        hyb_matrix(const hyb_matrix<IndexType2, ValueType2, MemorySpace2>& matrix);
         
         // construct from a different matrix format
         template <typename MatrixType>
@@ -67,8 +68,8 @@ namespace cusp
 
         void swap(hyb_matrix& matrix);
         
-        template <typename IndexType2, typename ValueType2, typename SpaceOrAlloc2>
-        hyb_matrix& operator=(const hyb_matrix<IndexType2, ValueType2, SpaceOrAlloc2>& matrix);
+        template <typename IndexType2, typename ValueType2, typename MemorySpace2>
+        hyb_matrix& operator=(const hyb_matrix<IndexType2, ValueType2, MemorySpace2>& matrix);
 
         template <typename MatrixType>
         hyb_matrix& operator=(const MatrixType& matrix);

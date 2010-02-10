@@ -6,9 +6,9 @@
 
 #include <cmath>
 
-template <typename IndexType, typename ValueType, typename SpaceOrAlloc, typename Orientation>
-int lu_factor(cusp::array2d<ValueType,SpaceOrAlloc,Orientation>& A,
-              cusp::array1d<IndexType,SpaceOrAlloc>& pivot)
+template <typename IndexType, typename ValueType, typename MemorySpace, typename Orientation>
+int lu_factor(cusp::array2d<ValueType,MemorySpace,Orientation>& A,
+              cusp::array1d<IndexType,MemorySpace>& pivot)
 {
     const int n = A.num_rows;
 
@@ -55,11 +55,11 @@ int lu_factor(cusp::array2d<ValueType,SpaceOrAlloc,Orientation>& A,
 
 
 
-template <typename IndexType, typename ValueType, typename SpaceOrAlloc, typename Orientation>
-int lu_solve(const cusp::array2d<ValueType,SpaceOrAlloc,Orientation>& A,
-             const cusp::array1d<ValueType,SpaceOrAlloc>& b,
-             const cusp::array1d<IndexType,SpaceOrAlloc>& pivot,
-                   cusp::array1d<ValueType,SpaceOrAlloc>& x)
+template <typename IndexType, typename ValueType, typename MemorySpace, typename Orientation>
+int lu_solve(const cusp::array2d<ValueType,MemorySpace,Orientation>& A,
+             const cusp::array1d<ValueType,MemorySpace>& b,
+             const cusp::array1d<IndexType,MemorySpace>& pivot,
+                   cusp::array1d<ValueType,MemorySpace>& x)
 {
     const int n = A.num_rows;
    
@@ -108,22 +108,22 @@ void TestSolveArray2d(void)
     b[2] = 1.18994714;
     b[3] = 0.61914723;
    
-    std::cout << "\nA" << std::endl;
-    cusp::print_matrix(A);
-    std::cout << "b" << std::endl;
-    cusp::print_matrix(b);
+//    std::cout << "\nA" << std::endl;
+//    cusp::print_matrix(A);
+//    std::cout << "b" << std::endl;
+//    cusp::print_matrix(b);
     
     cusp::array1d<int, cusp::host_memory>   pivot(4);
     cusp::array1d<float, cusp::host_memory> x(4);
     lu_factor(A, pivot);
     lu_solve(A, b, pivot, x);
 
-    std::cout << "LU" << std::endl;
-    cusp::print_matrix(A);
-    std::cout << "pivot" << std::endl;
-    cusp::print_matrix(pivot);
-    std::cout << "x" << std::endl;
-    cusp::print_matrix(x);
+//    std::cout << "LU" << std::endl;
+//    cusp::print_matrix(A);
+//    std::cout << "pivot" << std::endl;
+//    cusp::print_matrix(pivot);
+//    std::cout << "x" << std::endl;
+//    cusp::print_matrix(x);
     
     cusp::array1d<float, cusp::host_memory> expected(4);
     expected[0] = 0.21713221; 

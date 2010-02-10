@@ -26,13 +26,13 @@ namespace cusp
 //////////////////
         
 // construct empty matrix
-template <typename IndexType, typename ValueType, class SpaceOrAlloc>
-hyb_matrix<IndexType,ValueType,SpaceOrAlloc>
+template <typename IndexType, typename ValueType, class MemorySpace>
+hyb_matrix<IndexType,ValueType,MemorySpace>
     ::hyb_matrix() {}
 
 // construct matrix with given shape and number of entries
-template <typename IndexType, typename ValueType, class SpaceOrAlloc>
-hyb_matrix<IndexType,ValueType,SpaceOrAlloc>
+template <typename IndexType, typename ValueType, class MemorySpace>
+hyb_matrix<IndexType,ValueType,MemorySpace>
     ::hyb_matrix(IndexType num_rows, IndexType num_cols,
                  IndexType num_ell_entries, IndexType num_coo_entries,
                  IndexType num_entries_per_row, IndexType alignment)
@@ -41,18 +41,18 @@ hyb_matrix<IndexType,ValueType,SpaceOrAlloc>
           coo(num_rows, num_cols, num_coo_entries) {}
 
 // construct from another matrix
-template <typename IndexType, typename ValueType, class SpaceOrAlloc>
-template <typename IndexType2, typename ValueType2, typename SpaceOrAlloc2>
-hyb_matrix<IndexType,ValueType,SpaceOrAlloc>
-    ::hyb_matrix(const hyb_matrix<IndexType2, ValueType2, SpaceOrAlloc2>& matrix)
+template <typename IndexType, typename ValueType, class MemorySpace>
+template <typename IndexType2, typename ValueType2, typename MemorySpace2>
+hyb_matrix<IndexType,ValueType,MemorySpace>
+    ::hyb_matrix(const hyb_matrix<IndexType2, ValueType2, MemorySpace2>& matrix)
         : detail::matrix_base<IndexType>(matrix),
           ell(matrix.ell),
           coo(matrix.coo) {}
 
 // construct from a different matrix format
-template <typename IndexType, typename ValueType, class SpaceOrAlloc>
+template <typename IndexType, typename ValueType, class MemorySpace>
 template <typename MatrixType>
-hyb_matrix<IndexType,ValueType,SpaceOrAlloc>
+hyb_matrix<IndexType,ValueType,MemorySpace>
     ::hyb_matrix(const MatrixType& matrix)
     {
         cusp::detail::convert(*this, matrix);
@@ -63,9 +63,9 @@ hyb_matrix<IndexType,ValueType,SpaceOrAlloc>
 //////////////////////
         
 // resize matrix shape and storage
-template <typename IndexType, typename ValueType, class SpaceOrAlloc>
+template <typename IndexType, typename ValueType, class MemorySpace>
     void
-    hyb_matrix<IndexType,ValueType,SpaceOrAlloc>
+    hyb_matrix<IndexType,ValueType,MemorySpace>
     ::resize(IndexType num_rows, IndexType num_cols,
              IndexType num_ell_entries, IndexType num_coo_entries,
              IndexType num_entries_per_row, IndexType alignment)
@@ -79,9 +79,9 @@ template <typename IndexType, typename ValueType, class SpaceOrAlloc>
     }
 
 // swap matrix contents
-template <typename IndexType, typename ValueType, class SpaceOrAlloc>
+template <typename IndexType, typename ValueType, class MemorySpace>
     void
-    hyb_matrix<IndexType,ValueType,SpaceOrAlloc>
+    hyb_matrix<IndexType,ValueType,MemorySpace>
     ::swap(hyb_matrix& matrix)
     {
         detail::matrix_base<IndexType>::swap(matrix);
@@ -90,11 +90,11 @@ template <typename IndexType, typename ValueType, class SpaceOrAlloc>
         coo.swap(matrix.coo);
     }
 
-template <typename IndexType, typename ValueType, class SpaceOrAlloc>
-template <typename IndexType2, typename ValueType2, typename SpaceOrAlloc2>
-    hyb_matrix<IndexType,ValueType,SpaceOrAlloc>&
-    hyb_matrix<IndexType,ValueType,SpaceOrAlloc>
-    ::operator=(const hyb_matrix<IndexType2, ValueType2, SpaceOrAlloc2>& matrix)
+template <typename IndexType, typename ValueType, class MemorySpace>
+template <typename IndexType2, typename ValueType2, typename MemorySpace2>
+    hyb_matrix<IndexType,ValueType,MemorySpace>&
+    hyb_matrix<IndexType,ValueType,MemorySpace>
+    ::operator=(const hyb_matrix<IndexType2, ValueType2, MemorySpace2>& matrix)
     {
         this->num_rows    = matrix.num_rows;
         this->num_cols    = matrix.num_cols;
@@ -105,10 +105,10 @@ template <typename IndexType2, typename ValueType2, typename SpaceOrAlloc2>
         return *this;
     }
 
-template <typename IndexType, typename ValueType, class SpaceOrAlloc>
+template <typename IndexType, typename ValueType, class MemorySpace>
 template <typename MatrixType>
-    hyb_matrix<IndexType,ValueType,SpaceOrAlloc>&
-    hyb_matrix<IndexType,ValueType,SpaceOrAlloc>
+    hyb_matrix<IndexType,ValueType,MemorySpace>&
+    hyb_matrix<IndexType,ValueType,MemorySpace>
     ::operator=(const MatrixType& matrix)
     {
         cusp::detail::convert(*this, matrix);

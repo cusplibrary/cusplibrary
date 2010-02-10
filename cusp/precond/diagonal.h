@@ -44,20 +44,20 @@ class diagonal : public linear_operator<ValueType, MemorySpace>
 
 public:
 
-    template<typename IndexType, typename ValueType2, class SpaceOrAlloc>
-    diagonal(const cusp::csr_matrix<IndexType, ValueType2, SpaceOrAlloc>& A);
+    template<typename IndexType2, typename ValueType2, class MemorySpace2>
+    diagonal(const cusp::csr_matrix<IndexType2, ValueType2, MemorySpace2>& A);
 
-    template<typename IndexType, typename ValueType2, class SpaceOrAlloc>
-    diagonal(const cusp::coo_matrix<IndexType, ValueType2, SpaceOrAlloc>& A);
+    template<typename IndexType2, typename ValueType2, class MemorySpace2>
+    diagonal(const cusp::coo_matrix<IndexType2, ValueType2, MemorySpace2>& A);
 
-    template<typename IndexType, typename ValueType2, class SpaceOrAlloc>
-    diagonal(const cusp::ell_matrix<IndexType, ValueType2, SpaceOrAlloc>& A);
+    template<typename IndexType2, typename ValueType2, class MemorySpace2>
+    diagonal(const cusp::ell_matrix<IndexType2, ValueType2, MemorySpace2>& A);
 
-    template<typename IndexType, typename ValueType2, class SpaceOrAlloc>
-    diagonal(const cusp::hyb_matrix<IndexType, ValueType2, SpaceOrAlloc>& A);
+    template<typename IndexType2, typename ValueType2, class MemorySpace2>
+    diagonal(const cusp::hyb_matrix<IndexType2, ValueType2, MemorySpace2>& A);
         
     template <typename VectorType1, typename VectorType2>
-    void multiply(const VectorType1& x, VectorType2& y) const;
+    void operator()(const VectorType1& x, VectorType2& y) const;
 };
 
 } // end namespace precond

@@ -46,9 +46,9 @@ namespace detail
 } // end namespace detail
     
 template <typename ValueType, typename MemorySpace>
-    template<typename IndexType, typename ValueType2, class SpaceOrAlloc>
+    template<typename IndexType2, typename ValueType2, class MemorySpace2>
     diagonal<ValueType, MemorySpace>
-    ::diagonal(const cusp::csr_matrix<IndexType, ValueType2, SpaceOrAlloc>& A)
+    ::diagonal(const cusp::csr_matrix<IndexType2, ValueType2, MemorySpace2>& A)
     {
         // extract the main diagonal
         cusp::detail::extract_diagonal(A, diagonal_reciprocals);
@@ -59,10 +59,10 @@ template <typename ValueType, typename MemorySpace>
     }
         
 template <typename ValueType, typename MemorySpace>
-    template<typename IndexType, typename ValueType2, class SpaceOrAlloc>
+    template<typename IndexType2, typename ValueType2, class MemorySpace2>
     diagonal<ValueType, MemorySpace>
-    ::diagonal(const cusp::coo_matrix<IndexType, ValueType2, SpaceOrAlloc>& A)
-    : diagonal_reciprocals(thrust::min(A.num_rows,A.num_cols), IndexType(0))
+    ::diagonal(const cusp::coo_matrix<IndexType2, ValueType2, MemorySpace2>& A)
+    : diagonal_reciprocals(thrust::min(A.num_rows,A.num_cols), ValueType(0))
     {
         // extract the main diagonal
         cusp::detail::extract_diagonal(A, diagonal_reciprocals);
@@ -73,10 +73,10 @@ template <typename ValueType, typename MemorySpace>
     }
         
 template <typename ValueType, typename MemorySpace>
-    template<typename IndexType, typename ValueType2, class SpaceOrAlloc>
+    template<typename IndexType2, typename ValueType2, class MemorySpace2>
     diagonal<ValueType, MemorySpace>
-    ::diagonal(const cusp::ell_matrix<IndexType, ValueType2, SpaceOrAlloc>& A)
-    : diagonal_reciprocals(thrust::min(A.num_rows,A.num_cols), IndexType(0))
+    ::diagonal(const cusp::ell_matrix<IndexType2, ValueType2, MemorySpace2>& A)
+    : diagonal_reciprocals(thrust::min(A.num_rows,A.num_cols), ValueType(0))
     {
         // extract the main diagonal
         cusp::detail::extract_diagonal(A, diagonal_reciprocals);
@@ -87,10 +87,10 @@ template <typename ValueType, typename MemorySpace>
     }
         
 template <typename ValueType, typename MemorySpace>
-    template<typename IndexType, typename ValueType2, class SpaceOrAlloc>
+    template<typename IndexType2, typename ValueType2, class MemorySpace2>
     diagonal<ValueType, MemorySpace>
-    ::diagonal(const cusp::hyb_matrix<IndexType, ValueType2, SpaceOrAlloc>& A)
-    : diagonal_reciprocals(thrust::min(A.num_rows,A.num_cols), IndexType(0))
+    ::diagonal(const cusp::hyb_matrix<IndexType2, ValueType2, MemorySpace2>& A)
+    : diagonal_reciprocals(thrust::min(A.num_rows,A.num_cols), ValueType(0))
     {
         // extract the main diagonal
         cusp::detail::extract_diagonal(A.coo, diagonal_reciprocals);
@@ -104,7 +104,7 @@ template <typename ValueType, typename MemorySpace>
 template <typename ValueType, typename MemorySpace>
     template <typename VectorType1, typename VectorType2>
     void diagonal<ValueType, MemorySpace>
-    ::multiply(const VectorType1& x, VectorType2& y) const
+    ::operator()(const VectorType1& x, VectorType2& y) const
     {
         cusp::blas::xmy(diagonal_reciprocals, x, y);
     }

@@ -36,13 +36,13 @@ namespace cusp
 
     // Forward definitions
     struct column_major;
-    template<typename ValueType, class SpaceOrAlloc, class Orientation> class array2d;
+    template<typename ValueType, class MemorySpace, class Orientation> class array2d;
 
 /*! \p dia_matrix : Diagonal matrix format
  *
  * \tparam IndexType Type used for matrix indices (e.g. \c int).
  * \tparam ValueType Type used for matrix values (e.g. \c float).
- * \tparam SpaceOrAlloc Either a memory space such as \c cusp::host_memory or 
+ * \tparam MemorySpace Either a memory space such as \c cusp::host_memory or 
  *         \c cusp::device_memory or a specific memory allocator type such as
  *         \c thrust::device_malloc_allocator<T>.
  *
@@ -84,21 +84,21 @@ namespace cusp
  *  \endcode
  *
  */
-    template <typename IndexType, typename ValueType, class SpaceOrAlloc>
+    template <typename IndexType, typename ValueType, class MemorySpace>
     class dia_matrix : public detail::matrix_base<IndexType>
     {
         public:
 
         // TODO statically assert is_signed<IndexType>
-        typedef IndexType index_type;
-        typedef ValueType value_type;
+        typedef IndexType   index_type;
+        typedef ValueType   value_type;
+        typedef MemorySpace memory_space;
 
-        typedef typename cusp::choose_memory_allocator<IndexType, SpaceOrAlloc>::type index_allocator_type;
-        typedef typename cusp::choose_memory_allocator<ValueType, SpaceOrAlloc>::type value_allocator_type;
-        typedef typename cusp::allocator_space<index_allocator_type>::type memory_space;
+        typedef typename cusp::choose_memory_allocator<IndexType, MemorySpace>::type index_allocator_type;
+        typedef typename cusp::choose_memory_allocator<ValueType, MemorySpace>::type value_allocator_type;
         
-        template<typename SpaceOrAlloc2>
-        struct rebind { typedef dia_matrix<IndexType, ValueType, SpaceOrAlloc2> type; };
+        template<typename MemorySpace2>
+        struct rebind { typedef dia_matrix<IndexType, ValueType, MemorySpace2> type; };
 
         /*! Storage for the diagonal offsets.
          */
@@ -128,8 +128,8 @@ namespace cusp
          *
          *  \param matrix Another \p dia_matrix.
          */
-        template <typename IndexType2, typename ValueType2, typename SpaceOrAlloc2>
-        dia_matrix(const dia_matrix<IndexType2, ValueType2, SpaceOrAlloc2>& matrix);
+        template <typename IndexType2, typename ValueType2, typename MemorySpace2>
+        dia_matrix(const dia_matrix<IndexType2, ValueType2, MemorySpace2>& matrix);
         
         /*! Construct a \p dia_matrix from another matrix format.
          *
@@ -151,8 +151,8 @@ namespace cusp
          *
          *  \param matrix Another \p dia_matrix with possibly different IndexType and ValueType.
          */
-        template <typename IndexType2, typename ValueType2, typename SpaceOrAlloc2>
-        dia_matrix& operator=(const dia_matrix<IndexType2, ValueType2, SpaceOrAlloc2>& matrix);
+        template <typename IndexType2, typename ValueType2, typename MemorySpace2>
+        dia_matrix& operator=(const dia_matrix<IndexType2, ValueType2, MemorySpace2>& matrix);
 
         /*! Assignment from another matrix format.
          *

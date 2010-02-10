@@ -34,19 +34,19 @@ namespace device
 //////////////////////////////////
 template <typename IndexType,
           typename ValueType,
-          typename SpaceOrAlloc>
-void multiply(const cusp::coo_matrix<IndexType,ValueType,SpaceOrAlloc>& A,
-              const cusp::coo_matrix<IndexType,ValueType,SpaceOrAlloc>& B,
-                    cusp::coo_matrix<IndexType,ValueType,SpaceOrAlloc>& C)
+          typename MemorySpace>
+void multiply(const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& A,
+              const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& B,
+                    cusp::coo_matrix<IndexType,ValueType,MemorySpace>& C)
 {
     cusp::detail::generic::multiply(A,B,C);
 }
     
 template <typename ValueType,
-          typename SpaceOrAlloc>
-void multiply(const cusp::array2d<ValueType,SpaceOrAlloc>& A,
-              const cusp::array2d<ValueType,SpaceOrAlloc>& B,
-                    cusp::array2d<ValueType,SpaceOrAlloc>& C)
+          typename MemorySpace>
+void multiply(const cusp::array2d<ValueType,MemorySpace>& A,
+              const cusp::array2d<ValueType,MemorySpace>& B,
+                    cusp::array2d<ValueType,MemorySpace>& C)
 {
     cusp::detail::generic::multiply(A,B,C);
 }
@@ -56,12 +56,12 @@ void multiply(const cusp::array2d<ValueType,SpaceOrAlloc>& A,
 //////////////////////////////////
 template <typename IndexType,
           typename ValueType,
-          typename SpaceOrAlloc1,
-          typename SpaceOrAlloc2,
-          typename SpaceOrAlloc3>
-void multiply(const cusp::coo_matrix<IndexType,ValueType,SpaceOrAlloc1>& A,
-              const cusp::array1d<ValueType,SpaceOrAlloc2>& B,
-                    cusp::array1d<ValueType,SpaceOrAlloc3>& C)
+          typename MemorySpace1,
+          typename MemorySpace2,
+          typename MemorySpace3>
+void multiply(const cusp::coo_matrix<IndexType,ValueType,MemorySpace1>& A,
+              const cusp::array1d<ValueType,MemorySpace2>& B,
+                    cusp::array1d<ValueType,MemorySpace3>& C)
 {
 #ifdef CUSP_USE_TEXTURE_MEMORY    
     cusp::detail::device::spmv_coo_flat_tex(A, thrust::raw_pointer_cast(&B[0]), thrust::raw_pointer_cast(&C[0]));
@@ -72,12 +72,12 @@ void multiply(const cusp::coo_matrix<IndexType,ValueType,SpaceOrAlloc1>& A,
 
 template <typename IndexType,
           typename ValueType,
-          typename SpaceOrAlloc1,
-          typename SpaceOrAlloc2,
-          typename SpaceOrAlloc3>
-void multiply(const cusp::csr_matrix<IndexType,ValueType,SpaceOrAlloc1>& A,
-              const cusp::array1d<ValueType,SpaceOrAlloc2>& B,
-                    cusp::array1d<ValueType,SpaceOrAlloc3>& C)
+          typename MemorySpace1,
+          typename MemorySpace2,
+          typename MemorySpace3>
+void multiply(const cusp::csr_matrix<IndexType,ValueType,MemorySpace1>& A,
+              const cusp::array1d<ValueType,MemorySpace2>& B,
+                    cusp::array1d<ValueType,MemorySpace3>& C)
 {
 #ifdef CUSP_USE_TEXTURE_MEMORY    
     cusp::detail::device::spmv_csr_vector_tex(A, thrust::raw_pointer_cast(&B[0]), thrust::raw_pointer_cast(&C[0]));
@@ -88,12 +88,12 @@ void multiply(const cusp::csr_matrix<IndexType,ValueType,SpaceOrAlloc1>& A,
 
 template <typename IndexType,
           typename ValueType,
-          typename SpaceOrAlloc1,
-          typename SpaceOrAlloc2,
-          typename SpaceOrAlloc3>
-void multiply(const cusp::dia_matrix<IndexType,ValueType,SpaceOrAlloc1>& A,
-              const cusp::array1d<ValueType,SpaceOrAlloc2>& B,
-                    cusp::array1d<ValueType,SpaceOrAlloc3>& C)
+          typename MemorySpace1,
+          typename MemorySpace2,
+          typename MemorySpace3>
+void multiply(const cusp::dia_matrix<IndexType,ValueType,MemorySpace1>& A,
+              const cusp::array1d<ValueType,MemorySpace2>& B,
+                    cusp::array1d<ValueType,MemorySpace3>& C)
 {
 #ifdef CUSP_USE_TEXTURE_MEMORY    
     cusp::detail::device::spmv_dia_tex(A, thrust::raw_pointer_cast(&B[0]), thrust::raw_pointer_cast(&C[0]));
@@ -104,12 +104,12 @@ void multiply(const cusp::dia_matrix<IndexType,ValueType,SpaceOrAlloc1>& A,
 
 template <typename IndexType,
           typename ValueType,
-          typename SpaceOrAlloc1,
-          typename SpaceOrAlloc2,
-          typename SpaceOrAlloc3>
-void multiply(const cusp::ell_matrix<IndexType,ValueType,SpaceOrAlloc1>& A,
-              const cusp::array1d<ValueType,SpaceOrAlloc2>& B,
-                    cusp::array1d<ValueType,SpaceOrAlloc3>& C)
+          typename MemorySpace1,
+          typename MemorySpace2,
+          typename MemorySpace3>
+void multiply(const cusp::ell_matrix<IndexType,ValueType,MemorySpace1>& A,
+              const cusp::array1d<ValueType,MemorySpace2>& B,
+                    cusp::array1d<ValueType,MemorySpace3>& C)
 {
 #ifdef CUSP_USE_TEXTURE_MEMORY    
     cusp::detail::device::spmv_ell_tex(A, thrust::raw_pointer_cast(&B[0]), thrust::raw_pointer_cast(&C[0]));
@@ -120,12 +120,12 @@ void multiply(const cusp::ell_matrix<IndexType,ValueType,SpaceOrAlloc1>& A,
 
 template <typename IndexType,
           typename ValueType,
-          typename SpaceOrAlloc1,
-          typename SpaceOrAlloc2,
-          typename SpaceOrAlloc3>
-void multiply(const cusp::hyb_matrix<IndexType,ValueType,SpaceOrAlloc1>& A,
-              const cusp::array1d<ValueType,SpaceOrAlloc2>& B,
-                    cusp::array1d<ValueType,SpaceOrAlloc3>& C)
+          typename MemorySpace1,
+          typename MemorySpace2,
+          typename MemorySpace3>
+void multiply(const cusp::hyb_matrix<IndexType,ValueType,MemorySpace1>& A,
+              const cusp::array1d<ValueType,MemorySpace2>& B,
+                    cusp::array1d<ValueType,MemorySpace3>& C)
 {
 #ifdef CUSP_USE_TEXTURE_MEMORY    
     cusp::detail::device::spmv_tex(A, thrust::raw_pointer_cast(&B[0]), thrust::raw_pointer_cast(&C[0]));

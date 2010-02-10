@@ -35,19 +35,19 @@ namespace host
 //////////////////////////////////
 template <typename IndexType,
           typename ValueType,
-          typename SpaceOrAlloc>
-void multiply(const cusp::coo_matrix<IndexType,ValueType,SpaceOrAlloc>& A,
-              const cusp::coo_matrix<IndexType,ValueType,SpaceOrAlloc>& B,
-                    cusp::coo_matrix<IndexType,ValueType,SpaceOrAlloc>& C)
+          typename MemorySpace>
+void multiply(const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& A,
+              const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& B,
+                    cusp::coo_matrix<IndexType,ValueType,MemorySpace>& C)
 {
     cusp::detail::generic::multiply(A,B,C);
 }
     
 template <typename ValueType,
-          typename SpaceOrAlloc>
-void multiply(const cusp::array2d<ValueType,SpaceOrAlloc>& A,
-              const cusp::array2d<ValueType,SpaceOrAlloc>& B,
-                    cusp::array2d<ValueType,SpaceOrAlloc>& C)
+          typename MemorySpace>
+void multiply(const cusp::array2d<ValueType,MemorySpace>& A,
+              const cusp::array2d<ValueType,MemorySpace>& B,
+                    cusp::array2d<ValueType,MemorySpace>& C)
 {
     cusp::detail::generic::multiply(A,B,C);
 }
@@ -57,12 +57,12 @@ void multiply(const cusp::array2d<ValueType,SpaceOrAlloc>& A,
 //////////////////////////////////
 template <typename IndexType,
           typename ValueType,
-          typename SpaceOrAlloc1,
-          typename SpaceOrAlloc2,
-          typename SpaceOrAlloc3>
-void multiply(const cusp::coo_matrix<IndexType,ValueType,SpaceOrAlloc1>& A,
-              const cusp::array1d<ValueType,SpaceOrAlloc2>& B,
-                    cusp::array1d<ValueType,SpaceOrAlloc3>& C)
+          typename MemorySpace1,
+          typename MemorySpace2,
+          typename MemorySpace3>
+void multiply(const cusp::coo_matrix<IndexType,ValueType,MemorySpace1>& A,
+              const cusp::array1d<ValueType,MemorySpace2>& B,
+                    cusp::array1d<ValueType,MemorySpace3>& C)
 {
     cusp::detail::host::spmv_coo
         (A.num_rows, A.num_cols, A.num_entries,
@@ -73,12 +73,12 @@ void multiply(const cusp::coo_matrix<IndexType,ValueType,SpaceOrAlloc1>& A,
 
 template <typename IndexType,
           typename ValueType,
-          typename SpaceOrAlloc1,
-          typename SpaceOrAlloc2,
-          typename SpaceOrAlloc3>
-void multiply(const cusp::csr_matrix<IndexType,ValueType,SpaceOrAlloc1>& A,
-              const cusp::array1d<ValueType,SpaceOrAlloc2>& B,
-                    cusp::array1d<ValueType,SpaceOrAlloc3>& C)
+          typename MemorySpace1,
+          typename MemorySpace2,
+          typename MemorySpace3>
+void multiply(const cusp::csr_matrix<IndexType,ValueType,MemorySpace1>& A,
+              const cusp::array1d<ValueType,MemorySpace2>& B,
+                    cusp::array1d<ValueType,MemorySpace3>& C)
 {
     cusp::detail::host::spmv_csr
         (A.num_rows, A.num_cols,
@@ -89,12 +89,12 @@ void multiply(const cusp::csr_matrix<IndexType,ValueType,SpaceOrAlloc1>& A,
 
 template <typename IndexType,
           typename ValueType,
-          typename SpaceOrAlloc1,
-          typename SpaceOrAlloc2,
-          typename SpaceOrAlloc3>
-void multiply(const cusp::dia_matrix<IndexType,ValueType,SpaceOrAlloc1>& A,
-              const cusp::array1d<ValueType,SpaceOrAlloc2>& B,
-                    cusp::array1d<ValueType,SpaceOrAlloc3>& C)
+          typename MemorySpace1,
+          typename MemorySpace2,
+          typename MemorySpace3>
+void multiply(const cusp::dia_matrix<IndexType,ValueType,MemorySpace1>& A,
+              const cusp::array1d<ValueType,MemorySpace2>& B,
+                    cusp::array1d<ValueType,MemorySpace3>& C)
 {
     const IndexType num_diagonals = A.values.num_cols;
     const IndexType stride        = A.values.num_rows;
@@ -108,12 +108,12 @@ void multiply(const cusp::dia_matrix<IndexType,ValueType,SpaceOrAlloc1>& A,
 
 template <typename IndexType,
           typename ValueType,
-          typename SpaceOrAlloc1,
-          typename SpaceOrAlloc2,
-          typename SpaceOrAlloc3>
-void multiply(const cusp::ell_matrix<IndexType,ValueType,SpaceOrAlloc1>& A,
-              const cusp::array1d<ValueType,SpaceOrAlloc2>& B,
-                    cusp::array1d<ValueType,SpaceOrAlloc3>& C)
+          typename MemorySpace1,
+          typename MemorySpace2,
+          typename MemorySpace3>
+void multiply(const cusp::ell_matrix<IndexType,ValueType,MemorySpace1>& A,
+              const cusp::array1d<ValueType,MemorySpace2>& B,
+                    cusp::array1d<ValueType,MemorySpace3>& C)
 {
     const IndexType stride              = A.column_indices.num_rows;
     const IndexType num_entries_per_row = A.column_indices.num_cols;
@@ -127,12 +127,12 @@ void multiply(const cusp::ell_matrix<IndexType,ValueType,SpaceOrAlloc1>& A,
 
 template <typename IndexType,
           typename ValueType,
-          typename SpaceOrAlloc1,
-          typename SpaceOrAlloc2,
-          typename SpaceOrAlloc3>
-void multiply(const cusp::hyb_matrix<IndexType,ValueType,SpaceOrAlloc1>& A,
-              const cusp::array1d<ValueType,SpaceOrAlloc2>& B,
-                    cusp::array1d<ValueType,SpaceOrAlloc3>& C)
+          typename MemorySpace1,
+          typename MemorySpace2,
+          typename MemorySpace3>
+void multiply(const cusp::hyb_matrix<IndexType,ValueType,MemorySpace1>& A,
+              const cusp::array1d<ValueType,MemorySpace2>& B,
+                    cusp::array1d<ValueType,MemorySpace3>& C)
 {
     const IndexType stride              = A.ell.column_indices.num_rows;
     const IndexType num_entries_per_row = A.ell.column_indices.num_cols;

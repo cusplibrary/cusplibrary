@@ -34,17 +34,17 @@ void offsets_to_indices(const OffsetArray& offsets, IndexArray& indices);
 template <typename IndexArray, typename OffsetArray>
 void indices_to_offsets(const IndexArray& indices, OffsetArray& offsets);
     
-template <typename IndexType, typename ValueType, typename SpaceOrAlloc,
+template <typename IndexType, typename ValueType, typename MemorySpace,
           typename ArrayType>
-void extract_diagonal(const cusp::csr_matrix<IndexType,ValueType,SpaceOrAlloc>& A, ArrayType& output);
+void extract_diagonal(const cusp::csr_matrix<IndexType,ValueType,MemorySpace>& A, ArrayType& output);
     
-template <typename IndexType, typename ValueType, typename SpaceOrAlloc,
+template <typename IndexType, typename ValueType, typename MemorySpace,
           typename ArrayType>
-void extract_diagonal(const cusp::coo_matrix<IndexType,ValueType,SpaceOrAlloc>& A, ArrayType& output);
+void extract_diagonal(const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& A, ArrayType& output);
     
-template <typename IndexType, typename ValueType, typename SpaceOrAlloc,
+template <typename IndexType, typename ValueType, typename MemorySpace,
           typename ArrayType>
-void extract_diagonal(const cusp::ell_matrix<IndexType,ValueType,SpaceOrAlloc>& A, ArrayType& output);
+void extract_diagonal(const cusp::ell_matrix<IndexType,ValueType,MemorySpace>& A, ArrayType& output);
 
 } // end namespace detail
 } // end namespace cusp

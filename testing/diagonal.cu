@@ -2,6 +2,7 @@
 
 #include <cusp/precond/diagonal.h>
 #include <cusp/array2d.h>
+#include <cusp/multiply.h>
 
 template <class MatrixType>
 void TestDiagonalPreconditioner(void)
@@ -28,7 +29,11 @@ void TestDiagonalPreconditioner(void)
     MatrixType M(A);
     cusp::precond::diagonal<float, Space> D(M);
 
-    D.multiply(input, output);
+    D(input, output);
+
+    ASSERT_EQUAL(output, expected);
+    
+    cusp::multiply(D, input, output);
 
     ASSERT_EQUAL(output, expected);
 }

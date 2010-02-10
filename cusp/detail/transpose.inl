@@ -33,14 +33,14 @@ namespace cusp
 namespace detail
 {
 
-template <typename IndexType1, typename ValueType1, typename SpaceOrAlloc1,
-          typename IndexType2, typename ValueType2, typename SpaceOrAlloc2>
-void transpose(const cusp::coo_matrix<IndexType1,ValueType1,SpaceOrAlloc1>& A,
-                     cusp::coo_matrix<IndexType2,ValueType2,SpaceOrAlloc2>& At)
+template <typename IndexType1, typename ValueType1, typename MemorySpace1,
+          typename IndexType2, typename ValueType2, typename MemorySpace2>
+void transpose(const cusp::coo_matrix<IndexType1,ValueType1,MemorySpace1>& A,
+                     cusp::coo_matrix<IndexType2,ValueType2,MemorySpace2>& At)
 {
-    cusp::coo_matrix<IndexType2,ValueType2,SpaceOrAlloc2> temp(A.num_cols, A.num_rows, A.num_entries);
+    cusp::coo_matrix<IndexType2,ValueType2,MemorySpace2> temp(A.num_cols, A.num_rows, A.num_entries);
 
-    cusp::array1d<IndexType2,SpaceOrAlloc2> permutation(A.num_entries);
+    cusp::array1d<IndexType2,MemorySpace2> permutation(A.num_entries);
     thrust::sequence(permutation.begin(), permutation.end());
 
     temp.row_indices = A.column_indices;
@@ -60,18 +60,18 @@ void transpose(const cusp::coo_matrix<IndexType1,ValueType1,SpaceOrAlloc1>& A,
 }
 
     
-template <typename IndexType1, typename ValueType1, typename SpaceOrAlloc1,
-          typename IndexType2, typename ValueType2, typename SpaceOrAlloc2>
-void transpose(const cusp::csr_matrix<IndexType1,ValueType1,SpaceOrAlloc1>& A,
-                     cusp::csr_matrix<IndexType2,ValueType2,SpaceOrAlloc2>& At)
+template <typename IndexType1, typename ValueType1, typename MemorySpace1,
+          typename IndexType2, typename ValueType2, typename MemorySpace2>
+void transpose(const cusp::csr_matrix<IndexType1,ValueType1,MemorySpace1>& A,
+                     cusp::csr_matrix<IndexType2,ValueType2,MemorySpace2>& At)
 {
-    cusp::csr_matrix<IndexType2,ValueType2,SpaceOrAlloc2> temp(A.num_cols, A.num_rows, A.num_entries);
+    cusp::csr_matrix<IndexType2,ValueType2,MemorySpace2> temp(A.num_cols, A.num_rows, A.num_entries);
     
-    cusp::array1d<IndexType2,SpaceOrAlloc2> permutation(A.num_entries);
+    cusp::array1d<IndexType2,MemorySpace2> permutation(A.num_entries);
     thrust::sequence(permutation.begin(), permutation.end());
     
     // sort column indices of A
-    cusp::array1d<IndexType2,SpaceOrAlloc2> indices(A.column_indices);
+    cusp::array1d<IndexType2,MemorySpace2> indices(A.column_indices);
     thrust::stable_sort_by_key(indices.begin(), indices.end(), permutation.begin());
 
     // compute row offsets of At
@@ -113,10 +113,10 @@ struct transpose_index : public thrust::unary_function<T, T>
 };
 
     
-template <typename ValueType1, typename SpaceOrAlloc1, typename SourceOrientation,
-          typename ValueType2, typename SpaceOrAlloc2, typename DestinationOrientation>
-void transpose(const cusp::array2d<ValueType1,SpaceOrAlloc1,SourceOrientation>& A,
-                     cusp::array2d<ValueType2,SpaceOrAlloc2,DestinationOrientation>& At)
+template <typename ValueType1, typename MemorySpace1, typename SourceOrientation,
+          typename ValueType2, typename MemorySpace2, typename DestinationOrientation>
+void transpose(const cusp::array2d<ValueType1,MemorySpace1,SourceOrientation>& A,
+                     cusp::array2d<ValueType2,MemorySpace2,DestinationOrientation>& At)
 {
     At.resize(A.num_cols, A.num_rows);
 

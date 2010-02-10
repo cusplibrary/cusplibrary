@@ -70,20 +70,19 @@ namespace cusp
         IndexType index_of(IndexType i, IndexType j, IndexType num_rows, IndexType num_cols, column_major) { return j * num_rows + i; }
     }
 
-    template<typename ValueType, class SpaceOrAlloc, class Orientation = cusp::row_major>
+    template<typename ValueType, class MemorySpace, class Orientation = cusp::row_major>
     struct array2d : public detail::matrix_base<int>
     {
         public:
-        typedef int       index_type;
-        typedef ValueType value_type;
-        
-        typedef typename cusp::choose_memory_allocator<ValueType, SpaceOrAlloc>::type value_allocator_type;
-        typedef typename cusp::allocator_space<value_allocator_type>::type memory_space;
+        typedef int         index_type;
+        typedef ValueType   value_type;
+        typedef MemorySpace memory_space;
+        typedef typename cusp::choose_memory_allocator<ValueType, MemorySpace>::type value_allocator_type;
 
         typedef Orientation orientation;
         
-        template<typename SpaceOrAlloc2>
-        struct rebind { typedef array2d<ValueType, SpaceOrAlloc2, Orientation> type; };
+        template<typename MemorySpace2>
+        struct rebind { typedef array2d<ValueType, MemorySpace2, Orientation> type; };
        
         cusp::array1d<ValueType, value_allocator_type> values;
        
@@ -94,8 +93,8 @@ namespace cusp
         array2d(int num_rows, int num_cols);
         
         // construct from another array2d (with the same Orientation)
-        template <typename ValueType2, typename SpaceOrAlloc2>
-        array2d(const array2d<ValueType2, SpaceOrAlloc2, Orientation>& matrix);
+        template <typename ValueType2, typename MemorySpace2>
+        array2d(const array2d<ValueType2, MemorySpace2, Orientation>& matrix);
         
         // construct from a different matrix format
         template <typename MatrixType>
@@ -115,8 +114,8 @@ namespace cusp
 
         void swap(array2d& matrix);
         
-        template <typename ValueType2, typename SpaceOrAlloc2>
-        array2d& operator=(const array2d<ValueType2, SpaceOrAlloc2, Orientation>& matrix);
+        template <typename ValueType2, typename MemorySpace2>
+        array2d& operator=(const array2d<ValueType2, MemorySpace2, Orientation>& matrix);
 
         template <typename MatrixType>
         array2d& operator=(const MatrixType& matrix);

@@ -33,18 +33,18 @@ namespace cusp
  *  \ingroup container_classes
  *  \{
  */
-    template<typename IndexType, class SpaceOrAlloc>
+    template<typename IndexType, class MemorySpace>
     class coo_pattern : public detail::matrix_base<IndexType>
     {
         public:
         typedef IndexType index_type;
 
-        typedef typename cusp::choose_memory_allocator<IndexType, SpaceOrAlloc>::type index_allocator_type;
-        typedef typename cusp::allocator_space<index_allocator_type>::type memory_space;
-        typedef typename cusp::coo_pattern<IndexType, SpaceOrAlloc> pattern_type;
+        typedef MemorySpace memory_space;
+        typedef typename cusp::choose_memory_allocator<IndexType, MemorySpace>::type index_allocator_type;
+        typedef typename cusp::coo_pattern<IndexType, MemorySpace> pattern_type;
         
-        template<typename SpaceOrAlloc2>
-        struct rebind { typedef coo_pattern<IndexType, SpaceOrAlloc2> type; };
+        template<typename MemorySpace2>
+        struct rebind { typedef coo_pattern<IndexType, MemorySpace2> type; };
 
         cusp::array1d<IndexType, index_allocator_type> row_indices;
         cusp::array1d<IndexType, index_allocator_type> column_indices;
@@ -53,8 +53,8 @@ namespace cusp
 
         coo_pattern(IndexType num_rows, IndexType num_cols, IndexType num_entries);
 
-        template <typename IndexType2, typename SpaceOrAlloc2>
-        coo_pattern(const coo_pattern<IndexType2,SpaceOrAlloc2>& pattern);
+        template <typename IndexType2, typename MemorySpace2>
+        coo_pattern(const coo_pattern<IndexType2,MemorySpace2>& pattern);
         
         void resize(IndexType num_rows, IndexType num_cols, IndexType num_entries);
         
@@ -66,7 +66,7 @@ namespace cusp
  *
  * \tparam IndexType Type used for matrix indices (e.g. \c int).
  * \tparam ValueType Type used for matrix values (e.g. \c float).
- * \tparam SpaceOrAlloc Either a memory space such as \c cusp::host_memory or 
+ * \tparam MemorySpace Either a memory space such as \c cusp::host_memory or 
  *         \c cusp::device_memory or a specific memory allocator type such as
  *         \c thrust::device_malloc_allocator<T>.
  *
@@ -103,17 +103,17 @@ namespace cusp
  *  \endcode
  *
  */
-    template <typename IndexType, typename ValueType, class SpaceOrAlloc>
-    class coo_matrix : public coo_pattern<IndexType, SpaceOrAlloc>
+    template <typename IndexType, typename ValueType, class MemorySpace>
+    class coo_matrix : public coo_pattern<IndexType, MemorySpace>
     {
         public:
         typedef ValueType value_type;
 
-        typedef typename cusp::choose_memory_allocator<ValueType, SpaceOrAlloc>::type value_allocator_type;
-        typedef typename cusp::coo_matrix<IndexType, ValueType, SpaceOrAlloc> matrix_type;
+        typedef typename cusp::choose_memory_allocator<ValueType, MemorySpace>::type value_allocator_type;
+        typedef typename cusp::coo_matrix<IndexType, ValueType, MemorySpace> matrix_type;
         
-        template<typename SpaceOrAlloc2>
-        struct rebind { typedef coo_matrix<IndexType, ValueType, SpaceOrAlloc2> type; };
+        template<typename MemorySpace2>
+        struct rebind { typedef coo_matrix<IndexType, ValueType, MemorySpace2> type; };
    
         /*! Storage for the nonzero entries of the COO data structure.
          */
@@ -135,8 +135,8 @@ namespace cusp
          *
          *  \param matrix Another \p coo_matrix.
          */
-        template <typename IndexType2, typename ValueType2, typename SpaceOrAlloc2>
-        coo_matrix(const coo_matrix<IndexType2, ValueType2, SpaceOrAlloc2>& matrix);
+        template <typename IndexType2, typename ValueType2, typename MemorySpace2>
+        coo_matrix(const coo_matrix<IndexType2, ValueType2, MemorySpace2>& matrix);
         
         /*! Construct a \p coo_matrix from another matrix format.
          *
@@ -157,8 +157,8 @@ namespace cusp
          *
          *  \param matrix Another \p coo_matrix with possibly different IndexType and ValueType.
          */
-        template <typename IndexType2, typename ValueType2, typename SpaceOrAlloc2>
-        coo_matrix& operator=(const coo_matrix<IndexType2, ValueType2, SpaceOrAlloc2>& matrix);
+        template <typename IndexType2, typename ValueType2, typename MemorySpace2>
+        coo_matrix& operator=(const coo_matrix<IndexType2, ValueType2, MemorySpace2>& matrix);
 
         /*! Assignment from another matrix format.
          *
