@@ -7,6 +7,7 @@
 #include "bytes_per_spmv.h"
 
 #include "../timer.h"
+#include <cusp/detail/device/spmv/coo_flat_k.h>
 
 const char * BENCHMARK_OUTPUT_FILE_NAME = "benchmark_output.log";
 
@@ -23,7 +24,8 @@ float check_spmv(HostMatrix& host_matrix, TestMatrix& test_matrix, TestKernel te
     // create host input (x) and output (y) vectors
     cusp::array1d<ValueType,cusp::host_memory> host_x(N);
     cusp::array1d<ValueType,cusp::host_memory> host_y(M);
-    for(IndexType i = 0; i < N; i++) host_x[i] = (rand() % 21) - 10; //(int(i % 21) - 10);
+    //for(IndexType i = 0; i < N; i++) host_x[i] = (rand() % 21) - 10;
+    for(IndexType i = 0; i < N; i++) host_x[i] = (int(i % 21) - 10);
     for(IndexType i = 0; i < M; i++) host_y[i] = 0;
    
     // create test input (x) and output (y) vectors
@@ -37,7 +39,25 @@ float check_spmv(HostMatrix& host_matrix, TestMatrix& test_matrix, TestKernel te
     // compare results
     cusp::array1d<ValueType,cusp::host_memory> test_y_copy(test_y.begin(), test_y.end());
     double error = l2_error(M, thrust::raw_pointer_cast(&test_y_copy[0]), thrust::raw_pointer_cast(&host_y[0]));
-    
+
+//    if (error > 0.0001)
+//    {
+//        for(int i = 0; i < std::min<int>(N,256); i++)
+//            printf("host_x[%5d] = %10.8f\n", i, (float) host_x[i]);
+//        
+//        int limit = 256;
+//        for(int i = 0; i < M; i++)
+//        {
+//            if(std::abs(host_y[i] - test_y[i]) > 0.0)
+//            {
+//                printf("host_y[%5d] = %10.8f   test_y[%5d] = %10.8f\n", i, (float) host_y[i], i, (float) test_y[i]);
+//
+//                if(--limit <= 0)
+//                    break;
+//            }
+//        }
+//    }
+
     return error;
 }
 
@@ -122,6 +142,9 @@ void test_coo(HostMatrix& host_matrix)
     
     test_spmv("coo_flat",     host_matrix, test_matrix_on_host, test_matrix_on_device, cusp::detail::device::spmv_coo_flat    <IndexType,ValueType>);
     test_spmv("coo_flat_tex", host_matrix, test_matrix_on_host, test_matrix_on_device, cusp::detail::device::spmv_coo_flat_tex<IndexType,ValueType>);
+    
+    test_spmv("coo_flat_k",     host_matrix, test_matrix_on_host, test_matrix_on_device, cusp::detail::device::spmv_coo_flat_k    <IndexType,ValueType>);
+    test_spmv("coo_flat_k_tex", host_matrix, test_matrix_on_host, test_matrix_on_device, cusp::detail::device::spmv_coo_flat_k_tex<IndexType,ValueType>);
 }
 
 template <typename HostMatrix>
