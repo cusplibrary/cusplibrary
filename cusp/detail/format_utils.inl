@@ -72,6 +72,30 @@ struct row_operator : public std::unary_function<T,IndexType>
         int step;
 };
 
+
+
+// TODO fuse transform and scatter_if together
+template <typename IndexType, typename ValueType, typename MemorySpace,
+          typename ArrayType>
+void extract_diagonal(const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& A, ArrayType& output)
+{
+    output.resize(thrust::min(A.num_rows, A.num_cols));
+
+    // initialize output to zero
+    thrust::fill(output.begin(), output.end(), ValueType(0));
+
+    // determine which matrix entries correspond to the matrix diagonal
+    cusp::array1d<unsigned int,MemorySpace> is_diagonal(A.num_entries);
+    thrust::transform(A.row_indices.begin(), A.row_indices.end(), A.column_indices.begin(), is_diagonal.begin(), thrust::equal_to<IndexType>());
+
+    // scatter the diagonal values to output
+    thrust::scatter_if(A.values.begin(), A.values.end(),
+                       A.row_indices.begin(),
+                       is_diagonal.begin(),
+                       output.begin());
+}
+
+
 template <typename IndexType, typename ValueType, typename MemorySpace,
           typename ArrayType>
 void extract_diagonal(const cusp::csr_matrix<IndexType,ValueType,MemorySpace>& A, ArrayType& output)
@@ -96,25 +120,43 @@ void extract_diagonal(const cusp::csr_matrix<IndexType,ValueType,MemorySpace>& A
                        output.begin());
 }
 
+
 template <typename IndexType, typename ValueType, typename MemorySpace,
           typename ArrayType>
-void extract_diagonal(const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& A, ArrayType& output)
+void extract_diagonal(const cusp::dia_matrix<IndexType,ValueType,MemorySpace>& A, ArrayType& output)
 {
-    // determine which matrix entries correspond to the matrix diagonal
-    cusp::array1d<unsigned int,MemorySpace> is_diagonal(A.num_entries);
-    thrust::transform(A.row_indices.begin(), A.row_indices.end(), A.column_indices.begin(), is_diagonal.begin(), thrust::equal_to<IndexType>());
+    output.resize(thrust::min(A.num_rows, A.num_cols));
 
-    // scatter the diagonal values to output
-    thrust::scatter_if(A.values.begin(), A.values.end(),
-                       A.row_indices.begin(),
-                       is_diagonal.begin(),
-                       output.begin());
+    // copy diagonal_offsets to host (sometimes unnecessary)
+    cusp::array1d<IndexType,cusp::host_memory> diagonal_offsets(A.diagonal_offsets);
+
+    for(size_t i = 0; i < diagonal_offsets.size(); i++)
+    {
+        if(diagonal_offsets[i] == 0)
+        {
+            // diagonal found, copy to output and return
+            thrust::copy(A.values.values.begin() + A.values.num_rows * i,
+                         A.values.values.begin() + A.values.num_rows * i + output.size(),
+                         output.begin());
+            return;
+        }
+    }
+
+    // no diagonal found
+    thrust::fill(output.begin(), output.end(), ValueType(0));
 }
+
 
 template <typename IndexType, typename ValueType, typename MemorySpace,
           typename ArrayType>
 void extract_diagonal(const cusp::ell_matrix<IndexType,ValueType,MemorySpace>& A, ArrayType& output)
 {
+    output.resize(thrust::min(A.num_rows, A.num_cols));
+
+    // initialize output to zero
+    thrust::fill(output.begin(), output.end(), ValueType(0));
+
+    // compute ELL row indices
     cusp::array1d<IndexType,MemorySpace> row_indices(A.column_indices.values.size());
     thrust::transform(thrust::counting_iterator<int>(0), thrust::counting_iterator<int>(A.column_indices.values.size()),
             row_indices.begin(), row_operator<int,IndexType>(A.column_indices.num_rows));
@@ -128,6 +170,54 @@ void extract_diagonal(const cusp::ell_matrix<IndexType,ValueType,MemorySpace>& A
                        row_indices.begin(),
                        is_diagonal.begin(),
                        output.begin());
+}
+
+template <typename IndexType, typename ValueType, typename MemorySpace,
+          typename ArrayType>
+void extract_diagonal(const cusp::hyb_matrix<IndexType,ValueType,MemorySpace>& A, ArrayType& output)
+{
+    output.resize(thrust::min(A.num_rows, A.num_cols));
+    
+    // initialize output to zero
+    thrust::fill(output.begin(), output.end(), ValueType(0));
+
+    // extract COO diagonal
+    {
+        // determine which matrix entries correspond to the matrix diagonal
+        cusp::array1d<unsigned int,MemorySpace> is_diagonal(A.coo.num_entries);
+        thrust::transform(A.coo.row_indices.begin(), A.coo.row_indices.end(),
+                          A.coo.column_indices.begin(),
+                          is_diagonal.begin(),
+                          thrust::equal_to<IndexType>());
+    
+        // scatter the diagonal values to output
+        thrust::scatter_if(A.coo.values.begin(), A.coo.values.end(),
+                           A.coo.row_indices.begin(),
+                           is_diagonal.begin(),
+                           output.begin());
+    }
+
+    // extract ELL diagonal
+    {
+        // compute ELL row indices
+        cusp::array1d<IndexType,MemorySpace> row_indices(A.ell.column_indices.values.size());
+        thrust::transform(thrust::counting_iterator<int>(0), thrust::counting_iterator<int>(A.ell.column_indices.values.size()),
+                          row_indices.begin(),
+                          row_operator<int,IndexType>(A.ell.column_indices.num_rows));
+
+        // determine which matrix entries correspond to the matrix diagonal
+        cusp::array1d<unsigned int,MemorySpace> is_diagonal(A.ell.column_indices.values.size());
+        thrust::transform(row_indices.begin(), row_indices.end(),
+                          A.ell.column_indices.values.begin(),
+                          is_diagonal.begin(),
+                          thrust::equal_to<IndexType>());
+
+        // scatter the diagonal values to output
+        thrust::scatter_if(A.ell.values.values.begin(), A.ell.values.values.end(),
+                           row_indices.begin(),
+                           is_diagonal.begin(),
+                           output.begin());
+    }
 }
 
 } // end namespace detail

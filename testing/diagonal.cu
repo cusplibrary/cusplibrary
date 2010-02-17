@@ -5,7 +5,7 @@
 #include <cusp/multiply.h>
 
 template <class MatrixType>
-void TestDiagonalPreconditioner(void)
+void _TestDiagonalPreconditioner(void)
 {
     typedef typename MatrixType::memory_space Space;
 
@@ -38,31 +38,10 @@ void TestDiagonalPreconditioner(void)
     ASSERT_EQUAL(output, expected);
 }
 
-template <class Space>
-void TestDiagonalPreconditionerCooMarix(void)
+template <class SparseMatrix>
+void TestDiagonalPreconditioner(void)
 {
-    TestDiagonalPreconditioner< cusp::coo_matrix<int,float,Space> >();
+    _TestDiagonalPreconditioner<SparseMatrix>();
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestDiagonalPreconditionerCooMarix);
-
-template <class Space>
-void TestDiagonalPreconditionerCsrMarix(void)
-{
-    TestDiagonalPreconditioner< cusp::csr_matrix<int,float,Space> >();
-}
-DECLARE_HOST_DEVICE_UNITTEST(TestDiagonalPreconditionerCsrMarix);
-
-template <class Space>
-void TestDiagonalPreconditionerEllMarix(void)
-{
-    TestDiagonalPreconditioner< cusp::ell_matrix<int,float,Space> >();
-}
-DECLARE_HOST_DEVICE_UNITTEST(TestDiagonalPreconditionerEllMarix);
-
-template <class Space>
-void TestDiagonalPreconditionerHybMarix(void)
-{
-    TestDiagonalPreconditioner< cusp::hyb_matrix<int,float,Space> >();
-}
-DECLARE_HOST_DEVICE_UNITTEST(TestDiagonalPreconditionerHybMarix);
+DECLARE_SPARSE_MATRIX_UNITTEST(TestDiagonalPreconditioner);
 

@@ -68,9 +68,13 @@ void TestIndicesToOffsets(void)
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestIndicesToOffsets);
 
-template <class Space>
-void TestCsrExtractDiagonal(void)
+template <class SparseMatrix>
+void _TestExtractDiagonal(void)
 {
+    typedef typename SparseMatrix::index_type   IndexType;
+    typedef typename SparseMatrix::value_type   ValueType;
+    typedef typename SparseMatrix::memory_space Space;
+
     {
         cusp::array2d<float, Space> A(2,2);
         A(0,0) = 1.0;  A(0,1) = 2.0;
@@ -82,37 +86,39 @@ void TestCsrExtractDiagonal(void)
 
         cusp::array1d<float, Space> output;
 
-        cusp::detail::extract_diagonal(cusp::csr_matrix<int, float, Space>(A), output);
+        cusp::detail::extract_diagonal(SparseMatrix(A), output);
 
         ASSERT_EQUAL(output, expected);
     }
     
     {
-        cusp::array2d<float, Space> A(2,2);
-        A(0,0) = 0.0;  A(0,1) = 1.0;
-        A(1,0) = 0.0;  A(1,1) = 2.0;
+        cusp::array2d<float, Space> A(3,4);
+        A(0,0) = 0.0;  A(0,1) = 0.0;  A(0,2) = 4.0;  A(0,3) = 0.0;  
+        A(1,0) = 1.0;  A(1,1) = 2.0;  A(1,2) = 0.0;  A(1,3) = 6.0;
+        A(2,0) = 0.0;  A(2,1) = 3.0;  A(2,2) = 5.0;  A(2,3) = 0.0;
 
-        cusp::array1d<float, Space> expected(2);
+        cusp::array1d<float, Space> expected(3);
         expected[0] = 0.0;
         expected[1] = 2.0;
+        expected[2] = 5.0;
 
         cusp::array1d<float, Space> output;
 
-        cusp::detail::extract_diagonal(cusp::csr_matrix<int, float, Space>(A), output);
+        cusp::detail::extract_diagonal(SparseMatrix(A), output);
 
         ASSERT_EQUAL(output, expected);
     }
     
     {
         cusp::array2d<float, Space> A(5,5);
-        A(0,0) = 0.0;  A(0,1) = 1.0;   A(0,2) = 2.0;   A(0,3) = 0.0;   A(0,4) = 0.0; 
-        A(1,0) = 3.0;  A(1,1) = 4.0;   A(1,2) = 0.0;   A(1,3) = 0.0;   A(1,4) = 5.0;
-        A(2,0) = 0.0;  A(2,1) = 0.0;   A(2,2) = 0.0;   A(2,3) = 0.0;   A(2,4) = 0.0;
-        A(3,0) = 0.0;  A(3,1) = 6.0;   A(3,2) = 7.0;   A(3,3) = 8.0;   A(3,4) = 0.0;
+        A(0,0) = 1.0;  A(0,1) = 1.0;   A(0,2) = 2.0;   A(0,3) = 0.0;   A(0,4) = 0.0; 
+        A(1,0) = 3.0;  A(1,1) = 4.0;   A(1,2) = 0.0;   A(1,3) = 0.0;   A(1,4) = 0.0;
+        A(2,0) = 0.0;  A(2,1) = 6.0;   A(2,2) = 0.0;   A(2,3) = 0.0;   A(2,4) = 0.0;
+        A(3,0) = 0.0;  A(3,1) = 0.0;   A(3,2) = 7.0;   A(3,3) = 8.0;   A(3,4) = 0.0;
         A(4,0) = 0.0;  A(4,1) = 0.0;   A(4,2) = 0.0;   A(4,3) = 0.0;   A(4,4) = 9.0;
 
         cusp::array1d<float, Space> expected(5);
-        expected[0] = 0.0;
+        expected[0] = 1.0;
         expected[1] = 4.0;
         expected[2] = 0.0;
         expected[3] = 8.0;
@@ -120,11 +126,18 @@ void TestCsrExtractDiagonal(void)
 
         cusp::array1d<float, Space> output;
 
-        cusp::detail::extract_diagonal(cusp::csr_matrix<int, float, Space>(A), output);
+        cusp::detail::extract_diagonal(SparseMatrix(A), output);
 
         ASSERT_EQUAL(output, expected);
     }
 
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestCsrExtractDiagonal);
+
+
+template <class SparseMatrix>
+void TestExtractDiagonal(void)
+{
+    _TestExtractDiagonal<SparseMatrix>();
+}
+DECLARE_SPARSE_MATRIX_UNITTEST(TestExtractDiagonal);
 
