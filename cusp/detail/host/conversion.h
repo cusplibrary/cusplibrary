@@ -265,17 +265,17 @@ void dia_to_csr(      cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& d
 {
     IndexType num_entries = 0;
     IndexType num_diagonals = src.diagonal_offsets.size();
-
-    for(IndexType n = 0; n < num_diagonals; n++)
+    
+    // count nonzero entries
+    for(IndexType i = 0; i < src.num_rows; i++)
     {
-        const IndexType k = src.diagonal_offsets[n];  //diagonal offset
+        for(IndexType n = 0; n < num_diagonals; n++)
+        {
+            const IndexType j = i + src.diagonal_offsets[n];
 
-        const IndexType row_start = std::max((IndexType) 0, -k);
-        const IndexType row_end   = std::max(src.num_rows, src.num_cols - k);
-        
-        for(IndexType m = row_start; m < row_end; m++)
-            if(src.values(m,n) != 0)
+            if(j >= 0 && j < src.num_cols && src.values(i,n) != 0)
                 num_entries++;
+        }
     }
 
     dst.resize(src.num_rows, src.num_cols, num_entries);
@@ -283,6 +283,7 @@ void dia_to_csr(      cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& d
     num_entries = 0;
     dst.row_offsets[0] = 0;
 
+    // copy nonzero entries to CSR structure
     for(IndexType i = 0; i < src.num_rows; i++)
     {
         for(IndexType n = 0; n < num_diagonals; n++)
