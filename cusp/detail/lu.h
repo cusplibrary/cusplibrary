@@ -1,10 +1,31 @@
-#include <unittest/unittest.h>
+/*
+ *  Copyright 2008-2009 NVIDIA Corporation
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 
+#pragma once
+
+#include <cusp/array1d.h>
 #include <cusp/array2d.h>
-
-#include <cusp/print.h> // TODO remove
+#include <cusp/linear_operator.h>
 
 #include <cmath>
+
+namespace cusp
+{
+namespace detail
+{
 
 template <typename IndexType, typename ValueType, typename MemorySpace, typename Orientation>
 int lu_factor(cusp::array2d<ValueType,MemorySpace,Orientation>& A,
@@ -57,8 +78,8 @@ int lu_factor(cusp::array2d<ValueType,MemorySpace,Orientation>& A,
 
 template <typename IndexType, typename ValueType, typename MemorySpace, typename Orientation>
 int lu_solve(const cusp::array2d<ValueType,MemorySpace,Orientation>& A,
-             const cusp::array1d<ValueType,MemorySpace>& b,
              const cusp::array1d<IndexType,MemorySpace>& pivot,
+             const cusp::array1d<ValueType,MemorySpace>& b,
                    cusp::array1d<ValueType,MemorySpace>& x)
 {
     const int n = A.num_rows;
@@ -94,48 +115,31 @@ int lu_solve(const cusp::array2d<ValueType,MemorySpace,Orientation>& A,
 }
 
 
-void TestSolveArray2d(void)
+template <typename ValueType, typename MemorySpace>
+class lu_solver : public cusp::linear_operator<ValueType,MemorySpace>
 {
-    cusp::array2d<float, cusp::host_memory> A(4,4);
-    A(0,0) = 0.83228434;  A(0,1) = 0.41106598;  A(0,2) = 0.72609841;  A(0,3) = 0.80428486;
-    A(1,0) = 0.00890590;  A(1,1) = 0.29940800;  A(1,2) = 0.60630740;  A(1,3) = 0.33654542;
-    A(2,0) = 0.22525064;  A(2,1) = 0.93054253;  A(2,2) = 0.37939225;  A(2,3) = 0.16235888;
-    A(3,0) = 0.83911960;  A(3,1) = 0.21176293;  A(3,2) = 0.21010691;  A(3,3) = 0.52911885;
-    
-    cusp::array1d<float, cusp::host_memory> b(4);
-    b[0] = 1.31699541; 
-    b[1] = 0.87768331;
-    b[2] = 1.18994714;
-    b[3] = 0.61914723;
+    cusp::array2d<ValueType,cusp::host_memory> lu;
+    cusp::array1d<int,cusp::host_memory>       pivot;
+
+    public:
+    template <typename Orientation>
+    lu_solver(const cusp::array2d<ValueType,MemorySpace,Orientation>& A) 
+        : linear_operator<ValueType,MemorySpace>(A.num_rows, A.num_cols, A.num_entries)
+    {
+        // TODO assert A is square
+        lu = A;
+        pivot.resize(A.num_rows);
+        lu_factor(lu,pivot);
+    }
    
-//    std::cout << "\nA" << std::endl;
-//    cusp::print_matrix(A);
-//    std::cout << "b" << std::endl;
-//    cusp::print_matrix(b);
-    
-    cusp::array1d<int, cusp::host_memory>   pivot(4);
-    cusp::array1d<float, cusp::host_memory> x(4);
-    lu_factor(A, pivot);
-    lu_solve(A, b, pivot, x);
+    // TODO handle host and device
+    template <typename VectorType1, typename VectorType2>
+    void operator()(const VectorType1& x, VectorType2& y) const
+    {
+        lu_solve(lu, pivot, x, y);
+    }
+};
 
-//    std::cout << "LU" << std::endl;
-//    cusp::print_matrix(A);
-//    std::cout << "pivot" << std::endl;
-//    cusp::print_matrix(pivot);
-//    std::cout << "x" << std::endl;
-//    cusp::print_matrix(x);
-    
-    cusp::array1d<float, cusp::host_memory> expected(4);
-    expected[0] = 0.21713221; 
-    expected[1] = 0.80528582;
-    expected[2] = 0.98416811;
-    expected[3] = 0.11271028;
-
-    ASSERT_EQUAL(std::fabs(expected[0] - x[0]) < 1e-4, true);
-    ASSERT_EQUAL(std::fabs(expected[1] - x[1]) < 1e-4, true);
-    ASSERT_EQUAL(std::fabs(expected[2] - x[2]) < 1e-4, true);
-    ASSERT_EQUAL(std::fabs(expected[3] - x[3]) < 1e-4, true);
-}
-DECLARE_UNITTEST(TestSolveArray2d);
-
+} // end namespace detail
+} // end namespace cusp
 

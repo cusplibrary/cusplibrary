@@ -243,7 +243,7 @@ void __spmv_coo_flat_k(const coo_matrix<IndexType,ValueType,cusp::device_memory>
     }
 
     //TODO Determine optimal CTA_SIZE and max_blocks
-    const unsigned int CTA_SIZE = 32;
+    const unsigned int CTA_SIZE = 128;
     const unsigned int K        = 4;
     
     const unsigned int N = coo.num_entries;
