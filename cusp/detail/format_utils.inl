@@ -14,9 +14,11 @@
  *  limitations under the License.
  */
     
-#include <cusp/csr_matrix.h>
 #include <cusp/coo_matrix.h>
+#include <cusp/csr_matrix.h>
+#include <cusp/dia_matrix.h>
 #include <cusp/ell_matrix.h>
+#include <cusp/hyb_matrix.h>
 
 #include <thrust/fill.h>
 #include <thrust/binary_search.h>

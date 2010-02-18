@@ -18,10 +18,6 @@
  *  \brief Inline file for diagonal.h
  */
 
-#include <cusp/csr_matrix.h>
-#include <cusp/coo_matrix.h>
-#include <cusp/ell_matrix.h>
-#include <cusp/hyb_matrix.h>
 #include <cusp/blas.h>
 #include <cusp/detail/format_utils.h>
 

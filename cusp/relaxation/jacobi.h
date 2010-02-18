@@ -14,25 +14,36 @@
  *  limitations under the License.
  */
 
+/*! \file jacobi.h
+ *  \brief Jacobi relaxation.
+ */
 
 #pragma once
 
+#include <cusp/detail/config.h>
+
+#include <cusp/linear_operator.h>
+
 namespace cusp
 {
-namespace detail
+namespace relaxation
 {
 
-template <typename OffsetArray, typename IndexArray>
-void offsets_to_indices(const OffsetArray& offsets, IndexArray& indices);
+template <typename ValueType, typename MemorySpace>
+class jacobi
+{
+    cusp::array1d<ValueType, MemorySpace> diagonal;
 
-template <typename IndexArray, typename OffsetArray>
-void indices_to_offsets(const IndexArray& indices, OffsetArray& offsets);
-    
-template <typename MatrixType, typename ArrayType>
-void extract_diagonal(const MatrixType& A, ArrayType& output);
-    
-} // end namespace detail
+public:
+    template <typename MatrixType>
+    jacobi(const MatrixType& A);
+        
+    template <typename MatrixType, typename VectorType1, typename VectorType2>
+    void operator()(const MatrixType& A, const VectorType1& b, VectorType2& x);
+};
+
+} // end namespace relaxation
 } // end namespace cusp
 
-#include <cusp/detail/format_utils.inl>
+#include <cusp/relaxation/detail/jacobi.inl>
 
