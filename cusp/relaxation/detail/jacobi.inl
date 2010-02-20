@@ -32,18 +32,22 @@ namespace relaxation
 namespace detail
 {
 
-template <typename T>
+template <typename ValueType>
 struct jacobi_functor
 {
-    template <typename Tuple>
-    T operator()(const Tuple& t)
-    {
-        const T x = thrust::get<0>(t);
-        const T d = thrust::get<1>(t);
-        const T b = thrust::get<2>(t);
-        const T y = thrust::get<3>(t);
+    ValueType omega;
 
-        return x + (b - y) / d;
+    jacobi_functor(ValueType omega) : omega(omega) {}
+
+    template <typename Tuple>
+    ValueType operator()(const Tuple& t)
+    {
+        const ValueType x = thrust::get<0>(t);
+        const ValueType d = thrust::get<1>(t);
+        const ValueType b = thrust::get<2>(t);
+        const ValueType y = thrust::get<3>(t);
+
+        return x + omega * (b - y) / d;
     }
 };
 
@@ -54,17 +58,26 @@ struct jacobi_functor
 template <typename ValueType, typename MemorySpace>
 template<typename MatrixType>
     jacobi<ValueType,MemorySpace>
-    ::jacobi(const MatrixType& A)
+    ::jacobi(const MatrixType& A, ValueType omega) : default_omega(omega)
     {
         // extract the main diagonal
         cusp::detail::extract_diagonal(A, diagonal);
     }
-        
-// linear operator
+
+// linear_operator
 template <typename ValueType, typename MemorySpace>
 template<typename MatrixType, typename VectorType1, typename VectorType2>
     void jacobi<ValueType,MemorySpace>
     ::operator()(const MatrixType& A, const VectorType1& b, VectorType2& x)
+    {
+        jacobi<ValueType,MemorySpace>::operator()(A,b,x,default_omega);
+    }
+
+// override default omega
+template <typename ValueType, typename MemorySpace>
+template<typename MatrixType, typename VectorType1, typename VectorType2>
+    void jacobi<ValueType,MemorySpace>
+    ::operator()(const MatrixType& A, const VectorType1& b, VectorType2& x, ValueType omega)
     {
         // TODO see if preallocating y is noticably faster
         cusp::array1d<ValueType,MemorySpace> y(x.size());
@@ -76,7 +89,7 @@ template<typename MatrixType, typename VectorType1, typename VectorType2>
         thrust::transform(thrust::make_zip_iterator(thrust::make_tuple(x.begin(), diagonal.begin(), b.begin(), y.begin())),
                           thrust::make_zip_iterator(thrust::make_tuple(x.end(),   diagonal.end(),   b.end(),   y.end())),
                           x.begin(),
-                          detail::jacobi_functor<ValueType>());
+                          detail::jacobi_functor<ValueType>(omega));
     }
 
 } // end namespace relaxation

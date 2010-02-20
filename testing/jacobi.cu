@@ -41,3 +41,43 @@ void TestJacobiRelaxation(void)
 }
 DECLARE_SPARSE_MATRIX_UNITTEST(TestJacobiRelaxation);
 
+
+template <class MatrixType>
+void _TestJacobiRelaxationWithWeighting(void)
+{
+    typedef typename MatrixType::memory_space Space;
+
+    cusp::array2d<float, Space> M(2,2);
+    M(0,0) = 2.0;  M(0,1) = 1.0;
+    M(1,0) = 1.0;  M(1,1) = 3.0;
+
+    MatrixType A(M);
+
+    // use default omega
+    {
+        cusp::array1d<float, Space> b(2,  5.0);
+        cusp::array1d<float, Space> x(2, -1.0);
+        cusp::relaxation::jacobi<float, Space> relax(A, 0.5);
+        relax(A, b, x);
+        ASSERT_EQUAL(x[0], 1.0);
+        ASSERT_EQUAL(x[1], 0.5);
+    }
+    
+    // override default omega
+    {
+        cusp::array1d<float, Space> b(2,  5.0);
+        cusp::array1d<float, Space> x(2, -1.0);
+        cusp::relaxation::jacobi<float, Space> relax(A, 1.0);
+        relax(A, b, x, 0.5);
+        ASSERT_EQUAL(x[0], 1.0);
+        ASSERT_EQUAL(x[1], 0.5);
+    }
+}
+
+template <class SparseMatrix>
+void TestJacobiRelaxationWithWeighting(void)
+{
+    _TestJacobiRelaxationWithWeighting<SparseMatrix>();
+}
+DECLARE_SPARSE_MATRIX_UNITTEST(TestJacobiRelaxationWithWeighting);
+

@@ -32,14 +32,18 @@ namespace relaxation
 template <typename ValueType, typename MemorySpace>
 class jacobi
 {
+    ValueType default_omega;
     cusp::array1d<ValueType, MemorySpace> diagonal;
 
 public:
     template <typename MatrixType>
-    jacobi(const MatrixType& A);
-        
+    jacobi(const MatrixType& A, ValueType omega=1.0);
+    
     template <typename MatrixType, typename VectorType1, typename VectorType2>
     void operator()(const MatrixType& A, const VectorType1& b, VectorType2& x);
+        
+    template <typename MatrixType, typename VectorType1, typename VectorType2>
+    void operator()(const MatrixType& A, const VectorType1& b, VectorType2& x, ValueType omega);
 };
 
 } // end namespace relaxation

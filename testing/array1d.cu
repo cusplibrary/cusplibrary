@@ -25,6 +25,69 @@ void TestArray1d(void)
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestArray1d);
 
+
+template <typename MemorySpace>
+void TestArray1dConstructor(void)
+{
+    cusp::array1d<int, MemorySpace> a(2);
+    a[0] = 0;
+    a[1] = 1;
+
+    cusp::array1d<int, cusp::host_memory> h(a);
+    ASSERT_EQUAL(h.size(), 2); 
+    ASSERT_EQUAL(h[0], 0);
+    ASSERT_EQUAL(h[1], 1);
+    
+    cusp::array1d<int, cusp::device_memory> d(a);
+    ASSERT_EQUAL(d.size(), 2); 
+    ASSERT_EQUAL(d[0], 0);
+    ASSERT_EQUAL(d[1], 1);
+    
+    const cusp::array1d<int, cusp::host_memory> ch(2, 10);
+    ASSERT_EQUAL(ch.size(), 2); 
+    ASSERT_EQUAL(ch[0], 10);
+    ASSERT_EQUAL(ch[1], 10);
+    
+    const cusp::array1d<int, cusp::device_memory> cd(ch);
+    ASSERT_EQUAL(cd.size(), 2); 
+    ASSERT_EQUAL(cd[0], 10);
+    ASSERT_EQUAL(cd[1], 10);
+}
+DECLARE_HOST_DEVICE_UNITTEST(TestArray1dConstructor);
+
+
+template <typename MemorySpace>
+void TestArray1dAssignment(void)
+{
+    cusp::array1d<int, MemorySpace> a(2);
+    a[0] = 0;
+    a[1] = 1;
+
+    cusp::array1d<int, cusp::host_memory> h = a;
+    ASSERT_EQUAL(h.size(), 2); 
+    ASSERT_EQUAL(h[0], 0);
+    ASSERT_EQUAL(h[1], 1);
+    
+    cusp::array1d<int, cusp::device_memory> d = a;
+    ASSERT_EQUAL(d.size(), 2); 
+    ASSERT_EQUAL(d[0], 0);
+    ASSERT_EQUAL(d[1], 1);
+    
+    const cusp::array1d<int, cusp::host_memory> ch(2, 10);
+    a = ch;
+    ASSERT_EQUAL(a.size(), 2); 
+    ASSERT_EQUAL(a[0], 10);
+    ASSERT_EQUAL(a[1], 10);
+    
+    const cusp::array1d<int, cusp::device_memory> cd(2, 20);
+    a = cd;
+    ASSERT_EQUAL(a.size(), 2); 
+    ASSERT_EQUAL(a[0], 20);
+    ASSERT_EQUAL(a[1], 20);
+}
+DECLARE_HOST_DEVICE_UNITTEST(TestArray1dAssignment);
+
+
 template <typename MemorySpace>
 void TestArray1dEquality(void)
 {
