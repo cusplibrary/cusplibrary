@@ -20,6 +20,7 @@
 #include <thrust/iterator/permutation_iterator.h>
 #include <thrust/transform.h>
 
+#include <list>
 
 
 template <typename IndexType>
@@ -217,6 +218,147 @@ void TestDirectInterpolation(void)
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestDirectInterpolation);
 
+template <typename IndexType, typename ValueType, typename MemorySpace>
+class ruge_stuben_solver
+{
+    
+    struct level
+    {
+        cusp::coo_matrix<IndexType,ValueType,MemorySpace> R;  // restriction operator
+        cusp::coo_matrix<IndexType,ValueType,MemorySpace> A;  // matrix
+        cusp::coo_matrix<IndexType,ValueType,MemorySpace> P;  // prolongation operator
+        cusp::array1d<int,MemorySpace> splitting;             // C/F splitting
+        
+        cusp::relaxation::jacobi<ValueType,MemorySpace> smoother;
+       
+        ValueType rho;                                        // spectral radius
+        //cusp::array1d<ValueType,MemorySpace> temp1;
+        //cusp::array1d<ValueType,MemorySpace> temp2;
+    };
+
+    std::list<level> levels;
+        
+    cusp::detail::lu_solver<float, cusp::host_memory> LU;
+
+    public:
+
+    ruge_stuben_solver(const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& A)
+    {
+        levels.push_back(level());
+        levels.back().A = A; // copy
+
+        extend_hierarchy();
+   
+        // TODO make lu_solver accept sparse input
+        cusp::array2d<float,cusp::host_memory> coarse_dense(levels.back().A);
+        LU = cusp::detail::lu_solver<float, cusp::host_memory>(coarse_dense);
+    }
+
+    void extend_hierarchy(void)
+    {
+        const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& A = levels.back().A;
+
+        // compute C/F splitting
+        cusp::array1d<int,cusp::device_memory> splitting(A.num_rows);
+        {
+            // TODO implement MIS for coo_matrix
+            cusp::csr_matrix<int,float,cusp::device_memory> csr(A);
+            cusp::graph::maximal_independent_set(csr, splitting);
+        }
+
+        //    // TODO XXX XXX XXX remove
+        //    for(int i = 0; i < splitting.size(); i++)
+        //        splitting[i] = (i + 1) % 2;
+
+        // compute prolongation operator
+        cusp::coo_matrix<int,float,cusp::device_memory> P;
+        direct_interpolation(A, A, splitting, P);
+
+        // compute restriction operator (transpose of prolongator)
+        cusp::coo_matrix<int,float,cusp::device_memory> R;
+        cusp::transpose(P,R);
+
+        // construct Galerkin product R*A*P
+        cusp::coo_matrix<int,float,cusp::device_memory> RAP;
+        {
+            // TODO test speed of R * (A * P) vs. (R * A) * P
+            cusp::coo_matrix<int,float,cusp::device_memory> AP;
+            cusp::multiply(A, P, AP);
+            cusp::multiply(R, AP, RAP);
+        }
+
+        levels.back().R.swap(R);
+        levels.back().P.swap(P);
+        levels.back().smoother = cusp::relaxation::jacobi<ValueType, MemorySpace>(A, 0.66f);  
+        levels.back().splitting.swap(splitting);
+
+        levels.push_back(level());
+        levels.back().A.swap(RAP);
+        //levels.back().temp1.resize(RAP.num_rows);
+        //levels.back().temp2.resize(RAP.num_rows);
+    }
+    
+    void solve(const cusp::array1d<float,cusp::device_memory> b,
+                     cusp::array1d<float,cusp::device_memory> x)
+    {
+        // TODO check sizes
+        cusp::coo_matrix<int,float,cusp::device_memory> & R = levels.front().R;
+        cusp::coo_matrix<int,float,cusp::device_memory> & A = levels.front().A;
+        cusp::coo_matrix<int,float,cusp::device_memory> & P = levels.front().P;
+        
+        cusp::relaxation::jacobi<ValueType, MemorySpace>& smoother = levels.front().smoother;
+        
+        cusp::coo_matrix<int,float,cusp::device_memory> & RAP = levels.back().A;
+
+        //  4/3 * 1/rho is a good default, where rho is the spectral radius of D^-1(A)
+
+        cusp::array1d<float,cusp::device_memory> residual(A.num_rows);
+        cusp::array1d<float,cusp::device_memory> coarse(RAP.num_rows);
+            
+        // compute initial residual norm
+        cusp::multiply(A,x,residual);
+        cusp::blas::axpby(b, residual, residual, 1.0f, -1.0f);
+        float last_norm = cusp::blas::nrm2(residual);
+
+        // perform V-cycles on 2-level hierarchy
+        for (unsigned int i = 0; i < 25; i++)
+        {
+            // presmooth
+            smoother(A,b,x);
+
+            // compute residual <- b - A*x
+            cusp::multiply(A,x,residual);
+            cusp::blas::axpby(b, residual, residual, 1.0f, -1.0f);
+
+            // restrict to coarse grid
+            cusp::multiply(R, residual, coarse);
+
+            // compute coarse grid solution
+            {
+                // TODO streamline
+                cusp::array1d<float,cusp::host_memory> temp_b(coarse);
+                cusp::array1d<float,cusp::host_memory> temp_x(coarse.size());
+                LU(temp_b, temp_x);
+                coarse = temp_x;
+            }
+
+            // apply coarse grid correction 
+            cusp::multiply(P, coarse, residual);
+            cusp::blas::axpy(residual, x, 1.0f);
+
+            // postsmooth
+            smoother(A,b,x);
+
+            float norm = cusp::blas::nrm2(x);
+
+            //printf("%10.8f  %6.4f\n", norm, norm/last_norm);
+
+            last_norm = norm;
+        }
+    }
+        
+};
+
 
 void TestRugeStubenSolver(void)
 {
@@ -224,128 +366,13 @@ void TestRugeStubenSolver(void)
     cusp::coo_matrix<int,float,cusp::device_memory> A;
     cusp::gallery::poisson5pt(A, 51, 51);
     
-    // compute C/F splitting
-    cusp::array1d<int,cusp::device_memory> splitting(A.num_rows);
-    {
-        // TODO implement MIS for coo_matrix
-        cusp::csr_matrix<int,float,cusp::device_memory> csr(A);
-        cusp::graph::maximal_independent_set(csr, splitting);
-    }
-
-    // TODO XXX XXX XXX remove
-    for(int i = 0; i < splitting.size(); i++)
-        splitting[i] = (i + 1) % 2;
-
-    // compute prolongator
-    cusp::coo_matrix<int,float,cusp::device_memory> P;
-    direct_interpolation(A, A, splitting, P);
-    
-    // compute transpose of prolongator
-    cusp::coo_matrix<int,float,cusp::device_memory> Pt;
-    cusp::transpose(P,Pt);
-
-    // construct Galerkin product
-    cusp::coo_matrix<int,float,cusp::device_memory> PtAP;
-    {
-        // TODO test speed of Pt * (A * P) vs. (Pt * A) * P
-        cusp::coo_matrix<int,float,cusp::device_memory> AP;
-        cusp::multiply(A, P, AP);
-        cusp::multiply(Pt, AP, PtAP);
-    }
-
     // setup linear system
     cusp::array1d<float,cusp::device_memory> b(A.num_rows,0);
     cusp::array1d<float,cusp::device_memory> x(A.num_rows,1);
-//    for (size_t i = 0; i < x.size(); i++)
-//        x[i] = (i + 1) % 2;
-//    unittest::random_samples(x.begin(), x.end());
+    unittest::random_samples(x.begin(), x.end());
 
-    //  4/3 * 1/rho is a good default, where rho is the spectral radius of D^-1(A)
-    cusp::relaxation::jacobi<float, cusp::device_memory> relax(A, 0.66f);  
-    cusp::array1d<float,cusp::device_memory> residual(A.num_rows);
-    cusp::array1d<float,cusp::device_memory> coarse(PtAP.num_rows);
-
-    cusp::array2d<float,cusp::host_memory> PtAP_dense(PtAP);
-    cusp::detail::lu_solver<float, cusp::host_memory> LU(PtAP_dense);
-   
-    float last_norm = cusp::blas::nrm2(x);
-
-    // perform V-cycles on 2-level hierarchy
-    for (unsigned int i = 0; i < 10; i++)
-    {
-        // presmooth
-        relax(A,b,x);
-
-//        std::cout << "x after presmoothing" << std::endl;
-//        cusp::print_matrix(x);
-
-        // compute residual <- b - A*x
-        cusp::multiply(A,x,residual);
-        cusp::blas::axpby(b, residual, residual, 1.0f, -1.0f);
-
-        // restrict to coarse grid
-        cusp::multiply(Pt, residual, coarse);
-            
-//        std::cout << "residual " << std::endl;
-//        cusp::print_matrix(residual);
-//        std::cout << "coarse_b " << std::endl;
-//        cusp::print_matrix(coarse);
-
-        // compute coarse grid solution
-        {
-            cusp::array1d<float,cusp::host_memory> temp_b(coarse);
-            cusp::array1d<float,cusp::host_memory> temp_x(coarse.size());
-            LU(temp_b, temp_x);
-            coarse = temp_x;
-//            std::cout << "temp_b " << std::endl;
-//            cusp::print_matrix(temp_b);
-//            std::cout << "temp_x " << std::endl;
-//            cusp::print_matrix(temp_x);
-        }
-            
-//        std::cout << "coarse_x " << std::endl;
-//        cusp::print_matrix(coarse);
-       
-        // apply coarse grid correction 
-        cusp::multiply(P, coarse, residual);
-        cusp::blas::axpy(residual, x, 1.0f);
-        
-//        std::cout << "before postsmoothing " << std::endl;
-//        cusp::print_matrix(x);
-
-        // postsmooth
-        relax(A,b,x);
-        
-//        std::cout << "after postsmoothing " << std::endl;
-//        cusp::print_matrix(x);
-        
-        float norm = cusp::blas::nrm2(x);
-
-        //printf("%10.8f  %6.4f\n", norm, norm/last_norm);
-
-        last_norm = norm;
-        
-//        std::cout << "x " << std::endl;
-//        cusp::print_matrix(x);
-    }
-
-//    std::cout << "A" << std::endl;
-//    cusp::print_matrix(A);
-//    std::cout << "x" << std::endl;
-//    cusp::print_matrix(x);
-//    std::cout << "b" << std::endl;
-//    cusp::print_matrix(b);
-//    std::cout << "splitting" << std::endl;
-//    cusp::print_matrix(splitting);
-//    std::cout << "P" << std::endl;
-//    cusp::print_matrix(P);
-//    std::cout << "PtAP" << std::endl;
-//    cusp::print_matrix(PtAP);
-    
-//    cusp::io::write_matrix_market_file(A, "/home/nathan/Desktop/AMG/A.mtx");
-//    cusp::io::write_matrix_market_file(P, "/home/nathan/Desktop/AMG/P.mtx");
-//    cusp::io::write_matrix_market_file(Pt, "/home/nathan/Desktop/AMG/Pt.mtx");
-//    cusp::io::write_matrix_market_file(PtAP, "/home/nathan/Desktop/AMG/PtAP.mtx");
+    ruge_stuben_solver<int,float,cusp::device_memory> rs(A);
+    rs.solve(b,x);
 }
 DECLARE_UNITTEST(TestRugeStubenSolver);
 
