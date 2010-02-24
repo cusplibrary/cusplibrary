@@ -32,8 +32,6 @@ namespace detail
 namespace device
 {
 
-// TODO make work for > BLOCKSIZE diagonals
-
 ////////////////////////////////////////////////////////////////////////
 // DIA SpMV kernels 
 ///////////////////////////////////////////////////////////////////////
@@ -68,12 +66,12 @@ spmv_dia_kernel(const IndexType num_rows,
 {
     __shared__ IndexType offsets[BLOCK_SIZE];
     
-    const IndexType thread_id = blockDim.x * blockIdx.x + threadIdx.x;
-    const IndexType grid_size = gridDim.x * blockDim.x;
+    const IndexType thread_id = BLOCK_SIZE * blockIdx.x + threadIdx.x;
+    const IndexType grid_size = BLOCK_SIZE * gridDim.x;
 
-    for(IndexType base = 0; base < num_diagonals; base += blockDim.x)
+    for(IndexType base = 0; base < num_diagonals; base += BLOCK_SIZE)
     {
-        const IndexType limit = min(blockDim.x, num_diagonals - base);
+        const IndexType limit = min(BLOCK_SIZE, num_diagonals - base);
 
         // load diagonal offsets into shared memory
         if(threadIdx.x < limit)
@@ -118,6 +116,13 @@ void __spmv_dia(const cusp::dia_matrix<IndexType,ValueType,cusp::device_memory>&
    
     const IndexType num_diagonals = dia.values.num_cols;
     const IndexType stride        = dia.values.num_rows;
+
+    if (num_diagonals == 0)
+    {
+        // empty matrix
+        thrust::fill(thrust::device_pointer_cast(y), thrust::device_pointer_cast(y) + dia.num_rows, ValueType(0));
+        return;
+    }
 
     if (UseCache)
         bind_x(x);

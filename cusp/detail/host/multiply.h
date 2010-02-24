@@ -150,6 +150,25 @@ void multiply(const cusp::hyb_matrix<IndexType,ValueType,MemorySpace1>& A,
          thrust::identity<ValueType>(), thrust::multiplies<ValueType>(), thrust::plus<ValueType>());
 }
 
+template <typename ValueType,
+          typename MemorySpace1,
+          typename MemorySpace2,
+          typename MemorySpace3>
+void multiply(const cusp::array2d<ValueType,MemorySpace1>& A,
+              const cusp::array1d<ValueType,MemorySpace2>& B,
+                    cusp::array1d<ValueType,MemorySpace3>& C)
+{
+    for(size_t i = 0; i < A.num_rows; i++)
+    {
+        ValueType sum = 0;
+        for(size_t j = 0; j < A.num_cols; j++)
+        {
+            sum += A(i,j) * B[j];
+        }
+        C[i] = sum;
+    }
+}
+
 } // end namespace host
 } // end namespace detail
 } // end namespace cusp
