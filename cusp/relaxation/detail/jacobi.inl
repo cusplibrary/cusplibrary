@@ -56,6 +56,12 @@ struct jacobi_functor
 
 // constructor
 template <typename ValueType, typename MemorySpace>
+    jacobi<ValueType,MemorySpace>
+    ::jacobi() : default_omega(0.0)
+    {
+    }
+
+template <typename ValueType, typename MemorySpace>
 template<typename MatrixType>
     jacobi<ValueType,MemorySpace>
     ::jacobi(const MatrixType& A, ValueType omega) : default_omega(omega)

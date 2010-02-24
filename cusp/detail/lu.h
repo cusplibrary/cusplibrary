@@ -122,6 +122,10 @@ class lu_solver : public cusp::linear_operator<ValueType,MemorySpace>
     cusp::array1d<int,cusp::host_memory>       pivot;
 
     public:
+    lu_solver()
+        : linear_operator<ValueType,MemorySpace>()
+    { }
+
     template <typename Orientation>
     lu_solver(const cusp::array2d<ValueType,MemorySpace,Orientation>& A) 
         : linear_operator<ValueType,MemorySpace>(A.num_rows, A.num_cols, A.num_entries)

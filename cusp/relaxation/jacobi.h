@@ -36,6 +36,8 @@ class jacobi
     cusp::array1d<ValueType, MemorySpace> diagonal;
 
 public:
+    jacobi();
+
     template <typename MatrixType>
     jacobi(const MatrixType& A, ValueType omega=1.0);
     
