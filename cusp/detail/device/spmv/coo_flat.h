@@ -170,7 +170,7 @@ spmv_coo_flat_kernel(const IndexType num_nonzeros,
                            IndexType * temp_rows,
                            ValueType * temp_vals)
 {
-    __shared__ IndexType rows[BLOCK_SIZE];
+    __shared__ IndexType rows[48 *(BLOCK_SIZE/32)];
     __shared__ ValueType vals[BLOCK_SIZE];
 
     const IndexType thread_id   = BLOCK_SIZE * blockIdx.x + threadIdx.x;                 // global thread index
@@ -180,13 +180,17 @@ spmv_coo_flat_kernel(const IndexType num_nonzeros,
     const IndexType interval_begin = warp_id * interval_size;                            // warp's offset into I,J,V
     const IndexType interval_end   = min(interval_begin + interval_size, num_nonzeros);  // end of warps's work
 
+    const IndexType idx = 16 * (threadIdx.x/32 + 1) + threadIdx.x;                       // thread's index into padded rows array
+
+    rows[idx - 16] = -1;                                                                 // fill padding with invalid row index
+
     if(interval_begin >= interval_end)                                                   // warp has no work to do 
         return;
 
     if (thread_lane == 31)
     {
         // initialize the carry in values
-        rows[threadIdx.x] = I[interval_begin]; 
+        rows[idx] = I[interval_begin]; 
         vals[threadIdx.x] = 0;
     }
   
@@ -197,22 +201,29 @@ spmv_coo_flat_kernel(const IndexType num_nonzeros,
         
         if (thread_lane == 0)
         {
-            if(row == rows[threadIdx.x + 31])
+            if(row == rows[idx + 31])
                 val += vals[threadIdx.x + 31];                        // row continues
             else
-                y[rows[threadIdx.x + 31]] += vals[threadIdx.x + 31];  // row terminated
+                y[rows[idx + 31]] += vals[threadIdx.x + 31];  // row terminated
         }
         
-        val = segreduce_warp(thread_lane, row, val, rows, vals);      // segmented reduction in shared memory
+        rows[idx]         = row;
+        vals[threadIdx.x] = val;
 
-        if(thread_lane < 31 && row != rows[threadIdx.x + 1])
-            y[row] += val;                                            // row terminated
+        if(row == rows[idx -  1]) { vals[threadIdx.x] = val = val + vals[threadIdx.x -  1]; } 
+        if(row == rows[idx -  2]) { vals[threadIdx.x] = val = val + vals[threadIdx.x -  2]; }
+        if(row == rows[idx -  4]) { vals[threadIdx.x] = val = val + vals[threadIdx.x -  4]; }
+        if(row == rows[idx -  8]) { vals[threadIdx.x] = val = val + vals[threadIdx.x -  8]; }
+        if(row == rows[idx - 16]) { vals[threadIdx.x] = val = val + vals[threadIdx.x - 16]; }
+
+        if(thread_lane < 31 && row != rows[idx + 1])
+            y[row] += vals[threadIdx.x];                                            // row terminated
     }
 
     if(thread_lane == 31)
     {
         // write the carry out values
-        temp_rows[warp_id] = rows[threadIdx.x];
+        temp_rows[warp_id] = rows[idx];
         temp_vals[warp_id] = vals[threadIdx.x];
     }
 }
@@ -231,7 +242,8 @@ spmv_coo_reduce_update_kernel(const IndexType num_warps,
 
     const IndexType end = num_warps - (num_warps & (BLOCK_SIZE - 1));
 
-    if (threadIdx.x == 0){
+    if (threadIdx.x == 0)
+    {
         rows[BLOCK_SIZE] = (IndexType) -1;
         vals[BLOCK_SIZE] = (ValueType)  0;
     }
@@ -240,7 +252,8 @@ spmv_coo_reduce_update_kernel(const IndexType num_warps,
 
     IndexType i = threadIdx.x;
 
-    while (i < end){
+    while (i < end)
+    {
         // do full blocks
         rows[threadIdx.x] = temp_rows[i];
         vals[threadIdx.x] = temp_vals[i];
