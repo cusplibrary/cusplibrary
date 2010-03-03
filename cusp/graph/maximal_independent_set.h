@@ -25,7 +25,7 @@ namespace graph
 {
     
 template <typename MatrixType, typename ArrayType>
-size_t maximal_independent_set(MatrixType& A, ArrayType& stencil);
+size_t maximal_independent_set(MatrixType& A, ArrayType& stencil, size_t k = 1);
 
 } // end namespace graph
 } // end namespace cusp

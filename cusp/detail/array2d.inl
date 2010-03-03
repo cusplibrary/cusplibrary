@@ -35,6 +35,13 @@ array2d<ValueType,MemorySpace,Orientation>
         : detail::matrix_base<index_type>(num_rows, num_cols, num_rows * num_cols),
           values(num_rows * num_cols) {}
 
+// construct matrix with given shape and number of entries and fill with a given value
+template<typename ValueType, class MemorySpace, class Orientation>
+array2d<ValueType,MemorySpace,Orientation>
+    ::array2d(int num_rows, int num_cols, const ValueType& value)
+        : detail::matrix_base<index_type>(num_rows, num_cols, num_rows * num_cols),
+          values(num_rows * num_cols, value) {}
+
 // construct from another array2d
 template<typename ValueType, class MemorySpace, class Orientation>
 template <typename ValueType2, typename MemorySpace2>

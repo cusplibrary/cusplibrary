@@ -14,6 +14,24 @@ void TestArray2dBasicConstructor(void)
 DECLARE_HOST_DEVICE_UNITTEST(TestArray2dBasicConstructor);
 
 template <class Space>
+void TestArray2dFillConstructor(void)
+{
+    cusp::array2d<float, Space> matrix(3, 2, 13.0f);
+
+    ASSERT_EQUAL(matrix.num_rows,       3);
+    ASSERT_EQUAL(matrix.num_cols,       2);
+    ASSERT_EQUAL(matrix.num_entries,    6);
+    ASSERT_EQUAL(matrix.values.size(),  6);
+    ASSERT_EQUAL(matrix.values[0], 13.0f);
+    ASSERT_EQUAL(matrix.values[1], 13.0f);
+    ASSERT_EQUAL(matrix.values[2], 13.0f);
+    ASSERT_EQUAL(matrix.values[3], 13.0f);
+    ASSERT_EQUAL(matrix.values[4], 13.0f);
+    ASSERT_EQUAL(matrix.values[5], 13.0f);
+}
+DECLARE_HOST_DEVICE_UNITTEST(TestArray2dFillConstructor);
+
+template <class Space>
 void TestArray2dCopyConstructor(void)
 {
     cusp::array2d<float, Space> matrix(3, 2);

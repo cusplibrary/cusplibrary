@@ -49,7 +49,9 @@ struct process_nodes
 };
 
 template <typename IndexType, typename ValueType, typename MemorySpace, typename ArrayType>
-size_t maximal_independent_set(const cusp::csr_matrix<IndexType,ValueType,MemorySpace>& A, ArrayType& stencil)
+size_t maximal_independent_set(const cusp::csr_matrix<IndexType,ValueType,MemorySpace>& A,
+                                     ArrayType& stencil,
+                               size_t k)
 {
     typedef unsigned int RandomType;
     typedef unsigned int NodeStateType;
@@ -77,7 +79,7 @@ size_t maximal_independent_set(const cusp::csr_matrix<IndexType,ValueType,Memory
 
     while (thrust::count(states.begin(), states.end(), 1) > 0)
     {
-        // find the largest (state,value,index) neighbor for each node
+        // find the largest (state,value,index) 1-ring neighbor for each node
         cusp::detail::device::cuda::spmv_csr_scalar
             (A.num_rows,
              A.row_offsets.begin(), A.column_indices.begin(), thrust::constant_iterator<int>(1),  // XXX should we mask explicit zeros? (e.g. DIA, array2d)
@@ -85,6 +87,24 @@ size_t maximal_independent_set(const cusp::csr_matrix<IndexType,ValueType,Memory
              thrust::make_zip_iterator(thrust::make_tuple(states.begin(), random_values.begin(), thrust::counting_iterator<IndexType>(0))),
              thrust::make_zip_iterator(thrust::make_tuple(maximal_states.begin(), maximal_values.begin(), maximal_indices.begin())),
              thrust::identity<Tuple>(), thrust::project2nd<Tuple,Tuple>(), thrust::maximum<Tuple>());
+
+        // find the largest (state,value,index) k-ring neighbor for each node (if k > 1)
+        for(size_t ring = 1; ring < k; ring++)
+        {
+            // TODO streamline these, possibly with .swap
+            cusp::array1d<NodeStateType,MemorySpace> last_states(maximal_states);
+            cusp::array1d<RandomType,MemorySpace>    last_values(maximal_values);
+            cusp::array1d<IndexType,MemorySpace>     last_indices(maximal_indices);
+
+            cusp::detail::device::cuda::spmv_csr_scalar
+                (A.num_rows,
+                 A.row_offsets.begin(), A.column_indices.begin(), thrust::constant_iterator<int>(1),  // XXX should we mask explicit zeros? (e.g. DIA, array2d)
+                 thrust::make_zip_iterator(thrust::make_tuple(last_states.begin(), last_values.begin(), last_indices.begin())),
+                 thrust::make_zip_iterator(thrust::make_tuple(last_states.begin(), last_values.begin(), last_indices.begin())),
+                 thrust::make_zip_iterator(thrust::make_tuple(maximal_states.begin(), maximal_values.begin(), maximal_indices.begin())),
+                 thrust::identity<Tuple>(), thrust::project2nd<Tuple,Tuple>(), thrust::maximum<Tuple>());
+        }
+
 
         // label local maxima as MIS nodes and neighbors of MIS nodes as non-MIS nodes
         thrust::for_each(thrust::make_zip_iterator(thrust::make_tuple(thrust::counting_iterator<IndexType>(0), states.begin(), maximal_states.begin(), maximal_indices.begin())),
@@ -103,9 +123,19 @@ size_t maximal_independent_set(const cusp::csr_matrix<IndexType,ValueType,Memory
 } // end namespace detail
 
 template <typename MatrixType, typename ArrayType>
-size_t maximal_independent_set(MatrixType& A, ArrayType& stencil)
+size_t maximal_independent_set(MatrixType& A, ArrayType& stencil, size_t k)
 {
-    return cusp::graph::detail::maximal_independent_set(A, stencil);
+    // TODO check sizes
+
+    if (k == 0)
+    {
+        thrust::fill(stencil.begin(), stencil.end(), typename ArrayType::value_type(1));
+        return stencil.size();
+    }
+    else
+    {
+        return cusp::graph::detail::maximal_independent_set(A, stencil, k);
+    }
 }
 
 } // end namespace graph

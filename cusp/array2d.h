@@ -92,6 +92,9 @@ namespace cusp
         // construct matrix with given shape and number of entries
         array2d(int num_rows, int num_cols);
         
+        // construct matrix with given shape and number of entries and fill with a given value
+        array2d(int num_rows, int num_cols, const value_type& value);
+        
         // construct from another array2d (with the same Orientation)
         template <typename ValueType2, typename MemorySpace2>
         array2d(const array2d<ValueType2, MemorySpace2, Orientation>& matrix);
