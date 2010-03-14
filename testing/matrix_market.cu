@@ -74,7 +74,7 @@ template <typename MemorySpace>
 void TestReadMatrixMarketFileToCsrMatrix(void)
 {
     // load matrix
-    cusp::coo_matrix<int, float, MemorySpace> csr;
+    cusp::csr_matrix<int, float, MemorySpace> csr;
     cusp::io::read_matrix_market_file(csr, "data/test/coordinate_real_general.mtx");
 
     // convert to array2d
