@@ -25,7 +25,7 @@
 #include <thrust/scatter.h>
 #include <thrust/sort.h>
 #include <thrust/transform.h>
-#include <thrust/unique.h>
+#include <thrust/reduce.h>
 #include <thrust/iterator/permutation_iterator.h>
 
 namespace cusp
@@ -123,20 +123,26 @@ void multiply(const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& A,
         thrust::sort_by_key(I.begin(), I.end(), thrust::make_zip_iterator(thrust::make_tuple(J.begin(), V.begin())));
     }
 
-    // compress duplicate (I,J) entries
-    size_t NNZ = thrust::unique_by_key(thrust::make_zip_iterator(thrust::make_tuple(I.begin(), J.begin())),
-                                       thrust::make_zip_iterator(thrust::make_tuple(I.end(), J.end())),
-                                       V.begin(),
-                                       thrust::equal_to< thrust::tuple<IndexType,IndexType> >(),
-                                       thrust::plus<ValueType>()).second - V.begin();
-    I.resize(NNZ);
-    J.resize(NNZ);
-    V.resize(NNZ);
 
+    // compute unique number of nonzeros in the output
+    IndexType NNZ = thrust::inner_product(thrust::make_zip_iterator(thrust::make_tuple(I.begin(), J.begin())),
+                                          thrust::make_zip_iterator(thrust::make_tuple(I.end (), J.end()))    - 1,
+                                          thrust::make_zip_iterator(thrust::make_tuple(I.begin(), J.begin())) + 1,
+                                          IndexType(0),
+                                          thrust::plus<IndexType>(),
+                                          thrust::not_equal_to< thrust::tuple<IndexType,IndexType> >()) + 1;
+
+    // allocate space for output
     C.resize(A.num_rows, B.num_cols, NNZ);
-    C.row_indices    = I;
-    C.column_indices = J;
-    C.values         = V;
+
+    // sum values with the same (i,j)
+    thrust::reduce_by_key(thrust::make_zip_iterator(thrust::make_tuple(I.begin(), J.begin())),
+                          thrust::make_zip_iterator(thrust::make_tuple(I.end(),   J.end())),
+                          V.begin(),
+                          thrust::make_zip_iterator(thrust::make_tuple(C.row_indices.begin(), C.column_indices.begin())),
+                          C.values.begin(),
+                          thrust::equal_to< thrust::tuple<IndexType,IndexType> >(),
+                          thrust::plus<ValueType>());
 }
 
 
