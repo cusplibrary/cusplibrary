@@ -66,14 +66,25 @@ template <typename IndexType, typename ValueType>
 void make_synthetic_example(const IndexType N, const IndexType D, 
                             cusp::csr_matrix<IndexType, ValueType, cusp::device_memory>& csr)
 {
-    // create banded matrix with D diagonals
-    const IndexType NNZ = N * D - (D * (D - 1)) / 2;
-    cusp::dia_matrix<IndexType, ValueType, cusp::host_memory> dia(N, N, NNZ, D, N);
-    thrust::sequence(dia.diagonal_offsets.begin(), dia.diagonal_offsets.end());
-    thrust::fill(dia.values.values.begin(), dia.values.values.end(), 1);
+//    // create DIA matrix with D diagonal bands
+//    const IndexType NNZ = N * D - (D * (D - 1)) / 2;
+//    cusp::dia_matrix<IndexType, ValueType, cusp::host_memory> dia(N, N, NNZ, D, N);
+//    thrust::sequence(dia.diagonal_offsets.begin(), dia.diagonal_offsets.end());
+//    thrust::fill(dia.values.values.begin(), dia.values.values.end(), 1);
+
+    // create ELL matrix with D diagonals
+    cusp::ell_matrix<IndexType, ValueType, cusp::host_memory> ell(N, D, N * D, D);
+    for(IndexType i = 0; i < N; i++)
+    {
+        for(IndexType j = 0; j < D; j++)
+        {
+            ell.column_indices(i,j) = j;
+            ell.values(i,j) = 1.0;
+        }
+    }
 
     // convert to CSR
-    csr = dia;
+    csr = ell;
 }
 
 
@@ -82,19 +93,20 @@ int main(int argc, char** argv)
     typedef int   IndexType;
     typedef float ValueType;
         
-    // matrix varies along rows, # of threads per vector varies along column
-    printf("matrix      ,       2,       4,       8,      16,      32,\n");
 
     if (argc == 1)
     {
-        const IndexType N = 160 * 1000; // for alignment
-        const IndexType max_diagonals  = 32;
+        // matrix varies along rows, # of threads per vector varies along column
+        printf("matrix      , nnz per row,       2,       4,       8,      16,      32,\n");
+
+        const IndexType N = 320 * 1000;
+        const IndexType max_diagonals = 64;
 
         for(IndexType D = 1; D <= max_diagonals; D++)
         {
             cusp::csr_matrix<IndexType, ValueType, cusp::device_memory> csr;
             make_synthetic_example(N, D, csr);
-            printf("%2dbands     ,", (int) D);
+            printf("dense_%02d    ,    %8.2f,", (int) D, (float) csr.num_entries / (float) csr.num_rows);
             printf("  %5.4f,", benchmark_matrix< 2, IndexType, ValueType>(csr));
             printf("  %5.4f,", benchmark_matrix< 4, IndexType, ValueType>(csr));
             printf("  %5.4f,", benchmark_matrix< 8, IndexType, ValueType>(csr));
@@ -105,11 +117,14 @@ int main(int argc, char** argv)
     }
     else
     {
+        // matrix varies along rows, # of threads per vector varies along column
+        printf("matrix              , nnz per row,       2,       4,       8,      16,      32,\n");
+
         for(int i = 1; i < argc; i++)
         {
             cusp::csr_matrix<IndexType, ValueType, cusp::device_memory> csr;
             cusp::io::read_matrix_market_file(csr, std::string(argv[i]));
-            printf("%12s,", argv[i]);
+            printf("%20s,    %8.2f,", argv[i], (float) csr.num_entries / (float) csr.num_rows);
             printf("  %5.4f,", benchmark_matrix< 2, IndexType, ValueType>(csr));
             printf("  %5.4f,", benchmark_matrix< 4, IndexType, ValueType>(csr));
             printf("  %5.4f,", benchmark_matrix< 8, IndexType, ValueType>(csr));
