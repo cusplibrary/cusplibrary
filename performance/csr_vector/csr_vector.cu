@@ -1,5 +1,8 @@
+#define CUSP_USE_TEXTURE_MEMORY
+
 #include <cusp/dia_matrix.h>
 #include <cusp/csr_matrix.h>
+#include <cusp/io/matrix_market.h>
 
 #include <thrust/sequence.h>
 #include <thrust/fill.h>
@@ -8,12 +11,6 @@
 
 #include <cusp/detail/device/spmv.h>
 #include "../timer.h"
-
-const size_t N = 160 * 1000; // for alignment
-const size_t num_iterations = 100;
-const size_t max_diagonals  = 32;
-
-
 
 template <bool UseCache, unsigned int THREADS_PER_VECTOR, typename IndexType, typename ValueType>
 void perform_spmv(const cusp::csr_matrix<IndexType,ValueType,cusp::device_memory>& csr, 
@@ -41,54 +38,86 @@ void perform_spmv(const cusp::csr_matrix<IndexType,ValueType,cusp::device_memory
         unbind_x(x);
 }
  
-template <typename IndexType, typename ValueType, unsigned int ThreadsPerVector>
-void benchmark_csr_vector()
+template <unsigned int ThreadsPerVector, typename IndexType, typename ValueType>
+float benchmark_matrix(const cusp::csr_matrix<IndexType,ValueType,cusp::device_memory>& csr)
 {
-    printf("%4d,", (int) ThreadsPerVector);
+    const size_t num_iterations = 100;
 
-    cusp::array1d<ValueType, cusp::device_memory> x(N);
-    cusp::array1d<ValueType, cusp::device_memory> y(N);
+    cusp::array1d<ValueType, cusp::device_memory> x(csr.num_cols);
+    cusp::array1d<ValueType, cusp::device_memory> y(csr.num_rows);
 
-    for(IndexType D = 1; D <= max_diagonals; D++)
-    {
-        // create banded matrix with D diagonals
-        const IndexType NNZ = N * D - (D * (D - 1)) / 2;
-        cusp::dia_matrix<IndexType, ValueType, cusp::host_memory> dia(N, N, NNZ, D, N);
-        thrust::sequence(dia.diagonal_offsets.begin(), dia.diagonal_offsets.end());
-        thrust::fill(dia.values.values.begin(), dia.values.values.end(), 1);
+    // warmup
+    perform_spmv<true, ThreadsPerVector>(csr, thrust::raw_pointer_cast(&x[0]), thrust::raw_pointer_cast(&y[0]));
 
-        // convert to CSR
-        cusp::csr_matrix<IndexType, ValueType, cusp::device_memory> csr(dia);
-    
-        // time several SpMV iterations
-        timer t;
-        for(size_t i = 0; i < num_iterations; i++)
-            perform_spmv<true, ThreadsPerVector>(csr, thrust::raw_pointer_cast(&x[0]), thrust::raw_pointer_cast(&y[0]));
-        cudaThreadSynchronize();
+    // time several SpMV iterations
+    timer t;
+    for(size_t i = 0; i < num_iterations; i++)
+        perform_spmv<true, ThreadsPerVector>(csr, thrust::raw_pointer_cast(&x[0]), thrust::raw_pointer_cast(&y[0]));
+    cudaThreadSynchronize();
 
-        float sec_per_iteration = t.seconds_elapsed() / num_iterations;
-        float gflops = (NNZ/sec_per_iteration) / 1e9;
+    float sec_per_iteration = t.seconds_elapsed() / num_iterations;
+    float gflops = (csr.num_entries/sec_per_iteration) / 1e9;
 
-        printf("%4.1f,", gflops);
-    }
+    return gflops;
+}
 
-    std::cout << std::endl;
+
+template <typename IndexType, typename ValueType>
+void make_synthetic_example(const IndexType N, const IndexType D, 
+                            cusp::csr_matrix<IndexType, ValueType, cusp::device_memory>& csr)
+{
+    // create banded matrix with D diagonals
+    const IndexType NNZ = N * D - (D * (D - 1)) / 2;
+    cusp::dia_matrix<IndexType, ValueType, cusp::host_memory> dia(N, N, NNZ, D, N);
+    thrust::sequence(dia.diagonal_offsets.begin(), dia.diagonal_offsets.end());
+    thrust::fill(dia.values.values.begin(), dia.values.values.end(), 1);
+
+    // convert to CSR
+    csr = dia;
 }
 
 
 int main(int argc, char** argv)
 {
-    printf("# of diagonals vary along rows, # of threads per vector varies along column\n");
-    printf("    ,");
-    for(size_t D = 1; D <= max_diagonals; D++)
-        printf("%4d,", (int) D);
-    std::cout << std::endl;
+    typedef int   IndexType;
+    typedef float ValueType;
+        
+    // matrix varies along rows, # of threads per vector varies along column
+    printf("matrix      ,       2,       4,       8,      16,      32,\n");
 
-    benchmark_csr_vector<int, float,  2>();
-    benchmark_csr_vector<int, float,  4>();
-    benchmark_csr_vector<int, float,  8>();
-    benchmark_csr_vector<int, float, 16>();
-    benchmark_csr_vector<int, float, 32>();
+    if (argc == 1)
+    {
+        const IndexType N = 160 * 1000; // for alignment
+        const IndexType max_diagonals  = 32;
+
+        for(IndexType D = 1; D <= max_diagonals; D++)
+        {
+            cusp::csr_matrix<IndexType, ValueType, cusp::device_memory> csr;
+            make_synthetic_example(N, D, csr);
+            printf("%2dbands     ,", (int) D);
+            printf("  %5.4f,", benchmark_matrix< 2, IndexType, ValueType>(csr));
+            printf("  %5.4f,", benchmark_matrix< 4, IndexType, ValueType>(csr));
+            printf("  %5.4f,", benchmark_matrix< 8, IndexType, ValueType>(csr));
+            printf("  %5.4f,", benchmark_matrix<16, IndexType, ValueType>(csr));
+            printf("  %5.4f,", benchmark_matrix<32, IndexType, ValueType>(csr));
+            printf("\n");
+        }
+    }
+    else
+    {
+        for(int i = 1; i < argc; i++)
+        {
+            cusp::csr_matrix<IndexType, ValueType, cusp::device_memory> csr;
+            cusp::io::read_matrix_market_file(csr, std::string(argv[i]));
+            printf("%12s,", argv[i]);
+            printf("  %5.4f,", benchmark_matrix< 2, IndexType, ValueType>(csr));
+            printf("  %5.4f,", benchmark_matrix< 4, IndexType, ValueType>(csr));
+            printf("  %5.4f,", benchmark_matrix< 8, IndexType, ValueType>(csr));
+            printf("  %5.4f,", benchmark_matrix<16, IndexType, ValueType>(csr));
+            printf("  %5.4f,", benchmark_matrix<32, IndexType, ValueType>(csr));
+            printf("\n");
+        }
+    }
 
     return 0;
 }
