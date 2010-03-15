@@ -60,10 +60,6 @@ void multiply(const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& A,
 
     // for each element A(i,j) compute the number of nonzero elements in B(j,:)
     cusp::array1d<IndexType,MemorySpace> segment_lengths(A.num_entries);
-    // XXX REMOVE
-    //thrust::gather(segment_lengths.begin(), segment_lengths.end(),
-    //               A.column_indices.begin(),
-    //               B_row_lengths.begin());
     thrust::next::gather(A.column_indices.begin(), A.column_indices.end(),
                    B_row_lengths.begin(),
                    segment_lengths.begin());
