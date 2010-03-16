@@ -3,6 +3,7 @@
 #include <cusp/csr_matrix.h>
 #include <cusp/io/matrix_market.h>
 #include <cusp/blas.h>
+#include <cusp/multiply.h>
 
 #include <iostream>
 #include <string>
@@ -55,7 +56,7 @@ void benchmark_cusp_spmv(cusp::csr_matrix<IndexType, ValueType, cusp::host_memor
     cusp::array1d<ValueType,cusp::device_memory> y(A.num_rows, 0);
     
     // warm up
-    A.multiply(x, y);
+    cusp::multiply(A, x, y);
 
     // benchmark SpMV
     timer t;
@@ -63,7 +64,7 @@ void benchmark_cusp_spmv(cusp::csr_matrix<IndexType, ValueType, cusp::host_memor
     const size_t num_iterations = 500;
 
     for(size_t i = 0; i < num_iterations; i++)
-        A.multiply(x, y);
+        cusp::multiply(A, x, y);
 
     float time = t.seconds_elapsed() / num_iterations;
     float GFLOPs = (time == 0) ? 0 : (2 * A.num_entries / time) / 1e9;
@@ -137,8 +138,8 @@ int main(void)
     cusp::array1d<ValueType, cusp::host_memory> b;
 
     cusp::io::read_matrix_market_file(A, "A.mtx");
-    { cusp::array2d<ValueType, cusp::host_memory> temp; cusp::read_matrix_market_file(temp, "x.mtx"); temp.values.swap(x); }
-    { cusp::array2d<ValueType, cusp::host_memory> temp; cusp::read_matrix_market_file(temp, "b.mtx"); temp.values.swap(b); }
+    { cusp::array2d<ValueType, cusp::host_memory> temp; cusp::io::read_matrix_market_file(temp, "x.mtx"); temp.values.swap(x); }
+    { cusp::array2d<ValueType, cusp::host_memory> temp; cusp::io::read_matrix_market_file(temp, "b.mtx"); temp.values.swap(b); }
     
     std::cout << "loaded matrix with shape (" << A.num_rows << "," << A.num_cols << ") and " << A.num_entries << " entries" << "\n\n";
 
@@ -151,7 +152,7 @@ int main(void)
         std::cout << "\n----------- benchmarking CG -----------\n";
         // compute residual
         cusp::array1d<ValueType, cusp::host_memory> r(A.num_rows,0);
-        A.multiply(x,r);
+        cusp::multiply(A, x, r);
         cusp::blas::axpy(b, r, ValueType(-1.0));
 
         ValueType residual_norm = cusp::blas::nrm2(r);
