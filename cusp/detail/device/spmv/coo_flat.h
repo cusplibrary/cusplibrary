@@ -170,8 +170,8 @@ spmv_coo_flat_kernel(const IndexType num_nonzeros,
                            IndexType * temp_rows,
                            ValueType * temp_vals)
 {
-    __shared__ IndexType rows[48 *(BLOCK_SIZE/32)];
-    __shared__ ValueType vals[BLOCK_SIZE];
+    __shared__ volatile IndexType rows[48 *(BLOCK_SIZE/32)];
+    __shared__ volatile ValueType vals[BLOCK_SIZE];
 
     const IndexType thread_id   = BLOCK_SIZE * blockIdx.x + threadIdx.x;                 // global thread index
     const IndexType thread_lane = threadIdx.x & (WARP_SIZE-1);                           // thread index within the warp
