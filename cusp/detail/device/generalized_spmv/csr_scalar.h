@@ -36,6 +36,7 @@ template <typename SizeType,
           typename IndexIterator,
           typename ValueIterator,
           typename InputIterator,
+          typename InitialIterator,
           typename OutputIterator,
           typename UnaryFunction,
           typename BinaryFunction1,
@@ -46,7 +47,7 @@ void spmv_csr_scalar_kernel(SizeType        num_rows,
                             IndexIterator   column_indices,
                             ValueIterator   values,
                             InputIterator   x, 
-                            InputIterator   y,
+                            InitialIterator y,
                             OutputIterator  z,
                             UnaryFunction   initialize,
                             BinaryFunction1 combine,
@@ -87,6 +88,7 @@ template <typename SizeType,
           typename IndexIterator,
           typename ValueIterator,
           typename InputIterator,
+          typename InitialIterator,
           typename OutputIterator,
           typename UnaryFunction,
           typename BinaryFunction1,
@@ -96,14 +98,14 @@ void spmv_csr_scalar(SizeType        num_rows,
                      IndexIterator   column_indices,
                      ValueIterator   values,
                      InputIterator   x, 
-                     InputIterator   y,
+                     InitialIterator y,
                      OutputIterator  z,
                      UnaryFunction   initialize,
                      BinaryFunction1 combine,
                      BinaryFunction2 reduce)
 {
     const SizeType block_size = 256;
-    const SizeType max_blocks = thrust::experimental::arch::max_active_blocks(spmv_csr_scalar_kernel<SizeType, OffsetIterator, IndexIterator, ValueIterator, InputIterator, OutputIterator, UnaryFunction, BinaryFunction1, BinaryFunction2>, block_size, (size_t) 0);
+    const SizeType max_blocks = thrust::experimental::arch::max_active_blocks(spmv_csr_scalar_kernel<SizeType, OffsetIterator, IndexIterator, ValueIterator, InputIterator, InitialIterator, OutputIterator, UnaryFunction, BinaryFunction1, BinaryFunction2>, block_size, (size_t) 0);
     const SizeType num_blocks = std::min(max_blocks, DIVIDE_INTO(num_rows, block_size));
     
     spmv_csr_scalar_kernel<<<num_blocks, block_size>>> 
