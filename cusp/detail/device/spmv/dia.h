@@ -71,35 +71,40 @@ spmv_dia_kernel(const IndexType num_rows,
 
     for(IndexType base = 0; base < num_diagonals; base += BLOCK_SIZE)
     {
-        const IndexType limit = min(BLOCK_SIZE, num_diagonals - base);
+        // read a chunk of the diagonal offsets into shared memory
+        const IndexType chunk_size = min(BLOCK_SIZE, num_diagonals - base);
 
-        // load diagonal offsets into shared memory
-        if(threadIdx.x < limit)
+        if(threadIdx.x < chunk_size)
             offsets[threadIdx.x] = diagonal_offsets[base + threadIdx.x];
     
         __syncthreads();
-    
+   
+        // process chunk
         for(IndexType row = thread_id; row < num_rows; row += grid_size)
         {
-            ValueType sum = 0;
+            ValueType sum = (base == 0) ? 0 : y[row];
     
-            IndexType offset = row;
+            // index into values array
+            IndexType idx = row + stride * base;
     
-            for(IndexType n = 0; n < limit; n++)
+            for(IndexType n = 0; n < chunk_size; n++)
             {
                 const IndexType col = row + offsets[n];
         
                 if(col >= 0 && col < num_cols)
                 {
-                    const ValueType A_ij = values[offset];
+                    const ValueType A_ij = values[idx];
                     sum += A_ij * fetch_x<UseCache>(col, x);
                 }
         
-                offset += stride;
+                idx += stride;
             }
     
             y[row] = sum;
         }
+
+        // wait until all threads are done reading offsets 
+        __syncthreads();
     }
 }
 
