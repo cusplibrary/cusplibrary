@@ -199,10 +199,12 @@ void spmv_ell(const IndexType num_rows,
         {
             const IndexType j   = Aj_n[i];
             const ValueType Aij = Ax_n[i];
-            const ValueType xj  = x[j];
 
             if (j != invalid_index)
+            {
+                const ValueType xj  = x[j];
                 y[i] = reduce(y[i], combine(Aij, xj));
+            }
         }
     }
 }

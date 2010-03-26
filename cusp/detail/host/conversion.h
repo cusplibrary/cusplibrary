@@ -312,6 +312,36 @@ void dia_to_csr(      cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& d
 /////////////////////
 
 template <typename IndexType, typename ValueType>
+void ell_to_coo(      cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& dst,
+                const cusp::ell_matrix<IndexType,ValueType,cusp::host_memory>& src)
+{
+    const IndexType invalid_index = cusp::ell_matrix<IndexType, ValueType, cusp::host_memory>::invalid_index;
+    
+    dst.resize(src.num_rows, src.num_cols, src.num_entries);
+
+    IndexType num_entries = 0;
+
+    const IndexType num_entries_per_row = src.column_indices.num_cols;
+
+    for(IndexType i = 0; i < src.num_rows; i++)
+    {
+        for(IndexType n = 0; n < num_entries_per_row; n++)
+        {
+            const IndexType j = src.column_indices(i,n);
+            const ValueType v = src.values(i,n);
+
+            if(j != invalid_index)
+            {
+                dst.row_indices[num_entries]    = i;
+                dst.column_indices[num_entries] = j;
+                dst.values[num_entries]         = v;
+                num_entries++;
+            }
+        }
+    }
+}
+
+template <typename IndexType, typename ValueType>
 void ell_to_csr(      cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& dst,
                 const cusp::ell_matrix<IndexType,ValueType,cusp::host_memory>& src)
 {
@@ -334,7 +364,7 @@ void ell_to_csr(      cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& d
             if(j != invalid_index)
             {
                 dst.column_indices[num_entries] = j;
-                dst.values[num_entries] = v;
+                dst.values[num_entries]         = v;
                 num_entries++;
             }
         }
@@ -348,34 +378,91 @@ void ell_to_csr(      cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& d
 /////////////////////
 
 template <typename IndexType, typename ValueType>
+void hyb_to_coo(      cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& dst,
+                const cusp::hyb_matrix<IndexType,ValueType,cusp::host_memory>& src)
+{
+    dst.resize(src.num_rows, src.num_cols, src.num_entries);
+
+    const cusp::ell_matrix<IndexType,ValueType,cusp::host_memory>& ell = src.ell;
+    const cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& coo = src.coo;
+
+    const IndexType invalid_index = cusp::ell_matrix<IndexType, ValueType, cusp::host_memory>::invalid_index;
+    const IndexType num_entries_per_row = ell.column_indices.num_cols;
+
+    IndexType num_entries  = 0;
+    IndexType coo_progress = 0;
+    
+    // merge each row of the ELL and COO parts into a single COO row
+    for(IndexType i = 0; i < src.num_rows; i++)
+    {
+        // append the i-th row from the ELL part
+        for(IndexType n = 0; n < num_entries_per_row; n++)
+        {
+            const IndexType j = ell.column_indices(i,n);
+            const ValueType v = ell.values(i,n);
+
+            if(j != invalid_index)
+            {
+                dst.row_indices[num_entries]    = i;
+                dst.column_indices[num_entries] = j;
+                dst.values[num_entries]         = v;
+                num_entries++;
+            }
+        }
+
+        // append the i-th row from the COO part
+        while (coo_progress < coo.num_entries && coo.row_indices[coo_progress] == i)
+        {
+            dst.row_indices[num_entries]    = i;
+            dst.column_indices[num_entries] = coo.column_indices[coo_progress];
+            dst.values[num_entries]         = coo.values[coo_progress];
+            num_entries++;
+            coo_progress++;
+        }
+    }
+}
+
+template <typename IndexType, typename ValueType>
 void hyb_to_csr(      cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& dst,
                 const cusp::hyb_matrix<IndexType,ValueType,cusp::host_memory>& src)
 {
-    cusp::csr_matrix<IndexType,ValueType,cusp::host_memory> ell_part;
-    cusp::csr_matrix<IndexType,ValueType,cusp::host_memory> coo_part;
-
-    ell_to_csr(ell_part, src.ell);
-    coo_to_csr(coo_part, src.coo);
-
     dst.resize(src.num_rows, src.num_cols, src.num_entries);
 
-    // merge the two CSR parts
+    const cusp::ell_matrix<IndexType,ValueType,cusp::host_memory>& ell = src.ell;
+    const cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& coo = src.coo;
+
+    const IndexType invalid_index = cusp::ell_matrix<IndexType, ValueType, cusp::host_memory>::invalid_index;
+    const IndexType num_entries_per_row = ell.column_indices.num_cols;
+
     IndexType num_entries = 0;
     dst.row_offsets[0] = 0;
+    
+    IndexType coo_progress = 0;
+    
+    // merge each row of the ELL and COO parts into a single CSR row
     for(IndexType i = 0; i < src.num_rows; i++)
     {
-        for(IndexType jj = ell_part.row_offsets[i]; jj < ell_part.row_offsets[i + 1]; jj++)
+        // append the i-th row from the ELL part
+        for(IndexType n = 0; n < num_entries_per_row; n++)
         {
-            dst.column_indices[num_entries] = ell_part.column_indices[jj];
-            dst.values[num_entries]         = ell_part.values[jj];
-            num_entries++;
+            const IndexType j = ell.column_indices(i,n);
+            const ValueType v = ell.values(i,n);
+
+            if(j != invalid_index)
+            {
+                dst.column_indices[num_entries] = j;
+                dst.values[num_entries]         = v;
+                num_entries++;
+            }
         }
 
-        for(IndexType jj = coo_part.row_offsets[i]; jj < coo_part.row_offsets[i + 1]; jj++)
+        // append the i-th row from the COO part
+        while (coo_progress < coo.num_entries && coo.row_indices[coo_progress] == i)
         {
-            dst.column_indices[num_entries] = coo_part.column_indices[jj];
-            dst.values[num_entries]         = coo_part.values[jj];
+            dst.column_indices[num_entries] = coo.column_indices[coo_progress];
+            dst.values[num_entries]         = coo.values[coo_progress];
             num_entries++;
+            coo_progress++;
         }
 
         dst.row_offsets[i + 1] = num_entries;

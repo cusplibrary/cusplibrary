@@ -40,6 +40,8 @@ namespace host
 
 // Host Conversion Functions
 // COO <- CSR
+//     <- ELL
+//     <- HYB
 //     <- Array
 // CSR <- COO
 //     <- DIA
@@ -60,6 +62,16 @@ template <typename IndexType, typename ValueType>
 void convert(      cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& dst,
              const cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& src)
 {    cusp::detail::host::csr_to_coo(dst, src);    }
+
+template <typename IndexType, typename ValueType>
+void convert(      cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& dst,
+             const cusp::ell_matrix<IndexType,ValueType,cusp::host_memory>& src)
+{    cusp::detail::host::ell_to_coo(dst, src);    }
+
+template <typename IndexType, typename ValueType>
+void convert(      cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& dst,
+             const cusp::hyb_matrix<IndexType,ValueType,cusp::host_memory>& src)
+{    cusp::detail::host::hyb_to_coo(dst, src);    }
 
 template <typename IndexType, typename ValueType, class Orientation>
 void convert(      cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& dst,
