@@ -5,6 +5,15 @@
 #include <iostream>
 #include <iomanip>
 
+struct malloc_free
+{
+    void operator()(size_t n)
+    {
+        char * buff = (char *) malloc(n);
+        free(buff);
+    }
+};
+
 struct cudaMalloc_cudaFree
 {
     void operator()(size_t n)
@@ -33,7 +42,7 @@ struct thrust_device_vector
 };
 
 template <typename TestFunction>
-void benchmark(TestFunction f, size_t max_n = (size_t) 1 << 30, size_t num_iterations = 1)
+void benchmark(TestFunction f, size_t max_n = (size_t) 1 << 30, size_t num_iterations = 100)
 {
     for (size_t n = 1; n <= max_n; n *= 2)
     {
@@ -58,6 +67,9 @@ void benchmark(TestFunction f, size_t max_n = (size_t) 1 << 30, size_t num_itera
 
 int main(void)
 {
+    std::cout << "malloc() & free()" << std::endl;
+    benchmark(malloc_free());
+
     std::cout << "cudaMalloc() & cudaFree()" << std::endl;
     benchmark(cudaMalloc_cudaFree());
     
