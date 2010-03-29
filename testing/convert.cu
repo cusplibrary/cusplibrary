@@ -7,6 +7,7 @@
 #include <cusp/ell_matrix.h>
 #include <cusp/hyb_matrix.h>
 
+#include <cusp/valid.h>
 
 template <typename IndexType, typename ValueType, typename Space>
 void initialize_conversion_example(cusp::csr_matrix<IndexType, ValueType, Space> & csr)
@@ -154,8 +155,8 @@ void TestConversion(DestinationType dst, HostSourceType src)
 
         initialize_conversion_example(src);
 
-        {  DestinationType dst(src);              verify_conversion_example(dst);   }
-        {  DestinationType dst;       dst = src;  verify_conversion_example(dst);   }
+        {  DestinationType dst(src);              verify_conversion_example(dst);  cusp::assert_is_valid_matrix(dst); }
+        {  DestinationType dst;       dst = src;  verify_conversion_example(dst);  cusp::assert_is_valid_matrix(dst); }
     }
 
     {
@@ -163,8 +164,8 @@ void TestConversion(DestinationType dst, HostSourceType src)
 
         initialize_conversion_example(src);
 
-        {  DestinationType dst(src);              verify_conversion_example(dst);   }
-        {  DestinationType dst;       dst = src;  verify_conversion_example(dst);   }
+        {  DestinationType dst(src);              verify_conversion_example(dst);  cusp::assert_is_valid_matrix(dst); }
+        {  DestinationType dst;       dst = src;  verify_conversion_example(dst);  cusp::assert_is_valid_matrix(dst); }
     }
     
 }
@@ -245,6 +246,8 @@ void TestConvertCsrToDiaMatrixHost(void)
     ASSERT_EQUAL(dia.values(1,2), 12.50);
     ASSERT_EQUAL(dia.values(2,2), 15.25);
     ASSERT_EQUAL(dia.values(3,2),  0.00);
+
+    cusp::assert_is_valid_matrix(dia);
 }
 DECLARE_UNITTEST(TestConvertCsrToDiaMatrixHost);
 
@@ -282,6 +285,8 @@ void TestConvertCsrToEllMatrixHost(void)
     ASSERT_EQUAL(ell.column_indices.values[ 9],  X);  ASSERT_EQUAL(ell.values.values[ 9],  0.00);
     ASSERT_EQUAL(ell.column_indices.values[10],  3);  ASSERT_EQUAL(ell.values.values[10], 15.25);
     ASSERT_EQUAL(ell.column_indices.values[11],  X);  ASSERT_EQUAL(ell.values.values[11],  0.00);
+    
+    cusp::assert_is_valid_matrix(ell);
 }
 DECLARE_UNITTEST(TestConvertCsrToEllMatrixHost);
 

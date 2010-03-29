@@ -283,6 +283,53 @@ void TestIsValidMatrixHyb(void)
 DECLARE_HOST_DEVICE_UNITTEST(TestIsValidMatrixHyb);
 
 
+template <typename MemorySpace>
+void TestIsValidMatrixArray2d(void)
+{
+    cusp::array2d<float, MemorySpace> A(3,3);
+    A(0,0) = 0;  A(0,1) = 1;  A(0,2) = 0;
+    A(1,0) = 1;  A(1,1) = 0;  A(1,2) = 1;
+    A(2,0) = 0;  A(2,1) = 1;  A(2,2) = 0;
+
+    // basic tests
+    {
+        cusp::array2d<float, MemorySpace> M(A);
+        ASSERT_EQUAL(cusp::is_valid_matrix(M), true);
+    }
+    {
+        cusp::array2d<float, MemorySpace> M(A);
+        M.num_rows = -1;
+        ASSERT_EQUAL(cusp::is_valid_matrix(M), false);
+    }
+    {
+        cusp::array2d<float, MemorySpace> M(A);
+        M.num_cols = -1;
+        ASSERT_EQUAL(cusp::is_valid_matrix(M), false);
+    }
+    {
+        cusp::array2d<float, MemorySpace> M(A);
+        M.num_entries = -1;
+        ASSERT_EQUAL(cusp::is_valid_matrix(M), false);
+    }
+
+    // invalid shapes
+    {
+        cusp::array2d<float, MemorySpace> M(A);
+        M.num_rows = 10;
+        M.num_cols = 10;
+        ASSERT_EQUAL(cusp::is_valid_matrix(M), false);
+    }
+    {
+        cusp::array2d<float, MemorySpace> M(A);
+        M.num_rows = 10;
+        M.num_cols = 10;
+        M.num_cols = 100;
+        ASSERT_EQUAL(cusp::is_valid_matrix(M), false);
+    }
+}
+DECLARE_HOST_DEVICE_UNITTEST(TestIsValidMatrixArray2d);
+
+
 template <typename MatrixType>
 void TestAssertIsValidMatrix(void)
 {

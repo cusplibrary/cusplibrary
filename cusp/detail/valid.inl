@@ -340,6 +340,29 @@ bool is_valid_matrix(const cusp::hyb_matrix<IndexType,ValueType,MemoryType>& A,
     return cusp::is_valid_matrix(A.ell, ostream) && cusp::is_valid_matrix(A.coo, ostream);
 }
 
+
+template <typename IndexType, typename ValueType, typename MemoryType,
+          typename OutputStream>
+bool is_valid_matrix(const cusp::array2d<IndexType,ValueType,MemoryType>& A,
+                           OutputStream& ostream)
+{
+    if (A.num_rows * A.num_cols != A.num_entries)
+    {
+        ostream << "product of matrix dimensions (" << A.num_rows << "," << A.num_cols << ") ";
+        ostream << "should equal num_entries (" << A.num_entries << ")";
+        return false;
+    }
+    
+    if (A.num_entries != A.values.size())
+    {
+        ostream << "num_entries (" << A.num_entries << ") ";
+        ostream << "should agree with size of values array (" << A.values.size() << ")";
+        return false;
+    }
+
+    return true;
+}
+
 } // end namespace detail
 
 
