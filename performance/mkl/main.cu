@@ -14,6 +14,16 @@
 #include "mkl.h"
 #include "../timer.h"
 
+void spmv_mkl(MKL_INT m, float values[], MKL_INT rowIndex[], MKL_INT columns[], float x[], float y[])
+{
+    spmv_mkl_float(m, values, rowIndex, columns, x, y);
+}
+
+void spmv_mkl(MKL_INT m, double values[], MKL_INT rowIndex[], MKL_INT columns[], double x[], double y[])
+{
+    spmv_mkl_double(m, values, rowIndex, columns, x, y);
+}
+
 template <typename IndexType, typename ValueType>
 void benchmark_mkl_spmv(cusp::csr_matrix<IndexType, ValueType, cusp::host_memory>& A)
 {
@@ -21,12 +31,12 @@ void benchmark_mkl_spmv(cusp::csr_matrix<IndexType, ValueType, cusp::host_memory
     cusp::array1d<ValueType,cusp::host_memory> y(A.num_rows, 0);
 
     // warm up
-    spmv_mkl_double(A.num_rows,
-                    &A.values[0],
-                    &A.row_offsets[0],
-                    &A.column_indices[0],
-                    &x[0],
-                    &y[0]);
+    spmv_mkl(A.num_rows,
+             &A.values[0],
+             &A.row_offsets[0],
+             &A.column_indices[0],
+             &x[0],
+             &y[0]);
 
     // benchmark SpMV
     timer t;
@@ -34,12 +44,12 @@ void benchmark_mkl_spmv(cusp::csr_matrix<IndexType, ValueType, cusp::host_memory
     const size_t num_iterations = 500;
 
     for(size_t i = 0; i < num_iterations; i++)
-        spmv_mkl_double(A.num_rows,
-                        &A.values[0],
-                        &A.row_offsets[0],
-                        &A.column_indices[0],
-                        &x[0],
-                        &y[0]);
+        spmv_mkl(A.num_rows,
+                 &A.values[0],
+                 &A.row_offsets[0],
+                 &A.column_indices[0],
+                 &x[0],
+                 &y[0]);
 
 
     float time = t.seconds_elapsed() / num_iterations;
@@ -126,42 +136,48 @@ void benchmark_cusp_cg(cusp::csr_matrix<IndexType, ValueType, cusp::host_memory>
     printf("CUSP CG finished in %8.4f secs\n", time);
 }
 
-int main(void)
+int main(int argc, char ** argv)
 {
-    cudaSetDevice(1);
+    if (argc != 2)
+    {
+        std::cout << "usage: " << argv[0] << " A.mtx" << std::endl;
+        return -1;
+    }
+
+    cudaSetDevice(0);
 
     typedef int    IndexType;
     typedef double ValueType;
 
     cusp::csr_matrix<IndexType, ValueType, cusp::host_memory> A;
-    cusp::array1d<ValueType, cusp::host_memory> x;
-    cusp::array1d<ValueType, cusp::host_memory> b;
+    cusp::io::read_matrix_market_file(A, argv[1]);
 
-    cusp::io::read_matrix_market_file(A, "A.mtx");
-    { cusp::array2d<ValueType, cusp::host_memory> temp; cusp::io::read_matrix_market_file(temp, "x.mtx"); temp.values.swap(x); }
-    { cusp::array2d<ValueType, cusp::host_memory> temp; cusp::io::read_matrix_market_file(temp, "b.mtx"); temp.values.swap(b); }
-    
     std::cout << "loaded matrix with shape (" << A.num_rows << "," << A.num_cols << ") and " << A.num_entries << " entries" << "\n\n";
 
     std::cout << "---------- benchmarking SpMV ----------\n";
     benchmark_mkl_spmv(A);
-    benchmark_cusp_spmv(A);
+//    benchmark_cusp_spmv(A);
 
-    if (A.num_rows == A.num_cols)
-    {
-        std::cout << "\n----------- benchmarking CG -----------\n";
-        // compute residual
-        cusp::array1d<ValueType, cusp::host_memory> r(A.num_rows,0);
-        cusp::multiply(A, x, r);
-        cusp::blas::axpy(b, r, ValueType(-1.0));
+//    if (A.num_rows == A.num_cols)
+//    {
+//        cusp::array1d<ValueType, cusp::host_memory> x;
+//        cusp::array1d<ValueType, cusp::host_memory> b;
 
-        ValueType residual_norm = cusp::blas::nrm2(r);
-        
-        std::cout << " provided solution has residual norm " << residual_norm << std::endl;
-
-        benchmark_mkl_cg(A, b, residual_norm);
-        benchmark_cusp_cg(A, b, residual_norm);
-    }
+//        { cusp::array2d<ValueType, cusp::host_memory> temp; cusp::io::read_matrix_market_file(temp, "x.mtx"); temp.values.swap(x); }
+//        { cusp::array2d<ValueType, cusp::host_memory> temp; cusp::io::read_matrix_market_file(temp, "b.mtx"); temp.values.swap(b); }
+//        std::cout << "\n----------- benchmarking CG -----------\n";
+//        // compute residual
+//        cusp::array1d<ValueType, cusp::host_memory> r(A.num_rows,0);
+//        cusp::multiply(A, x, r);
+//        cusp::blas::axpy(b, r, ValueType(-1.0));
+//
+//        ValueType residual_norm = cusp::blas::nrm2(r);
+//        
+//        std::cout << " provided solution has residual norm " << residual_norm << std::endl;
+//
+//        benchmark_mkl_cg(A, b, residual_norm);
+//        benchmark_cusp_cg(A, b, residual_norm);
+//    }
 
     return 0;
 }

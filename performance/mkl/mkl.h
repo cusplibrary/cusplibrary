@@ -2,6 +2,13 @@
 
 #include "mkl_types.h"
 
+void spmv_mkl_float(MKL_INT m, 
+                    float values[],
+                    MKL_INT rowIndex[],
+                    MKL_INT columns[],
+                    float x[],
+                    float y[]);
+
 void spmv_mkl_double(MKL_INT m, 
                      double values[],
                      MKL_INT rowIndex[],
