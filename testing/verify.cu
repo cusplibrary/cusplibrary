@@ -1,6 +1,6 @@
 #include <unittest/unittest.h>
 
-#include <cusp/valid.h>
+#include <cusp/verify.h>
 #include <cusp/array2d.h>
 #include <cusp/csr_matrix.h>
 #include <cusp/coo_matrix.h>

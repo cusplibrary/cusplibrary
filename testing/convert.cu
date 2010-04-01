@@ -7,7 +7,7 @@
 #include <cusp/ell_matrix.h>
 #include <cusp/hyb_matrix.h>
 
-#include <cusp/valid.h>
+#include <cusp/verify.h>
 
 template <typename IndexType, typename ValueType, typename Space>
 void initialize_conversion_example(cusp::csr_matrix<IndexType, ValueType, Space> & csr)
