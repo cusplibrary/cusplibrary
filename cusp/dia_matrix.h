@@ -86,14 +86,7 @@ namespace cusp
     class dia_matrix : public detail::matrix_base<IndexType,ValueType,MemorySpace>
     {
         public:
-
         // TODO statically assert is_signed<IndexType>
-        typedef IndexType   index_type;
-        typedef ValueType   value_type;
-        typedef MemorySpace memory_space;
-
-        typedef typename cusp::choose_memory_allocator<IndexType, MemorySpace>::type index_allocator_type;
-        typedef typename cusp::choose_memory_allocator<ValueType, MemorySpace>::type value_allocator_type;
         
         template<typename MemorySpace2>
         struct rebind { typedef dia_matrix<IndexType, ValueType, MemorySpace2> type; };

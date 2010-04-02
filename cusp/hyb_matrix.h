@@ -24,10 +24,16 @@
 
 namespace cusp
 {
+/*! \addtogroup container_classes Container Classes 
+ *  \addtogroup sparse_matrix_formats Sparse Matrices
+ *  \ingroup container_classes
+ *  \{
+ */
     // Forward definitions
     template <typename IndexType, typename ValueType, class MemorySpace> class ell_matrix;
     template <typename IndexType, typename ValueType, class MemorySpace> class coo_matrix;
 
+    // TODO document
     template <typename IndexType, typename ValueType, class MemorySpace>
     class hyb_matrix : public detail::matrix_base<IndexType,ValueType,MemorySpace>
     {
@@ -66,6 +72,8 @@ namespace cusp
         template <typename MatrixType>
         hyb_matrix& operator=(const MatrixType& matrix);
     }; // class hyb_matrix
+/*! \}
+ */
 
 } // end namespace cusp
 
