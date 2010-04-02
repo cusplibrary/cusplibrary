@@ -24,42 +24,25 @@ namespace cusp
 //////////////////
         
 // construct empty matrix
-template<typename IndexType, class MemorySpace>
-coo_pattern<IndexType,MemorySpace>
-    ::coo_pattern() {}
-
 template <typename IndexType, typename ValueType, class MemorySpace>
 coo_matrix<IndexType,ValueType,MemorySpace>
     ::coo_matrix()
-        : coo_pattern<IndexType,MemorySpace>() {}
+        : detail::matrix_base<IndexType,ValueType,MemorySpace>() {}
 
 // construct matrix with given shape and number of entries
-template<typename IndexType, class MemorySpace>
-coo_pattern<IndexType,MemorySpace>
-    :: coo_pattern(IndexType num_rows, IndexType num_cols, IndexType num_entries)
-        : detail::matrix_base<IndexType>(num_rows, num_cols, num_entries),
-          row_indices(num_entries), column_indices(num_entries) {}
-
 template <typename IndexType, typename ValueType, class MemorySpace>
 coo_matrix<IndexType,ValueType,MemorySpace>
     ::coo_matrix(IndexType num_rows, IndexType num_cols, IndexType num_entries)
-        : coo_pattern<IndexType,MemorySpace>(num_rows, num_cols, num_entries),
-          values(num_entries) {}
+        : detail::matrix_base<IndexType,ValueType,MemorySpace>(num_rows, num_cols, num_entries),
+          row_indices(num_entries), column_indices(num_entries), values(num_entries) {}
 
 // construct from another coo_matrix
-template<typename IndexType, class MemorySpace>
-template <typename IndexType2, typename MemorySpace2>
-coo_pattern<IndexType,MemorySpace>
-    :: coo_pattern(const coo_pattern<IndexType2,MemorySpace2>& pattern)
-        : detail::matrix_base<IndexType>(pattern),
-          row_indices(pattern.row_indices), column_indices(pattern.column_indices) {}
-
 template <typename IndexType, typename ValueType, class MemorySpace>
 template <typename IndexType2, typename ValueType2, typename MemorySpace2>
 coo_matrix<IndexType,ValueType,MemorySpace>
     ::coo_matrix(const coo_matrix<IndexType2, ValueType2, MemorySpace2>& matrix)
-        : coo_pattern<IndexType,MemorySpace>(matrix),
-          values(matrix.values) {}
+        : detail::matrix_base<IndexType,ValueType,MemorySpace>(matrix.num_rows, matrix.num_cols, matrix.num_entries),
+          row_indices(matrix.row_indices), column_indices(matrix.column_indices), values(matrix.values) {}
         
 // construct from a different matrix format
 template <typename IndexType, typename ValueType, class MemorySpace>
@@ -75,9 +58,9 @@ coo_matrix<IndexType,ValueType,MemorySpace>
 //////////////////////
         
 // resize matrix shape and storage
-template <typename IndexType, class MemorySpace>
+template <typename IndexType, typename ValueType, class MemorySpace>
     void
-    coo_pattern<IndexType,MemorySpace>
+    coo_matrix<IndexType,ValueType,MemorySpace>
     ::resize(IndexType num_rows, IndexType num_cols, IndexType num_entries)
     {
         this->num_rows    = num_rows;
@@ -86,46 +69,30 @@ template <typename IndexType, class MemorySpace>
 
         row_indices.resize(num_entries);
         column_indices.resize(num_entries);
-    }
-
-template <typename IndexType, typename ValueType, class MemorySpace>
-    void
-    coo_matrix<IndexType,ValueType,MemorySpace>
-    ::resize(IndexType num_rows, IndexType num_cols, IndexType num_entries)
-    {
-        coo_pattern<IndexType,MemorySpace>::resize(num_rows, num_cols, num_entries);
         values.resize(num_entries);
     }
 
 // swap matrix contents
-template <typename IndexType, class MemorySpace>
-    void
-    coo_pattern<IndexType,MemorySpace>
-    ::swap(coo_pattern& pattern)
-    {
-        detail::matrix_base<IndexType>::swap(pattern);
-
-        row_indices.swap(pattern.row_indices);
-        column_indices.swap(pattern.column_indices);
-    }
-
 template <typename IndexType, typename ValueType, class MemorySpace>
     void
     coo_matrix<IndexType,ValueType,MemorySpace>
     ::swap(coo_matrix& matrix)
     {
-        coo_pattern<IndexType,MemorySpace>::swap(matrix);
+        detail::matrix_base<IndexType,ValueType,MemorySpace>::swap(matrix);
+
+        row_indices.swap(matrix.row_indices);
+        column_indices.swap(matrix.column_indices);
         values.swap(matrix.values);
     }
 
-
+// assignment from another coo_matrix
 template <typename IndexType, typename ValueType, class MemorySpace>
 template <typename IndexType2, typename ValueType2, typename MemorySpace2>
     coo_matrix<IndexType,ValueType,MemorySpace>&
     coo_matrix<IndexType,ValueType,MemorySpace>
     ::operator=(const coo_matrix<IndexType2, ValueType2, MemorySpace2>& matrix)
     {
-        // TODO use coo_pattern::operator= or coo_pattern::assign()
+        // TODO use matrix_base::operator=
         this->num_rows       = matrix.num_rows;
         this->num_cols       = matrix.num_cols;
         this->num_entries    = matrix.num_entries;
@@ -136,7 +103,7 @@ template <typename IndexType2, typename ValueType2, typename MemorySpace2>
         return *this;
     }
 
-
+// assignment from another matrix format
 template <typename IndexType, typename ValueType, class MemorySpace>
 template <typename MatrixType>
     coo_matrix<IndexType,ValueType,MemorySpace>&

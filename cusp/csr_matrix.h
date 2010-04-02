@@ -33,34 +33,6 @@ namespace cusp
  *  \ingroup container_classes
  *  \{
  */
-    template<typename IndexType, class MemorySpace>
-    class csr_pattern : public detail::matrix_base<IndexType>
-    {
-        public:
-        typedef MemorySpace memory_space;
-
-        typedef typename cusp::csr_pattern<IndexType, MemorySpace> pattern_type;
-        
-        typedef IndexType index_type;
-       
-        template<typename MemorySpace2>
-        struct rebind { typedef csr_pattern<IndexType, MemorySpace2> type; };
-
-        cusp::array1d<IndexType, MemorySpace> row_offsets;
-        cusp::array1d<IndexType, MemorySpace> column_indices;
-    
-        csr_pattern();
-    
-        csr_pattern(IndexType num_rows, IndexType num_cols, IndexType num_entries);
-        
-        template <typename IndexType2, typename MemorySpace2>
-        csr_pattern(const csr_pattern<IndexType2,MemorySpace2>& pattern);
-
-        void resize(IndexType num_rows, IndexType num_cols, IndexType num_entries);
-        
-        void swap(csr_pattern& pattern);
-    }; // class csr_pattern
-
 
 /*! \p csr_matrix : Compressed Sparse Row matrix format
  *
@@ -107,19 +79,26 @@ namespace cusp
  *
  */
     template <typename IndexType, typename ValueType, class MemorySpace>
-    class csr_matrix : public csr_pattern<IndexType, MemorySpace>
+    class csr_matrix : public detail::matrix_base<IndexType,ValueType,MemorySpace>
     {
         public:
         typedef typename cusp::csr_matrix<IndexType, ValueType, MemorySpace> matrix_type;
-    
-        typedef ValueType value_type;
         
         template<typename MemorySpace2>
         struct rebind { typedef csr_matrix<IndexType, ValueType, MemorySpace2> type; };
         
+        /*! Storage for the row offsets of the CSR data structure.  Also called the "row pointer" array.
+         */
+        cusp::array1d<IndexType, MemorySpace> row_offsets;
+        
+        /*! Storage for the column indices of the CSR data structure.
+         */
+        cusp::array1d<IndexType, MemorySpace> column_indices;
+        
         /*! Storage for the nonzero entries of the CSR data structure.
          */
         cusp::array1d<ValueType, MemorySpace> values;
+    
     
         /*! Construct an empty \p csr_matrix.
          */

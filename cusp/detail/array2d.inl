@@ -32,14 +32,14 @@ array2d<ValueType,MemorySpace,Orientation>
 template<typename ValueType, class MemorySpace, class Orientation>
 array2d<ValueType,MemorySpace,Orientation>
     ::array2d(int num_rows, int num_cols)
-        : detail::matrix_base<index_type>(num_rows, num_cols, num_rows * num_cols),
+        : detail::matrix_base<int,ValueType,MemorySpace>(num_rows, num_cols, num_rows * num_cols),
           values(num_rows * num_cols) {}
 
 // construct matrix with given shape and number of entries and fill with a given value
 template<typename ValueType, class MemorySpace, class Orientation>
 array2d<ValueType,MemorySpace,Orientation>
     ::array2d(int num_rows, int num_cols, const ValueType& value)
-        : detail::matrix_base<index_type>(num_rows, num_cols, num_rows * num_cols),
+        : detail::matrix_base<int,ValueType,MemorySpace>(num_rows, num_cols, num_rows * num_cols),
           values(num_rows * num_cols, value) {}
 
 // construct from another array2d
@@ -47,7 +47,7 @@ template<typename ValueType, class MemorySpace, class Orientation>
 template <typename ValueType2, typename MemorySpace2>
 array2d<ValueType,MemorySpace,Orientation>
     ::array2d(const array2d<ValueType2, MemorySpace2, Orientation>& matrix)
-        : detail::matrix_base<index_type>(matrix),
+        : detail::matrix_base<int,ValueType,MemorySpace>(matrix.num_rows, matrix.num_cols, matrix.num_entries),
           values(matrix.values) {}
 
 // construct from a different matrix format
@@ -66,7 +66,7 @@ array2d<ValueType,MemorySpace,Orientation>
 template<typename ValueType, class MemorySpace, class Orientation>
     void
     array2d<ValueType,MemorySpace,Orientation>
-    ::resize(index_type num_rows, index_type num_cols)
+    ::resize(int num_rows, int num_cols)
 {
     this->num_rows    = num_rows;
     this->num_cols    = num_cols;
@@ -80,7 +80,7 @@ template<typename ValueType, class MemorySpace, class Orientation>
     array2d<ValueType,MemorySpace,Orientation>
     ::swap(array2d<ValueType,MemorySpace,Orientation> & matrix)
 {
-    detail::matrix_base<index_type>::swap(matrix);
+    detail::matrix_base<int,ValueType,MemorySpace>::swap(matrix);
 
     values.swap(matrix.values);
 }

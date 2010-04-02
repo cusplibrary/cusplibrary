@@ -36,36 +36,6 @@ namespace cusp
     struct column_major;
     template<typename ValueType, class MemorySpace, class Orientation> class array2d;
 
-    template<typename IndexType, class MemorySpace>
-    class ell_pattern : public detail::matrix_base<IndexType>
-    {
-        public:
-        typedef IndexType   index_type;
-        typedef MemorySpace memory_space;
-
-        typedef typename cusp::ell_pattern<IndexType, MemorySpace> pattern_type;
-
-        const static index_type invalid_index = static_cast<IndexType>(-1);
-        
-        template<typename MemorySpace2>
-        struct rebind { typedef ell_pattern<IndexType, MemorySpace2> type; };
-
-        cusp::array2d<IndexType, MemorySpace, cusp::column_major> column_indices;
-
-        ell_pattern();
-                   
-        ell_pattern(IndexType num_rows, IndexType num_cols, IndexType num_entries,
-                    IndexType num_entries_per_row, IndexType alignment = 16);
-
-        template <typename IndexType2, typename MemorySpace2>
-        ell_pattern(const ell_pattern<IndexType2,MemorySpace2>& pattern);
-
-        void resize(IndexType num_rows, IndexType num_cols, IndexType num_entries,
-                    IndexType num_entries_per_row, IndexType alignment = 16);
-
-        void swap(ell_pattern& pattern);
-    }; // class ell_pattern
-
 /*! \p ell_matrix : ELLPACK/ITPACK matrix format
  *
  * \tparam IndexType Type used for matrix indices (e.g. \c int).
@@ -113,15 +83,21 @@ namespace cusp
  *
  */
     template <typename IndexType, typename ValueType, class MemorySpace>
-    class ell_matrix : public ell_pattern<IndexType, MemorySpace>
+    class ell_matrix : public detail::matrix_base<IndexType,ValueType,MemorySpace>
     {
         public:
         typedef typename cusp::ell_matrix<IndexType, ValueType, MemorySpace> matrix_type;
     
-        typedef ValueType value_type;
-    
         template<typename MemorySpace2>
         struct rebind { typedef ell_matrix<IndexType, ValueType, MemorySpace2> type; };
+
+        /*! Value used to pad the rows of the column_indices array.
+         */
+        const static IndexType invalid_index = static_cast<IndexType>(-1);
+        
+        /*! Storage for the column indices of the ELL data structure.
+         */
+        cusp::array2d<IndexType, MemorySpace, cusp::column_major> column_indices;
 
         /*! Storage for the nonzero entries of the ELL data structure.
          */

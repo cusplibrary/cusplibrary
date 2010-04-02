@@ -2,43 +2,6 @@
 #include <cusp/ell_matrix.h>
 
 template <class Space>
-void TestEllPatternBasicConstructor(void)
-{
-    cusp::ell_pattern<int, Space> pattern(3, 2, 6, 2, 4);
-
-    ASSERT_EQUAL(pattern.num_rows,              3);
-    ASSERT_EQUAL(pattern.num_cols,              2);
-    ASSERT_EQUAL(pattern.num_entries,           6);
-    ASSERT_EQUAL(pattern.column_indices.num_cols,    2);
-    ASSERT_EQUAL(pattern.column_indices.num_rows,    4);
-    ASSERT_EQUAL(pattern.column_indices.num_entries, 8);
-}
-DECLARE_HOST_DEVICE_UNITTEST(TestEllPatternBasicConstructor);
-
-template <class Space>
-void TestEllPatternCopyConstructor(void)
-{
-    cusp::ell_pattern<int, Space> pattern(3, 2, 6, 2, 4);
-
-    pattern.column_indices.values[0] = 0;
-    pattern.column_indices.values[1] = 0;
-    pattern.column_indices.values[2] = 0;
-    pattern.column_indices.values[4] = 0;
-    pattern.column_indices.values[3] = 1;
-    pattern.column_indices.values[5] = 1;
-    pattern.column_indices.values[6] = 1;
-    pattern.column_indices.values[7] = 1;
-
-    cusp::ell_pattern<int, Space> copy_of_pattern(pattern);
-    
-    ASSERT_EQUAL(copy_of_pattern.num_rows,              3);
-    ASSERT_EQUAL(copy_of_pattern.num_cols,              2);
-    ASSERT_EQUAL(copy_of_pattern.num_entries,           6);
-    ASSERT_EQUAL_QUIET(copy_of_pattern.column_indices, pattern.column_indices);
-}
-DECLARE_HOST_DEVICE_UNITTEST(TestEllPatternCopyConstructor);
-
-template <class Space>
 void TestEllMatrixBasicConstructor(void)
 {
     cusp::ell_matrix<int, float, Space> matrix(3, 2, 6, 2, 4);
@@ -129,18 +92,6 @@ void TestEllMatrixResize(void)
     ASSERT_EQUAL(matrix.values.num_entries, 8);
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestEllMatrixResize);
-
-void TestEllPatternRebind(void)
-{
-    typedef cusp::ell_pattern<int, cusp::host_memory>      HostPattern;
-    typedef HostPattern::rebind<cusp::device_memory>::type DevicePattern;
-
-    HostPattern   h_pattern(10,10,100,10,10);
-    DevicePattern d_pattern(h_pattern);
-
-    ASSERT_EQUAL(h_pattern.num_entries, d_pattern.num_entries);
-}
-DECLARE_UNITTEST(TestEllPatternRebind);
 
 void TestEllMatrixRebind(void)
 {

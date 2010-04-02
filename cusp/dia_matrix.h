@@ -83,7 +83,7 @@ namespace cusp
  *
  */
     template <typename IndexType, typename ValueType, class MemorySpace>
-    class dia_matrix : public detail::matrix_base<IndexType>
+    class dia_matrix : public detail::matrix_base<IndexType,ValueType,MemorySpace>
     {
         public:
 

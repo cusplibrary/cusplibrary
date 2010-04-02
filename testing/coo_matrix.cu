@@ -2,44 +2,6 @@
 #include <cusp/coo_matrix.h>
 
 template <class Space>
-void TestCooPatternBasicConstructor(void)
-{
-    cusp::coo_pattern<int, Space> pattern(3, 2, 6);
-
-    ASSERT_EQUAL(pattern.num_rows,              3);
-    ASSERT_EQUAL(pattern.num_cols,              2);
-    ASSERT_EQUAL(pattern.num_entries,           6);
-    ASSERT_EQUAL(pattern.row_indices.size(),    6);
-    ASSERT_EQUAL(pattern.column_indices.size(), 6);
-}
-DECLARE_HOST_DEVICE_UNITTEST(TestCooPatternBasicConstructor);
-
-template <class Space>
-void TestCooPatternCopyConstructor(void)
-{
-    cusp::coo_pattern<int, Space> pattern(3, 2, 6);
-
-    pattern.row_indices[0] = 0;  pattern.column_indices[0] = 0;
-    pattern.row_indices[1] = 0;  pattern.column_indices[1] = 1;
-    pattern.row_indices[2] = 1;  pattern.column_indices[2] = 0;
-    pattern.row_indices[3] = 1;  pattern.column_indices[3] = 1;
-    pattern.row_indices[4] = 2;  pattern.column_indices[4] = 0;
-    pattern.row_indices[5] = 2;  pattern.column_indices[5] = 1;
-
-    cusp::coo_pattern<int, Space> copy_of_pattern(pattern);
-    
-    ASSERT_EQUAL(copy_of_pattern.num_rows,              3);
-    ASSERT_EQUAL(copy_of_pattern.num_cols,              2);
-    ASSERT_EQUAL(copy_of_pattern.num_entries,           6);
-    ASSERT_EQUAL(copy_of_pattern.row_indices.size(),    6);
-    ASSERT_EQUAL(copy_of_pattern.column_indices.size(), 6);
-   
-    ASSERT_EQUAL(copy_of_pattern.row_indices,    pattern.row_indices);
-    ASSERT_EQUAL(copy_of_pattern.column_indices, pattern.column_indices);
-}
-DECLARE_HOST_DEVICE_UNITTEST(TestCooPatternCopyConstructor);
-
-template <class Space>
 void TestCooMatrixBasicConstructor(void)
 {
     cusp::coo_matrix<int, float, Space> matrix(3, 2, 6);
@@ -129,18 +91,6 @@ void TestCooMatrixSwap(void)
     ASSERT_EQUAL(B.values,         A_copy.values);
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestCooMatrixSwap);
-
-void TestCooPatternRebind(void)
-{
-    typedef cusp::coo_pattern<int, cusp::host_memory>      HostPattern;
-    typedef HostPattern::rebind<cusp::device_memory>::type DevicePattern;
-
-    HostPattern   h_pattern(10,10,100);
-    DevicePattern d_pattern(h_pattern);
-
-    ASSERT_EQUAL(h_pattern.num_entries, d_pattern.num_entries);
-}
-DECLARE_UNITTEST(TestCooPatternRebind);
 
 void TestCooMatrixRebind(void)
 {

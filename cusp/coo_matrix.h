@@ -33,33 +33,6 @@ namespace cusp
  *  \ingroup container_classes
  *  \{
  */
-    template<typename IndexType, class MemorySpace>
-    class coo_pattern : public detail::matrix_base<IndexType>
-    {
-        public:
-        typedef IndexType   index_type;
-        typedef MemorySpace memory_space;
-
-        typedef typename cusp::coo_pattern<IndexType, MemorySpace> pattern_type;
-        
-        template<typename MemorySpace2>
-        struct rebind { typedef coo_pattern<IndexType, MemorySpace2> type; };
-
-        cusp::array1d<IndexType, MemorySpace> row_indices;
-        cusp::array1d<IndexType, MemorySpace> column_indices;
-
-        coo_pattern();
-
-        coo_pattern(IndexType num_rows, IndexType num_cols, IndexType num_entries);
-
-        template <typename IndexType2, typename MemorySpace2>
-        coo_pattern(const coo_pattern<IndexType2,MemorySpace2>& pattern);
-        
-        void resize(IndexType num_rows, IndexType num_cols, IndexType num_entries);
-        
-        void swap(coo_pattern& pattern);
-    }; // class coo_pattern
-
 
 /*! \p coo_matrix : Coordinate matrix format
  *
@@ -101,16 +74,22 @@ namespace cusp
  *
  */
     template <typename IndexType, typename ValueType, class MemorySpace>
-    class coo_matrix : public coo_pattern<IndexType, MemorySpace>
+    class coo_matrix : public detail::matrix_base<IndexType,ValueType,MemorySpace>
     {
         public:
-        typedef ValueType value_type;
-
         typedef typename cusp::coo_matrix<IndexType, ValueType, MemorySpace> matrix_type;
         
         template<typename MemorySpace2>
         struct rebind { typedef coo_matrix<IndexType, ValueType, MemorySpace2> type; };
    
+        /*! Storage for the row indices of the COO data structure.
+         */
+        cusp::array1d<IndexType, MemorySpace> row_indices;
+        
+        /*! Storage for the column indices of the COO data structure.
+         */
+        cusp::array1d<IndexType, MemorySpace> column_indices;
+
         /*! Storage for the nonzero entries of the COO data structure.
          */
         cusp::array1d<ValueType, MemorySpace> values;

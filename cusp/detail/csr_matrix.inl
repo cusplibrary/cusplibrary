@@ -24,42 +24,25 @@ namespace cusp
 //////////////////
         
 // construct empty matrix
-template<typename IndexType, class MemorySpace>
-csr_pattern<IndexType,MemorySpace>
-    ::csr_pattern() {}
-
 template <typename IndexType, typename ValueType, class MemorySpace>
 csr_matrix<IndexType,ValueType,MemorySpace>
     ::csr_matrix()
-        : csr_pattern<IndexType,MemorySpace>() {}
+        : detail::matrix_base<IndexType,ValueType,MemorySpace>() {}
 
 // construct matrix with given shape and number of entries
-template<typename IndexType, class MemorySpace>
-csr_pattern<IndexType,MemorySpace>
-    :: csr_pattern(IndexType num_rows, IndexType num_cols, IndexType num_entries)
-        : detail::matrix_base<IndexType>(num_rows, num_cols, num_entries),
-          row_offsets(num_rows + 1), column_indices(num_entries) {}
-
 template <typename IndexType, typename ValueType, class MemorySpace>
 csr_matrix<IndexType,ValueType,MemorySpace>
     ::csr_matrix(IndexType num_rows, IndexType num_cols, IndexType num_entries)
-        : csr_pattern<IndexType,MemorySpace>(num_rows, num_cols, num_entries),
-          values(num_entries) {}
+        : detail::matrix_base<IndexType,ValueType,MemorySpace>(num_rows, num_cols, num_entries),
+          row_offsets(num_rows + 1), column_indices(num_entries), values(num_entries) {}
 
 // construct from another matrix
-template<typename IndexType, class MemorySpace>
-template <typename IndexType2, typename MemorySpace2>
-csr_pattern<IndexType,MemorySpace>
-    :: csr_pattern(const csr_pattern<IndexType2,MemorySpace2>& pattern)
-        : detail::matrix_base<IndexType>(pattern),
-          row_offsets(pattern.row_offsets), column_indices(pattern.column_indices) {}
-
 template <typename IndexType, typename ValueType, class MemorySpace>
 template <typename IndexType2, typename ValueType2, typename MemorySpace2>
 csr_matrix<IndexType,ValueType,MemorySpace>
     ::csr_matrix(const csr_matrix<IndexType2, ValueType2, MemorySpace2>& matrix)
-        : csr_pattern<IndexType,MemorySpace>(matrix),
-          values(matrix.values) {}
+        : detail::matrix_base<IndexType,ValueType,MemorySpace>(matrix.num_rows, matrix.num_cols, matrix.num_entries),
+          row_offsets(matrix.row_offsets), column_indices(matrix.column_indices), values(matrix.values) {}
 
 // construct from a different matrix format
 template <typename IndexType, typename ValueType, class MemorySpace>
@@ -75,9 +58,9 @@ csr_matrix<IndexType,ValueType,MemorySpace>
 //////////////////////
 
 // resize matrix shape and storage
-template <typename IndexType, class MemorySpace>
+template <typename IndexType, typename ValueType, class MemorySpace>
     void
-    csr_pattern<IndexType,MemorySpace>
+    csr_matrix<IndexType,ValueType,MemorySpace>
     ::resize(IndexType num_rows, IndexType num_cols, IndexType num_entries)
     {
         this->num_rows    = num_rows;
@@ -86,44 +69,29 @@ template <typename IndexType, class MemorySpace>
 
         row_offsets.resize(num_rows + 1);
         column_indices.resize(num_entries);
-    }
-
-template <typename IndexType, typename ValueType, class MemorySpace>
-    void
-    csr_matrix<IndexType,ValueType,MemorySpace>
-    ::resize(IndexType num_rows, IndexType num_cols, IndexType num_entries)
-    {
-        csr_pattern<IndexType,MemorySpace>::resize(num_rows, num_cols, num_entries);
         values.resize(num_entries);
     }
 
 // swap matrix contents
-template <typename IndexType, class MemorySpace>
-    void
-    csr_pattern<IndexType,MemorySpace>
-    ::swap(csr_pattern& pattern)
-    {
-        detail::matrix_base<IndexType>::swap(pattern);
-        row_offsets.swap(pattern.row_offsets);
-        column_indices.swap(pattern.column_indices);
-    }
-
 template <typename IndexType, typename ValueType, class MemorySpace>
     void
     csr_matrix<IndexType,ValueType,MemorySpace>
     ::swap(csr_matrix& matrix)
     {
-        csr_pattern<IndexType,MemorySpace>::swap(matrix);
+        detail::matrix_base<IndexType,ValueType,MemorySpace>::swap(matrix);
+        row_offsets.swap(matrix.row_offsets);
+        column_indices.swap(matrix.column_indices);
         values.swap(matrix.values);
     }
 
+// assignment from another csr_matrix
 template <typename IndexType, typename ValueType, class MemorySpace>
 template <typename IndexType2, typename ValueType2, typename MemorySpace2>
     csr_matrix<IndexType,ValueType,MemorySpace>&
     csr_matrix<IndexType,ValueType,MemorySpace>
     ::operator=(const csr_matrix<IndexType2, ValueType2, MemorySpace2>& matrix)
     {
-        // TODO use csr_pattern::operator= or csr_pattern::assign()
+        // TODO use matrix_base::operator=
         this->num_rows       = matrix.num_rows;
         this->num_cols       = matrix.num_cols;
         this->num_entries    = matrix.num_entries;
@@ -134,7 +102,7 @@ template <typename IndexType2, typename ValueType2, typename MemorySpace2>
         return *this;
     }
 
-
+// assignment from another matrix format
 template <typename IndexType, typename ValueType, class MemorySpace>
 template <typename MatrixType>
     csr_matrix<IndexType,ValueType,MemorySpace>&

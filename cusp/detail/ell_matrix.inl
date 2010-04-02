@@ -25,44 +25,27 @@ namespace cusp
 //////////////////
         
 // construct empty matrix
-template<typename IndexType, class MemorySpace>
-ell_pattern<IndexType,MemorySpace>
-    ::ell_pattern() {}
-
 template <typename IndexType, typename ValueType, class MemorySpace>
 ell_matrix<IndexType,ValueType,MemorySpace>
     ::ell_matrix()
-        : ell_pattern<IndexType,MemorySpace>() {}
+        : detail::matrix_base<IndexType,ValueType,MemorySpace>() {}
 
 // construct matrix with given shape and number of entries
-template<typename IndexType, class MemorySpace>
-ell_pattern<IndexType,MemorySpace>
-    ::ell_pattern(IndexType num_rows, IndexType num_cols, IndexType num_entries,
-                  IndexType num_entries_per_row, IndexType alignment)
-        : detail::matrix_base<IndexType>(num_rows, num_cols, num_entries),
-          column_indices(detail::round_up(num_rows, alignment), num_entries_per_row) {}
-
 template <typename IndexType, typename ValueType, class MemorySpace>
 ell_matrix<IndexType,ValueType,MemorySpace>
     ::ell_matrix(IndexType num_rows, IndexType num_cols, IndexType num_entries,
                  IndexType num_entries_per_row, IndexType alignment)
-        : ell_pattern<IndexType,MemorySpace>(num_rows, num_cols, num_entries, num_entries_per_row, alignment),
+        : detail::matrix_base<IndexType,ValueType,MemorySpace>(num_rows, num_cols, num_entries),
+          column_indices(detail::round_up(num_rows, alignment), num_entries_per_row),
           values(detail::round_up(num_rows, alignment), num_entries_per_row) {}
 
 // construct from another matrix
-template<typename IndexType, class MemorySpace>
-template <typename IndexType2, typename MemorySpace2>
-ell_pattern<IndexType,MemorySpace>
-    :: ell_pattern(const ell_pattern<IndexType2,MemorySpace2>& pattern)
-        : detail::matrix_base<IndexType>(pattern),
-          column_indices(pattern.column_indices) {}
-
 template <typename IndexType, typename ValueType, class MemorySpace>
 template <typename IndexType2, typename ValueType2, typename MemorySpace2>
 ell_matrix<IndexType,ValueType,MemorySpace>
     ::ell_matrix(const ell_matrix<IndexType2, ValueType2, MemorySpace2>& matrix)
-        : ell_pattern<IndexType,MemorySpace>(matrix),
-          values(matrix.values) {}
+        : detail::matrix_base<IndexType,ValueType,MemorySpace>(matrix.num_rows, matrix.num_cols, matrix.num_entries),
+          column_indices(matrix.column_indices), values(matrix.values) {}
 
 // construct from a different matrix format
 template <typename IndexType, typename ValueType, class MemorySpace>
@@ -78,9 +61,9 @@ ell_matrix<IndexType,ValueType,MemorySpace>
 //////////////////////
 
 // resize matrix shape and storage
-template <typename IndexType, class MemorySpace>
+template <typename IndexType, typename ValueType, class MemorySpace>
     void
-    ell_pattern<IndexType,MemorySpace>
+    ell_matrix<IndexType,ValueType,MemorySpace>
     ::resize(IndexType num_rows, IndexType num_cols, IndexType num_entries,
              IndexType num_entries_per_row, IndexType alignment)
     {
@@ -89,47 +72,29 @@ template <typename IndexType, class MemorySpace>
         this->num_entries = num_entries;
 
         column_indices.resize(detail::round_up(num_rows, alignment), num_entries_per_row);
-    }
-
-template <typename IndexType, typename ValueType, class MemorySpace>
-    void
-    ell_matrix<IndexType,ValueType,MemorySpace>
-    ::resize(IndexType num_rows, IndexType num_cols, IndexType num_entries,
-             IndexType num_entries_per_row, IndexType alignment)
-    {
-        ell_pattern<IndexType,MemorySpace>::resize(num_rows, num_cols, num_entries,
-                                                    num_entries_per_row, alignment);
-
         values.resize(detail::round_up(num_rows, alignment), num_entries_per_row);
     }
 
 // swap matrix contents
-template <typename IndexType, class MemorySpace>
-    void
-    ell_pattern<IndexType,MemorySpace>
-    ::swap(ell_pattern& pattern)
-    {
-        detail::matrix_base<IndexType>::swap(pattern);
-
-        column_indices.swap(pattern.column_indices);
-    }
-
 template <typename IndexType, typename ValueType, class MemorySpace>
     void
     ell_matrix<IndexType,ValueType,MemorySpace>
     ::swap(ell_matrix& matrix)
     {
-        ell_pattern<IndexType,MemorySpace>::swap(matrix);
+        detail::matrix_base<IndexType,ValueType,MemorySpace>::swap(matrix);
+
+        column_indices.swap(matrix.column_indices);
         values.swap(matrix.values);
     }
 
+// assignment from another coo_matrix
 template <typename IndexType, typename ValueType, class MemorySpace>
 template <typename IndexType2, typename ValueType2, typename MemorySpace2>
     ell_matrix<IndexType,ValueType,MemorySpace>&
     ell_matrix<IndexType,ValueType,MemorySpace>
     ::operator=(const ell_matrix<IndexType2, ValueType2, MemorySpace2>& matrix)
     {
-        // TODO use ell_pattern::operator= or ell_pattern::assign()
+        // TODO use matrix_base::operator=
         this->num_rows            = matrix.num_rows;
         this->num_cols            = matrix.num_cols;
         this->num_entries         = matrix.num_entries;
@@ -139,6 +104,7 @@ template <typename IndexType2, typename ValueType2, typename MemorySpace2>
         return *this;
     }
 
+// assignment from another matrix format
 template <typename IndexType, typename ValueType, class MemorySpace>
 template <typename MatrixType>
     ell_matrix<IndexType,ValueType,MemorySpace>&

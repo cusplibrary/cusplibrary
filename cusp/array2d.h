@@ -71,12 +71,9 @@ namespace cusp
     }
 
     template<typename ValueType, class MemorySpace, class Orientation = cusp::row_major>
-    struct array2d : public detail::matrix_base<int>
+    struct array2d : public detail::matrix_base<int,ValueType,MemorySpace>
     {
         public:
-        typedef int         index_type;
-        typedef ValueType   value_type;
-        typedef MemorySpace memory_space;
         typedef typename cusp::choose_memory_allocator<ValueType, MemorySpace>::type value_allocator_type;
 
         typedef Orientation orientation;
@@ -93,7 +90,7 @@ namespace cusp
         array2d(int num_rows, int num_cols);
         
         // construct matrix with given shape and number of entries and fill with a given value
-        array2d(int num_rows, int num_cols, const value_type& value);
+        array2d(int num_rows, int num_cols, const ValueType& value);
         
         // construct from another array2d (with the same Orientation)
         template <typename ValueType2, typename MemorySpace2>
@@ -103,17 +100,17 @@ namespace cusp
         template <typename MatrixType>
         array2d(const MatrixType& matrix);
         
-        typename value_allocator_type::reference operator()(const index_type i, const index_type j)
+        typename value_allocator_type::reference operator()(const int i, const int j)
         { 
-            return values[detail::index_of(i, j, num_rows, num_cols, orientation())];
+            return values[detail::index_of(i, j, this->num_rows, this->num_cols, orientation())];
         }
 
-        typename value_allocator_type::const_reference operator()(const index_type i, const index_type j) const
+        typename value_allocator_type::const_reference operator()(const int i, const int j) const
         { 
-            return values[detail::index_of(i, j, num_rows, num_cols, orientation())];
+            return values[detail::index_of(i, j, this->num_rows, this->num_cols, orientation())];
         }
         
-        void resize(index_type num_rows, index_type num_cols);
+        void resize(int num_rows, int num_cols);
 
         void swap(array2d& matrix);
         

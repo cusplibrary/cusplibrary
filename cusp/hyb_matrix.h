@@ -29,14 +29,9 @@ namespace cusp
     template <typename IndexType, typename ValueType, class MemorySpace> class coo_matrix;
 
     template <typename IndexType, typename ValueType, class MemorySpace>
-    class hyb_matrix : public detail::matrix_base<IndexType>
+    class hyb_matrix : public detail::matrix_base<IndexType,ValueType,MemorySpace>
     {
         public:
-        typedef IndexType index_type;
-        typedef ValueType value_type;
-
-        typedef MemorySpace memory_space;
-
         template<typename MemorySpace2>
         struct rebind { typedef hyb_matrix<IndexType, ValueType, MemorySpace2> type; };
 

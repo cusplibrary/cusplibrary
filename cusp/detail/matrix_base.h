@@ -22,11 +22,13 @@ namespace cusp
 namespace detail
 {
 
-    template<typename IndexType>
+    template<typename IndexType, typename ValueType, typename MemorySpace>
     class matrix_base
     {
         public:
-            typedef IndexType index_type;
+            typedef IndexType   index_type;
+            typedef ValueType   value_type;
+            typedef MemorySpace memory_space;
 
             index_type num_rows;
             index_type num_cols;
