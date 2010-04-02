@@ -28,9 +28,9 @@
 namespace cusp
 {
 
-/*! \addtogroup container_classes Container Classes 
+/*! \addtogroup containers Containers 
  *  \addtogroup sparse_matrix_formats Sparse Matrices
- *  \ingroup container_classes
+ *  \ingroup containers
  *  \{
  */
 
