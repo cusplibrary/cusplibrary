@@ -93,11 +93,11 @@ namespace cusp
 
         /*! Storage for the diagonal offsets.
          */
-        cusp::array1d<IndexType, index_allocator_type> diagonal_offsets;
+        cusp::array1d<IndexType, MemorySpace> diagonal_offsets;
         
         /*! Storage for the nonzero entries of the DIA data structure.
          */
-        cusp::array2d<ValueType, value_allocator_type, cusp::column_major> values;
+        cusp::array2d<ValueType, MemorySpace, cusp::column_major> values;
             
         /*! Construct an empty \p dia_matrix.
          */
