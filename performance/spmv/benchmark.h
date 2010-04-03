@@ -143,8 +143,8 @@ void test_coo(HostMatrix& host_matrix)
     test_spmv("coo_flat",     host_matrix, test_matrix_on_host, test_matrix_on_device, cusp::detail::device::spmv_coo_flat    <IndexType,ValueType>);
     test_spmv("coo_flat_tex", host_matrix, test_matrix_on_host, test_matrix_on_device, cusp::detail::device::spmv_coo_flat_tex<IndexType,ValueType>);
     
-    test_spmv("coo_flat_k",     host_matrix, test_matrix_on_host, test_matrix_on_device, cusp::detail::device::spmv_coo_flat_k    <IndexType,ValueType>);
-    test_spmv("coo_flat_k_tex", host_matrix, test_matrix_on_host, test_matrix_on_device, cusp::detail::device::spmv_coo_flat_k_tex<IndexType,ValueType>);
+//    test_spmv("coo_flat_k",     host_matrix, test_matrix_on_host, test_matrix_on_device, cusp::detail::device::spmv_coo_flat_k    <IndexType,ValueType>);
+//    test_spmv("coo_flat_k_tex", host_matrix, test_matrix_on_host, test_matrix_on_device, cusp::detail::device::spmv_coo_flat_k_tex<IndexType,ValueType>);
 }
 
 template <typename HostMatrix>
