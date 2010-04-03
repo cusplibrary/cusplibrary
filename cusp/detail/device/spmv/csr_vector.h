@@ -64,7 +64,7 @@ spmv_csr_vector_kernel(const IndexType num_rows,
                        const ValueType * x, 
                              ValueType * y)
 {
-    __shared__ volatile ValueType sdata[(VECTORS_PER_BLOCK + 1) * THREADS_PER_VECTOR];      // padded to avoid reduction conditionals
+    __shared__ volatile ValueType sdata[VECTORS_PER_BLOCK * THREADS_PER_VECTOR + THREADS_PER_VECTOR / 2];  // padded to avoid reduction conditionals
     __shared__ volatile IndexType ptrs[VECTORS_PER_BLOCK][2];
     
     const IndexType THREADS_PER_BLOCK = VECTORS_PER_BLOCK * THREADS_PER_VECTOR;
@@ -102,26 +102,18 @@ spmv_csr_vector_kernel(const IndexType num_rows,
         if (THREADS_PER_VECTOR >  2) sdata[threadIdx.x] = sum = sum + sdata[threadIdx.x +  2];
         if (THREADS_PER_VECTOR >  1) sdata[threadIdx.x] = sum = sum + sdata[threadIdx.x +  1];
        
-//// Alternative method (slightly slower)
-//      if (THREADS_PER_VECTOR > 16)  sdata[threadIdx.x] += sdata[threadIdx.x + 16];
-//      if (THREADS_PER_VECTOR >  8)  sdata[threadIdx.x] += sdata[threadIdx.x +  8];
-//      if (THREADS_PER_VECTOR >  4)  sdata[threadIdx.x] += sdata[threadIdx.x +  4];
-//      if (THREADS_PER_VECTOR >  2)  sdata[threadIdx.x] += sdata[threadIdx.x +  2];
-//      if (THREADS_PER_VECTOR >  1)  sdata[threadIdx.x] += sdata[threadIdx.x +  1];
-
         // first thread writes the result
         if (thread_lane == 0)
             y[row] = sdata[threadIdx.x];
     }
 }
 
-template <bool UseCache, typename IndexType, typename ValueType>
+template <bool UseCache, unsigned int THREADS_PER_VECTOR, typename IndexType, typename ValueType>
 void __spmv_csr_vector(const csr_matrix<IndexType,ValueType,cusp::device_memory>& csr, 
                        const ValueType * x, 
                              ValueType * y)
 {
     const unsigned int THREADS_PER_BLOCK  = 128;
-    const unsigned int THREADS_PER_VECTOR = 32;
     const unsigned int VECTORS_PER_BLOCK  = THREADS_PER_BLOCK / THREADS_PER_VECTOR;
 
     //const unsigned int MAX_BLOCKS = MAX_THREADS / THREADS_PER_BLOCK;
@@ -147,7 +139,14 @@ void spmv_csr_vector(const cusp::csr_matrix<IndexType,ValueType,cusp::device_mem
                      const ValueType * x, 
                            ValueType * y)
 {
-    __spmv_csr_vector<false>(csr, x, y);
+    const IndexType nnz_per_row = csr.num_entries / csr.num_rows;
+
+    if (nnz_per_row <=  2) { __spmv_csr_vector<false, 2>(csr, x, y); return; }
+    if (nnz_per_row <=  4) { __spmv_csr_vector<false, 4>(csr, x, y); return; }
+    if (nnz_per_row <=  8) { __spmv_csr_vector<false, 8>(csr, x, y); return; }
+    if (nnz_per_row <= 16) { __spmv_csr_vector<false,16>(csr, x, y); return; }
+    
+    __spmv_csr_vector<false,32>(csr, x, y);
 }
 
 template <typename IndexType, typename ValueType>
@@ -155,7 +154,14 @@ void spmv_csr_vector_tex(const csr_matrix<IndexType,ValueType,cusp::device_memor
                          const ValueType * x, 
                                ValueType * y)
 {
-    __spmv_csr_vector<true>(csr, x, y);
+    const IndexType nnz_per_row = csr.num_entries / csr.num_rows;
+
+    if (nnz_per_row <=  2) { __spmv_csr_vector<true, 2>(csr, x, y); return; }
+    if (nnz_per_row <=  4) { __spmv_csr_vector<true, 4>(csr, x, y); return; }
+    if (nnz_per_row <=  8) { __spmv_csr_vector<true, 8>(csr, x, y); return; }
+    if (nnz_per_row <= 16) { __spmv_csr_vector<true,16>(csr, x, y); return; }
+
+    __spmv_csr_vector<true,32>(csr, x, y);
 }
 
 } // end namespace device
