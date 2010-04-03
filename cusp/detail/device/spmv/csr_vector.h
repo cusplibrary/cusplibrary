@@ -87,10 +87,27 @@ spmv_csr_vector_kernel(const IndexType num_rows,
 
         // initialize local sum
         ValueType sum = 0;
-        
-        // accumulate local sums
-        for(IndexType jj = row_start + thread_lane; jj < row_end; jj += THREADS_PER_VECTOR)
-            sum += Ax[jj] * fetch_x<UseCache>(Aj[jj], x);
+     
+        if (THREADS_PER_VECTOR == 32 && row_end - row_start > 32)
+        {
+            // ensure aligned memory access to Aj and Ax
+
+            IndexType jj = row_start - (row_start & (THREADS_PER_VECTOR - 1)) + thread_lane;
+
+            // accumulate local sums
+            if(jj >= row_start && jj < row_end)
+                sum += Ax[jj] * fetch_x<UseCache>(Aj[jj], x);
+
+            // accumulate local sums
+            for(jj += THREADS_PER_VECTOR; jj < row_end; jj += THREADS_PER_VECTOR)
+                sum += Ax[jj] * fetch_x<UseCache>(Aj[jj], x);
+        }
+        else
+        {
+            // accumulate local sums
+            for(IndexType jj = row_start + thread_lane; jj < row_end; jj += THREADS_PER_VECTOR)
+                sum += Ax[jj] * fetch_x<UseCache>(Aj[jj], x);
+        }
 
         // store local sum in shared memory
         sdata[threadIdx.x] = sum;
