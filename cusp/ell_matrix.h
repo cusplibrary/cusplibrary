@@ -114,10 +114,10 @@ namespace cusp
          *  \param num_cols Number of columns.
          *  \param num_entries Number of nonzero matrix entries.
          *  \param num_entries_per_row Maximum number of nonzeros per row.
-         *  \param alignment Amount of padding used to align the data structure (default 16).
+         *  \param alignment Amount of padding used to align the data structure (default 32).
          */
         ell_matrix(IndexType num_rows, IndexType num_cols, IndexType num_entries,
-                   IndexType num_entries_per_row, IndexType alignment = 16);
+                   IndexType num_entries_per_row, IndexType alignment = 32);
     
         /*! Construct a \p ell_matrix from another \p ell_matrix.
          *
@@ -134,7 +134,7 @@ namespace cusp
         ell_matrix(const MatrixType& matrix);
         
         void resize(IndexType num_rows, IndexType num_cols, IndexType num_entries,
-                    IndexType num_entries_per_row, IndexType alignment = 16);
+                    IndexType num_entries_per_row, IndexType alignment = 32);
 
         /*! Swap the contents of two \p ell_matrix objects.
          *

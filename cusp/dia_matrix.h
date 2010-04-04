@@ -110,10 +110,10 @@ namespace cusp
          *  \param num_cols Number of columns.
          *  \param num_entries Number of nonzero matrix entries.
          *  \param num_diagonals Number of occupied diagonals.
-         *  \param alignment Amount of padding used to align the data structure (default 16).
+         *  \param alignment Amount of padding used to align the data structure (default 32).
          */
         dia_matrix(IndexType num_rows, IndexType num_cols, IndexType num_entries,
-                   IndexType num_diagonals, IndexType alignment = 16);
+                   IndexType num_diagonals, IndexType alignment = 32);
         
         /*! Construct a \p dia_matrix from another \p dia_matrix.
          *
@@ -130,7 +130,7 @@ namespace cusp
         dia_matrix(const MatrixType& matrix);
         
         void resize(IndexType num_rows, IndexType num_cols, IndexType num_entries,
-                    IndexType num_diagonals, IndexType alignment = 16);
+                    IndexType num_diagonals, IndexType alignment = 32);
 
         /*! Swap the contents of two \p dia_matrix objects.
          *

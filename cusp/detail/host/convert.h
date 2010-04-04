@@ -122,7 +122,7 @@ template <typename IndexType, typename ValueType>
 void convert(      cusp::dia_matrix<IndexType,ValueType,cusp::host_memory>& dst,
              const cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& src,
              const float max_fill = 3.0,
-             const IndexType alignment = 16)
+             const IndexType alignment = 32)
 {
     const IndexType occupied_diagonals = cusp::detail::host::count_diagonals(src);
 
@@ -150,7 +150,7 @@ template <typename IndexType, typename ValueType>
 void convert(      cusp::ell_matrix<IndexType,ValueType,cusp::host_memory>& dst,
              const cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& src,
              const float max_fill = 3.0,
-             const IndexType alignment = 16)
+             const IndexType alignment = 32)
 {
     const IndexType max_entries_per_row = cusp::detail::host::compute_max_entries_per_row(src);
     const float fill_ratio = float(max_entries_per_row) * float(src.num_rows) / std::max(1.0f, float(src.num_entries));

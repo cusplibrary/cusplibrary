@@ -76,8 +76,7 @@ void __spmv_csr_scalar(const csr_matrix<IndexType,ValueType,cusp::device_memory>
                              ValueType * y)
 {
     const unsigned int BLOCK_SIZE = 256;
-    const unsigned int MAX_BLOCKS = MAX_THREADS / BLOCK_SIZE;
-//    const unsigned int MAX_BLOCKS = thrust::experimental::arch::max_active_blocks(spmv_csr_scalar_kernel<IndexType, ValueType, UseCache>, BLOCK_SIZE, (size_t) 0);
+    const unsigned int MAX_BLOCKS = thrust::experimental::arch::max_active_blocks(spmv_csr_scalar_kernel<IndexType, ValueType, UseCache>, BLOCK_SIZE, (size_t) 0);
     const unsigned int NUM_BLOCKS = std::min(MAX_BLOCKS, DIVIDE_INTO(csr.num_rows, BLOCK_SIZE));
     
     if (UseCache)

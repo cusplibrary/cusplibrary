@@ -118,7 +118,7 @@ void csr_to_coo(      cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& d
 template <typename IndexType, typename ValueType>
 void csr_to_dia(       cusp::dia_matrix<IndexType,ValueType,cusp::host_memory>& dia,
                  const cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& csr,
-                 const IndexType alignment = 16)
+                 const IndexType alignment = 32)
 {
     // compute number of occupied diagonals and enumerate them
     IndexType num_diagonals = 0;
@@ -175,7 +175,7 @@ template <typename IndexType, typename ValueType>
 void csr_to_hyb(      cusp::hyb_matrix<IndexType,ValueType,cusp::host_memory>& hyb, 
                 const cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& csr,
                 const IndexType num_entries_per_row,
-                const IndexType alignment = 16)
+                const IndexType alignment = 32)
 {
     // The ELL portion of the HYB matrix will have 'num_entries_per_row' columns.
     // Nonzero values that do not fit within the ELL structure are placed in the 
@@ -229,7 +229,7 @@ void csr_to_hyb(      cusp::hyb_matrix<IndexType,ValueType,cusp::host_memory>& h
 template <typename IndexType, typename ValueType>
 void csr_to_ell(      cusp::ell_matrix<IndexType,ValueType,cusp::host_memory>&  ell,
                 const cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>&  csr,
-                const IndexType num_entries_per_row, const IndexType alignment = 16)
+                const IndexType num_entries_per_row, const IndexType alignment = 32)
 {
     // Constructs an ELL matrix with 'num_entries_per_row' consisting of the first
     // 'num_entries_per_row' entries in each row of the CSR matrix.

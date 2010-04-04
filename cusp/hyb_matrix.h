@@ -50,7 +50,7 @@ namespace cusp
         // construct matrix with given shape and number of entries
         hyb_matrix(IndexType num_rows, IndexType num_cols,
                    IndexType num_ell_entries, IndexType num_coo_entries,
-                   IndexType num_entries_per_row, IndexType alignment = 16);
+                   IndexType num_entries_per_row, IndexType alignment = 32);
 
         // construct from another hyb_matrix
         template <typename IndexType2, typename ValueType2, typename MemorySpace2>
@@ -62,7 +62,7 @@ namespace cusp
         
         void resize(IndexType num_rows, IndexType num_cols,
                     IndexType num_ell_entries, IndexType num_coo_entries,
-                    IndexType num_entries_per_row, IndexType alignment = 16);
+                    IndexType num_entries_per_row, IndexType alignment = 32);
 
         void swap(hyb_matrix& matrix);
         

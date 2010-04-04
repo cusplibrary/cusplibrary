@@ -315,10 +315,8 @@ void __spmv_coo_flat(const coo_matrix<IndexType,ValueType,cusp::device_memory>& 
         return;
     }
 
-    //TODO Determine optimal BLOCK_SIZE and MAX_BLOCKS
     const unsigned int BLOCK_SIZE = 256;
-    const unsigned int MAX_BLOCKS = MAX_THREADS / (2 * BLOCK_SIZE);
-//    const unsigned int MAX_BLOCKS = thrust::experimental::arch::max_active_blocks(spmv_coo_flat_kernel<IndexType, ValueType, BLOCK_SIZE, UseCache>, BLOCK_SIZE, (size_t) 0);
+    const unsigned int MAX_BLOCKS = thrust::experimental::arch::max_active_blocks(spmv_coo_flat_kernel<IndexType, ValueType, BLOCK_SIZE, UseCache>, BLOCK_SIZE, (size_t) 0);
     const unsigned int WARPS_PER_BLOCK = BLOCK_SIZE / WARP_SIZE;
 
     const unsigned int num_units  = coo.num_entries / WARP_SIZE; 
@@ -342,11 +340,11 @@ void __spmv_coo_flat(const coo_matrix<IndexType,ValueType,cusp::device_memory>& 
         (tail, interval_size, I, J, V, d_x, d_y,
          thrust::raw_pointer_cast(&temp_rows[0]), thrust::raw_pointer_cast(&temp_vals[0]));
 
-    spmv_coo_serial_kernel<IndexType,ValueType> <<<1,1>>>
-        (coo.num_entries - tail, I + tail, J + tail, V + tail, d_x, d_y);
-
     spmv_coo_reduce_update_kernel<IndexType, ValueType, 512> <<<1, 512>>>
         (active_warps, thrust::raw_pointer_cast(&temp_rows[0]), thrust::raw_pointer_cast(&temp_vals[0]), d_y);
+    
+    spmv_coo_serial_kernel<IndexType,ValueType> <<<1,1>>>
+        (coo.num_entries - tail, I + tail, J + tail, V + tail, d_x, d_y);
 
     if (UseCache)
         unbind_x(d_x);
