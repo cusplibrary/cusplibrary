@@ -67,7 +67,7 @@ void spmv_csr_scalar_kernel(SizeType        num_rows,
         OffsetIterator r0 = row_offsets; r0 += i;      OffsetType row_start = thrust::detail::device::dereference(r0); // row_offsets[i]
         OffsetIterator r1 = row_offsets; r1 += i + 1;  OffsetType row_end   = thrust::detail::device::dereference(r1); // row_offsets[i + 1]
 
-        InputIterator y0 = y; y0 += i;  OutputType sum = initialize(thrust::detail::device::dereference(y0));        // initialize(y[i])
+        InitialIterator y0 = y; y0 += i;  OutputType sum = initialize(thrust::detail::device::dereference(y0));        // initialize(y[i])
     
         for (IndexType jj = row_start; jj < row_end; jj++)
         {

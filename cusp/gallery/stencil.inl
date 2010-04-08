@@ -19,6 +19,7 @@
 #include <thrust/tuple.h> // TODO add cusp::tuple?
 
 #include <thrust/reduce.h>
+#include <thrust/scan.h>
 #include <thrust/count.h>
 #include <thrust/functional.h>
 
