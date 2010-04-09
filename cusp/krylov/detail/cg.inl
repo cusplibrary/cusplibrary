@@ -18,10 +18,8 @@
 #include <cusp/array1d.h>
 #include <cusp/blas.h>
 #include <cusp/multiply.h>
-#include <cusp/stopping_criteria.h>
+#include <cusp/monitor.h>
 #include <cusp/linear_operator.h>
-
-#include <iostream>
 
 namespace blas = cusp::blas;
 
@@ -36,35 +34,38 @@ void cg(LinearOperator& A,
         VectorType& x,
         VectorType& b)
 {
-    return cg(A, x, b, cusp::default_stopping_criteria());
+    typedef typename LinearOperator::value_type   ValueType;
+
+    cusp::default_monitor<ValueType> monitor(b);
+
+    cusp::krylov::cg(A, x, b, monitor);
 }
 
 template <class LinearOperator,
           class VectorType,
-          class StoppingCriteria>
+          class Monitor>
 void cg(LinearOperator& A,
         VectorType& x,
         VectorType& b,
-        StoppingCriteria& stopping_criteria)
+        Monitor& monitor)
 {
     typedef typename LinearOperator::value_type   ValueType;
     typedef typename LinearOperator::memory_space MemorySpace;
 
     cusp::identity_operator<ValueType,MemorySpace> M(A.num_rows, A.num_cols);
 
-    return cg(A, x, b, stopping_criteria, M);
+    cusp::krylov::cg(A, x, b, monitor, M);
 }
 
 template <class LinearOperator,
           class VectorType,
-          class StoppingCriteria,
+          class Monitor,
           class Preconditioner>
 void cg(LinearOperator& A,
         VectorType& x,
         VectorType& b,
-        StoppingCriteria& stopping_criteria,
-        Preconditioner& M,
-        const int verbose)
+        Monitor& monitor,
+        Preconditioner& M)
 {
     typedef typename LinearOperator::value_type   ValueType;
     typedef typename LinearOperator::memory_space MemorySpace;
@@ -79,11 +80,6 @@ void cg(LinearOperator& A,
     cusp::array1d<ValueType,MemorySpace> r(N);
     cusp::array1d<ValueType,MemorySpace> p(N);
         
-    //clock_t start = clock();
-
-    // initialize the stopping criteria
-    stopping_criteria.initialize(A, x, b);
-   
     // y <- Ax
     cusp::multiply(A, x, y);
 
@@ -101,27 +97,8 @@ void cg(LinearOperator& A,
     // rz = <r^H, z>
     ValueType rz = blas::dotc(r, z);
 
-    if (verbose)
-        std::cout << "[CG] initial residual norm " << r_norm << std::endl;
-
-    size_t iteration_number = 0;
-
-    while (true)
+    while (!monitor.finished(r))
     {
-        if (stopping_criteria.has_converged(A, x, b, r_norm))
-        {
-            if (verbose)
-                    std::cout << "[CG] converged in " << iteration_number << " iterations (achieved " << r_norm << " residual)" << std::endl;
-            break;
-        }
-        
-        if (stopping_criteria.has_reached_iteration_limit(iteration_number))
-        {
-            if (verbose)
-                    std::cout << "[CG] failed to converge within " << iteration_number << " iterations (achieved " << r_norm << " residual)" << std::endl;;
-            break;
-        }
-
         // y <- Ap
         cusp::multiply(A, p, y);
         
@@ -134,8 +111,8 @@ void cg(LinearOperator& A,
         // z <- M*r
         cusp::multiply(M, r, z);
 		
-        // r2 = <r,r>
-        r_norm = blas::nrm2(r);
+        //// r2 = <r,r>
+        //r_norm = blas::nrm2(r);
         
         ValueType rz_old = rz;
 
@@ -148,7 +125,7 @@ void cg(LinearOperator& A,
         // p <- r + beta*p
         blas::axpby(z, p, p, ValueType(1), beta);
 
-        iteration_number++;
+        ++monitor;
     }
 
     //cudaThreadSynchronize();

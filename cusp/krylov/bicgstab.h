@@ -31,23 +31,22 @@ void bicgstab(LinearOperator& A,
               Vector& b);
 
 template <class LinearOperator,
-          class VectorType,
-          class StoppingCriteria>
+          class Vector,
+          class Monitor>
 void bicgstab(LinearOperator& A,
-              VectorType& x,
-              VectorType& b,
-              StoppingCriteria& stopping_criteria);
+              Vector& x,
+              Vector& b,
+              Monitor& monitor);
 
 template <class LinearOperator,
           class Vector,
-          class StoppingCriteria,
+          class Monitor,
           class Preconditioner>
 void bicgstab(LinearOperator& A,
               Vector& x,
               Vector& b,
-              StoppingCriteria& stopping_criteria,
-              Preconditioner& M,
-              const int verbose = 0);
+              Monitor& monitor,
+              Preconditioner& M);
 
 } // end namespace krylov
 } // end namespace cusp

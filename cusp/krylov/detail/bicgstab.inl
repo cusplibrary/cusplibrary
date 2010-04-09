@@ -18,10 +18,8 @@
 #include <cusp/array1d.h>
 #include <cusp/blas.h>
 #include <cusp/multiply.h>
-#include <cusp/stopping_criteria.h>
+#include <cusp/monitor.h>
 #include <cusp/linear_operator.h>
-
-#include <iostream>
 
 namespace blas = cusp::blas;
 
@@ -36,35 +34,38 @@ void bicgstab(LinearOperator& A,
               Vector& x,
               Vector& b)
 {
-    return bicgstab(A, x, b, cusp::default_stopping_criteria());
+    typedef typename LinearOperator::value_type   ValueType;
+
+    cusp::default_monitor<ValueType> monitor(b);
+
+    cusp::krylov::bicgstab(A, x, b, monitor);
 }
 
 template <class LinearOperator,
-          class VectorType,
-          class StoppingCriteria>
+          class Vector,
+          class Monitor>
 void bicgstab(LinearOperator& A,
-              VectorType& x,
-              VectorType& b,
-              StoppingCriteria& stopping_criteria)
+              Vector& x,
+              Vector& b,
+              Monitor& monitor)
 {
     typedef typename LinearOperator::value_type   ValueType;
     typedef typename LinearOperator::memory_space MemorySpace;
 
     cusp::identity_operator<ValueType,MemorySpace> M(A.num_rows, A.num_cols);
 
-    return bicgstab(A, x, b, stopping_criteria, M);
+    cusp::krylov::bicgstab(A, x, b, monitor, M);
 }
 
 template <class LinearOperator,
           class Vector,
-          class StoppingCriteria,
+          class Monitor,
           class Preconditioner>
 void bicgstab(LinearOperator& A,
               Vector& x,
               Vector& b,
-              StoppingCriteria& stopping_criteria,
-              Preconditioner& M,
-              const int verbose)
+              Monitor& monitor,
+              Preconditioner& M)
 {
     typedef typename LinearOperator::value_type   ValueType;
     typedef typename LinearOperator::memory_space MemorySpace;
@@ -85,9 +86,6 @@ void bicgstab(LinearOperator& A,
     cusp::array1d<ValueType,MemorySpace>  Ms(N);
     cusp::array1d<ValueType,MemorySpace> AMs(N);
 
-    // initialize the stopping criteria
-    stopping_criteria.initialize(A, x, b);
-
     // y <- Ax
     cusp::multiply(A, x, y);
 
@@ -100,32 +98,10 @@ void bicgstab(LinearOperator& A,
     // r_star <- r
     blas::copy(r, r_star);
 
-    // r_norm <- || r ||
-    ValueType r_norm = blas::nrm2(r);
-
     ValueType r_r_star_old = blas::dotc(r_star, r);
 
-    if (verbose)
-        std::cout << "[BiCGstab] initial residual norm " << r_norm << std::endl;
-
-    size_t iteration_number = 0;
-
-    while (true)
+    while (!monitor.finished(r))
     {
-        if (stopping_criteria.has_converged(A, x, b, r_norm))
-        {
-            if (verbose)
-                    std::cout << "[BiCGstab] converged in " << iteration_number << " iterations (achieved " << r_norm << " residual)" << std::endl;
-            break;
-        }
-        
-        if (stopping_criteria.has_reached_iteration_limit(iteration_number))
-        {
-            if (verbose)
-                    std::cout << "[BiCGstab] failed to converge within " << iteration_number << " iterations (achieved " << r_norm << " residual)" << std::endl;;
-            break;
-        }
-
         // Mp = M*p
         cusp::multiply(M, p, Mp);
 
@@ -161,9 +137,7 @@ void bicgstab(LinearOperator& A,
         // p_{j+1} = r_{j+1} + beta*(p_j - omega*A*M*p)
         blas::axpbypcz(r, p, AMp, p, ValueType(1), beta, -beta*omega);
 
-        r_norm = blas::nrm2(r);
-
-        iteration_number++;
+        ++monitor;
     }
 }
 

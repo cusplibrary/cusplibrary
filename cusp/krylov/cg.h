@@ -32,22 +32,21 @@ void cg(LinearOperator& A,
 
 template <class LinearOperator,
           class VectorType,
-          class StoppingCriteria>
+          class Monitor>
 void cg(LinearOperator& A,
         VectorType& x,
         VectorType& b,
-        StoppingCriteria& stopping_criteria);
+        Monitor& monitor);
 
 template <class LinearOperator,
           class VectorType,
-          class StoppingCriteria,
+          class Monitor,
           class Preconditioner>
 void cg(LinearOperator& A,
         VectorType& x,
         VectorType& b,
-        StoppingCriteria& stopping_criteria,
-        Preconditioner& M,
-        const int verbose = 0);
+        Monitor& monitor,
+        Preconditioner& M);
 
 } // end namespace krylov
 } // end namespace cusp

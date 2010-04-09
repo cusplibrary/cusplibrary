@@ -21,18 +21,15 @@ int main(void)
     cusp::array1d<ValueType, MemorySpace> b(A.num_rows, 1);
 
     // set stopping criteria:
-    //        tolerance = 1e-6
-    //  iteration_limit = 100
-    cusp::default_stopping_criteria stopping_criteria(1e-6, 100);
+    //  iteration_limit    = 100
+    //  relative_tolerance = 1e-6
+    cusp::verbose_monitor<ValueType> monitor(b, 100, 1e-6);
 
     // set preconditioner (identity)
     cusp::identity_operator<ValueType, MemorySpace> M(A.num_rows, A.num_rows);
 
-    // set verbosity level
-    int verbose = 1;
-
-    // obtain a linear operator from matrix A and call CG
-    cusp::krylov::cg(A, x, b, stopping_criteria, M, verbose);
+    // solve the linear system A * x = b with the Conjugate Gradient method
+    cusp::krylov::cg(A, x, b, monitor, M);
 
     return 0;
 }
