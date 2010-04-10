@@ -17,6 +17,8 @@
 
 #pragma once
 
+#include <thrust/utility.h>
+
 namespace cusp
 {
 namespace detail

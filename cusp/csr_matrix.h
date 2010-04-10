@@ -60,12 +60,13 @@ namespace cusp
  *  A.row_offsets[2] = 2;  
  *  A.row_offsets[3] = 3;
  *  A.row_offsets[4] = 6; // last offset is always num_entries
- *  A.columns_indices[0] = 0; A.values[0] = 10; 
- *  A.columns_indices[1] = 2; A.values[1] = 20;
- *  A.columns_indices[2] = 2; A.values[2] = 30;
- *  A.columns_indices[3] = 0; A.values[3] = 40;
- *  A.columns_indices[4] = 1; A.values[4] = 50;
- *  A.columns_indices[5] = 2; A.values[5] = 60;
+ *
+ *  A.column_indices[0] = 0; A.values[0] = 10; 
+ *  A.column_indices[1] = 2; A.values[1] = 20;
+ *  A.column_indices[2] = 2; A.values[2] = 30;
+ *  A.column_indices[3] = 0; A.values[3] = 40;
+ *  A.column_indices[4] = 1; A.values[4] = 50;
+ *  A.column_indices[5] = 2; A.values[5] = 60;
  *
  *  // A now represents the following matrix
  *  //    [10  0 20]
@@ -82,8 +83,6 @@ namespace cusp
     class csr_matrix : public detail::matrix_base<IndexType,ValueType,MemorySpace>
     {
         public:
-        typedef typename cusp::csr_matrix<IndexType, ValueType, MemorySpace> matrix_type;
-        
         template<typename MemorySpace2>
         struct rebind { typedef csr_matrix<IndexType, ValueType, MemorySpace2> type; };
         

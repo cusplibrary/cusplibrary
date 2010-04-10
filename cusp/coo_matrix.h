@@ -55,12 +55,12 @@ namespace cusp
  *  cusp::coo_matrix<int,float,cusp::host_memory> A(4,3,6);
  *
  *  // initialize matrix entries on host
- *  A.row_indices[0] = 0; A.columns_indices[0] = 0; A.values[0] = 10;
- *  A.row_indices[1] = 0; A.columns_indices[1] = 2; A.values[1] = 20;
- *  A.row_indices[2] = 2; A.columns_indices[2] = 2; A.values[2] = 30;
- *  A.row_indices[3] = 3; A.columns_indices[3] = 0; A.values[3] = 40;
- *  A.row_indices[4] = 3; A.columns_indices[4] = 1; A.values[4] = 50;
- *  A.row_indices[5] = 3; A.columns_indices[5] = 2; A.values[5] = 60;
+ *  A.row_indices[0] = 0; A.column_indices[0] = 0; A.values[0] = 10;
+ *  A.row_indices[1] = 0; A.column_indices[1] = 2; A.values[1] = 20;
+ *  A.row_indices[2] = 2; A.column_indices[2] = 2; A.values[2] = 30;
+ *  A.row_indices[3] = 3; A.column_indices[3] = 0; A.values[3] = 40;
+ *  A.row_indices[4] = 3; A.column_indices[4] = 1; A.values[4] = 50;
+ *  A.row_indices[5] = 3; A.column_indices[5] = 2; A.values[5] = 60;
  *
  *  // A now represents the following matrix
  *  //    [10  0 20]
@@ -77,8 +77,6 @@ namespace cusp
     class coo_matrix : public detail::matrix_base<IndexType,ValueType,MemorySpace>
     {
         public:
-        typedef typename cusp::coo_matrix<IndexType, ValueType, MemorySpace> matrix_type;
-        
         template<typename MemorySpace2>
         struct rebind { typedef coo_matrix<IndexType, ValueType, MemorySpace2> type; };
    

@@ -54,22 +54,28 @@ namespace cusp
  *  #include <cusp/ell_matrix.h>
  *  ...
  *
- *  // allocate storage for (4,3) matrix with 6 nonzeros
+ *  // allocate storage for (4,3) matrix with 6 nonzeros and at most 3 nonzeros per row.
  *  cusp::ell_matrix<int,float,cusp::host_memory> A(4,3,6,3);
  *
  *  // X is used to fill unused entries in the matrix
  *  const int X = cusp::ell_matrix<int,float,cusp::host_memory>::invalid_index;
  *
- *  // initialize column indices to X
- *  TODO
- *
  *  // initialize matrix entries on host
- *  A.columns_indices(0,0) = 0; A.values(0,0) = 10;
- *  A.columns_indices(0,1) = 2; A.values(0,1) = 20;  // shifted to leftmost position
- *  A.columns_indices(2,0) = 2; A.values(2,0) = 30;  // shifted to leftmost position
- *  A.columns_indices(3,0) = 0; A.values(3,0) = 40;
- *  A.columns_indices(3,1) = 1; A.values(3,1) = 50;
- *  A.columns_indices(3,2) = 2; A.values(3,2) = 60;
+ *  A.column_indices(0,0) = 0; A.values(0,0) = 10;
+ *  A.column_indices(0,1) = 2; A.values(0,1) = 20;  // shifted to leftmost position
+ *  A.column_indices(0,2) = X; A.values(0,2) =  0;  // padding
+ *
+ *  A.column_indices(1,0) = X; A.values(1,0) =  0;  // padding
+ *  A.column_indices(1,1) = X; A.values(1,1) =  0;  // padding
+ *  A.column_indices(1,2) = X; A.values(1,2) =  0;  // padding
+ *
+ *  A.column_indices(2,0) = 2; A.values(2,0) = 30;  // shifted to leftmost position
+ *  A.column_indices(2,1) = X; A.values(2,1) =  0;  // padding
+ *  A.column_indices(2,2) = X; A.values(2,2) =  0;  // padding
+ *
+ *  A.column_indices(3,0) = 0; A.values(3,0) = 40;
+ *  A.column_indices(3,1) = 1; A.values(3,1) = 50;
+ *  A.column_indices(3,2) = 2; A.values(3,2) = 60;
  *
  *  // A now represents the following matrix
  *  //    [10  0 20]
@@ -86,8 +92,6 @@ namespace cusp
     class ell_matrix : public detail::matrix_base<IndexType,ValueType,MemorySpace>
     {
         public:
-        typedef typename cusp::ell_matrix<IndexType, ValueType, MemorySpace> matrix_type;
-    
         template<typename MemorySpace2>
         struct rebind { typedef ell_matrix<IndexType, ValueType, MemorySpace2> type; };
 
@@ -107,7 +111,7 @@ namespace cusp
          */
         ell_matrix();
     
-        /*! Construct a \p ell_matrix with a specific shape, number of nonzero entries,
+        /*! Construct an \p ell_matrix with a specific shape, number of nonzero entries,
          *  and maximum number of nonzero entries per row.
          *
          *  \param num_rows Number of rows.
@@ -119,14 +123,14 @@ namespace cusp
         ell_matrix(IndexType num_rows, IndexType num_cols, IndexType num_entries,
                    IndexType num_entries_per_row, IndexType alignment = 32);
     
-        /*! Construct a \p ell_matrix from another \p ell_matrix.
+        /*! Construct an \p ell_matrix from another \p ell_matrix.
          *
          *  \param matrix Another \p ell_matrix.
          */
         template <typename IndexType2, typename ValueType2, typename MemorySpace2>
         ell_matrix(const ell_matrix<IndexType2, ValueType2, MemorySpace2>& matrix);
         
-        /*! Construct a \p ell_matrix from another matrix format.
+        /*! Construct an \p ell_matrix from another matrix format.
          *
          *  \param matrix Another sparse or dense matrix.
          */
