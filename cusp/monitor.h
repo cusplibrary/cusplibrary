@@ -30,24 +30,100 @@
 
 namespace cusp
 {
+/*! \addtogroup iterative_solvers Iterative Solvers
+ *  \addtogroup monitors Monitors
+ *  \ingroup iterative_solvers
+ *  \{
+ */
 
-template <typename ValueType>
+/*! \p default_monitor : Implements standard convergence criteria
+ * and reporting for iterative solvers.
+ *
+ * \tparam Real real-valued type (e.g. \c float or \c double).
+ *
+ *  The following code snippet demonstrates how to configure
+ *  the \p default_monitor and use it with an iterative solver.
+ *
+ *  \code
+ *  #include <cusp/csr_matrix.h>
+ *  #include <cusp/monitor.h>
+ *  #include <cusp/krylov/cg.h>
+ *  #include <cusp/gallery/poisson.h>
+ *  
+ *  int main(void)
+ *  {
+ *      // create an empty sparse matrix structure (CSR format)
+ *      cusp::csr_matrix<int, float, cusp::device_memory> A;
+ *  
+ *      // initialize matrix
+ *      cusp::gallery::poisson5pt(A, 10, 10);
+ *  
+ *      // allocate storage for solution (x) and right hand side (b)
+ *      cusp::array1d<float, cusp::device_memory> x(A.num_rows, 0);
+ *      cusp::array1d<float, cusp::device_memory> b(A.num_rows, 1);
+ *  
+ *      // set stopping criteria:
+ *      //  iteration_limit    = 100
+ *      //  relative_tolerance = 1e-6
+ *      cusp::default_monitor<float> monitor(b, 100, 1e-6);
+ *  
+ *      // solve the linear system A x = b
+ *      cusp::krylov::cg(A, x, b, monitor);
+ *  
+ *      // report solver results
+ *      if (monitor.converged())
+ *      {
+ *          std::cout << "Solver converged to " << monitor.relative_tolerance() << " relative tolerance";
+ *          std::cout << " after " << monitor.iteration_count() << " iterations" << std::endl;
+ *      }
+ *      else
+ *      {
+ *          std::cout << "Solver reached iteration limit " << monitor.iteration_limit() << " before converging";
+ *          std::cout << " to " << monitor.relative_tolerance() << " relative tolerance " << std::endl;
+ *      }
+ *  
+ *      return 0;
+ *  }
+ *  \endcode
+ *
+ *  \see \p verbose_monitor
+ *
+ */
+template <typename Real>
 class default_monitor
 {
     public:
-
+    /*! Construct a \p default_monitor for a given right-hand-side \b
+     *
+     *  The \p default_monitor terminates iteration when the residual norm
+     *  satisfies the condition
+     *       ||b - A x|| < relative_tolerance * ||b||
+     *  or when the iteration limit is reached.
+     *
+     *  \param b right-hand-side of the linear system A x = b
+     *  \param iteration_limit maximum number of solver iterations to allow
+     *  \param relative_tolerance determines convergence criteria
+     *
+     *  \tparam VectorType vector
+     */
     template <typename Vector>
-    default_monitor(const Vector& b, size_t iteration_limit = 500, ValueType relative_tolerance = 1e-5)
+    default_monitor(const Vector& b, size_t iteration_limit = 500, Real relative_tolerance = 1e-5)
         : b_norm(cusp::blas::nrm2(b)),
-          r_norm(std::numeric_limits<ValueType>::max()),
+          r_norm(std::numeric_limits<Real>::max()),
           iteration_limit_(iteration_limit),
           iteration_count_(0),
           relative_tolerance_(relative_tolerance)
     {}
 
-    void operator++(void) {  ++iteration_count_; } // prefix
-    //void operator++(int)  {  iteration++; } // postfix
+    /*! increment the iteration count
+     */
+    void operator++(void) {  ++iteration_count_; } // prefix increment
 
+    /*! applies convergence criteria to determine whether iteration is finished
+     *
+     *  \param r residual vector of the linear system (r = b - A x)
+     *  \tparam Vector vector
+     */
     template <typename Vector>
     bool finished(const Vector& r)
     {
@@ -56,6 +132,8 @@ class default_monitor
         return converged() || iteration_count() >= iteration_limit();
     }
     
+    /*! whether the last tested residual satifies the convergence tolerance
+     */
     bool converged() const
     {
         if (b_norm == 0)
@@ -64,35 +142,50 @@ class default_monitor
             return r_norm < relative_tolerance() * b_norm;
     }
 
+    /*! number of iterations
+     */
     size_t iteration_count() const { return iteration_count_; }
+
+    /*! maximum number of iterations
+     */
     size_t iteration_limit() const { return iteration_limit_; }
 
-    ValueType relative_tolerance() const { return relative_tolerance_; }
+    /*! relative tolerance
+     */
+    Real relative_tolerance() const { return relative_tolerance_; }
 
     protected:
     
-    ValueType r_norm;
-    ValueType b_norm;
-    ValueType relative_tolerance_;
+    Real r_norm;
+    Real b_norm;
+    Real relative_tolerance_;
 
     size_t iteration_limit_;
     size_t iteration_count_;
 };
 
 
-template <typename ValueType=double>
-class verbose_monitor : public default_monitor<ValueType>
+/*! \p default_monitor is similar to \p default monitor except that
+ * it displays the solver status during iteration and reports a 
+ * summary after iteration has stopped.
+ *
+ * \tparam Real real-valued type (e.g. \c float or \c double).
+ *
+ * \see \p default_monitor
+ */
+template <typename Real>
+class verbose_monitor : public default_monitor<Real>
 {
-    typedef cusp::default_monitor<ValueType> super;
+    typedef cusp::default_monitor<Real> super;
 
     public:
 
     template <typename Vector>
-    verbose_monitor(const Vector& b, size_t iteration_limit = 500, ValueType relative_tolerance = 1e-5)
+    verbose_monitor(const Vector& b, size_t iteration_limit = 500, Real relative_tolerance = 1e-5)
         : super(b, iteration_limit, relative_tolerance)
     {
         std::cout << "Solver will continue until ";
-        std::cout << "residual " << super::b_norm * super::relative_tolerance() << " or reaching ";
+        std::cout << "residual norm " << super::b_norm * super::relative_tolerance() << " or reaching ";
         std::cout << super::iteration_limit() << " iterations " << std::endl;
         std::cout << "  Iteration Number  | Residual Norm" << std::endl;
     }
@@ -121,6 +214,8 @@ class verbose_monitor : public default_monitor<ValueType>
         }
     }
 };
+/*! \}
+ */
 
 } // end namespace cusp
 

@@ -25,7 +25,41 @@ namespace cusp
 {
 namespace gallery
 {
+/*! \addtogroup gallery Matrix Gallery
+ *  \addtogroup poisson Poisson
+ *  \ingroup gallery
+ *  \{
+ */
 
+/*! \p poisson5pt: Create a matrix representing a Poisson problem
+ * discretized on an \p m by \p n grid with the standard 5-point
+ * finite-difference stencil.
+ *
+ * \param matrix output
+ * \param m number of grid rows
+ * \param n number of grid columns 
+ * \tparam MatrixType matrix container
+ *
+ * \code
+ * #include <cusp/gallery/poisson.h>
+ * #include <cusp/coo_matrix.h>
+ * #include <cusp/print.h>
+ * 
+ * int main(void)
+ * {
+ *     cusp::coo_matrix<int, float, cusp::device_memory> A;
+ *     
+ *     // create a matrix for a Poisson problem on a 4x4 grid
+ *     cusp::gallery::poisson5pt(A, 4, 4);
+ * 
+ *     // print matrix
+ *     cusp::print_matrix(A);
+ * 
+ *     return 0;
+ * }
+ * \endcode
+ *
+ */
 template <typename MatrixType>
 void poisson5pt(      MatrixType& matrix, size_t m, size_t n)
 {
@@ -43,6 +77,8 @@ void poisson5pt(      MatrixType& matrix, size_t m, size_t n)
 
     cusp::gallery::generate_matrix_from_stencil(matrix, stencil, StencilIndex(m,n));
 }
+/*! \}
+ */
 
 } // end namespace gallery
 } // end namespace cusp

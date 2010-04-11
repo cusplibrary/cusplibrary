@@ -29,10 +29,10 @@ namespace krylov
 {
 
 template <class LinearOperator,
-          class VectorType>
+          class Vector>
 void cg(LinearOperator& A,
-        VectorType& x,
-        VectorType& b)
+        Vector& x,
+        Vector& b)
 {
     typedef typename LinearOperator::value_type   ValueType;
 
@@ -42,11 +42,11 @@ void cg(LinearOperator& A,
 }
 
 template <class LinearOperator,
-          class VectorType,
+          class Vector,
           class Monitor>
 void cg(LinearOperator& A,
-        VectorType& x,
-        VectorType& b,
+        Vector& x,
+        Vector& b,
         Monitor& monitor)
 {
     typedef typename LinearOperator::value_type   ValueType;
@@ -58,12 +58,12 @@ void cg(LinearOperator& A,
 }
 
 template <class LinearOperator,
-          class VectorType,
+          class Vector,
           class Monitor,
           class Preconditioner>
 void cg(LinearOperator& A,
-        VectorType& x,
-        VectorType& b,
+        Vector& x,
+        Vector& b,
         Monitor& monitor,
         Preconditioner& M)
 {

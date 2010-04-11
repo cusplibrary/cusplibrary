@@ -62,7 +62,7 @@ void bicgstab(LinearOperator& A,
  * \param M preconditioner for A
  *
  * \tparam LinearOperator is a matrix or subclass of \p linear_operator
- * \tparam VectorType vector
+ * \tparam Vector vector
  * \tparam Monitor is a monitor such as \p default_monitor or \p verbose_monitor
  * \tparam Preconditioner is a matrix or subclass of \p linear_operator
  *
@@ -102,6 +102,8 @@ void bicgstab(LinearOperator& A,
  *  }
  *  \endcode
  *
+ *  \see \p default_monitor
+ *  \see \p verbose_monitor
  */
 template <class LinearOperator,
           class Vector,

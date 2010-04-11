@@ -36,21 +36,21 @@ namespace krylov
  * using the default convergence criteria.
  */
 template <class LinearOperator,
-          class VectorType>
+          class Vector>
 void cg(LinearOperator& A,
-        VectorType& x,
-        VectorType& b);
+        Vector& x,
+        Vector& b);
 
 /*! \p cg : Conjugate Gradient method
  *
  * Solves the symmetric, positive-definite linear system A x = b without preconditioning.
  */
 template <class LinearOperator,
-          class VectorType,
+          class Vector,
           class Monitor>
 void cg(LinearOperator& A,
-        VectorType& x,
-        VectorType& b,
+        Vector& x,
+        Vector& b,
         Monitor& monitor);
 
 /*! \p cg : Conjugate Gradient method
@@ -65,7 +65,7 @@ void cg(LinearOperator& A,
  * \param M preconditioner for A
  *
  * \tparam LinearOperator is a matrix or subclass of \p linear_operator
- * \tparam VectorType vector
+ * \tparam Vector vector
  * \tparam Monitor is a monitor such as \p default_monitor or \p verbose_monitor
  * \tparam Preconditioner is a matrix or subclass of \p linear_operator
  *
@@ -106,15 +106,18 @@ void cg(LinearOperator& A,
  *      return 0;
  *  }
  *  \endcode
+ 
+ *  \see \p default_monitor
+ *  \see \p verbose_monitor
  *
  */
 template <class LinearOperator,
-          class VectorType,
+          class Vector,
           class Monitor,
           class Preconditioner>
 void cg(LinearOperator& A,
-        VectorType& x,
-        VectorType& b,
+        Vector& x,
+        Vector& b,
         Monitor& monitor,
         Preconditioner& M);
 /*! \}
