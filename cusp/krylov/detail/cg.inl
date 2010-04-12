@@ -92,8 +92,6 @@ void cg(LinearOperator& A,
     // p <- z
     blas::copy(z, p);
 		
-    ValueType r_norm = blas::nrm2(r.begin(), r.end());
-
     // rz = <r^H, z>
     ValueType rz = blas::dotc(r, z);
 
@@ -104,16 +102,16 @@ void cg(LinearOperator& A,
         
         // alpha <- <r,z>/<y,p>
         ValueType alpha =  rz / blas::dotc(y, p);
+
         // x <- x + alpha * p
         blas::axpy(p, x, alpha);
+
         // r <- r - alpha * y		
         blas::axpy(y, r, -alpha);
+
         // z <- M*r
         cusp::multiply(M, r, z);
 		
-        //// r2 = <r,r>
-        //r_norm = blas::nrm2(r);
-        
         ValueType rz_old = rz;
 
         // rz = <r^H, z>
@@ -127,13 +125,6 @@ void cg(LinearOperator& A,
 
         ++monitor;
     }
-
-    //cudaThreadSynchronize();
-
-    // MFLOPs excludes BLAS operations
-    //double elapsed = ((double) (clock() - start)) / CLOCKS_PER_SEC;
-    //double MFLOPs = 2* ((double) i * (double) A.num_entries)/ (1e6 * elapsed);
-    //printf("-iteration completed in %lfms  ( > %6.2lf MFLOPs )\n",1000*elapsed, MFLOPs );
 }
 
 } // end namespace krylov
