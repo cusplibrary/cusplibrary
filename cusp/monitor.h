@@ -93,7 +93,7 @@ template <typename Real>
 class default_monitor
 {
     public:
-    /*! Construct a \p default_monitor for a given right-hand-side \b
+    /*! Construct a \p default_monitor for a given right-hand-side \p b
      *
      *  The \p default_monitor terminates iteration when the residual norm
      *  satisfies the condition
@@ -179,7 +179,19 @@ class verbose_monitor : public default_monitor<Real>
     typedef cusp::default_monitor<Real> super;
 
     public:
-
+    /*! Construct a \p verbose_monitor for a given right-hand-side \p b
+     *
+     *  The \p verbose_monitor terminates iteration when the residual norm
+     *  satisfies the condition
+     *       ||b - A x|| < relative_tolerance * ||b||
+     *  or when the iteration limit is reached.
+     *
+     *  \param b right-hand-side of the linear system A x = b
+     *  \param iteration_limit maximum number of solver iterations to allow
+     *  \param relative_tolerance determines convergence criteria
+     *
+     *  \tparam VectorType vector
+     */
     template <typename Vector>
     verbose_monitor(const Vector& b, size_t iteration_limit = 500, Real relative_tolerance = 1e-5)
         : super(b, iteration_limit, relative_tolerance)

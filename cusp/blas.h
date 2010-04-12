@@ -19,6 +19,8 @@
 
 #include <cusp/detail/config.h>
 
+#include <thrust/iterator/iterator_traits.h>
+
 namespace cusp
 {
 namespace blas
