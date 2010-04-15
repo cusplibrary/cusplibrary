@@ -1,8 +1,9 @@
 #pragma once
 
 #include <stdlib.h>
+#include <vector>
 
-#include <iterator>
+#include <thrust/host_vector.h>
 
 const unsigned int DEFAULT_SEED = 13;
 
@@ -16,7 +17,7 @@ template<typename T>
   {
       T value = 0;
         
-      for(int i = 0; i < sizeof(T); i++)
+      for(size_t i = 0; i < sizeof(T); i++)
           value ^= T(rand() & 0xff) << (8*i);
 
       return value;
@@ -81,34 +82,32 @@ template<>
 
 
 
-template<typename ForwardIterator>
-void random_integers(ForwardIterator begin, ForwardIterator end, int seed = DEFAULT_SEED)
+template<typename T>
+thrust::host_vector<T> random_integers(const size_t N)
 {
-    const size_t N = end - begin;
-
     srand(DEFAULT_SEED);
 
-    typedef typename std::iterator_traits<ForwardIterator>::value_type T;
-
+    thrust::host_vector<T> vec(N);
     random_integer<T> rnd;
 
-    while(begin != end)
-        *begin++ = rnd();
+    for(size_t i = 0; i < N; i++)
+        vec[i] = rnd();
+
+    return vec;
 }
 
-template<typename ForwardIterator>
-void random_samples(ForwardIterator begin, ForwardIterator end, int seed = DEFAULT_SEED)
+template<typename T>
+thrust::host_vector<T> random_samples(const size_t N)
 {
-    const size_t N = end - begin;
-
     srand(DEFAULT_SEED);
 
-    typedef typename std::iterator_traits<ForwardIterator>::value_type T;
-
+    thrust::host_vector<T> vec(N);
     random_sample<T> rnd;
 
-    while(begin != end)
-        *begin++ = rnd();
+    for(size_t i = 0; i < N; i++)
+        vec[i] = rnd();
+
+    return vec;
 }
 
 }; //end namespace unittest

@@ -479,8 +479,7 @@ void TestRugeStubenSolver(void)
     
     // setup linear system
     cusp::array1d<float,cusp::device_memory> b(A.num_rows,0);
-    cusp::array1d<float,cusp::device_memory> x(A.num_rows,1);
-    unittest::random_samples(x.begin(), x.end());
+    cusp::array1d<float,cusp::device_memory> x = unittest::random_samples<float>(A.num_rows);
 
     ruge_stuben_solver<int,float,cusp::device_memory> rs(A);
     rs.solve(b,x);

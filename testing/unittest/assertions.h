@@ -2,6 +2,7 @@
 
 #include <cusp/array1d.h>
 #include <thrust/iterator/iterator_traits.h>
+#include <thrust/detail/type_traits.h>
 
 #include <unittest/exceptions.h>
 #include <unittest/util.h>
@@ -29,13 +30,32 @@ static size_t MAX_OUTPUT_LINES = 10;
 static double DEFAULT_RELATIVE_TOL = 1e-4;
 static double DEFAULT_ABSOLUTE_TOL = 1e-4;
 
+template<typename T>
+  struct value_type
+{
+  typedef typename thrust::detail::remove_const<
+    typename thrust::detail::remove_reference<
+      T
+    >::type
+  >::type type;
+};
+
+template<typename T>
+  struct value_type< thrust::device_reference<T> >
+{
+  typedef typename value_type<T>::type type;
+};
+
 ////
 // check scalar values
 template <typename T1, typename T2>
 void assert_equal(const T1& a, const T2& b, 
                   const std::string& filename = "unknown", int lineno = -1)
 {
-    if(!(a == b)){
+    // convert a & b to a's value_type to avoid warning upon comparison
+    typedef typename value_type<T1>::type T;
+
+    if(!(T(a) == T(b))){
         unittest::UnitTestFailure f;
         f << "[" << filename << ":" << lineno << "] ";
         f << "values are not equal: " << a << " " << b;
