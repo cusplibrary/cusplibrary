@@ -101,6 +101,14 @@ namespace cusp
                 { Parent::operator=(v); return *this; }
 
             template<typename OtherT, typename OtherAlloc>
+            array1d(const thrust::detail::vector_base<OtherT,OtherAlloc> &v)
+                : Parent(v) {}
+            
+            template<typename OtherT, typename OtherAlloc>
+                array1d &operator=(const thrust::detail::vector_base<OtherT,OtherAlloc> &v)
+                { Parent::operator=(v); return *this;}
+
+            template<typename OtherT, typename OtherAlloc>
                 array1d(const std::vector<OtherT,OtherAlloc> &v)
                 : Parent(v) {}
 
