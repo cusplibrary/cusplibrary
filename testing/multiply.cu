@@ -1,6 +1,8 @@
 #include <unittest/unittest.h>
 
+#ifndef _MSC_VER
 #define CUSP_USE_TEXTURE_MEMORY
+#endif
 
 #include <cusp/multiply.h>
 #include <cusp/linear_operator.h>
@@ -183,6 +185,10 @@ DECLARE_SPARSE_MATRIX_UNITTEST(TestSparseMatrixVectorMultiply);
 template <class TestMatrix>
 void TestSparseMatrixVectorMultiplyTextureCache()
 {
+#ifdef _MSC_VER
+    KNOWN_FAILURE;
+#endif
+
     typedef typename TestMatrix::memory_space MemorySpace;
 
     // test with aligned memory
