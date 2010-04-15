@@ -74,13 +74,11 @@ inline void unbind_x(const double * x)
 template <bool UseCache>
 __inline__ __device__ float fetch_x(const int& i, const float * x)
 {
-    if (UseCache)
 #ifdef CUSP_USE_TEXTURE_MEMORY
+    if (UseCache)
         return tex1Dfetch(tex_x_float, i);
-#else
-        return 1.0/0.0; // should never be called
-#endif
     else
+#endif
         return x[i];
 }
 
@@ -88,22 +86,18 @@ template <bool UseCache>
 __inline__ __device__ double fetch_x(const int& i, const double * x)
 {
 #if __CUDA_ARCH__ >= 130
+#ifdef CUSP_USE_TEXTURE_MEMORY
     // double requires Compute Capability 1.3 or greater
     if (UseCache)
     {
-#ifdef CUSP_USE_TEXTURE_MEMORY
         int2 v = tex1Dfetch(tex_x_double, i);
         return __hiloint2double(v.y, v.x);
-#else
-        return 1.0/0.0; // should never be called
-#endif // CUSP_USE_TEXTURE_MEMORY
     }
     else
-    {
+#endif // CUSP_USE_TEXTURE_MEMORY
         return x[i];
-    }
-#else
-    return 1.0/0.0; // should never be called
+#else 
+    return 1.0f;
 #endif
 }
 
