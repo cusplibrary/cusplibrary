@@ -16,6 +16,10 @@
 
 #include <cusp/detail/convert.h>
 
+#include <thrust/sort.h>
+#include <thrust/is_sorted.h>
+#include <thrust/iterator/zip_iterator.h>
+
 namespace cusp
 {
 
@@ -113,6 +117,26 @@ template <typename MatrixType>
         cusp::detail::convert(*this, matrix);
         
         return *this;
+    }
+
+// sort matrix elements by row index
+template <typename IndexType, typename ValueType, class MemorySpace>
+    void
+    coo_matrix<IndexType,ValueType,MemorySpace>
+    ::sort_by_row(void)
+    {
+        thrust::sort_by_key(row_indices.begin(),
+                            row_indices.end(),
+                            thrust::make_zip_iterator(thrust::make_tuple(column_indices.begin(), values.begin())));
+    }
+
+// determine whether matrix elements are sorted by row index
+template <typename IndexType, typename ValueType, class MemorySpace>
+    bool
+    coo_matrix<IndexType,ValueType,MemorySpace>
+    ::is_sorted_by_row(void)
+    {
+        return thrust::is_sorted(row_indices.begin(), row_indices.end());
     }
 
 } // end namespace cusp

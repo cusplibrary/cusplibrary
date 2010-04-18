@@ -40,7 +40,7 @@ namespace cusp
  * \tparam ValueType Type used for matrix values (e.g. \c float).
  * \tparam MemorySpace A memory space (e.g. \c cusp::host_memory or cusp::device_memory)
  *
- * \note The matrix entries must be sorted by row and column index.
+ * \note The matrix entries must be sorted by row index.
  * \note The matrix should not contain duplicate entries.
  *
  *  The following code snippet demonstrates how to create a 4-by-3
@@ -139,6 +139,16 @@ namespace cusp
          */
         template <typename MatrixType>
         coo_matrix& operator=(const MatrixType& matrix);
+
+        /*! Sort matrix elements by row index
+         */
+        void sort_by_row(void);
+        
+        /*! Determine whether matrix elements are sorted by row index
+         *
+         *  \return \c false, if the row indices are unsorted; \c true, otherwise.
+         */
+        bool is_sorted_by_row(void);
     }; // class coo_matrix
 /*! \}
  */
