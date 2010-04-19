@@ -26,13 +26,15 @@ int main(void)
     // report solver results
     if (monitor.converged())
     {
-        std::cout << "Solver converged to " << monitor.relative_tolerance() << " relative tolerance";
-        std::cout << " after " << monitor.iteration_count() << " iterations" << std::endl;
+        std::cout << "Solver converged to " << monitor.tolerance() << " tolerance";
+        std::cout << " after " << monitor.iteration_count() << " iterations";
+        std::cout << " (" << monitor.residual_norm() << " final residual)" << std::endl;
     }
     else
     {
         std::cout << "Solver reached iteration limit " << monitor.iteration_limit() << " before converging";
-        std::cout << " to " << monitor.relative_tolerance() << " relative tolerance " << std::endl;
+        std::cout << " to " << monitor.tolerance() << " tolerance ";
+        std::cout << " (" << monitor.residual_norm() << " final residual)" << std::endl;
     }
 
     return 0;

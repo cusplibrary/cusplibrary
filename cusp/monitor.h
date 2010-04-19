@@ -97,22 +97,24 @@ class default_monitor
      *
      *  The \p default_monitor terminates iteration when the residual norm
      *  satisfies the condition
-     *       ||b - A x|| < relative_tolerance * ||b||
+     *       ||b - A x|| < absolute_tolerance + relative_tolerance * ||b||
      *  or when the iteration limit is reached.
      *
      *  \param b right-hand-side of the linear system A x = b
      *  \param iteration_limit maximum number of solver iterations to allow
      *  \param relative_tolerance determines convergence criteria
+     *  \param absolute_tolerance determines convergence criteria
      *
      *  \tparam VectorType vector
      */
     template <typename Vector>
-    default_monitor(const Vector& b, size_t iteration_limit = 500, Real relative_tolerance = 1e-5)
+    default_monitor(const Vector& b, size_t iteration_limit = 500, Real relative_tolerance = 1e-5, Real absolute_tolerance = 0)
         : b_norm(cusp::blas::nrm2(b)),
           r_norm(std::numeric_limits<Real>::max()),
           iteration_limit_(iteration_limit),
           iteration_count_(0),
-          relative_tolerance_(relative_tolerance)
+          relative_tolerance_(relative_tolerance),
+          absolute_tolerance_(absolute_tolerance)
     {}
 
     /*! increment the iteration count
@@ -131,16 +133,17 @@ class default_monitor
         
         return converged() || iteration_count() >= iteration_limit();
     }
-    
+   
     /*! whether the last tested residual satifies the convergence tolerance
      */
     bool converged() const
     {
-        if (b_norm == 0)
-            return r_norm < relative_tolerance();
-        else
-            return r_norm < relative_tolerance() * b_norm;
+        return residual_norm() < tolerance();
     }
+
+    /*! Euclidean norm of last residual
+     */
+    Real residual_norm() const { return r_norm; }
 
     /*! number of iterations
      */
@@ -153,12 +156,24 @@ class default_monitor
     /*! relative tolerance
      */
     Real relative_tolerance() const { return relative_tolerance_; }
+    
+    /*! absolute tolerance
+     */
+    Real absolute_tolerance() const { return absolute_tolerance_; }
+   
+    /*! tolerance
+     *
+     *  Equal to absolute_tolerance() + relative_tolerance() * ||b||
+     *
+     */ 
+    Real tolerance() const { return absolute_tolerance() + relative_tolerance() * b_norm; }
 
     protected:
     
     Real r_norm;
     Real b_norm;
     Real relative_tolerance_;
+    Real absolute_tolerance_;
 
     size_t iteration_limit_;
     size_t iteration_count_;
@@ -197,7 +212,7 @@ class verbose_monitor : public default_monitor<Real>
         : super(b, iteration_limit, relative_tolerance)
     {
         std::cout << "Solver will continue until ";
-        std::cout << "residual norm " << super::b_norm * super::relative_tolerance() << " or reaching ";
+        std::cout << "residual norm " << super::tolerance() << " or reaching ";
         std::cout << super::iteration_limit() << " iterations " << std::endl;
         std::cout << "  Iteration Number  | Residual Norm" << std::endl;
     }
@@ -208,7 +223,7 @@ class verbose_monitor : public default_monitor<Real>
         super::r_norm = cusp::blas::nrm2(r);
 
         std::cout << "       "  << std::setw(10) << super::iteration_count();
-        std::cout << "       "  << std::setw(10) << std::scientific << super::r_norm << std::endl;
+        std::cout << "       "  << std::setw(10) << std::scientific << super::residual_norm() << std::endl;
 
         if (super::converged())
         {
