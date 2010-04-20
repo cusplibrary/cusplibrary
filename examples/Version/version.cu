@@ -14,8 +14,8 @@ int main(void)
                                    THRUST_SUBMINOR_VERSION << std::endl;
 
     std::cout << "    Cusp   v" << CUSP_MAJOR_VERSION << "." << 
-                                     CUSP_MINOR_VERSION << "." << 
-                                     CUSP_SUBMINOR_VERSION << std::endl;
+                                   CUSP_MINOR_VERSION << "." << 
+                                   CUSP_SUBMINOR_VERSION << std::endl;
 
     return 0;
 }
