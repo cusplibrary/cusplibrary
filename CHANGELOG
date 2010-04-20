@@ -1,0 +1,46 @@
+#######################################
+#            Cusp v0.1.0              #
+#######################################
+
+Summary
+  Initial release
+
+Features
+    Sparse Matrix Support
+        cusp::coo_matrix
+        cusp::csr_matrix
+        cusp::dia_matrix
+        cusp::ell_matrix
+        cusp::hyb_matrix
+        conversion between all formats
+        host<->device transfers
+    Dense Matrix Support
+        cusp::array1d
+        cusp::array2d
+    Algorithms
+        cusp::multiply(A,x,y) : y = A*x
+        cusp::transpose(A,At) : A^T
+    Gallery
+        cusp::gallery::stencil
+        cusp::gallery::poisson5pt
+    Solvers
+        cusp::krylov::cg
+        cusp::krylov::bicgstab
+    Monitors
+        cusp::default_monitor
+        cusp::verbose_monitor
+    Preconditioners
+        cusp::precond::diagonal
+    User-Defined Linear Operators
+        cusp::linear_operator
+    File I/O
+        cusp::io::read_matrix_market_file
+        cusp::io::write_matrix_market_file
+    Utilities
+        cusp::blas::*
+        cusp::print_matrix
+        cusp::is_valid_matrix etc.
+
+Known Limitations
+    - Many routines assume that several arguments have the exact same type
+
