@@ -60,7 +60,7 @@ void multiply(const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& A,
 
     // for each element A(i,j) compute the number of nonzero elements in B(j,:)
     cusp::array1d<IndexType,MemorySpace> segment_lengths(A.num_entries);
-    thrust::next::gather(A.column_indices.begin(), A.column_indices.end(),
+    thrust::gather(A.column_indices.begin(), A.column_indices.end(),
                    B_row_lengths.begin(),
                    segment_lengths.begin());
     
@@ -98,13 +98,13 @@ void multiply(const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& A,
     cusp::array1d<IndexType,MemorySpace> J(coo_num_nonzeros);
     cusp::array1d<ValueType,MemorySpace> V(coo_num_nonzeros);
     
-    thrust::next::gather(segments.begin(), segments.end(),
-                         A.row_indices.begin(),
-                         I.begin());
+    thrust::gather(segments.begin(), segments.end(),
+                   A.row_indices.begin(),
+                   I.begin());
 
-    thrust::next::gather(gather_locations.begin(), gather_locations.end(),
-                         B.column_indices.begin(),
-                         J.begin());
+    thrust::gather(gather_locations.begin(), gather_locations.end(),
+                   B.column_indices.begin(),
+                   J.begin());
 
     thrust::transform(thrust::make_permutation_iterator(A.values.begin(), segments.begin()),
                       thrust::make_permutation_iterator(A.values.begin(), segments.begin()) + coo_num_nonzeros,
