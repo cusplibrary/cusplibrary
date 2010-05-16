@@ -70,7 +70,7 @@ void TestSparseMatrixMatrixMultiply(void)
     cusp::array2d<float,cusp::host_memory> K;
     cusp::gallery::random(24, 12, 20, K);
   
-    std::vector< cusp::array2d<float,cusp::host_memory> > matrices;
+    thrust::host_vector< cusp::array2d<float,cusp::host_memory> > matrices;
     matrices.push_back(A);
     matrices.push_back(B);
     matrices.push_back(C);
