@@ -21,6 +21,7 @@
 
 #include <cusp/detail/utils.h>
 #include <cusp/detail/format_utils.h>
+#include <cusp/detail/matrix_traits.h>
 
 #include <thrust/functional.h>
 #include <thrust/gather.h>
@@ -34,11 +35,16 @@ namespace cusp
 namespace detail
 {
 
-template <typename IndexType1, typename ValueType1, typename MemorySpace1,
-          typename IndexType2, typename ValueType2, typename MemorySpace2>
-void transpose(const cusp::coo_matrix<IndexType1,ValueType1,MemorySpace1>& A,
-                     cusp::coo_matrix<IndexType2,ValueType2,MemorySpace2>& At)
+// COO format
+template <typename MatrixType1,   typename MatrixType2>
+void transpose(const MatrixType1& A, MatrixType2& At,
+               cusp::detail::coo_format_tag,
+               cusp::detail::coo_format_tag)
 {
+    typedef typename MatrixType2::index_type   IndexType2;
+    typedef typename MatrixType2::value_type   ValueType2;
+    typedef typename MatrixType2::memory_space MemorySpace2;
+
     cusp::coo_matrix<IndexType2,ValueType2,MemorySpace2> temp(A.num_cols, A.num_rows, A.num_entries);
 
     cusp::array1d<IndexType2,MemorySpace2> permutation(A.num_entries);
@@ -53,15 +59,20 @@ void transpose(const cusp::coo_matrix<IndexType1,ValueType1,MemorySpace1>& A,
                    thrust::make_zip_iterator(thrust::make_tuple(A.row_indices.begin(),       A.values.begin())),
                    thrust::make_zip_iterator(thrust::make_tuple(temp.column_indices.begin(), temp.values.begin())));
 
-    At.swap(temp);
+    At.swap(temp);  // TODO make this a destructive .assign() or the like
 }
 
-    
-template <typename IndexType1, typename ValueType1, typename MemorySpace1,
-          typename IndexType2, typename ValueType2, typename MemorySpace2>
-void transpose(const cusp::csr_matrix<IndexType1,ValueType1,MemorySpace1>& A,
-                     cusp::csr_matrix<IndexType2,ValueType2,MemorySpace2>& At)
+
+// CSR format
+template <typename MatrixType1,   typename MatrixType2>
+void transpose(const MatrixType1& A, MatrixType2& At,
+               cusp::detail::csr_format_tag,
+               cusp::detail::csr_format_tag)
 {
+    typedef typename MatrixType2::index_type   IndexType2;
+    typedef typename MatrixType2::value_type   ValueType2;
+    typedef typename MatrixType2::memory_space MemorySpace2;
+
     cusp::csr_matrix<IndexType2,ValueType2,MemorySpace2> temp(A.num_cols, A.num_rows, A.num_entries);
     
     cusp::array1d<IndexType2,MemorySpace2> permutation(A.num_entries);
@@ -82,7 +93,7 @@ void transpose(const cusp::csr_matrix<IndexType1,ValueType1,MemorySpace1>& A,
                    thrust::make_zip_iterator(thrust::make_tuple(indices.begin(),             A.values.begin())),
                    thrust::make_zip_iterator(thrust::make_tuple(temp.column_indices.begin(), temp.values.begin())));
 
-    At.swap(temp);
+    At.swap(temp);  // TODO make this a destructive .assign() or the like
 }
 
 
@@ -105,12 +116,15 @@ struct transpose_index : public thrust::unary_function<T, T>
     }
 };
 
-    
-template <typename ValueType1, typename MemorySpace1, typename SourceOrientation,
-          typename ValueType2, typename MemorySpace2, typename DestinationOrientation>
-void transpose(const cusp::array2d<ValueType1,MemorySpace1,SourceOrientation>& A,
-                     cusp::array2d<ValueType2,MemorySpace2,DestinationOrientation>& At)
+// Array2d format 
+template <typename MatrixType1,   typename MatrixType2>
+void transpose(const MatrixType1& A, MatrixType2& At,
+               cusp::detail::array2d_format_tag,
+               cusp::detail::array2d_format_tag)
 {
+    typedef typename MatrixType1::orientation SourceOrientation;
+    typedef typename MatrixType2::orientation DestinationOrientation;
+
     At.resize(A.num_cols, A.num_rows);
 
     thrust::counting_iterator<size_t> begin(0);
@@ -123,9 +137,11 @@ void transpose(const cusp::array2d<ValueType1,MemorySpace1,SourceOrientation>& A
 }
 
 
-// all other formats go through CSR
-template <typename MatrixType1, typename MatrixType2>
-void transpose(const MatrixType1& A, MatrixType2& At)
+// Default case uses CSR transpose
+template <typename MatrixType1,   typename MatrixType2,
+          typename MatrixFormat1, typename MatrixFormat2>
+void transpose(const MatrixType1& A, MatrixType2& At,
+                     MatrixFormat1,  MatrixFormat2)
 {
     typedef typename MatrixType1::index_type   IndexType;
     typedef typename MatrixType1::value_type   ValueType;
@@ -133,7 +149,7 @@ void transpose(const MatrixType1& A, MatrixType2& At)
 
     cusp::csr_matrix<IndexType, ValueType, MemorySpace> A_csr(A);
     cusp::csr_matrix<IndexType, ValueType, MemorySpace> At_csr;
-    cusp::detail::transpose(A_csr, At_csr);
+    cusp::transpose(A_csr, At_csr);
 
     At = At_csr;
 }
@@ -143,7 +159,9 @@ void transpose(const MatrixType1& A, MatrixType2& At)
 template <typename MatrixType1, typename MatrixType2>
 void transpose(const MatrixType1& A, MatrixType2& At)
 {
-    cusp::detail::transpose(A, At);
+    cusp::detail::transpose(A, At,
+                            typename cusp::detail::matrix_format<MatrixType1>::type(),
+                            typename cusp::detail::matrix_format<MatrixType2>::type());
 }
 
 } // end namespace cusp
