@@ -27,6 +27,7 @@
 #include <thrust/sequence.h>
 #include <thrust/sort.h>
 #include <thrust/iterator/transform_iterator.h>
+#include <thrust/iterator/zip_iterator.h>
 
 namespace cusp
 {
@@ -47,14 +48,10 @@ void transpose(const cusp::coo_matrix<IndexType1,ValueType1,MemorySpace1>& A,
 
     thrust::stable_sort_by_key(temp.row_indices.begin(), temp.row_indices.end(), permutation.begin());
 
-    // XXX could be fused with a zip_iterator
+    // gather the permuted indices and values
     thrust::gather(permutation.begin(), permutation.end(),
-                   A.row_indices.begin(),
-                   temp.column_indices.begin());
-    
-    thrust::gather(permutation.begin(), permutation.end(),
-                   A.values.begin(),
-                   temp.values.begin());
+                   thrust::make_zip_iterator(thrust::make_tuple(A.row_indices.begin(),       A.values.begin())),
+                   thrust::make_zip_iterator(thrust::make_tuple(temp.column_indices.begin(), temp.values.begin())));
 
     At.swap(temp);
 }
@@ -79,15 +76,11 @@ void transpose(const cusp::csr_matrix<IndexType1,ValueType1,MemorySpace1>& A,
 
     // compute row indices of A
     cusp::detail::offsets_to_indices(A.row_offsets, indices);
-
-    // XXX could be fused with a zip_iterator
+   
+    // gather the permuted indices and values
     thrust::gather(permutation.begin(), permutation.end(),
-                   indices.begin(),
-                   temp.column_indices.begin());
-    
-    thrust::gather(permutation.begin(), permutation.end(),
-                   A.values.begin(),
-                   temp.values.begin());
+                   thrust::make_zip_iterator(thrust::make_tuple(indices.begin(),             A.values.begin())),
+                   thrust::make_zip_iterator(thrust::make_tuple(temp.column_indices.begin(), temp.values.begin())));
 
     At.swap(temp);
 }
