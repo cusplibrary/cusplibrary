@@ -6,7 +6,7 @@ import glob
 try:
   Import('env')
 except:
-  exec open("../../build/build-env.py")
+  exec open("../build/build-env.py")
   env = Environment()
 
 # on mac we have to tell the linker to link against the C++ library
@@ -15,7 +15,7 @@ if env['PLATFORM'] == "darwin":
 
 # find all .cus & .cpps in the current directory
 sources = []
-directories = ['.']
+directories = [name for name in os.listdir('.') if os.path.isdir(name)]
 extensions = ['*.cu', '*.cpp']
 for dir in directories:
   for ext in extensions:
