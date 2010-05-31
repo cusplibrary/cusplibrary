@@ -17,12 +17,11 @@
 
 #pragma once
 
-#include <cusp/ell_matrix.h>
-
 #include <cusp/detail/device/common.h>
 #include <cusp/detail/device/utils.h>
 #include <cusp/detail/device/texture.h>
 
+#include <thrust/device_ptr.h>
 #include <thrust/experimental/arch.h>
 
 // SpMV kernel for the ELLPACK/ITPACK matrix format.
@@ -74,46 +73,52 @@ spmv_ell_kernel(const IndexType num_rows,
 }
 
 
-template <bool UseCache, typename IndexType, typename ValueType>
-void __spmv_ell(const cusp::ell_matrix<IndexType,ValueType,cusp::device_memory>& ell, 
-                const ValueType * x, 
-                      ValueType * y)
+template <bool UseCache,
+          typename Matrix,
+          typename ValueType>
+void __spmv_ell(const Matrix&    A, 
+                const ValueType* x, 
+                      ValueType* y)
 {
+    typedef typename Matrix::index_type IndexType;
+
     const unsigned int BLOCK_SIZE = 256;
     const unsigned int MAX_BLOCKS = thrust::experimental::arch::max_active_blocks(spmv_ell_kernel<IndexType, ValueType, UseCache>, BLOCK_SIZE, (size_t) 0);
-    const unsigned int NUM_BLOCKS = std::min(MAX_BLOCKS, DIVIDE_INTO(ell.num_rows, BLOCK_SIZE));
+    const unsigned int NUM_BLOCKS = std::min(MAX_BLOCKS, DIVIDE_INTO(A.num_rows, BLOCK_SIZE));
 
-    const IndexType stride              = ell.column_indices.num_rows;
-    const IndexType num_entries_per_row = ell.column_indices.num_cols;
+    const IndexType stride              = A.column_indices.num_rows;
+    const IndexType num_entries_per_row = A.column_indices.num_cols;
     
     if (UseCache)
         bind_x(x);
 
     spmv_ell_kernel<IndexType,ValueType,UseCache> <<<NUM_BLOCKS, BLOCK_SIZE>>>
-        (ell.num_rows, ell.num_cols,
+        (A.num_rows, A.num_cols,
          num_entries_per_row, stride,
-         thrust::raw_pointer_cast(&ell.column_indices.values[0]), 
-         thrust::raw_pointer_cast(&ell.values.values[0]),
+         thrust::raw_pointer_cast(&A.column_indices.values[0]), 
+         thrust::raw_pointer_cast(&A.values.values[0]),
          x, y);
 
     if (UseCache)
         unbind_x(x);
 }
 
-template <typename IndexType, typename ValueType>
-void spmv_ell(const cusp::ell_matrix<IndexType,ValueType,cusp::device_memory>& ell, 
-              const ValueType * x, 
-                    ValueType * y)
+template <typename Matrix,
+          typename ValueType>
+void spmv_ell(const Matrix&    A, 
+              const ValueType* x, 
+                    ValueType* y)
 {
-    __spmv_ell<false>(ell, x, y);
+    __spmv_ell<false>(A, x, y);
 }
 
-template <typename IndexType, typename ValueType>
-void spmv_ell_tex(const cusp::ell_matrix<IndexType,ValueType,cusp::device_memory>& ell, 
-                  const ValueType * x, 
-                        ValueType * y)
+template <typename Matrix,
+          typename ValueType>
+void spmv_ell_tex(const Matrix&    A,
+                  const ValueType* x, 
+                        ValueType* y)
 {
-    __spmv_ell<true>(ell, x, y);
+    __spmv_ell<true>(A, x, y);
 }
 
 } // end namespace device

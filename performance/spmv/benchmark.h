@@ -33,7 +33,7 @@ float check_spmv(HostMatrix& host_matrix, TestMatrix& test_matrix, TestKernel te
     cusp::array1d<ValueType, MemorySpace> test_y(host_y.begin(), host_y.end());
 
     // compute SpMV on host and device
-    cusp::detail::host::spmv(host_matrix, thrust::raw_pointer_cast(&host_x[0]), thrust::raw_pointer_cast(&host_y[0]));
+    cusp::multiply(host_matrix, host_x, host_y);
     test_kernel(test_matrix, thrust::raw_pointer_cast(&test_x[0]), thrust::raw_pointer_cast(&test_y[0]));
 
     // compare results
@@ -138,13 +138,14 @@ void test_coo(HostMatrix& host_matrix)
     cusp::coo_matrix<IndexType, ValueType, cusp::host_memory> test_matrix_on_host(host_matrix);
 
     // transfer TestMatrix to device
-    cusp::coo_matrix<IndexType, ValueType, cusp::device_memory> test_matrix_on_device(test_matrix_on_host);
+    typedef typename cusp::coo_matrix<IndexType, ValueType, cusp::device_memory> DeviceMatrix;
+    DeviceMatrix test_matrix_on_device(test_matrix_on_host);
     
-    test_spmv("coo_flat",     host_matrix, test_matrix_on_host, test_matrix_on_device, cusp::detail::device::spmv_coo_flat    <IndexType,ValueType>);
-    test_spmv("coo_flat_tex", host_matrix, test_matrix_on_host, test_matrix_on_device, cusp::detail::device::spmv_coo_flat_tex<IndexType,ValueType>);
+    test_spmv("coo_flat",     host_matrix, test_matrix_on_host, test_matrix_on_device, cusp::detail::device::spmv_coo_flat    <DeviceMatrix,ValueType>);
+    test_spmv("coo_flat_tex", host_matrix, test_matrix_on_host, test_matrix_on_device, cusp::detail::device::spmv_coo_flat_tex<DeviceMatrix,ValueType>);
     
-//    test_spmv("coo_flat_k",     host_matrix, test_matrix_on_host, test_matrix_on_device, cusp::detail::device::spmv_coo_flat_k    <IndexType,ValueType>);
-//    test_spmv("coo_flat_k_tex", host_matrix, test_matrix_on_host, test_matrix_on_device, cusp::detail::device::spmv_coo_flat_k_tex<IndexType,ValueType>);
+//    test_spmv("coo_flat_k",     host_matrix, test_matrix_on_host, test_matrix_on_device, cusp::detail::device::spmv_coo_flat_k    <DeviceMatrix,ValueType>);
+//    test_spmv("coo_flat_k_tex", host_matrix, test_matrix_on_host, test_matrix_on_device, cusp::detail::device::spmv_coo_flat_k_tex<DeviceMatrix,ValueType>);
 }
 
 template <typename HostMatrix>
@@ -157,12 +158,13 @@ void test_csr(HostMatrix& host_matrix)
     cusp::csr_matrix<IndexType, ValueType, cusp::host_memory> test_matrix_on_host(host_matrix);
 
     // transfer csr_matrix to device
-    cusp::csr_matrix<IndexType, ValueType, cusp::device_memory> test_matrix_on_device(test_matrix_on_host);
+    typedef typename cusp::csr_matrix<IndexType, ValueType, cusp::device_memory> DeviceMatrix;
+    DeviceMatrix test_matrix_on_device(test_matrix_on_host);
     
-    test_spmv("csr_scalar",     host_matrix, test_matrix_on_host, test_matrix_on_device, cusp::detail::device::spmv_csr_scalar    <IndexType,ValueType>);
-    test_spmv("csr_scalar_tex", host_matrix, test_matrix_on_host, test_matrix_on_device, cusp::detail::device::spmv_csr_scalar_tex<IndexType,ValueType>);
-    test_spmv("csr_vector",     host_matrix, test_matrix_on_host, test_matrix_on_device, cusp::detail::device::spmv_csr_vector    <IndexType,ValueType>);
-    test_spmv("csr_vector_tex", host_matrix, test_matrix_on_host, test_matrix_on_device, cusp::detail::device::spmv_csr_vector_tex<IndexType,ValueType>);
+    test_spmv("csr_scalar",     host_matrix, test_matrix_on_host, test_matrix_on_device, cusp::detail::device::spmv_csr_scalar    <DeviceMatrix,ValueType>);
+    test_spmv("csr_scalar_tex", host_matrix, test_matrix_on_host, test_matrix_on_device, cusp::detail::device::spmv_csr_scalar_tex<DeviceMatrix,ValueType>);
+    test_spmv("csr_vector",     host_matrix, test_matrix_on_host, test_matrix_on_device, cusp::detail::device::spmv_csr_vector    <DeviceMatrix,ValueType>);
+    test_spmv("csr_vector_tex", host_matrix, test_matrix_on_host, test_matrix_on_device, cusp::detail::device::spmv_csr_vector_tex<DeviceMatrix,ValueType>);
 }
 
 template <typename HostMatrix>
@@ -185,10 +187,11 @@ void test_dia(HostMatrix& host_matrix)
     }
 
     // transfer TestMatrix to device
-    cusp::dia_matrix<IndexType, ValueType, cusp::device_memory> test_matrix_on_device(test_matrix_on_host);
+    typedef typename cusp::dia_matrix<IndexType, ValueType, cusp::device_memory> DeviceMatrix;
+    DeviceMatrix test_matrix_on_device(test_matrix_on_host);
     
-    test_spmv("dia",     host_matrix, test_matrix_on_host, test_matrix_on_device, cusp::detail::device::spmv_dia    <IndexType,ValueType>);
-    test_spmv("dia_tex", host_matrix, test_matrix_on_host, test_matrix_on_device, cusp::detail::device::spmv_dia_tex<IndexType,ValueType>);
+    test_spmv("dia",     host_matrix, test_matrix_on_host, test_matrix_on_device, cusp::detail::device::spmv_dia    <DeviceMatrix,ValueType>);
+    test_spmv("dia_tex", host_matrix, test_matrix_on_host, test_matrix_on_device, cusp::detail::device::spmv_dia_tex<DeviceMatrix,ValueType>);
 }
 
 template <typename HostMatrix>
@@ -211,10 +214,11 @@ void test_ell(HostMatrix& host_matrix)
     }
 
     // transfer TestMatrix to device
-    cusp::ell_matrix<IndexType, ValueType, cusp::device_memory> test_matrix_on_device(test_matrix_on_host);
+    typedef typename cusp::ell_matrix<IndexType, ValueType, cusp::device_memory> DeviceMatrix;
+    DeviceMatrix test_matrix_on_device(test_matrix_on_host);
     
-    test_spmv("ell",     host_matrix, test_matrix_on_host, test_matrix_on_device, cusp::detail::device::spmv_ell    <IndexType,ValueType>);
-    test_spmv("ell_tex", host_matrix, test_matrix_on_host, test_matrix_on_device, cusp::detail::device::spmv_ell_tex<IndexType,ValueType>);
+    test_spmv("ell",     host_matrix, test_matrix_on_host, test_matrix_on_device, cusp::detail::device::spmv_ell    <DeviceMatrix,ValueType>);
+    test_spmv("ell_tex", host_matrix, test_matrix_on_host, test_matrix_on_device, cusp::detail::device::spmv_ell_tex<DeviceMatrix,ValueType>);
 }
 
 template <typename HostMatrix>
@@ -227,9 +231,10 @@ void test_hyb(HostMatrix& host_matrix)
     cusp::hyb_matrix<IndexType, ValueType, cusp::host_memory> test_matrix_on_host(host_matrix);
 
     // transfer TestMatrix to device
-    cusp::hyb_matrix<IndexType, ValueType, cusp::device_memory> test_matrix_on_device(test_matrix_on_host);
+    typedef typename cusp::hyb_matrix<IndexType, ValueType, cusp::device_memory> DeviceMatrix;
+    DeviceMatrix test_matrix_on_device(test_matrix_on_host);
     
-    test_spmv("hyb",     host_matrix, test_matrix_on_host, test_matrix_on_device, cusp::detail::device::spmv_hyb    <IndexType,ValueType>);
-    test_spmv("hyb_tex", host_matrix, test_matrix_on_host, test_matrix_on_device, cusp::detail::device::spmv_hyb_tex<IndexType,ValueType>);
+    test_spmv("hyb",     host_matrix, test_matrix_on_host, test_matrix_on_device, cusp::detail::device::spmv_hyb    <DeviceMatrix,ValueType>);
+    test_spmv("hyb_tex", host_matrix, test_matrix_on_host, test_matrix_on_device, cusp::detail::device::spmv_hyb_tex<DeviceMatrix,ValueType>);
 }
 

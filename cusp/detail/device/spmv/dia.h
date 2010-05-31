@@ -17,12 +17,11 @@
 
 #pragma once
 
-#include <cusp/dia_matrix.h>
-
 #include <cusp/detail/device/common.h>
 #include <cusp/detail/device/utils.h>
 #include <cusp/detail/device/texture.h>
 
+#include <thrust/device_ptr.h>
 #include <thrust/experimental/arch.h>
 
 namespace cusp
@@ -109,23 +108,27 @@ spmv_dia_kernel(const IndexType num_rows,
 }
 
     
-template <bool UseCache, typename IndexType, typename ValueType>
-void __spmv_dia(const cusp::dia_matrix<IndexType,ValueType,cusp::device_memory>& dia, 
-                const ValueType * x, 
-                      ValueType * y)
+template <bool UseCache,
+          typename Matrix,
+          typename ValueType>
+void __spmv_dia(const Matrix&    A,
+                const ValueType* x, 
+                      ValueType* y)
 {
+    typedef typename Matrix::index_type IndexType;
+
     const unsigned int BLOCK_SIZE = 256;
     const unsigned int MAX_BLOCKS = thrust::experimental::arch::max_active_blocks(spmv_dia_kernel<IndexType, ValueType, BLOCK_SIZE, UseCache>, BLOCK_SIZE, (size_t) sizeof(IndexType) * BLOCK_SIZE);
-    const unsigned int NUM_BLOCKS = std::min(MAX_BLOCKS, DIVIDE_INTO(dia.num_rows, BLOCK_SIZE));
+    const unsigned int NUM_BLOCKS = std::min(MAX_BLOCKS, DIVIDE_INTO(A.num_rows, BLOCK_SIZE));
    
-    const IndexType num_diagonals = dia.values.num_cols;
-    const IndexType stride        = dia.values.num_rows;
+    const IndexType num_diagonals = A.values.num_cols;
+    const IndexType stride        = A.values.num_rows;
 
     // TODO can this be removed?
     if (num_diagonals == 0)
     {
         // empty matrix
-        thrust::fill(thrust::device_pointer_cast(y), thrust::device_pointer_cast(y) + dia.num_rows, ValueType(0));
+        thrust::fill(thrust::device_pointer_cast(y), thrust::device_pointer_cast(y) + A.num_rows, ValueType(0));
         return;
     }
 
@@ -133,29 +136,31 @@ void __spmv_dia(const cusp::dia_matrix<IndexType,ValueType,cusp::device_memory>&
         bind_x(x);
   
     spmv_dia_kernel<IndexType, ValueType, BLOCK_SIZE, UseCache> <<<NUM_BLOCKS, BLOCK_SIZE>>>
-        (dia.num_rows, dia.num_cols, num_diagonals, stride,
-         thrust::raw_pointer_cast(&dia.diagonal_offsets[0]),
-         thrust::raw_pointer_cast(&dia.values.values[0]),
+        (A.num_rows, A.num_cols, num_diagonals, stride,
+         thrust::raw_pointer_cast(&A.diagonal_offsets[0]),
+         thrust::raw_pointer_cast(&A.values.values[0]),
          x, y);
 
     if (UseCache)
         unbind_x(x);
 }
 
-template <typename IndexType, typename ValueType>
-void spmv_dia(const cusp::dia_matrix<IndexType,ValueType,cusp::device_memory>& dia, 
-              const ValueType * x, 
-                    ValueType * y)
+template <typename Matrix,
+          typename ValueType>
+void spmv_dia(const Matrix&    A, 
+              const ValueType* x, 
+                    ValueType* y)
 {
-    __spmv_dia<false>(dia, x, y);
+    __spmv_dia<false>(A, x, y);
 }
 
-template <typename IndexType, typename ValueType>
-void spmv_dia_tex(const cusp::dia_matrix<IndexType,ValueType,cusp::device_memory>& dia, 
-                  const ValueType * x, 
-                        ValueType * y)
+template <typename Matrix,
+          typename ValueType>
+void spmv_dia_tex(const Matrix&    A,
+                  const ValueType* x, 
+                        ValueType* y)
 {
-    __spmv_dia<true>(dia, x, y);
+    __spmv_dia<true>(A, x, y);
 }
 
 } // end namespace device

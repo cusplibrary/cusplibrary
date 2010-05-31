@@ -9,7 +9,7 @@
 
 #include <iostream>
 
-#include <cusp/detail/device/spmv.h>
+#include <cusp/detail/device/spmv/csr_vector.h>
 #include "../timer.h"
 
 template <bool UseCache, unsigned int THREADS_PER_VECTOR, typename IndexType, typename ValueType>

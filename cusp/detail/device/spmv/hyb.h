@@ -17,8 +17,6 @@
 
 #pragma once
 
-#include <cusp/hyb_matrix.h>
-
 #include <cusp/detail/device/spmv/ell.h>
 #include <cusp/detail/device/spmv/coo_flat.h>
 
@@ -29,23 +27,24 @@ namespace detail
 namespace device
 {
 
-// SpMV kernels for the hybrid ELL/COO matrix format.
-template <typename IndexType, typename ValueType>
-void spmv_hyb(const cusp::hyb_matrix<IndexType, ValueType, cusp::device_memory>& hyb, 
-              const ValueType * x, 
-                    ValueType * y)
+template <typename Matrix,
+          typename ValueType>
+void spmv_hyb(const Matrix&    A, 
+              const ValueType* x, 
+                    ValueType* y)
 {
-    spmv_ell(hyb.ell, x, y);
-    __spmv_coo_flat<IndexType, ValueType, false, false>(hyb.coo, x, y);
+    spmv_ell(A.ell, x, y);
+    __spmv_coo_flat<false, false>(A.coo, x, y);
 }
 
-template <typename IndexType, typename ValueType>
-void spmv_hyb_tex(const cusp::hyb_matrix<IndexType, ValueType, cusp::device_memory>& hyb, 
-                  const ValueType * x, 
-                        ValueType * y)
+template <typename Matrix,
+          typename ValueType>
+void spmv_hyb_tex(const Matrix&    A,
+                  const ValueType* x, 
+                        ValueType* y)
 {
-    spmv_ell_tex(hyb.ell, x, y);
-    __spmv_coo_flat<IndexType, ValueType, true, false>(hyb.coo, x, y);
+    spmv_ell_tex(A.ell, x, y);
+    __spmv_coo_flat<true, false>(A.coo, x, y);
 }
 
 } // end namespace device

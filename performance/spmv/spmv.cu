@@ -10,8 +10,8 @@
 #include <cmath>
 #include <limits>
 
-#include <cusp/detail/host/spmv.h>
-#include <cusp/detail/device/spmv.h>
+#include <cusp/multiply.h>
+#include <cusp/detail/device/spmv/csr_scalar.h>
 
 #include "bytes_per_spmv.h"
 #include "utility.h"

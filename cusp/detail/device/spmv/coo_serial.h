@@ -14,11 +14,9 @@
  *  limitations under the License.
  */
 
-
-
 #pragma once
 
-#include <cusp/coo_matrix.h>
+#include <thrust/device_ptr.h>
 
 namespace cusp
 {
@@ -48,17 +46,20 @@ spmv_coo_serial_kernel(const IndexType num_nonzeros,
 }
 
 
-template <typename IndexType, typename ValueType>
-void spmv_coo_serial_device(const coo_matrix<IndexType,ValueType,cusp::device_memory>& coo, 
-                            const ValueType * d_x, 
-                                  ValueType * d_y)
+template <typename Matrix,
+          typename ValueType>
+void spmv_coo_serial_device(const Matrix&    A, 
+                            const ValueType* x, 
+                                  ValueType* y)
 {
-    const IndexType * I = thrust::raw_pointer_cast(&coo.row_indices[0]);
-    const IndexType * J = thrust::raw_pointer_cast(&coo.column_indices[0]);
-    const ValueType * V = thrust::raw_pointer_cast(&coo.values[0]);
+    typedef typename Matrix::index_type IndexType;
+
+    const IndexType * I = thrust::raw_pointer_cast(&A.row_indices[0]);
+    const IndexType * J = thrust::raw_pointer_cast(&A.column_indices[0]);
+    const ValueType * V = thrust::raw_pointer_cast(&A.values[0]);
 
     spmv_coo_serial_kernel<IndexType,ValueType> <<<1,1>>>
-        (coo.num_nonzeros, coo.I, coo.J, coo.V, d_x, d_y);
+        (A.num_nonzeros, I, J, V, x, y);
 }
 
 } // end namespace device

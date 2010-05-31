@@ -16,11 +16,10 @@
 
 #pragma once
 
-#include <cusp/csr_matrix.h>
-
 #include <cusp/detail/device/utils.h>
 #include <cusp/detail/device/texture.h>
 
+#include <thrust/device_ptr.h>
 #include <thrust/experimental/arch.h>
 
 namespace cusp
@@ -43,7 +42,9 @@ namespace device
 //   Same as spmv_csr_scalar_device, except x is accessed via texture cache.
 //
 
-template <typename IndexType, typename ValueType, bool UseCache>
+template <bool UseCache,
+          typename IndexType,
+          typename ValueType>
 __global__ void
 spmv_csr_scalar_kernel(const IndexType num_rows,
                        const IndexType * Ap, 
@@ -70,43 +71,49 @@ spmv_csr_scalar_kernel(const IndexType num_rows,
 }
 
     
-template <bool UseCache, typename IndexType, typename ValueType>
-void __spmv_csr_scalar(const csr_matrix<IndexType,ValueType,cusp::device_memory>& csr, 
-                       const ValueType * x, 
-                             ValueType * y)
+template <bool UseCache,
+          typename Matrix,
+          typename ValueType>
+void __spmv_csr_scalar(const Matrix&    A,
+                       const ValueType* x, 
+                             ValueType* y)
 {
+    typedef typename Matrix::index_type IndexType;
+
     const unsigned int BLOCK_SIZE = 256;
-    const unsigned int MAX_BLOCKS = thrust::experimental::arch::max_active_blocks(spmv_csr_scalar_kernel<IndexType, ValueType, UseCache>, BLOCK_SIZE, (size_t) 0);
-    const unsigned int NUM_BLOCKS = std::min(MAX_BLOCKS, DIVIDE_INTO(csr.num_rows, BLOCK_SIZE));
+    const unsigned int MAX_BLOCKS = thrust::experimental::arch::max_active_blocks(spmv_csr_scalar_kernel<UseCache, IndexType, ValueType>, BLOCK_SIZE, (size_t) 0);
+    const unsigned int NUM_BLOCKS = std::min(MAX_BLOCKS, DIVIDE_INTO(A.num_rows, BLOCK_SIZE));
     
     if (UseCache)
         bind_x(x);
 
-    spmv_csr_scalar_kernel<IndexType, ValueType, UseCache> <<<NUM_BLOCKS, BLOCK_SIZE>>> 
-        (csr.num_rows,
-         thrust::raw_pointer_cast(&csr.row_offsets[0]),
-         thrust::raw_pointer_cast(&csr.column_indices[0]),
-         thrust::raw_pointer_cast(&csr.values[0]),
+    spmv_csr_scalar_kernel<UseCache> <<<NUM_BLOCKS, BLOCK_SIZE>>> 
+        (A.num_rows,
+         thrust::raw_pointer_cast(&A.row_offsets[0]),
+         thrust::raw_pointer_cast(&A.column_indices[0]),
+         thrust::raw_pointer_cast(&A.values[0]),
          x, y);
 
     if (UseCache)
         unbind_x(x);
 }
 
-template <typename IndexType, typename ValueType>
-void spmv_csr_scalar(const csr_matrix<IndexType,ValueType,cusp::device_memory>& csr, 
-                     const ValueType * x, 
-                           ValueType * y)
+template <typename Matrix,
+          typename ValueType>
+void spmv_csr_scalar(const Matrix&    A,
+                     const ValueType* x, 
+                           ValueType* y)
 {
-    __spmv_csr_scalar<false>(csr, x, y);
+    __spmv_csr_scalar<false>(A, x, y);
 }
 
-template <typename IndexType, typename ValueType>
-void spmv_csr_scalar_tex(const csr_matrix<IndexType,ValueType,cusp::device_memory>& csr, 
-                         const ValueType * x, 
-                               ValueType * y)
+template <typename Matrix,
+          typename ValueType>
+void spmv_csr_scalar_tex(const Matrix&    A,
+                         const ValueType* x, 
+                               ValueType* y)
 {
-    __spmv_csr_scalar<true>(csr, x, y);
+    __spmv_csr_scalar<true>(A, x, y);
 }
 
 } // end namespace device
