@@ -139,7 +139,6 @@ void multiply(const Matrix&  A,
 //              cusp::detail::array2d_format_tag,
 //              cusp::detail::array2d_format_tag)
 //{
-//    sparse_matrix_block_vector_multiply(A, B, C);    
 //}
 
 ////////////////////////////////////////

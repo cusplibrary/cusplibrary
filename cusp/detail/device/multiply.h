@@ -17,8 +17,14 @@
 #pragma once
 
 #include <cusp/detail/matrix_traits.h>
+
 #include <cusp/detail/generic/multiply.h>
-#include <cusp/detail/device/spmv.h>
+
+#include <cusp/detail/device/spmv/coo_flat.h>
+#include <cusp/detail/device/spmv/csr_vector.h>
+#include <cusp/detail/device/spmv/dia.h>
+#include <cusp/detail/device/spmv/ell.h>
+#include <cusp/detail/device/spmv/hyb.h>
 
 namespace cusp
 {
@@ -145,7 +151,6 @@ void multiply(const Matrix&  A,
 //              cusp::detail::array2d_format_tag,
 //              cusp::detail::array2d_format_tag)
 //{
-//    sparse_matrix_block_vector_multiply(A, B, C);    
 //}
 
 ////////////////////////////////////////

@@ -20,7 +20,7 @@
 #include <cusp/hyb_matrix.h>
 
 #include <cusp/detail/device/spmv/ell.h>
-#include <cusp/detail/device/spmv/coo.h>
+#include <cusp/detail/device/spmv/coo_flat.h>
 
 namespace cusp
 {
@@ -35,7 +35,7 @@ void spmv_hyb(const cusp::hyb_matrix<IndexType, ValueType, cusp::device_memory>&
               const ValueType * x, 
                     ValueType * y)
 {
-    cusp::detail::device::spmv(hyb.ell, x, y);
+    spmv_ell(hyb.ell, x, y);
     __spmv_coo_flat<IndexType, ValueType, false, false>(hyb.coo, x, y);
 }
 
@@ -44,25 +44,8 @@ void spmv_hyb_tex(const cusp::hyb_matrix<IndexType, ValueType, cusp::device_memo
                   const ValueType * x, 
                         ValueType * y)
 {
-    cusp::detail::device::spmv_tex(hyb.ell, x, y);
+    spmv_ell_tex(hyb.ell, x, y);
     __spmv_coo_flat<IndexType, ValueType, true, false>(hyb.coo, x, y);
-}
-
-    
-template <typename IndexType, typename ValueType>
-void spmv(const cusp::hyb_matrix<IndexType, ValueType, cusp::device_memory>& hyb, 
-          const ValueType * x, 
-                ValueType * y)
-{
-    spmv_hyb(hyb, x, y);
-}
-
-template <typename IndexType, typename ValueType>
-void spmv_tex(const cusp::hyb_matrix<IndexType, ValueType, cusp::device_memory>& hyb, 
-              const ValueType * x, 
-                    ValueType * y)
-{
-    spmv_hyb_tex(hyb, x, y);
 }
 
 } // end namespace device

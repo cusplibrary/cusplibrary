@@ -116,22 +116,6 @@ void spmv_ell_tex(const cusp::ell_matrix<IndexType,ValueType,cusp::device_memory
     __spmv_ell<true>(ell, x, y);
 }
 
-template <typename IndexType, typename ValueType>
-void spmv(const cusp::ell_matrix<IndexType,ValueType,cusp::device_memory>& ell, 
-          const ValueType * x, 
-                ValueType * y)
-{
-    spmv_ell(ell, x, y);
-}
-
-template <typename IndexType, typename ValueType>
-void spmv_tex(const cusp::ell_matrix<IndexType,ValueType,cusp::device_memory>& ell, 
-              const ValueType * x, 
-                    ValueType * y)
-{
-    spmv_ell_tex(ell, x, y);
-}
-
 } // end namespace device
 } // end namespace detail
 } // end namespace cusp

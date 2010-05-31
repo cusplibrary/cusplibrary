@@ -182,6 +182,26 @@ void TestSparseMatrixVectorMultiply()
 }
 DECLARE_SPARSE_MATRIX_UNITTEST(TestSparseMatrixVectorMultiply);
 
+
+template <typename IndexType, typename ValueType>
+void spmv_tex(const cusp::coo_matrix<IndexType,ValueType,cusp::device_memory>& A, const ValueType * x, ValueType * y)
+{ cusp::detail::device::spmv_coo_flat_tex(A, x, y); }
+template <typename IndexType, typename ValueType>
+void spmv_tex(const cusp::csr_matrix<IndexType,ValueType,cusp::device_memory>& A, const ValueType * x, ValueType * y)
+{ cusp::detail::device::spmv_csr_vector_tex(A, x, y); }
+template <typename IndexType, typename ValueType>
+void spmv_tex(const cusp::dia_matrix<IndexType,ValueType,cusp::device_memory>& A, const ValueType * x, ValueType * y)
+{ cusp::detail::device::spmv_dia_tex(A, x, y); }
+template <typename IndexType, typename ValueType>
+void spmv_tex(const cusp::ell_matrix<IndexType,ValueType,cusp::device_memory>& A, const ValueType * x, ValueType * y)
+{ cusp::detail::device::spmv_ell_tex(A, x, y); }
+template <typename IndexType, typename ValueType>
+void spmv_tex(const cusp::hyb_matrix<IndexType,ValueType,cusp::device_memory>& A, const ValueType * x, ValueType * y)
+{ cusp::detail::device::spmv_hyb_tex(A, x, y); }
+
+
+
+
 template <class TestMatrix>
 void TestSparseMatrixVectorMultiplyTextureCache()
 {
@@ -215,9 +235,7 @@ void TestSparseMatrixVectorMultiplyTextureCache()
         x[3] = 4.0f; y[3] = 40.0f;
                      y[4] = 50.0f;
 
-        cusp::detail::device::spmv_tex(test_matrix,
-                                       thrust::raw_pointer_cast(&x[0]),
-                                       thrust::raw_pointer_cast(&y[0]));
+        spmv_tex(test_matrix, thrust::raw_pointer_cast(&x[0]), thrust::raw_pointer_cast(&y[0]));
 
         ASSERT_EQUAL(y[0], 173.0f);
         ASSERT_EQUAL(y[1],  54.0f);
@@ -235,7 +253,7 @@ void TestSparseMatrixVectorMultiplyTextureCache()
         cusp::array1d<float, MemorySpace> x(test_matrix.num_cols + 1); // offset by one
         cusp::array1d<float, MemorySpace> y(test_matrix.num_rows);
 
-        ASSERT_THROWS(cusp::detail::device::spmv_tex(test_matrix, thrust::raw_pointer_cast(&x[0]) + 1, thrust::raw_pointer_cast(&y[0])),
+        ASSERT_THROWS(spmv_tex(test_matrix, thrust::raw_pointer_cast(&x[0]) + 1, thrust::raw_pointer_cast(&y[0])),
                       cusp::invalid_input_exception);
 
     }

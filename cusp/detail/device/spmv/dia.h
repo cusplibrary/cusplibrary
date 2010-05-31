@@ -158,23 +158,6 @@ void spmv_dia_tex(const cusp::dia_matrix<IndexType,ValueType,cusp::device_memory
     __spmv_dia<true>(dia, x, y);
 }
 
-
-template <typename IndexType, typename ValueType>
-void spmv(const cusp::dia_matrix<IndexType,ValueType,cusp::device_memory>& dia, 
-          const ValueType * x, 
-                ValueType * y)
-{
-    spmv_dia(dia, x, y);
-}
-
-template <typename IndexType, typename ValueType>
-void spmv_tex(const cusp::dia_matrix<IndexType,ValueType,cusp::device_memory>& dia, 
-              const ValueType * x, 
-                    ValueType * y)
-{
-    spmv_dia_tex(dia, x, y);
-}
-
 } // end namespace device
 } // end namespace detail
 } // end namespace cusp
