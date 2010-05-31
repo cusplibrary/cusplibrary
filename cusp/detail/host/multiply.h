@@ -142,7 +142,6 @@ void multiply(const Matrix&  A,
 //    sparse_matrix_block_vector_multiply(A, B, C);    
 //}
 
-
 ////////////////////////////////////////
 // Dense Matrix-Matrix Multiplication //
 ////////////////////////////////////////
