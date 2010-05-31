@@ -67,13 +67,7 @@ void multiply(const Matrix&  A,
               cusp::detail::array1d_format_tag,
               cusp::detail::array1d_format_tag)
 {
-    typedef typename Vector2::value_type ValueType;
-
-    cusp::detail::host::spmv_coo
-        (A.num_rows, A.num_cols, A.num_entries,
-         &A.row_indices[0], &A.column_indices[0], &A.values[0],
-         &B[0], &C[0],
-         cusp::detail::zero_function<ValueType>(), thrust::multiplies<ValueType>(), thrust::plus<ValueType>());
+    cusp::detail::host::spmv_coo(A, B, C);
 }
 
 template <typename Matrix,
@@ -86,13 +80,7 @@ void multiply(const Matrix&  A,
               cusp::detail::array1d_format_tag,
               cusp::detail::array1d_format_tag)
 {
-    typedef typename Vector2::value_type ValueType;
-
-    cusp::detail::host::spmv_csr
-        (A.num_rows, A.num_cols,
-         &A.row_offsets[0], &A.column_indices[0], &A.values[0],
-         &B[0], &C[0],
-         cusp::detail::zero_function<ValueType>(), thrust::multiplies<ValueType>(), thrust::plus<ValueType>());
+    cusp::detail::host::spmv_csr(A, B, C);
 }
 
 template <typename Matrix,
@@ -105,17 +93,7 @@ void multiply(const Matrix&  A,
               cusp::detail::array1d_format_tag,
               cusp::detail::array1d_format_tag)
 {
-    typedef typename Matrix::index_type  IndexType;
-    typedef typename Vector2::value_type ValueType;
-
-    const IndexType num_diagonals = A.values.num_cols;
-    const IndexType stride        = A.values.num_rows;
-
-    cusp::detail::host::spmv_dia
-        (A.num_rows, A.num_cols, num_diagonals, stride,
-         &A.diagonal_offsets[0], &A.values.values[0],
-         &B[0], &C[0],
-         cusp::detail::zero_function<ValueType>(), thrust::multiplies<ValueType>(), thrust::plus<ValueType>());
+    cusp::detail::host::spmv_dia(A, B, C);
 }
 
 template <typename Matrix,
@@ -128,17 +106,7 @@ void multiply(const Matrix&  A,
               cusp::detail::array1d_format_tag,
               cusp::detail::array1d_format_tag)
 {
-    typedef typename Matrix::index_type  IndexType;
-    typedef typename Vector2::value_type ValueType;
-
-    const IndexType stride              = A.column_indices.num_rows;
-    const IndexType num_entries_per_row = A.column_indices.num_cols;
-
-    cusp::detail::host::spmv_ell
-        (A.num_rows, A.num_cols, num_entries_per_row, stride,
-         &A.column_indices.values[0], &A.values.values[0],
-         &B[0], &C[0],
-         cusp::detail::zero_function<ValueType>(), thrust::multiplies<ValueType>(), thrust::plus<ValueType>());
+    cusp::detail::host::spmv_ell(A, B, C);
 }
 
 template <typename Matrix,
@@ -151,23 +119,10 @@ void multiply(const Matrix&  A,
               cusp::detail::array1d_format_tag,
               cusp::detail::array1d_format_tag)
 {
-    typedef typename Matrix::index_type  IndexType;
     typedef typename Vector2::value_type ValueType;
 
-    const IndexType stride              = A.ell.column_indices.num_rows;
-    const IndexType num_entries_per_row = A.ell.column_indices.num_cols;
-
-    cusp::detail::host::spmv_ell
-        (A.num_rows, A.num_cols, num_entries_per_row, stride,
-         &A.ell.column_indices.values[0], &A.ell.values.values[0],
-         &B[0], &C[0],
-         cusp::detail::zero_function<ValueType>(), thrust::multiplies<ValueType>(), thrust::plus<ValueType>());
-    
-    cusp::detail::host::spmv_coo
-        (A.coo.num_rows, A.coo.num_cols, A.coo.num_entries,
-         &A.coo.row_indices[0], &A.coo.column_indices[0], &A.coo.values[0],
-         &B[0], &C[0],
-         thrust::identity<ValueType>(), thrust::multiplies<ValueType>(), thrust::plus<ValueType>());
+    cusp::detail::host::spmv_ell(A.ell, B, C);
+    cusp::detail::host::spmv_coo(A.coo, B, C, thrust::identity<ValueType>(), thrust::multiplies<ValueType>(), thrust::plus<ValueType>());
 }
 
 ////////////////////////////////////////
