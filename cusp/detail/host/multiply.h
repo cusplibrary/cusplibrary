@@ -16,9 +16,7 @@
 
 #pragma once
 
-#include <cusp/coo_matrix.h>
-#include <cusp/array2d.h>
-
+#include <cusp/detail/matrix_traits.h>
 #include <cusp/detail/functional.h>
 #include <cusp/detail/generic/multiply.h>
 #include <cusp/detail/host/spmv.h>
@@ -31,39 +29,46 @@ namespace host
 {
 
 //////////////////////////////////
-// Matrix-Matrix Multiplication //
+// Dense Matrix-Vector Multiply //
 //////////////////////////////////
-template <typename IndexType,
-          typename ValueType,
-          typename MemorySpace>
-void multiply(const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& A,
-              const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& B,
-                    cusp::coo_matrix<IndexType,ValueType,MemorySpace>& C)
+template <typename Matrix,
+          typename Vector1,
+          typename Vector2>
+void multiply(const Matrix&  A,
+              const Vector1& B,
+                    Vector2& C,
+              cusp::detail::array2d_format_tag,
+              cusp::detail::array1d_format_tag,
+              cusp::detail::array1d_format_tag)
 {
-    cusp::detail::generic::multiply(A,B,C);
-}
-    
-template <typename ValueType,
-          typename MemorySpace>
-void multiply(const cusp::array2d<ValueType,MemorySpace>& A,
-              const cusp::array2d<ValueType,MemorySpace>& B,
-                    cusp::array2d<ValueType,MemorySpace>& C)
-{
-    cusp::detail::generic::multiply(A,B,C);
+    typedef typename Vector2::value_type ValueType;
+
+    for(size_t i = 0; i < A.num_rows; i++)
+    {
+        ValueType sum = 0;
+        for(size_t j = 0; j < A.num_cols; j++)
+        {
+            sum += A(i,j) * B[j];
+        }
+        C[i] = sum;
+    }
 }
 
-//////////////////////////////////
-// Matrix-Vector Multiplication //
-//////////////////////////////////
-template <typename IndexType,
-          typename ValueType,
-          typename MemorySpace1,
-          typename MemorySpace2,
-          typename MemorySpace3>
-void multiply(const cusp::coo_matrix<IndexType,ValueType,MemorySpace1>& A,
-              const cusp::array1d<ValueType,MemorySpace2>& B,
-                    cusp::array1d<ValueType,MemorySpace3>& C)
+///////////////////////////////////
+// Sparse Matrix-Vector Multiply //
+///////////////////////////////////
+template <typename Matrix,
+          typename Vector1,
+          typename Vector2>
+void multiply(const Matrix&  A,
+              const Vector1& B,
+                    Vector2& C,
+              cusp::detail::coo_format_tag,
+              cusp::detail::array1d_format_tag,
+              cusp::detail::array1d_format_tag)
 {
+    typedef typename Vector2::value_type ValueType;
+
     cusp::detail::host::spmv_coo
         (A.num_rows, A.num_cols, A.num_entries,
          &A.row_indices[0], &A.column_indices[0], &A.values[0],
@@ -71,15 +76,18 @@ void multiply(const cusp::coo_matrix<IndexType,ValueType,MemorySpace1>& A,
          cusp::detail::zero_function<ValueType>(), thrust::multiplies<ValueType>(), thrust::plus<ValueType>());
 }
 
-template <typename IndexType,
-          typename ValueType,
-          typename MemorySpace1,
-          typename MemorySpace2,
-          typename MemorySpace3>
-void multiply(const cusp::csr_matrix<IndexType,ValueType,MemorySpace1>& A,
-              const cusp::array1d<ValueType,MemorySpace2>& B,
-                    cusp::array1d<ValueType,MemorySpace3>& C)
+template <typename Matrix,
+          typename Vector1,
+          typename Vector2>
+void multiply(const Matrix&  A,
+              const Vector1& B,
+                    Vector2& C,
+              cusp::detail::csr_format_tag,
+              cusp::detail::array1d_format_tag,
+              cusp::detail::array1d_format_tag)
 {
+    typedef typename Vector2::value_type ValueType;
+
     cusp::detail::host::spmv_csr
         (A.num_rows, A.num_cols,
          &A.row_offsets[0], &A.column_indices[0], &A.values[0],
@@ -87,15 +95,19 @@ void multiply(const cusp::csr_matrix<IndexType,ValueType,MemorySpace1>& A,
          cusp::detail::zero_function<ValueType>(), thrust::multiplies<ValueType>(), thrust::plus<ValueType>());
 }
 
-template <typename IndexType,
-          typename ValueType,
-          typename MemorySpace1,
-          typename MemorySpace2,
-          typename MemorySpace3>
-void multiply(const cusp::dia_matrix<IndexType,ValueType,MemorySpace1>& A,
-              const cusp::array1d<ValueType,MemorySpace2>& B,
-                    cusp::array1d<ValueType,MemorySpace3>& C)
+template <typename Matrix,
+          typename Vector1,
+          typename Vector2>
+void multiply(const Matrix&  A,
+              const Vector1& B,
+                    Vector2& C,
+              cusp::detail::dia_format_tag,
+              cusp::detail::array1d_format_tag,
+              cusp::detail::array1d_format_tag)
 {
+    typedef typename Matrix::index_type  IndexType;
+    typedef typename Vector2::value_type ValueType;
+
     const IndexType num_diagonals = A.values.num_cols;
     const IndexType stride        = A.values.num_rows;
 
@@ -106,15 +118,19 @@ void multiply(const cusp::dia_matrix<IndexType,ValueType,MemorySpace1>& A,
          cusp::detail::zero_function<ValueType>(), thrust::multiplies<ValueType>(), thrust::plus<ValueType>());
 }
 
-template <typename IndexType,
-          typename ValueType,
-          typename MemorySpace1,
-          typename MemorySpace2,
-          typename MemorySpace3>
-void multiply(const cusp::ell_matrix<IndexType,ValueType,MemorySpace1>& A,
-              const cusp::array1d<ValueType,MemorySpace2>& B,
-                    cusp::array1d<ValueType,MemorySpace3>& C)
+template <typename Matrix,
+          typename Vector1,
+          typename Vector2>
+void multiply(const Matrix&  A,
+              const Vector1& B,
+                    Vector2& C,
+              cusp::detail::ell_format_tag,
+              cusp::detail::array1d_format_tag,
+              cusp::detail::array1d_format_tag)
 {
+    typedef typename Matrix::index_type  IndexType;
+    typedef typename Vector2::value_type ValueType;
+
     const IndexType stride              = A.column_indices.num_rows;
     const IndexType num_entries_per_row = A.column_indices.num_cols;
 
@@ -125,15 +141,19 @@ void multiply(const cusp::ell_matrix<IndexType,ValueType,MemorySpace1>& A,
          cusp::detail::zero_function<ValueType>(), thrust::multiplies<ValueType>(), thrust::plus<ValueType>());
 }
 
-template <typename IndexType,
-          typename ValueType,
-          typename MemorySpace1,
-          typename MemorySpace2,
-          typename MemorySpace3>
-void multiply(const cusp::hyb_matrix<IndexType,ValueType,MemorySpace1>& A,
-              const cusp::array1d<ValueType,MemorySpace2>& B,
-                    cusp::array1d<ValueType,MemorySpace3>& C)
+template <typename Matrix,
+          typename Vector1,
+          typename Vector2>
+void multiply(const Matrix&  A,
+              const Vector1& B,
+                    Vector2& C,
+              cusp::detail::hyb_format_tag,
+              cusp::detail::array1d_format_tag,
+              cusp::detail::array1d_format_tag)
 {
+    typedef typename Matrix::index_type  IndexType;
+    typedef typename Vector2::value_type ValueType;
+
     const IndexType stride              = A.ell.column_indices.num_rows;
     const IndexType num_entries_per_row = A.ell.column_indices.num_cols;
 
@@ -150,23 +170,70 @@ void multiply(const cusp::hyb_matrix<IndexType,ValueType,MemorySpace1>& A,
          thrust::identity<ValueType>(), thrust::multiplies<ValueType>(), thrust::plus<ValueType>());
 }
 
-template <typename ValueType,
-          typename MemorySpace1,
-          typename MemorySpace2,
-          typename MemorySpace3>
-void multiply(const cusp::array2d<ValueType,MemorySpace1>& A,
-              const cusp::array1d<ValueType,MemorySpace2>& B,
-                    cusp::array1d<ValueType,MemorySpace3>& C)
+////////////////////////////////////////
+// Sparse Matrix-BlockVector Multiply //
+////////////////////////////////////////
+//// TODO implement this w/ repeated SpMVs and then specialize
+//template <typename Matrix,
+//          typename Vector1,
+//          typename Vector2>
+//void multiply(const Matrix&  A,
+//              const Vector1& B,
+//                    Vector2& C,
+//              cusp::detail::sparse_format_tag,
+//              cusp::detail::array2d_format_tag,
+//              cusp::detail::array2d_format_tag)
+//{
+//    sparse_matrix_block_vector_multiply(A, B, C);    
+//}
+
+
+////////////////////////////////////////
+// Dense Matrix-Matrix Multiplication //
+////////////////////////////////////////
+template <typename Matrix1,
+          typename Matrix2,
+          typename Matrix3>
+void multiply(const Matrix1&  A,
+              const Matrix2& B,
+                    Matrix3& C,
+              cusp::detail::array2d_format_tag,
+              cusp::detail::array2d_format_tag,
+              cusp::detail::array2d_format_tag)
 {
-    for(size_t i = 0; i < A.num_rows; i++)
-    {
-        ValueType sum = 0;
-        for(size_t j = 0; j < A.num_cols; j++)
-        {
-            sum += A(i,j) * B[j];
-        }
-        C[i] = sum;
-    }
+    cusp::detail::generic::multiply(A,B,C);
+}
+
+/////////////////////////////////////////
+// Sparse Matrix-Matrix Multiplication //
+/////////////////////////////////////////
+template <typename Matrix1,
+          typename Matrix2,
+          typename Matrix3>
+void multiply(const Matrix1&  A,
+              const Matrix2& B,
+                    Matrix3& C,
+              cusp::detail::sparse_format_tag,
+              cusp::detail::sparse_format_tag,
+              cusp::detail::sparse_format_tag)
+{
+    cusp::detail::generic::multiply(A,B,C);
+}
+  
+/////////////////
+// Entry Point //
+/////////////////
+template <typename Matrix,
+          typename MatrixOrVector1,
+          typename MatrixOrVector2>
+void multiply(const Matrix&  A,
+              const MatrixOrVector1& B,
+                    MatrixOrVector2& C)
+{
+    cusp::detail::host::multiply(A, B, C,
+            typename cusp::detail::matrix_format<Matrix>::type(),
+            typename cusp::detail::matrix_format<MatrixOrVector1>::type(),
+            typename cusp::detail::matrix_format<MatrixOrVector2>::type());
 }
 
 } // end namespace host
