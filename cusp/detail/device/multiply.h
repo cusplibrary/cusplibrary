@@ -18,13 +18,15 @@
 
 #include <cusp/detail/matrix_traits.h>
 
-#include <cusp/detail/generic/multiply.h>
-
+// SpMV
 #include <cusp/detail/device/spmv/coo_flat.h>
 #include <cusp/detail/device/spmv/csr_vector.h>
 #include <cusp/detail/device/spmv/dia.h>
 #include <cusp/detail/device/spmv/ell.h>
 #include <cusp/detail/device/spmv/hyb.h>
+
+// SpMM
+#include <cusp/detail/device/spmm/coo.h>
 
 namespace cusp
 {
@@ -156,18 +158,18 @@ void multiply(const Matrix&  A,
 ////////////////////////////////////////
 // Dense Matrix-Matrix Multiplication //
 ////////////////////////////////////////
-template <typename Matrix1,
-          typename Matrix2,
-          typename Matrix3>
-void multiply(const Matrix1&  A,
-              const Matrix2& B,
-                    Matrix3& C,
-              cusp::detail::array2d_format_tag,
-              cusp::detail::array2d_format_tag,
-              cusp::detail::array2d_format_tag)
-{
-    cusp::detail::generic::multiply(A,B,C);
-}
+// TODO implement
+//template <typename Matrix1,
+//          typename Matrix2,
+//          typename Matrix3>
+//void multiply(const Matrix1& A,
+//              const Matrix2& B,
+//                    Matrix3& C,
+//              cusp::detail::array2d_format_tag,
+//              cusp::detail::array2d_format_tag,
+//              cusp::detail::array2d_format_tag)
+//{
+//}
 
 /////////////////////////////////////////
 // Sparse Matrix-Matrix Multiplication //
@@ -175,16 +177,28 @@ void multiply(const Matrix1&  A,
 template <typename Matrix1,
           typename Matrix2,
           typename Matrix3>
-void multiply(const Matrix1&  A,
+void multiply(const Matrix1& A,
               const Matrix2& B,
                     Matrix3& C,
-              cusp::detail::sparse_format_tag,
-              cusp::detail::sparse_format_tag,
-              cusp::detail::sparse_format_tag)
+              cusp::detail::coo_format_tag,
+              cusp::detail::coo_format_tag,
+              cusp::detail::coo_format_tag)
 {
-    cusp::detail::generic::multiply(A,B,C);
+    cusp::detail::device::spmm_coo(A,B,C);
 }
-  
+
+// TODO implement with COO SpMM or specialized path
+//template <typename Matrix1,
+//          typename Matrix2,
+//          typename Matrix3>
+//void multiply(const Matrix1& A,
+//              const Matrix2& B,
+//                    Matrix3& C,
+//              cusp::detail::sparse_format_tag,
+//              cusp::detail::sparse_format_tag,
+//              cusp::detail::sparse_format_tag)
+//{
+//}
 
 /////////////////
 // Entry Point //

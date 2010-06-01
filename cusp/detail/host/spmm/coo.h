@@ -14,8 +14,7 @@
  *  limitations under the License.
  */
 
-#include <cusp/coo_matrix.h>
-#include <cusp/array2d.h>
+#include <cusp/array1d.h>
 
 #include <cusp/detail/format_utils.h>
 
@@ -32,21 +31,24 @@ namespace cusp
 {
 namespace detail
 {
-namespace generic
+namespace host
 {
 
-template <typename IndexType,
-          typename ValueType,
-          typename MemorySpace>
-void multiply(const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& A,
-              const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& B,
-                    cusp::coo_matrix<IndexType,ValueType,MemorySpace>& C)
+template <typename Matrix1,
+          typename Matrix2,
+          typename Matrix3>
+void spmm_coo(const Matrix1& A,
+              const Matrix2& B,
+                    Matrix3& C)
 {
+    typedef typename Matrix3::index_type   IndexType;
+    typedef typename Matrix3::value_type   ValueType;
+    typedef typename Matrix3::memory_space MemorySpace;
+
     // check whether matrices are empty
     if (A.num_entries == 0 || B.num_entries == 0)
     {
-        cusp::coo_matrix<IndexType,ValueType,MemorySpace> temp(A.num_rows, B.num_cols, 0);
-        C.swap(temp);
+        C.resize(A.num_rows, B.num_cols, 0);
         return;
     }
 
@@ -122,7 +124,7 @@ void multiply(const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& A,
 
     // compute unique number of nonzeros in the output
     IndexType NNZ = thrust::inner_product(thrust::make_zip_iterator(thrust::make_tuple(I.begin(), J.begin())),
-                                          thrust::make_zip_iterator(thrust::make_tuple(I.end (), J.end()))    - 1,
+                                          thrust::make_zip_iterator(thrust::make_tuple(I.end (),  J.end()))   - 1,
                                           thrust::make_zip_iterator(thrust::make_tuple(I.begin(), J.begin())) + 1,
                                           IndexType(0),
                                           thrust::plus<IndexType>(),
@@ -141,30 +143,7 @@ void multiply(const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& A,
                           thrust::plus<ValueType>());
 }
 
-
-template <typename ValueType,
-          typename MemorySpace>
-void multiply(const cusp::array2d<ValueType,MemorySpace>& A,
-              const cusp::array2d<ValueType,MemorySpace>& B,
-                    cusp::array2d<ValueType,MemorySpace>& C)
-{
-    C.resize(A.num_rows, B.num_cols);
-
-    for(size_t i = 0; i < C.num_rows; i++)
-    {
-        for(size_t j = 0; j < C.num_cols; j++)
-        {
-            ValueType v = 0;
-
-            for(size_t k = 0; k < A.num_cols; k++)
-                v += A(i,k) * B(k,j);
-            
-            C(i,j) = v;
-        }
-    }
-}
-
-} // end namespace generic
+} // end namespace host
 } // end namespace detail
 } // end namespace cusp
 

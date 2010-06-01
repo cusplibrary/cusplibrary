@@ -1,11 +1,5 @@
 #pragma once
 
-#include <cusp/coo_matrix.h>
-#include <cusp/csr_matrix.h>
-#include <cusp/dia_matrix.h>
-#include <cusp/ell_matrix.h>
-#include <cusp/hyb_matrix.h>
-
 #include <thrust/functional.h>
 #include <cusp/detail/functional.h>
 

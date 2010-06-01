@@ -18,8 +18,9 @@
 
 #include <cusp/detail/matrix_traits.h>
 #include <cusp/detail/functional.h>
-#include <cusp/detail/generic/multiply.h>
+
 #include <cusp/detail/host/spmv.h>
+#include <cusp/detail/host/spmm/coo.h>
 
 namespace cusp
 {
@@ -154,7 +155,22 @@ void multiply(const Matrix1&  A,
               cusp::detail::array2d_format_tag,
               cusp::detail::array2d_format_tag)
 {
-    cusp::detail::generic::multiply(A,B,C);
+    typedef typename Matrix3::value_type ValueType;
+
+    C.resize(A.num_rows, B.num_cols);
+
+    for(size_t i = 0; i < C.num_rows; i++)
+    {
+        for(size_t j = 0; j < C.num_cols; j++)
+        {
+            ValueType v = 0;
+
+            for(size_t k = 0; k < A.num_cols; k++)
+                v += A(i,k) * B(k,j);
+            
+            C(i,j) = v;
+        }
+    }
 }
 
 /////////////////////////////////////////
@@ -166,12 +182,25 @@ template <typename Matrix1,
 void multiply(const Matrix1&  A,
               const Matrix2& B,
                     Matrix3& C,
-              cusp::detail::sparse_format_tag,
-              cusp::detail::sparse_format_tag,
-              cusp::detail::sparse_format_tag)
+              cusp::detail::coo_format_tag,
+              cusp::detail::coo_format_tag,
+              cusp::detail::coo_format_tag)
 {
-    cusp::detail::generic::multiply(A,B,C);
+    cusp::detail::host::spmm_coo(A,B,C);
 }
+
+// TODO implement with CSR SpMM or specialized path
+//template <typename Matrix1,
+//          typename Matrix2,
+//          typename Matrix3>
+//void multiply(const Matrix1& A,
+//              const Matrix2& B,
+//                    Matrix3& C,
+//              cusp::detail::sparse_format_tag,
+//              cusp::detail::sparse_format_tag,
+//              cusp::detail::sparse_format_tag)
+//{
+//}
   
 /////////////////
 // Entry Point //
