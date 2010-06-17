@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include <cusp/detail/config.h>
+
 #include <string>
 #include <stdexcept>
 

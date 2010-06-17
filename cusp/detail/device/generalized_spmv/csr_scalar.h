@@ -20,6 +20,7 @@
 
 #include <thrust/iterator/iterator_traits.h>
 #include <thrust/experimental/arch.h>
+#include <thrust/detail/device/dereference.h>
 
 namespace cusp
 {

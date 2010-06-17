@@ -21,6 +21,7 @@
 #include <cusp/hyb_matrix.h>
 
 #include <thrust/fill.h>
+#include <thrust/extrema.h>
 #include <thrust/binary_search.h>
 #include <thrust/transform.h>
 #include <thrust/scatter.h>

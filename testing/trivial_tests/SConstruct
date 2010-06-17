@@ -1,5 +1,8 @@
 import os
 import glob
+from warnings import warn
+
+cusp_abspath = os.path.abspath("../../cusp/")
 
 # try to import an environment first
 try:
@@ -8,43 +11,61 @@ except:
   exec open("../../build/build-env.py")
   env = Environment()
 
-# build and run the program that divines the version of the SM on gpu 0 of the build/test machine
-nvcc_options_file = env.Command('../../build/nvcc_options_file.txt',
-                                env.Program('../../build/print_sm_version.cpp'),
-                                os.path.join('"' + env.GetLaunchDir(), '../../build/print_sm_version" > ../../build/nvcc_options_file.txt'))
+# this function builds a trivial source file from a Cusp header
+def trivial_source_from_header(source, target, env):
+  src_abspath = str(source[0])
+  src_relpath = os.path.relpath(src_abspath, cusp_abspath)
+  include = os.path.join('cusp', src_relpath)
 
-env.Append(NVCCFLAGS = ['-optf=../../build/nvcc_options_file.txt'])
+  target_filename = str(target[0])
+  fid = open(target_filename, 'w')
+  fid.write('#include <' + include + '>\n')
+  fid.close()
 
-# find all .h files in the thrust directory
+
+# CUFile builds a trivial .cu file from a Cusp header
+cu_from_header_builder = Builder(action = trivial_source_from_header,
+                                 suffix = '.cu',
+                                 src_suffix = '.h')
+env.Append(BUILDERS = {'CUFile' : cu_from_header_builder})
+
+# CPPFile builds a trivial .cpp file from a Cusp header
+cpp_from_header_builder = Builder(action = trivial_source_from_header,
+                                  suffix = '.cpp',
+                                  src_suffix = '.h')
+env.Append(BUILDERS = {'CPPFile' : cpp_from_header_builder})
+
+
+# find all user-includable .h files in the cusp tree and generate trivial source files #including them
 extensions = ['.h']
-for ext in extensions:
-  pattern = os.path.join(os.path.abspath('../../cusp/'), "*" + ext)
-  for fullpath in glob.glob(pattern):
-    headerfilename = os.path.basename(fullpath)
-    # create a .cu file
-    fid = open(headerfilename.replace('.h', '.cu'), 'w')
-    fid.write('#include <cusp/' + headerfilename + '>\n')
-    fid.close()
-    # create a .cpp file
-    #fid = open(headerfilename.replace('.h', '_cpp.cpp'), 'w')
-    #fid.write('#include <cusp/' + headerfilename + '>\n')
-    #fid.close()
-    
-fid = open('main.cu', 'w')
-fid.write('int main(void){ return 0; }\n')
-fid.close()
+folders = ['',              # main folder
+           'gallery/',
+           'graph/',
+           'io/',
+           'krylov/',
+           'precond/',
+           'relaxation/']
 
-# find all .cus & .cpps in the current directory
-sources = []
-extensions = ['*.cu', '*.cpp']
-for ext in extensions:
-  sources.extend(env.Glob(ext, strings = True))
+sources  = []
 
+for folder in folders:
+  for ext in extensions:
+    pattern = os.path.join(os.path.join(cusp_abspath, folder), "*" + ext)
+    for fullpath in glob.glob(pattern):
+      headerfilename = os.path.basename(fullpath)
+
+      cu  = env.CUFile(headerfilename.replace('.h', '.cu'), fullpath)
+      cpp = env.CPPFile(headerfilename.replace('.h', '_cpp.cpp'), fullpath)
+
+      sources.append(cu)
+      #sources.append(cpp)  # TODO: re-enable this
+
+      # insure that all files #include <cusp/detail/config.h>
+      fid = open(fullpath)
+      if '#include <cusp/detail/config.h>' not in fid.read():
+        warn('Header <cusp/' + folder + headerfilename + '> does not include <cusp/detail/config.h>')
+
+# and the file with main()
+sources.append('main.cu')
 tester = env.Program('tester', sources)
-env.Depends(sources, nvcc_options_file)
-
-# add all the .cu-generated linkinfo files to the clean list
-for src in sources:
-  if src.endswith('.cu'):
-    env.Clean(tester, src.replace(".cu", ".linkinfo"))
 
