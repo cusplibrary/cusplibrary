@@ -29,24 +29,24 @@ namespace dispatch
 ///////////////////////
 // Host to Host Path //
 ///////////////////////
-template <class DestinationType, class SourceType>
-void convert(DestinationType& dst, const SourceType& src, cusp::host_memory, cusp::host_memory)
+template <typename SourceType, typename DestinationType>
+void convert(const SourceType& src, DestinationType& dst, cusp::host_memory, cusp::host_memory)
 {
-    cusp::detail::host::convert(dst, src);
+    cusp::detail::host::convert(src, dst);
 }
 
 /////////////////////////
 // Host to Device Path //
 /////////////////////////
-template <class DestinationType, class SourceType>
-void convert(DestinationType& dst, const SourceType& src, cusp::device_memory, cusp::host_memory)
+template <typename SourceType, typename DestinationType>
+void convert(const SourceType& src, DestinationType& dst, cusp::host_memory, cusp::device_memory)
 {
     // convert on host and transfer to device
     typedef typename DestinationType::template rebind<cusp::host_memory>::type HostDestinationType;
     
     HostDestinationType tmp;
 
-    cusp::detail::host::convert(tmp, src);
+    cusp::detail::host::convert(src, tmp);
 
     dst = tmp;
 }
@@ -54,24 +54,24 @@ void convert(DestinationType& dst, const SourceType& src, cusp::device_memory, c
 /////////////////////////
 // Device to Host Path //
 /////////////////////////
-template <class DestinationType, class SourceType>
-void convert(DestinationType& dst, const SourceType& src, cusp::host_memory, cusp::device_memory)
+template <typename SourceType, typename DestinationType>
+void convert(const SourceType& src, DestinationType& dst, cusp::device_memory, cusp::host_memory)
 {
     // transfer to host and transfer to device
     typedef typename SourceType::template rebind<cusp::host_memory>::type HostSourceType;
     
     HostSourceType tmp(src);
 
-    cusp::detail::host::convert(dst, tmp);
+    cusp::detail::host::convert(tmp, dst);
 }
 
 ///////////////////////////
 // Device to Device Path //
 ///////////////////////////
-template <class DestinationType, class SourceType>
-void convert(DestinationType& dst, const SourceType& src, cusp::device_memory, cusp::device_memory)
+template <typename SourceType, typename DestinationType>
+void convert(const SourceType& src, DestinationType& dst, cusp::device_memory, cusp::device_memory)
 {
-    cusp::detail::device::convert(dst, src);
+    cusp::detail::device::convert(src, dst);
 }
 
 } // end namespace dispatch

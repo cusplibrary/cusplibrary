@@ -54,7 +54,7 @@ template <typename MatrixType>
 coo_matrix<IndexType,ValueType,MemorySpace>
     ::coo_matrix(const MatrixType& matrix)
     {
-        cusp::detail::convert(*this, matrix);
+        cusp::detail::convert(matrix, *this);
     }
 
 //////////////////////
@@ -114,7 +114,7 @@ template <typename MatrixType>
     coo_matrix<IndexType,ValueType,MemorySpace>
     ::operator=(const MatrixType& matrix)
     {
-        cusp::detail::convert(*this, matrix);
+        cusp::detail::convert(matrix, *this);
         
         return *this;
     }

@@ -52,7 +52,7 @@ template <typename MatrixType>
 dia_matrix<IndexType,ValueType,MemorySpace>
     ::dia_matrix(const MatrixType& matrix)
     {
-        cusp::detail::convert(*this, matrix);
+        cusp::detail::convert(matrix, *this);
     }
 
 //////////////////////
@@ -109,7 +109,7 @@ template <typename MatrixType>
     dia_matrix<IndexType,ValueType,MemorySpace>
     ::operator=(const MatrixType& matrix)
     {
-        cusp::detail::convert(*this, matrix);
+        cusp::detail::convert(matrix, *this);
         
         return *this;
     }

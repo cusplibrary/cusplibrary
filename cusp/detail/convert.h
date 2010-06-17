@@ -22,8 +22,8 @@ namespace cusp
 namespace detail
 {
 
-    template <class DestinationType, class SourceType>
-    void convert(DestinationType& dst, const SourceType& src);
+template <typename SourceType, typename DestinationType>
+void convert(const SourceType& src, DestinationType& dst);
 
 } // end namespace detail
 } // end namespace cusp

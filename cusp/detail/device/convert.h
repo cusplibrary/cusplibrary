@@ -61,8 +61,9 @@ namespace device
 // COO //
 /////////
 template <typename IndexType, typename ValueType>
-void convert(      cusp::coo_matrix<IndexType,ValueType,cusp::device_memory>& dst,
-             const cusp::csr_matrix<IndexType,ValueType,cusp::device_memory>& src)
+void convert(const cusp::csr_matrix<IndexType,ValueType,cusp::device_memory>& src,
+                   cusp::coo_matrix<IndexType,ValueType,cusp::device_memory>& dst)
+             
 {
     cusp::coo_matrix<IndexType,ValueType,cusp::device_memory> tmp(src.num_rows, src.num_cols, src.num_entries);
 
@@ -72,26 +73,13 @@ void convert(      cusp::coo_matrix<IndexType,ValueType,cusp::device_memory>& ds
 
     dst.swap(tmp);
 }
-//template <typename IndexType, typename ValueType, class Orientation>
-//void convert(      cusp::coo_matrix<IndexType,ValueType,cusp::device_memory>& dst,
-//             const cusp::array2d<ValueType,cusp::device_memory,Orientation>& src)
-//{    cusp::detail::device::array_to_coo(dst, src);    }
-//
-//template <typename IndexType, typename ValueType, class MatrixType>
-//void convert(      cusp::coo_matrix<IndexType,ValueType,cusp::device_memory>& dst,
-//             const MatrixType& src)
-//{
-//    cusp::csr_matrix<IndexType,ValueType,cusp::device_memory> csr;
-//    cusp::detail::convert(csr, src);
-//    cusp::detail::convert(dst, csr);
-//}
 
 /////////
 // CSR //
 /////////
 template <typename IndexType, typename ValueType>
-void convert(      cusp::csr_matrix<IndexType,ValueType,cusp::device_memory>& dst,
-             const cusp::coo_matrix<IndexType,ValueType,cusp::device_memory>& src)
+void convert(const cusp::coo_matrix<IndexType,ValueType,cusp::device_memory>& src,
+                   cusp::csr_matrix<IndexType,ValueType,cusp::device_memory>& dst)
 {
     cusp::csr_matrix<IndexType,ValueType,cusp::device_memory> tmp(src.num_rows, src.num_cols, src.num_entries);
 
@@ -101,145 +89,38 @@ void convert(      cusp::csr_matrix<IndexType,ValueType,cusp::device_memory>& ds
 
     dst.swap(tmp);
 }
-//template <typename IndexType, typename ValueType>
-//void convert(      cusp::csr_matrix<IndexType,ValueType,cusp::device_memory>& dst,
-//             const cusp::dia_matrix<IndexType,ValueType,cusp::device_memory>& src)
-//{    cusp::detail::device::dia_to_csr(dst, src);    }
-//
-//template <typename IndexType, typename ValueType>
-//void convert(      cusp::csr_matrix<IndexType,ValueType,cusp::device_memory>& dst,
-//             const cusp::ell_matrix<IndexType,ValueType,cusp::device_memory>& src)
-//{    cusp::detail::device::ell_to_csr(dst, src);    }
-//
-//template <typename IndexType, typename ValueType>
-//void convert(      cusp::csr_matrix<IndexType,ValueType,cusp::device_memory>& dst,
-//             const cusp::hyb_matrix<IndexType,ValueType,cusp::device_memory>& src)
-//{    cusp::detail::device::hyb_to_csr(dst, src);    }
-//
-//template <typename IndexType, typename ValueType, class Orientation>
-//void convert(      cusp::csr_matrix<IndexType,ValueType,cusp::device_memory>& dst,
-//             const cusp::array2d<ValueType,cusp::device_memory,Orientation>& src)
-//{    cusp::detail::device::array_to_csr(dst, src);    }
 
 /////////
 // DIA //
 /////////
-//template <typename IndexType, typename ValueType>
-//void convert(      cusp::dia_matrix<IndexType,ValueType,cusp::device_memory>& dst,
-//             const cusp::csr_matrix<IndexType,ValueType,cusp::device_memory>& src,
-//             const float max_fill = 3.0,
-//             const IndexType alignment = 16)
-//{
-//    const IndexType occupied_diagonals = cusp::detail::device::count_diagonals(src);
-//
-//    const float fill_ratio = float(occupied_diagonals) * float(src.num_rows) / std::max(1.0f, float(src.num_entries));
-//
-//    if (max_fill < fill_ratio)
-//        throw cusp::format_conversion_exception("dia_matrix fill-in would exceed maximum tolerance");
-//
-//    cusp::detail::device::csr_to_dia(dst, src, alignment);
-//}
-//
-//template <typename IndexType, typename ValueType, class MatrixType>
-//void convert(      cusp::dia_matrix<IndexType,ValueType,cusp::device_memory>& dst,
-//             const MatrixType& src)
-//{
-//    cusp::csr_matrix<IndexType,ValueType,cusp::device_memory> csr;
-//    cusp::detail::convert(csr, src);
-//    cusp::detail::convert(dst, csr);
-//}
 
 /////////
 // ELL //
 /////////
-//template <typename IndexType, typename ValueType>
-//void convert(      cusp::ell_matrix<IndexType,ValueType,cusp::device_memory>& dst,
-//             const cusp::csr_matrix<IndexType,ValueType,cusp::device_memory>& src,
-//             const float max_fill = 3.0,
-//             const IndexType alignment = 16)
-//{
-//    const IndexType max_entries_per_row = cusp::detail::device::compute_max_entries_per_row(src);
-//    const float fill_ratio = float(max_entries_per_row) * float(src.num_rows) / std::max(1.0f, float(src.num_entries));
-//
-//    if (max_fill < fill_ratio)
-//        throw cusp::format_conversion_exception("ell_matrix fill-in would exceed maximum tolerance");
-//
-//    cusp::detail::device::csr_to_ell(dst, src, max_entries_per_row, alignment);
-//}
-//
-//template <typename IndexType, typename ValueType, class MatrixType>
-//void convert(      cusp::ell_matrix<IndexType,ValueType,cusp::device_memory>& dst,
-//             const MatrixType& src)
-//{
-//    cusp::csr_matrix<IndexType,ValueType,cusp::device_memory> csr;
-//    cusp::detail::convert(csr, src);
-//    cusp::detail::convert(dst, csr);
-//}
 
 /////////
 // HYB //
 /////////
-//template <typename IndexType, typename ValueType>
-//void convert(      cusp::hyb_matrix<IndexType,ValueType,cusp::device_memory>& dst,
-//             const cusp::csr_matrix<IndexType,ValueType,cusp::device_memory>& src,
-//             const float relative_speed = 3.0,  const IndexType breakeven_threshold = 4096)
-//{
-//    const IndexType num_entries_per_row = cusp::detail::device::compute_optimal_entries_per_row(src, relative_speed, breakeven_threshold);
-//    cusp::detail::device::csr_to_hyb(dst, src, num_entries_per_row);
-//}
-//
-//template <typename IndexType, typename ValueType, class MatrixType>
-//void convert(      cusp::hyb_matrix<IndexType,ValueType,cusp::device_memory>& dst,
-//             const MatrixType& src)
-//{
-//    cusp::csr_matrix<IndexType,ValueType,cusp::device_memory> csr;
-//    cusp::detail::convert(csr, src);
-//    cusp::detail::convert(dst, csr);
-//}
 
 ///////////
 // Array //
 ///////////
-//template <typename IndexType, typename ValueType, class Orientation>
-//void convert(      cusp::array2d<ValueType,cusp::device_memory,Orientation>& dst,
-//             const cusp::csr_matrix<IndexType,ValueType,cusp::device_memory>& src)
-//{    cusp::detail::device::csr_to_array(dst, src);    }
-//
-//template <typename IndexType, typename ValueType, class Orientation>
-//void convert(      cusp::array2d<ValueType,cusp::device_memory,Orientation>& dst,
-//             const cusp::coo_matrix<IndexType,ValueType,cusp::device_memory>& src)
-//{    cusp::detail::device::coo_to_array(dst, src);    }
-//
-//template <typename ValueType1, class Orientation1,
-//          typename ValueType2, class Orientation2>
-//void convert(      cusp::array2d<ValueType1,cusp::device_memory,Orientation1>& dst,
-//             const cusp::array2d<ValueType2,cusp::device_memory,Orientation2>& src)
-//{    cusp::detail::device::array_to_array(dst, src);   }
-//template <typename ValueType, class Orientation, class MatrixType>
-//void convert(      cusp::array2d<ValueType,cusp::device_memory,Orientation>& dst,
-//             const MatrixType& src)
-//{
-//    typedef typename MatrixType::index_type IndexType;
-//    cusp::csr_matrix<IndexType,ValueType,cusp::device_memory> csr;
-//    cusp::detail::convert(csr, src);
-//    cusp::detail::convert(dst, csr);
-//}
 
 ///////////////////
 // Host Fallback //
 ///////////////////
-template <class DestinationType, class SourceType>
-void convert(DestinationType& dst, const SourceType& src)
+template <typename Matrix1, typename Matrix2>
+void convert(const Matrix1& src, Matrix2& dst)
 {
     // transfer to host, convert on host, and transfer back to device
-    typedef typename SourceType::template rebind<cusp::host_memory>::type      HostSourceType;
-    typedef typename DestinationType::template rebind<cusp::host_memory>::type HostDestinationType;
+    typedef typename Matrix1::template rebind<cusp::host_memory>::type      HostSourceType;
+    typedef typename Matrix2::template rebind<cusp::host_memory>::type HostDestinationType;
 
     HostSourceType tmp1(src);
 
     HostDestinationType tmp2;
 
-    cusp::detail::host::convert(tmp2, tmp1);
+    cusp::detail::host::convert(tmp1, tmp2);
 
     dst = tmp2;
 }

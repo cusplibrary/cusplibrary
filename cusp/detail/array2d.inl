@@ -56,7 +56,7 @@ template <typename MatrixType>
 array2d<ValueType,MemorySpace,Orientation>
     ::array2d(const MatrixType& matrix)
     {
-        cusp::detail::convert(*this, matrix);
+        cusp::detail::convert(matrix, *this);
     }
 
 //////////////////////
@@ -105,7 +105,7 @@ template <typename MatrixType>
     array2d<ValueType,MemorySpace,Orientation>
     ::operator=(const MatrixType& matrix)
     {
-        cusp::detail::convert(*this, matrix);
+        cusp::detail::convert(matrix, *this);
         
         return *this;
     }

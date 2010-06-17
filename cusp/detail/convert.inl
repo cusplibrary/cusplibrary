@@ -21,13 +21,12 @@ namespace cusp
 namespace detail
 {
 
-template <class DestinationType, class SourceType>
-void convert(DestinationType& dst, const SourceType& src)
+template <typename SourceType, typename DestinationType>
+void convert(const SourceType& src, DestinationType& dst)
 {
-    typedef typename DestinationType::memory_space destination_space;
-    typedef typename SourceType::memory_space      source_space;
-
-    cusp::detail::dispatch::convert(dst, src, destination_space(), source_space());
+    cusp::detail::dispatch::convert(src, dst,
+            typename SourceType::memory_space(),
+            typename DestinationType::memory_space());
 }
 
 } // end namespace detail

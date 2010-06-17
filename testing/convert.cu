@@ -219,9 +219,9 @@ void TestConvertCsrToDiaMatrixHost(void)
     // initialize host matrix
     initialize_conversion_example(csr);
 
-    //ASSERT_THROWS(cusp::detail::host::convert(dia, csr, 1.0, 4), cusp::format_conversion_exception);
+    //ASSERT_THROWS(cusp::detail::host::convert(csr, dia, 1.0, 4), cusp::format_conversion_exception);
 
-    cusp::detail::host::convert(dia, csr, 3.0, 4);
+    cusp::detail::host::convert(csr, dia, 3.0, 4);
 
     // compare csr and dia
     ASSERT_EQUAL(dia.num_rows,    csr.num_rows);
@@ -259,9 +259,9 @@ void TestConvertCsrToEllMatrixHost(void)
     // initialize host matrix
     initialize_conversion_example(csr);
 
-    //ASSERT_THROWS(cusp::detail::host::convert(ell, csr, 1.0, 1), cusp::format_conversion_exception);
+    //ASSERT_THROWS(cusp::detail::host::convert(csr, ell, 1.0, 1), cusp::format_conversion_exception);
 
-    cusp::detail::host::convert(ell, csr, 3.0, 1);
+    cusp::detail::host::convert(csr, ell, 3.0, 1);
 
     const int X = cusp::ell_matrix<int, float, cusp::host_memory>::invalid_index;
 
