@@ -97,14 +97,7 @@ void TestSparseMatrixMatrixMultiply(void)
     }
 
 }
-
-template <typename Space>
-void TestSparseMatrixMatrixMultiplyCoo(void)
-{
-    TestSparseMatrixMatrixMultiply< cusp::coo_matrix<int,float,Space> >();
-}
-DECLARE_HOST_DEVICE_UNITTEST(TestSparseMatrixMatrixMultiplyCoo);
-
+DECLARE_SPARSE_MATRIX_UNITTEST(TestSparseMatrixMatrixMultiply);
 
 
 /////////////////////////////////////////

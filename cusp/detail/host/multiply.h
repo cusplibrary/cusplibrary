@@ -17,6 +17,8 @@
 #pragma once
 
 #include <cusp/detail/matrix_traits.h>
+
+#include <cusp/csr_matrix.h>
 #include <cusp/detail/functional.h>
 
 #include <cusp/detail/host/spmv.h>
@@ -180,7 +182,7 @@ void multiply(const Matrix1&  A,
 template <typename Matrix1,
           typename Matrix2,
           typename Matrix3>
-void multiply(const Matrix1&  A,
+void multiply(const Matrix1& A,
               const Matrix2& B,
                     Matrix3& C,
               cusp::detail::coo_format_tag,
@@ -196,11 +198,31 @@ template <typename Matrix1,
 void multiply(const Matrix1& A,
               const Matrix2& B,
                     Matrix3& C,
+              cusp::detail::csr_format_tag,
+              cusp::detail::csr_format_tag,
+              cusp::detail::csr_format_tag)
+{
+    cusp::detail::host::spmm_csr(A,B,C);
+}
+
+template <typename Matrix1,
+          typename Matrix2,
+          typename Matrix3>
+void multiply(const Matrix1& A,
+              const Matrix2& B,
+                    Matrix3& C,
               cusp::detail::sparse_format_tag,
               cusp::detail::sparse_format_tag,
               cusp::detail::sparse_format_tag)
 {
-    cusp::detail::host::spmm_csr(A,B,C);
+    // other formats use CSR * CSR
+    cusp::csr_matrix<typename Matrix1::index_type,typename Matrix1::value_type,cusp::host_memory> A_(A);
+    cusp::csr_matrix<typename Matrix2::index_type,typename Matrix2::value_type,cusp::host_memory> B_(B);
+    cusp::csr_matrix<typename Matrix3::index_type,typename Matrix3::value_type,cusp::host_memory> C_;
+
+    cusp::detail::host::spmm_csr(A_,B_,C_);
+
+    C = C_;
 }
   
 /////////////////

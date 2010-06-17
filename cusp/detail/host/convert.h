@@ -128,7 +128,7 @@ void convert(      cusp::dia_matrix<IndexType,ValueType,cusp::host_memory>& dst,
 
     const float fill_ratio = float(occupied_diagonals) * float(src.num_rows) / std::max(1.0f, float(src.num_entries));
 
-    if (max_fill < fill_ratio)
+    if (max_fill < fill_ratio && src.num_entries > (1 << 20))
         throw cusp::format_conversion_exception("dia_matrix fill-in would exceed maximum tolerance");
 
     cusp::detail::host::csr_to_dia(dst, src, alignment);
@@ -155,7 +155,7 @@ void convert(      cusp::ell_matrix<IndexType,ValueType,cusp::host_memory>& dst,
     const IndexType max_entries_per_row = cusp::detail::host::compute_max_entries_per_row(src);
     const float fill_ratio = float(max_entries_per_row) * float(src.num_rows) / std::max(1.0f, float(src.num_entries));
 
-    if (max_fill < fill_ratio)
+    if (max_fill < fill_ratio && src.num_entries > (1 << 20))
         throw cusp::format_conversion_exception("ell_matrix fill-in would exceed maximum tolerance");
 
     cusp::detail::host::csr_to_ell(dst, src, max_entries_per_row, alignment);

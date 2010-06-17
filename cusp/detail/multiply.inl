@@ -60,6 +60,8 @@ void multiply(const LinearOperator&  A,
               const MatrixOrVector1& B,
                     MatrixOrVector2& C)
 {
+    // TODO check that dimensions are compatible
+
     typedef typename LinearOperator::value_type   ValueType;
     typedef typename LinearOperator::memory_space MemorySpace;
 

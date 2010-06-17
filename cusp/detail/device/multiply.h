@@ -18,6 +18,8 @@
 
 #include <cusp/detail/matrix_traits.h>
 
+#include <cusp/coo_matrix.h>
+
 // SpMV
 #include <cusp/detail/device/spmv/coo_flat.h>
 #include <cusp/detail/device/spmv/csr_vector.h>
@@ -187,18 +189,25 @@ void multiply(const Matrix1& A,
     cusp::detail::device::spmm_coo(A,B,C);
 }
 
-// TODO implement with COO SpMM or specialized path
-//template <typename Matrix1,
-//          typename Matrix2,
-//          typename Matrix3>
-//void multiply(const Matrix1& A,
-//              const Matrix2& B,
-//                    Matrix3& C,
-//              cusp::detail::sparse_format_tag,
-//              cusp::detail::sparse_format_tag,
-//              cusp::detail::sparse_format_tag)
-//{
-//}
+template <typename Matrix1,
+          typename Matrix2,
+          typename Matrix3>
+void multiply(const Matrix1& A,
+              const Matrix2& B,
+                    Matrix3& C,
+              cusp::detail::sparse_format_tag,
+              cusp::detail::sparse_format_tag,
+              cusp::detail::sparse_format_tag)
+{
+    // other formats use COO * COO
+    cusp::coo_matrix<typename Matrix1::index_type,typename Matrix1::value_type,cusp::device_memory> A_(A);
+    cusp::coo_matrix<typename Matrix2::index_type,typename Matrix2::value_type,cusp::device_memory> B_(B);
+    cusp::coo_matrix<typename Matrix3::index_type,typename Matrix3::value_type,cusp::device_memory> C_;
+
+    cusp::detail::host::spmm_coo(A_,B_,C_);
+
+    C = C_;
+}
 
 /////////////////
 // Entry Point //
