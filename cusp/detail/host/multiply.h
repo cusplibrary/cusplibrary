@@ -21,6 +21,7 @@
 
 #include <cusp/detail/host/spmv.h>
 #include <cusp/detail/host/spmm/coo.h>
+#include <cusp/detail/host/spmm/csr.h>
 
 namespace cusp
 {
@@ -189,18 +190,18 @@ void multiply(const Matrix1&  A,
     cusp::detail::host::spmm_coo(A,B,C);
 }
 
-// TODO implement with CSR SpMM or specialized path
-//template <typename Matrix1,
-//          typename Matrix2,
-//          typename Matrix3>
-//void multiply(const Matrix1& A,
-//              const Matrix2& B,
-//                    Matrix3& C,
-//              cusp::detail::sparse_format_tag,
-//              cusp::detail::sparse_format_tag,
-//              cusp::detail::sparse_format_tag)
-//{
-//}
+template <typename Matrix1,
+          typename Matrix2,
+          typename Matrix3>
+void multiply(const Matrix1& A,
+              const Matrix2& B,
+                    Matrix3& C,
+              cusp::detail::sparse_format_tag,
+              cusp::detail::sparse_format_tag,
+              cusp::detail::sparse_format_tag)
+{
+    cusp::detail::host::spmm_csr(A,B,C);
+}
   
 /////////////////
 // Entry Point //
