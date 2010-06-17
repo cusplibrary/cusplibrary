@@ -118,7 +118,7 @@ void csr_to_coo(      cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& d
 template <typename IndexType, typename ValueType>
 void csr_to_dia(       cusp::dia_matrix<IndexType,ValueType,cusp::host_memory>& dia,
                  const cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& csr,
-                 const IndexType alignment = 32)
+                 const size_t alignment = 32)
 {
     // compute number of occupied diagonals and enumerate them
     IndexType num_diagonals = 0;
@@ -174,8 +174,8 @@ void csr_to_dia(       cusp::dia_matrix<IndexType,ValueType,cusp::host_memory>& 
 template <typename IndexType, typename ValueType>
 void csr_to_hyb(      cusp::hyb_matrix<IndexType,ValueType,cusp::host_memory>& hyb, 
                 const cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& csr,
-                const IndexType num_entries_per_row,
-                const IndexType alignment = 32)
+                const size_t num_entries_per_row,
+                const size_t alignment = 32)
 {
     // The ELL portion of the HYB matrix will have 'num_entries_per_row' columns.
     // Nonzero values that do not fit within the ELL structure are placed in the 
@@ -187,7 +187,7 @@ void csr_to_hyb(      cusp::hyb_matrix<IndexType,ValueType,cusp::host_memory>& h
     // compute number of nonzeros in the ELL and COO portions
     IndexType num_ell_entries = 0;
     for(IndexType i = 0; i < csr.num_rows; i++)
-        num_ell_entries += std::min(num_entries_per_row, csr.row_offsets[i+1] - csr.row_offsets[i]); 
+        num_ell_entries += std::min<IndexType>(num_entries_per_row, csr.row_offsets[i+1] - csr.row_offsets[i]); 
 
     IndexType num_coo_entries = csr.num_entries - num_ell_entries;
 
@@ -229,7 +229,7 @@ void csr_to_hyb(      cusp::hyb_matrix<IndexType,ValueType,cusp::host_memory>& h
 template <typename IndexType, typename ValueType>
 void csr_to_ell(      cusp::ell_matrix<IndexType,ValueType,cusp::host_memory>&  ell,
                 const cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>&  csr,
-                const IndexType num_entries_per_row, const IndexType alignment = 32)
+                const size_t num_entries_per_row, const size_t alignment = 32)
 {
     // Constructs an ELL matrix with 'num_entries_per_row' consisting of the first
     // 'num_entries_per_row' entries in each row of the CSR matrix.

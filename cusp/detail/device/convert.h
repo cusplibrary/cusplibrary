@@ -60,11 +60,14 @@ namespace device
 /////////
 // COO //
 /////////
-template <typename IndexType, typename ValueType>
-void convert(const cusp::csr_matrix<IndexType,ValueType,cusp::device_memory>& src,
-                   cusp::coo_matrix<IndexType,ValueType,cusp::device_memory>& dst)
-             
+template <typename Matrix1, typename Matrix2>
+void convert(const Matrix1& src, Matrix2& dst,
+             cusp::detail::csr_format_tag,
+             cusp::detail::coo_format_tag)
 {
+    typedef typename Matrix2::index_type IndexType;
+    typedef typename Matrix2::value_type ValueType;
+
     cusp::coo_matrix<IndexType,ValueType,cusp::device_memory> tmp(src.num_rows, src.num_cols, src.num_entries);
 
     cusp::detail::offsets_to_indices(src.row_offsets, tmp.row_indices);
@@ -77,10 +80,14 @@ void convert(const cusp::csr_matrix<IndexType,ValueType,cusp::device_memory>& sr
 /////////
 // CSR //
 /////////
-template <typename IndexType, typename ValueType>
-void convert(const cusp::coo_matrix<IndexType,ValueType,cusp::device_memory>& src,
-                   cusp::csr_matrix<IndexType,ValueType,cusp::device_memory>& dst)
+template <typename Matrix1, typename Matrix2>
+void convert(const Matrix1& src, Matrix2& dst,
+             cusp::detail::coo_format_tag,
+             cusp::detail::csr_format_tag)
 {
+    typedef typename Matrix2::index_type IndexType;
+    typedef typename Matrix2::value_type ValueType;
+
     cusp::csr_matrix<IndexType,ValueType,cusp::device_memory> tmp(src.num_rows, src.num_cols, src.num_entries);
 
     cusp::detail::indices_to_offsets(src.row_indices, tmp.row_offsets);
@@ -109,8 +116,10 @@ void convert(const cusp::coo_matrix<IndexType,ValueType,cusp::device_memory>& sr
 ///////////////////
 // Host Fallback //
 ///////////////////
-template <typename Matrix1, typename Matrix2>
-void convert(const Matrix1& src, Matrix2& dst)
+template <typename Matrix1, typename Matrix2, typename MatrixFormat1, typename MatrixFormat2>
+void convert(const Matrix1& src, Matrix2& dst,
+             MatrixFormat1,
+             MatrixFormat2)
 {
     // transfer to host, convert on host, and transfer back to device
     typedef typename Matrix1::template rebind<cusp::host_memory>::type      HostSourceType;
@@ -123,6 +132,17 @@ void convert(const Matrix1& src, Matrix2& dst)
     cusp::detail::host::convert(tmp1, tmp2);
 
     dst = tmp2;
+}
+
+/////////////////
+// Entry Point //
+/////////////////
+template <typename Matrix1, typename Matrix2>
+void convert(const Matrix1& src, Matrix2& dst)
+{
+    cusp::detail::device::convert(src, dst,
+            typename cusp::detail::matrix_format<Matrix1>::type(),
+            typename cusp::detail::matrix_format<Matrix2>::type());
 }
 
 } // end namespace device

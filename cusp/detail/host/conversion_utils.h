@@ -73,7 +73,7 @@ IndexType compute_max_entries_per_row(const cusp::csr_matrix<IndexType,ValueType
 ////////////////////////////////////////////////////////////////////////////////
 template <typename IndexType, typename ValueType>
 IndexType compute_optimal_entries_per_row(const cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& csr,
-                                          float relative_speed = 3.0, IndexType breakeven_threshold = 4096)
+                                          float relative_speed = 3.0, size_t breakeven_threshold = 4096)
 {
     // compute maximum row length
     IndexType max_cols_per_row = 0;
