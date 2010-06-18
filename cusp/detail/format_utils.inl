@@ -14,11 +14,13 @@
  *  limitations under the License.
  */
     
-#include <cusp/coo_matrix.h>
+#include <cusp/coo_matrix.h>  // TODO remove
 #include <cusp/csr_matrix.h>
 #include <cusp/dia_matrix.h>
 #include <cusp/ell_matrix.h>
 #include <cusp/hyb_matrix.h>
+
+#include <cusp/detail/matrix_traits.h>
 
 #include <thrust/fill.h>
 #include <thrust/extrema.h>
@@ -62,28 +64,28 @@ struct row_operator : public std::unary_function<T,IndexType>
 {
     row_operator(int a_step)
         : step(a_step)
-	{
+    {}
 
-	}
-
-    __host__ __device__ IndexType operator()(const T &value) const
-	{
-        return value % step;
-	}
+    __host__ __device__
+        IndexType operator()(const T &value) const
+        {
+            return value % step;
+        }
 
     private:
-        int step;
+    int step; // TODO replace with IndexType
 };
 
 
 
 // TODO fuse transform and scatter_if together
-template <typename IndexType, typename ValueType, typename MemorySpace,
-          typename ArrayType>
-void extract_diagonal(const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& A, ArrayType& output)
+template <typename Matrix, typename Array>
+void extract_diagonal(const Matrix& A, Array& output, cusp::detail::coo_format_tag)
 {
-    output.resize(thrust::min(A.num_rows, A.num_cols));
-
+    typedef typename Matrix::index_type  IndexType;
+    typedef typename Array::value_type   ValueType;
+    typedef typename Array::memory_space MemorySpace;  // TODO remove
+    
     // initialize output to zero
     thrust::fill(output.begin(), output.end(), ValueType(0));
 
@@ -99,12 +101,13 @@ void extract_diagonal(const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& A
 }
 
 
-template <typename IndexType, typename ValueType, typename MemorySpace,
-          typename ArrayType>
-void extract_diagonal(const cusp::csr_matrix<IndexType,ValueType,MemorySpace>& A, ArrayType& output)
+template <typename Matrix, typename Array>
+void extract_diagonal(const Matrix& A, Array& output, cusp::detail::csr_format_tag)
 {
-    output.resize(thrust::min(A.num_rows, A.num_cols));
-
+    typedef typename Matrix::index_type  IndexType;
+    typedef typename Array::value_type   ValueType;
+    typedef typename Array::memory_space MemorySpace;  // TODO remove
+    
     // initialize output to zero
     thrust::fill(output.begin(), output.end(), ValueType(0));
 
@@ -124,12 +127,13 @@ void extract_diagonal(const cusp::csr_matrix<IndexType,ValueType,MemorySpace>& A
 }
 
 
-template <typename IndexType, typename ValueType, typename MemorySpace,
-          typename ArrayType>
-void extract_diagonal(const cusp::dia_matrix<IndexType,ValueType,MemorySpace>& A, ArrayType& output)
+template <typename Matrix, typename Array>
+void extract_diagonal(const Matrix& A, Array& output, cusp::detail::dia_format_tag)
 {
-    output.resize(thrust::min(A.num_rows, A.num_cols));
-
+    typedef typename Matrix::index_type  IndexType;
+    typedef typename Array::value_type   ValueType;
+    typedef typename Array::memory_space MemorySpace;  // TODO remove
+    
     // copy diagonal_offsets to host (sometimes unnecessary)
     cusp::array1d<IndexType,cusp::host_memory> diagonal_offsets(A.diagonal_offsets);
 
@@ -150,12 +154,13 @@ void extract_diagonal(const cusp::dia_matrix<IndexType,ValueType,MemorySpace>& A
 }
 
 
-template <typename IndexType, typename ValueType, typename MemorySpace,
-          typename ArrayType>
-void extract_diagonal(const cusp::ell_matrix<IndexType,ValueType,MemorySpace>& A, ArrayType& output)
+template <typename Matrix, typename Array>
+void extract_diagonal(const Matrix& A, Array& output, cusp::detail::ell_format_tag)
 {
-    output.resize(thrust::min(A.num_rows, A.num_cols));
-
+    typedef typename Matrix::index_type  IndexType;
+    typedef typename Array::value_type   ValueType;
+    typedef typename Array::memory_space MemorySpace;  // TODO remove
+    
     // initialize output to zero
     thrust::fill(output.begin(), output.end(), ValueType(0));
 
@@ -175,17 +180,20 @@ void extract_diagonal(const cusp::ell_matrix<IndexType,ValueType,MemorySpace>& A
                        output.begin());
 }
 
-template <typename IndexType, typename ValueType, typename MemorySpace,
-          typename ArrayType>
-void extract_diagonal(const cusp::hyb_matrix<IndexType,ValueType,MemorySpace>& A, ArrayType& output)
+template <typename Matrix, typename Array>
+void extract_diagonal(const Matrix& A, Array& output, cusp::detail::hyb_format_tag)
 {
-    output.resize(thrust::min(A.num_rows, A.num_cols));
+    typedef typename Matrix::index_type  IndexType;
+    typedef typename Array::value_type   ValueType;
+    typedef typename Array::memory_space MemorySpace;  // TODO remove
     
     // initialize output to zero
     thrust::fill(output.begin(), output.end(), ValueType(0));
 
     // extract COO diagonal
     {
+        // TODO fuse into single operation
+
         // determine which matrix entries correspond to the matrix diagonal
         cusp::array1d<unsigned int,MemorySpace> is_diagonal(A.coo.num_entries);
         thrust::transform(A.coo.row_indices.begin(), A.coo.row_indices.end(),
@@ -202,6 +210,8 @@ void extract_diagonal(const cusp::hyb_matrix<IndexType,ValueType,MemorySpace>& A
 
     // extract ELL diagonal
     {
+        // TODO fuse into single operation
+
         // compute ELL row indices
         cusp::array1d<IndexType,MemorySpace> row_indices(A.ell.column_indices.values.size());
         thrust::transform(thrust::counting_iterator<int>(0), thrust::counting_iterator<int>(A.ell.column_indices.values.size()),
@@ -221,6 +231,16 @@ void extract_diagonal(const cusp::hyb_matrix<IndexType,ValueType,MemorySpace>& A
                            is_diagonal.begin(),
                            output.begin());
     }
+}
+
+
+template <typename Matrix, typename Array>
+void extract_diagonal(const Matrix& A, Array& output)
+{
+    output.resize(thrust::min(A.num_rows, A.num_cols));
+
+    // dispatch on matrix_format
+    extract_diagonal(A, output, typename cusp::detail::matrix_format<Matrix>::type());
 }
 
 } // end namespace detail
