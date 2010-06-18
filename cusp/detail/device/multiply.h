@@ -204,7 +204,7 @@ void multiply(const Matrix1& A,
     cusp::coo_matrix<typename Matrix2::index_type,typename Matrix2::value_type,cusp::device_memory> B_(B);
     cusp::coo_matrix<typename Matrix3::index_type,typename Matrix3::value_type,cusp::device_memory> C_;
 
-    cusp::detail::host::spmm_coo(A_,B_,C_);
+    cusp::detail::device::spmm_coo(A_,B_,C_);
 
     C = C_;
 }
