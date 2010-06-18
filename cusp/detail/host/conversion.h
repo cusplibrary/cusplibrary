@@ -18,14 +18,9 @@
 
 #pragma once
 
-#include <algorithm>
+#include <algorithm>  // TODO replace w/ thrust algorithms
 
-#include <cusp/coo_matrix.h>
-#include <cusp/csr_matrix.h>
-#include <cusp/dia_matrix.h>
 #include <cusp/ell_matrix.h>
-#include <cusp/hyb_matrix.h>
-#include <cusp/array2d.h>
 
 #include <cusp/exception.h>
 
@@ -42,10 +37,12 @@ namespace host
 // COO Conversions //
 /////////////////////
     
-template <typename IndexType, typename ValueType>
-void coo_to_csr(      cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& dst,
-                const cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& src)
+template <typename Matrix1, typename Matrix2>
+void coo_to_csr(const Matrix1& src, Matrix2& dst)
 {
+    typedef typename Matrix2::index_type IndexType;
+    typedef typename Matrix2::value_type ValueType;
+
     dst.resize(src.num_rows, src.num_cols, src.num_entries);
     
     //compute number of non-zero entries per row of A 
@@ -85,10 +82,12 @@ void coo_to_csr(      cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& d
     //csr may contain duplicates
 }
 
-template <typename IndexType, typename ValueType, class Orientation>
-void coo_to_array(      cusp::array2d<ValueType,cusp::host_memory,Orientation>& dst,
-                  const cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& src)
+template <typename Matrix1, typename Matrix2>
+void coo_to_array(const Matrix1& src, Matrix2& dst)
 {
+    typedef typename Matrix2::index_type IndexType;
+    typedef typename Matrix2::value_type ValueType;
+
     dst.resize(src.num_rows, src.num_cols);
 
     std::fill(dst.values.begin(), dst.values.end(), ValueType(0));
@@ -101,12 +100,15 @@ void coo_to_array(      cusp::array2d<ValueType,cusp::host_memory,Orientation>& 
 // CSR Conversions //
 /////////////////////
 
-template <typename IndexType, typename ValueType>
-void csr_to_coo(      cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& dst,
-                const cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& src)
+template <typename Matrix1, typename Matrix2>
+void csr_to_coo(const Matrix1& src, Matrix2& dst)
 {
+    typedef typename Matrix2::index_type IndexType;
+    typedef typename Matrix2::value_type ValueType;
+
     dst.resize(src.num_rows, src.num_cols, src.num_entries);
-    
+   
+    // TODO replace with offsets_to_indices
     for(IndexType i = 0; i < src.num_rows; i++)
         for(IndexType jj = src.row_offsets[i]; jj < src.row_offsets[i + 1]; jj++)
             dst.row_indices[jj] = i;
@@ -115,22 +117,24 @@ void csr_to_coo(      cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& d
     dst.values         = src.values;
 }
 
-template <typename IndexType, typename ValueType>
-void csr_to_dia(       cusp::dia_matrix<IndexType,ValueType,cusp::host_memory>& dia,
-                 const cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& csr,
-                 const size_t alignment = 32)
+template <typename Matrix1, typename Matrix2>
+void csr_to_dia(const Matrix1& src, Matrix2& dst,
+                const size_t alignment = 32)
 {
+    typedef typename Matrix2::index_type IndexType;
+    typedef typename Matrix2::value_type ValueType;
+
     // compute number of occupied diagonals and enumerate them
     IndexType num_diagonals = 0;
 
-    cusp::array1d<IndexType,cusp::host_memory> diag_map(csr.num_rows + csr.num_cols, 0);
+    cusp::array1d<IndexType,cusp::host_memory> diag_map(src.num_rows + src.num_cols, 0);
 
-    for(IndexType i = 0; i < csr.num_rows; i++)
+    for(IndexType i = 0; i < src.num_rows; i++)
     {
-        for(IndexType jj = csr.row_offsets[i]; jj < csr.row_offsets[i+1]; jj++)
+        for(IndexType jj = src.row_offsets[i]; jj < src.row_offsets[i+1]; jj++)
         {
-            IndexType j = csr.column_indices[jj];
-            IndexType map_index = (csr.num_rows - i) + j; //offset shifted by + num_rows
+            IndexType j = src.column_indices[jj];
+            IndexType map_index = (src.num_rows - i) + j; //offset shifted by + num_rows
             if(diag_map[map_index] == 0)
             {
                 diag_map[map_index] = 1;
@@ -141,110 +145,133 @@ void csr_to_dia(       cusp::dia_matrix<IndexType,ValueType,cusp::host_memory>& 
    
 
     // allocate DIA structure
-    dia.resize(csr.num_rows, csr.num_cols, csr.num_entries, num_diagonals, alignment);
+    dst.resize(src.num_rows, src.num_cols, src.num_entries, num_diagonals, alignment);
 
     // fill in diagonal_offsets array
-    for(IndexType n = 0, diag = 0; n < csr.num_rows + csr.num_cols; n++)
+    for(IndexType n = 0, diag = 0; n < src.num_rows + src.num_cols; n++)
     {
         if(diag_map[n] == 1)
         {
             diag_map[n] = diag;
-            dia.diagonal_offsets[diag] = (IndexType) n - (IndexType) csr.num_rows;
+            dst.diagonal_offsets[diag] = (IndexType) n - (IndexType) src.num_rows;
             diag++;
         }
     }
 
     // fill in values array
-    std::fill(dia.values.values.begin(), dia.values.values.end(), ValueType(0));
+    std::fill(dst.values.values.begin(), dst.values.values.end(), ValueType(0));
 
-    for(IndexType i = 0; i < csr.num_rows; i++)
+    for(IndexType i = 0; i < src.num_rows; i++)
     {
-        for(IndexType jj = csr.row_offsets[i]; jj < csr.row_offsets[i+1]; jj++)
+        for(IndexType jj = src.row_offsets[i]; jj < src.row_offsets[i+1]; jj++)
         {
-            IndexType j = csr.column_indices[jj];
-            IndexType map_index = (csr.num_rows - i) + j; //offset shifted by + num_rows
+            IndexType j = src.column_indices[jj];
+            IndexType map_index = (src.num_rows - i) + j; //offset shifted by + num_rows
             IndexType diag = diag_map[map_index];
         
-            dia.values(i, diag) = csr.values[jj];
+            dst.values(i, diag) = src.values[jj];
         }
     }
 }
     
 
-template <typename IndexType, typename ValueType>
-void csr_to_hyb(      cusp::hyb_matrix<IndexType,ValueType,cusp::host_memory>& hyb, 
-                const cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& csr,
+template <typename Matrix1, typename Matrix2>
+void csr_to_hyb(const Matrix1& src, Matrix2& dst,
                 const size_t num_entries_per_row,
                 const size_t alignment = 32)
 {
+    typedef typename Matrix2::index_type IndexType;
+    typedef typename Matrix2::value_type ValueType;
+
     // The ELL portion of the HYB matrix will have 'num_entries_per_row' columns.
     // Nonzero values that do not fit within the ELL structure are placed in the 
     // COO format portion of the HYB matrix.
     
-    cusp::ell_matrix<IndexType, ValueType, cusp::host_memory> & ell = hyb.ell;
-    cusp::coo_matrix<IndexType, ValueType, cusp::host_memory> & coo = hyb.coo;
-
     // compute number of nonzeros in the ELL and COO portions
     IndexType num_ell_entries = 0;
-    for(IndexType i = 0; i < csr.num_rows; i++)
-        num_ell_entries += std::min<IndexType>(num_entries_per_row, csr.row_offsets[i+1] - csr.row_offsets[i]); 
+    for(IndexType i = 0; i < src.num_rows; i++)
+        num_ell_entries += std::min<IndexType>(num_entries_per_row, src.row_offsets[i+1] - src.row_offsets[i]); 
 
-    IndexType num_coo_entries = csr.num_entries - num_ell_entries;
+    IndexType num_coo_entries = src.num_entries - num_ell_entries;
 
-    hyb.resize(csr.num_rows, csr.num_cols, 
+    dst.resize(src.num_rows, src.num_cols, 
                num_ell_entries, num_coo_entries, 
                num_entries_per_row, alignment);
 
     const IndexType invalid_index = cusp::ell_matrix<IndexType, ValueType, cusp::host_memory>::invalid_index;
 
     // pad out ELL format with zeros
-    std::fill(ell.column_indices.values.begin(), ell.column_indices.values.end(), invalid_index);
-    std::fill(ell.values.values.begin(),         ell.values.values.end(),         ValueType(0));
+    std::fill(dst.ell.column_indices.values.begin(), dst.ell.column_indices.values.end(), invalid_index);
+    std::fill(dst.ell.values.values.begin(),         dst.ell.values.values.end(),         ValueType(0));
 
-    for(IndexType i = 0, coo_nnz = 0; i < csr.num_rows; i++)
+    for(IndexType i = 0, coo_nnz = 0; i < src.num_rows; i++)
     {
         IndexType n = 0;
-        IndexType jj = csr.row_offsets[i];
+        IndexType jj = src.row_offsets[i];
 
         // copy up to num_cols_per_row values of row i into the ELL
-        while(jj < csr.row_offsets[i+1] && n < num_entries_per_row)
+        while(jj < src.row_offsets[i+1] && n < num_entries_per_row)
         {
-            ell.column_indices(i,n) = csr.column_indices[jj];
-            ell.values(i,n)         = csr.values[jj];
+            dst.ell.column_indices(i,n) = src.column_indices[jj];
+            dst.ell.values(i,n)         = src.values[jj];
             jj++, n++;
         }
 
         // copy any remaining values in row i into the COO
-        while(jj < csr.row_offsets[i+1])
+        while(jj < src.row_offsets[i+1])
         {
-            coo.row_indices[coo_nnz]    = i;
-            coo.column_indices[coo_nnz] = csr.column_indices[jj];
-            coo.values[coo_nnz]         = csr.values[jj];
+            dst.coo.row_indices[coo_nnz]    = i;
+            dst.coo.column_indices[coo_nnz] = src.column_indices[jj];
+            dst.coo.values[coo_nnz]         = src.values[jj];
             jj++; coo_nnz++;
         }
     }
 }
 
 
-template <typename IndexType, typename ValueType>
-void csr_to_ell(      cusp::ell_matrix<IndexType,ValueType,cusp::host_memory>&  ell,
-                const cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>&  csr,
+template <typename Matrix1, typename Matrix2>
+void csr_to_ell(const Matrix1& src, Matrix2& dst,
                 const size_t num_entries_per_row, const size_t alignment = 32)
 {
-    // Constructs an ELL matrix with 'num_entries_per_row' consisting of the first
-    // 'num_entries_per_row' entries in each row of the CSR matrix.
-    cusp::hyb_matrix<IndexType, ValueType, cusp::host_memory> hyb;
+    typedef typename Matrix2::index_type IndexType;
+    typedef typename Matrix2::value_type ValueType;
 
-    csr_to_hyb(hyb, csr, num_entries_per_row, alignment);
+    // compute number of nonzeros
 
-    ell.swap(hyb.ell);
+    IndexType num_entries = 0;
+    for(IndexType i = 0; i < src.num_rows; i++)
+        num_entries += std::min<IndexType>(num_entries_per_row, src.row_offsets[i+1] - src.row_offsets[i]); 
+
+    dst.resize(src.num_rows, src.num_cols, num_entries, num_entries_per_row, alignment);
+
+    const IndexType invalid_index = cusp::ell_matrix<IndexType, ValueType, cusp::host_memory>::invalid_index;
+
+    // pad out ELL format with zeros
+    std::fill(dst.column_indices.values.begin(), dst.column_indices.values.end(), invalid_index);
+    std::fill(dst.values.values.begin(),         dst.values.values.end(),         ValueType(0));
+
+    for(IndexType i = 0; i < src.num_rows; i++)
+    {
+        IndexType n = 0;
+        IndexType jj = src.row_offsets[i];
+
+        // copy up to num_cols_per_row values of row i into the ELL
+        while(jj < src.row_offsets[i+1] && n < num_entries_per_row)
+        {
+            dst.column_indices(i,n) = src.column_indices[jj];
+            dst.values(i,n)         = src.values[jj];
+            jj++, n++;
+        }
+    }
 }
 
     
-template <typename IndexType, typename ValueType, class Orientation>
-void csr_to_array(      cusp::array2d<ValueType,cusp::host_memory,Orientation>& dst,
-                  const cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& src)
+template <typename Matrix1, typename Matrix2>
+void csr_to_array(const Matrix1& src, Matrix2& dst)
 {
+    typedef typename Matrix2::index_type IndexType;
+    typedef typename Matrix2::value_type ValueType;
+
     dst.resize(src.num_rows, src.num_cols);
 
     std::fill(dst.values.begin(), dst.values.end(), ValueType(0));
@@ -259,10 +286,12 @@ void csr_to_array(      cusp::array2d<ValueType,cusp::host_memory,Orientation>& 
 // DIA Conversions //
 /////////////////////
 
-template <typename IndexType, typename ValueType>
-void dia_to_csr(      cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& dst,
-                const cusp::dia_matrix<IndexType,ValueType,cusp::host_memory>& src)
+template <typename Matrix1, typename Matrix2>
+void dia_to_csr(const Matrix1& src, Matrix2& dst)
 {
+    typedef typename Matrix2::index_type IndexType;
+    typedef typename Matrix2::value_type ValueType;
+    
     IndexType num_entries = 0;
     IndexType num_diagonals = src.diagonal_offsets.size();
     
@@ -311,10 +340,12 @@ void dia_to_csr(      cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& d
 // ELL Conversions //
 /////////////////////
 
-template <typename IndexType, typename ValueType>
-void ell_to_coo(      cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& dst,
-                const cusp::ell_matrix<IndexType,ValueType,cusp::host_memory>& src)
+template <typename Matrix1, typename Matrix2>
+void ell_to_coo(const Matrix1& src, Matrix2& dst)
 {
+    typedef typename Matrix2::index_type IndexType;
+    typedef typename Matrix2::value_type ValueType;
+    
     const IndexType invalid_index = cusp::ell_matrix<IndexType, ValueType, cusp::host_memory>::invalid_index;
     
     dst.resize(src.num_rows, src.num_cols, src.num_entries);
@@ -341,10 +372,12 @@ void ell_to_coo(      cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& d
     }
 }
 
-template <typename IndexType, typename ValueType>
-void ell_to_csr(      cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& dst,
-                const cusp::ell_matrix<IndexType,ValueType,cusp::host_memory>& src)
+template <typename Matrix1, typename Matrix2>
+void ell_to_csr(const Matrix1& src, Matrix2& dst)
 {
+    typedef typename Matrix2::index_type IndexType;
+    typedef typename Matrix2::value_type ValueType;
+    
     const IndexType invalid_index = cusp::ell_matrix<IndexType, ValueType, cusp::host_memory>::invalid_index;
 
     dst.resize(src.num_rows, src.num_cols, src.num_entries);
@@ -377,17 +410,16 @@ void ell_to_csr(      cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& d
 // HYB Conversions //
 /////////////////////
 
-template <typename IndexType, typename ValueType>
-void hyb_to_coo(      cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& dst,
-                const cusp::hyb_matrix<IndexType,ValueType,cusp::host_memory>& src)
+template <typename Matrix1, typename Matrix2>
+void hyb_to_coo(const Matrix1& src, Matrix2& dst)
 {
+    typedef typename Matrix2::index_type IndexType;
+    typedef typename Matrix2::value_type ValueType;
+    
     dst.resize(src.num_rows, src.num_cols, src.num_entries);
 
-    const cusp::ell_matrix<IndexType,ValueType,cusp::host_memory>& ell = src.ell;
-    const cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& coo = src.coo;
-
     const IndexType invalid_index = cusp::ell_matrix<IndexType, ValueType, cusp::host_memory>::invalid_index;
-    const IndexType num_entries_per_row = ell.column_indices.num_cols;
+    const IndexType num_entries_per_row = src.ell.column_indices.num_cols;
 
     IndexType num_entries  = 0;
     IndexType coo_progress = 0;
@@ -398,8 +430,8 @@ void hyb_to_coo(      cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& d
         // append the i-th row from the ELL part
         for(IndexType n = 0; n < num_entries_per_row; n++)
         {
-            const IndexType j = ell.column_indices(i,n);
-            const ValueType v = ell.values(i,n);
+            const IndexType j = src.ell.column_indices(i,n);
+            const ValueType v = src.ell.values(i,n);
 
             if(j != invalid_index)
             {
@@ -411,28 +443,27 @@ void hyb_to_coo(      cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& d
         }
 
         // append the i-th row from the COO part
-        while (coo_progress < coo.num_entries && coo.row_indices[coo_progress] == i)
+        while (coo_progress < src.coo.num_entries && src.coo.row_indices[coo_progress] == i)
         {
             dst.row_indices[num_entries]    = i;
-            dst.column_indices[num_entries] = coo.column_indices[coo_progress];
-            dst.values[num_entries]         = coo.values[coo_progress];
+            dst.column_indices[num_entries] = src.coo.column_indices[coo_progress];
+            dst.values[num_entries]         = src.coo.values[coo_progress];
             num_entries++;
             coo_progress++;
         }
     }
 }
 
-template <typename IndexType, typename ValueType>
-void hyb_to_csr(      cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& dst,
-                const cusp::hyb_matrix<IndexType,ValueType,cusp::host_memory>& src)
+template <typename Matrix1, typename Matrix2>
+void hyb_to_csr(const Matrix1& src, Matrix2& dst)
 {
+    typedef typename Matrix2::index_type IndexType;
+    typedef typename Matrix2::value_type ValueType;
+    
     dst.resize(src.num_rows, src.num_cols, src.num_entries);
 
-    const cusp::ell_matrix<IndexType,ValueType,cusp::host_memory>& ell = src.ell;
-    const cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& coo = src.coo;
-
     const IndexType invalid_index = cusp::ell_matrix<IndexType, ValueType, cusp::host_memory>::invalid_index;
-    const IndexType num_entries_per_row = ell.column_indices.num_cols;
+    const IndexType num_entries_per_row = src.ell.column_indices.num_cols;
 
     IndexType num_entries = 0;
     dst.row_offsets[0] = 0;
@@ -445,8 +476,8 @@ void hyb_to_csr(      cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& d
         // append the i-th row from the ELL part
         for(IndexType n = 0; n < num_entries_per_row; n++)
         {
-            const IndexType j = ell.column_indices(i,n);
-            const ValueType v = ell.values(i,n);
+            const IndexType j = src.ell.column_indices(i,n);
+            const ValueType v = src.ell.values(i,n);
 
             if(j != invalid_index)
             {
@@ -457,10 +488,10 @@ void hyb_to_csr(      cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& d
         }
 
         // append the i-th row from the COO part
-        while (coo_progress < coo.num_entries && coo.row_indices[coo_progress] == i)
+        while (coo_progress < src.coo.num_entries && src.coo.row_indices[coo_progress] == i)
         {
-            dst.column_indices[num_entries] = coo.column_indices[coo_progress];
-            dst.values[num_entries]         = coo.values[coo_progress];
+            dst.column_indices[num_entries] = src.coo.column_indices[coo_progress];
+            dst.values[num_entries]         = src.coo.values[coo_progress];
             num_entries++;
             coo_progress++;
         }
@@ -473,10 +504,8 @@ void hyb_to_csr(      cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& d
 ///////////////////////
 // Dense Conversions //
 ///////////////////////
-template <typename ValueType1, class Orientation1,
-          typename ValueType2, class Orientation2>
-void array_to_array(      cusp::array2d<ValueType1,cusp::host_memory,Orientation1>& dst,
-                    const cusp::array2d<ValueType2,cusp::host_memory,Orientation2>& src)
+template <typename Matrix1, typename Matrix2>
+void array_to_array(const Matrix1& src, Matrix2& dst)
 {
     dst.resize(src.num_rows, src.num_cols);
 
@@ -486,10 +515,12 @@ void array_to_array(      cusp::array2d<ValueType1,cusp::host_memory,Orientation
 }
 
 
-template <typename IndexType, typename ValueType, class Orientation>
-void array_to_coo(      cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& dst,
-                  const cusp::array2d<ValueType,cusp::host_memory,Orientation>& src)
+template <typename Matrix1, typename Matrix2>
+void array_to_coo(const Matrix1& src, Matrix2& dst)
 {
+    typedef typename Matrix2::index_type IndexType;
+    typedef typename Matrix2::value_type ValueType;
+    
     IndexType nnz = src.num_entries - std::count(src.values.begin(), src.values.end(), ValueType(0));
 
     dst.resize(src.num_rows, src.num_cols, nnz);
@@ -511,10 +542,12 @@ void array_to_coo(      cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>&
     }
 }
 
-template <typename IndexType, typename ValueType, class Orientation>
-void array_to_csr(      cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& dst,
-                  const cusp::array2d<ValueType,cusp::host_memory,Orientation>& src)
+template <typename Matrix1, typename Matrix2>
+void array_to_csr(const Matrix1& src, Matrix2& dst)
 {
+    typedef typename Matrix2::index_type IndexType;
+    typedef typename Matrix2::value_type ValueType;
+    
     IndexType nnz = src.num_entries - std::count(src.values.begin(), src.values.end(), ValueType(0));
 
     dst.resize(src.num_rows, src.num_cols, nnz);

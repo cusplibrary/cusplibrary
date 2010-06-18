@@ -14,13 +14,9 @@
  *  limitations under the License.
  */
     
-#include <cusp/coo_matrix.h>  // TODO remove
-#include <cusp/csr_matrix.h>
-#include <cusp/dia_matrix.h>
-#include <cusp/ell_matrix.h>
-#include <cusp/hyb_matrix.h>
-
 #include <cusp/detail/matrix_traits.h>
+
+#include <cusp/array1d.h>
 
 #include <thrust/fill.h>
 #include <thrust/extrema.h>
