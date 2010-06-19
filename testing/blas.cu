@@ -282,6 +282,25 @@ DECLARE_HOST_DEVICE_UNITTEST(TestNrm2);
 
 
 template <class MemorySpace>
+void TestNrmmax(void)
+{
+    cusp::array1d<float, MemorySpace> x(6);
+
+    x[0] =  7.0f;
+    x[1] = -5.0f;
+    x[2] =  4.0f;
+    x[3] = -3.0f;
+    x[4] =  0.0f;
+    x[5] =  1.0f;
+
+    ASSERT_EQUAL(cusp::blas::nrmmax(x.begin() + 1, x.end()), 5.0f);
+
+    ASSERT_EQUAL(cusp::blas::nrmmax(x), 7.0f);
+}
+DECLARE_HOST_DEVICE_UNITTEST(TestNrmmax);
+
+
+template <class MemorySpace>
 void TestScal(void)
 {
     cusp::array1d<float, MemorySpace> x(6);

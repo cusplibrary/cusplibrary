@@ -15,7 +15,7 @@
  */
 
 
-#pragma once
+
 
 #include <cusp/array1d.h>
 
@@ -79,6 +79,17 @@ namespace detail
                 T operator()(T x)
                 { 
                     return x * x;
+                }
+        };
+
+    // absolute<T> computes the absolute value of a number f(x) -> |x|
+    template <typename T>
+        struct absolute : public thrust::unary_function<T,T>
+        {
+            __host__ __device__
+                T operator()(T x)
+                { 
+                    return x < 0 ? -x : x;
                 }
         };
     
@@ -390,6 +401,29 @@ typename Array::value_type
     nrm2(const Array& x)
 {
     return cusp::blas::nrm2(x.begin(), x.end());
+}
+
+
+template <typename InputIterator>
+typename thrust::iterator_value<InputIterator>::type
+    nrmmax(InputIterator first,
+           InputIterator last)
+{
+    typedef typename thrust::iterator_value<InputIterator>::type ValueType;
+
+    detail::absolute<ValueType>  unary_op;
+    thrust::maximum<ValueType>   binary_op;
+
+    ValueType init = 0;
+
+    return thrust::transform_reduce(first, last, unary_op, init, binary_op);
+}
+
+template <typename Array>
+typename Array::value_type
+    nrmmax(const Array& x)
+{
+    return cusp::blas::nrmmax(x.begin(), x.end());
 }
 
 

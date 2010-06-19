@@ -170,6 +170,16 @@ typename Array::value_type
     nrm2(const Array& array);
 
 
+template <typename InputIterator>
+typename thrust::iterator_value<InputIterator>::type
+    nrmmax(InputIterator first,
+           InputIterator last);
+
+template <typename Array>
+typename Array::value_type
+    nrmmax(const Array& array);
+
+
 template <typename ForwardIterator,
           typename ScalarType>
 void scal(ForwardIterator first,
