@@ -29,6 +29,10 @@ void _TestDiagonalPreconditioner(void)
     MatrixType M(A);
     cusp::precond::diagonal<float, Space> D(M);
 
+    ASSERT_EQUAL(D.num_rows,    5);
+    ASSERT_EQUAL(D.num_cols,    5);
+    ASSERT_EQUAL(D.num_entries, 5);
+
     D(input, output);
 
     ASSERT_EQUAL(output, expected);

@@ -14,11 +14,14 @@
 #include <cusp/transpose.h>
 #include <cusp/relaxation/jacobi.h>
 #include <cusp/graph/maximal_independent_set.h>
+#include <cusp/precond/diagonal.h>
 #include <cusp/detail/lu.h>
+#include <cusp/detail/spectral_radius.h>
 
 #include <thrust/extrema.h>
 #include <thrust/transform.h>
 #include <thrust/gather.h>
+#include <thrust/reduce.h>
 
 #include <vector>
 
@@ -89,6 +92,7 @@ void standard_aggregation(const cusp::coo_matrix<IndexType,ValueType,MemorySpace
                                 ArrayType& aggregates)
 {
     // TODO check sizes
+    // TODO label singletons with a -1
 
     const size_t N = C.num_rows;
 
@@ -103,6 +107,100 @@ void standard_aggregation(const cusp::coo_matrix<IndexType,ValueType,MemorySpace
     mis_to_aggregates(C, mis, aggregates);
 }
 
+template <typename T>
+struct square : thrust::unary_function<T,T>
+{
+    __host__ __device__
+    T operator()(const T& x) { return x * x; }
+};
+
+template <typename T>
+struct sqrt_functor : thrust::unary_function<T,T>
+{
+    __host__ __device__
+    T operator()(const T& x) { return sqrt(x); }
+};
+
+template <typename Array1,
+          typename Array2,
+          typename IndexType, typename ValueType, typename MemorySpace,
+          typename Array3>
+void fit_candidates(const Array1& aggregates,
+                    const Array2& B,
+                          cusp::coo_matrix<IndexType,ValueType,MemorySpace>& Q,
+                          Array3& R)
+{
+    // TODO handle case w/ unaggregated nodes (marked w/ -1)
+    IndexType num_aggregates = *thrust::max_element(aggregates.begin(), aggregates.end()) + 1;
+
+    Q.resize(aggregates.size(), num_aggregates, aggregates.size());
+    R.resize(num_aggregates);
+
+    // gather values into Q
+    thrust::sequence(Q.row_indices.begin(), Q.row_indices.end());
+    thrust::copy(aggregates.begin(), aggregates.end(), Q.column_indices.begin());
+    thrust::copy(B.begin(), B.end(), Q.values.begin());
+                          
+    // compute norm over each aggregate
+    {
+        // compute Qt
+        cusp::coo_matrix<IndexType,ValueType,MemorySpace> Qt;  cusp::transpose(Q, Qt);
+
+        // compute sum of squares for each column of Q (rows of Qt)
+        cusp::array1d<IndexType, MemorySpace> temp(num_aggregates);
+        thrust::reduce_by_key(Qt.row_indices.begin(), Qt.row_indices.end(),
+                              thrust::make_transform_iterator(Qt.values.begin(), square<ValueType>()),
+                              temp.begin(),
+                              R.begin());
+
+        // compute square root of each column sum
+        thrust::transform(R.begin(), R.end(), R.begin(), sqrt_functor<ValueType>());
+    }
+
+    // rescale columns of Q
+    thrust::transform(Q.values.begin(), Q.values.end(),
+                      thrust::make_permutation_iterator(R.begin(), Q.column_indices.begin()),
+                      Q.values.begin(),
+                      thrust::divides<ValueType>());
+    
+    //std::cout << "Q" << std::endl;
+    //cusp::print_matrix(Q);
+
+    //std::cout << "R" << std::endl;
+    //cusp::print_matrix(R);
+}
+
+template <typename MatrixType>
+struct Dinv_A : public cusp::linear_operator<typename MatrixType::value_type, typename MatrixType::memory_space>
+{
+    const MatrixType& A;
+    const cusp::precond::diagonal<typename MatrixType::value_type, typename MatrixType::memory_space> Dinv;
+
+    Dinv_A(const MatrixType& A)
+        : A(A), Dinv(A),
+          cusp::linear_operator<typename MatrixType::value_type, typename MatrixType::memory_space>(A.num_rows, A.num_cols, A.num_entries + A.num_rows)
+          {}
+
+    template <typename Array1, typename Array2>
+    void operator()(const Array1& x, Array2& y) const
+    {
+        cusp::multiply(A,x,y);
+        cusp::multiply(Dinv,y,y);
+    }
+};
+
+template <typename MatrixType>
+double estimate_rho_Dinv_A(const MatrixType& A)
+{
+    typedef typename MatrixType::value_type   ValueType;
+    typedef typename MatrixType::memory_space MemorySpace;
+
+    Dinv_A<MatrixType> Dinv_A(A);
+
+    return cusp::detail::estimate_spectral_radius(Dinv_A);
+}
+
+
 void TestStandardAggregation(void)
 {
     cusp::coo_matrix<int,float,cusp::device_memory> A;
@@ -114,4 +212,109 @@ void TestStandardAggregation(void)
 //    cusp::print_matrix(aggregates);
 }
 DECLARE_UNITTEST(TestStandardAggregation);
+
+
+template <class MemorySpace>
+void TestEstimateRhoDinvA(void)
+{
+    // 2x2 diagonal matrix
+    {
+        cusp::csr_matrix<int, float, MemorySpace> A(2,2,2);
+        A.row_offsets[0] = 0;
+        A.row_offsets[1] = 1;
+        A.row_offsets[2] = 2;
+        A.column_indices[0] = 0;
+        A.column_indices[1] = 1;
+        A.values[0] = -5;
+        A.values[1] =  2;
+        float rho = 1.0;
+        ASSERT_EQUAL((std::abs(estimate_rho_Dinv_A(A) - rho) / rho) < 0.1f, true);
+    }
+
+    // 2x2 Poisson problem
+    {
+        cusp::csr_matrix<int, float, MemorySpace> A; cusp::gallery::poisson5pt(A, 2, 2); 
+        float rho = 1.5;
+        ASSERT_EQUAL((std::abs(estimate_rho_Dinv_A(A) - rho) / rho) < 0.1f, true);
+    }
+
+    // 4x4 Poisson problem
+    {
+        cusp::csr_matrix<int, float, MemorySpace> A; cusp::gallery::poisson5pt(A, 4, 4); 
+        float rho = 1.8090169943749468;
+        ASSERT_EQUAL((std::abs(estimate_rho_Dinv_A(A) - rho) / rho) < 0.1f, true);
+    }
+}
+DECLARE_HOST_DEVICE_UNITTEST(TestEstimateRhoDinvA);
+
+
+template <typename MemorySpace>
+void TestFitCandidates(void)
+{
+    // 2 aggregates with 2 nodes each
+    {
+        cusp::array1d<int,MemorySpace> aggregates(4);
+        aggregates[0] = 0;
+        aggregates[1] = 0;
+        aggregates[2] = 1;
+        aggregates[3] = 1;
+        cusp::array1d<float,MemorySpace> B(4);
+        B[0] = 0.0f;
+        B[1] = 1.0f;
+        B[2] = 3.0f;
+        B[3] = 4.0f;
+
+        cusp::coo_matrix<int,float,MemorySpace> Q;
+        cusp::array1d<float,MemorySpace> R(2);
+
+        fit_candidates(aggregates, B, Q, R);
+
+        ASSERT_EQUAL(R[0], 1.0f);
+        ASSERT_EQUAL(R[1], 5.0f);
+        ASSERT_ALMOST_EQUAL(Q.values[0], 0.0f);
+        ASSERT_ALMOST_EQUAL(Q.values[1], 1.0f);
+        ASSERT_ALMOST_EQUAL(Q.values[2], 0.6f);
+        ASSERT_ALMOST_EQUAL(Q.values[3], 0.8f);
+    }
+
+    // 4 aggregates with varying numbers of nodes
+    {
+        cusp::array1d<int,MemorySpace> aggregates(10);
+        aggregates[0] = 1;
+        aggregates[1] = 2;
+        aggregates[2] = 0;
+        aggregates[3] = 3;
+        aggregates[4] = 0;
+        aggregates[5] = 2;
+        aggregates[6] = 1;
+        aggregates[7] = 2;
+        aggregates[8] = 1;
+        aggregates[9] = 1;
+        cusp::array1d<float,MemorySpace> B(10,1.0f);
+
+        cusp::coo_matrix<int,float,MemorySpace> Q;
+        cusp::array1d<float,MemorySpace> R(4);
+   
+        fit_candidates(aggregates, B, Q, R);
+
+        ASSERT_ALMOST_EQUAL(R[0], 1.41421f);
+        ASSERT_ALMOST_EQUAL(R[1], 2.00000f);
+        ASSERT_ALMOST_EQUAL(R[2], 1.73205f);
+        ASSERT_ALMOST_EQUAL(R[3], 1.00000f);
+
+        ASSERT_ALMOST_EQUAL(Q.values[0], 0.500000f); 
+        ASSERT_ALMOST_EQUAL(Q.values[1], 0.577350f);
+        ASSERT_ALMOST_EQUAL(Q.values[2], 0.707107f);
+        ASSERT_ALMOST_EQUAL(Q.values[3], 1.000000f);
+        ASSERT_ALMOST_EQUAL(Q.values[4], 0.707107f);
+        ASSERT_ALMOST_EQUAL(Q.values[5], 0.577350f);
+        ASSERT_ALMOST_EQUAL(Q.values[6], 0.500000f);
+        ASSERT_ALMOST_EQUAL(Q.values[7], 0.577350f);
+        ASSERT_ALMOST_EQUAL(Q.values[8], 0.500000f);
+        ASSERT_ALMOST_EQUAL(Q.values[9], 0.500000f);
+    }
+
+    // TODO test case w/ unaggregated nodes (marked w/ -1)
+}
+DECLARE_HOST_DEVICE_UNITTEST(TestFitCandidates);
 
