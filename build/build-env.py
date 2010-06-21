@@ -203,6 +203,9 @@ def Environment():
   # set thrust include path
   env.Append(CPPPATH = os.path.dirname(thisDir))
 
+  if 'THRUST_PATH' in os.environ:
+      env.Append(CPPPATH = [os.path.abspath(os.environ['THRUST_PATH'])])
+
   # import the LD_LIBRARY_PATH so we can run commands which depend
   # on shared libraries
   # XXX we should probably just copy the entire environment
