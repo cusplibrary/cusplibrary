@@ -170,6 +170,91 @@ void fit_candidates(const Array1& aggregates,
     //cusp::print_matrix(R);
 }
 
+
+//   Smoothed (final) prolongator defined by P = (I - omega/rho(K) K) * T
+//   where K = diag(S)^-1 * S and rho(K) is an approximation to the 
+//   spectral radius of K.
+template <typename IndexType, typename ValueType, typename MemorySpace>
+void smooth_prolongator(const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& S,
+                        const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& T,
+                              cusp::coo_matrix<IndexType,ValueType,MemorySpace>& P,
+                        const ValueType omega = 4.0/3.0,
+                        const ValueType rho_Dinv_S = 0.0)
+{
+    // TODO handle case with unaggregated nodes
+    assert(T.num_entries == T.num_rows);
+
+    const ValueType lambda = omega / (rho_Dinv_S == 0.0 ? estimate_rho_Dinv_A(S) : rho_Dinv_S);
+
+    // temp <- lambda * S(i,j) * T(j,k)
+    cusp::coo_matrix<IndexType,ValueType,MemorySpace> temp(S.num_rows, T.num_cols, S.num_entries + T.num_entries);
+    thrust::copy(S.row_indices.begin(), S.row_indices.end(), temp.row_indices.begin());
+    thrust::gather(S.column_indices.begin(), S.column_indices.end(), T.column_indices.begin(), temp.column_indices.begin());
+    thrust::transform(S.values.begin(), S.values.end(),
+                      thrust::make_permutation_iterator(T.values.begin(), S.column_indices.begin()),
+                      temp.values.begin(),
+                      thrust::multiplies<ValueType>());
+    thrust::transform(temp.values.begin(), temp.values.begin() + S.num_entries,
+                      thrust::constant_iterator<ValueType>(lambda),
+                      temp.values.begin(),
+                      thrust::multiplies<ValueType>());
+    // temp <- D^-1
+    {
+        cusp::array1d<ValueType, MemorySpace> D(S.num_rows);
+        cusp::detail::extract_diagonal(S, D);
+        thrust::transform(temp.values.begin(), temp.values.begin() + S.num_entries,
+                          thrust::make_permutation_iterator(D.begin(), S.row_indices.begin()),
+                          temp.values.begin(),
+                          thrust::divides<ValueType>());
+    }
+
+    // temp <- temp + T
+    thrust::copy(T.row_indices.begin(),    T.row_indices.end(),    temp.row_indices.begin()    + S.num_entries);
+    thrust::copy(T.column_indices.begin(), T.column_indices.end(), temp.column_indices.begin() + S.num_entries);
+    thrust::copy(T.values.begin(),         T.values.end(),         temp.values.begin()         + S.num_entries);
+
+    // sort by (I,J)
+    {
+        // TODO use explicit permuation and temporary arrays for efficiency
+        thrust::sort_by_key(temp.column_indices.begin(), temp.column_indices.end(), thrust::make_zip_iterator(thrust::make_tuple(temp.row_indices.begin(),    temp.values.begin())));
+        thrust::sort_by_key(temp.row_indices.begin(),    temp.row_indices.end(),    thrust::make_zip_iterator(thrust::make_tuple(temp.column_indices.begin(), temp.values.begin())));
+    }
+
+
+    // compute unique number of nonzeros in the output
+    IndexType NNZ = thrust::inner_product(thrust::make_zip_iterator(thrust::make_tuple(temp.row_indices.begin(), temp.column_indices.begin())),
+                                          thrust::make_zip_iterator(thrust::make_tuple(temp.row_indices.end (),  temp.column_indices.end()))   - 1,
+                                          thrust::make_zip_iterator(thrust::make_tuple(temp.row_indices.begin(), temp.column_indices.begin())) + 1,
+                                          IndexType(0),
+                                          thrust::plus<IndexType>(),
+                                          thrust::not_equal_to< thrust::tuple<IndexType,IndexType> >()) + 1;
+
+    // allocate space for output
+    P.resize(temp.num_rows, temp.num_cols, NNZ);
+
+    // sum values with the same (i,j)
+    thrust::reduce_by_key(thrust::make_zip_iterator(thrust::make_tuple(temp.row_indices.begin(), temp.column_indices.begin())),
+                          thrust::make_zip_iterator(thrust::make_tuple(temp.row_indices.end(),   temp.column_indices.end())),
+                          temp.values.begin(),
+                          thrust::make_zip_iterator(thrust::make_tuple(P.row_indices.begin(), P.column_indices.begin())),
+                          P.values.begin(),
+                          thrust::equal_to< thrust::tuple<IndexType,IndexType> >(),
+                          thrust::plus<ValueType>());
+
+//    std::cout << "S" << std::endl;
+//    cusp::print_matrix(S);
+//
+//    std::cout << "T" << std::endl;
+//    cusp::print_matrix(T);
+//
+//    std::cout << "temp" << std::endl;
+//    cusp::print_matrix(temp);
+//    
+//    std::cout << "P" << std::endl;
+//    cusp::print_matrix(P);
+}
+
+
 template <typename MatrixType>
 struct Dinv_A : public cusp::linear_operator<typename MatrixType::value_type, typename MatrixType::memory_space>
 {
@@ -317,4 +402,53 @@ void TestFitCandidates(void)
     // TODO test case w/ unaggregated nodes (marked w/ -1)
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestFitCandidates);
+
+
+template <class MemorySpace>
+void TestSmoothProlongator(void)
+{
+    // 1D Poisson problem w/ 4 points and 2 aggregates
+    {
+        cusp::coo_matrix<int, float, MemorySpace> S(4,4,10);
+        S.row_indices[0] = 0; S.column_indices[0] = 0; S.values[0] = 2;
+        S.row_indices[1] = 0; S.column_indices[1] = 1; S.values[1] =-1;
+        S.row_indices[2] = 1; S.column_indices[2] = 0; S.values[2] =-1;
+        S.row_indices[3] = 1; S.column_indices[3] = 1; S.values[3] = 2;
+        S.row_indices[4] = 1; S.column_indices[4] = 2; S.values[4] =-1;
+        S.row_indices[5] = 2; S.column_indices[5] = 1; S.values[5] =-1;
+        S.row_indices[6] = 2; S.column_indices[6] = 2; S.values[6] = 2;
+        S.row_indices[7] = 2; S.column_indices[7] = 3; S.values[7] =-1;
+        S.row_indices[8] = 3; S.column_indices[8] = 2; S.values[8] =-1;
+        S.row_indices[9] = 3; S.column_indices[9] = 3; S.values[9] = 2;
+
+        cusp::coo_matrix<int, float, MemorySpace> T(4,2,4);
+        T.row_indices[0] = 0; T.column_indices[0] = 0; T.values[0] = 0.5;
+        T.row_indices[1] = 1; T.column_indices[1] = 0; T.values[1] = 0.5;
+        T.row_indices[2] = 2; T.column_indices[2] = 1; T.values[2] = 0.5;
+        T.row_indices[3] = 3; T.column_indices[3] = 1; T.values[3] = 0.5;
+
+        cusp::coo_matrix<int, float, MemorySpace> P;
+
+        smooth_prolongator(S, T, P, 4.0f/3.0f, 1.8090169943749472f); 
+
+        ASSERT_EQUAL(P.num_rows,    4);
+        ASSERT_EQUAL(P.num_cols,    2);
+        ASSERT_EQUAL(P.num_entries, 6);
+        
+        ASSERT_EQUAL(P.row_indices[0], 0); ASSERT_EQUAL(P.column_indices[0], 0);
+        ASSERT_EQUAL(P.row_indices[1], 1); ASSERT_EQUAL(P.column_indices[1], 0);
+        ASSERT_EQUAL(P.row_indices[2], 1); ASSERT_EQUAL(P.column_indices[2], 1);
+        ASSERT_EQUAL(P.row_indices[3], 2); ASSERT_EQUAL(P.column_indices[3], 0);
+        ASSERT_EQUAL(P.row_indices[4], 2); ASSERT_EQUAL(P.column_indices[4], 1);
+        ASSERT_EQUAL(P.row_indices[5], 3); ASSERT_EQUAL(P.column_indices[5], 1);
+
+        ASSERT_ALMOST_EQUAL(P.values[0],  0.68426213);
+        ASSERT_ALMOST_EQUAL(P.values[1],  0.68426213);
+        ASSERT_ALMOST_EQUAL(P.values[2], -0.18426213);
+        ASSERT_ALMOST_EQUAL(P.values[3], -0.18426213);
+        ASSERT_ALMOST_EQUAL(P.values[4],  0.68426213);
+        ASSERT_ALMOST_EQUAL(P.values[5],  0.68426213);
+    }
+}
+DECLARE_HOST_DEVICE_UNITTEST(TestSmoothProlongator);
 
