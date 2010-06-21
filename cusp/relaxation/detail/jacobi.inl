@@ -74,7 +74,7 @@ template<typename MatrixType>
 template <typename ValueType, typename MemorySpace>
 template<typename MatrixType, typename VectorType1, typename VectorType2>
     void jacobi<ValueType,MemorySpace>
-    ::operator()(const MatrixType& A, const VectorType1& b, VectorType2& x)
+    ::operator()(const MatrixType& A, const VectorType1& b, VectorType2& x) const
     {
         jacobi<ValueType,MemorySpace>::operator()(A,b,x,default_omega);
     }
@@ -83,7 +83,7 @@ template<typename MatrixType, typename VectorType1, typename VectorType2>
 template <typename ValueType, typename MemorySpace>
 template<typename MatrixType, typename VectorType1, typename VectorType2>
     void jacobi<ValueType,MemorySpace>
-    ::operator()(const MatrixType& A, const VectorType1& b, VectorType2& x, ValueType omega)
+    ::operator()(const MatrixType& A, const VectorType1& b, VectorType2& x, ValueType omega) const
     {
         // TODO see if preallocating y is noticably faster
         cusp::array1d<ValueType,MemorySpace> y(x.size());

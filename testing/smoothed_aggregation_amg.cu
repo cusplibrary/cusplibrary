@@ -6,7 +6,7 @@
 #include <cusp/print.h>
 #include <cusp/gallery/poisson.h>
 #include <cusp/io/matrix_market.h>
-
+#include <cusp/krylov/cg.h>
 
 // TAKE THESE
 #include <cusp/blas.h>
@@ -451,4 +451,211 @@ void TestSmoothProlongator(void)
     }
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestSmoothProlongator);
+
+template <typename IndexType, typename ValueType, typename MemorySpace>
+class smoothed_aggregation_solver: public cusp::linear_operator<ValueType, MemorySpace, IndexType>
+{
+    struct level
+    {
+        cusp::coo_matrix<IndexType,ValueType,MemorySpace> R;  // restriction operator
+        cusp::coo_matrix<IndexType,ValueType,MemorySpace> A;  // matrix
+        cusp::coo_matrix<IndexType,ValueType,MemorySpace> P;  // prolongation operator
+        cusp::array1d<IndexType,MemorySpace> aggregates;      // aggregates
+        cusp::array1d<ValueType,MemorySpace> B;               // near-nullspace candidates
+        
+        cusp::relaxation::jacobi<ValueType,MemorySpace> smoother;
+       
+        ValueType rho;                                        // spectral radius
+    };
+
+    std::vector<level> levels;
+        
+    cusp::detail::lu_solver<float, cusp::host_memory> LU;
+
+    public:
+
+    smoothed_aggregation_solver(const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& A)
+    {
+        levels.reserve(20); // avoid reallocations which force matrix copies
+
+        levels.push_back(level());
+        levels.back().A = A; // copy
+        levels.back().B.resize(A.num_rows, 1.0f);
+
+        extend_hierarchy();
+        //extend_hierarchy();
+        //extend_hierarchy();
+   
+        // TODO make lu_solver accept sparse input
+        cusp::array2d<ValueType,cusp::host_memory> coarse_dense(levels.back().A);
+        LU = cusp::detail::lu_solver<ValueType, cusp::host_memory>(coarse_dense);
+
+        //printf("\n");
+        //for (int i = 0; i < levels.size(); i++)
+        //    printf("level[%2d] %10d unknowns %10d nonzeros\n", i, levels[i].A.num_rows, levels[i].A.num_entries);
+
+        cusp::io::write_matrix_market_file(levels[0].R, "/home/nathan/Desktop/AMG/R0.mtx");
+        cusp::io::write_matrix_market_file(levels[0].A, "/home/nathan/Desktop/AMG/A0.mtx");
+        cusp::io::write_matrix_market_file(levels[0].P, "/home/nathan/Desktop/AMG/P0.mtx");
+        cusp::io::write_matrix_market_file(levels[1].A, "/home/nathan/Desktop/AMG/A1.mtx");
+        //cusp::io::write_matrix_market_file(levels[1].R, "/home/nathan/Desktop/AMG/R1.mtx");
+        //cusp::io::write_matrix_market_file(levels[1].P, "/home/nathan/Desktop/AMG/P1.mtx");
+        //cusp::io::write_matrix_market_file(levels[2].A, "/home/nathan/Desktop/AMG/A2.mtx");
+    }
+
+    void extend_hierarchy(void)
+    {
+        const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& A = levels.back().A;
+        const cusp::array1d<ValueType,MemorySpace>&              B = levels.back().B;
+
+        // compute stength of connection matrix
+        const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& C = A;
+        // TODO add symmetric_strength of connection
+
+        // compute spectral radius of diag(C)^-1 * C
+        ValueType rho_DinvA = estimate_rho_Dinv_A(A);
+
+        // compute aggregates
+        cusp::array1d<IndexType,MemorySpace> aggregates(A.num_rows);
+        standard_aggregation(A, aggregates);
+        
+        // compute tenative prolongator and coarse nullspace vector
+        cusp::coo_matrix<IndexType,ValueType,MemorySpace> T;
+        cusp::array1d<ValueType,MemorySpace>              B_coarse;
+        fit_candidates(aggregates, B, T, B_coarse);
+
+        // compute prolongation operator
+        cusp::coo_matrix<IndexType,ValueType,MemorySpace> P;
+        smooth_prolongator(C, T, P, 4.0f/3.0f, rho_DinvA);  // TODO if C != A then compute rho_Dinv_C
+
+        // compute restriction operator (transpose of prolongator)
+        cusp::coo_matrix<IndexType,ValueType,MemorySpace> R;
+        cusp::transpose(P,R);
+
+        // construct Galerkin product R*A*P
+        cusp::coo_matrix<IndexType,ValueType,MemorySpace> RAP;
+        {
+            // TODO test speed of R * (A * P) vs. (R * A) * P
+            cusp::coo_matrix<IndexType,ValueType,MemorySpace> AP;
+            cusp::multiply(A, P, AP);
+            cusp::multiply(R, AP, RAP);
+        }
+        
+        //  4/3 * 1/rho is a good default, where rho is the spectral radius of D^-1(A)
+        ValueType omega = (4.0f/3.0f) / rho_DinvA;
+        levels.back().smoother = cusp::relaxation::jacobi<ValueType, MemorySpace>(A, omega);
+        levels.back().aggregates.swap(aggregates);
+        levels.back().R.swap(R);
+        levels.back().P.swap(P);
+
+        levels.push_back(level());
+        levels.back().A.swap(RAP);
+        levels.back().B.swap(B_coarse);
+    }
+    
+    template <typename Array1, typename Array2>
+    void operator()(const Array1& x, Array2& y) const
+    {
+        // perform 1 V-cycle
+        _solve(x, y, 0);
+    }
+
+    void solve(const cusp::array1d<ValueType,cusp::device_memory>& b,
+                     cusp::array1d<ValueType,cusp::device_memory>& x) const
+    {
+        // TODO check sizes
+        cusp::coo_matrix<IndexType,ValueType,MemorySpace> & A = levels[0].A;
+
+        cusp::array1d<ValueType,MemorySpace> residual(A.num_rows);  // TODO eliminate temporaries
+            
+        // compute initial residual norm
+        cusp::multiply(A,x,residual);
+        cusp::blas::axpby(b, residual, residual, 1.0f, -1.0f);
+        ValueType last_norm = cusp::blas::nrm2(residual);
+            
+        printf("%10.8f\n", last_norm);
+
+        // perform 25 V-cycles
+        for (int i = 0; i < 25; i++)
+        {
+            _solve(b, x, 0);
+
+            // compute residual norm
+            cusp::multiply(A,x,residual);
+            cusp::blas::axpby(b, residual, residual, 1.0f, -1.0f);
+            ValueType norm = cusp::blas::nrm2(residual);
+
+            printf("%10.8f  %6.4f\n", norm, norm/last_norm);
+
+            last_norm = norm;
+        }
+    }
+
+    void _solve(const cusp::array1d<ValueType,MemorySpace>& b,
+                      cusp::array1d<ValueType,MemorySpace>& x,
+                const int i) const
+    {
+        if (i + 1 == levels.size())
+        {
+            // coarse grid solve
+            // TODO streamline
+            cusp::array1d<ValueType,cusp::host_memory> temp_b(b);
+            cusp::array1d<ValueType,cusp::host_memory> temp_x(x.size());
+            LU(temp_b, temp_x);
+            x = temp_x;
+        }
+        else
+        {
+            const cusp::coo_matrix<IndexType,ValueType,MemorySpace> & R = levels[i].R;
+            const cusp::coo_matrix<IndexType,ValueType,MemorySpace> & A = levels[i].A;
+            const cusp::coo_matrix<IndexType,ValueType,MemorySpace> & P = levels[i].P;
+
+            cusp::array1d<ValueType,MemorySpace> residual(P.num_rows);  // TODO eliminate temporaries
+            cusp::array1d<ValueType,MemorySpace> coarse_b(P.num_cols);
+            cusp::array1d<ValueType,MemorySpace> coarse_x(P.num_cols);
+
+            // presmooth
+            levels[i].smoother(A,b,x);
+
+            // compute residual <- b - A*x
+            cusp::multiply(A, x, residual);
+            cusp::blas::axpby(b, residual, residual, 1.0f, -1.0f);
+
+            // restrict to coarse grid
+            cusp::multiply(R, residual, coarse_b);
+
+            // compute coarse grid solution
+            _solve(coarse_b, coarse_x, i + 1);
+
+            // apply coarse grid correction 
+            cusp::multiply(P, coarse_x, residual);
+            cusp::blas::axpy(residual, x, 1.0f);
+
+            // postsmooth
+            levels[i].smoother(A,b,x);
+        }
+    }
+};
+
+
+void TestSmoothedAggregationSolver(void)
+{
+    // Create 2D Poisson problem
+    cusp::coo_matrix<int,float,cusp::device_memory> A;
+//    cusp::gallery::poisson5pt(A, 10, 10);
+    cusp::gallery::poisson5pt(A, 50, 50);
+    
+    // setup linear system
+    cusp::array1d<float,cusp::device_memory> b(A.num_rows,0);
+    cusp::array1d<float,cusp::device_memory> x = unittest::random_samples<float>(A.num_rows);
+
+    smoothed_aggregation_solver<int,float,cusp::device_memory> M(A);
+//    M.solve(b,x);
+
+    // set stopping criteria (iteration_limit = 100, relative_tolerance = 1e-6)
+    //cusp::verbose_monitor<float> monitor(b, 100, 1e-6);
+
+    //cusp::krylov::cg(A, x, b, monitor);//, M);
+}
+DECLARE_UNITTEST(TestSmoothedAggregationSolver);
 

@@ -42,10 +42,10 @@ public:
     jacobi(const MatrixType& A, ValueType omega=1.0);
     
     template <typename MatrixType, typename VectorType1, typename VectorType2>
-    void operator()(const MatrixType& A, const VectorType1& b, VectorType2& x);
+    void operator()(const MatrixType& A, const VectorType1& b, VectorType2& x) const;
         
     template <typename MatrixType, typename VectorType1, typename VectorType2>
-    void operator()(const MatrixType& A, const VectorType1& b, VectorType2& x, ValueType omega);
+    void operator()(const MatrixType& A, const VectorType1& b, VectorType2& x, ValueType omega) const;
 };
 
 } // end namespace relaxation
