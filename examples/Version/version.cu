@@ -7,7 +7,7 @@ int main(void)
     std::cout << "The following libraries were found:" << std::endl;
 
     std::cout << "    CUDA   v" << (CUDA_VERSION / 1000) << "." <<
-                                   (CUDA_VERSION % 100) / 10 << std::endl;
+                                   (CUDA_VERSION % 1000) / 10 << std::endl;
 
     std::cout << "    Thrust v" << THRUST_MAJOR_VERSION << "." << 
                                    THRUST_MINOR_VERSION << "." << 
