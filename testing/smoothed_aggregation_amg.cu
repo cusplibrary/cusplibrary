@@ -195,7 +195,7 @@ void smooth_prolongator(const cusp::coo_matrix<IndexType,ValueType,MemorySpace>&
                       temp.values.begin(),
                       thrust::multiplies<ValueType>());
     thrust::transform(temp.values.begin(), temp.values.begin() + S.num_entries,
-                      thrust::constant_iterator<ValueType>(lambda),
+                      thrust::constant_iterator<ValueType>(-lambda),
                       temp.values.begin(),
                       thrust::multiplies<ValueType>());
     // temp <- D^-1
@@ -407,6 +407,39 @@ DECLARE_HOST_DEVICE_UNITTEST(TestFitCandidates);
 template <class MemorySpace>
 void TestSmoothProlongator(void)
 {
+    // simple example with diagonal S
+    {
+        cusp::coo_matrix<int, float, MemorySpace> S(4,4,4);
+        S.row_indices[0] = 0; S.column_indices[0] = 0; S.values[0] = 1;
+        S.row_indices[1] = 1; S.column_indices[1] = 1; S.values[1] = 2;
+        S.row_indices[2] = 2; S.column_indices[2] = 2; S.values[2] = 3;
+        S.row_indices[3] = 3; S.column_indices[3] = 3; S.values[3] = 4;
+
+        cusp::coo_matrix<int, float, MemorySpace> T(4,2,4);
+        T.row_indices[0] = 0; T.column_indices[0] = 0; T.values[0] = 0.5;
+        T.row_indices[1] = 1; T.column_indices[1] = 0; T.values[1] = 0.5;
+        T.row_indices[2] = 2; T.column_indices[2] = 1; T.values[2] = 0.5;
+        T.row_indices[3] = 3; T.column_indices[3] = 1; T.values[3] = 0.5;
+
+        cusp::coo_matrix<int, float, MemorySpace> P;
+
+        smooth_prolongator(S, T, P, 4.0f, 2.0f); 
+
+        ASSERT_EQUAL(P.num_rows,    4);
+        ASSERT_EQUAL(P.num_cols,    2);
+        ASSERT_EQUAL(P.num_entries, 4);
+        
+        ASSERT_EQUAL(P.row_indices[0], 0); ASSERT_EQUAL(P.column_indices[0], 0);
+        ASSERT_EQUAL(P.row_indices[1], 1); ASSERT_EQUAL(P.column_indices[1], 0);
+        ASSERT_EQUAL(P.row_indices[2], 2); ASSERT_EQUAL(P.column_indices[2], 1);
+        ASSERT_EQUAL(P.row_indices[3], 3); ASSERT_EQUAL(P.column_indices[3], 1);
+
+        ASSERT_EQUAL(P.values[0], -0.5);
+        ASSERT_EQUAL(P.values[1], -0.5);
+        ASSERT_EQUAL(P.values[2], -0.5);
+        ASSERT_EQUAL(P.values[3], -0.5);
+    }
+
     // 1D Poisson problem w/ 4 points and 2 aggregates
     {
         cusp::coo_matrix<int, float, MemorySpace> S(4,4,10);
@@ -442,12 +475,12 @@ void TestSmoothProlongator(void)
         ASSERT_EQUAL(P.row_indices[4], 2); ASSERT_EQUAL(P.column_indices[4], 1);
         ASSERT_EQUAL(P.row_indices[5], 3); ASSERT_EQUAL(P.column_indices[5], 1);
 
-        ASSERT_ALMOST_EQUAL(P.values[0],  0.68426213);
-        ASSERT_ALMOST_EQUAL(P.values[1],  0.68426213);
-        ASSERT_ALMOST_EQUAL(P.values[2], -0.18426213);
-        ASSERT_ALMOST_EQUAL(P.values[3], -0.18426213);
-        ASSERT_ALMOST_EQUAL(P.values[4],  0.68426213);
-        ASSERT_ALMOST_EQUAL(P.values[5],  0.68426213);
+        ASSERT_ALMOST_EQUAL(P.values[0], 0.31573787f);
+        ASSERT_ALMOST_EQUAL(P.values[1], 0.31573787f);
+        ASSERT_ALMOST_EQUAL(P.values[2], 0.18426213f);
+        ASSERT_ALMOST_EQUAL(P.values[3], 0.18426213f);
+        ASSERT_ALMOST_EQUAL(P.values[4], 0.31573787f);
+        ASSERT_ALMOST_EQUAL(P.values[5], 0.31573787f);
     }
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestSmoothProlongator);
@@ -494,10 +527,16 @@ class smoothed_aggregation_solver: public cusp::linear_operator<ValueType, Memor
         //for (int i = 0; i < levels.size(); i++)
         //    printf("level[%2d] %10d unknowns %10d nonzeros\n", i, levels[i].A.num_rows, levels[i].A.num_entries);
 
+        //{
+        //    cusp::array2d<ValueType, MemorySpace> aggregates0(levels[0].aggregates.size(),1);
+        //    aggregates0.values = levels[0].aggregates;
+        //    cusp::io::write_matrix_market_file(aggregates0, "/home/nathan/Desktop/AMG/aggregates0.mtx");
+        //}
         //cusp::io::write_matrix_market_file(levels[0].R, "/home/nathan/Desktop/AMG/R0.mtx");
         //cusp::io::write_matrix_market_file(levels[0].A, "/home/nathan/Desktop/AMG/A0.mtx");
         //cusp::io::write_matrix_market_file(levels[0].P, "/home/nathan/Desktop/AMG/P0.mtx");
         //cusp::io::write_matrix_market_file(levels[1].A, "/home/nathan/Desktop/AMG/A1.mtx");
+        //cusp::io::write_matrix_market_file(levels[0].R, "/home/nathan/Desktop/AMG/aggregates1.mtx");
         //cusp::io::write_matrix_market_file(levels[1].R, "/home/nathan/Desktop/AMG/R1.mtx");
         //cusp::io::write_matrix_market_file(levels[1].P, "/home/nathan/Desktop/AMG/P1.mtx");
         //cusp::io::write_matrix_market_file(levels[2].A, "/home/nathan/Desktop/AMG/A2.mtx");
@@ -523,6 +562,8 @@ class smoothed_aggregation_solver: public cusp::linear_operator<ValueType, Memor
         cusp::coo_matrix<IndexType,ValueType,MemorySpace> T;
         cusp::array1d<ValueType,MemorySpace>              B_coarse;
         fit_candidates(aggregates, B, T, B_coarse);
+        
+        //cusp::io::write_matrix_market_file(T, "/home/nathan/Desktop/AMG/T0.mtx");
 
         // compute prolongation operator
         cusp::coo_matrix<IndexType,ValueType,MemorySpace> P;
@@ -548,6 +589,8 @@ class smoothed_aggregation_solver: public cusp::linear_operator<ValueType, Memor
         levels.back().R.swap(R);
         levels.back().P.swap(P);
 
+        //std::cout << "omega " << omega << std::endl;
+
         levels.push_back(level());
         levels.back().A.swap(RAP);
         levels.back().B.swap(B_coarse);
@@ -564,7 +607,7 @@ class smoothed_aggregation_solver: public cusp::linear_operator<ValueType, Memor
                      cusp::array1d<ValueType,cusp::device_memory>& x) const
     {
         // TODO check sizes
-        cusp::coo_matrix<IndexType,ValueType,MemorySpace> & A = levels[0].A;
+        const cusp::coo_matrix<IndexType,ValueType,MemorySpace> & A = levels[0].A;
 
         cusp::array1d<ValueType,MemorySpace> residual(A.num_rows);  // TODO eliminate temporaries
             
@@ -573,7 +616,7 @@ class smoothed_aggregation_solver: public cusp::linear_operator<ValueType, Memor
         cusp::blas::axpby(b, residual, residual, 1.0f, -1.0f);
         ValueType last_norm = cusp::blas::nrm2(residual);
             
-        printf("%10.8f\n", last_norm);
+        //printf("%10.8f\n", last_norm);
 
         // perform 25 V-cycles
         for (int i = 0; i < 25; i++)
@@ -585,7 +628,7 @@ class smoothed_aggregation_solver: public cusp::linear_operator<ValueType, Memor
             cusp::blas::axpby(b, residual, residual, 1.0f, -1.0f);
             ValueType norm = cusp::blas::nrm2(residual);
 
-            printf("%10.8f  %6.4f\n", norm, norm/last_norm);
+            //printf("%10.8f  %6.4f\n", norm, norm/last_norm);
 
             last_norm = norm;
         }
@@ -646,7 +689,7 @@ void TestSmoothedAggregationSolver(void)
 
     // Create 2D Poisson problem
     cusp::coo_matrix<IndexType,ValueType,MemorySpace> A;
-//    cusp::gallery::poisson5pt(A, 10, 10);
+//    cusp::gallery::poisson5pt(A, 4, 4);
     cusp::gallery::poisson5pt(A, 50, 50);
     
     // setup linear system
@@ -654,7 +697,7 @@ void TestSmoothedAggregationSolver(void)
     cusp::array1d<ValueType,MemorySpace> x = unittest::random_samples<ValueType>(A.num_rows);
 
     smoothed_aggregation_solver<IndexType,ValueType,MemorySpace> M(A);
-//    M.solve(b,x);
+    M.solve(b,x);
 
     // set stopping criteria (iteration_limit = 100, relative_tolerance = 1e-6)
     //cusp::verbose_monitor<ValueType> monitor(b, 100, 1e-6);
