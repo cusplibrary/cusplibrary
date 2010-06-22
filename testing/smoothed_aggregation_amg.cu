@@ -470,7 +470,7 @@ class smoothed_aggregation_solver: public cusp::linear_operator<ValueType, Memor
 
     std::vector<level> levels;
         
-    cusp::detail::lu_solver<float, cusp::host_memory> LU;
+    cusp::detail::lu_solver<ValueType, cusp::host_memory> LU;
 
     public:
 
@@ -494,10 +494,10 @@ class smoothed_aggregation_solver: public cusp::linear_operator<ValueType, Memor
         //for (int i = 0; i < levels.size(); i++)
         //    printf("level[%2d] %10d unknowns %10d nonzeros\n", i, levels[i].A.num_rows, levels[i].A.num_entries);
 
-        cusp::io::write_matrix_market_file(levels[0].R, "/home/nathan/Desktop/AMG/R0.mtx");
-        cusp::io::write_matrix_market_file(levels[0].A, "/home/nathan/Desktop/AMG/A0.mtx");
-        cusp::io::write_matrix_market_file(levels[0].P, "/home/nathan/Desktop/AMG/P0.mtx");
-        cusp::io::write_matrix_market_file(levels[1].A, "/home/nathan/Desktop/AMG/A1.mtx");
+        //cusp::io::write_matrix_market_file(levels[0].R, "/home/nathan/Desktop/AMG/R0.mtx");
+        //cusp::io::write_matrix_market_file(levels[0].A, "/home/nathan/Desktop/AMG/A0.mtx");
+        //cusp::io::write_matrix_market_file(levels[0].P, "/home/nathan/Desktop/AMG/P0.mtx");
+        //cusp::io::write_matrix_market_file(levels[1].A, "/home/nathan/Desktop/AMG/A1.mtx");
         //cusp::io::write_matrix_market_file(levels[1].R, "/home/nathan/Desktop/AMG/R1.mtx");
         //cusp::io::write_matrix_market_file(levels[1].P, "/home/nathan/Desktop/AMG/P1.mtx");
         //cusp::io::write_matrix_market_file(levels[2].A, "/home/nathan/Desktop/AMG/A2.mtx");
@@ -526,7 +526,7 @@ class smoothed_aggregation_solver: public cusp::linear_operator<ValueType, Memor
 
         // compute prolongation operator
         cusp::coo_matrix<IndexType,ValueType,MemorySpace> P;
-        smooth_prolongator(C, T, P, 4.0f/3.0f, rho_DinvA);  // TODO if C != A then compute rho_Dinv_C
+        smooth_prolongator(C, T, P, (ValueType) (4.0/3.0), rho_DinvA);  // TODO if C != A then compute rho_Dinv_C
 
         // compute restriction operator (transpose of prolongator)
         cusp::coo_matrix<IndexType,ValueType,MemorySpace> R;
@@ -640,21 +640,24 @@ class smoothed_aggregation_solver: public cusp::linear_operator<ValueType, Memor
 
 void TestSmoothedAggregationSolver(void)
 {
+    typedef int                 IndexType;
+    typedef float               ValueType;
+    typedef cusp::device_memory MemorySpace;
+
     // Create 2D Poisson problem
-    cusp::coo_matrix<int,float,cusp::device_memory> A;
+    cusp::coo_matrix<IndexType,ValueType,MemorySpace> A;
 //    cusp::gallery::poisson5pt(A, 10, 10);
     cusp::gallery::poisson5pt(A, 50, 50);
     
     // setup linear system
-    cusp::array1d<float,cusp::device_memory> b(A.num_rows,0);
-    cusp::array1d<float,cusp::device_memory> x = unittest::random_samples<float>(A.num_rows);
+    cusp::array1d<ValueType,MemorySpace> b(A.num_rows,0);
+    cusp::array1d<ValueType,MemorySpace> x = unittest::random_samples<ValueType>(A.num_rows);
 
-    smoothed_aggregation_solver<int,float,cusp::device_memory> M(A);
+    smoothed_aggregation_solver<IndexType,ValueType,MemorySpace> M(A);
 //    M.solve(b,x);
 
     // set stopping criteria (iteration_limit = 100, relative_tolerance = 1e-6)
-    //cusp::verbose_monitor<float> monitor(b, 100, 1e-6);
-
+    //cusp::verbose_monitor<ValueType> monitor(b, 100, 1e-6);
     //cusp::krylov::cg(A, x, b, monitor);//, M);
 }
 DECLARE_UNITTEST(TestSmoothedAggregationSolver);
