@@ -11,7 +11,7 @@ output_file = 'benchmark_output.log'        # file where results are stored
 #    http://www.nvidia.com/content/NV_Research/matrices.zip
 
 mats = []
-unstructured_path = '../../../../research/datasets/matrices/unstructured/matrix_market/'
+unstructured_path = '~/scratch/Matrices/williams/mm/'
 unstructured_mats = [('Dense','dense2.mtx'),
                      ('Protein','pdb1HYS.mtx'),
                      ('FEM/Spheres','consph.mtx'),
@@ -28,7 +28,7 @@ unstructured_mats = [('Dense','dense2.mtx'),
                      ('LP','rail4284.mtx') ]
 unstructured_mats = [ mat + (unstructured_path,) for mat in unstructured_mats]
 
-structured_path = '../../../../research/datasets/matrices/stencil/isotropic_laplacian/'
+structured_path = '~/scratch/Matrices/stencil/'
 structured_mats = [('Laplacian_3pt_stencil',  '3pt_1000000.mtx'),
                    ('Laplacian_5pt_stencil',  '5pt_1000x1000.mtx'),
                    ('Laplacian_7pt_stencil',  '7pt_100x100x100.mtx'),
