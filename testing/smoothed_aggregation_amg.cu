@@ -515,9 +515,8 @@ class smoothed_aggregation_solver: public cusp::linear_operator<ValueType, Memor
         levels.back().A = A; // copy
         levels.back().B.resize(A.num_rows, 1.0f);
 
-        extend_hierarchy();
-        //extend_hierarchy();
-        //extend_hierarchy();
+        while (levels.back().A.num_rows > 100)
+            extend_hierarchy();
    
         // TODO make lu_solver accept sparse input
         cusp::array2d<ValueType,cusp::host_memory> coarse_dense(levels.back().A);
@@ -656,7 +655,7 @@ class smoothed_aggregation_solver: public cusp::linear_operator<ValueType, Memor
 
             cusp::array1d<ValueType,MemorySpace> residual(P.num_rows);  // TODO eliminate temporaries
             cusp::array1d<ValueType,MemorySpace> coarse_b(P.num_cols);
-            cusp::array1d<ValueType,MemorySpace> coarse_x(P.num_cols);
+            cusp::array1d<ValueType,MemorySpace> coarse_x(P.num_cols, 0);
 
             // presmooth
             levels[i].smoother(A,b,x);
