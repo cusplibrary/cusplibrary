@@ -600,6 +600,7 @@ class smoothed_aggregation_solver: public cusp::linear_operator<ValueType, Memor
     void operator()(const Array1& x, Array2& y) const
     {
         // perform 1 V-cycle
+        thrust::fill(y.begin(), y.end(), typename Array1::value_type(0));
         _solve(x, y, 0);
     }
 
@@ -690,18 +691,40 @@ void TestSmoothedAggregationSolver(void)
     // Create 2D Poisson problem
     cusp::coo_matrix<IndexType,ValueType,MemorySpace> A;
 //    cusp::gallery::poisson5pt(A, 4, 4);
-    cusp::gallery::poisson5pt(A, 50, 50);
+    cusp::gallery::poisson5pt(A, 100, 100);
     
     // setup linear system
-    cusp::array1d<ValueType,MemorySpace> b(A.num_rows,0);
+    //cusp::array1d<ValueType,MemorySpace> b(A.num_rows,0);
+    cusp::array1d<ValueType,MemorySpace> b = unittest::random_samples<ValueType>(A.num_rows);
     cusp::array1d<ValueType,MemorySpace> x = unittest::random_samples<ValueType>(A.num_rows);
 
     smoothed_aggregation_solver<IndexType,ValueType,MemorySpace> M(A);
-    M.solve(b,x);
+//    M.solve(b,x);
+   
 
-    // set stopping criteria (iteration_limit = 100, relative_tolerance = 1e-6)
-    //cusp::verbose_monitor<ValueType> monitor(b, 100, 1e-6);
-    //cusp::krylov::cg(A, x, b, monitor);//, M);
+//    cusp::array1d<ValueType,MemorySpace> residual(A.num_rows);  // TODO eliminate temporaries
+//    // compute initial residual norm
+//    cusp::multiply(A,x,residual);
+//    cusp::blas::axpby(b, residual, residual, 1.0f, -1.0f);
+//    ValueType last_norm = cusp::blas::nrm2(residual);
+//    printf("%10.8f\n", last_norm);
+//    for (int i = 0; i < 25; i++)
+//    {
+//            M(b, x);
+//            // compute residual norm
+//            cusp::multiply(A,x,residual);
+//            cusp::blas::axpby(b, residual, residual, 1.0f, -1.0f);
+//            ValueType norm = cusp::blas::nrm2(residual);
+//
+//            printf("%10.8f  %6.4f\n", norm, norm/last_norm);
+//
+//            last_norm = norm;
+//    }
+
+    // set stopping criteria (iteration_limit = 100, relative_tolerance = 1e-5)
+    //cusp::verbose_monitor<ValueType> monitor(b, 100, 1e-5);
+    cusp::default_monitor<ValueType> monitor(b, 100, 1e-5);
+    cusp::krylov::cg(A, x, b, monitor, M);
 }
 DECLARE_UNITTEST(TestSmoothedAggregationSolver);
 
