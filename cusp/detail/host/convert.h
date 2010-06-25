@@ -136,9 +136,11 @@ void convert(const Matrix1& src, Matrix2& dst,
 {
     const size_t occupied_diagonals = cusp::detail::host::count_diagonals(src);
 
-    const float fill_ratio = float(occupied_diagonals) * float(src.num_rows) / std::max(1.0f, float(src.num_entries));
+    const float threshold  = 1e6; // 1M entries
+    const float size       = float(occupied_diagonals) * float(src.num_rows);
+    const float fill_ratio = size / std::max(1.0f, float(src.num_entries));
 
-    if (max_fill < fill_ratio && src.num_entries > (1 << 20))
+    if (max_fill < fill_ratio && size > threshold)
         throw cusp::format_conversion_exception("dia_matrix fill-in would exceed maximum tolerance");
 
     cusp::detail::host::csr_to_dia(src, dst, alignment);
@@ -167,9 +169,12 @@ void convert(const Matrix1& src, Matrix2& dst,
              const size_t alignment = 32)
 {
     const size_t max_entries_per_row = cusp::detail::host::compute_max_entries_per_row(src);
-    const float fill_ratio = float(max_entries_per_row) * float(src.num_rows) / std::max(1.0f, float(src.num_entries));
+    
+    const float threshold  = 1e6; // 1M entries
+    const float size       = float(max_entries_per_row) * float(src.num_rows);
+    const float fill_ratio = size / std::max(1.0f, float(src.num_entries));
 
-    if (max_fill < fill_ratio && src.num_entries > (1 << 20))
+    if (max_fill < fill_ratio && size > threshold)
         throw cusp::format_conversion_exception("ell_matrix fill-in would exceed maximum tolerance");
 
     cusp::detail::host::csr_to_ell(src, dst, max_entries_per_row, alignment);
