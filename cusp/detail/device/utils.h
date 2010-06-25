@@ -50,9 +50,13 @@ namespace detail
 namespace device
 {    
 
-#if !defined(CUDA_NO_SM_11_ATOMIC_INTRINSICS)
+// Atomic operations are only available for capability 1.1 and above
+#if __CUDA_ARCH__ >= 110
+
+#if __CUDA_ARCH__ < 200
 //
-// We have to emulate FP atomicAdd because it isn't supported natively.
+// We have to emulate FP atomicAdd because it isn't supported natively
+// on devices prior to capability 2.0.
 //
 // Note that the semantics of atomicCAS() on float values is a little
 // dodgy.  It just does a bit comparison rather than a true floating
@@ -67,13 +71,20 @@ static __inline__ __device__ float atomicAdd(float *addr, float val)
         old = int_as_float( atomicCAS((int*)addr,
                                         float_as_int(assumed),
                                         float_as_int(val+assumed)));
-    } while( assumed!=old );
+    } while( float_as_int(assumed)!=float_as_int(old) );
+    //
+    // NOTE: Comparing as ints rather than floats is mandatory.
+    // For floats, the test NaN==NaN would always fall, leading to an
+    // infinite loop.
 
     return old;
 }
-#endif // !defined(CUDA_NO_SM_11_ATOMIC_INTRINSICS)
+#endif // __CUDA_ARCH__ < 200
 
-#if !defined(CUDA_NO_SM_13_DOUBLE_INTRINSICS)
+//
+// Double precision atomics are not supported on any device, so we
+// always emulate with atomicCAS().
+//
 static __inline__ __device__ double atomicAdd(double *addr, double val)
 {
     double old=*addr, assumed;
@@ -83,11 +94,12 @@ static __inline__ __device__ double atomicAdd(double *addr, double val)
         old = __longlong_as_double( atomicCAS((unsigned long long int*)addr,
                                         __double_as_longlong(assumed),
                                         __double_as_longlong(val+assumed)));
-    } while( assumed!=old );
+    } while( __double_as_longlong(assumed)!=__double_as_longlong(old) );
 
     return old;
 }
-#endif // !defined(CUDA_NO_SM_13_DOUBLE_INTRINSICS)
+
+#endif // __CUDA_ARCH__ >= 110
 
 } // end namespace device
 } // end namespace detail
