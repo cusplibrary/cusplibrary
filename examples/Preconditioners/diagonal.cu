@@ -1,5 +1,4 @@
 #include <cusp/precond/diagonal.h>
-#include <cusp/krylov/bicgstab.h>
 #include <cusp/krylov/cg.h>
 #include <cusp/csr_matrix.h>
 #include <cusp/io/matrix_market.h>

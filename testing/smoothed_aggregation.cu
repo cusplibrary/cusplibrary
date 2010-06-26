@@ -205,7 +205,7 @@ void TestSmoothProlongator(void)
 DECLARE_HOST_DEVICE_UNITTEST(TestSmoothProlongator);
 
 
-void TestSmoothedAggregationSolver(void)
+void TestSmoothedAggregation(void)
 {
     typedef int                 IndexType;
     typedef float               ValueType;
@@ -216,7 +216,7 @@ void TestSmoothedAggregationSolver(void)
     cusp::gallery::poisson5pt(A, 100, 100);
     
     // create smoothed aggregation solver
-    cusp::precond::smoothed_aggregation_solver<IndexType,ValueType,MemorySpace> M(A);
+    cusp::precond::smoothed_aggregation<IndexType,ValueType,MemorySpace> M(A);
 
     // test as standalone solver
     {
@@ -241,5 +241,5 @@ void TestSmoothedAggregationSolver(void)
         ASSERT_EQUAL(monitor.converged(), true);
     }
 }
-DECLARE_UNITTEST(TestSmoothedAggregationSolver);
+DECLARE_UNITTEST(TestSmoothedAggregation);
 

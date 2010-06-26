@@ -48,7 +48,7 @@ namespace precond
  */
 
 template <typename IndexType, typename ValueType, typename MemorySpace>
-class smoothed_aggregation_solver: public cusp::linear_operator<ValueType, MemorySpace, IndexType>
+class smoothed_aggregation : public cusp::linear_operator<ValueType, MemorySpace, IndexType>
 {
     struct level
     {
@@ -69,7 +69,7 @@ class smoothed_aggregation_solver: public cusp::linear_operator<ValueType, Memor
 
     public:
 
-    smoothed_aggregation_solver(const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& A);
+    smoothed_aggregation(const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& A);
 
     
     template <typename Array1, typename Array2>

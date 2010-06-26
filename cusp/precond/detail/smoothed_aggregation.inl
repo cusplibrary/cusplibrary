@@ -274,11 +274,11 @@ void smooth_prolongator(const cusp::coo_matrix<IndexType,ValueType,MemorySpace>&
 
 
 template <typename IndexType, typename ValueType, typename MemorySpace>
-smoothed_aggregation_solver<IndexType,ValueType,MemorySpace>::smoothed_aggregation_solver(const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& A)
+smoothed_aggregation<IndexType,ValueType,MemorySpace>::smoothed_aggregation(const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& A)
 {
     levels.reserve(20); // avoid reallocations which force matrix copies
 
-    levels.push_back(typename smoothed_aggregation_solver<IndexType,ValueType,MemorySpace>::level());
+    levels.push_back(typename smoothed_aggregation<IndexType,ValueType,MemorySpace>::level());
     levels.back().A = A; // copy
     levels.back().B.resize(A.num_rows, 1.0f);
 
@@ -291,7 +291,7 @@ smoothed_aggregation_solver<IndexType,ValueType,MemorySpace>::smoothed_aggregati
 }
 
 template <typename IndexType, typename ValueType, typename MemorySpace>
-void smoothed_aggregation_solver<IndexType,ValueType,MemorySpace>::extend_hierarchy(void)
+void smoothed_aggregation<IndexType,ValueType,MemorySpace>::extend_hierarchy(void)
 {
     const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& A = levels.back().A;
     const cusp::array1d<ValueType,MemorySpace>&              B = levels.back().B;
@@ -347,7 +347,7 @@ void smoothed_aggregation_solver<IndexType,ValueType,MemorySpace>::extend_hierar
     
 template <typename IndexType, typename ValueType, typename MemorySpace>
 template <typename Array1, typename Array2>
-void smoothed_aggregation_solver<IndexType,ValueType,MemorySpace>::operator()(const Array1& x, Array2& y) const
+void smoothed_aggregation<IndexType,ValueType,MemorySpace>::operator()(const Array1& x, Array2& y) const
 {
     // perform 1 V-cycle
     thrust::fill(y.begin(), y.end(), typename Array1::value_type(0));
@@ -355,7 +355,7 @@ void smoothed_aggregation_solver<IndexType,ValueType,MemorySpace>::operator()(co
 }
 
 template <typename IndexType, typename ValueType, typename MemorySpace>
-void smoothed_aggregation_solver<IndexType,ValueType,MemorySpace>::solve(const cusp::array1d<ValueType,cusp::device_memory>& b,
+void smoothed_aggregation<IndexType,ValueType,MemorySpace>::solve(const cusp::array1d<ValueType,cusp::device_memory>& b,
                                                                                cusp::array1d<ValueType,cusp::device_memory>& x) const
 {
     // TODO check sizes
@@ -387,7 +387,7 @@ void smoothed_aggregation_solver<IndexType,ValueType,MemorySpace>::solve(const c
 }
 
 template <typename IndexType, typename ValueType, typename MemorySpace>
-void smoothed_aggregation_solver<IndexType,ValueType,MemorySpace>
+void smoothed_aggregation<IndexType,ValueType,MemorySpace>
 ::_solve(const cusp::array1d<ValueType,MemorySpace>& b,
                cusp::array1d<ValueType,MemorySpace>& x,
          const int i) const
