@@ -52,7 +52,7 @@ int main(void)
         report_status(monitor);
     }
 
-    // solve with diagonal preconditioner
+    // solve with smoothed aggregation algebraic multigrid preconditioner
     {
         std::cout << "\nSolving with smoothed aggregation preconditioner" << std::endl;
         
