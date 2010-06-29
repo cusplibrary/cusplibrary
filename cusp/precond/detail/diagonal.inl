@@ -33,6 +33,7 @@ namespace detail
     template <typename T>
         struct reciprocal : public thrust::unary_function<T,T>
     {
+        __host__ __device__
         T operator()(const T& v)
         {
             return T(1.0) / v;

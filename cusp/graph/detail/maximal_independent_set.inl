@@ -21,6 +21,7 @@ namespace detail
 // http://burtleburtle.net/bob/hash/integer.html
 struct simple_hash
 {
+    __host__ __device__
     unsigned int operator()(unsigned int a)
     {
         a = (a + 0x7ed55d16) + (a << 12);
@@ -36,6 +37,7 @@ struct simple_hash
 struct process_nodes
 {
     template <typename Tuple>
+    __host__ __device__
     void operator()(Tuple t)
     {
         if (thrust::get<1>(t) == 1)                     // undecided node

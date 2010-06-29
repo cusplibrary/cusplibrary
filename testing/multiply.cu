@@ -69,8 +69,13 @@ void TestSparseMatrixMatrixMultiply(void)
 
     cusp::array2d<float,cusp::host_memory> K;
     cusp::gallery::random(24, 12, 20, K);
-  
+ 
+#if THRUST_VERSION >= 100300
     thrust::host_vector< cusp::array2d<float,cusp::host_memory> > matrices;
+#else
+    // TODO remove this when Thrust v1.2.x is unsupported
+    std::vector< cusp::array2d<float,cusp::host_memory> > matrices;
+#endif
     matrices.push_back(A);
     matrices.push_back(B);
     matrices.push_back(C);

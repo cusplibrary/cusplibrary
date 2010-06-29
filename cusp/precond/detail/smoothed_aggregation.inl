@@ -83,9 +83,16 @@ void mis_to_aggregates(const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& 
     cusp::array1d<IndexType,MemorySpace> mis_enum(N);
     thrust::exclusive_scan(mis.begin(), mis.end(), mis_enum.begin());
 
+#if THRUST_VERSION >= 100300
     thrust::gather(idx2.begin(), idx2.end(),
                    mis_enum.begin(),
                    aggregates.begin());
+#else
+    // TODO remove this when Thrust v1.2.x is unsupported
+    thrust::next::gather(idx2.begin(), idx2.end(),
+                         mis_enum.begin(),
+                         aggregates.begin());
+#endif    
 } // mis_to_aggregates()
 
 
@@ -217,7 +224,12 @@ void smooth_prolongator(const cusp::coo_matrix<IndexType,ValueType,MemorySpace>&
     // temp <- lambda * S(i,j) * T(j,k)
     cusp::coo_matrix<IndexType,ValueType,MemorySpace> temp(S.num_rows, T.num_cols, S.num_entries + T.num_entries);
     thrust::copy(S.row_indices.begin(), S.row_indices.end(), temp.row_indices.begin());
+#if THRUST_VERSION >= 100300
     thrust::gather(S.column_indices.begin(), S.column_indices.end(), T.column_indices.begin(), temp.column_indices.begin());
+#else
+    // TODO remove this when Thrust v1.2.x is unsupported
+    thrust::next::gather(S.column_indices.begin(), S.column_indices.end(), T.column_indices.begin(), temp.column_indices.begin());
+#endif 
     thrust::transform(S.values.begin(), S.values.end(),
                       thrust::make_permutation_iterator(T.values.begin(), S.column_indices.begin()),
                       temp.values.begin(),

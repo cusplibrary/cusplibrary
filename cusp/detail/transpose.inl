@@ -54,10 +54,17 @@ void transpose(const MatrixType1& A, MatrixType2& At,
 
     thrust::stable_sort_by_key(temp.row_indices.begin(), temp.row_indices.end(), permutation.begin());
 
+#if THRUST_VERSION >= 100300
     // gather the permuted indices and values
     thrust::gather(permutation.begin(), permutation.end(),
                    thrust::make_zip_iterator(thrust::make_tuple(A.row_indices.begin(),       A.values.begin())),
                    thrust::make_zip_iterator(thrust::make_tuple(temp.column_indices.begin(), temp.values.begin())));
+#else
+    // TODO remove this when Thrust v1.2.x is unsupported
+    thrust::next::gather(permutation.begin(), permutation.end(),
+                         thrust::make_zip_iterator(thrust::make_tuple(A.row_indices.begin(),       A.values.begin())),
+                         thrust::make_zip_iterator(thrust::make_tuple(temp.column_indices.begin(), temp.values.begin())));
+#endif
 
     At.swap(temp);  // TODO make this a destructive .assign() or the like
 }
@@ -88,10 +95,17 @@ void transpose(const MatrixType1& A, MatrixType2& At,
     // compute row indices of A
     cusp::detail::offsets_to_indices(A.row_offsets, indices);
    
+#if THRUST_VERSION >= 100300
     // gather the permuted indices and values
     thrust::gather(permutation.begin(), permutation.end(),
                    thrust::make_zip_iterator(thrust::make_tuple(indices.begin(),             A.values.begin())),
                    thrust::make_zip_iterator(thrust::make_tuple(temp.column_indices.begin(), temp.values.begin())));
+#else
+    // TODO remove this when Thrust v1.2.x is unsupported
+    thrust::next::gather(permutation.begin(), permutation.end(),
+                         thrust::make_zip_iterator(thrust::make_tuple(indices.begin(),             A.values.begin())),
+                         thrust::make_zip_iterator(thrust::make_tuple(temp.column_indices.begin(), temp.values.begin())));
+#endif
 
     At.swap(temp);  // TODO make this a destructive .assign() or the like
 }
@@ -130,10 +144,18 @@ void transpose(const MatrixType1& A, MatrixType2& At,
     thrust::counting_iterator<size_t> begin(0);
     thrust::counting_iterator<size_t> end(A.values.size());
 
+#if THRUST_VERSION >= 100300
     thrust::gather(thrust::make_transform_iterator(begin, transpose_index<size_t, SourceOrientation, DestinationOrientation>(At.num_rows, At.num_cols)),
                    thrust::make_transform_iterator(end,   transpose_index<size_t, SourceOrientation, DestinationOrientation>(At.num_rows, At.num_cols)),
                    A.values.begin(),
                    At.values.begin());
+#else
+    // TODO remove this when Thrust v1.2.x is unsupported
+    thrust::next::gather(thrust::make_transform_iterator(begin, transpose_index<size_t, SourceOrientation, DestinationOrientation>(At.num_rows, At.num_cols)),
+                         thrust::make_transform_iterator(end,   transpose_index<size_t, SourceOrientation, DestinationOrientation>(At.num_rows, At.num_cols)),
+                         A.values.begin(),
+                         At.values.begin());
+#endif
 }
 
 
