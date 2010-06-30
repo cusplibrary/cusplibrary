@@ -1,6 +1,6 @@
 #include <cusp/hyb_matrix.h>
 #include <cusp/gallery/poisson.h>
-#include <cusp/krylov/cg.h>
+#include <cusp/krylov/cg-m.h>
 
 // where to perform the computation
 typedef cusp::device_memory MemorySpace;
@@ -17,19 +17,25 @@ int main(void)
     cusp::gallery::poisson5pt(A, 10, 10);
 
     // allocate storage for solution (x) and right hand side (b)
-    cusp::array1d<ValueType, MemorySpace> x(A.num_rows, 0);
-    cusp::array1d<ValueType, MemorySpace> b(A.num_rows, 1);
+    size_t N_s = 4;
+    cusp::array1d<ValueType, MemorySpace> x(A.num_rows*N_s, ValueType(0));  // TODO replace with array2d when cg_m supports it
+    cusp::array1d<ValueType, MemorySpace> b(A.num_rows, ValueType(1));
+
+    // set sigma values
+    cusp::array1d<ValueType, MemorySpace> sigma(N_s);
+    sigma[0] = ValueType(0.1);
+    sigma[1] = ValueType(0.5);
+    sigma[2] = ValueType(1.0);
+    sigma[3] = ValueType(5.0);
 
     // set stopping criteria:
     //  iteration_limit    = 100
     //  relative_tolerance = 1e-6
     cusp::verbose_monitor<ValueType> monitor(b, 100, 1e-6);
 
-    // set preconditioner (identity)
-    cusp::identity_operator<ValueType, MemorySpace> M(A.num_rows, A.num_rows);
-
-    // solve the linear system A * x = b with the Conjugate Gradient method
-    cusp::krylov::cg(A, x, b, monitor, M);
+    // solve the linear systems (A + \sigma_i * I) * x = b for each 
+    // sigma_i with the Conjugate Gradient method
+    cusp::krylov_m::cg_m(A, x, b, sigma, monitor);
 
     return 0;
 }
