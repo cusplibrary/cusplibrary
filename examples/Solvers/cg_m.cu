@@ -1,6 +1,6 @@
 #include <cusp/hyb_matrix.h>
 #include <cusp/gallery/poisson.h>
-#include <cusp/krylov/cg-m.h>
+#include <cusp/krylov/cg_m.h>
 
 // where to perform the computation
 typedef cusp::device_memory MemorySpace;
@@ -35,7 +35,7 @@ int main(void)
 
     // solve the linear systems (A + \sigma_i * I) * x = b for each 
     // sigma_i with the Conjugate Gradient method
-    cusp::krylov_m::cg_m(A, x, b, sigma, monitor);
+    cusp::krylov::cg_m(A, x, b, sigma, monitor);
 
     return 0;
 }

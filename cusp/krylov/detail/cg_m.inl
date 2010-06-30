@@ -15,14 +15,10 @@
  */
 
 
-//TODO see if we need all of these
 #include <cusp/array1d.h>
 #include <cusp/blas.h>
 #include <cusp/multiply.h>
 #include <cusp/monitor.h>
-#include <cusp/linear_operator.h>
-
-#include <cusp/exception.h>
 
 #include <thrust/copy.h>
 #include <thrust/fill.h>
@@ -50,13 +46,9 @@
  *
  */
 
-// put everything in cusp
 namespace cusp
 {
-
-// this namespace contains things that are like cusp::krylov
-// different name chosen to avoid the possibility of collisions
-namespace krylov_m
+namespace krylov
 {
 
 // structs in this namespace do things that are somewhat blas-like, but
@@ -211,7 +203,7 @@ namespace detail_m
 // Each has a version that takes Array inputs, and another that takes iterators
 // as input. The CG-M routine only explicitly refers version with Arrays as
 // arguments. The Array version calls the iterator version which uses
-// a struct from cusp::krylov_m::detail_m.
+// a struct from cusp::krylov::detail_m.
 namespace trans_m
 {
   // compute \zeta_1^\sigma, using iterators
@@ -229,7 +221,7 @@ namespace trans_m
     thrust::for_each(
     thrust::make_zip_iterator(thrust::make_tuple(z_1_s_b,z_0_s_b,z_m1_s_b,sig_b)),
     thrust::make_zip_iterator(thrust::make_tuple(z_1_s_b,z_0_s_b,z_m1_s_b,sig_b))+N,
-    cusp::krylov_m::detail_m::KERNEL_Z<ScalarType>(beta_m1,beta_0,alpha_0)
+    cusp::krylov::detail_m::KERNEL_Z<ScalarType>(beta_m1,beta_0,alpha_0)
     );
   }
 
@@ -247,7 +239,7 @@ namespace trans_m
     thrust::for_each(
     thrust::make_zip_iterator(thrust::make_tuple(beta_0_s_b,z_1_s_b,z_0_s_b)),
     thrust::make_zip_iterator(thrust::make_tuple(beta_0_s_b,z_1_s_b,z_0_s_b))+N,
-    cusp::krylov_m::detail_m::KERNEL_B<ScalarType>(beta_0)
+    cusp::krylov::detail_m::KERNEL_B<ScalarType>(beta_0)
     );
   }
 
@@ -263,7 +255,7 @@ namespace trans_m
     cusp::blas::detail::assert_same_dimensions(z_1_s,sig);
 
     // compute
-    cusp::krylov_m::trans_m::compute_z_m(z_0_s.begin(),z_0_s.end(),
+    cusp::krylov::trans_m::compute_z_m(z_0_s.begin(),z_0_s.end(),
 		    z_m1_s.begin(),sig.begin(),z_1_s.begin(),
                     beta_m1,beta_0,alpha_0);
 
@@ -279,7 +271,7 @@ namespace trans_m
     cusp::blas::detail::assert_same_dimensions(z_1_s,z_0_s,beta_0_s);
 
     // compute
-    cusp::krylov_m::trans_m::compute_b_m(z_1_s.begin(),z_1_s.end(),
+    cusp::krylov::trans_m::compute_b_m(z_1_s.begin(),z_1_s.end(),
 		    z_0_s.begin(),beta_0_s.begin(),beta_0);
   }
 
@@ -297,7 +289,7 @@ namespace trans_m
     thrust::for_each(
     thrust::make_zip_iterator(thrust::make_tuple(alpha_0_s_b,z_0_s_b,z_1_s_b,beta_0_s_b)),
     thrust::make_zip_iterator(thrust::make_tuple(alpha_0_s_b,z_0_s_b,z_1_s_b,beta_0_s_b))+N,
-    cusp::krylov_m::detail_m::KERNEL_A<ScalarType>(beta_0,alpha_0));
+    cusp::krylov::detail_m::KERNEL_A<ScalarType>(beta_0,alpha_0));
   }
 
   // compute \alpha_0^\sigma, and swap \zeta_i^\sigma using arrays
@@ -312,7 +304,7 @@ namespace trans_m
     cusp::blas::detail::assert_same_dimensions(z_0_s,alpha_0_s,beta_0_s);
 
     // compute
-    cusp::krylov_m::trans_m::compute_a_m(z_0_s.begin(), z_0_s.end(),
+    cusp::krylov::trans_m::compute_a_m(z_0_s.begin(), z_0_s.end(),
 		z_1_s.begin(), beta_0_s.begin(), alpha_0_s.begin(),
                 beta_0, alpha_0);
   }
@@ -352,10 +344,10 @@ namespace trans_m
 
     // compute x
     thrust::transform(counter_1,counter_1+N_t,x_0_s.begin(),x_0_s.begin(),
-    cusp::krylov_m::detail_m::KERNEL_X<ScalarType>(N,raw_ptr_beta_0_s,raw_ptr_p_0_s));
+    cusp::krylov::detail_m::KERNEL_X<ScalarType>(N,raw_ptr_beta_0_s,raw_ptr_p_0_s));
     // compute p
     thrust::transform(counter_2,counter_2+N_t,p_0_s.begin(),p_0_s.begin(),
-    cusp::krylov_m::detail_m::KERNEL_P<ScalarType>(N,raw_ptr_alpha_0_s,raw_ptr_z_1_s,raw_ptr_r_0));
+    cusp::krylov::detail_m::KERNEL_P<ScalarType>(N,raw_ptr_alpha_0_s,raw_ptr_z_1_s,raw_ptr_r_0));
   }
 
   // multiple copy of array to another array
@@ -378,17 +370,23 @@ namespace trans_m
 
     // compute
     thrust::transform(counter,counter+N_t,dest.begin(),
-    cusp::krylov_m::detail_m::KERNEL_VCOPY<ScalarType>(N,raw_ptr_source));
+    cusp::krylov::detail_m::KERNEL_VCOPY<ScalarType>(N,raw_ptr_source));
 
   }
 
 } // end namespace trans_m
 
+
+
 // CG-M routine that uses the default monitor to determine completion
 template <class LinearOperator,
-          class VectorType1, class VectorType2, class VectorType3>
+          class VectorType1,
+          class VectorType2,
+          class VectorType3>
 void cg_m(LinearOperator& A,
-        VectorType1& x, VectorType2& b, VectorType3& sigma)
+          VectorType1& x,
+          VectorType2& b,
+          VectorType3& sigma)
 {
     typedef typename LinearOperator::value_type   ValueType;
 
@@ -399,11 +397,15 @@ void cg_m(LinearOperator& A,
 
 // CG-M routine that takes a user specified monitor
 template <class LinearOperator,
-          class VectorType1, class VectorType2, class VectorType3,
+          class VectorType1,
+          class VectorType2,
+          class VectorType3,
           class Monitor>
 void cg_m(LinearOperator& A,
-        VectorType1& x, VectorType2& b, VectorType3& sigma,
-        Monitor& monitor)
+          VectorType1& x,
+          VectorType2& b,
+          VectorType3& sigma,
+          Monitor& monitor)
 {
   //
   // This bit is initialization of the solver.
@@ -465,7 +467,7 @@ void cg_m(LinearOperator& A,
   cusp::blas::fill(x.begin(),x.end(),ValueType(0));
 
   // set up initial value of p_0 and p_0^\sigma
-  cusp::krylov_m::trans_m::vectorize_copy(b,p_0_s);
+  cusp::krylov::trans_m::vectorize_copy(b,p_0_s);
   cusp::blas::copy(b,p_0);
   
   //
@@ -490,10 +492,10 @@ void cg_m(LinearOperator& A,
     cusp::blas::axpy(Ap,r_0,beta_0);
 
     // compute \zeta_1^\sigma
-    cusp::krylov_m::trans_m::compute_z_m(z_0_s, z_m1_s, sigma, z_1_s,
+    cusp::krylov::trans_m::compute_z_m(z_0_s, z_m1_s, sigma, z_1_s,
                                       beta_m1, beta_0, alpha_0);
     // compute \beta_0^\sigma
-    cusp::krylov_m::trans_m::compute_b_m(z_1_s, z_0_s, beta_0_s, beta_0);
+    cusp::krylov::trans_m::compute_b_m(z_1_s, z_0_s, beta_0_s, beta_0);
 
     // compute \alpha_0
     rsq_1 = cusp::blas::dotc(r_0,r_0);
@@ -504,11 +506,11 @@ void cg_m(LinearOperator& A,
     cusp::blas::scal(p_0,alpha_0);
     
     // calculate \alpha_0^\sigma
-    cusp::krylov_m::trans_m::compute_a_m(z_0_s, z_1_s, beta_0_s,
+    cusp::krylov::trans_m::compute_a_m(z_0_s, z_1_s, beta_0_s,
                                       alpha_0_s, beta_0, alpha_0);
 
     // compute x_0^\sigma, p_0^\sigma
-    cusp::krylov_m::trans_m::compute_xp_m(alpha_0_s, z_1_s, beta_0_s, r_0,
+    cusp::krylov::trans_m::compute_xp_m(alpha_0_s, z_1_s, beta_0_s, r_0,
                                       x, p_0_s);
 
     // recycle \zeta_i^\sigma
@@ -529,5 +531,6 @@ void cg_m(LinearOperator& A,
   
 } // end cg_m
 
-} // end namespace krylov_m
+} // end namespace krylov
 } // end namespace cusp
+

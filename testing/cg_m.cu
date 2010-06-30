@@ -2,7 +2,7 @@
 
 #include <cusp/gallery/poisson.h>
 #include <cusp/csr_matrix.h>
-#include <cusp/krylov/cg-m.h>
+#include <cusp/krylov/cg_m.h>
 
 template <class LinearOperator, class VectorType1, class VectorType2, class VectorType3>
 void check_residuals(LinearOperator& A, VectorType1& xs, VectorType2& b, VectorType3& sigma)
@@ -63,7 +63,7 @@ void TestConjugateGradientM(void)
 
     // solve the linear systems (A + \sigma_i * I) * x = b for each 
     // sigma_i with the Conjugate Gradient method
-    cusp::krylov_m::cg_m(A, x, b, sigma, monitor);
+    cusp::krylov::cg_m(A, x, b, sigma, monitor);
 
     check_residuals(A, x, b, sigma);
 }
