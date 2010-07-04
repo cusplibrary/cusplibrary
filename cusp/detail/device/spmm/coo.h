@@ -20,12 +20,16 @@
 
 #include <thrust/gather.h>
 #include <thrust/scan.h>
-#include <thrust/segmented_scan.h>
 #include <thrust/scatter.h>
 #include <thrust/sort.h>
 #include <thrust/transform.h>
 #include <thrust/reduce.h>
 #include <thrust/iterator/permutation_iterator.h>
+
+#if (THRUST_VERSION < 100300)
+// TODO remove this when Thrust v1.2.x is unsupported
+#include <thrust/segmented_scan.h>
+#endif
 
 namespace cusp
 {
@@ -98,9 +102,17 @@ void spmm_coo(const Matrix1& A,
                        output_ptr.begin(),
                        segment_lengths.begin(),
                        gather_locations.begin());
+#if THRUST_VERSION >= 100300
+    thrust::inclusive_scan_by_key(segments.begin(), segments.end(),
+                                  gather_locations.begin(),
+                                  gather_locations.begin());
+
+#else
+    // TODO remove this when Thrust v1.2.x is unsupported
     thrust::experimental::inclusive_segmented_scan(gather_locations.begin(), gather_locations.end(),
                                                    segments.begin(),
                                                    gather_locations.begin());
+#endif
     
     // compute column entries and values of intermediate format
     cusp::array1d<IndexType,MemorySpace> I(coo_num_nonzeros);
