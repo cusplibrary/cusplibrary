@@ -52,9 +52,9 @@ void usage(int argc, char** argv)
     std::cout << "\t" << argv[0] << "\n";
     std::cout << "\t" << argv[0] << " my_matrix.mtx\n";
     std::cout << "\t" << argv[0] << " my_matrix.mtx --device=1\n";
-    std::cout << "\t" << argv[0] << " my_matrix.mtx --value_type=double\n";
+    std::cout << "\t" << argv[0] << " my_matrix.mtx --value_type=double\n\n";
     std::cout << "Note: my_matrix.mtx must be real-valued sparse matrix in the MatrixMarket file format.\n"; 
-    std::cout << "      If no matrix file is provided then a simple example is created.\n";  
+    std::cout << "      If no matrix file is provided then a simple example is created.\n";
 }
 
 
@@ -99,7 +99,11 @@ int main(int argc, char** argv)
 {
     std::string filename = process_args(argc, argv);
 
-    if (args.count("help")) usage(argc, argv);
+    if (args.count("help"))
+    {
+        usage(argc, argv);
+        return 0;
+    }
 
     // select ValueType
     std::string value_type = args.count("value_type") ? args["value_type"] : "float";

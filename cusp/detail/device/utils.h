@@ -53,7 +53,6 @@ namespace device
 // Atomic operations are only available for capability 1.1 and above
 #if __CUDA_ARCH__ >= 110
 
-#if __CUDA_ARCH__ < 200
 //
 // We have to emulate FP atomicAdd because it isn't supported natively
 // on devices prior to capability 2.0.
@@ -79,8 +78,8 @@ static __inline__ __device__ float atomicAdd(float *addr, float val)
 
     return old;
 }
-#endif // __CUDA_ARCH__ < 200
 
+#if __CUDA_ARCH__ >= 130
 //
 // Double precision atomics are not supported on any device, so we
 // always emulate with atomicCAS().
@@ -98,6 +97,7 @@ static __inline__ __device__ double atomicAdd(double *addr, double val)
 
     return old;
 }
+#endif // __CUDA_ARCH__ >= 130
 
 #endif // __CUDA_ARCH__ >= 110
 
