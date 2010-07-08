@@ -58,6 +58,31 @@ void tokenize(std::vector<std::string>& tokens,
     }
 }
 
+template<typename I, typename M>
+void check_matrix_market_type(const cusp::coo_matrix<I,float,M>& coo, const std::string& type)
+{
+    if( type=="complex" )
+        throw cusp::io_exception("complex-valued matrices incompatible with 'float' containers");
+    // else: integer, real, and pattern are all allowed
+}
+
+template<typename I, typename M>
+void check_matrix_market_type(const cusp::coo_matrix<I,double,M>& coo, const std::string& type)
+{
+    if( type=="complex" )
+        throw cusp::io_exception("complex-valued matrices incompatible with 'double' containers");
+    // else: integer, real, and pattern are all allowed
+}
+
+// TODO: Add ValueType=complex case here when complex data is supported
+
+template<typename I, typename V, typename M>
+void check_matrix_market_type(const cusp::coo_matrix<I,V,M>& coo, const std::string& type)
+{
+    if( type=="real" )
+        throw cusp::io_exception("real-valued matrices require a container with 'float' or 'double' values");
+}
+
 } // end namespace detail
 
 
@@ -125,6 +150,9 @@ void read_matrix_market_stream(cusp::coo_matrix<IndexType,ValueType,cusp::host_m
     // read banner
     matrix_market_banner banner;
     read_matrix_market_banner(banner, file);
+
+    // check for type mismatch with container
+    detail::check_matrix_market_type(coo, banner.type);
    
     // read file contents line by line
     std::string line;
