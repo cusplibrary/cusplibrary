@@ -208,8 +208,8 @@ class verbose_monitor : public default_monitor<Real>
      *  \tparam VectorType vector
      */
     template <typename Vector>
-    verbose_monitor(const Vector& b, size_t iteration_limit = 500, Real relative_tolerance = 1e-5)
-        : super(b, iteration_limit, relative_tolerance)
+    verbose_monitor(const Vector& b, size_t iteration_limit = 500, Real relative_tolerance = 1e-5, Real absolute_tolerance = 0)
+        : super(b, iteration_limit, relative_tolerance, absolute_tolerance)
     {
         std::cout << "Solver will continue until ";
         std::cout << "residual norm " << super::tolerance() << " or reaching ";
