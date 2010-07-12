@@ -27,7 +27,43 @@ struct hash_01
     }
 };
 
-void TestAINV(void)
+void TestAINVFactorization(void)
+{
+    typedef int                 IndexType;
+    typedef float               ValueType;
+    typedef cusp::device_memory MemorySpace;
+
+    // Create 2D Poisson problem
+    cusp::csr_matrix<IndexType,ValueType,MemorySpace> A;
+    cusp::gallery::poisson5pt(A, 10, 10);
+    A.values[0] = 10;
+    int N = A.num_rows;
+
+    // factor exactly
+    cusp::precond::scaled_bridson_ainv<ValueType,MemorySpace> M(A, 0);
+
+
+
+    cusp::array1d<ValueType,MemorySpace> x(N);
+    cusp::array1d<ValueType,MemorySpace> b(N, 0);
+    
+    thrust::transform(thrust::counting_iterator<unsigned int>(0),
+                      thrust::counting_iterator<unsigned int>(N),
+                      x.begin(),
+                      hash_01());
+
+    cusp::array1d<ValueType,MemorySpace> x_solve = x;
+
+    // cg should converge in 1 iteration
+    // because we're in single precision, this isn't exact, but 1e-5 tolerance should give enough leeway.
+    cusp::default_monitor<ValueType> monitor(b, 1, 0, 1e-5);
+    cusp::krylov::cg(A, x_solve, b, monitor, M);
+
+    ASSERT_EQUAL(monitor.converged(), true);
+}
+DECLARE_UNITTEST(TestAINVFactorization);
+
+void TestAINVConvergence(void)
 {
     typedef int                 IndexType;
     typedef float               ValueType;
@@ -49,16 +85,71 @@ void TestAINV(void)
 
 
 
-    // test as preconditioner
+    // test drop tolerance strategy 
+    {
+        cusp::array1d<ValueType,MemorySpace> x_solve = x;
+        cusp::precond::scaled_bridson_ainv<ValueType,MemorySpace> M(A, .1);
+
+        cusp::default_monitor<ValueType> monitor(b, 125, 0, 1e-5);
+        cusp::krylov::cg(A, x_solve, b, monitor, M);
+
+        ASSERT_EQUAL(monitor.converged(), true);
+    }
+
+    // test sparsity strategy 
+    {
+        cusp::array1d<ValueType,MemorySpace> x_solve = x;
+        cusp::precond::scaled_bridson_ainv<ValueType,MemorySpace> M(A, 0, 10);
+
+        cusp::default_monitor<ValueType> monitor(b, 70, 0, 1e-5);
+        cusp::krylov::cg(A, x_solve, b, monitor, M);
+
+        ASSERT_EQUAL(monitor.converged(), true);
+    }
+
+    // test both 
+    {
+        cusp::array1d<ValueType,MemorySpace> x_solve = x;
+        cusp::precond::scaled_bridson_ainv<ValueType,MemorySpace> M(A, .01, 4);
+
+        cusp::default_monitor<ValueType> monitor(b, 120, 0, 1e-5);
+        cusp::krylov::cg(A, x_solve, b, monitor, M);
+
+        ASSERT_EQUAL(monitor.converged(), true);
+    }
+
+    // test drop tolerance strategy 
     {
         cusp::array1d<ValueType,MemorySpace> x_solve = x;
         cusp::precond::bridson_ainv<ValueType,MemorySpace> M(A, .1);
 
-        cusp::default_monitor<ValueType> monitor(b, 1000, 0, 1e-5);
+        cusp::default_monitor<ValueType> monitor(b, 125, 0, 1e-5);
+        cusp::krylov::cg(A, x_solve, b, monitor, M);
+
+        ASSERT_EQUAL(monitor.converged(), true);
+    }
+
+    // test sparsity strategy 
+    {
+        cusp::array1d<ValueType,MemorySpace> x_solve = x;
+        cusp::precond::bridson_ainv<ValueType,MemorySpace> M(A, 0, 10);
+
+        cusp::default_monitor<ValueType> monitor(b, 70, 0, 1e-5);
+        cusp::krylov::cg(A, x_solve, b, monitor, M);
+
+        ASSERT_EQUAL(monitor.converged(), true);
+    }
+
+    // test both 
+    {
+        cusp::array1d<ValueType,MemorySpace> x_solve = x;
+        cusp::precond::bridson_ainv<ValueType,MemorySpace> M(A, .01, 4);
+
+        cusp::default_monitor<ValueType> monitor(b, 120, 0, 1e-5);
         cusp::krylov::cg(A, x_solve, b, monitor, M);
 
         ASSERT_EQUAL(monitor.converged(), true);
     }
 }
-DECLARE_UNITTEST(TestAINV);
+DECLARE_UNITTEST(TestAINVConvergence);
 
