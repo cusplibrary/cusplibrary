@@ -81,8 +81,8 @@ namespace cusp
             {
                 if(n > 0)
                 {
-                    Parent::mBegin = Parent::mAllocator.allocate(n);
-                    Parent::mSize  = Parent::mCapacity = n;
+                    Parent::m_storage.allocate(n);
+                    Parent::m_size = n;
                 }
             }
 
