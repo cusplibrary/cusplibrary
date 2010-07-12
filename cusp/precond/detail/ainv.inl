@@ -31,7 +31,6 @@ namespace cusp
 {
 namespace precond
 {
-
 namespace detail
 {
 
@@ -184,8 +183,8 @@ template <typename ValueType, typename MemorySpace>
         typename MatrixTypeA::index_type n = A.num_rows;
   
         // copy A to host
-        typename csr_matrix<typename MatrixTypeA::index_type, typename MatrixTypeA::value_type, host_memory> host_A = A;
-        array1d<ValueType, host_memory> host_diagonals(n);
+        typename cusp::csr_matrix<typename MatrixTypeA::index_type, typename MatrixTypeA::value_type, host_memory> host_A = A;
+        cusp::array1d<ValueType, host_memory> host_diagonals(n);
         
 
         // perform factorization
@@ -198,8 +197,9 @@ template <typename ValueType, typename MemorySpace>
 
         typename std::map<typename MatrixTypeA::index_type, typename MatrixTypeA::value_type> u;
 
-        for (j=0; j < n; j++) {
-          detail::matrix_vector_product(host_A, w_factor[j], u);
+        for (j=0; j < n; j++)
+        {
+          cusp::precond::detail::matrix_vector_product(host_A, w_factor[j], u);
           typename MatrixTypeA::value_type p = detail::dot_product(w_factor[j], u);
           host_diagonals[j] = (ValueType) (1.0/p);
 
@@ -266,7 +266,7 @@ template <typename ValueType, typename MemorySpace>
         typename MatrixTypeA::index_type n = A.num_rows;
   
         // copy A to host
-        typename csr_matrix<typename MatrixTypeA::index_type, typename MatrixTypeA::value_type, host_memory> host_A = A;
+        typename cusp::csr_matrix<typename MatrixTypeA::index_type, typename MatrixTypeA::value_type, host_memory> host_A = A;
         
         // perform factorization
         typename std::vector<std::map<typename MatrixTypeA::index_type, typename MatrixTypeA::value_type> > w_factor(n);
@@ -279,7 +279,7 @@ template <typename ValueType, typename MemorySpace>
         typename std::map<typename MatrixTypeA::index_type, typename MatrixTypeA::value_type> u;
 
         for (j=0; j < n; j++) {
-          detail::matrix_vector_product(host_A, w_factor[j], u);
+          cusp::precond::detail::matrix_vector_product(host_A, w_factor[j], u);
           typename MatrixTypeA::value_type p = detail::dot_product(w_factor[j], u);
 
           detail::vector_scalar(u, (typename MatrixTypeA::value_type) (1.0/sqrt((ValueType) p)));
