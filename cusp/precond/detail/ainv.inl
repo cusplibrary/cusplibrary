@@ -97,9 +97,16 @@ ValueType dot_product(const std::map<IndexType, ValueType> &a, const std::map<In
     return sum;
 }
 
+template<typename T>
+bool less_than_abs(const T &a, const T &b)
+{
+  T abs_a = a < 0 ? -a : a;
+  T abs_b = b < 0 ? -b : b;
+  return abs_a < abs_b;
+}
 
 template<typename IndexType, typename ValueType>
-void vector_add_inplace_drop(std::map<IndexType, ValueType> &result, ValueType mult, const std::map<IndexType, ValueType> &operand, ValueType tolerance)
+void vector_add_inplace_drop(std::map<IndexType, ValueType> &result, ValueType mult, const std::map<IndexType, ValueType> &operand, ValueType tolerance, int sparsity_pattern)
 {
     // write into result:
     // result += mult * operand
@@ -108,11 +115,46 @@ void vector_add_inplace_drop(std::map<IndexType, ValueType> &result, ValueType m
     for (typename std::map<IndexType, ValueType>::const_iterator op_iter = operand.begin(); op_iter != operand.end(); ++op_iter) {
         IndexType i = op_iter->first;
         ValueType term = mult * op_iter->second;
+        ValueType abs_term = term < 0 ? -term : term;
 
-        // we could replace this with a bound on the size of result.  if we've already reached that maximum size
+        if (abs_term < tolerance)
+            continue;
+
+        // We use a combination of 2 dropping strategies: a standard drop tolerance, as well as a bound on the 
+        // number of non-zeros per row.  if we've already reached that maximum size
         // and this would add a new entry to result, we add it only if it is larger than one of the current entries 
-        // in result, in which case we remove that element in its place.  This is similar to the Lin algorithm.
-        // it would be an interesting experiment to compare different drop tolerances against this method...
+        // in which case we remove that element in its place.  
+        // This idea has been applied to IC factorization, but not to AINV as far as I'm aware.
+        // See: Lin, C. and More, J. J. 1999. Incomplete Cholesky Factorizations with Limited Memory. 
+        //      SIAM J. Sci. Comput. 21, 1 (Aug. 1999), 24-45. 
+        typename std::map<IndexType, ValueType>::iterator result_iter = result.find(i);
+
+        if (result_iter != result.end())
+            result_iter->second += term;
+        else {
+          if (sparsity_pattern < 0 || result.size() < sparsity_pattern)
+            result[i] = term;
+          else {
+
+            // check if this is larger than one of the existing values.  If so, replace the smallest value.
+            typename std::map<IndexType, ValueType>::iterator min_iter = result.begin();
+            
+            for (typename std::map<IndexType, ValueType>::iterator result_row_iter = result.begin(); result_row_iter != result.end(); result_row_iter++) {
+              if (less_than_abs(result_row_iter->second, min_iter->second)) 
+                min_iter = result_row_iter;
+            }
+
+            if (less_than_abs(min_iter->second, term)) {
+              result.erase(min_iter);
+              result[i] = term;
+            }
+
+          }
+        }
+
+        
+#if 0
+
         ValueType abs_term = term < 0 ? -term : term;
 
         if (abs_term < tolerance)
@@ -123,6 +165,7 @@ void vector_add_inplace_drop(std::map<IndexType, ValueType> &result, ValueType m
             result[i] = term;
         else
             result_iter->second += term;
+#endif
     }
 }
 
@@ -135,7 +178,7 @@ void vector_add_inplace_drop(std::map<IndexType, ValueType> &result, ValueType m
 template <typename ValueType, typename MemorySpace>
     template<typename MatrixTypeA>
     bridson_ainv<ValueType,MemorySpace>
-    ::bridson_ainv(const MatrixTypeA & A, ValueType drop_tolerance)
+    ::bridson_ainv(const MatrixTypeA & A, ValueType drop_tolerance, int sparsity_pattern)
         : linear_operator<ValueType,MemorySpace>(A.num_rows, A.num_cols, A.num_rows)
     {
         typename MatrixTypeA::index_type n = A.num_rows;
@@ -164,7 +207,7 @@ template <typename ValueType, typename MemorySpace>
           // this should be a O(1)-time operation, since u is a sparse vector
           for (typename std::map<typename MatrixTypeA::index_type,typename MatrixTypeA::value_type>::const_iterator u_iter = u.upper_bound(j); u_iter != u.end(); ++u_iter) {
             i = u_iter->first;
-            detail::vector_add_inplace_drop(w_factor[i], -u_iter->second/p, w_factor[j], drop_tolerance);
+            detail::vector_add_inplace_drop(w_factor[i], -u_iter->second/p, w_factor[j], drop_tolerance, sparsity_pattern);
           }
 
         }
@@ -217,7 +260,7 @@ template <typename ValueType, typename MemorySpace>
 template <typename ValueType, typename MemorySpace>
     template<typename MatrixTypeA>
     scaled_bridson_ainv<ValueType,MemorySpace>
-    ::scaled_bridson_ainv(const MatrixTypeA & A, ValueType drop_tolerance)
+    ::scaled_bridson_ainv(const MatrixTypeA & A, ValueType drop_tolerance, int sparsity_pattern)
         : linear_operator<ValueType,MemorySpace>(A.num_rows, A.num_cols, A.num_rows)
     {
         typename MatrixTypeA::index_type n = A.num_rows;
@@ -246,7 +289,7 @@ template <typename ValueType, typename MemorySpace>
           // this should be a O(1)-time operation, since u is a sparse vector
           for (typename std::map<typename MatrixTypeA::index_type,typename MatrixTypeA::value_type>::const_iterator u_iter = u.upper_bound(j); u_iter != u.end(); ++u_iter) {
             i = u_iter->first;
-            detail::vector_add_inplace_drop(w_factor[i], -u_iter->second, w_factor[j], drop_tolerance);
+            detail::vector_add_inplace_drop(w_factor[i], -u_iter->second, w_factor[j], drop_tolerance, sparsity_pattern);
           }
 
         }

@@ -35,7 +35,16 @@ namespace precond
  *  \{
  */
 
-/*! \p ainv : Approximate Inverse preconditoner (from Bridson's "outer product" formulation)
+/*! \p scaled_bridson_ainv : Approximate Inverse preconditoner (from Bridson's "outer product" formulation)
+ *  The diagonal matrix is folded into the factorization to reduce operation count during 
+ *  preconditioner application.  Not sure if this is a good idea or not, yet.
+ *  This preconditioner allows for a novel dropping strategy, where rather than a fixed
+ *  drop tolerance, you can specify now many non-zeroes are allowed per row.  The non-zeroes
+ *  will be chosen based on largest magnitude.  This idea has been applied to IC factorization,
+ *  but not AINV as far as I'm aware.  See:
+ *  Lin, C. and More, J. J. 1999. Incomplete Cholesky Factorizations with Limited Memory. 
+ *  SIAM J. Sci. Comput. 21, 1 (Aug. 1999), 24-45. 
+ *  This preconditioner will only work for SPD matrices. 
  *
  */
 template <typename ValueType, typename MemorySpace>
@@ -51,9 +60,11 @@ public:
      *
      * \param A matrix to precondition
      * \tparam MatrixType matrix
+     * \param ValueType drop_tolerance Tolerance for dropping during factorization
+     * \param sparsity_pattern Count of non-zeroes allowed per row of the factored matrix.  If negative, this will be ignored.
      */
     template<typename MatrixTypeA>
-    scaled_bridson_ainv(const MatrixTypeA & A, ValueType drop_tolerance=0.1);
+    scaled_bridson_ainv(const MatrixTypeA & A, ValueType drop_tolerance=0.1, int sparsity_pattern=-1);
         
     /*! apply the preconditioner to vector \p x and store the result in \p y
      *
@@ -69,6 +80,21 @@ public:
  */
 
 
+/*! \addtogroup preconditioners Preconditioners
+ *  \ingroup preconditioners
+ *  \{
+ */
+
+/*! \p bridson_ainv : Approximate Inverse preconditoner (from Bridson's "outer product" formulation)
+ *  This preconditioner allows for a novel dropping strategy, where rather than a fixed
+ *  drop tolerance, you can specify now many non-zeroes are allowed per row.  The non-zeroes
+ *  will be chosen based on largest magnitude.  This idea has been applied to IC factorization,
+ *  but not AINV as far as I'm aware.  See:
+ *  Lin, C. and More, J. J. 1999. Incomplete Cholesky Factorizations with Limited Memory. 
+ *  SIAM J. Sci. Comput. 21, 1 (Aug. 1999), 24-45. 
+ *  This preconditioner will only work for SPD matrices. 
+ */
+
 template <typename ValueType, typename MemorySpace>
 class bridson_ainv : public linear_operator<ValueType, MemorySpace>
 {       
@@ -82,10 +108,12 @@ public:
     /*! construct a \p ainv preconditioner
      *
      * \param A matrix to precondition
-     * \tparam MatrixType matrix
+     * \tparam MatrixTypeA matrix
+     * \param ValueType drop_tolerance Tolerance for dropping during factorization
+     * \param sparsity_pattern Count of non-zeroes allowed per row of the factored matrix.  If negative, this will be ignored.
      */
     template<typename MatrixTypeA>
-    bridson_ainv(const MatrixTypeA & A, ValueType drop_tolerance=0.1);
+    bridson_ainv(const MatrixTypeA & A, ValueType drop_tolerance=0.1, int sparsity_pattern=-1);
         
     /*! apply the preconditioner to vector \p x and store the result in \p y
      *
