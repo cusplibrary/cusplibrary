@@ -162,11 +162,21 @@ def Environment():
       lib_folder = 'lib'
 
   if os.name == 'posix':
+    # set cuda paths on linux/osx
     env.Append(LIBPATH = ['/usr/local/cuda/' + lib_folder])
     env.Append(CPPPATH = ['/usr/local/cuda/include'])
   elif os.name == 'nt':
-    env.Append(LIBPATH = ['C:/CUDA/' + lib_folder])
-    env.Append(CPPPATH = ['C:/CUDA/include'])
+    # set cuda paths on windows 
+    if 'CUDA_LIB_PATH' in os.environ:
+      env.Append(LIBPATH = [os.path.abspath(os.environ['CUDA_LIB_PATH'])])
+    else:
+      env.Append(LIBPATH = ['C:/CUDA/' + lib_folder])
+
+    if 'CUDA_INC_PATH' in os.environ:
+      env.Append(CPPPATH = [os.path.abspath(os.environ['CUDA_INC_PATH'])])
+    else:
+      env.Append(CPPPATH = ['C:/CUDA/include'])
+
   else:
     raise ValueError, "Unknown OS. What are the CUDA include & library paths?"
 
