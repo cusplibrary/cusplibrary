@@ -159,6 +159,7 @@ __device__ void segreduce_block(const IndexType * idx, ValueType * val)
 //  temp_rows and temp_vals, which are processed by a second kernel.
 //
 template <typename IndexType, typename ValueType, unsigned int BLOCK_SIZE, bool UseCache>
+__launch_bounds__(BLOCK_SIZE,1)
 __global__ void
 spmv_coo_flat_kernel(const IndexType num_nonzeros,
                      const IndexType interval_size,
@@ -231,6 +232,7 @@ spmv_coo_flat_kernel(const IndexType num_nonzeros,
 
 // The second level of the segmented reduction operation
 template <typename IndexType, typename ValueType, unsigned int BLOCK_SIZE>
+__launch_bounds__(BLOCK_SIZE,1)
 __global__ void
 spmv_coo_reduce_update_kernel(const IndexType num_warps,
                               const IndexType * temp_rows,
@@ -345,7 +347,7 @@ void __spmv_coo_flat(const Matrix&    A,
         (tail, interval_size, I, J, V, x, y,
          thrust::raw_pointer_cast(&temp_rows[0]), thrust::raw_pointer_cast(&temp_vals[0]));
 
-    spmv_coo_reduce_update_kernel<IndexType, ValueType, 512> <<<1, 512>>>
+    spmv_coo_reduce_update_kernel<IndexType, ValueType, BLOCK_SIZE> <<<1, BLOCK_SIZE>>>
         (active_warps, thrust::raw_pointer_cast(&temp_rows[0]), thrust::raw_pointer_cast(&temp_vals[0]), y);
     
     spmv_coo_serial_kernel<IndexType,ValueType> <<<1,1>>>

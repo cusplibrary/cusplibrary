@@ -55,6 +55,7 @@ namespace device
 
 
 template <typename IndexType, typename ValueType, unsigned int VECTORS_PER_BLOCK, unsigned int THREADS_PER_VECTOR, bool UseCache>
+__launch_bounds__(VECTORS_PER_BLOCK * THREADS_PER_VECTOR,1)
 __global__ void
 spmv_csr_vector_kernel(const IndexType num_rows,
                        const IndexType * Ap, 
@@ -131,11 +132,11 @@ void __spmv_csr_vector(const Matrix&    A,
 {
     typedef typename Matrix::index_type IndexType;
 
-    const unsigned int THREADS_PER_BLOCK  = 128;
-    const unsigned int VECTORS_PER_BLOCK  = THREADS_PER_BLOCK / THREADS_PER_VECTOR;
+    const size_t THREADS_PER_BLOCK  = 128;
+    const size_t VECTORS_PER_BLOCK  = THREADS_PER_BLOCK / THREADS_PER_VECTOR;
 
-    const unsigned int MAX_BLOCKS = thrust::experimental::arch::max_active_blocks(spmv_csr_vector_kernel<IndexType, ValueType, VECTORS_PER_BLOCK, THREADS_PER_VECTOR, UseCache>, THREADS_PER_BLOCK, (size_t) 0);
-    const unsigned int NUM_BLOCKS = std::min(MAX_BLOCKS, DIVIDE_INTO(A.num_rows, VECTORS_PER_BLOCK));
+    const size_t MAX_BLOCKS = thrust::experimental::arch::max_active_blocks(spmv_csr_vector_kernel<IndexType, ValueType, VECTORS_PER_BLOCK, THREADS_PER_VECTOR, UseCache>, THREADS_PER_BLOCK, (size_t) 0);
+    const size_t NUM_BLOCKS = std::min<size_t>(MAX_BLOCKS, DIVIDE_INTO(A.num_rows, VECTORS_PER_BLOCK));
     
     if (UseCache)
         bind_x(x);
