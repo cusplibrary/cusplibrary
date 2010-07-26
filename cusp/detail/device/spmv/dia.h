@@ -17,6 +17,8 @@
 
 #pragma once
 
+#include <thrust/extrema.h>
+
 #include <cusp/detail/device/common.h>
 #include <cusp/detail/device/utils.h>
 #include <cusp/detail/device/texture.h>
@@ -72,7 +74,7 @@ spmv_dia_kernel(const IndexType num_rows,
     for(IndexType base = 0; base < num_diagonals; base += BLOCK_SIZE)
     {
         // read a chunk of the diagonal offsets into shared memory
-        const IndexType chunk_size = min(IndexType(BLOCK_SIZE), num_diagonals - base);
+        const IndexType chunk_size = thrust::min(IndexType(BLOCK_SIZE), num_diagonals - base);
 
         if(threadIdx.x < chunk_size)
             offsets[threadIdx.x] = diagonal_offsets[base + threadIdx.x];

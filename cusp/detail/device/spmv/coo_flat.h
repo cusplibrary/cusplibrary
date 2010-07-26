@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include <thrust/extrema.h>
+
 #include <cusp/detail/device/common.h>
 #include <cusp/detail/device/utils.h>
 #include <cusp/detail/device/texture.h>
@@ -174,18 +176,18 @@ spmv_coo_flat_kernel(const IndexType num_nonzeros,
     __shared__ volatile IndexType rows[48 *(BLOCK_SIZE/32)];
     __shared__ volatile ValueType vals[BLOCK_SIZE];
 
-    const IndexType thread_id   = BLOCK_SIZE * blockIdx.x + threadIdx.x;                 // global thread index
-    const IndexType thread_lane = threadIdx.x & (WARP_SIZE-1);                           // thread index within the warp
-    const IndexType warp_id     = thread_id   / WARP_SIZE;                               // global warp index
+    const IndexType thread_id   = BLOCK_SIZE * blockIdx.x + threadIdx.x;                         // global thread index
+    const IndexType thread_lane = threadIdx.x & (WARP_SIZE-1);                                   // thread index within the warp
+    const IndexType warp_id     = thread_id   / WARP_SIZE;                                       // global warp index
 
-    const IndexType interval_begin = warp_id * interval_size;                            // warp's offset into I,J,V
-    const IndexType interval_end   = min(interval_begin + interval_size, num_nonzeros);  // end of warps's work
+    const IndexType interval_begin = warp_id * interval_size;                                    // warp's offset into I,J,V
+    const IndexType interval_end   = thrust::min(interval_begin + interval_size, num_nonzeros);  // end of warps's work
 
-    const IndexType idx = 16 * (threadIdx.x/32 + 1) + threadIdx.x;                       // thread's index into padded rows array
+    const IndexType idx = 16 * (threadIdx.x/32 + 1) + threadIdx.x;                               // thread's index into padded rows array
 
-    rows[idx - 16] = -1;                                                                 // fill padding with invalid row index
+    rows[idx - 16] = -1;                                                                         // fill padding with invalid row index
 
-    if(interval_begin >= interval_end)                                                   // warp has no work to do 
+    if(interval_begin >= interval_end)                                                           // warp has no work to do 
         return;
 
     if (thread_lane == 31)
