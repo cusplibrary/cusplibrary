@@ -238,7 +238,7 @@ template <typename ValueType, typename MemorySpace>
         }
 
         w = host_w;
-        transpose(w, w_t);
+        cusp::transpose(w, w_t);
     }
         
 // linear operator
@@ -321,7 +321,7 @@ template <typename ValueType, typename MemorySpace>
         w = host_w;
 
         // w_t is the transpose
-        transpose(w, w_t);
+        cusp::transpose(w, w_t);
     }
 
 template <typename ValueType, typename MemorySpace>
