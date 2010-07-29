@@ -28,3 +28,33 @@ void TestBiConjugateGradientStabilized(void)
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestBiConjugateGradientStabilized);
 
+
+template <class MemorySpace>
+void TestBiConjugateGradientStabilizedZeroResidual(void)
+{
+    cusp::array2d<float, MemorySpace> M(2,2);
+    M(0,0) = 8; M(0,1) = 0;
+    M(1,0) = 0; M(1,1) = 4;
+
+    cusp::csr_matrix<int, float, MemorySpace> A(M);
+
+    cusp::array1d<float, MemorySpace> x(A.num_rows, 1.0f);
+    cusp::array1d<float, MemorySpace> b(A.num_rows);
+
+    cusp::multiply(A, x, b);
+
+    cusp::default_monitor<float> monitor(b, 20, 0.0f);
+    
+    cusp::krylov::bicgstab(A, x, b, monitor);
+
+    // check residual norm
+    cusp::array1d<float, MemorySpace> residual(A.num_rows, 0.0f);
+    cusp::multiply(A, x, residual);
+    cusp::blas::axpby(residual, b, residual, -1.0f, 1.0f);
+
+    ASSERT_EQUAL(monitor.converged(),        true);
+    ASSERT_EQUAL(monitor.iteration_count(),     0);
+    ASSERT_EQUAL(cusp::blas::nrm2(residual), 0.0f);
+}
+DECLARE_HOST_DEVICE_UNITTEST(TestBiConjugateGradientStabilizedZeroResidual);
+
