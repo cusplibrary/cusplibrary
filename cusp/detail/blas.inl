@@ -15,8 +15,6 @@
  */
 
 
-
-
 #include <cusp/array1d.h>
 
 #include <cusp/exception.h>
