@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2009 NVIDIA Corporation
+ *  Copyright 2008-2010 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@
 //  CUSP_VERSION / 100 % 1000 is the minor version
 //  CUSP_VERSION / 100000 is the major version
 
-#define CUSP_VERSION 100
+#define CUSP_VERSION 200
 #define CUSP_MAJOR_VERSION     (CUSP_VERSION / 100000)
 #define CUSP_MINOR_VERSION     (CUSP_VERSION / 100 % 1000)
 #define CUSP_SUBMINOR_VERSION  (CUSP_VERSION % 100)
