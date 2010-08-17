@@ -28,6 +28,8 @@
 
 #include <thrust/iterator/transform_iterator.h>
 
+#include <cmath>
+
 namespace cusp
 {
 namespace blas
