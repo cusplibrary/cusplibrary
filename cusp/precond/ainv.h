@@ -30,6 +30,7 @@ namespace cusp
 namespace precond
 {
 
+
 /*! \addtogroup preconditioners Preconditioners
  *  \ingroup preconditioners
  *  \{
@@ -61,10 +62,12 @@ public:
      * \param A matrix to precondition
      * \tparam MatrixType matrix
      * \param ValueType drop_tolerance Tolerance for dropping during factorization
-     * \param sparsity_pattern Count of non-zeroes allowed per row of the factored matrix.  If negative, this will be ignored.
+     * \param nonzero_per_row Count of non-zeroes allowed per row of the factored matrix.  If negative or lin_dropping==true, this will be ignored.
+     * \param lin_dropping When true, this will use the dropping strategy from Lin & More, where the per-row count will be based on A's structure.
+     * \param lin_param when lin_dropping set to true, this indicates how many additional non-zeros per row to include
      */
     template<typename MatrixTypeA>
-    scaled_bridson_ainv(const MatrixTypeA & A, ValueType drop_tolerance=0.1, int sparsity_pattern=-1);
+    scaled_bridson_ainv(const MatrixTypeA & A, ValueType drop_tolerance=0.1, int nonzero_per_row=-1, bool lin_dropping=false, int lin_param=1);
         
     /*! apply the preconditioner to vector \p x and store the result in \p y
      *
@@ -110,10 +113,59 @@ public:
      * \param A matrix to precondition
      * \tparam MatrixTypeA matrix
      * \param ValueType drop_tolerance Tolerance for dropping during factorization
-     * \param sparsity_pattern Count of non-zeroes allowed per row of the factored matrix.  If negative, this will be ignored.
+     * \param nonzero_per_row Count of non-zeroes allowed per row of the factored matrix.  If negative or lin_dropping==true, this will be ignored.
+     * \param lin_dropping When true, this will use the dropping strategy from Lin & More, where the per-row count will be based on A's structure.
+     * \param lin_param when lin_dropping set to true, this indicates how many additional non-zeros per row to include
      */
     template<typename MatrixTypeA>
-    bridson_ainv(const MatrixTypeA & A, ValueType drop_tolerance=0.1, int sparsity_pattern=-1);
+    bridson_ainv(const MatrixTypeA & A, ValueType drop_tolerance=0.1, int nonzero_per_row =-1, bool lin_dropping=false, int lin_param=1);
+        
+    /*! apply the preconditioner to vector \p x and store the result in \p y
+     *
+     * \param x input vector
+     * \param y ouput vector
+     * \tparam VectorType1 vector
+     * \tparam VectorType2 vector
+     */
+    template <typename VectorType1, typename VectorType2>
+    void operator()(const VectorType1& x, VectorType2& y) const;
+};
+/*! \}
+ */
+
+
+/*! \addtogroup preconditioners Preconditioners
+ *  \ingroup preconditioners
+ *  \{
+ */
+
+/*! \p nonsym_bridson_ainv : Approximate Inverse preconditoner (from Bridson's "outer product" formulation)
+ *  The non-symmetric form, which is identical to the standard form in the case of symmetric matrices, but
+ *  handles non-symmtric matrices as well.  The storage and cost of applying the preconditioner 
+ *  are about the same, but build time is 2x higher.
+ */
+
+template <typename ValueType, typename MemorySpace>
+class nonsym_bridson_ainv : public linear_operator<ValueType, MemorySpace>
+{       
+    typedef linear_operator<ValueType, MemorySpace> Parent;
+
+public:
+    cusp::hyb_matrix<int, ValueType, MemorySpace> w_t;
+    cusp::hyb_matrix<int, ValueType, MemorySpace> z;
+    cusp::array1d<ValueType, MemorySpace> diagonals;
+
+    /*! construct a \p ainv preconditioner
+     *
+     * \param A matrix to precondition
+     * \tparam MatrixTypeA matrix
+     * \param ValueType drop_tolerance Tolerance for dropping during factorization
+     * \param nonzero_per_row Count of non-zeroes allowed per row of the factored matrix.  If negative or lin_dropping==true, this will be ignored.
+     * \param lin_dropping When true, this will use the dropping strategy from Lin & More, where the per-row count will be based on A's structure.
+     * \param lin_param when lin_dropping set to true, this indicates how many additional non-zeros per row to include
+     */
+    template<typename MatrixTypeA>
+    nonsym_bridson_ainv(const MatrixTypeA & A, ValueType drop_tolerance=0.1, int nonzero_per_row=-1, bool lin_dropping=false, int lin_param=1);
         
     /*! apply the preconditioner to vector \p x and store the result in \p y
      *
