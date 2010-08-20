@@ -510,7 +510,6 @@ template <typename ValueType, typename MemorySpace>
         // copy diagonal & w_factor into w, w_t
         diagonals = host_diagonals;
         detail::convert_to_device_csr(w_factor, w);
-        transpose(w, w_t);
     }
         
 // linear operator
@@ -573,7 +572,7 @@ template <typename ValueType, typename MemorySpace>
 
         // copy w_factor into w:
         detail::convert_to_device_csr(w_factor, w);
-        transpose(w, w_t);
+        cusp::transpose(w, w_t);
     }
 
 template <typename ValueType, typename MemorySpace>

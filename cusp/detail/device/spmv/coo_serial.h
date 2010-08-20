@@ -32,14 +32,14 @@ namespace device
 
 template <typename IndexType, typename ValueType>
 __global__ void
-spmv_coo_serial_kernel(const IndexType num_nonzeros,
+spmv_coo_serial_kernel(const IndexType num_entries,
                        const IndexType * I, 
                        const IndexType * J, 
                        const ValueType * V, 
                        const ValueType * x, 
                              ValueType * y)
 {
-    for(IndexType n = 0; n < num_nonzeros; n++)
+    for(IndexType n = 0; n < num_entries; n++)
     {
         y[I[n]] += V[n] * x[J[n]];
     }
@@ -59,7 +59,7 @@ void spmv_coo_serial_device(const Matrix&    A,
     const ValueType * V = thrust::raw_pointer_cast(&A.values[0]);
 
     spmv_coo_serial_kernel<IndexType,ValueType> <<<1,1>>>
-        (A.num_nonzeros, I, J, V, x, y);
+        (A.num_entries, I, J, V, x, y);
 }
 
 } // end namespace device

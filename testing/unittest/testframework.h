@@ -57,28 +57,22 @@ typedef unittest::type_list<char,
 typedef unittest::type_list<long long,
                               unsigned long long> LargeIntegralTypes;
 
-typedef unittest::type_list<float
-#if __CUDA_ARCH__ >= 130
-                              , double
-#endif // __CUDA_ARCH__
-                             > FloatTypes;
+typedef unittest::type_list<float,
+                            double> FloatingPointTypes;
 
 typedef unittest::type_list<char,
-                              signed char,
-                              unsigned char,
-                              short,
-                              unsigned short,
-                              int,
-                              unsigned int,
-                              long,
-                              unsigned long,
-                              long long,
-                              unsigned long long,
-                              float
-#if __CUDA_ARCH__ >= 130
-                              , double
-#endif // __CUDA_ARCH__
-                              > NumericTypes;
+                            signed char,
+                            unsigned char,
+                            short,
+                            unsigned short,
+                            int,
+                            unsigned int,
+                            long,
+                            unsigned long,
+                            long long,
+                            unsigned long long,
+                            float> NumericTypes;
+// exclude double from NumericTypes
 
 inline std::string base_class_name(const char *name)
 {

@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2010 NVIDIA Corporation
+ *  Copyright 2008-2009 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,17 +16,25 @@
 
 #pragma once
 
-#include <cusp/detail/config.h>
+namespace cusp
+{
+namespace detail
+{
+namespace host
+{
 
-//  This is the only cusp header that is guaranteed to 
-//  change with every cusp release.
-//
-//  CUSP_VERSION % 100 is the sub-minor version
-//  CUSP_VERSION / 100 % 1000 is the minor version
-//  CUSP_VERSION / 100000 is the major version
+template <typename Matrix1,
+          typename Matrix2,
+          typename Matrix3,
+          typename BinaryFunction>
+void transform_elementwise(const Matrix1& A,
+                           const Matrix2& B,
+                                 Matrix3& C,
+                                 BinaryFunction op);
 
-#define CUSP_VERSION 200
-#define CUSP_MAJOR_VERSION     (CUSP_VERSION / 100000)
-#define CUSP_MINOR_VERSION     (CUSP_VERSION / 100 % 1000)
-#define CUSP_SUBMINOR_VERSION  (CUSP_VERSION % 100)
+} // end namespace host
+} // end namespace detail
+} // end namespace cusp
+
+#include <cusp/detail/host/elementwise.inl>
 

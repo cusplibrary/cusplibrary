@@ -15,8 +15,6 @@
  */
 
 
-
-
 #include <cusp/array1d.h>
 
 #include <cusp/exception.h>
@@ -29,6 +27,8 @@
 #include <thrust/inner_product.h>
 
 #include <thrust/iterator/transform_iterator.h>
+
+#include <cmath>
 
 namespace cusp
 {

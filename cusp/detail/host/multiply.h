@@ -22,8 +22,8 @@
 #include <cusp/detail/functional.h>
 
 #include <cusp/detail/host/spmv.h>
-#include <cusp/detail/host/spmm/coo.h>
-#include <cusp/detail/host/spmm/csr.h>
+#include <cusp/detail/host/detail/coo.h>
+#include <cusp/detail/host/detail/csr.h>
 
 namespace cusp
 {
@@ -189,7 +189,7 @@ void multiply(const Matrix1& A,
               cusp::detail::coo_format_tag,
               cusp::detail::coo_format_tag)
 {
-    cusp::detail::host::spmm_coo(A,B,C);
+    cusp::detail::host::detail::spmm_coo(A,B,C);
 }
 
 template <typename Matrix1,
@@ -202,7 +202,7 @@ void multiply(const Matrix1& A,
               cusp::detail::csr_format_tag,
               cusp::detail::csr_format_tag)
 {
-    cusp::detail::host::spmm_csr(A,B,C);
+    cusp::detail::host::detail::spmm_csr(A,B,C);
 }
 
 template <typename Matrix1,
@@ -220,7 +220,7 @@ void multiply(const Matrix1& A,
     cusp::csr_matrix<typename Matrix2::index_type,typename Matrix2::value_type,cusp::host_memory> B_(B);
     cusp::csr_matrix<typename Matrix3::index_type,typename Matrix3::value_type,cusp::host_memory> C_;
 
-    cusp::detail::host::spmm_csr(A_,B_,C_);
+    cusp::detail::host::detail::spmm_csr(A_,B_,C_);
 
     C = C_;
 }

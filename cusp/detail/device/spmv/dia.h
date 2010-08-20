@@ -17,6 +17,8 @@
 
 #pragma once
 
+#include <thrust/extrema.h>
+
 #include <cusp/detail/device/common.h>
 #include <cusp/detail/device/utils.h>
 #include <cusp/detail/device/texture.h>
@@ -53,6 +55,7 @@ namespace device
 
 
 template <typename IndexType, typename ValueType, unsigned int BLOCK_SIZE, bool UseCache>
+__launch_bounds__(BLOCK_SIZE,1)
 __global__ void
 spmv_dia_kernel(const IndexType num_rows, 
                 const IndexType num_cols, 
@@ -71,7 +74,7 @@ spmv_dia_kernel(const IndexType num_rows,
     for(IndexType base = 0; base < num_diagonals; base += BLOCK_SIZE)
     {
         // read a chunk of the diagonal offsets into shared memory
-        const IndexType chunk_size = min(BLOCK_SIZE, num_diagonals - base);
+        const IndexType chunk_size = thrust::min(IndexType(BLOCK_SIZE), num_diagonals - base);
 
         if(threadIdx.x < chunk_size)
             offsets[threadIdx.x] = diagonal_offsets[base + threadIdx.x];
@@ -117,9 +120,9 @@ void __spmv_dia(const Matrix&    A,
 {
     typedef typename Matrix::index_type IndexType;
 
-    const unsigned int BLOCK_SIZE = 256;
-    const unsigned int MAX_BLOCKS = thrust::experimental::arch::max_active_blocks(spmv_dia_kernel<IndexType, ValueType, BLOCK_SIZE, UseCache>, BLOCK_SIZE, (size_t) sizeof(IndexType) * BLOCK_SIZE);
-    const unsigned int NUM_BLOCKS = std::min(MAX_BLOCKS, DIVIDE_INTO(A.num_rows, BLOCK_SIZE));
+    const size_t BLOCK_SIZE = 256;
+    const size_t MAX_BLOCKS = thrust::experimental::arch::max_active_blocks(spmv_dia_kernel<IndexType, ValueType, BLOCK_SIZE, UseCache>, BLOCK_SIZE, (size_t) sizeof(IndexType) * BLOCK_SIZE);
+    const size_t NUM_BLOCKS = std::min<size_t>(MAX_BLOCKS, DIVIDE_INTO(A.num_rows, BLOCK_SIZE));
    
     const IndexType num_diagonals = A.values.num_cols;
     const IndexType stride        = A.values.num_rows;

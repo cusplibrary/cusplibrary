@@ -71,7 +71,7 @@ namespace cusp
     }
 
     template<typename ValueType, class MemorySpace, class Orientation = cusp::row_major>
-    struct array2d : public detail::matrix_base<int,ValueType,MemorySpace>
+    class array2d : public detail::matrix_base<int,ValueType,MemorySpace>
     {
         public:
         typedef typename cusp::choose_memory_allocator<ValueType, MemorySpace>::type value_allocator_type;

@@ -97,7 +97,7 @@ class default_monitor
      *
      *  The \p default_monitor terminates iteration when the residual norm
      *  satisfies the condition
-     *       ||b - A x|| < absolute_tolerance + relative_tolerance * ||b||
+     *       ||b - A x|| <= absolute_tolerance + relative_tolerance * ||b||
      *  or when the iteration limit is reached.
      *
      *  \param b right-hand-side of the linear system A x = b
@@ -138,7 +138,7 @@ class default_monitor
      */
     bool converged() const
     {
-        return residual_norm() < tolerance();
+        return residual_norm() <= tolerance();
     }
 
     /*! Euclidean norm of last residual
@@ -198,12 +198,13 @@ class verbose_monitor : public default_monitor<Real>
      *
      *  The \p verbose_monitor terminates iteration when the residual norm
      *  satisfies the condition
-     *       ||b - A x|| < relative_tolerance * ||b||
+     *       ||b - A x|| <= absolute_tolerance + relative_tolerance * ||b||
      *  or when the iteration limit is reached.
      *
      *  \param b right-hand-side of the linear system A x = b
      *  \param iteration_limit maximum number of solver iterations to allow
      *  \param relative_tolerance determines convergence criteria
+     *  \param absolute_tolerance determines convergence criteria
      *
      *  \tparam VectorType vector
      */

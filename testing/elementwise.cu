@@ -1,0 +1,159 @@
+#include <unittest/unittest.h>
+
+#include <cusp/elementwise.h>
+
+#include <cusp/coo_matrix.h>
+#include <cusp/gallery/poisson.h>
+#include <cusp/gallery/random.h>
+
+template <typename Vector>
+void example_matrices(Vector& matrices)
+{
+    cusp::array2d<float,cusp::host_memory> A(3,2);
+    A(0,0) = 1.0; A(0,1) = 2.0;
+    A(1,0) = 3.0; A(1,1) = 0.0;
+    A(2,0) = 5.0; A(2,1) = 6.0;
+    
+    cusp::array2d<float,cusp::host_memory> B(2,4);
+    B(0,0) = 0.0; B(0,1) = 2.0; B(0,2) = 3.0; B(0,3) = 4.0;
+    B(1,0) = 5.0; B(1,1) = 0.0; B(1,2) = 0.0; B(1,3) = 8.0;
+
+    cusp::array2d<float,cusp::host_memory> C(2,2);
+    C(0,0) = 0.0; C(0,1) = 0.0;
+    C(1,0) = 3.0; C(1,1) = 5.0;
+    
+    cusp::array2d<float,cusp::host_memory> D(2,1);
+    D(0,0) = 2.0;
+    D(1,0) = 3.0;
+    
+    cusp::array2d<float,cusp::host_memory> E(2,2);
+    E(0,0) = 0.0; E(0,1) = 0.0;
+    E(1,0) = 0.0; E(1,1) = 0.0;
+    
+    cusp::array2d<float,cusp::host_memory> F(3,2);
+    F(0,0) = 0.0; F(0,1) = 1.5;
+    F(1,0) = 0.5; F(1,1) = 0.0;
+    F(2,0) = 0.0; F(2,1) = 0.0;
+    
+    cusp::array2d<float,cusp::host_memory> G;
+    cusp::gallery::poisson5pt(G, 4, 6);
+
+    cusp::array2d<float,cusp::host_memory> H;
+    cusp::gallery::poisson5pt(H, 8, 3);
+
+    cusp::array2d<float,cusp::host_memory> I;
+    cusp::gallery::random(24, 24, 150, I);
+    
+    cusp::array2d<float,cusp::host_memory> J;
+    cusp::gallery::random(24, 24, 50, J);
+
+    cusp::array2d<float,cusp::host_memory> K;
+    cusp::gallery::random(24, 12, 20, K);
+ 
+    matrices.push_back(A);
+    matrices.push_back(B);
+    matrices.push_back(C);
+    matrices.push_back(D);
+    matrices.push_back(E);
+    matrices.push_back(F);
+    matrices.push_back(G);
+    matrices.push_back(H);
+    matrices.push_back(I);
+    matrices.push_back(J);
+    matrices.push_back(K);
+}
+
+
+template <typename SparseMatrix>
+void TestAdd(void)
+{
+    typedef cusp::array2d<float,cusp::host_memory> DenseMatrix;
+
+#if THRUST_VERSION >= 100300
+    thrust::host_vector< DenseMatrix > matrices;
+#else
+    // TODO remove this when Thrust v1.2.x is unsupported
+    std::vector< DenseMatrix > matrices;
+#endif
+
+    example_matrices(matrices);
+    
+    // test add for every pair of compatible matrices
+    for(size_t i = 0; i < matrices.size(); i++)
+    {
+        for(size_t j = 0; j < matrices.size(); j++)
+        {
+            const DenseMatrix& A = matrices[i];
+            const DenseMatrix& B = matrices[j];
+
+            if (A.num_rows == B.num_rows && A.num_cols == B.num_cols)
+            {
+                DenseMatrix C;
+                cusp::add(A, B, C);
+
+                SparseMatrix _A(A), _B(B), _C;
+                cusp::add(_A, _B, _C);
+
+                ASSERT_EQUAL(C == DenseMatrix(_C), true);
+            }
+        }
+    }
+    
+    SparseMatrix A = DenseMatrix(2,2);
+    SparseMatrix B = DenseMatrix(2,3); 
+    SparseMatrix C = DenseMatrix(3,2); 
+    SparseMatrix D;
+
+    ASSERT_THROWS(cusp::add(A,B,D), cusp::invalid_input_exception);
+    ASSERT_THROWS(cusp::add(A,C,D), cusp::invalid_input_exception);
+    ASSERT_THROWS(cusp::add(B,C,D), cusp::invalid_input_exception);
+}
+DECLARE_SPARSE_MATRIX_UNITTEST(TestAdd);
+
+
+template <typename SparseMatrix>
+void TestSubtract(void)
+{
+    typedef cusp::array2d<float,cusp::host_memory> DenseMatrix;
+
+#if THRUST_VERSION >= 100300
+    thrust::host_vector< DenseMatrix > matrices;
+#else
+    // TODO remove this when Thrust v1.2.x is unsupported
+    std::vector< DenseMatrix > matrices;
+#endif
+
+    example_matrices(matrices);
+    
+    // test add for every pair of compatible matrices
+    for(size_t i = 0; i < matrices.size(); i++)
+    {
+        for(size_t j = 0; j < matrices.size(); j++)
+        {
+            const DenseMatrix& A = matrices[i];
+            const DenseMatrix& B = matrices[j];
+
+            if (A.num_rows == B.num_rows && A.num_cols == B.num_cols)
+            {
+                DenseMatrix C;
+                cusp::subtract(A, B, C);
+
+                SparseMatrix _A(A), _B(B), _C;
+                cusp::subtract(_A, _B, _C);
+
+                ASSERT_EQUAL(C == DenseMatrix(_C), true);
+            }
+        }
+    }
+
+    SparseMatrix A = DenseMatrix(2,2);
+    SparseMatrix B = DenseMatrix(2,3); 
+    SparseMatrix C = DenseMatrix(3,2); 
+    SparseMatrix D;
+
+    ASSERT_THROWS(cusp::subtract(A,B,D), cusp::invalid_input_exception);
+    ASSERT_THROWS(cusp::subtract(A,C,D), cusp::invalid_input_exception);
+    ASSERT_THROWS(cusp::subtract(B,C,D), cusp::invalid_input_exception);
+}
+DECLARE_SPARSE_MATRIX_UNITTEST(TestSubtract);
+

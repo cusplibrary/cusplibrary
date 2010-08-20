@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include <thrust/extrema.h>
+
 #include <cusp/detail/device/common.h>
 #include <cusp/detail/device/utils.h>
 #include <cusp/detail/device/texture.h>
@@ -159,6 +161,7 @@ __device__ void segreduce_block(const IndexType * idx, ValueType * val)
 //  temp_rows and temp_vals, which are processed by a second kernel.
 //
 template <typename IndexType, typename ValueType, unsigned int BLOCK_SIZE, bool UseCache>
+__launch_bounds__(BLOCK_SIZE,1)
 __global__ void
 spmv_coo_flat_kernel(const IndexType num_nonzeros,
                      const IndexType interval_size,
@@ -173,18 +176,18 @@ spmv_coo_flat_kernel(const IndexType num_nonzeros,
     __shared__ volatile IndexType rows[48 *(BLOCK_SIZE/32)];
     __shared__ volatile ValueType vals[BLOCK_SIZE];
 
-    const IndexType thread_id   = BLOCK_SIZE * blockIdx.x + threadIdx.x;                 // global thread index
-    const IndexType thread_lane = threadIdx.x & (WARP_SIZE-1);                           // thread index within the warp
-    const IndexType warp_id     = thread_id   / WARP_SIZE;                               // global warp index
+    const IndexType thread_id   = BLOCK_SIZE * blockIdx.x + threadIdx.x;                         // global thread index
+    const IndexType thread_lane = threadIdx.x & (WARP_SIZE-1);                                   // thread index within the warp
+    const IndexType warp_id     = thread_id   / WARP_SIZE;                                       // global warp index
 
-    const IndexType interval_begin = warp_id * interval_size;                            // warp's offset into I,J,V
-    const IndexType interval_end   = min(interval_begin + interval_size, num_nonzeros);  // end of warps's work
+    const IndexType interval_begin = warp_id * interval_size;                                    // warp's offset into I,J,V
+    const IndexType interval_end   = thrust::min(interval_begin + interval_size, num_nonzeros);  // end of warps's work
 
-    const IndexType idx = 16 * (threadIdx.x/32 + 1) + threadIdx.x;                       // thread's index into padded rows array
+    const IndexType idx = 16 * (threadIdx.x/32 + 1) + threadIdx.x;                               // thread's index into padded rows array
 
-    rows[idx - 16] = -1;                                                                 // fill padding with invalid row index
+    rows[idx - 16] = -1;                                                                         // fill padding with invalid row index
 
-    if(interval_begin >= interval_end)                                                   // warp has no work to do 
+    if(interval_begin >= interval_end)                                                           // warp has no work to do 
         return;
 
     if (thread_lane == 31)
@@ -231,6 +234,7 @@ spmv_coo_flat_kernel(const IndexType num_nonzeros,
 
 // The second level of the segmented reduction operation
 template <typename IndexType, typename ValueType, unsigned int BLOCK_SIZE>
+__launch_bounds__(BLOCK_SIZE,1)
 __global__ void
 spmv_coo_reduce_update_kernel(const IndexType num_warps,
                               const IndexType * temp_rows,
@@ -345,7 +349,7 @@ void __spmv_coo_flat(const Matrix&    A,
         (tail, interval_size, I, J, V, x, y,
          thrust::raw_pointer_cast(&temp_rows[0]), thrust::raw_pointer_cast(&temp_vals[0]));
 
-    spmv_coo_reduce_update_kernel<IndexType, ValueType, 512> <<<1, 512>>>
+    spmv_coo_reduce_update_kernel<IndexType, ValueType, BLOCK_SIZE> <<<1, BLOCK_SIZE>>>
         (active_warps, thrust::raw_pointer_cast(&temp_rows[0]), thrust::raw_pointer_cast(&temp_vals[0]), y);
     
     spmv_coo_serial_kernel<IndexType,ValueType> <<<1,1>>>

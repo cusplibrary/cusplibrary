@@ -1,14 +1,40 @@
+EnsureSConsVersion(1,2)
+
 import os
 
 import inspect
 import platform
 
+def get_cuda_paths():
+  """Determines CUDA {bin,lib,include} paths
+  
+  returns (bin_path,lib_path,inc_path)
+  """
 
-def is_64bit():
-  """ is this a 64-bit system? """
-  return platform.machine()[-2:] == '64'
-  #return platform.machine() == 'x86_64':
-  #return platform.machine() == 'AMD64':
+  # determine defaults
+  if os.name == 'nt':
+    bin_path = 'C:/CUDA/bin'
+    lib_path = 'C:/CUDA/lib'
+    inc_path = 'C:/CUDA/include'
+  elif os.name == 'posix':
+    bin_path = '/usr/local/cuda/bin'
+    lib_path = '/usr/local/cuda/lib'
+    inc_path = '/usr/local/cuda/include'
+  else:
+    raise ValueError, 'Error: unknown OS.  Where is nvcc installed?'
+   
+  if platform.machine()[-2:] == '64':
+    lib_path += '64'
+
+  # override with environement variables
+  if 'CUDA_BIN_PATH' in os.environ:
+    bin_path = os.path.abspath(os.environ['CUDA_BIN_PATH'])
+  if 'CUDA_LIB_PATH' in os.environ:
+    lib_path = os.path.abspath(os.environ['CUDA_LIB_PATH'])
+  if 'CUDA_INC_PATH' in os.environ:
+    inc_path = os.path.abspath(os.environ['CUDA_INC_PATH'])
+
+  return (bin_path,lib_path,inc_path)
 
 
 def getTools():
@@ -28,9 +54,9 @@ OldEnvironment = Environment;
 # this dictionary maps the name of a compiler program to a dictionary mapping the name of
 # a compiler switch of interest to the specific switch implementing the feature
 gCompilerOptions = {
-    'gcc' : {'optimization' : '-O2', 'debug' : '-g',  'exception_handling' : '',      'omp' : '-fopenmp'},
-    'g++' : {'optimization' : '-O2', 'debug' : '-g',  'exception_handling' : '',      'omp' : '-fopenmp'},
-    'cl'  : {'optimization' : '/Ox', 'debug' : ['/Zi', '-D_DEBUG', '/MTd'], 'exception_handling' : '/EHsc', 'omp' : '/openmp'}
+    'gcc' : {'warn_all' : '-Wall', 'optimization' : '-O2', 'debug' : '-g',  'exception_handling' : '',      'omp' : '-fopenmp'},
+    'g++' : {'warn_all' : '-Wall', 'optimization' : '-O2', 'debug' : '-g',  'exception_handling' : '',      'omp' : '-fopenmp'},
+    'cl'  : {'warn_all' : '/Wall', 'optimization' : '/Ox', 'debug' : ['/Zi', '-D_DEBUG', '/MTd'], 'exception_handling' : '/EHsc', 'omp' : '/openmp'}
   }
 
 
@@ -43,7 +69,7 @@ gLinkerOptions = {
   }
 
 
-def getCFLAGS(mode, backend, CC):
+def getCFLAGS(mode, backend, warn, CC):
   result = []
   if mode == 'release':
     # turn on optimization
@@ -59,10 +85,14 @@ def getCFLAGS(mode, backend, CC):
   if backend == 'omp':
     result.append(gCompilerOptions[CC]['omp'])
 
+  if warn:
+    # turn on all warnings
+    result.append(gCompilerOptions[CC]['warn_all'])
+
   return result
 
 
-def getCXXFLAGS(mode, backend, CXX):
+def getCXXFLAGS(mode, backend, warn, CXX):
   result = []
   if mode == 'release':
     # turn on optimization
@@ -79,6 +109,10 @@ def getCXXFLAGS(mode, backend, CXX):
   # generate omp code
   if backend == 'omp':
     result.append(gCompilerOptions[CXX]['omp'])
+
+  if warn:
+    # turn on all warnings
+    result.append(gCompilerOptions[CXX]['warn_all'])
 
   return result
 
@@ -128,6 +162,9 @@ def Environment():
   vars.Add(EnumVariable('arch', 'Compute capability code generation', 'sm_10',
                         allowed_values = ('sm_10', 'sm_11', 'sm_12', 'sm_13', 'sm_20')))
 
+  # add a variable to handle warnings
+  vars.Add(BoolVariable('Wall', 'Turn on all compilation warnings', 0))
+
   # create an Environment
   env = OldEnvironment(tools = getTools(), variables = vars)
 
@@ -142,12 +179,13 @@ def Environment():
   # get the preprocessor define to use for the backend
   backend_define = { 'cuda' : 'THRUST_DEVICE_BACKEND_CUDA', 'omp' : 'THRUST_DEVICE_BACKEND_OMP', 'ocelot' : 'THRUST_DEVICE_BACKEND_CUDA' }[env['backend']] 
   env.Append(CFLAGS = ['-DTHRUST_DEVICE_BACKEND=%s' % backend_define])
+  env.Append(CXXFLAGS = ['-DTHRUST_DEVICE_BACKEND=%s' % backend_define])
 
   # get C compiler switches
-  env.Append(CFLAGS = getCFLAGS(env['mode'], env['backend'], env.subst('$CC')))
+  env.Append(CFLAGS = getCFLAGS(env['mode'], env['backend'], env['Wall'], env.subst('$CC')))
 
   # get CXX compiler switches
-  env.Append(CXXFLAGS = getCXXFLAGS(env['mode'], env['backend'], env.subst('$CXX')))
+  env.Append(CXXFLAGS = getCXXFLAGS(env['mode'], env['backend'], env['Wall'], env.subst('$CXX')))
 
   # get NVCC compiler switches
   env.Append(NVCCFLAGS = getNVCCFLAGS(env['mode'], env['backend'], env['arch']))
@@ -155,30 +193,10 @@ def Environment():
   # get linker switches
   env.Append(LINKFLAGS = getLINKFLAGS(env['mode'], env['backend'], env.subst('$LINK')))
    
-  # set CUDA lib & include path
-  if is_64bit():
-      lib_folder = 'lib64'
-  else:
-      lib_folder = 'lib'
-
-  if os.name == 'posix':
-    # set cuda paths on linux/osx
-    env.Append(LIBPATH = ['/usr/local/cuda/' + lib_folder])
-    env.Append(CPPPATH = ['/usr/local/cuda/include'])
-  elif os.name == 'nt':
-    # set cuda paths on windows 
-    if 'CUDA_LIB_PATH' in os.environ:
-      env.Append(LIBPATH = [os.path.abspath(os.environ['CUDA_LIB_PATH'])])
-    else:
-      env.Append(LIBPATH = ['C:/CUDA/' + lib_folder])
-
-    if 'CUDA_INC_PATH' in os.environ:
-      env.Append(CPPPATH = [os.path.abspath(os.environ['CUDA_INC_PATH'])])
-    else:
-      env.Append(CPPPATH = ['C:/CUDA/include'])
-
-  else:
-    raise ValueError, "Unknown OS. What are the CUDA include & library paths?"
+  # get CUDA paths
+  (cuda_exe_path,cuda_lib_path,cuda_inc_path) = get_cuda_paths()
+  env.Append(LIBPATH = [cuda_lib_path])
+  env.Append(CPPPATH = [cuda_inc_path])
 
   # set Ocelot lib path
   if env['backend'] == 'ocelot':
