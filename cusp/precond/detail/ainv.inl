@@ -385,7 +385,7 @@ template <typename ValueType, typename MemorySpace>
     {
         typename MatrixTypeA::index_type n = A.num_rows;
         typename MatrixTypeA At;
-        transpose(A, At);
+        cusp::transpose(A, At);
 
         // copy A, At to host
         typename cusp::csr_matrix<typename MatrixTypeA::index_type, typename MatrixTypeA::value_type, host_memory> host_A = A;
@@ -444,7 +444,7 @@ template <typename ValueType, typename MemorySpace>
         // convert wt to csr
         typename cusp::hyb_matrix<int, ValueType, MemorySpace> w;
         detail::convert_to_device_csr(wt_factor, w);
-        transpose(w, w_t);
+        cusp::transpose(w, w_t);
         detail::convert_to_device_csr(z_factor, z);
     }
         
@@ -510,6 +510,7 @@ template <typename ValueType, typename MemorySpace>
         // copy diagonal & w_factor into w, w_t
         diagonals = host_diagonals;
         detail::convert_to_device_csr(w_factor, w);
+        cusp::transpose(w, w_t);
     }
         
 // linear operator
