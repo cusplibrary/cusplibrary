@@ -10,6 +10,8 @@ struct malloc_free
     void operator()(size_t n)
     {
         char * buff = (char *) malloc(n);
+        for (size_t i = 0; i < n; i += 4096)
+            buff[i] = '\0';
         free(buff);
     }
 };
@@ -42,7 +44,7 @@ struct thrust_device_vector
 };
 
 template <typename TestFunction>
-void benchmark(TestFunction f, size_t max_n = (size_t) 1 << 30, size_t num_iterations = 100)
+void benchmark(TestFunction f, size_t max_n = (size_t) 1 << 30, size_t num_iterations = 10)
 {
     for (size_t n = 1; n <= max_n; n *= 2)
     {
