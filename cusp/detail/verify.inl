@@ -117,13 +117,6 @@ bool is_valid_matrix(const cusp::coo_matrix<IndexType,ValueType,MemoryType>& A,
    
     if (A.num_entries > 0)
     {
-        // check that row_indices is a non-decreasing sequence
-        if (!thrust::is_sorted(A.row_indices.begin(), A.row_indices.end()))
-        {
-            ostream << "row indices should form a non-decreasing sequence";
-            return false;
-        }
-
         // check that row indices are within [0, num_rows)
         thrust::pair<IndexType,IndexType> min_max_row = index_range(A.row_indices);
         if (min_max_row.first < 0)
@@ -131,9 +124,16 @@ bool is_valid_matrix(const cusp::coo_matrix<IndexType,ValueType,MemoryType>& A,
             ostream << "row indices should be non-negative";
             return false;
         }
-        if (min_max_row.second >= A.num_cols)
+        if (min_max_row.second >= A.num_rows)
         {
             ostream << "row indices should be less than num_row (" << A.num_rows << ")";
+            return false;
+        }
+        
+        // check that row_indices is a non-decreasing sequence
+        if (!thrust::is_sorted(A.row_indices.begin(), A.row_indices.end()))
+        {
+            ostream << "row indices should form a non-decreasing sequence";
             return false;
         }
 
