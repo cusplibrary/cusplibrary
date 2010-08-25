@@ -57,23 +57,23 @@ public:
 
   struct heap_entry {
     ValueType value;
-    typename std::map<IndexType, typename map_entry>::iterator mapiter;
+    typename std::map<IndexType, typename ainv_matrix_row::map_entry>::iterator mapiter;
 
-    heap_entry(const ValueType &v, const typename std::map<IndexType, typename map_entry>::iterator &i) : value(v), mapiter(i) { }
+    heap_entry(const ValueType &v, const typename std::map<IndexType, typename ainv_matrix_row::map_entry>::iterator &i) : value(v), mapiter(i) { }
     heap_entry() { }
   };
 
-  typedef typename std::map<IndexType, typename map_entry>::const_iterator const_iterator;
+  typedef typename std::map<IndexType, typename ainv_matrix_row::map_entry>::const_iterator const_iterator;
 
 private:
 
-  typename std::map<IndexType, typename map_entry> row_map; // row entries sorted by index
-  typename std::vector<typename heap_entry> row_heap; // row entries sorted by min-abs-val (in a heap)
+  typename std::map<IndexType, typename ainv_matrix_row::map_entry> row_map; // row entries sorted by index
+  typename std::vector<typename ainv_matrix_row::heap_entry> row_heap; // row entries sorted by min-abs-val (in a heap)
 
   void heap_swap(int i, int j)
   {
     // swap the entries
-    typename heap_entry val = this->row_heap[i];
+    typename ainv_matrix_row::heap_entry val = this->row_heap[i];
     this->row_heap[i] = this->row_heap[j];
     this->row_heap[j] = val;
 
@@ -116,7 +116,7 @@ private:
   }
 
 
-  void heap_insert(typename heap_entry val)
+  void heap_insert(typename ainv_matrix_row::heap_entry val)
   {
     this->row_heap.push_back(val);
     val.mapiter->second.heapidx = (int) this->row_heap.size()-1;
@@ -150,8 +150,8 @@ private:
 
 public:
 
-  typename const_iterator begin() const { return this->row_map.begin(); }
-  typename const_iterator end()   const { return this->row_map.end(); }
+  typename ainv_matrix_row::const_iterator begin() const { return this->row_map.begin(); }
+  typename ainv_matrix_row::const_iterator end()   const { return this->row_map.end(); }
   size_t size() const { return this->row_map.size(); }
 
   bool has_entry_at_index(IndexType i) {
@@ -167,8 +167,8 @@ public:
   }
 
   void insert(IndexType i, ValueType t) {
-    map_entry me(t, -1);
-    heap_entry he;
+    ainv_matrix_row::map_entry me(t, -1);
+    ainv_matrix_row::heap_entry he;
 
     // map::insert returns a pair (iterator, bool), so we can grab the iterator from that
     he.mapiter = this->row_map.insert(std::make_pair(i, me)).first;
@@ -178,7 +178,7 @@ public:
   }
 
   ValueType min_abs_value() const {
-    return this->row_heap.empty() ? (typename ValueType)0 : this->row_heap.begin()->value;
+    return this->row_heap.empty() ? (ValueType)0 : this->row_heap.begin()->value;
   }
 
   // these are here for the unit test only
@@ -197,7 +197,7 @@ public:
 
   // these are here for the unit test only
   bool validate_backpointers() const {
-    for (typename const_iterator iter = this->row_map.begin(); iter != this->row_map.end(); ++iter) {
+    for (typename ainv_matrix_row::const_iterator iter = this->row_map.begin(); iter != this->row_map.end(); ++iter) {
       if (this->row_heap[iter->second.heapidx].mapiter != iter ||
           this->row_heap[iter->second.heapidx].value != iter->second.value)
         return false;
@@ -207,7 +207,7 @@ public:
 
   void add_to_value(IndexType i, ValueType addend) {
     // update val in map, which is free
-    typename std::map<IndexType, typename map_entry>::iterator map_iter = this->row_map.find(i);
+    typename std::map<IndexType, typename ainv_matrix_row::map_entry>::iterator map_iter = this->row_map.find(i);
     map_iter->second.value += addend;
 
     // update val in heap, which requires re-sorting
@@ -218,7 +218,7 @@ public:
     if (this->row_heap.empty())
       return;
 
-    typename std::map<IndexType, typename map_entry>::iterator iter_to_remove = this->row_heap.begin()->mapiter;
+    typename std::map<IndexType, typename ainv_matrix_row::map_entry>::iterator iter_to_remove = this->row_heap.begin()->mapiter;
     this->heap_pop();
     this->row_map.erase(iter_to_remove);
   }
@@ -343,20 +343,20 @@ template<typename IndexTypeA, typename ValueTypeA, typename IndexTypeB, typename
 void convert_to_device_csr(const std::vector<detail::ainv_matrix_row<IndexTypeA, ValueTypeA> > &src, cusp::hyb_matrix<IndexTypeB, ValueTypeB, MemorySpaceB> &dst)
 {
   // convert wt to csr
-    typename IndexTypeA nnz = 0;
-    typename IndexTypeA n = src.size();
+    IndexTypeA nnz = 0;
+    IndexTypeA n = src.size();
 
     int i;
     for (i=0; i < n; i++)
       nnz += src[i].size();
 
-    cusp::csr_matrix<typename IndexTypeA, typename ValueTypeA, host_memory> host_src(n, n, nnz);
+    cusp::csr_matrix<IndexTypeA, ValueTypeA, host_memory> host_src(n, n, nnz);
 
-    typename IndexTypeA pos = 0;
+    IndexTypeA pos = 0;
     host_src.row_offsets[0] = 0;
 
     for (i=0; i < n; i++) {
-      typename detail::ainv_matrix_row<typename IndexTypeA, typename ValueTypeA>::const_iterator src_iter = src[i].begin();
+      typename detail::ainv_matrix_row<IndexTypeA, ValueTypeA>::const_iterator src_iter = src[i].begin();
       while (src_iter != src[i].end()) {
         host_src.column_indices[pos] = src_iter->first;
         host_src.values        [pos] = src_iter->second.value;
@@ -384,7 +384,7 @@ template <typename ValueType, typename MemorySpace>
         : linear_operator<ValueType,MemorySpace>(A.num_rows, A.num_cols, A.num_rows)
     {
         typename MatrixTypeA::index_type n = A.num_rows;
-        typename MatrixTypeA At;
+        MatrixTypeA At;
         cusp::transpose(A, At);
 
         // copy A, At to host
