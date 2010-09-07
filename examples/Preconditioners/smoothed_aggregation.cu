@@ -65,6 +65,9 @@ int main(void)
 
         // setup preconditioner
         cusp::precond::smoothed_aggregation<IndexType, ValueType, MemorySpace> M(A);
+	
+	// print hierarchy information
+	M.print();
 
         // solve
         cusp::krylov::cg(A, x, b, monitor, M);

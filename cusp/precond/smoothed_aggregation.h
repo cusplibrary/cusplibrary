@@ -78,6 +78,12 @@ class smoothed_aggregation : public cusp::linear_operator<ValueType, MemorySpace
     void solve(const cusp::array1d<ValueType,cusp::device_memory>& b,
                      cusp::array1d<ValueType,cusp::device_memory>& x) const;
 
+    void print( void );
+
+    double operator_complexity( void );
+
+    double grid_complexity( void );
+
     protected:
 
     void extend_hierarchy(void);

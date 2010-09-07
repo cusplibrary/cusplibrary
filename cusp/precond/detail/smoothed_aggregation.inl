@@ -445,6 +445,53 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace>
     }
 }
 
+template <typename IndexType, typename ValueType, typename MemorySpace>
+void smoothed_aggregation<IndexType,ValueType,MemorySpace>
+::print( void )
+{
+	IndexType num_levels = levels.size();
+
+	std::cout << "multilevel solver stats" << std::endl;
+	std::cout << "\tNumber of Levels:\t" << num_levels << std::endl;
+	std::cout << "\tOperator Complexity:\t" << operator_complexity() << std::endl;
+	std::cout << "\tGrid Complexity:\t" << grid_complexity() << std::endl;
+	std::cout << "\tlevel\tunknowns\tnonzeros:\t" << std::endl;
+
+	IndexType nnz = 0;
+	for( IndexType index = 0; index < levels.size(); index++ )
+		nnz += levels[index].A.num_entries;
+
+	for( IndexType index = 0; index < levels.size(); index++ ){
+		double percent = (double)levels[index].A.num_entries / nnz;
+		std::cout << "\t" << index << "\t" << levels[index].A.num_cols << "\t\t" \
+		<< levels[index].A.num_entries << " \t[" << 100*percent << "%]" \
+		<< std::endl;
+	}
+} 
+
+template <typename IndexType, typename ValueType, typename MemorySpace>
+double smoothed_aggregation<IndexType,ValueType,MemorySpace>
+::operator_complexity( void )
+{
+	IndexType nnz = 0;
+
+	for( IndexType index = 0; index < levels.size(); index++ )
+		nnz += levels[index].A.num_entries;
+
+	return (double) nnz / levels[0].A.num_entries;
+} 
+
+template <typename IndexType, typename ValueType, typename MemorySpace>
+double smoothed_aggregation<IndexType,ValueType,MemorySpace>
+::grid_complexity( void )
+{
+	IndexType unknowns = 0;
+	for( IndexType index = 0; index < levels.size(); index++ )
+		unknowns += levels[index].A.num_rows;
+
+	return (double) unknowns / levels[0].A.num_rows;
+} 
+
 } // end namespace precond
 } // end namespace cusp
 
