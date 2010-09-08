@@ -68,12 +68,12 @@ void TestIndicesToOffsets(void)
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestIndicesToOffsets);
 
-template <class SparseMatrix>
-void _TestExtractDiagonal(void)
+template <class Matrix>
+void TestExtractDiagonal(void)
 {
-    typedef typename SparseMatrix::index_type   IndexType;
-    typedef typename SparseMatrix::value_type   ValueType;
-    typedef typename SparseMatrix::memory_space Space;
+    typedef typename Matrix::index_type   IndexType;
+    typedef typename Matrix::value_type   ValueType;
+    typedef typename Matrix::memory_space Space;
 
     {
         cusp::array2d<float, Space> A(2,2);
@@ -86,7 +86,7 @@ void _TestExtractDiagonal(void)
 
         cusp::array1d<float, Space> output;
 
-        cusp::detail::extract_diagonal(SparseMatrix(A), output);
+        cusp::detail::extract_diagonal(Matrix(A), output);
 
         ASSERT_EQUAL(output, expected);
     }
@@ -104,7 +104,7 @@ void _TestExtractDiagonal(void)
 
         cusp::array1d<float, Space> output;
 
-        cusp::detail::extract_diagonal(SparseMatrix(A), output);
+        cusp::detail::extract_diagonal(Matrix(A), output);
 
         ASSERT_EQUAL(output, expected);
     }
@@ -126,18 +126,10 @@ void _TestExtractDiagonal(void)
 
         cusp::array1d<float, Space> output;
 
-        cusp::detail::extract_diagonal(SparseMatrix(A), output);
+        cusp::detail::extract_diagonal(Matrix(A), output);
 
         ASSERT_EQUAL(output, expected);
     }
-
-}
-
-
-template <class SparseMatrix>
-void TestExtractDiagonal(void)
-{
-    _TestExtractDiagonal<SparseMatrix>();
 }
 DECLARE_SPARSE_MATRIX_UNITTEST(TestExtractDiagonal);
 
