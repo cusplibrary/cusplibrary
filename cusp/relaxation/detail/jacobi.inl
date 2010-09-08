@@ -92,7 +92,7 @@ template<typename MatrixType, typename VectorType1, typename VectorType2>
         // y <- A*x
         cusp::multiply(A, x, y);
         
-        // x <- D^-1 (b - y)
+        // x <- x + D^-1 (b - y)
         thrust::transform(thrust::make_zip_iterator(thrust::make_tuple(x.begin(), diagonal.begin(), b.begin(), y.begin())),
                           thrust::make_zip_iterator(thrust::make_tuple(x.end(),   diagonal.end(),   b.end(),   y.end())),
                           x.begin(),
