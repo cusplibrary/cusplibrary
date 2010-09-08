@@ -56,7 +56,7 @@ float benchmark_matrix(const cusp::csr_matrix<IndexType,ValueType,cusp::device_m
     cudaThreadSynchronize();
 
     float sec_per_iteration = t.seconds_elapsed() / num_iterations;
-    float gflops = (csr.num_entries/sec_per_iteration) / 1e9;
+    float gflops = 2.0 * (csr.num_entries/sec_per_iteration) / 1e9;
 
     return gflops;
 }
