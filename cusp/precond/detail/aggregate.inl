@@ -1,0 +1,206 @@
+#include <cusp/csr_matrix.h>
+#include <cusp/coo_matrix.h>
+#include <thrust/count.h>
+
+namespace cusp
+{
+namespace precond
+{
+namespace detail
+{
+
+template <typename IndexType, typename ValueType, typename MemorySpace,
+          typename ArrayType>
+void mis_to_aggregates(const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& C,
+                       const ArrayType& mis,
+                             ArrayType& aggregates)
+{
+    // 
+    const IndexType N = C.num_rows;
+
+    // (2,i) mis (0,i) non-mis
+    cusp::csr_matrix<IndexType,ValueType,MemorySpace> A(C);
+
+    // current (ring,index)
+    ArrayType mis1(N);
+    ArrayType idx1(N);
+    ArrayType mis2(N);
+    ArrayType idx2(N);
+
+    typedef typename ArrayType::value_type T;
+    typedef thrust::tuple<T,T> Tuple;
+
+    // find the largest (mis[j],j) 1-ring neighbor for each node
+    cusp::detail::device::cuda::spmv_csr_scalar
+        (A.num_rows,
+         A.row_offsets.begin(), A.column_indices.begin(), thrust::constant_iterator<int>(1),  // XXX should we mask explicit zeros? (e.g. DIA, array2d)
+         thrust::make_zip_iterator(thrust::make_tuple(mis.begin(), thrust::counting_iterator<IndexType>(0))),
+         thrust::make_zip_iterator(thrust::make_tuple(mis.begin(), thrust::counting_iterator<IndexType>(0))),
+         thrust::make_zip_iterator(thrust::make_tuple(mis1.begin(), idx1.begin())),
+         thrust::identity<Tuple>(), thrust::project2nd<Tuple,Tuple>(), thrust::maximum<Tuple>());
+
+    // boost mis0 values so they win in second round
+    thrust::transform(mis.begin(), mis.end(), mis1.begin(), mis1.begin(), thrust::plus<typename ArrayType::value_type>());
+
+    // find the largest (mis[j],j) 2-ring neighbor for each node
+    cusp::detail::device::cuda::spmv_csr_scalar
+        (A.num_rows,
+         A.row_offsets.begin(), A.column_indices.begin(), thrust::constant_iterator<int>(1),  // XXX should we mask explicit zeros? (e.g. DIA, array2d)
+         thrust::make_zip_iterator(thrust::make_tuple(mis1.begin(), idx1.begin())),
+         thrust::make_zip_iterator(thrust::make_tuple(mis1.begin(), idx1.begin())),
+         thrust::make_zip_iterator(thrust::make_tuple(mis2.begin(), idx2.begin())),
+         thrust::identity<Tuple>(), thrust::project2nd<Tuple,Tuple>(), thrust::maximum<Tuple>());
+
+    // enumerate the MIS nodes
+    cusp::array1d<IndexType,MemorySpace> mis_enum(N);
+    thrust::exclusive_scan(mis.begin(), mis.end(), mis_enum.begin());
+
+#if THRUST_VERSION >= 100300
+    thrust::gather(idx2.begin(), idx2.end(),
+                   mis_enum.begin(),
+                   aggregates.begin());
+#else
+    // TODO remove this when Thrust v1.2.x is unsupported
+    thrust::next::gather(idx2.begin(), idx2.end(),
+                         mis_enum.begin(),
+                         aggregates.begin());
+#endif    
+} // mis_to_aggregates()
+
+
+template <typename IndexType, typename ValueType,
+          typename ArrayType>
+void standard_aggregation(const cusp::coo_matrix<IndexType,ValueType,cusp::device_memory>& C,
+                                ArrayType& aggregates)
+{
+    // TODO check sizes
+    // TODO label singletons with a -1
+
+    const size_t N = C.num_rows;
+
+    cusp::array1d<IndexType,cusp::device_memory> mis(N);
+    // compute MIS(2)
+    {
+        // TODO implement MIS for coo_matrix
+        cusp::csr_matrix<IndexType,ValueType,cusp::device_memory> csr(C);
+        cusp::graph::maximal_independent_set(csr, mis, 2);
+    }
+
+    mis_to_aggregates(C, mis, aggregates);
+}
+
+template <typename IndexType, typename ValueType,
+	  typename ArrayType>
+void standard_aggregation(const cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& C,
+				ArrayType& aggregates)
+{
+
+    IndexType next_aggregate = 1; // number of aggregates + 1
+    // TODO work with COO directly instead of converting to CSR
+    cusp::array1d<IndexType,cusp::host_memory> row_offsets( C.num_rows+1, 0 );
+    cusp::detail::indices_to_offsets(C.row_indices, row_offsets);
+    IndexType n_row = C.num_rows;
+
+    //Pass #1
+    for(IndexType i = 0; i < n_row; i++){
+	if(aggregates[i]){ continue; } //already marked
+
+	const IndexType row_start = row_offsets[i];
+	const IndexType row_end   = row_offsets[i+1];
+
+	//Determine whether all neighbors of this node are free (not already aggregates)
+	bool has_aggregated_neighbors = false;
+	bool has_neighbors            = false;
+	for(IndexType jj = row_start; jj < row_end; jj++){
+	    const IndexType j = C.column_indices[jj];
+	    if( i != j ){
+		has_neighbors = true;
+		if( aggregates[j] ){
+		    has_aggregated_neighbors = true;
+		    break;
+		}
+	    }
+	}
+
+	if(!has_neighbors){
+	    //isolated node, do not aggregate
+	    aggregates[i] = -n_row;
+	}
+	else if (!has_aggregated_neighbors){
+	    //Make an aggregate out of this node and its neighbors
+	    aggregates[i] = next_aggregate;
+	    for(IndexType jj = row_start; jj < row_end; jj++){
+		aggregates[C.column_indices[jj]] = next_aggregate;
+	    }
+	    next_aggregate++;
+	}
+    }
+
+    //Pass #2
+    // Add unaggregated nodes to any neighboring aggregate
+    for(IndexType i = 0; i < n_row; i++){
+	if(aggregates[i]){ continue; } //already marked
+
+	for(IndexType jj = row_offsets[i]; jj < row_offsets[i+1]; jj++){
+	    const IndexType j = C.column_indices[jj];
+
+	    const IndexType tj = aggregates[j];
+	    if(tj > 0){
+		aggregates[i] = -tj;
+		break;
+	    }
+	}
+    }
+
+    next_aggregate--;
+
+    //Pass #3
+    for(IndexType i = 0; i < n_row; i++){
+	const IndexType ti = aggregates[i];
+
+	if(ti != 0){
+	    // node i has been aggregated
+	    if(ti > 0)
+		aggregates[i] = ti - 1;
+	    else if(ti == -n_row)
+		aggregates[i] = -1;
+	    else
+		aggregates[i] = -ti - 1;
+	    continue;
+	}
+
+	// node i has not been aggregated
+	const IndexType row_start = row_offsets[i];
+	const IndexType row_end   = row_offsets[i+1];
+
+	aggregates[i] = next_aggregate;
+
+	for(IndexType jj = row_start; jj < row_end; jj++){
+	    const IndexType j = C.column_indices[jj];
+
+	    if(aggregates[j] == 0){ //unmarked neighbors
+		aggregates[j] = next_aggregate;
+	    }
+	}
+	next_aggregate++;
+    }
+
+    if( next_aggregate == 0 )
+    {
+	cusp::array1d<ValueType,cusp::host_memory> values( n_row, 0 );
+	aggregates = values;
+    }
+    else
+    {
+	// TODO Handle unaggregated nodes
+	ValueType agg_min = *std::min_element(aggregates.begin(), aggregates.end());
+	if( agg_min == -1 ){
+		IndexType num_aggs = aggregates.size() - thrust::count(aggregates.begin(), aggregates.end(), -1.0);
+		printf("number aggregated : %d\n",num_aggs);
+	}
+    }
+}
+
+} // end namespace detail
+} // end namespace precond
+} // end namespace cusp

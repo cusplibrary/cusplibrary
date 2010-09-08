@@ -19,6 +19,8 @@
 #include <cusp/transpose.h>
 #include <cusp/graph/maximal_independent_set.h>
 #include <cusp/precond/diagonal.h>
+#include <cusp/precond/aggregate.h>
+#include <cusp/precond/strength.h>
 #include <cusp/detail/spectral_radius.h>
 
 #include <thrust/extrema.h>
@@ -37,85 +39,6 @@ namespace precond
 namespace detail
 {
 
-template <typename IndexType, typename ValueType, typename MemorySpace,
-          typename ArrayType>
-void mis_to_aggregates(const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& C,
-                       const ArrayType& mis,
-                             ArrayType& aggregates)
-{
-    // 
-    const IndexType N = C.num_rows;
-
-    // (2,i) mis (0,i) non-mis
-    cusp::csr_matrix<IndexType,ValueType,MemorySpace> A(C);
-
-    // current (ring,index)
-    ArrayType mis1(N);
-    ArrayType idx1(N);
-    ArrayType mis2(N);
-    ArrayType idx2(N);
-
-    typedef typename ArrayType::value_type T;
-    typedef thrust::tuple<T,T> Tuple;
-
-    // find the largest (mis[j],j) 1-ring neighbor for each node
-    cusp::detail::device::cuda::spmv_csr_scalar
-        (A.num_rows,
-         A.row_offsets.begin(), A.column_indices.begin(), thrust::constant_iterator<int>(1),  // XXX should we mask explicit zeros? (e.g. DIA, array2d)
-         thrust::make_zip_iterator(thrust::make_tuple(mis.begin(), thrust::counting_iterator<IndexType>(0))),
-         thrust::make_zip_iterator(thrust::make_tuple(mis.begin(), thrust::counting_iterator<IndexType>(0))),
-         thrust::make_zip_iterator(thrust::make_tuple(mis1.begin(), idx1.begin())),
-         thrust::identity<Tuple>(), thrust::project2nd<Tuple,Tuple>(), thrust::maximum<Tuple>());
-
-    // boost mis0 values so they win in second round
-    thrust::transform(mis.begin(), mis.end(), mis1.begin(), mis1.begin(), thrust::plus<typename ArrayType::value_type>());
-
-    // find the largest (mis[j],j) 2-ring neighbor for each node
-    cusp::detail::device::cuda::spmv_csr_scalar
-        (A.num_rows,
-         A.row_offsets.begin(), A.column_indices.begin(), thrust::constant_iterator<int>(1),  // XXX should we mask explicit zeros? (e.g. DIA, array2d)
-         thrust::make_zip_iterator(thrust::make_tuple(mis1.begin(), idx1.begin())),
-         thrust::make_zip_iterator(thrust::make_tuple(mis1.begin(), idx1.begin())),
-         thrust::make_zip_iterator(thrust::make_tuple(mis2.begin(), idx2.begin())),
-         thrust::identity<Tuple>(), thrust::project2nd<Tuple,Tuple>(), thrust::maximum<Tuple>());
-
-    // enumerate the MIS nodes
-    cusp::array1d<IndexType,MemorySpace> mis_enum(N);
-    thrust::exclusive_scan(mis.begin(), mis.end(), mis_enum.begin());
-
-#if THRUST_VERSION >= 100300
-    thrust::gather(idx2.begin(), idx2.end(),
-                   mis_enum.begin(),
-                   aggregates.begin());
-#else
-    // TODO remove this when Thrust v1.2.x is unsupported
-    thrust::next::gather(idx2.begin(), idx2.end(),
-                         mis_enum.begin(),
-                         aggregates.begin());
-#endif    
-} // mis_to_aggregates()
-
-
-template <typename IndexType, typename ValueType, typename MemorySpace,
-          typename ArrayType>
-void standard_aggregation(const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& C,
-                                ArrayType& aggregates)
-{
-    // TODO check sizes
-    // TODO label singletons with a -1
-
-    const size_t N = C.num_rows;
-
-    cusp::array1d<IndexType,MemorySpace> mis(N);
-    // compute MIS(2)
-    {
-        // TODO implement MIS for coo_matrix
-        cusp::csr_matrix<IndexType,ValueType,MemorySpace> csr(C);
-        cusp::graph::maximal_independent_set(csr, mis, 2);
-    }
-
-    mis_to_aggregates(C, mis, aggregates);
-}
 
 template <typename MatrixType>
 struct Dinv_A : public cusp::linear_operator<typename MatrixType::value_type, typename MatrixType::memory_space>
@@ -262,6 +185,7 @@ void smooth_prolongator(const cusp::coo_matrix<IndexType,ValueType,MemorySpace>&
 
 
     // compute unique number of nonzeros in the output
+    // throws a warning at compile (warning: expression has no effect)
     IndexType NNZ = thrust::inner_product(thrust::make_zip_iterator(thrust::make_tuple(temp.row_indices.begin(), temp.column_indices.begin())),
                                           thrust::make_zip_iterator(thrust::make_tuple(temp.row_indices.end (),  temp.column_indices.end()))   - 1,
                                           thrust::make_zip_iterator(thrust::make_tuple(temp.row_indices.begin(), temp.column_indices.begin())) + 1,
@@ -309,15 +233,15 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace>::extend_hierarchy(voi
     const cusp::array1d<ValueType,MemorySpace>&              B = levels.back().B;
 
     // compute stength of connection matrix
-    const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& C = A;
-    // TODO add symmetric_strength of connection
+    cusp::coo_matrix<IndexType,ValueType,MemorySpace> C;
+    detail::symmetric_strength_of_connection(A,C);
 
     // compute spectral radius of diag(C)^-1 * C
     ValueType rho_DinvA = detail::estimate_rho_Dinv_A(A);
 
     // compute aggregates
-    cusp::array1d<IndexType,MemorySpace> aggregates(A.num_rows);
-    detail::standard_aggregation(A, aggregates);
+    cusp::array1d<IndexType,MemorySpace> aggregates(C.num_rows,0);
+    detail::standard_aggregation(C, aggregates);
 
     // compute tenative prolongator and coarse nullspace vector
     cusp::coo_matrix<IndexType,ValueType,MemorySpace> T;
@@ -328,7 +252,7 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace>::extend_hierarchy(voi
 
     // compute prolongation operator
     cusp::coo_matrix<IndexType,ValueType,MemorySpace> P;
-    detail::smooth_prolongator(C, T, P, (ValueType) (4.0/3.0), rho_DinvA);  // TODO if C != A then compute rho_Dinv_C
+    detail::smooth_prolongator(A, T, P, (ValueType) (4.0/3.0), rho_DinvA);  // TODO if C != A then compute rho_Dinv_C
 
     // compute restriction operator (transpose of prolongator)
     cusp::coo_matrix<IndexType,ValueType,MemorySpace> R;
@@ -367,8 +291,8 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace>::operator()(const Arr
 }
 
 template <typename IndexType, typename ValueType, typename MemorySpace>
-void smoothed_aggregation<IndexType,ValueType,MemorySpace>::solve(const cusp::array1d<ValueType,cusp::device_memory>& b,
-                                                                               cusp::array1d<ValueType,cusp::device_memory>& x) const
+void smoothed_aggregation<IndexType,ValueType,MemorySpace>::solve(const cusp::array1d<ValueType,MemorySpace>& b,
+                                                                               cusp::array1d<ValueType,MemorySpace>& x) const
 {
     // TODO check sizes
     const cusp::coo_matrix<IndexType,ValueType,MemorySpace> & A = levels[0].A;
@@ -423,6 +347,7 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace>
         cusp::array1d<ValueType,MemorySpace> coarse_b(P.num_cols);
         cusp::array1d<ValueType,MemorySpace> coarse_x(P.num_cols, 0);
 
+    	// Jacobi smoother throws a warning at compile (warning: expression has no effect)
         // presmooth
         levels[i].smoother(A,b,x);
 

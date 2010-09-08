@@ -5,17 +5,18 @@
 #include <cusp/gallery/poisson.h>
 #include <cusp/krylov/cg.h>
 
+template <class MemorySpace>
 void TestStandardAggregation(void)
 {
     // TODO make this test something, possibly disjoint things that must aggregate
 
-    cusp::coo_matrix<int,float,cusp::device_memory> A;
+    cusp::coo_matrix<int,float,MemorySpace> A;
     cusp::gallery::poisson5pt(A, 10, 10);
 
-    cusp::array1d<int,cusp::device_memory> aggregates(A.num_rows);
+    cusp::array1d<int,MemorySpace> aggregates(A.num_rows);
     cusp::precond::detail::standard_aggregation(A, aggregates);
 }
-DECLARE_UNITTEST(TestStandardAggregation);
+DECLARE_HOST_DEVICE_UNITTEST(TestStandardAggregation);
 
 
 template <class MemorySpace>
@@ -204,12 +205,11 @@ void TestSmoothProlongator(void)
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestSmoothProlongator);
 
-
+template <class MemorySpace>
 void TestSmoothedAggregation(void)
 {
     typedef int                 IndexType;
     typedef float               ValueType;
-    typedef cusp::device_memory MemorySpace;
 
     // Create 2D Poisson problem
     cusp::coo_matrix<IndexType,ValueType,MemorySpace> A;
@@ -241,5 +241,5 @@ void TestSmoothedAggregation(void)
         ASSERT_EQUAL(monitor.converged(), true);
     }
 }
-DECLARE_UNITTEST(TestSmoothedAggregation);
+DECLARE_HOST_DEVICE_UNITTEST(TestSmoothedAggregation);
 

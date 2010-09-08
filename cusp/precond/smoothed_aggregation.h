@@ -75,8 +75,8 @@ class smoothed_aggregation : public cusp::linear_operator<ValueType, MemorySpace
     template <typename Array1, typename Array2>
     void operator()(const Array1& x, Array2& y) const;
 
-    void solve(const cusp::array1d<ValueType,cusp::device_memory>& b,
-                     cusp::array1d<ValueType,cusp::device_memory>& x) const;
+    void solve(const cusp::array1d<ValueType,MemorySpace>& b,
+                     cusp::array1d<ValueType,MemorySpace>& x) const;
 
     void print( void );
 
