@@ -22,6 +22,7 @@ void TestMatrixFormatArray1d(void)
     ASSERT_EQUAL((bool) (thrust::detail::is_same<format,cusp::detail::array1d_format_tag>::value), true);
     ASSERT_EQUAL((bool) (thrust::detail::is_convertible<format,cusp::detail::sparse_format_tag>::value), false);
     ASSERT_EQUAL((bool) (thrust::detail::is_convertible<format,cusp::detail::dense_format_tag>::value), true);
+    ASSERT_EQUAL((bool) (thrust::detail::is_convertible<format,cusp::detail::known_format_tag>::value), true);
 }
 DECLARE_UNITTEST(TestMatrixFormatArray1d);
 
@@ -31,6 +32,7 @@ void TestMatrixFormatArray2d(void)
     ASSERT_EQUAL((bool) (thrust::detail::is_same<format,cusp::detail::array2d_format_tag>::value), true);
     ASSERT_EQUAL((bool) (thrust::detail::is_convertible<format,cusp::detail::sparse_format_tag>::value),false);
     ASSERT_EQUAL((bool) (thrust::detail::is_convertible<format,cusp::detail::dense_format_tag>::value), true);
+    ASSERT_EQUAL((bool) (thrust::detail::is_convertible<format,cusp::detail::known_format_tag>::value), true);
 }
 DECLARE_UNITTEST(TestMatrixFormatArray2d);
 
@@ -40,6 +42,7 @@ void TestMatrixFormatCooMatrix(void)
     ASSERT_EQUAL((bool) (thrust::detail::is_same<format,cusp::detail::coo_format_tag>::value), true);
     ASSERT_EQUAL((bool) (thrust::detail::is_convertible<format,cusp::detail::sparse_format_tag>::value), true);
     ASSERT_EQUAL((bool) (thrust::detail::is_convertible<format,cusp::detail::dense_format_tag>::value), false);
+    ASSERT_EQUAL((bool) (thrust::detail::is_convertible<format,cusp::detail::known_format_tag>::value), true);
 }
 DECLARE_UNITTEST(TestMatrixFormatCooMatrix);
 
@@ -49,6 +52,7 @@ void TestMatrixFormatCsrMatrix(void)
     ASSERT_EQUAL((bool) (thrust::detail::is_same<format,cusp::detail::csr_format_tag>::value), true);
     ASSERT_EQUAL((bool) (thrust::detail::is_convertible<format,cusp::detail::sparse_format_tag>::value), true);
     ASSERT_EQUAL((bool) (thrust::detail::is_convertible<format,cusp::detail::dense_format_tag>::value), false);
+    ASSERT_EQUAL((bool) (thrust::detail::is_convertible<format,cusp::detail::known_format_tag>::value), true);
 }
 DECLARE_UNITTEST(TestMatrixFormatCsrMatrix);
 
@@ -58,6 +62,7 @@ void TestMatrixFormatDiaMatrix(void)
     ASSERT_EQUAL((bool) (thrust::detail::is_same<format,cusp::detail::dia_format_tag>::value), true);
     ASSERT_EQUAL((bool) (thrust::detail::is_convertible<format,cusp::detail::sparse_format_tag>::value), true);
     ASSERT_EQUAL((bool) (thrust::detail::is_convertible<format,cusp::detail::dense_format_tag>::value), false);
+    ASSERT_EQUAL((bool) (thrust::detail::is_convertible<format,cusp::detail::known_format_tag>::value), true);
 }
 DECLARE_UNITTEST(TestMatrixFormatDiaMatrix);
 
@@ -67,6 +72,7 @@ void TestMatrixFormatEllMatrix(void)
     ASSERT_EQUAL((bool) (thrust::detail::is_same<format,cusp::detail::ell_format_tag>::value), true);
     ASSERT_EQUAL((bool) (thrust::detail::is_convertible<format,cusp::detail::sparse_format_tag>::value), true);
     ASSERT_EQUAL((bool) (thrust::detail::is_convertible<format,cusp::detail::dense_format_tag>::value), false);
+    ASSERT_EQUAL((bool) (thrust::detail::is_convertible<format,cusp::detail::known_format_tag>::value), true);
 }
 DECLARE_UNITTEST(TestMatrixFormatEllMatrix);
 
@@ -76,6 +82,7 @@ void TestMatrixFormatHybMatrix(void)
     ASSERT_EQUAL((bool) (thrust::detail::is_same<format,cusp::detail::hyb_format_tag>::value), true);
     ASSERT_EQUAL((bool) (thrust::detail::is_convertible<format,cusp::detail::sparse_format_tag>::value), true);
     ASSERT_EQUAL((bool) (thrust::detail::is_convertible<format,cusp::detail::dense_format_tag>::value), false);
+    ASSERT_EQUAL((bool) (thrust::detail::is_convertible<format,cusp::detail::known_format_tag>::value), true);
 }
 DECLARE_UNITTEST(TestMatrixFormatHybMatrix);
 

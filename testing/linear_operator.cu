@@ -8,13 +8,14 @@ void TestLinearOperator(void)
     cusp::array1d<float, MemorySpace> x(4);
     cusp::array1d<float, MemorySpace> y(4);
 
-    cusp::linear_operator<float, MemorySpace> A(4,3);
+    typedef typename cusp::linear_operator<float, MemorySpace, long> LinearOperator;
+    
+    LinearOperator A(4,3);
 
     ASSERT_EQUAL(A.num_rows, 4);
     ASSERT_EQUAL(A.num_cols, 3);
-
-    // linear_operator throws exceptions
-    ASSERT_THROWS(A(x, y), cusp::not_implemented_exception);
+    ASSERT_EQUAL((bool) (thrust::detail::is_same<typename LinearOperator::value_type,float>::value), true);
+    ASSERT_EQUAL((bool) (thrust::detail::is_same<typename LinearOperator::index_type,long>::value), true);
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestLinearOperator);
 

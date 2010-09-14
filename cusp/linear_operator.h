@@ -47,11 +47,6 @@ class linear_operator
     linear_operator(IndexType num_rows, IndexType num_cols, IndexType num_entries)
         : num_rows(num_rows), num_cols(num_cols), num_entries(num_entries) {}
 
-    template <typename VectorType1, typename VectorType2>
-    void operator()(const VectorType1& x, VectorType2& y) const
-    {
-        throw cusp::not_implemented_exception("linear_operator does not implement y <- A*x");
-    }
 }; // linear_operator
 
 template <typename ValueType, typename MemorySpace, typename IndexType=int>
