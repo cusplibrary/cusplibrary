@@ -17,7 +17,11 @@
 
 #pragma once
 
+#if THRUST_VERSION <= 100200
 #include <thrust/utility.h>
+#else
+#include <thrust/swap.h>
+#endif
 
 namespace cusp
 {

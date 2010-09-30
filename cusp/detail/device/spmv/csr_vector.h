@@ -22,7 +22,7 @@
 #include <cusp/detail/device/texture.h>
 
 #include <thrust/device_ptr.h>
-#include <thrust/experimental/arch.h>
+#include <thrust/detail/device/cuda/arch.h>
 
 namespace cusp
 {
@@ -135,7 +135,7 @@ void __spmv_csr_vector(const Matrix&    A,
     const size_t THREADS_PER_BLOCK  = 128;
     const size_t VECTORS_PER_BLOCK  = THREADS_PER_BLOCK / THREADS_PER_VECTOR;
 
-    const size_t MAX_BLOCKS = thrust::experimental::arch::max_active_blocks(spmv_csr_vector_kernel<IndexType, ValueType, VECTORS_PER_BLOCK, THREADS_PER_VECTOR, UseCache>, THREADS_PER_BLOCK, (size_t) 0);
+    const size_t MAX_BLOCKS = thrust::detail::device::cuda::arch::max_active_blocks(spmv_csr_vector_kernel<IndexType, ValueType, VECTORS_PER_BLOCK, THREADS_PER_VECTOR, UseCache>, THREADS_PER_BLOCK, (size_t) 0);
     const size_t NUM_BLOCKS = std::min<size_t>(MAX_BLOCKS, DIVIDE_INTO(A.num_rows, VECTORS_PER_BLOCK));
     
     if (UseCache)

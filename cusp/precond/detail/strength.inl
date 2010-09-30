@@ -5,6 +5,15 @@ namespace precond
 namespace detail
 {
 
+template <typename ValueType>
+struct absolute_value : public thrust::unary_function<ValueType,ValueType>
+{
+    ValueType operator()(const ValueType& x) const
+    {
+        return (x < 0) ? -x : x;
+    }
+};
+
 template <typename IndexType, typename ValueType>
 void symmetric_strength_of_connection(	const cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& A, 
 					cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& S,
@@ -20,7 +29,7 @@ void symmetric_strength_of_connection(	const cusp::coo_matrix<IndexType,ValueTyp
     cusp::array1d<ValueType,cusp::host_memory> diagonal;
     cusp::detail::extract_diagonal(A, diagonal);
     cusp::array1d<ValueType,cusp::host_memory> diagonal_abs(A.num_rows,0);
-    thrust::transform(diagonal.begin(), diagonal.end(), diagonal_abs.begin(), thrust::absolute_value<ValueType>());
+    thrust::transform(diagonal.begin(), diagonal.end(), diagonal_abs.begin(), absolute_value<ValueType>());
 
     S.resize(n_row,n_col,n_nnz);
 

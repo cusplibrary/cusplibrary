@@ -22,7 +22,7 @@
 #include <cusp/detail/device/texture.h>
 
 #include <thrust/device_ptr.h>
-#include <thrust/experimental/arch.h>
+#include <thrust/detail/device/cuda/arch.h>
 
 // SpMV kernel for the ELLPACK/ITPACK matrix format.
 
@@ -84,7 +84,7 @@ void __spmv_ell(const Matrix&    A,
     typedef typename Matrix::index_type IndexType;
 
     const size_t BLOCK_SIZE = 256;
-    const size_t MAX_BLOCKS = thrust::experimental::arch::max_active_blocks(spmv_ell_kernel<IndexType,ValueType,BLOCK_SIZE,UseCache>, BLOCK_SIZE, (size_t) 0);
+    const size_t MAX_BLOCKS = thrust::detail::device::cuda::arch::max_active_blocks(spmv_ell_kernel<IndexType,ValueType,BLOCK_SIZE,UseCache>, BLOCK_SIZE, (size_t) 0);
     const size_t NUM_BLOCKS = std::min<size_t>(MAX_BLOCKS, DIVIDE_INTO(A.num_rows, BLOCK_SIZE));
 
     const IndexType stride              = A.column_indices.num_rows;

@@ -19,7 +19,7 @@
 #include <cusp/detail/device/utils.h>
 
 #include <thrust/iterator/iterator_traits.h>
-#include <thrust/experimental/arch.h>
+#include <thrust/detail/device/cuda/arch.h>
 #include <thrust/detail/device/dereference.h>
 
 namespace cusp
@@ -106,7 +106,7 @@ void spmv_csr_scalar(SizeType        num_rows,
                      BinaryFunction2 reduce)
 {
     const SizeType block_size = 256;
-    const SizeType max_blocks = thrust::experimental::arch::max_active_blocks(spmv_csr_scalar_kernel<SizeType, OffsetIterator, IndexIterator, ValueIterator, InputIterator, InitialIterator, OutputIterator, UnaryFunction, BinaryFunction1, BinaryFunction2>, block_size, (size_t) 0);
+    const SizeType max_blocks = thrust::detail::device::cuda::arch::max_active_blocks(spmv_csr_scalar_kernel<SizeType, OffsetIterator, IndexIterator, ValueIterator, InputIterator, InitialIterator, OutputIterator, UnaryFunction, BinaryFunction1, BinaryFunction2>, block_size, (size_t) 0);
     const SizeType num_blocks = std::min(max_blocks, DIVIDE_INTO(num_rows, block_size));
     
     spmv_csr_scalar_kernel<<<num_blocks, block_size>>> 

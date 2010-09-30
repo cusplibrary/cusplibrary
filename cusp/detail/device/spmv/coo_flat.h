@@ -26,7 +26,7 @@
 #include <cusp/detail/device/spmv/coo_serial.h>
 
 #include <thrust/device_ptr.h>
-#include <thrust/experimental/arch.h>
+#include <thrust/detail/device/cuda/arch.h>
 
 // Note: Unlike the other kernels this kernel implements y += A*x
 
@@ -325,7 +325,7 @@ void __spmv_coo_flat(const Matrix&    A,
     }
 
     const unsigned int BLOCK_SIZE = 256;
-    const unsigned int MAX_BLOCKS = thrust::experimental::arch::max_active_blocks(spmv_coo_flat_kernel<IndexType, ValueType, BLOCK_SIZE, UseCache>, BLOCK_SIZE, (size_t) 0);
+    const unsigned int MAX_BLOCKS = thrust::detail::device::cuda::arch::max_active_blocks(spmv_coo_flat_kernel<IndexType, ValueType, BLOCK_SIZE, UseCache>, BLOCK_SIZE, (size_t) 0);
     const unsigned int WARPS_PER_BLOCK = BLOCK_SIZE / WARP_SIZE;
 
     const unsigned int num_units  = A.num_entries / WARP_SIZE; 

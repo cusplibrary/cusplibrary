@@ -17,10 +17,13 @@
 #include <cusp/csr_matrix.h>
 #include <cusp/exception.h>
 
-#include <thrust/is_sorted.h>
 #include <thrust/count.h>
 #include <thrust/extrema.h>
 #include <thrust/functional.h>
+
+#if THRUST_VERSION <= 100200
+#include <thrust/is_sorted.h>
+#endif
 
 #include <sstream>
 

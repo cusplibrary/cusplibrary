@@ -17,8 +17,11 @@
 #include <cusp/detail/convert.h>
 
 #include <thrust/sort.h>
-#include <thrust/is_sorted.h>
 #include <thrust/iterator/zip_iterator.h>
+
+#if THRUST_VERSION <= 100200
+#include <thrust/is_sorted.h>
+#endif
 
 namespace cusp
 {
