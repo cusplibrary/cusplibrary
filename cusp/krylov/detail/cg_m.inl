@@ -392,7 +392,7 @@ void cg_m(LinearOperator& A,
 
     cusp::default_monitor<ValueType> monitor(b);
 
-    return multi_cg(A, x, b, sigma, monitor);
+    return cg_m(A, x, b, sigma, monitor);
 }
 
 // CG-M routine that takes a user specified monitor
