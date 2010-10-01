@@ -17,7 +17,9 @@
 
 #pragma once
 
-#if THRUST_VERSION <= 100200
+#include <thrust/version.h>
+
+#if THRUST_VERSION < 100300
 #include <thrust/utility.h>
 #else
 #include <thrust/swap.h>

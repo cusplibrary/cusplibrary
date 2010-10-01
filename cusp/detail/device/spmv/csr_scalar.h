@@ -16,11 +16,11 @@
 
 #pragma once
 
+#include <cusp/detail/device/arch.h>
 #include <cusp/detail/device/utils.h>
 #include <cusp/detail/device/texture.h>
 
 #include <thrust/device_ptr.h>
-#include <thrust/experimental/arch.h>
 
 namespace cusp
 {
@@ -81,7 +81,7 @@ void __spmv_csr_scalar(const Matrix&    A,
     typedef typename Matrix::index_type IndexType;
 
     const unsigned int BLOCK_SIZE = 256;
-    const unsigned int MAX_BLOCKS = thrust::experimental::arch::max_active_blocks(spmv_csr_scalar_kernel<UseCache, IndexType, ValueType>, BLOCK_SIZE, (size_t) 0);
+    const unsigned int MAX_BLOCKS = cusp::detail::device::arch::max_active_blocks(spmv_csr_scalar_kernel<UseCache, IndexType, ValueType>, BLOCK_SIZE, (size_t) 0);
     const unsigned int NUM_BLOCKS = std::min(MAX_BLOCKS, DIVIDE_INTO(A.num_rows, BLOCK_SIZE));
     
     if (UseCache)

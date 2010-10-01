@@ -19,7 +19,7 @@
 #include <thrust/sort.h>
 #include <thrust/iterator/zip_iterator.h>
 
-#if THRUST_VERSION <= 100200
+#if (THRUST_VERSION < 100300)
 #include <thrust/is_sorted.h>
 #endif
 

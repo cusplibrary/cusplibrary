@@ -19,12 +19,12 @@
 
 #include <thrust/extrema.h>
 
+#include <cusp/detail/device/arch.h>
 #include <cusp/detail/device/common.h>
 #include <cusp/detail/device/utils.h>
 #include <cusp/detail/device/texture.h>
 
 #include <thrust/device_ptr.h>
-#include <thrust/detail/device/cuda/arch.h>
 
 namespace cusp
 {
@@ -121,7 +121,7 @@ void __spmv_dia(const Matrix&    A,
     typedef typename Matrix::index_type IndexType;
 
     const size_t BLOCK_SIZE = 256;
-    const size_t MAX_BLOCKS = thrust::detail::device::cuda::arch::max_active_blocks(spmv_dia_kernel<IndexType, ValueType, BLOCK_SIZE, UseCache>, BLOCK_SIZE, (size_t) sizeof(IndexType) * BLOCK_SIZE);
+    const size_t MAX_BLOCKS = cusp::detail::device::arch::max_active_blocks(spmv_dia_kernel<IndexType, ValueType, BLOCK_SIZE, UseCache>, BLOCK_SIZE, (size_t) sizeof(IndexType) * BLOCK_SIZE);
     const size_t NUM_BLOCKS = std::min<size_t>(MAX_BLOCKS, DIVIDE_INTO(A.num_rows, BLOCK_SIZE));
    
     const IndexType num_diagonals = A.values.num_cols;

@@ -67,14 +67,12 @@ void example_matrices(Vector& matrices)
 template <typename SparseMatrix>
 void TestAdd(void)
 {
+#if THRUST_VERSION < 100300
+    KNOWN_FAILURE;
+#else
     typedef cusp::array2d<float,cusp::host_memory> DenseMatrix;
 
-#if THRUST_VERSION >= 100300
     thrust::host_vector< DenseMatrix > matrices;
-#else
-    // TODO remove this when Thrust v1.2.x is unsupported
-    std::vector< DenseMatrix > matrices;
-#endif
 
     example_matrices(matrices);
     
@@ -107,6 +105,7 @@ void TestAdd(void)
     ASSERT_THROWS(cusp::add(A,B,D), cusp::invalid_input_exception);
     ASSERT_THROWS(cusp::add(A,C,D), cusp::invalid_input_exception);
     ASSERT_THROWS(cusp::add(B,C,D), cusp::invalid_input_exception);
+#endif
 }
 DECLARE_SPARSE_MATRIX_UNITTEST(TestAdd);
 
@@ -114,14 +113,12 @@ DECLARE_SPARSE_MATRIX_UNITTEST(TestAdd);
 template <typename SparseMatrix>
 void TestSubtract(void)
 {
+#if THRUST_VERSION < 100300
+    KNOWN_FAILURE;
+#else
     typedef cusp::array2d<float,cusp::host_memory> DenseMatrix;
 
-#if THRUST_VERSION >= 100300
     thrust::host_vector< DenseMatrix > matrices;
-#else
-    // TODO remove this when Thrust v1.2.x is unsupported
-    std::vector< DenseMatrix > matrices;
-#endif
 
     example_matrices(matrices);
     
@@ -154,6 +151,7 @@ void TestSubtract(void)
     ASSERT_THROWS(cusp::subtract(A,B,D), cusp::invalid_input_exception);
     ASSERT_THROWS(cusp::subtract(A,C,D), cusp::invalid_input_exception);
     ASSERT_THROWS(cusp::subtract(B,C,D), cusp::invalid_input_exception);
+#endif
 }
 DECLARE_SPARSE_MATRIX_UNITTEST(TestSubtract);
 

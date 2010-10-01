@@ -81,8 +81,13 @@ namespace cusp
             {
                 if(n > 0)
                 {
+#if (THRUST_VERSION < 100300)
+                    Parent::mBegin = Parent::mAllocator.allocate(n);
+                    Parent::mSize  = Parent::mCapacity = n;
+#else                    
                     Parent::m_storage.allocate(n);
                     Parent::m_size = n;
+#endif
                 }
             }
 
