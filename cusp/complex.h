@@ -66,48 +66,62 @@ namespace cusp
   // Arithmetic operators:
   // Multiplication
   template <typename ValueType> 
+    __host__ __device__
     inline complex<ValueType> operator*(const complex<ValueType>& lhs,
 					    const complex<ValueType>& rhs);
   template <typename ValueType> 
+    __host__ __device__
     inline complex<ValueType> operator*(const complex<ValueType>& lhs,
 					    const ValueType & rhs);
   template <typename ValueType> 
+    __host__ __device__
     inline complex<ValueType> operator*(const ValueType& lhs,
 					    const complex<ValueType>& rhs);
   // Division
   template <typename ValueType>
+    __host__ __device__
     inline complex<ValueType> operator/(const complex<ValueType>& lhs,
 					    const complex<ValueType>& rhs);
   template <>
+    __host__ __device__
     inline complex<float> operator/(const complex<float>& lhs,
 					const complex<float>& rhs);
   template <>
+    __host__ __device__
     inline complex<double> operator/(const complex<double>& lhs, 
 					 const complex<double>& rhs);
   // Addition
   template <typename ValueType> 
+    __host__ __device__
     inline complex<ValueType> operator+(const complex<ValueType>& lhs,
 					    const complex<ValueType>& rhs);
   template <typename ValueType> 
+    __host__ __device__
     inline complex<ValueType> operator+(const complex<ValueType>& lhs,
 					    const ValueType & rhs);
   template <typename ValueType> 
+    __host__ __device__
     inline complex<ValueType> operator+(const ValueType& lhs,
 					    const complex<ValueType>& rhs);
   // Subtraction
   template <typename ValueType> 
+    __host__ __device__
     inline complex<ValueType> operator-(const complex<ValueType>& lhs,
 					    const complex<ValueType>& rhs);
   template <typename ValueType> 
+    __host__ __device__
     inline complex<ValueType> operator-(const complex<ValueType>& lhs,
 					    const ValueType & rhs);
   template <typename ValueType> 
+    __host__ __device__
     inline complex<ValueType> operator-(const ValueType& lhs,
 					    const complex<ValueType>& rhs);
   // Unary plus and minus
   template <typename ValueType> 
+    __host__ __device__
     inline complex<ValueType> operator+(const complex<ValueType>& rhs);
   template <typename ValueType> 
+    __host__ __device__
     inline complex<ValueType> operator-(const complex<ValueType>& rhs);
 
   // Transcendentals:
@@ -202,37 +216,47 @@ namespace cusp
     public:
       typedef ValueType value_type;
       // Constructors
-      complex<ValueType>(const ValueType & re = ValueType(), const ValueType& im = ValueType()){
+      __host__ __device__      
+      inline complex<ValueType>(const ValueType & re = ValueType(), const ValueType& im = ValueType()){
 	real(re);
 	imag(im);
       }  
-      template <class X> complex<ValueType>(const complex<X> & z){
+      template <class X> 
+      __host__ __device__
+      inline complex<ValueType>(const complex<X> & z){
 	real(z.real());
 	imag(z.imag());
       }  
-
-      complex<ValueType>& operator+=(const complex<ValueType> z){
+      __host__ __device__
+      inline complex<ValueType>& operator+=(const complex<ValueType> z){
 	real(real()+z.real());
 	imag(imag()+z.imag());
 	return *this;
       }
-      complex<ValueType>& operator-=(const complex<ValueType> z){
+      __host__ __device__
+      inline complex<ValueType>& operator-=(const complex<ValueType> z){
 	real(real()-z.real());
 	imag(imag()-z.imag());
 	return *this;
       }
-      complex<ValueType>& operator*=(const complex<ValueType> z){
+      __host__ __device__
+      inline complex<ValueType>& operator*=(const complex<ValueType> z){
 	*this = *this * z;
 	return *this;
       }
-      complex<ValueType>& operator/=(const complex<ValueType> z){
+      __host__ __device__
+      inline complex<ValueType>& operator/=(const complex<ValueType> z){
 	*this = *this / z;
 	return *this;
       }
-      ValueType real() const;
-      ValueType imag() const;
-      void real(ValueType);
-      void imag(ValueType);
+      __host__ __device__
+      inline ValueType real() const;
+      __host__ __device__
+      inline ValueType imag() const;
+      __host__ __device__
+      inline void real(ValueType);
+      __host__ __device__
+      inline void imag(ValueType);
     };
 
 
@@ -241,46 +265,57 @@ namespace cusp
     {
     public:
       typedef float value_type;
-      complex<float>(const float & re = float(), const float& im = float()){
+      __host__ __device__ 
+      inline  complex<float>(const float & re = float(), const float& im = float()){
 	real(re);
 	imag(im);
       }  
       // For some reason having the following constructor
       // explicitly makes things faster with at least g++
+      __host__ __device__
       complex<float>(const complex<float> & z)
 	:cuFloatComplex(z){}
+      __host__ __device__
       complex<float>(cuFloatComplex z)
 	:cuFloatComplex(z){}
       // Member operators
-      complex<float>& operator+=(const complex<float> z){
+      __host__ __device__ 
+      inline complex<float>& operator+=(const complex<float> z){
 	real(real()+z.real());
 	imag(imag()+z.imag());
 	return *this;
       }
-      complex<float>& operator-=(const complex<float> z){
+      __host__ __device__ 
+      inline complex<float>& operator-=(const complex<float> z){
 	real(real()-z.real());
 	imag(imag()-z.imag());
 	return *this;
       }
-      complex<float>& operator*=(const complex<float> z){
+      __host__ __device__ 
+      inline complex<float>& operator*=(const complex<float> z){
 	*this = *this * z;
 	return *this;
       }
-      complex<float>& operator/=(const complex<float> z){
+      __host__ __device__ 
+      inline complex<float>& operator/=(const complex<float> z){
 	*this = *this / z;
 	return *this;
       }
       // Let the compiler synthesize the copy and assignment operators.
-      float real() const{
+      __host__ __device__ 
+	inline float real() const{
 	return x;
       }
-      float imag() const{
+      __host__ __device__
+	inline float imag() const{
 	return y;
       }
-      void real(float re){
+      __host__ __device__
+	inline void real(float re){
 	x = re;
       }
-      void imag(float im){
+      __host__ __device__ 
+	inline void imag(float im){
 	y = im;
       }
   
@@ -291,47 +326,57 @@ namespace cusp
     {
     public:
       typedef double value_type;
-      complex<double>(const double & re = double(), const double& im = double()){
+      __host__ __device__
+	inline complex<double>(const double & re = double(), const double& im = double()){
 	real(re);
 	imag(im);
       }  
       // For some reason having the following constructor
       // explicitly makes things faster with at least g++
-      complex<double>(const complex<double> & z)
+      __host__ __device__
+	inline complex<double>(const complex<double> & z)
 	:cuDoubleComplex(z){}
-
-      complex<double>(cuDoubleComplex z)
+      __host__ __device__
+	inline complex<double>(cuDoubleComplex z)
 	:cuDoubleComplex(z){}
       // Member operators
-      complex<double>& operator+=(const complex<double> z){
+      __host__ __device__
+	inline complex<double>& operator+=(const complex<double> z){
 	real(real()+z.real());
 	imag(imag()+z.imag());
 	return *this;
       }
-      complex<double>& operator-=(const complex<double> z){
+      __host__ __device__
+	inline complex<double>& operator-=(const complex<double> z){
 	real(real()-z.real());
 	imag(imag()-z.imag());
 	return *this;
       }
-      complex<double>& operator*=(const complex<double> z){
+      __host__ __device__
+	inline complex<double>& operator*=(const complex<double> z){
 	*this = *this * z;
 	return *this;
       }
-      complex<double>& operator/=(const complex<double> z){
+      __host__ __device__
+	inline complex<double>& operator/=(const complex<double> z){
 	*this = *this / z;
 	return *this;
       }
       // Let the compiler synthesize the copy and assignment operators.
-      double real() const{
+      __host__ __device__
+	inline double real() const{
 	return x;
       }
-      double imag() const{
+      __host__ __device__
+	inline double imag() const{
 	return y;
       }
-      void real(double re){
+      __host__ __device__
+	inline void real(double re){
 	x = re;
       }
-      void imag(double im){
+      __host__ __device__
+	inline void imag(double im){
 	y = im;
       }
   
@@ -367,17 +412,20 @@ namespace cusp
     //  return cuCsubf(lhs,rhs);
   }
   template <typename ValueType> 
+    __host__ __device__
     inline complex<ValueType> operator-(const complex<ValueType>& lhs, const ValueType & rhs){
     return complex<ValueType>(lhs.real()-rhs,lhs.imag());
     //  return cuCsubf(lhs,complex<float>(rhs));
   }
   template <typename ValueType> 
+    __host__ __device__
     inline complex<ValueType> operator-(const ValueType& lhs, const complex<ValueType>& rhs){
     return complex<ValueType>(lhs-rhs.real(),-rhs.imag());
     //  return cuCsubf(complex<float>(lhs),rhs);
   }
 
   template <typename ValueType> 
+    __host__ __device__
     inline complex<ValueType> operator*(const complex<ValueType>& lhs,
 					    const complex<ValueType>& rhs){
     return complex<ValueType>(lhs.real()*rhs.real()-lhs.imag()*rhs.imag(),
@@ -386,12 +434,14 @@ namespace cusp
   }
 
   template <typename ValueType> 
+    __host__ __device__
     inline complex<ValueType> operator*(const complex<ValueType>& lhs, const ValueType & rhs){
     return complex<ValueType>(lhs.real()*rhs,lhs.imag()*rhs);
     //  return cuCmulf(lhs,complex<float>(rhs));
   }
 
   template <typename ValueType> 
+    __host__ __device__
     inline complex<ValueType> operator*(const ValueType& lhs, const complex<ValueType>& rhs){
     return complex<ValueType>(rhs.real()*lhs,rhs.imag()*lhs);
     //  return cuCmulf(complex<float>(lhs),rhs);
@@ -399,6 +449,7 @@ namespace cusp
 
 
   template <typename ValueType>
+    __host__ __device__
     inline complex<ValueType> operator/(const complex<ValueType>& lhs, const complex<ValueType>& rhs){
     const ValueType cross_norm  =  lhs.real() * rhs.real() + lhs.imag() * rhs.imag();
     const ValueType rhs_norm = norm(rhs);
@@ -407,22 +458,26 @@ namespace cusp
   }
 
   template <>
+    __host__ __device__
     inline complex<float> operator/(const complex<float>& lhs, const complex<float>& rhs){
     return cuCdivf(lhs,rhs);
   }
 
   template <>
+    __host__ __device__
     inline complex<double> operator/(const complex<double>& lhs, const complex<double>& rhs){
     return cuCdiv(lhs,rhs);
   }
 
   template <typename ValueType> 
+    __host__ __device__
     inline complex<ValueType> operator/(const complex<ValueType>& lhs, const ValueType & rhs){
     return complex<ValueType>(lhs.real()/rhs,lhs.imag()/rhs);
     //  return cuCdivf(lhs,complex<float>(rhs));
   }
 
   template <typename ValueType>
+    __host__ __device__
     inline complex<ValueType> operator/(const ValueType& lhs, const complex<ValueType>& rhs){
     const ValueType cross_norm  =  lhs * rhs.real();
     const ValueType rhs_norm = norm(rhs);
@@ -430,10 +485,12 @@ namespace cusp
   }
 
   template <>
+    __host__ __device__
     inline complex<float> operator/(const float& lhs, const complex<float>& rhs){
     return cuCdivf(complex<float>(lhs),rhs);
   }
   template <>
+    __host__ __device__
     inline complex<double> operator/(const double& lhs, const complex<double>& rhs){
     return cuCdiv(complex<double>(lhs),rhs);
   }
@@ -441,16 +498,19 @@ namespace cusp
 
   // Unary arithmetic operations
   template <typename ValueType> 
+    __host__ __device__
     inline complex<ValueType> operator+(const complex<ValueType>& rhs){
     return rhs;
   }
   template <typename ValueType> 
+    __host__ __device__
     inline complex<ValueType> operator-(const complex<ValueType>& rhs){
     return rhs*-1;
   }
 
   // Equality operators 
   template <typename ValueType> 
+    __host__ __device__
     inline bool operator==(const complex<ValueType>& lhs, const complex<ValueType>& rhs){
     if(lhs.real() == rhs.real() && lhs.imag() == rhs.imag()){
       return true;
@@ -458,6 +518,7 @@ namespace cusp
     return false;
   }
   template <typename ValueType> 
+    __host__ __device__
     inline bool operator==(const ValueType & lhs, const complex<ValueType>& rhs){
     if(lhs == rhs.real() && rhs.imag() == 0){
       return true;
@@ -465,6 +526,7 @@ namespace cusp
     return false;
   }
   template <typename ValueType> 
+    __host__ __device__
     inline bool operator==(const complex<ValueType> & lhs, const ValueType& rhs){
     if(lhs.real() == rhs && lhs.imag() == 0){
       return true;
@@ -473,64 +535,78 @@ namespace cusp
   }
 
   template <typename ValueType> 
+    __host__ __device__
     inline bool operator!=(const complex<ValueType>& lhs, const complex<ValueType>& rhs){
     return !(lhs == rhs);
   }
 
   template <typename ValueType> 
+    __host__ __device__
     inline bool operator!=(const ValueType & lhs, const complex<ValueType>& rhs){
     return !(lhs == rhs);
   }
 
   template <typename ValueType> 
+    __host__ __device__
     inline bool operator!=(const complex<ValueType> & lhs, const ValueType& rhs){
     return !(lhs == rhs);
   }
 
 
   template <typename ValueType>
+    __host__ __device__
     inline complex<ValueType> conj(const complex<ValueType>& z){
     return complex<ValueType>(z.real(),-z.imag());
   }
 
   template <typename ValueType>
+    __host__ __device__
     inline ValueType abs(const complex<ValueType>& z){
     return sqrt(norm(z));
   }
   template <>
+    __host__ __device__
     inline float abs(const complex<float>& rhs){
     return cuCabsf(rhs);
   }
   template<>
+    __host__ __device__
     inline double abs(const complex<double>& rhs){
     return cuCabs(rhs);
   }
 
   template <typename ValueType>
+    __host__ __device__
     inline ValueType arg(const complex<ValueType>& z){
     return atan2(z.imag(),z.real());
   }
-  inline float arg(const complex<float>& z){
+  template<>
+    __host__ __device__
+    inline float arg(const complex<float>& z){
     return atan2f(z.imag(),z.real());
   }
 
   template <typename ValueType>
+    __host__ __device__
     inline ValueType norm(const complex<ValueType>& z){
     return z.real()*z.real() + z.imag()*z.imag();
   }
 
   template <typename ValueType>
+    __host__ __device__
     inline complex<ValueType> polar(const ValueType & m, const ValueType & theta){ 
     return complex<ValueType>(m * ::cos(theta),m * ::sin(theta));
   }
 
   template <>
+    __host__ __device__
     inline complex<float> polar(const float & magnitude, const float & angle){ 
     return complex<float>(magnitude * cosf(angle),magnitude * sinf(angle));
   }
 
   // Transcendental functions implementation
   template <typename ValueType>
+    __host__ __device__
     inline complex<ValueType> cos(const complex<ValueType>& z){
     const ValueType re = z.real();
     const ValueType im = z.imag();
@@ -538,6 +614,7 @@ namespace cusp
   }
 
   template <>
+    __host__ __device__
     inline complex<float> cos(const complex<float>& z){
     const float re = z.real();
     const float im = z.imag();
@@ -545,6 +622,7 @@ namespace cusp
   }
 
   template <typename ValueType>
+    __host__ __device__
     inline complex<ValueType> cosh(const complex<ValueType>& z){
     const ValueType re = z.real();
     const ValueType im = z.imag();
@@ -552,6 +630,7 @@ namespace cusp
   }
 
   template <>
+    __host__ __device__
     inline complex<float> cosh(const complex<float>& z){
     const float re = z.real();
     const float im = z.imag();
@@ -560,57 +639,68 @@ namespace cusp
 
 
   template <typename ValueType>
+    __host__ __device__
     inline complex<ValueType> exp(const complex<ValueType>& z){
     return polar(::exp(z.real()),z.imag());
   }
 
   template <>
+    __host__ __device__
     inline complex<float> exp(const complex<float>& z){
     return polar(expf(z.real()),z.imag());
   }
 
   template <typename ValueType>
+    __host__ __device__
     inline complex<ValueType> log(const complex<ValueType>& z){
     return complex<ValueType>(::log(abs(z)),arg(z));
   }
 
   template <>
+    __host__ __device__
     inline complex<float> log(const complex<float>& z){
     return complex<float>(::logf(abs(z)),arg(z));
   }
 
 
   template <typename ValueType>
+    __host__ __device__
     inline complex<ValueType> log10(const complex<ValueType>& z){
     return log(z)/ValueType(::log(10));
   }
 
   template <typename ValueType>
+    __host__ __device__
     inline complex<ValueType> pow(const complex<ValueType>& z, const ValueType & exponent){
     return exp(log(z)*exponent);
   }
 
   template <typename ValueType>
+    __host__ __device__
     inline complex<ValueType> pow(const complex<ValueType>& z, const complex<ValueType> & exponent){
     return exp(log(z)*exponent);
   }
 
   template <typename ValueType>
+    __host__ __device__
     inline complex<ValueType> pow(const ValueType & x, const complex<ValueType> & exponent){
     return exp(::log(x)*exponent);
   }
 
   template <>
+    __host__ __device__
     inline complex<float> pow(const float & x, const complex<float> & exponent){
     return exp(::logf(x)*exponent);
   }
 
   template <typename ValueType>
+    __host__ __device__
     inline complex<ValueType> pow(const complex<ValueType>& z,const int & exponent){
     return exp(log(z)*ValueType(exponent));
   }
 
   template <typename ValueType>
+    __host__ __device__
     inline complex<ValueType> sin(const complex<ValueType>& z){
     const ValueType re = z.real();
     const ValueType im = z.imag();
@@ -618,6 +708,7 @@ namespace cusp
   }
 
   template <>
+    __host__ __device__
     inline complex<float> sin(const complex<float>& z){
     const float re = z.real();
     const float im = z.imag();
@@ -625,6 +716,7 @@ namespace cusp
   }
 
   template <typename ValueType>
+    __host__ __device__
     inline complex<ValueType> sinh(const complex<ValueType>& z){
     const ValueType re = z.real();
     const ValueType im = z.imag();
@@ -632,6 +724,7 @@ namespace cusp
   }
 
   template <>
+    __host__ __device__
     inline complex<float> sinh(const complex<float>& z){
     const float re = z.real();
     const float im = z.imag();
@@ -639,16 +732,19 @@ namespace cusp
   }
 
   template <typename ValueType>
+    __host__ __device__
     inline complex<ValueType> sqrt(const complex<ValueType>& z){
     return polar(::sqrt(abs(z)),arg(z)/2);
   }
 
   template <typename ValueType>
+    __host__ __device__
     inline complex<ValueType> tan(const complex<ValueType>& z){
     return sin(z)/cos(z);
   }
 
   template <typename ValueType>
+    __host__ __device__
     inline complex<ValueType> tanh(const complex<ValueType>& z){
     return sinh(z)/cosh(z);
   }
@@ -658,20 +754,23 @@ namespace cusp
   // TODO: test
 
   template <typename ValueType>
+    __host__ __device__
     inline complex<ValueType> acos(const complex<ValueType>& z){
-    const const complex<ValueType> i(0,1);
+    const complex<ValueType> i(0,1);
     return -i*log(z+i*sqrt(ValueType(1)-z*z));
   }
 
   template <typename ValueType>
+    __host__ __device__
     inline complex<ValueType> asin(const complex<ValueType>& z){
-    const const complex<ValueType> i(0,1);
+    const complex<ValueType> i(0,1);
     return -i*log(i*z+sqrt(ValueType(1)-z*z));
   }
 
   template <typename ValueType>
+    __host__ __device__
     inline complex<ValueType> atan(const complex<ValueType>& z){
-    const const complex<ValueType> i(0,1);
+    const complex<ValueType> i(0,1);
     return i*(log(ValueType(1)-i*z)-log(ValueType(1)+i*z))/ValueType(2);
   }
 
