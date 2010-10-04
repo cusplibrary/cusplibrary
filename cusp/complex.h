@@ -140,7 +140,16 @@ namespace cusp
   template<typename ValueType> complex<ValueType> tan(const complex<ValueType>&z);
   // Returns the complex hyperbolic tangent of z.
   template<typename ValueType> complex<ValueType> tanh(const complex<ValueType>&z);
-    
+
+
+  // Inverse Trigonometric:
+  // Returns the complex arc cosine of z.
+  template<typename ValueType> complex<ValueType> acos(const complex<ValueType>& z);
+  // Returns the complex arc sine of z.
+  template<typename ValueType> complex<ValueType> asin(const complex<ValueType>& z);
+  // Returns the complex arc tangent of z.
+  template<typename ValueType> complex<ValueType> asin(const complex<ValueType>& z);
+
   // Stream operators:
   template<typename ValueType,class charT, class traits>
     std::basic_ostream<charT, traits>& operator<<(std::basic_ostream<charT, traits>& os,
@@ -642,6 +651,28 @@ namespace cusp
   template <typename ValueType>
     inline complex<ValueType> tanh(const complex<ValueType>& z){
     return sinh(z)/cosh(z);
+  }
+
+  // Inverse trigonometric functions implementation
+  // DISCLAIMER: completely untested
+  // TODO: test
+
+  template <typename ValueType>
+    inline complex<ValueType> acos(const complex<ValueType>& z){
+    const const complex<ValueType> i(0,1);
+    return -i*log(z+i*sqrt(ValueType(1)-z*z));
+  }
+
+  template <typename ValueType>
+    inline complex<ValueType> asin(const complex<ValueType>& z){
+    const const complex<ValueType> i(0,1);
+    return -i*log(i*z+sqrt(ValueType(1)-z*z));
+  }
+
+  template <typename ValueType>
+    inline complex<ValueType> atan(const complex<ValueType>& z){
+    const const complex<ValueType> i(0,1);
+    return i*(log(ValueType(1)-i*z)-log(ValueType(1)+i*z))/ValueType(2);
   }
 
 } // end namespace cusp
