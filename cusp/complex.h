@@ -226,7 +226,8 @@ namespace cusp
       typedef ValueType value_type;
       // Constructors
       __host__ __device__      
-      inline complex<ValueType>(const ValueType & re = ValueType(), const ValueType& im = ValueType()){
+      inline complex<ValueType>(const ValueType & re = ValueType(), 
+				const ValueType& im = ValueType()){
 	real(re);
 	imag(im);
       }  
@@ -781,8 +782,6 @@ namespace cusp
   }
 
   // Inverse trigonometric functions implementation
-  // DISCLAIMER: completely untested
-  // TODO: test
 
   template <typename ValueType>
     __host__ __device__
