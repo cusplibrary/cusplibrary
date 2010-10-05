@@ -128,14 +128,10 @@ __host__ bool compareWithStd(cusp::complex<ValueType> a){
   ASSERT_COMPLEX_ALMOST_EQUAL(b,s_b);
   b = cusp::log10(a);
   s_b = std::log10(s_a);
-  // There's a difference here but the cusp value came closer
-  // to the value calculated with arbitrary precision
   ASSERT_COMPLEX_ALMOST_EQUAL(b,s_b);
 
   b = cusp::pow(a,b);
   s_b = std::pow(s_a,s_b);
-  // There's a difference here but the cusp value came closer
-  // to the value calculated with arbitrary precision
   ASSERT_COMPLEX_ALMOST_EQUAL(b,s_b);
   b = cusp::pow(a,ValueType(1.3));
   s_b = std::pow(s_a,ValueType(1.3));
@@ -158,13 +154,9 @@ __host__ bool compareWithStd(cusp::complex<ValueType> a){
   ASSERT_COMPLEX_ALMOST_EQUAL(b,s_b);
   b = cusp::tan(a);  
   s_b = std::tan(s_a);
-  // There's a difference here and it's a close call 
-  // but I think the cusp value came closer
-  // to the value calculated with arbitrary precision
   ASSERT_COMPLEX_ALMOST_EQUAL(b,s_b);
   b = cusp::tanh(a);
   s_b = std::tanh(s_a);
-  // Here we're both clearly the wrong
   ASSERT_COMPLEX_ALMOST_EQUAL(b,s_b);
 
   // Inverse trigonometic functions not part of standard 
@@ -188,7 +180,6 @@ __host__ bool compareWithStd(cusp::complex<ValueType> a){
     __complex__ float g_b;
     g_a = s_a.real() + s_a.imag()*__I__;
     g_b = s_b.real() + s_b.imag()*__I__;
-    // Ok here we screwed big time
     b = cusp::acos(a);
     g_b = cacosf(g_a);
     s_b = std::complex<ValueType>(creal(g_b),cimag(g_b));
@@ -196,7 +187,6 @@ __host__ bool compareWithStd(cusp::complex<ValueType> a){
 
     g_a = s_a.real() + s_a.imag()*__I__;
     g_b = s_b.real() + s_b.imag()*__I__;
-    // Ok here we screwed big time
     b = cusp::asin(a);
     g_b = casinf(g_a);
     s_b = std::complex<ValueType>(creal(g_b),cimag(g_b));
@@ -204,7 +194,6 @@ __host__ bool compareWithStd(cusp::complex<ValueType> a){
 
     g_a = s_a.real() + s_a.imag()*__I__;
     g_b = s_b.real() + s_b.imag()*__I__;
-    // Ok here we screwed big time
     b = cusp::atan(a);
     g_b = catanf(g_a);
     s_b = std::complex<ValueType>(creal(g_b),cimag(g_b));
@@ -212,7 +201,6 @@ __host__ bool compareWithStd(cusp::complex<ValueType> a){
 
     g_a = s_a.real() + s_a.imag()*__I__;
     g_b = s_b.real() + s_b.imag()*__I__;
-    // Ok here we screwed big time
     b = cusp::acosh(a);
     g_b = cacoshf(g_a);
     s_b = std::complex<ValueType>(creal(g_b),cimag(g_b));
@@ -238,7 +226,6 @@ __host__ bool compareWithStd(cusp::complex<ValueType> a){
     __complex__ double g_b;
     g_a = s_a.real() + s_a.imag()*__I__;
     g_b = s_b.real() + s_b.imag()*__I__;
-    // Ok here we screwed big time
     b = cusp::acos(a);
     g_b = cacos(g_a);
     s_b = std::complex<ValueType>(creal(g_b),cimag(g_b));
@@ -246,7 +233,6 @@ __host__ bool compareWithStd(cusp::complex<ValueType> a){
 
     g_a = s_a.real() + s_a.imag()*__I__;
     g_b = s_b.real() + s_b.imag()*__I__;
-    // Ok here we screwed big time
     b = cusp::asin(a);
     g_b = casin(g_a);
     s_b = std::complex<ValueType>(creal(g_b),cimag(g_b));
@@ -254,7 +240,6 @@ __host__ bool compareWithStd(cusp::complex<ValueType> a){
 
     g_a = s_a.real() + s_a.imag()*__I__;
     g_b = s_b.real() + s_b.imag()*__I__;
-    // Ok here we screwed big time
     b = cusp::atan(a);
     g_b = catan(g_a);
     s_b = std::complex<ValueType>(creal(g_b),cimag(g_b));
@@ -262,7 +247,6 @@ __host__ bool compareWithStd(cusp::complex<ValueType> a){
 
     g_a = s_a.real() + s_a.imag()*__I__;
     g_b = s_b.real() + s_b.imag()*__I__;
-    // Ok here we screwed big time
     b = cusp::acosh(a);
     g_b = cacosh(g_a);
     s_b = std::complex<ValueType>(creal(g_b),cimag(g_b));
