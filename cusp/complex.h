@@ -808,7 +808,26 @@ namespace cusp
   template <typename ValueType>
     __host__ __device__
     inline complex<ValueType> acosh(const complex<ValueType>& z){
-    return log(sqrt(z*z-ValueType(1))+z);
+    cusp::complex<ValueType> ret((z.real() - z.imag()) * (z.real() + z.imag()) - ValueType(1.0),
+				 ValueType(2.0) * z.real() * z.imag());    
+    ret = sqrt(ret);
+    if (z.real() < ValueType(0.0)){
+      ret = -ret;
+    }
+    ret += z;
+    ret = log(ret);
+    if (ret.real() < ValueType(0.0)){
+      ret = -ret;
+    }
+    return ret;
+
+    /*
+    cusp::complex<ValueType> ret = log(sqrt(z*z-ValueType(1))+z);
+    if(ret.real() < 0){
+      ret.real(-ret.real());
+    }
+    return ret;
+    */
   }
 
   template <typename ValueType>
@@ -831,14 +850,14 @@ namespace cusp
     d = ValueType(1.0) -  z.real() * z.real() - imag2;
 
     ret.imag(ValueType(0.5) * ::atan2(ValueType(2.0) * z.imag(), d));
-    //    return (log(ValueType(1)+z)-log(ValueType(1)-z))/ValueType(2);
     return ret;
+    //return (log(ValueType(1)+z)-log(ValueType(1)-z))/ValueType(2);
   }
 
   template <typename ValueType>
     __host__ __device__
     inline complex<float> atanh(const complex<float>& z){
-    float imag2 = z.imag() *  z.imag();   
+        float imag2 = z.imag() *  z.imag();   
     float n = float(1.0) + z.real();
     n = imag2 + n * n;
 
@@ -849,8 +868,9 @@ namespace cusp
     d = float(1.0) -  z.real() * z.real() - imag2;
 
     ret.imag(float(0.5) * ::atan2f(float(2.0) * z.imag(), d));
-    //    return (log(ValueType(1)+z)-log(ValueType(1)-z))/ValueType(2);
     return ret;
+    //return (log(ValueType(1)+z)-log(ValueType(1)-z))/ValueType(2);
+
   }
 
 } // end namespace cusp
