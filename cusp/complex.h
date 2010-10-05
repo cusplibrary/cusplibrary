@@ -40,6 +40,7 @@ SUCH DAMAGE.
 
 */
 
+#include <math.h>
 #include <cuComplex.h>
 #include <sstream>
 
@@ -60,7 +61,7 @@ namespace cusp
 
   ///  Returns the complex conjugate of z.
   template<typename ValueType> complex<ValueType> conj(const complex<ValueType>& z);
-  ///  Returns the complex with magnitude m and angle theta.
+  ///  Returns the complex with magnitude m and angle theta in radians.
   template<typename ValueType> complex<ValueType> polar(const ValueType& m, const ValueType& theta = 0);
 
   // Arithmetic operators:
@@ -162,7 +163,15 @@ namespace cusp
   // Returns the complex arc sine of z.
   template<typename ValueType> complex<ValueType> asin(const complex<ValueType>& z);
   // Returns the complex arc tangent of z.
-  template<typename ValueType> complex<ValueType> asin(const complex<ValueType>& z);
+  template<typename ValueType> complex<ValueType> atan(const complex<ValueType>& z);
+  // Returns the complex hyperbolic arc cosine of z.
+  template<typename ValueType> complex<ValueType> acosh(const complex<ValueType>& z);
+  // Returns the complex hyperbolic arc sine of z.
+  template<typename ValueType> complex<ValueType> asinh(const complex<ValueType>& z);
+  // Returns the complex hyperbolic arc tangent of z.
+  template<typename ValueType> complex<ValueType> atanh(const complex<ValueType>& z);
+
+
 
   // Stream operators:
   template<typename ValueType,class charT, class traits>
@@ -505,7 +514,7 @@ namespace cusp
   template <typename ValueType> 
     __host__ __device__
     inline complex<ValueType> operator-(const complex<ValueType>& rhs){
-    return rhs*-1;
+    return rhs*-ValueType(1);
   }
 
   // Equality operators 
@@ -562,17 +571,17 @@ namespace cusp
   template <typename ValueType>
     __host__ __device__
     inline ValueType abs(const complex<ValueType>& z){
-    return sqrt(norm(z));
+    return ::hypot(z.real(),z.imag());
   }
   template <>
     __host__ __device__
-    inline float abs(const complex<float>& rhs){
-    return cuCabsf(rhs);
+    inline float abs(const complex<float>& z){
+    return ::hypotf(z.real(),z.imag());
   }
   template<>
     __host__ __device__
-    inline double abs(const complex<double>& rhs){
-    return cuCabs(rhs);
+    inline double abs(const complex<double>& z){
+    return ::hypot(z.real(),z.imag());
   }
 
   template <typename ValueType>
@@ -665,8 +674,11 @@ namespace cusp
 
   template <typename ValueType>
     __host__ __device__
-    inline complex<ValueType> log10(const complex<ValueType>& z){
-    return log(z)/ValueType(::log(10));
+    inline complex<ValueType> log10(const complex<ValueType>& z){ 
+    // Using the explicit literal prevents compile time warnings in
+    // devices that don't support doubles 
+    return log(z)/ValueType(2.30258509299404568402);
+    //    return log(z)/ValueType(::log(10.0));
   }
 
   template <typename ValueType>
@@ -734,7 +746,17 @@ namespace cusp
   template <typename ValueType>
     __host__ __device__
     inline complex<ValueType> sqrt(const complex<ValueType>& z){
-    return polar(::sqrt(abs(z)),arg(z)/2);
+    //    return polar(::sqrt(abs(z)),arg(z)/2);
+    ValueType d,r,s;
+    d = ::hypot(z.real(),z.imag());
+    if (z.real() > 0.0f){
+      r = ::sqrt(ValueType(0.5) * d + ValueType(0.5) * z.real());
+      s = (ValueType(0.5) * z.imag()) / r;
+    }else{
+      s = ::sqrt(ValueType(0.5) * d - ValueType(0.5) * z.real());
+      r = ::fabs((ValueType(0.5) * z.imag()) / s);
+    }
+    return complex<ValueType>(r,copysign(s, z.imag()));
   }
 
   template <typename ValueType>
@@ -756,22 +778,66 @@ namespace cusp
   template <typename ValueType>
     __host__ __device__
     inline complex<ValueType> acos(const complex<ValueType>& z){
-    const complex<ValueType> i(0,1);
-    return -i*log(z+i*sqrt(ValueType(1)-z*z));
+    const complex<ValueType> ret = asin(z);
+    return complex<ValueType>(ValueType(M_PI/2.0) - ret.real(),-ret.imag());
   }
 
   template <typename ValueType>
     __host__ __device__
     inline complex<ValueType> asin(const complex<ValueType>& z){
     const complex<ValueType> i(0,1);
-    return -i*log(i*z+sqrt(ValueType(1)-z*z));
+    return -i*asinh(i*z);
   }
 
   template <typename ValueType>
     __host__ __device__
     inline complex<ValueType> atan(const complex<ValueType>& z){
     const complex<ValueType> i(0,1);
-    return i*(log(ValueType(1)-i*z)-log(ValueType(1)+i*z))/ValueType(2);
+    return -i*atanh(i*z);
+  }
+
+  template <typename ValueType>
+    __host__ __device__
+    inline complex<ValueType> acosh(const complex<ValueType>& z){
+    complex<ValueType>ret((z.real() - z.imag()) * ( z.real() + z.imag()) - ValueType(1.0),
+			  ValueType(2.0) * z.real() * z.imag());
+    ret = sqrt(ret);
+    if (z.real() < ValueType(0.0)){
+      ret = -ret;
+    }
+    ret += z;
+    ret = log(ret);
+    if (ret.real() < ValueType(0.0)){
+      ret = -ret;
+    }
+    return ret;
+  }
+
+  template <typename ValueType>
+    __host__ __device__
+    inline complex<ValueType> asinh(const complex<ValueType>& z){
+    complex<ValueType> ret((z.real() - z.imag()) * (z.real() + z.imag()) + ValueType(1.0),
+			   ValueType(2.0) * z.real() *  z.imag());
+    ret = sqrt(ret);
+    ret += z;
+    return log(ret);
+  }
+
+  template <typename ValueType>
+    __host__ __device__
+    inline complex<ValueType> atanh(const complex<ValueType>& z){
+    ValueType imag2 = z.imag() *  z.imag();   
+    ValueType n = ValueType(1.0) + z.real();
+    n = imag2 + n * n;
+
+    ValueType d = ValueType(1.0) - z.real();
+    d = imag2 + d * d;
+    complex<ValueType> ret(ValueType(0.25) * (::log(n) - ::log(d)),0);
+
+    d = ValueType(1.0) -  z.real() * z.real() - imag2;
+
+    ret.imag(ValueType(0.5) * ::atan2(ValueType(2.0) * z.imag(), d));
+    return ret;
   }
 
 } // end namespace cusp
