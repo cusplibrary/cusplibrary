@@ -594,6 +594,11 @@ namespace cusp
     inline float arg(const complex<float>& z){
     return atan2f(z.imag(),z.real());
   }
+  template<>
+    __host__ __device__
+    inline double arg(const complex<double>& z){
+    return atan2(z.imag(),z.real());
+  }
 
   template <typename ValueType>
     __host__ __device__
@@ -610,7 +615,13 @@ namespace cusp
   template <>
     __host__ __device__
     inline complex<float> polar(const float & magnitude, const float & angle){ 
-    return complex<float>(magnitude * cosf(angle),magnitude * sinf(angle));
+    return complex<float>(magnitude * ::cosf(angle),magnitude * ::sinf(angle));
+  }
+
+  template <>
+    __host__ __device__
+    inline complex<double> polar(const double & magnitude, const double & angle){ 
+    return complex<double>(magnitude * ::cos(angle),magnitude * ::sin(angle));
   }
 
   // Transcendental functions implementation
@@ -656,7 +667,7 @@ namespace cusp
   template <>
     __host__ __device__
     inline complex<float> exp(const complex<float>& z){
-    return polar(expf(z.real()),z.imag());
+    return polar(::expf(z.real()),z.imag());
   }
 
   template <typename ValueType>
@@ -746,17 +757,13 @@ namespace cusp
   template <typename ValueType>
     __host__ __device__
     inline complex<ValueType> sqrt(const complex<ValueType>& z){
-    //    return polar(::sqrt(abs(z)),arg(z)/2);
-    ValueType d,r,s;
-    d = ::hypot(z.real(),z.imag());
-    if (z.real() > 0.0f){
-      r = ::sqrt(ValueType(0.5) * d + ValueType(0.5) * z.real());
-      s = (ValueType(0.5) * z.imag()) / r;
-    }else{
-      s = ::sqrt(ValueType(0.5) * d - ValueType(0.5) * z.real());
-      r = ::fabs((ValueType(0.5) * z.imag()) / s);
-    }
-    return complex<ValueType>(r,copysign(s, z.imag()));
+    return polar(::sqrt(abs(z)),arg(z)/ValueType(2));
+  }
+
+  template <typename ValueType>
+    __host__ __device__
+    inline complex<float> sqrt(const complex<float>& z){
+    return polar(::sqrtf(abs(z)),arg(z)/float(2));
   }
 
   template <typename ValueType>
@@ -768,7 +775,9 @@ namespace cusp
   template <typename ValueType>
     __host__ __device__
     inline complex<ValueType> tanh(const complex<ValueType>& z){
-    return sinh(z)/cosh(z);
+    // This implementation seems better than the simple sin/cos
+    return (exp(ValueType(2)*z)-ValueType(1))/(exp(ValueType(2)*z)+ValueType(1));
+    //    return sinh(z)/cosh(z);
   }
 
   // Inverse trigonometric functions implementation
@@ -799,28 +808,13 @@ namespace cusp
   template <typename ValueType>
     __host__ __device__
     inline complex<ValueType> acosh(const complex<ValueType>& z){
-    complex<ValueType>ret((z.real() - z.imag()) * ( z.real() + z.imag()) - ValueType(1.0),
-			  ValueType(2.0) * z.real() * z.imag());
-    ret = sqrt(ret);
-    if (z.real() < ValueType(0.0)){
-      ret = -ret;
-    }
-    ret += z;
-    ret = log(ret);
-    if (ret.real() < ValueType(0.0)){
-      ret = -ret;
-    }
-    return ret;
+    return log(sqrt(z*z-ValueType(1))+z);
   }
 
   template <typename ValueType>
     __host__ __device__
     inline complex<ValueType> asinh(const complex<ValueType>& z){
-    complex<ValueType> ret((z.real() - z.imag()) * (z.real() + z.imag()) + ValueType(1.0),
-			   ValueType(2.0) * z.real() *  z.imag());
-    ret = sqrt(ret);
-    ret += z;
-    return log(ret);
+    return log(sqrt(z*z+ValueType(1))+z);
   }
 
   template <typename ValueType>
@@ -837,6 +831,25 @@ namespace cusp
     d = ValueType(1.0) -  z.real() * z.real() - imag2;
 
     ret.imag(ValueType(0.5) * ::atan2(ValueType(2.0) * z.imag(), d));
+    //    return (log(ValueType(1)+z)-log(ValueType(1)-z))/ValueType(2);
+    return ret;
+  }
+
+  template <typename ValueType>
+    __host__ __device__
+    inline complex<float> atanh(const complex<float>& z){
+    float imag2 = z.imag() *  z.imag();   
+    float n = float(1.0) + z.real();
+    n = imag2 + n * n;
+
+    float d = float(1.0) - z.real();
+    d = imag2 + d * d;
+    complex<float> ret(float(0.25) * (::logf(n) - ::logf(d)),0);
+
+    d = float(1.0) -  z.real() * z.real() - imag2;
+
+    ret.imag(float(0.5) * ::atan2f(float(2.0) * z.imag(), d));
+    //    return (log(ValueType(1)+z)-log(ValueType(1)-z))/ValueType(2);
     return ret;
   }
 
