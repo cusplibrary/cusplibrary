@@ -29,6 +29,50 @@ void TestReadMatrixMarketFileCoordinateRealGeneral(void)
 }
 DECLARE_UNITTEST(TestReadMatrixMarketFileCoordinateRealGeneral);
 
+void TestReadMatrixMarketFileCoordinateComplexGeneral(void)
+{
+    // load matrix
+    cusp::coo_matrix<int, cusp::complex<float>, cusp::host_memory> coo;
+    cusp::io::read_matrix_market_file(coo, "data/test/coordinate_complex_general.mtx");
+
+    // convert to array2d
+    cusp::array2d<cusp::complex<float>, cusp::host_memory> D(coo);
+
+    // expected result
+    cusp::array2d<cusp::complex<float>, cusp::host_memory> E(5, 5);
+    E(0,0) = cusp::complex<float>(1.000e+00,1.040e+00);
+    E(1,0) = cusp::complex<float>(0.000e+00,0.000e+00);
+    E(2,0) = cusp::complex<float>(0.000e+00,0.000e+00);
+    E(3,0) = cusp::complex<float>(0.000e+00,0.000e+00);
+    E(4,0) = cusp::complex<float>(0.000e+00,0.000e+00);
+
+    E(0,1) = cusp::complex<float>(0.000e+00,0.000e+00);
+    E(1,1) = cusp::complex<float>(1.050e+01,3.000e+01);
+    E(2,1) = cusp::complex<float>(0.000e+00,0.000e+00);
+    E(3,1) = cusp::complex<float>(2.505e+02,-3.000e+00);
+    E(4,1) = cusp::complex<float>(0.000e+00,0.000e+00);
+
+    E(0,2) = cusp::complex<float>(0.000e+00,0.000e+00);
+    E(1,2) = cusp::complex<float>(0.000e+00,0.000e+00);
+    E(2,2) = cusp::complex<float>(2.500e-01,-5.300e+00);
+    E(3,2) = cusp::complex<float>(0.000e+00,0.000e+00);
+    E(4,2) = cusp::complex<float>(0.000e+00,0.000e+00);
+
+    E(0,3) = cusp::complex<float>(6.000e+00,3.000e-01);
+    E(1,3) = cusp::complex<float>(0.000e+00,0.000e+00);
+    E(2,3) = cusp::complex<float>(0.000e+00,0.000e+00);
+    E(3,3) = cusp::complex<float>(-2.500e+02,9.500e+02);
+
+    E(0,4) = cusp::complex<float>(0.000e+00,0.000e+00);
+    E(1,4) = cusp::complex<float>(0.000e+00,0.000e+00);
+    E(2,4) = cusp::complex<float>(0.000e+00,0.000e+00);
+    E(3,4) = cusp::complex<float>(3.875e+01,-8.000e+00);
+    E(4,4) = cusp::complex<float>(1.200e+01,6.200e+02);
+
+    ASSERT_EQUAL(D == E, true);
+}
+DECLARE_UNITTEST(TestReadMatrixMarketFileCoordinateComplexGeneral);
+
 void TestReadMatrixMarketFileCoordinatePatternSymmetric(void)
 {
     // load matrix
