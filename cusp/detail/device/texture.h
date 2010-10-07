@@ -17,7 +17,7 @@
 #pragma once
 
 #include <cuda.h>
-
+#include <cusp/complex.h>
 #include <cusp/exception.h>
 #include <cusp/detail/device/utils.h>
 
@@ -146,7 +146,7 @@ __inline__ __device__ double fetch_x(const int& i, const double * x)
 
 
 template <bool UseCache>
-__inline__ __device__ cusp::complex<float> fetch_x(const int& i, const float * x)
+__inline__ __device__ cusp::complex<float> fetch_x(const int& i, const cusp::complex<float> * x)
 {
 #ifdef CUSP_USE_TEXTURE_MEMORY
     if (UseCache)
