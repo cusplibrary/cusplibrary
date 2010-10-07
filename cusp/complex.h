@@ -43,6 +43,7 @@ SUCH DAMAGE.
 #include <math.h>
 #include <cuComplex.h>
 #include <sstream>
+#include <cusp/cmath.h>
 
 namespace cusp
 {
