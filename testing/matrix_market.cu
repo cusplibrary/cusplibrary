@@ -62,6 +62,7 @@ void TestReadMatrixMarketFileCoordinateComplexGeneral(void)
     E(1,3) = cusp::complex<float>(0.000e+00,0.000e+00);
     E(2,3) = cusp::complex<float>(0.000e+00,0.000e+00);
     E(3,3) = cusp::complex<float>(-2.500e+02,9.500e+02);
+    E(4,3) = cusp::complex<float>(0.000e+00,0.000e+00);
 
     E(0,4) = cusp::complex<float>(0.000e+00,0.000e+00);
     E(1,4) = cusp::complex<float>(0.000e+00,0.000e+00);
