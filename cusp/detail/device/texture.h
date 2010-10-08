@@ -150,7 +150,7 @@ __inline__ __device__ cusp::complex<float> fetch_x(const int& i, const cusp::com
 {
 #ifdef CUSP_USE_TEXTURE_MEMORY
     if (UseCache)
-      cusp::complex<float>(tex1Dfetch(tex_x_float, i*2),tex1Dfetch(tex_x_float, i*2+1));
+      return cusp::complex<float>(tex1Dfetch(tex_x_float, i*2),tex1Dfetch(tex_x_float, i*2+1));
     else
 #endif
         return x[i];
