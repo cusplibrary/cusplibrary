@@ -175,7 +175,7 @@ __host__ bool compareWithStd(cusp::complex<ValueType> a){
 #ifdef __GNUC__  
   /* Use the c99 complex function from gcc to test the
    function not part of the standard */
-  if(sizeof(ValueType) == 4){
+  if(is_same_type<ValueType,float>::result){
     __complex__ float g_a;
     __complex__ float g_b;
     g_a = s_a.real() + s_a.imag()*__I__;
@@ -221,7 +221,7 @@ __host__ bool compareWithStd(cusp::complex<ValueType> a){
       s_b = std::complex<ValueType>(creal(g_b),cimag(g_b));
       ASSERT_COMPLEX_ALMOST_EQUAL(b,s_b);
     }
-  }else if(sizeof(ValueType) == 8){
+  }else if(is_same_type<ValueType,double>::result){
     __complex__ double g_a;
     __complex__ double g_b;
     g_a = s_a.real() + s_a.imag()*__I__;
@@ -283,6 +283,7 @@ __host__ __device__ cusp::complex<ValueType> test_complex_members(){
   return a;
 }
 
+
 template <typename ValueType>
 __host__ __device__ cusp::complex<ValueType> test_complex_non_members(){
   cusp::complex<ValueType> a(ValueType(3.0),ValueType(1.0));
@@ -338,8 +339,37 @@ __global__ void test_complex_compilation_kernel(cusp::complex<ValueType> * a){
   *a = ret;
 }
 
+#if __CUDA_ARCH__ < 130
+// Don't try to run the double precision tests if the compiled
+// architecture doesn't support it 
+template <>
+__global__ void test_complex_compilation_kernel(cusp::complex<double> * a){
+}
+#endif
+
+bool device_supports_double(void)
+{
+    int current_device = -1;
+    cudaDeviceProp properties;
+
+    cudaError_t error = cudaGetDevice(&current_device);
+    if(error)
+        throw thrust::system_error(error, thrust::cuda_category());
+
+    if(current_device < 0)
+        throw thrust::system_error(cudaErrorNoDevice, thrust::cuda_category());
+    
+    // the properties weren't found, ask the runtime to generate them
+    error = cudaGetDeviceProperties(&properties, current_device);
+
+    if(error)
+      throw thrust::system_error(error, thrust::cuda_category());
+
+    return properties.major >= 1 && properties.minor >= 3;
+}
+
 template <typename ValueType>
-void test_complex_compilation()
+void TestComplex()
 {
   cusp::complex<ValueType> a;
   cusp::complex<ValueType> * d_a;  
@@ -349,23 +379,19 @@ void test_complex_compilation()
   cudaMemcpy(&a,d_a,sizeof(cusp::complex<ValueType>),cudaMemcpyDeviceToHost);
   std::complex<ValueType> b(a.real(),a.imag());
   a = test_complex_compilation_entry<ValueType>();
-  ASSERT_COMPLEX_ALMOST_EQUAL(a,b);
-  /* Test twice the unit circle */
+  // Don't check for equality between host and device code when the 
+  // hardware device does not support double precision 
+  if(is_same_type<ValueType,double>::result == false|| device_supports_double()){
+    ASSERT_COMPLEX_ALMOST_EQUAL(a,b);
+  }
+  // Test twice the unit circle 
   for(int i = 0;i < 32;i++){
     ValueType theta(ValueType(i*M_PI/8));
     compareWithStd<ValueType>(cusp::polar<ValueType>(ValueType(1),theta));
   }
 }
 
-#if __CUDA_ARCH__ < 130
-// Don't try to run the double precision tests if the compiled
-// architecture doesn't support it 
-template <>
-void test_complex_compilation<double>()
-{
-  compareWithStd<double>(cusp::complex<double>(1,1));
-}
-#endif
-DECLARE_NUMERIC_UNITTEST(test_complex_compilation);
+
+DECLARE_NUMERIC_UNITTEST(TestComplex);
 
 
