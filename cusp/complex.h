@@ -238,6 +238,14 @@ namespace cusp
 	real(z.real());
 	imag(z.imag());
       }  
+      template <typename T>
+      __host__ __device__
+      inline complex<ValueType>& operator=(const complex<T> z){
+	real(z.real());
+	imag(z.imag());
+	return *this;
+      }
+
       __host__ __device__
       inline complex<ValueType>& operator+=(const complex<ValueType> z){
 	real(real()+z.real());
@@ -290,6 +298,13 @@ namespace cusp
       complex<float>(cuFloatComplex z)
 	:cuFloatComplex(z){}
       // Member operators
+      template <typename T>
+      __host__ __device__
+      inline complex<float>& operator=(const complex<T> z){
+	real(z.real());
+	imag(z.imag());
+	return *this;
+      }
       __host__ __device__ 
       inline complex<float>& operator+=(const complex<float> z){
 	real(real()+z.real());
@@ -351,6 +366,13 @@ namespace cusp
 	inline complex<double>(cuDoubleComplex z)
 	:cuDoubleComplex(z){}
       // Member operators
+      template <typename T>
+      __host__ __device__
+      inline complex<double>& operator=(const complex<T> z){
+	real(z.real());
+	imag(z.imag());
+	return *this;
+      }
       __host__ __device__
 	inline complex<double>& operator+=(const complex<double> z){
 	real(real()+z.real());
