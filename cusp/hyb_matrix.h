@@ -20,6 +20,7 @@
 #include <cusp/detail/config.h>
 
 #include <cusp/array1d.h>
+#include <cusp/format.h>
 #include <cusp/detail/matrix_base.h>
 
 namespace cusp
@@ -115,7 +116,7 @@ namespace cusp
  *  \see \p coo_matrix
  */
     template <typename IndexType, typename ValueType, class MemorySpace>
-    class hyb_matrix : public detail::matrix_base<IndexType,ValueType,MemorySpace>
+    class hyb_matrix : public detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::hyb_format>
     {
         public:
         template<typename MemorySpace2>

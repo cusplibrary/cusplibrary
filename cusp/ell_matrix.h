@@ -22,6 +22,7 @@
 
 #include <cusp/detail/config.h>
 
+#include <cusp/format.h>
 #include <cusp/detail/matrix_base.h>
 
 namespace cusp
@@ -89,7 +90,7 @@ namespace cusp
  *
  */
     template <typename IndexType, typename ValueType, class MemorySpace>
-    class ell_matrix : public detail::matrix_base<IndexType,ValueType,MemorySpace>
+    class ell_matrix : public detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::ell_format>
     {
         public:
         template<typename MemorySpace2>

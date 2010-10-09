@@ -19,6 +19,7 @@
 
 #include <cusp/detail/config.h>
 
+#include <cusp/format.h>
 #include <cusp/array1d.h>
 #include <cusp/detail/matrix_base.h>
 
@@ -71,7 +72,7 @@ namespace cusp
     }
 
     template<typename ValueType, class MemorySpace, class Orientation = cusp::row_major>
-    class array2d : public detail::matrix_base<int,ValueType,MemorySpace>
+    class array2d : public detail::matrix_base<int,ValueType,MemorySpace,cusp::array2d_format>
     {
         public:
         typedef typename cusp::choose_memory_allocator<ValueType, MemorySpace>::type value_allocator_type;

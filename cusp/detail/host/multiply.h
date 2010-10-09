@@ -16,9 +16,9 @@
 
 #pragma once
 
-#include <cusp/detail/matrix_traits.h>
-
+#include <cusp/format.h>
 #include <cusp/csr_matrix.h>
+
 #include <cusp/detail/functional.h>
 
 #include <cusp/detail/host/spmv.h>
@@ -41,9 +41,9 @@ template <typename Matrix,
 void multiply(const Matrix&  A,
               const Vector1& B,
                     Vector2& C,
-              cusp::detail::array2d_format_tag,
-              cusp::detail::array1d_format_tag,
-              cusp::detail::array1d_format_tag)
+              cusp::array2d_format,
+              cusp::array1d_format,
+              cusp::array1d_format)
 {
     typedef typename Vector2::value_type ValueType;
 
@@ -67,9 +67,9 @@ template <typename Matrix,
 void multiply(const Matrix&  A,
               const Vector1& B,
                     Vector2& C,
-              cusp::detail::coo_format_tag,
-              cusp::detail::array1d_format_tag,
-              cusp::detail::array1d_format_tag)
+              cusp::coo_format,
+              cusp::array1d_format,
+              cusp::array1d_format)
 {
     cusp::detail::host::spmv_coo(A, B, C);
 }
@@ -80,9 +80,9 @@ template <typename Matrix,
 void multiply(const Matrix&  A,
               const Vector1& B,
                     Vector2& C,
-              cusp::detail::csr_format_tag,
-              cusp::detail::array1d_format_tag,
-              cusp::detail::array1d_format_tag)
+              cusp::csr_format,
+              cusp::array1d_format,
+              cusp::array1d_format)
 {
     cusp::detail::host::spmv_csr(A, B, C);
 }
@@ -93,9 +93,9 @@ template <typename Matrix,
 void multiply(const Matrix&  A,
               const Vector1& B,
                     Vector2& C,
-              cusp::detail::dia_format_tag,
-              cusp::detail::array1d_format_tag,
-              cusp::detail::array1d_format_tag)
+              cusp::dia_format,
+              cusp::array1d_format,
+              cusp::array1d_format)
 {
     cusp::detail::host::spmv_dia(A, B, C);
 }
@@ -106,9 +106,9 @@ template <typename Matrix,
 void multiply(const Matrix&  A,
               const Vector1& B,
                     Vector2& C,
-              cusp::detail::ell_format_tag,
-              cusp::detail::array1d_format_tag,
-              cusp::detail::array1d_format_tag)
+              cusp::ell_format,
+              cusp::array1d_format,
+              cusp::array1d_format)
 {
     cusp::detail::host::spmv_ell(A, B, C);
 }
@@ -119,9 +119,9 @@ template <typename Matrix,
 void multiply(const Matrix&  A,
               const Vector1& B,
                     Vector2& C,
-              cusp::detail::hyb_format_tag,
-              cusp::detail::array1d_format_tag,
-              cusp::detail::array1d_format_tag)
+              cusp::hyb_format,
+              cusp::array1d_format,
+              cusp::array1d_format)
 {
     typedef typename Vector2::value_type ValueType;
 
@@ -139,9 +139,9 @@ void multiply(const Matrix&  A,
 //void multiply(const Matrix&  A,
 //              const Vector1& B,
 //                    Vector2& C,
-//              cusp::detail::sparse_format_tag,
-//              cusp::detail::array2d_format_tag,
-//              cusp::detail::array2d_format_tag)
+//              cusp::detail::sparse_format,
+//              cusp::detail::array2d_format,
+//              cusp::detail::array2d_format)
 //{
 //}
 
@@ -154,9 +154,9 @@ template <typename Matrix1,
 void multiply(const Matrix1&  A,
               const Matrix2& B,
                     Matrix3& C,
-              cusp::detail::array2d_format_tag,
-              cusp::detail::array2d_format_tag,
-              cusp::detail::array2d_format_tag)
+              cusp::array2d_format,
+              cusp::array2d_format,
+              cusp::array2d_format)
 {
     typedef typename Matrix3::value_type ValueType;
 
@@ -185,9 +185,9 @@ template <typename Matrix1,
 void multiply(const Matrix1& A,
               const Matrix2& B,
                     Matrix3& C,
-              cusp::detail::coo_format_tag,
-              cusp::detail::coo_format_tag,
-              cusp::detail::coo_format_tag)
+              cusp::coo_format,
+              cusp::coo_format,
+              cusp::coo_format)
 {
     cusp::detail::host::detail::spmm_coo(A,B,C);
 }
@@ -198,9 +198,9 @@ template <typename Matrix1,
 void multiply(const Matrix1& A,
               const Matrix2& B,
                     Matrix3& C,
-              cusp::detail::csr_format_tag,
-              cusp::detail::csr_format_tag,
-              cusp::detail::csr_format_tag)
+              cusp::csr_format,
+              cusp::csr_format,
+              cusp::csr_format)
 {
     cusp::detail::host::detail::spmm_csr(A,B,C);
 }
@@ -211,9 +211,9 @@ template <typename Matrix1,
 void multiply(const Matrix1& A,
               const Matrix2& B,
                     Matrix3& C,
-              cusp::detail::sparse_format_tag,
-              cusp::detail::sparse_format_tag,
-              cusp::detail::sparse_format_tag)
+              cusp::sparse_format,
+              cusp::sparse_format,
+              cusp::sparse_format)
 {
     // other formats use CSR * CSR
     cusp::csr_matrix<typename Matrix1::index_type,typename Matrix1::value_type,cusp::host_memory> A_(A);
@@ -235,10 +235,10 @@ void multiply(const Matrix&  A,
               const MatrixOrVector1& B,
                     MatrixOrVector2& C)
 {
-    cusp::detail::host::multiply(A, B, C,
-            typename cusp::detail::matrix_format<Matrix>::type(),
-            typename cusp::detail::matrix_format<MatrixOrVector1>::type(),
-            typename cusp::detail::matrix_format<MatrixOrVector2>::type());
+  cusp::detail::host::multiply(A, B, C,
+                               typename Matrix::format(),
+                               typename MatrixOrVector1::format(),
+                               typename MatrixOrVector2::format());
 }
 
 } // end namespace host

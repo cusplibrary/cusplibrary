@@ -34,7 +34,7 @@ template <typename IndexType, typename ValueType, class MemorySpace>
 dia_matrix<IndexType,ValueType,MemorySpace>
     ::dia_matrix(IndexType num_rows, IndexType num_cols, IndexType num_entries,
                  IndexType num_diagonals, IndexType alignment)
-        : detail::matrix_base<IndexType,ValueType,MemorySpace>(num_rows, num_cols, num_entries),
+        : detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::dia_format>(num_rows, num_cols, num_entries),
           diagonal_offsets(num_diagonals),
           values(detail::round_up(num_rows, alignment), num_diagonals) {}
 
@@ -43,7 +43,7 @@ template <typename IndexType, typename ValueType, class MemorySpace>
 template <typename IndexType2, typename ValueType2, typename MemorySpace2>
 dia_matrix<IndexType,ValueType,MemorySpace>
     ::dia_matrix(const dia_matrix<IndexType2, ValueType2, MemorySpace2>& matrix)
-        : detail::matrix_base<IndexType,ValueType,MemorySpace>(matrix.num_rows, matrix.num_cols, matrix.num_entries),
+        : detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::dia_format>(matrix.num_rows, matrix.num_cols, matrix.num_entries),
           diagonal_offsets(matrix.diagonal_offsets), values(matrix.values) {}
 
 // construct from a different matrix format
@@ -80,7 +80,7 @@ template <typename IndexType, typename ValueType, class MemorySpace>
     dia_matrix<IndexType,ValueType,MemorySpace>
     ::swap(dia_matrix& matrix)
     {
-        detail::matrix_base<IndexType,ValueType,MemorySpace>::swap(matrix);
+        detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::dia_format>::swap(matrix);
 
         diagonal_offsets.swap(matrix.diagonal_offsets);
         values.swap(matrix.values);

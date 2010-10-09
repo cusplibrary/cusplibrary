@@ -5,11 +5,18 @@
 #endif
 
 #include <cusp/multiply.h>
+
 #include <cusp/linear_operator.h>
-#include <cusp/coo_matrix.h>
 #include <cusp/print.h>
 #include <cusp/gallery/poisson.h>
 #include <cusp/gallery/random.h>
+
+#include <cusp/array2d.h>
+#include <cusp/coo_matrix.h>
+#include <cusp/csr_matrix.h>
+#include <cusp/dia_matrix.h>
+#include <cusp/ell_matrix.h>
+#include <cusp/hyb_matrix.h>
 
 /////////////////////////////////////////
 // Sparse Matrix-Matrix Multiplication //

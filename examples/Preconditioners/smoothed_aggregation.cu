@@ -10,13 +10,13 @@ void report_status(Monitor& monitor)
 {
     if (monitor.converged())
     {
-        std::cout << "Solver converged to " << monitor.tolerance() << " tolerance";
+        std::cout << "  Solver converged to " << monitor.tolerance() << " tolerance";
         std::cout << " after " << monitor.iteration_count() << " iterations";
         std::cout << " (" << monitor.residual_norm() << " final residual)" << std::endl;
     }
     else
     {
-        std::cout << "Solver reached iteration limit " << monitor.iteration_limit() << " before converging";
+        std::cout << "  Solver reached iteration limit " << monitor.iteration_limit() << " before converging";
         std::cout << " to " << monitor.tolerance() << " tolerance ";
         std::cout << " (" << monitor.residual_norm() << " final residual)" << std::endl;
     }
@@ -36,7 +36,7 @@ int main(void)
 
     // solve without preconditioning
     {
-        std::cout << "\nSolving with no preconditioner" << std::endl;
+        std::cout << "\nSolving with no preconditioner..." << std::endl;
     
         // allocate storage for solution (x) and right hand side (b)
         cusp::array1d<ValueType, MemorySpace> x(A.num_rows, 0);
@@ -54,7 +54,7 @@ int main(void)
 
     // solve with smoothed aggregation algebraic multigrid preconditioner
     {
-        std::cout << "\nSolving with smoothed aggregation preconditioner" << std::endl;
+        std::cout << "\nSolving with smoothed aggregation preconditioner..." << std::endl;
         
         // allocate storage for solution (x) and right hand side (b)
         cusp::array1d<ValueType, MemorySpace> x(A.num_rows, 0);
@@ -65,15 +65,16 @@ int main(void)
 
         // setup preconditioner
         cusp::precond::smoothed_aggregation<IndexType, ValueType, MemorySpace> M(A);
-	
-	// print hierarchy information
-	M.print();
-
+        
         // solve
         cusp::krylov::cg(A, x, b, monitor, M);
         
         // report status
         report_status(monitor);
+        
+        // print hierarchy information
+        std::cout << "\nPreconditioner statistics" << std::endl;
+        M.print();
     }
 
     return 0;

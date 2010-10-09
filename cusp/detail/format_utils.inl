@@ -14,8 +14,7 @@
  *  limitations under the License.
  */
     
-#include <cusp/detail/matrix_traits.h>
-
+#include <cusp/format.h>
 #include <cusp/array1d.h>
 
 #include <thrust/fill.h>
@@ -76,7 +75,7 @@ struct row_operator : public std::unary_function<T,IndexType>
 
 // TODO fuse transform and scatter_if together
 template <typename Matrix, typename Array>
-void extract_diagonal(const Matrix& A, Array& output, cusp::detail::coo_format_tag)
+void extract_diagonal(const Matrix& A, Array& output, cusp::coo_format)
 {
     typedef typename Matrix::index_type  IndexType;
     typedef typename Array::value_type   ValueType;
@@ -98,7 +97,7 @@ void extract_diagonal(const Matrix& A, Array& output, cusp::detail::coo_format_t
 
 
 template <typename Matrix, typename Array>
-void extract_diagonal(const Matrix& A, Array& output, cusp::detail::csr_format_tag)
+void extract_diagonal(const Matrix& A, Array& output, cusp::csr_format)
 {
     typedef typename Matrix::index_type  IndexType;
     typedef typename Array::value_type   ValueType;
@@ -124,7 +123,7 @@ void extract_diagonal(const Matrix& A, Array& output, cusp::detail::csr_format_t
 
 
 template <typename Matrix, typename Array>
-void extract_diagonal(const Matrix& A, Array& output, cusp::detail::dia_format_tag)
+void extract_diagonal(const Matrix& A, Array& output, cusp::dia_format)
 {
     typedef typename Matrix::index_type  IndexType;
     typedef typename Array::value_type   ValueType;
@@ -151,7 +150,7 @@ void extract_diagonal(const Matrix& A, Array& output, cusp::detail::dia_format_t
 
 
 template <typename Matrix, typename Array>
-void extract_diagonal(const Matrix& A, Array& output, cusp::detail::ell_format_tag)
+void extract_diagonal(const Matrix& A, Array& output, cusp::ell_format)
 {
     typedef typename Matrix::index_type  IndexType;
     typedef typename Array::value_type   ValueType;
@@ -177,7 +176,7 @@ void extract_diagonal(const Matrix& A, Array& output, cusp::detail::ell_format_t
 }
 
 template <typename Matrix, typename Array>
-void extract_diagonal(const Matrix& A, Array& output, cusp::detail::hyb_format_tag)
+void extract_diagonal(const Matrix& A, Array& output, cusp::hyb_format)
 {
     typedef typename Matrix::index_type  IndexType;
     typedef typename Array::value_type   ValueType;
@@ -235,8 +234,8 @@ void extract_diagonal(const Matrix& A, Array& output)
 {
     output.resize(thrust::min(A.num_rows, A.num_cols));
 
-    // dispatch on matrix_format
-    extract_diagonal(A, output, typename cusp::detail::matrix_format<Matrix>::type());
+    // dispatch on matrix format
+    extract_diagonal(A, output, typename Matrix::format());
 }
 
 } // end namespace detail

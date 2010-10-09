@@ -27,13 +27,13 @@ namespace cusp
 template <typename IndexType, typename ValueType, class MemorySpace>
 csr_matrix<IndexType,ValueType,MemorySpace>
     ::csr_matrix()
-        : detail::matrix_base<IndexType,ValueType,MemorySpace>() {}
+        : detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::csr_format>() {}
 
 // construct matrix with given shape and number of entries
 template <typename IndexType, typename ValueType, class MemorySpace>
 csr_matrix<IndexType,ValueType,MemorySpace>
     ::csr_matrix(IndexType num_rows, IndexType num_cols, IndexType num_entries)
-        : detail::matrix_base<IndexType,ValueType,MemorySpace>(num_rows, num_cols, num_entries),
+        : detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::csr_format>(num_rows, num_cols, num_entries),
           row_offsets(num_rows + 1), column_indices(num_entries), values(num_entries) {}
 
 // construct from another matrix
@@ -41,7 +41,7 @@ template <typename IndexType, typename ValueType, class MemorySpace>
 template <typename IndexType2, typename ValueType2, typename MemorySpace2>
 csr_matrix<IndexType,ValueType,MemorySpace>
     ::csr_matrix(const csr_matrix<IndexType2, ValueType2, MemorySpace2>& matrix)
-        : detail::matrix_base<IndexType,ValueType,MemorySpace>(matrix.num_rows, matrix.num_cols, matrix.num_entries),
+        : detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::csr_format>(matrix.num_rows, matrix.num_cols, matrix.num_entries),
           row_offsets(matrix.row_offsets), column_indices(matrix.column_indices), values(matrix.values) {}
 
 // construct from a different matrix format
@@ -78,7 +78,7 @@ template <typename IndexType, typename ValueType, class MemorySpace>
     csr_matrix<IndexType,ValueType,MemorySpace>
     ::swap(csr_matrix& matrix)
     {
-        detail::matrix_base<IndexType,ValueType,MemorySpace>::swap(matrix);
+        detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::csr_format>::swap(matrix);
         row_offsets.swap(matrix.row_offsets);
         column_indices.swap(matrix.column_indices);
         values.swap(matrix.values);

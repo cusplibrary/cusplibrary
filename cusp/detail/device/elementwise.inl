@@ -17,9 +17,9 @@
 
 #pragma once
 
+#include <cusp/format.h>
 #include <cusp/coo_matrix.h>
 
-#include <cusp/detail/matrix_traits.h>
 #include <cusp/detail/device/detail/coo.h>
 
 namespace cusp
@@ -41,9 +41,9 @@ template <typename Matrix1,
 void add(const Matrix1& A,
          const Matrix2& B,
                Matrix3& C,
-         cusp::detail::coo_format_tag,
-         cusp::detail::coo_format_tag,
-         cusp::detail::coo_format_tag)
+         cusp::coo_format,
+         cusp::coo_format,
+         cusp::coo_format)
 {
     cusp::detail::device::detail::coo_add(A, B, C);
 }
@@ -54,9 +54,9 @@ template <typename Matrix1,
 void subtract(const Matrix1& A,
               const Matrix2& B,
                     Matrix3& C,
-              cusp::detail::coo_format_tag,
-              cusp::detail::coo_format_tag,
-              cusp::detail::coo_format_tag)
+              cusp::coo_format,
+              cusp::coo_format,
+              cusp::coo_format)
 {
     cusp::detail::device::detail::coo_subtract(A, B, C);
 }
@@ -72,9 +72,9 @@ template <typename Matrix1,
 void add(const Matrix1& A,
          const Matrix2& B,
                Matrix3& C,
-         cusp::detail::array2d_format_tag,
-         cusp::detail::array2d_format_tag,
-         cusp::detail::array2d_format_tag)
+         cusp::array2d_format,
+         cusp::array2d_format,
+         cusp::array2d_format)
 {
     typedef typename Matrix3::value_type ValueType;
 
@@ -92,9 +92,9 @@ template <typename Matrix1,
 void subtract(const Matrix1& A,
               const Matrix2& B,
                     Matrix3& C,
-              cusp::detail::array2d_format_tag,
-              cusp::detail::array2d_format_tag,
-              cusp::detail::array2d_format_tag)
+              cusp::array2d_format,
+              cusp::array2d_format,
+              cusp::array2d_format)
 {
     typedef typename Matrix3::value_type ValueType;
 
@@ -184,9 +184,9 @@ void add(const Matrix1& A,
                Matrix3& C)
 {
     cusp::detail::device::dispatch::add(A, B, C,
-            typename cusp::detail::matrix_format<Matrix1>::type(),
-            typename cusp::detail::matrix_format<Matrix2>::type(),
-            typename cusp::detail::matrix_format<Matrix3>::type());
+            typename Matrix1::format(),
+            typename Matrix2::format(),
+            typename Matrix3::format());
 }
 
 template <typename Matrix1,
@@ -197,9 +197,9 @@ void subtract(const Matrix1& A,
                     Matrix3& C)
 {
     cusp::detail::device::dispatch::subtract(A, B, C,
-            typename cusp::detail::matrix_format<Matrix1>::type(),
-            typename cusp::detail::matrix_format<Matrix2>::type(),
-            typename cusp::detail::matrix_format<Matrix3>::type());
+            typename Matrix1::format(),
+            typename Matrix2::format(),
+            typename Matrix3::format());
 }
 
 } // end namespace device

@@ -14,15 +14,16 @@
  *  limitations under the License.
  */
 
-#include <cusp/csr_matrix.h>
 #include <cusp/exception.h>
 
 #include <thrust/count.h>
 #include <thrust/extrema.h>
 #include <thrust/functional.h>
 
-#if THRUST_VERSION <= 100200
+#if THRUST_VERSION < 100300
 #include <thrust/is_sorted.h>
+#else
+#include <thrust/sort.h>
 #endif
 
 #include <sstream>
@@ -91,11 +92,13 @@ struct is_ell_entry_in_bounds
 // Matrix-Specific Functions //
 ///////////////////////////////
 
-template <typename IndexType, typename ValueType, typename MemoryType,
-          typename OutputStream>
-bool is_valid_matrix(const cusp::coo_matrix<IndexType,ValueType,MemoryType>& A,
-                           OutputStream& ostream)
+template <typename MatrixType, typename OutputStream>
+bool is_valid_matrix(const MatrixType& A,
+                     OutputStream& ostream,
+                     cusp::coo_format)
 {
+    typedef typename MatrixType::index_type IndexType;
+
     // we could relax some of these conditions if necessary
     if (A.row_indices.size() != A.num_entries)
     {
@@ -158,11 +161,13 @@ bool is_valid_matrix(const cusp::coo_matrix<IndexType,ValueType,MemoryType>& A,
 }
 
 
-template <typename IndexType, typename ValueType, typename MemoryType,
-          typename OutputStream>
-bool is_valid_matrix(const cusp::csr_matrix<IndexType,ValueType,MemoryType>& A,
-                           OutputStream& ostream)
+template <typename MatrixType, typename OutputStream>
+bool is_valid_matrix(const MatrixType& A,
+                     OutputStream& ostream,
+                     cusp::csr_format)
 {
+    typedef typename MatrixType::index_type IndexType;
+
     // we could relax some of these conditions if necessary
     
     if (A.row_offsets.size() != A.num_rows + 1)
@@ -228,10 +233,10 @@ bool is_valid_matrix(const cusp::csr_matrix<IndexType,ValueType,MemoryType>& A,
 }
 
 
-template <typename IndexType, typename ValueType, typename MemoryType,
-          typename OutputStream>
-bool is_valid_matrix(const cusp::dia_matrix<IndexType,ValueType,MemoryType>& A,
-                           OutputStream& ostream)
+template <typename MatrixType, typename OutputStream>
+bool is_valid_matrix(const MatrixType& A,
+                     OutputStream& ostream,
+                     cusp::dia_format)
 {
     if (A.num_rows > A.values.num_rows)
     {
@@ -250,12 +255,14 @@ bool is_valid_matrix(const cusp::dia_matrix<IndexType,ValueType,MemoryType>& A,
     return true;
 }
 
-template <typename IndexType, typename ValueType, typename MemoryType,
-          typename OutputStream>
-bool is_valid_matrix(const cusp::ell_matrix<IndexType,ValueType,MemoryType>& A,
-                           OutputStream& ostream)
+template <typename MatrixType, typename OutputStream>
+bool is_valid_matrix(const MatrixType& A,
+                     OutputStream& ostream,
+                     cusp::ell_format)
 {
-    const IndexType invalid_index = cusp::ell_matrix<IndexType,ValueType,MemoryType>::invalid_index;
+    typedef typename MatrixType::index_type IndexType;
+
+    const IndexType invalid_index = MatrixType::invalid_index;
 
     if (A.column_indices.num_rows != A.values.num_rows ||
         A.column_indices.num_cols != A.values.num_cols)
@@ -318,10 +325,10 @@ bool is_valid_matrix(const cusp::ell_matrix<IndexType,ValueType,MemoryType>& A,
     return true;
 }
 
-template <typename IndexType, typename ValueType, typename MemoryType,
-          typename OutputStream>
-bool is_valid_matrix(const cusp::hyb_matrix<IndexType,ValueType,MemoryType>& A,
-                           OutputStream& ostream)
+template <typename MatrixType, typename OutputStream>
+bool is_valid_matrix(const MatrixType& A,
+                     OutputStream& ostream,
+                     cusp::hyb_format)
 {
     // make sure redundant shapes values agree
     if (A.num_rows != A.ell.num_rows || A.num_rows != A.coo.num_rows ||
@@ -346,10 +353,10 @@ bool is_valid_matrix(const cusp::hyb_matrix<IndexType,ValueType,MemoryType>& A,
 }
 
 
-template <typename IndexType, typename ValueType, typename MemoryType,
-          typename OutputStream>
-bool is_valid_matrix(const cusp::array2d<IndexType,ValueType,MemoryType>& A,
-                           OutputStream& ostream)
+template <typename MatrixType, typename OutputStream>
+bool is_valid_matrix(const MatrixType& A,
+                     OutputStream& ostream,
+                     cusp::array2d_format)
 {
     if (A.num_rows * A.num_cols != A.num_entries)
     {
@@ -397,7 +404,7 @@ bool is_valid_matrix(const MatrixType& A, OutputStream& ostream)
         return false;
     }
 
-    return detail::is_valid_matrix(A, ostream);
+    return detail::is_valid_matrix(A, ostream, typename MatrixType::format());
 }
 
 template <typename MatrixType>

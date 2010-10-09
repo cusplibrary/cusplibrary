@@ -1,8 +1,13 @@
 #include <unittest/unittest.h>
 
 #include <cusp/relaxation/jacobi.h>
+
 #include <cusp/array2d.h>
-#include <cusp/multiply.h>
+#include <cusp/coo_matrix.h>
+#include <cusp/csr_matrix.h>
+#include <cusp/dia_matrix.h>
+#include <cusp/ell_matrix.h>
+#include <cusp/hyb_matrix.h>
 
 template <typename Matrix>
 void TestJacobiRelaxation(void)

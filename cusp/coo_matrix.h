@@ -22,6 +22,7 @@
 
 #include <cusp/detail/config.h>
 
+#include <cusp/format.h>
 #include <cusp/array1d.h>
 #include <cusp/detail/matrix_base.h>
 
@@ -74,7 +75,7 @@ namespace cusp
  *
  */
     template <typename IndexType, typename ValueType, class MemorySpace>
-    class coo_matrix : public detail::matrix_base<IndexType,ValueType,MemorySpace>
+    class coo_matrix : public detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::coo_format>
     {
         public:
         template<typename MemorySpace2>

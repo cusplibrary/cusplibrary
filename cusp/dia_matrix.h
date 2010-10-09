@@ -23,6 +23,7 @@
 #include <cusp/detail/config.h>
 
 #include <cusp/array1d.h>
+#include <cusp/format.h>
 #include <cusp/detail/matrix_base.h>
 
 namespace cusp
@@ -94,7 +95,7 @@ namespace cusp
  *
  */
     template <typename IndexType, typename ValueType, class MemorySpace>
-    class dia_matrix : public detail::matrix_base<IndexType,ValueType,MemorySpace>
+    class dia_matrix : public detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::dia_format>
     {
         public:
         // TODO statically assert is_signed<IndexType>
