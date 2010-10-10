@@ -129,4 +129,5 @@ void TestMaximalIndependentSetCsrDevice(void)
     _TestMaximalIndependentSet<TestMatrix>(E);
 }
 DECLARE_UNITTEST(TestMaximalIndependentSetCsrDevice);
+// TODO replace with DECLARE_SPARSE_MATRIX_UNITTEST
 
