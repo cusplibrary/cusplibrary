@@ -48,18 +48,22 @@ void spmm_coo(const Matrix1& A,
     
     typedef typename Matrix3::index_type IndexType;
     
-    IndexType num_nonzeros = 
+    IndexType estimated_nonzeros = 
         spmm_csr_pass1(A.num_rows, B.num_cols,
                        A_row_offsets, A.column_indices,
                        B_row_offsets, B.column_indices);
                          
     // Resize output
-    C.resize(A.num_rows, B.num_cols, num_nonzeros);
+    C.resize(A.num_rows, B.num_cols, estimated_nonzeros);
     
-    spmm_csr_pass2(A.num_rows, B.num_cols,
-                   A_row_offsets, A.column_indices, A.values,
-                   B_row_offsets, B.column_indices, B.values,
-                   C_row_offsets, C.column_indices, C.values);
+    IndexType true_nonzeros =
+        spmm_csr_pass2(A.num_rows, B.num_cols,
+                       A_row_offsets, A.column_indices, A.values,
+                       B_row_offsets, B.column_indices, B.values,
+                       C_row_offsets, C.column_indices, C.values);
+
+    // true_nonzeros may be less than estimated_nonzeros
+    C.resize(A.num_rows, B.num_cols, true_nonzeros);
 
     cusp::detail::offsets_to_indices(C_row_offsets, C.row_indices);
 }

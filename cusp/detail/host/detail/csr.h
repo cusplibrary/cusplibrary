@@ -148,10 +148,10 @@ template <typename IndexType,
           typename Array1, typename Array2, typename Array3,
           typename Array4, typename Array5, typename Array6,
           typename Array7, typename Array8, typename Array9>
-void spmm_csr_pass2(const IndexType num_rows, const IndexType num_cols,
-                    const Array1& A_row_offsets, const Array2& A_column_indices, const Array3& A_values,
-                    const Array4& B_row_offsets, const Array5& B_column_indices, const Array6& B_values,
-                          Array7& C_row_offsets,       Array8& C_column_indices,       Array9& C_values)
+IndexType spmm_csr_pass2(const IndexType num_rows, const IndexType num_cols,
+                         const Array1& A_row_offsets, const Array2& A_column_indices, const Array3& A_values,
+                         const Array4& B_row_offsets, const Array5& B_column_indices, const Array6& B_values,
+                               Array7& C_row_offsets,       Array8& C_column_indices,       Array9& C_values)
 {
     typedef typename Array9::value_type ValueType;
 
@@ -216,6 +216,8 @@ void spmm_csr_pass2(const IndexType num_rows, const IndexType num_cols,
     }
     
     // XXX note: entries of C are unsorted within each row
+
+    return num_nonzeros;
 }
 
 template <typename Matrix1,
