@@ -43,15 +43,7 @@ coo_matrix<IndexType,ValueType,MemorySpace>
         : detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::coo_format>(num_rows, num_cols, num_entries),
           row_indices(num_entries), column_indices(num_entries), values(num_entries) {}
 
-// construct from another coo_matrix
-template <typename IndexType, typename ValueType, class MemorySpace>
-template <typename IndexType2, typename ValueType2, typename MemorySpace2>
-coo_matrix<IndexType,ValueType,MemorySpace>
-    ::coo_matrix(const coo_matrix<IndexType2, ValueType2, MemorySpace2>& matrix)
-        : detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::coo_format>(matrix.num_rows, matrix.num_cols, matrix.num_entries),
-          row_indices(matrix.row_indices), column_indices(matrix.column_indices), values(matrix.values) {}
-        
-// construct from a different matrix format
+// construct from a different matrix
 template <typename IndexType, typename ValueType, class MemorySpace>
 template <typename MatrixType>
 coo_matrix<IndexType,ValueType,MemorySpace>
@@ -92,25 +84,7 @@ template <typename IndexType, typename ValueType, class MemorySpace>
         values.swap(matrix.values);
     }
 
-// assignment from another coo_matrix
-template <typename IndexType, typename ValueType, class MemorySpace>
-template <typename IndexType2, typename ValueType2, typename MemorySpace2>
-    coo_matrix<IndexType,ValueType,MemorySpace>&
-    coo_matrix<IndexType,ValueType,MemorySpace>
-    ::operator=(const coo_matrix<IndexType2, ValueType2, MemorySpace2>& matrix)
-    {
-        // TODO use matrix_base::operator=
-        this->num_rows       = matrix.num_rows;
-        this->num_cols       = matrix.num_cols;
-        this->num_entries    = matrix.num_entries;
-        this->row_indices    = matrix.row_indices;
-        this->column_indices = matrix.column_indices;
-        this->values         = matrix.values;
-
-        return *this;
-    }
-
-// assignment from another matrix format
+// assignment from another matrix
 template <typename IndexType, typename ValueType, class MemorySpace>
 template <typename MatrixType>
     coo_matrix<IndexType,ValueType,MemorySpace>&

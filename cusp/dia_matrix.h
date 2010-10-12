@@ -127,14 +127,7 @@ namespace cusp
         dia_matrix(IndexType num_rows, IndexType num_cols, IndexType num_entries,
                    IndexType num_diagonals, IndexType alignment = 32);
         
-        /*! Construct a \p dia_matrix from another \p dia_matrix.
-         *
-         *  \param matrix Another \p dia_matrix.
-         */
-        template <typename IndexType2, typename ValueType2, typename MemorySpace2>
-        dia_matrix(const dia_matrix<IndexType2, ValueType2, MemorySpace2>& matrix);
-        
-        /*! Construct a \p dia_matrix from another matrix format.
+        /*! Construct a \p dia_matrix from another matrix.
          *
          *  \param matrix Another sparse or dense matrix.
          */
@@ -150,14 +143,7 @@ namespace cusp
          */
         void swap(dia_matrix& matrix);
         
-        /*! Assignment from another \p dia_matrix.
-         *
-         *  \param matrix Another \p dia_matrix with possibly different IndexType and ValueType.
-         */
-        template <typename IndexType2, typename ValueType2, typename MemorySpace2>
-        dia_matrix& operator=(const dia_matrix<IndexType2, ValueType2, MemorySpace2>& matrix);
-
-        /*! Assignment from another matrix format.
+        /*! Assignment from another matrix.
          *
          *  \param matrix Another sparse or dense matrix.
          */

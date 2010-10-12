@@ -39,15 +39,7 @@ ell_matrix<IndexType,ValueType,MemorySpace>
           column_indices(detail::round_up(num_rows, alignment), num_entries_per_row),
           values(detail::round_up(num_rows, alignment), num_entries_per_row) {}
 
-// construct from another matrix
-template <typename IndexType, typename ValueType, class MemorySpace>
-template <typename IndexType2, typename ValueType2, typename MemorySpace2>
-ell_matrix<IndexType,ValueType,MemorySpace>
-    ::ell_matrix(const ell_matrix<IndexType2, ValueType2, MemorySpace2>& matrix)
-        : detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::ell_format>(matrix.num_rows, matrix.num_cols, matrix.num_entries),
-          column_indices(matrix.column_indices), values(matrix.values) {}
-
-// construct from a different matrix format
+// construct from a different matrix
 template <typename IndexType, typename ValueType, class MemorySpace>
 template <typename MatrixType>
 ell_matrix<IndexType,ValueType,MemorySpace>
@@ -87,24 +79,7 @@ template <typename IndexType, typename ValueType, class MemorySpace>
         values.swap(matrix.values);
     }
 
-// assignment from another coo_matrix
-template <typename IndexType, typename ValueType, class MemorySpace>
-template <typename IndexType2, typename ValueType2, typename MemorySpace2>
-    ell_matrix<IndexType,ValueType,MemorySpace>&
-    ell_matrix<IndexType,ValueType,MemorySpace>
-    ::operator=(const ell_matrix<IndexType2, ValueType2, MemorySpace2>& matrix)
-    {
-        // TODO use matrix_base::operator=
-        this->num_rows            = matrix.num_rows;
-        this->num_cols            = matrix.num_cols;
-        this->num_entries         = matrix.num_entries;
-        this->column_indices      = matrix.column_indices;
-        this->values              = matrix.values;
-
-        return *this;
-    }
-
-// assignment from another matrix format
+// assignment from another matrix
 template <typename IndexType, typename ValueType, class MemorySpace>
 template <typename MatrixType>
     ell_matrix<IndexType,ValueType,MemorySpace>&

@@ -103,6 +103,33 @@ void TestArray2dColumnMajor(void)
 DECLARE_HOST_DEVICE_UNITTEST(TestArray2dColumnMajor);
 
 template <class Space>
+void TestArray2dMixedOrientations(void)
+{
+    cusp::array2d<float, Space, cusp::row_major>    R(2,3);
+    cusp::array2d<float, Space, cusp::column_major> C(2,3);
+
+    R(0,0) = 10;  R(0,1) = 20;  R(0,2) = 30; 
+    R(1,0) = 40;  R(1,1) = 50;  R(1,2) = 60;
+
+    C = R;
+    ASSERT_EQUAL(C(0,0), 10);
+    ASSERT_EQUAL(C(0,1), 20);
+    ASSERT_EQUAL(C(0,2), 30);
+    ASSERT_EQUAL(C(1,0), 40);
+    ASSERT_EQUAL(C(1,1), 50);
+    ASSERT_EQUAL(C(1,2), 60);
+
+    R = C;
+    ASSERT_EQUAL(R(0,0), 10);
+    ASSERT_EQUAL(R(0,1), 20);
+    ASSERT_EQUAL(R(0,2), 30);
+    ASSERT_EQUAL(R(1,0), 40);
+    ASSERT_EQUAL(R(1,1), 50);
+    ASSERT_EQUAL(R(1,2), 60);
+}
+DECLARE_HOST_DEVICE_UNITTEST(TestArray2dMixedOrientations);
+
+template <class Space>
 void TestArray2dResize(void)
 {
     cusp::array2d<float, Space> matrix;

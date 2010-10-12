@@ -147,14 +147,7 @@ namespace cusp
                    IndexType num_ell_entries, IndexType num_coo_entries,
                    IndexType num_entries_per_row, IndexType alignment = 32);
 
-        /*! Construct a \p hyb_matrix from another \p hyb_matrix.
-         *
-         *  \param matrix Another \p hyb_matrix.
-         */
-        template <typename IndexType2, typename ValueType2, typename MemorySpace2>
-        hyb_matrix(const hyb_matrix<IndexType2, ValueType2, MemorySpace2>& matrix);
-        
-        /*! Construct a \p hyb_matrix from another matrix format.
+        /*! Construct a \p hyb_matrix from another matrix.
          *
          *  \param matrix Another sparse or dense matrix.
          */
@@ -171,14 +164,7 @@ namespace cusp
          */
         void swap(hyb_matrix& matrix);
         
-        /*! Assignment from another \p hyb_matrix.
-         *
-         *  \param matrix Another \p hyb_matrix with possibly different IndexType and ValueType.
-         */
-        template <typename IndexType2, typename ValueType2, typename MemorySpace2>
-        hyb_matrix& operator=(const hyb_matrix<IndexType2, ValueType2, MemorySpace2>& matrix);
-
-        /*! Assignment from another matrix format.
+        /*! Assignment from another matrix.
          *
          *  \param matrix Another sparse or dense matrix.
          */

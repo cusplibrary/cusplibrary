@@ -42,15 +42,7 @@ array2d<ValueType,MemorySpace,Orientation>
         : detail::matrix_base<int,ValueType,MemorySpace,cusp::array2d_format>(num_rows, num_cols, num_rows * num_cols),
           values(num_rows * num_cols, value) {}
 
-// construct from another array2d
-template<typename ValueType, class MemorySpace, class Orientation>
-template <typename ValueType2, typename MemorySpace2>
-array2d<ValueType,MemorySpace,Orientation>
-    ::array2d(const array2d<ValueType2, MemorySpace2, Orientation>& matrix)
-        : detail::matrix_base<int,ValueType,MemorySpace,cusp::array2d_format>(matrix.num_rows, matrix.num_cols, matrix.num_entries),
-          values(matrix.values) {}
-
-// construct from a different matrix format
+// construct from a different matrix
 template<typename ValueType, class MemorySpace, class Orientation>
 template <typename MatrixType>
 array2d<ValueType,MemorySpace,Orientation>
@@ -84,20 +76,6 @@ template<typename ValueType, class MemorySpace, class Orientation>
 
     values.swap(matrix.values);
 }
-
-template <typename ValueType, class MemorySpace, class Orientation>
-template <typename ValueType2, typename MemorySpace2>
-    array2d<ValueType,MemorySpace,Orientation>&
-    array2d<ValueType,MemorySpace,Orientation>
-    ::operator=(const array2d<ValueType2, MemorySpace2, Orientation>& matrix)
-    {
-        this->num_rows    = matrix.num_rows;
-        this->num_cols    = matrix.num_cols;
-        this->num_entries = matrix.num_entries;
-        this->values      = matrix.values;
-
-        return *this;
-    }
 
 template <typename ValueType, class MemorySpace, class Orientation>
 template <typename MatrixType>

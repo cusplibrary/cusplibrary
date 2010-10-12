@@ -14,8 +14,8 @@
  *  limitations under the License.
  */
 
-
 #include <cusp/format.h>
+// TODO replace with detail/array2d_utils.h or something
 #include <cusp/array2d.h>
 #include <cusp/coo_matrix.h>
 #include <cusp/csr_matrix.h>
@@ -27,6 +27,7 @@
 #include <thrust/gather.h>
 #include <thrust/sequence.h>
 #include <thrust/sort.h>
+#include <thrust/iterator/counting_iterator.h>
 #include <thrust/iterator/transform_iterator.h>
 #include <thrust/iterator/zip_iterator.h>
 

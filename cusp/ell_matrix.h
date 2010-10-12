@@ -124,14 +124,7 @@ namespace cusp
         ell_matrix(IndexType num_rows, IndexType num_cols, IndexType num_entries,
                    IndexType num_entries_per_row, IndexType alignment = 32);
     
-        /*! Construct an \p ell_matrix from another \p ell_matrix.
-         *
-         *  \param matrix Another \p ell_matrix.
-         */
-        template <typename IndexType2, typename ValueType2, typename MemorySpace2>
-        ell_matrix(const ell_matrix<IndexType2, ValueType2, MemorySpace2>& matrix);
-        
-        /*! Construct an \p ell_matrix from another matrix format.
+        /*! Construct an \p ell_matrix from another matrix.
          *
          *  \param matrix Another sparse or dense matrix.
          */
@@ -147,14 +140,7 @@ namespace cusp
          */
         void swap(ell_matrix& matrix);
         
-        /*! Assignment from another \p ell_matrix.
-         *
-         *  \param matrix Another \p ell_matrix with possibly different IndexType and ValueType.
-         */
-        template <typename IndexType2, typename ValueType2, typename MemorySpace2>
-        ell_matrix& operator=(const ell_matrix<IndexType2, ValueType2, MemorySpace2>& matrix);
-
-        /*! Assignment from another matrix format.
+        /*! Assignment from another matrix.
          *
          *  \param matrix Another sparse or dense matrix.
          */

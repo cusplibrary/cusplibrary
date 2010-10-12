@@ -46,6 +46,7 @@ namespace cusp
         __host__ __device__
         IndexType major_dimension(IndexType num_rows, IndexType num_cols, column_major) { return num_cols; }
 
+        // TODO distinguish between logical and physical linear locations (for nontrivial stride)
         template <typename IndexType>
         __host__ __device__
         IndexType linear_index_to_row_index(IndexType linear_index, IndexType num_rows, IndexType num_cols, row_major)    { return linear_index / num_cols; }
@@ -93,11 +94,7 @@ namespace cusp
         // construct matrix with given shape and number of entries and fill with a given value
         array2d(int num_rows, int num_cols, const ValueType& value);
         
-        // construct from another array2d (with the same Orientation)
-        template <typename ValueType2, typename MemorySpace2>
-        array2d(const array2d<ValueType2, MemorySpace2, Orientation>& matrix);
-        
-        // construct from a different matrix format
+        // construct from a different matrix
         template <typename MatrixType>
         array2d(const MatrixType& matrix);
         
@@ -115,9 +112,6 @@ namespace cusp
 
         void swap(array2d& matrix);
         
-        template <typename ValueType2, typename MemorySpace2>
-        array2d& operator=(const array2d<ValueType2, MemorySpace2, Orientation>& matrix);
-
         template <typename MatrixType>
         array2d& operator=(const MatrixType& matrix);
 

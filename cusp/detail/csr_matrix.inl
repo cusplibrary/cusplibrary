@@ -36,15 +36,7 @@ csr_matrix<IndexType,ValueType,MemorySpace>
         : detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::csr_format>(num_rows, num_cols, num_entries),
           row_offsets(num_rows + 1), column_indices(num_entries), values(num_entries) {}
 
-// construct from another matrix
-template <typename IndexType, typename ValueType, class MemorySpace>
-template <typename IndexType2, typename ValueType2, typename MemorySpace2>
-csr_matrix<IndexType,ValueType,MemorySpace>
-    ::csr_matrix(const csr_matrix<IndexType2, ValueType2, MemorySpace2>& matrix)
-        : detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::csr_format>(matrix.num_rows, matrix.num_cols, matrix.num_entries),
-          row_offsets(matrix.row_offsets), column_indices(matrix.column_indices), values(matrix.values) {}
-
-// construct from a different matrix format
+// construct from a different matrix
 template <typename IndexType, typename ValueType, class MemorySpace>
 template <typename MatrixType>
 csr_matrix<IndexType,ValueType,MemorySpace>
@@ -84,25 +76,7 @@ template <typename IndexType, typename ValueType, class MemorySpace>
         values.swap(matrix.values);
     }
 
-// assignment from another csr_matrix
-template <typename IndexType, typename ValueType, class MemorySpace>
-template <typename IndexType2, typename ValueType2, typename MemorySpace2>
-    csr_matrix<IndexType,ValueType,MemorySpace>&
-    csr_matrix<IndexType,ValueType,MemorySpace>
-    ::operator=(const csr_matrix<IndexType2, ValueType2, MemorySpace2>& matrix)
-    {
-        // TODO use matrix_base::operator=
-        this->num_rows       = matrix.num_rows;
-        this->num_cols       = matrix.num_cols;
-        this->num_entries    = matrix.num_entries;
-        this->row_offsets    = matrix.row_offsets;
-        this->column_indices = matrix.column_indices;
-        this->values         = matrix.values;
-
-        return *this;
-    }
-
-// assignment from another matrix format
+// assignment from another matrix
 template <typename IndexType, typename ValueType, class MemorySpace>
 template <typename MatrixType>
     csr_matrix<IndexType,ValueType,MemorySpace>&

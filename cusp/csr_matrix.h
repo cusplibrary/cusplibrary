@@ -112,14 +112,7 @@ namespace cusp
          */
         csr_matrix(IndexType num_rows, IndexType num_cols, IndexType num_entries);
     
-        /*! Construct a \p csr_matrix from another \p csr_matrix.
-         *
-         *  \param matrix Another \p csr_matrix.
-         */
-        template <typename IndexType2, typename ValueType2, typename MemorySpace2>
-        csr_matrix(const csr_matrix<IndexType2, ValueType2, MemorySpace2>& matrix);
-        
-        /*! Construct a \p csr_matrix from another matrix format.
+        /*! Construct a \p csr_matrix from another matrix.
          *
          *  \param matrix Another sparse or dense matrix.
          */
@@ -134,14 +127,7 @@ namespace cusp
          */
         void swap(csr_matrix& matrix);
         
-        /*! Assignment from another \p csr_matrix.
-         *
-         *  \param matrix Another \p csr_matrix with possibly different IndexType and ValueType.
-         */
-        template <typename IndexType2, typename ValueType2, typename MemorySpace2>
-        csr_matrix& operator=(const csr_matrix<IndexType2, ValueType2, MemorySpace2>& matrix);
-
-        /*! Assignment from another matrix format.
+        /*! Assignment from another matrix.
          *
          *  \param matrix Another sparse or dense matrix.
          */
