@@ -30,12 +30,13 @@ namespace cusp
 namespace detail
 {
 
-    template<typename IndexType, typename ValueType, typename MemorySpace>
+    template<typename IndexType, typename ValueType, typename MemorySpace, typename Format>
     class matrix_base
     {
         public:
             typedef IndexType   index_type;
             typedef ValueType   value_type;
+            typedef Format      format;
             typedef MemorySpace memory_space;
 
             index_type num_rows;
@@ -44,6 +45,9 @@ namespace detail
             
             matrix_base()
                 : num_rows(0), num_cols(0), num_entries(0) {}
+            
+            matrix_base(IndexType rows, IndexType cols)
+                : num_rows(rows), num_cols(cols), num_entries(0) {}
 
             matrix_base(IndexType rows, IndexType cols, IndexType entries)
                 : num_rows(rows), num_cols(cols), num_entries(entries) {}

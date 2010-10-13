@@ -14,19 +14,20 @@
  *  limitations under the License.
  */
 
-
+#include <cusp/format.h>
+// TODO replace with detail/array2d_utils.h or something
 #include <cusp/array2d.h>
 #include <cusp/coo_matrix.h>
 #include <cusp/csr_matrix.h>
 
 #include <cusp/detail/utils.h>
 #include <cusp/detail/format_utils.h>
-#include <cusp/detail/matrix_traits.h>
 
 #include <thrust/functional.h>
 #include <thrust/gather.h>
 #include <thrust/sequence.h>
 #include <thrust/sort.h>
+#include <thrust/iterator/counting_iterator.h>
 #include <thrust/iterator/transform_iterator.h>
 #include <thrust/iterator/zip_iterator.h>
 
@@ -38,8 +39,8 @@ namespace detail
 // COO format
 template <typename MatrixType1,   typename MatrixType2>
 void transpose(const MatrixType1& A, MatrixType2& At,
-               cusp::detail::coo_format_tag,
-               cusp::detail::coo_format_tag)
+               cusp::coo_format,
+               cusp::coo_format)
 {
     typedef typename MatrixType2::index_type   IndexType2;
     typedef typename MatrixType2::value_type   ValueType2;
@@ -73,8 +74,8 @@ void transpose(const MatrixType1& A, MatrixType2& At,
 // CSR format
 template <typename MatrixType1,   typename MatrixType2>
 void transpose(const MatrixType1& A, MatrixType2& At,
-               cusp::detail::csr_format_tag,
-               cusp::detail::csr_format_tag)
+               cusp::csr_format,
+               cusp::csr_format)
 {
     typedef typename MatrixType2::index_type   IndexType2;
     typedef typename MatrixType2::value_type   ValueType2;
@@ -133,8 +134,8 @@ struct transpose_index : public thrust::unary_function<T, T>
 // Array2d format 
 template <typename MatrixType1,   typename MatrixType2>
 void transpose(const MatrixType1& A, MatrixType2& At,
-               cusp::detail::array2d_format_tag,
-               cusp::detail::array2d_format_tag)
+               cusp::array2d_format,
+               cusp::array2d_format)
 {
     typedef typename MatrixType1::orientation SourceOrientation;
     typedef typename MatrixType2::orientation DestinationOrientation;
@@ -182,8 +183,8 @@ template <typename MatrixType1, typename MatrixType2>
 void transpose(const MatrixType1& A, MatrixType2& At)
 {
     cusp::detail::transpose(A, At,
-                            typename cusp::detail::matrix_format<MatrixType1>::type(),
-                            typename cusp::detail::matrix_format<MatrixType2>::type());
+                            typename MatrixType1::format(),
+                            typename MatrixType2::format());
 }
 
 } // end namespace cusp

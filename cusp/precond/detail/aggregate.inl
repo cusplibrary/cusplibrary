@@ -1,6 +1,23 @@
+/*
+ *  Copyright 2008-2009 NVIDIA Corporation
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
 #include <cusp/csr_matrix.h>
 #include <cusp/coo_matrix.h>
 #include <thrust/count.h>
+#include <thrust/fill.h>
 
 namespace cusp
 {
@@ -71,7 +88,7 @@ void mis_to_aggregates(const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& 
 template <typename IndexType, typename ValueType,
           typename ArrayType>
 void standard_aggregation(const cusp::coo_matrix<IndexType,ValueType,cusp::device_memory>& C,
-                                ArrayType& aggregates)
+                          ArrayType& aggregates)
 {
     // TODO check sizes
     // TODO label singletons with a -1
@@ -92,113 +109,124 @@ void standard_aggregation(const cusp::coo_matrix<IndexType,ValueType,cusp::devic
 template <typename IndexType, typename ValueType,
 	  typename ArrayType>
 void standard_aggregation(const cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& C,
-				ArrayType& aggregates)
+              				    ArrayType& aggregates)
 {
+  IndexType next_aggregate = 1; // number of aggregates + 1
 
-    IndexType next_aggregate = 1; // number of aggregates + 1
-    // TODO work with COO directly instead of converting to CSR
-    cusp::array1d<IndexType,cusp::host_memory> row_offsets( C.num_rows+1, 0 );
-    cusp::detail::indices_to_offsets(C.row_indices, row_offsets);
-    IndexType n_row = C.num_rows;
+  // TODO work with COO directly instead of converting to CSR
+  cusp::array1d<IndexType,cusp::host_memory> row_offsets(C.num_rows + 1);
+  cusp::detail::indices_to_offsets(C.row_indices, row_offsets);
 
-    //Pass #1
-    for(IndexType i = 0; i < n_row; i++){
-	if(aggregates[i]){ continue; } //already marked
+  // initialize aggregates to 0
+  thrust::fill(aggregates.begin(), aggregates.end(), 0);
 
-	const IndexType row_start = row_offsets[i];
-	const IndexType row_end   = row_offsets[i+1];
+  IndexType n_row = C.num_rows;
 
-	//Determine whether all neighbors of this node are free (not already aggregates)
-	bool has_aggregated_neighbors = false;
-	bool has_neighbors            = false;
-	for(IndexType jj = row_start; jj < row_end; jj++){
-	    const IndexType j = C.column_indices[jj];
-	    if( i != j ){
-		has_neighbors = true;
-		if( aggregates[j] ){
-		    has_aggregated_neighbors = true;
-		    break;
-		}
-	    }
-	}
+  //Pass #1
+  for(IndexType i = 0; i < n_row; i++)
+  {
+    if(aggregates[i]){ continue; } //already marked
 
-	if(!has_neighbors){
-	    //isolated node, do not aggregate
-	    aggregates[i] = -n_row;
-	}
-	else if (!has_aggregated_neighbors){
-	    //Make an aggregate out of this node and its neighbors
-	    aggregates[i] = next_aggregate;
-	    for(IndexType jj = row_start; jj < row_end; jj++){
-		aggregates[C.column_indices[jj]] = next_aggregate;
-	    }
-	    next_aggregate++;
-	}
-    }
+    const IndexType row_start = row_offsets[i];
+    const IndexType row_end   = row_offsets[i+1];
 
-    //Pass #2
-    // Add unaggregated nodes to any neighboring aggregate
-    for(IndexType i = 0; i < n_row; i++){
-	if(aggregates[i]){ continue; } //already marked
+    //Determine whether all neighbors of this node are free (not already aggregates)
+    bool has_aggregated_neighbors = false;
+    bool has_neighbors            = false;
 
-	for(IndexType jj = row_offsets[i]; jj < row_offsets[i+1]; jj++){
-	    const IndexType j = C.column_indices[jj];
-
-	    const IndexType tj = aggregates[j];
-	    if(tj > 0){
-		aggregates[i] = -tj;
-		break;
-	    }
-	}
-    }
-
-    next_aggregate--;
-
-    //Pass #3
-    for(IndexType i = 0; i < n_row; i++){
-	const IndexType ti = aggregates[i];
-
-	if(ti != 0){
-	    // node i has been aggregated
-	    if(ti > 0)
-		aggregates[i] = ti - 1;
-	    else if(ti == -n_row)
-		aggregates[i] = -1;
-	    else
-		aggregates[i] = -ti - 1;
-	    continue;
-	}
-
-	// node i has not been aggregated
-	const IndexType row_start = row_offsets[i];
-	const IndexType row_end   = row_offsets[i+1];
-
-	aggregates[i] = next_aggregate;
-
-	for(IndexType jj = row_start; jj < row_end; jj++){
-	    const IndexType j = C.column_indices[jj];
-
-	    if(aggregates[j] == 0){ //unmarked neighbors
-		aggregates[j] = next_aggregate;
-	    }
-	}
-	next_aggregate++;
-    }
-
-    if( next_aggregate == 0 )
+    for(IndexType jj = row_start; jj < row_end; jj++)
     {
-	cusp::array1d<ValueType,cusp::host_memory> values( n_row, 0 );
-	aggregates = values;
+      const IndexType j = C.column_indices[jj];
+      if( i != j )
+      {
+        has_neighbors = true;
+        if( aggregates[j] )
+        {
+          has_aggregated_neighbors = true;
+          break;
+        }
+      }
     }
-    else
+
+    if(!has_neighbors)
     {
-	// TODO Handle unaggregated nodes
-	ValueType agg_min = *std::min_element(aggregates.begin(), aggregates.end());
-	if( agg_min == -1 ){
-		IndexType num_aggs = aggregates.size() - thrust::count(aggregates.begin(), aggregates.end(), -1.0);
-		printf("number aggregated : %d\n",num_aggs);
-	}
+      //isolated node, do not aggregate
+      aggregates[i] = -n_row;
     }
+    else if (!has_aggregated_neighbors)
+    {
+      //Make an aggregate out of this node and its neighbors
+      aggregates[i] = next_aggregate;
+      for(IndexType jj = row_start; jj < row_end; jj++){
+        aggregates[C.column_indices[jj]] = next_aggregate;
+      }
+      next_aggregate++;
+    }
+  }
+
+  //Pass #2
+  // Add unaggregated nodes to any neighboring aggregate
+  for(IndexType i = 0; i < n_row; i++){
+    if(aggregates[i]){ continue; } //already marked
+
+    for(IndexType jj = row_offsets[i]; jj < row_offsets[i+1]; jj++){
+      const IndexType j = C.column_indices[jj];
+
+      const IndexType tj = aggregates[j];
+      if(tj > 0){
+        aggregates[i] = -tj;
+        break;
+      }
+    }
+  }
+
+  next_aggregate--;
+
+  //Pass #3
+  for(IndexType i = 0; i < n_row; i++){
+    const IndexType ti = aggregates[i];
+
+    if(ti != 0){
+      // node i has been aggregated
+      if(ti > 0)
+        aggregates[i] = ti - 1;
+      else if(ti == -n_row)
+        aggregates[i] = -1;
+      else
+        aggregates[i] = -ti - 1;
+      continue;
+    }
+
+    // node i has not been aggregated
+    const IndexType row_start = row_offsets[i];
+    const IndexType row_end   = row_offsets[i+1];
+
+    aggregates[i] = next_aggregate;
+
+    for(IndexType jj = row_start; jj < row_end; jj++){
+      const IndexType j = C.column_indices[jj];
+
+      if(aggregates[j] == 0){ //unmarked neighbors
+        aggregates[j] = next_aggregate;
+      }
+    }
+    next_aggregate++;
+  }
+
+  if( next_aggregate == 0 )
+  {
+    cusp::array1d<ValueType,cusp::host_memory> values( n_row, 0 );
+    aggregates = values;
+  }
+  else
+  {
+    // TODO Handle unaggregated nodes
+    ValueType agg_min = *std::min_element(aggregates.begin(), aggregates.end());
+    if( agg_min == -1 ){
+      IndexType num_aggs = aggregates.size() - thrust::count(aggregates.begin(), aggregates.end(), -1.0);
+      printf("number aggregated : %d\n",num_aggs);
+    }
+  }
 }
 
 } // end namespace detail

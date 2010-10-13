@@ -19,34 +19,27 @@
 
 #include <cusp/detail/config.h>
 
+#include <cusp/format.h>
 #include <cusp/blas.h>
 #include <cusp/exception.h>
+#include <cusp/detail/matrix_base.h>
 
 namespace cusp
 {
 
 template <typename ValueType, typename MemorySpace, typename IndexType=int>
-class linear_operator
+class linear_operator : public cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::unknown_format>
 {
-    public:
-    typedef IndexType   index_type;
-    typedef ValueType   value_type;
-    typedef MemorySpace memory_space;
+  typedef cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::unknown_format> Parent;
+ public:
+  linear_operator()
+      : Parent() {}
 
-    // replace with matrix_base
-    IndexType num_rows;
-    IndexType num_cols;
-    IndexType num_entries;
+  linear_operator(IndexType num_rows, IndexType num_cols)
+      : Parent(num_rows, num_cols) {}
 
-    linear_operator() 
-        : num_rows(0), num_cols(0), num_entries(0) {}
-    
-    linear_operator(IndexType num_rows, IndexType num_cols)
-        : num_rows(num_rows), num_cols(num_cols), num_entries(0) {}
-
-    linear_operator(IndexType num_rows, IndexType num_cols, IndexType num_entries)
-        : num_rows(num_rows), num_cols(num_cols), num_entries(num_entries) {}
-
+  linear_operator(IndexType num_rows, IndexType num_cols, IndexType num_entries)
+      : Parent(num_rows, num_cols, num_entries) {}
 }; // linear_operator
 
 template <typename ValueType, typename MemorySpace, typename IndexType=int>
@@ -61,9 +54,6 @@ class identity_operator : public linear_operator<ValueType,MemorySpace,IndexType
     identity_operator(IndexType num_rows, IndexType num_cols)
         : Parent(num_rows, num_cols) {}
 
-    identity_operator(IndexType num_rows, IndexType num_cols, IndexType num_entries)
-        : Parent(num_rows, num_cols, num_entries) {}
-    
     template <typename VectorType1,
               typename VectorType2>
     void operator()(const VectorType1& x, VectorType2& y) const

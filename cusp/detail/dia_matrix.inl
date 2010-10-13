@@ -34,19 +34,11 @@ template <typename IndexType, typename ValueType, class MemorySpace>
 dia_matrix<IndexType,ValueType,MemorySpace>
     ::dia_matrix(IndexType num_rows, IndexType num_cols, IndexType num_entries,
                  IndexType num_diagonals, IndexType alignment)
-        : detail::matrix_base<IndexType,ValueType,MemorySpace>(num_rows, num_cols, num_entries),
+        : detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::dia_format>(num_rows, num_cols, num_entries),
           diagonal_offsets(num_diagonals),
           values(detail::round_up(num_rows, alignment), num_diagonals) {}
 
-// construct from another dia_matrix
-template <typename IndexType, typename ValueType, class MemorySpace>
-template <typename IndexType2, typename ValueType2, typename MemorySpace2>
-dia_matrix<IndexType,ValueType,MemorySpace>
-    ::dia_matrix(const dia_matrix<IndexType2, ValueType2, MemorySpace2>& matrix)
-        : detail::matrix_base<IndexType,ValueType,MemorySpace>(matrix.num_rows, matrix.num_cols, matrix.num_entries),
-          diagonal_offsets(matrix.diagonal_offsets), values(matrix.values) {}
-
-// construct from a different matrix format
+// construct from a different matrix
 template <typename IndexType, typename ValueType, class MemorySpace>
 template <typename MatrixType>
 dia_matrix<IndexType,ValueType,MemorySpace>
@@ -80,26 +72,10 @@ template <typename IndexType, typename ValueType, class MemorySpace>
     dia_matrix<IndexType,ValueType,MemorySpace>
     ::swap(dia_matrix& matrix)
     {
-        detail::matrix_base<IndexType,ValueType,MemorySpace>::swap(matrix);
+        detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::dia_format>::swap(matrix);
 
         diagonal_offsets.swap(matrix.diagonal_offsets);
         values.swap(matrix.values);
-    }
-
-// copy another dia_matrix
-template <typename IndexType, typename ValueType, class MemorySpace>
-template <typename IndexType2, typename ValueType2, typename MemorySpace2>
-    dia_matrix<IndexType,ValueType,MemorySpace>&
-    dia_matrix<IndexType,ValueType,MemorySpace>
-    ::operator=(const dia_matrix<IndexType2, ValueType2, MemorySpace2>& matrix)
-    {
-        this->num_rows         = matrix.num_rows;
-        this->num_cols         = matrix.num_cols;
-        this->num_entries      = matrix.num_entries;
-        this->diagonal_offsets = matrix.diagonal_offsets;
-        this->values           = matrix.values;
-
-        return *this;
     }
 
 // copy a matrix in a different format

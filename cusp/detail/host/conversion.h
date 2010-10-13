@@ -18,13 +18,14 @@
 
 #pragma once
 
-#include <algorithm>  // TODO replace w/ thrust algorithms
-
 #include <cusp/ell_matrix.h>
-
 #include <cusp/exception.h>
 
 #include <cusp/detail/host/conversion_utils.h>
+
+#include <thrust/fill.h>
+#include <thrust/extrema.h>
+#include <thrust/count.h>
 
 namespace cusp
 {
@@ -46,7 +47,7 @@ void coo_to_csr(const Matrix1& src, Matrix2& dst)
     dst.resize(src.num_rows, src.num_cols, src.num_entries);
     
     //compute number of non-zero entries per row of A 
-    std::fill(dst.row_offsets.begin(), dst.row_offsets.end(), IndexType(0));
+    thrust::fill(dst.row_offsets.begin(), dst.row_offsets.end(), IndexType(0));
 
     for (IndexType n = 0; n < src.num_entries; n++)
         dst.row_offsets[src.row_indices[n]]++;
@@ -90,7 +91,7 @@ void coo_to_array(const Matrix1& src, Matrix2& dst)
 
     dst.resize(src.num_rows, src.num_cols);
 
-    std::fill(dst.values.begin(), dst.values.end(), ValueType(0));
+    thrust::fill(dst.values.begin(), dst.values.end(), ValueType(0));
 
     for(IndexType n = 0; n < src.num_entries; n++)
         dst(src.row_indices[n], src.column_indices[n]) += src.values[n]; //sum duplicates
@@ -159,7 +160,7 @@ void csr_to_dia(const Matrix1& src, Matrix2& dst,
     }
 
     // fill in values array
-    std::fill(dst.values.values.begin(), dst.values.values.end(), ValueType(0));
+    thrust::fill(dst.values.values.begin(), dst.values.values.end(), ValueType(0));
 
     for(IndexType i = 0; i < src.num_rows; i++)
     {
@@ -190,7 +191,7 @@ void csr_to_hyb(const Matrix1& src, Matrix2& dst,
     // compute number of nonzeros in the ELL and COO portions
     IndexType num_ell_entries = 0;
     for(IndexType i = 0; i < src.num_rows; i++)
-        num_ell_entries += std::min<IndexType>(num_entries_per_row, src.row_offsets[i+1] - src.row_offsets[i]); 
+        num_ell_entries += thrust::min<IndexType>(num_entries_per_row, src.row_offsets[i+1] - src.row_offsets[i]); 
 
     IndexType num_coo_entries = src.num_entries - num_ell_entries;
 
@@ -201,8 +202,8 @@ void csr_to_hyb(const Matrix1& src, Matrix2& dst,
     const IndexType invalid_index = cusp::ell_matrix<IndexType, ValueType, cusp::host_memory>::invalid_index;
 
     // pad out ELL format with zeros
-    std::fill(dst.ell.column_indices.values.begin(), dst.ell.column_indices.values.end(), invalid_index);
-    std::fill(dst.ell.values.values.begin(),         dst.ell.values.values.end(),         ValueType(0));
+    thrust::fill(dst.ell.column_indices.values.begin(), dst.ell.column_indices.values.end(), invalid_index);
+    thrust::fill(dst.ell.values.values.begin(),         dst.ell.values.values.end(),         ValueType(0));
 
     for(IndexType i = 0, coo_nnz = 0; i < src.num_rows; i++)
     {
@@ -240,15 +241,15 @@ void csr_to_ell(const Matrix1& src, Matrix2& dst,
 
     IndexType num_entries = 0;
     for(IndexType i = 0; i < src.num_rows; i++)
-        num_entries += std::min<IndexType>(num_entries_per_row, src.row_offsets[i+1] - src.row_offsets[i]); 
+        num_entries += thrust::min<IndexType>(num_entries_per_row, src.row_offsets[i+1] - src.row_offsets[i]); 
 
     dst.resize(src.num_rows, src.num_cols, num_entries, num_entries_per_row, alignment);
 
     const IndexType invalid_index = cusp::ell_matrix<IndexType, ValueType, cusp::host_memory>::invalid_index;
 
     // pad out ELL format with zeros
-    std::fill(dst.column_indices.values.begin(), dst.column_indices.values.end(), invalid_index);
-    std::fill(dst.values.values.begin(),         dst.values.values.end(),         ValueType(0));
+    thrust::fill(dst.column_indices.values.begin(), dst.column_indices.values.end(), invalid_index);
+    thrust::fill(dst.values.values.begin(),         dst.values.values.end(),         ValueType(0));
 
     for(IndexType i = 0; i < src.num_rows; i++)
     {
@@ -274,7 +275,7 @@ void csr_to_array(const Matrix1& src, Matrix2& dst)
 
     dst.resize(src.num_rows, src.num_cols);
 
-    std::fill(dst.values.begin(), dst.values.end(), ValueType(0));
+    thrust::fill(dst.values.begin(), dst.values.end(), ValueType(0));
 
     for(IndexType i = 0; i < src.num_rows; i++)
         for(IndexType jj = src.row_offsets[i]; jj < src.row_offsets[i+1]; jj++)
@@ -521,7 +522,7 @@ void array_to_coo(const Matrix1& src, Matrix2& dst)
     typedef typename Matrix2::index_type IndexType;
     typedef typename Matrix2::value_type ValueType;
     
-    IndexType nnz = src.num_entries - std::count(src.values.begin(), src.values.end(), ValueType(0));
+    IndexType nnz = src.num_entries - thrust::count(src.values.begin(), src.values.end(), ValueType(0));
 
     dst.resize(src.num_rows, src.num_cols, nnz);
 
@@ -548,7 +549,7 @@ void array_to_csr(const Matrix1& src, Matrix2& dst)
     typedef typename Matrix2::index_type IndexType;
     typedef typename Matrix2::value_type ValueType;
     
-    IndexType nnz = src.num_entries - std::count(src.values.begin(), src.values.end(), ValueType(0));
+    IndexType nnz = src.num_entries - thrust::count(src.values.begin(), src.values.end(), ValueType(0));
 
     dst.resize(src.num_rows, src.num_cols, nnz);
 

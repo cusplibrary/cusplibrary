@@ -16,8 +16,7 @@
 
 #pragma once
 
-#include <cusp/detail/matrix_traits.h>
-
+#include <cusp/format.h>
 #include <cusp/csr_matrix.h>
 #include <cusp/detail/host/detail/csr.h>
 
@@ -43,9 +42,9 @@ namespace dispatch
 //                           const Matrix2& B,
 //                                 Matrix3& C,
 //                                 BinaryFunction op,
-//                           cusp::detail::coo_format_tag,
-//                           cusp::detail::coo_format_tag,
-//                           cusp::detail::coo_format_tag)
+//                           cusp::coo_format,
+//                           cusp::coo_format,
+//                           cusp::coo_format)
 //{
 //    cusp::detail::host::detail::transform_elementwise_coo(A, B, C, op); 
 //}
@@ -63,9 +62,9 @@ void transform_elementwise(const Matrix1& A,
                            const Matrix2& B,
                                  Matrix3& C,
                                  BinaryFunction op,
-                           cusp::detail::csr_format_tag,
-                           cusp::detail::csr_format_tag,
-                           cusp::detail::csr_format_tag)
+                           cusp::csr_format,
+                           cusp::csr_format,
+                           cusp::csr_format)
 {
     cusp::detail::host::detail::csr_transform_elementwise(A, B, C, op); 
 }
@@ -82,9 +81,9 @@ void transform_elementwise(const Matrix1& A,
                            const Matrix2& B,
                                  Matrix3& C,
                                  BinaryFunction op,
-                           cusp::detail::array2d_format_tag,
-                           cusp::detail::array2d_format_tag,
-                           cusp::detail::array2d_format_tag)
+                           cusp::array2d_format,
+                           cusp::array2d_format,
+                           cusp::array2d_format)
 {
     typedef typename Matrix3::index_type IndexType;
 
@@ -107,9 +106,9 @@ void transform_elementwise(const Matrix1& A,
                            const Matrix2& B,
                                  Matrix3& C,
                                  BinaryFunction op,
-                           sparse_format_tag,
-                           sparse_format_tag,
-                           sparse_format_tag)
+                           sparse_format,
+                           sparse_format,
+                           sparse_format)
 {
     typedef typename Matrix1::index_type IndexType1;
     typedef typename Matrix2::index_type IndexType2;
@@ -144,9 +143,9 @@ void transform_elementwise(const Matrix1& A,
                                  BinaryFunction op)
 {
     cusp::detail::host::dispatch::transform_elementwise(A, B, C, op,
-            typename cusp::detail::matrix_format<Matrix1>::type(),
-            typename cusp::detail::matrix_format<Matrix2>::type(),
-            typename cusp::detail::matrix_format<Matrix3>::type());
+            typename Matrix1::format(),
+            typename Matrix2::format(),
+            typename Matrix3::format());
 }
 
 } // end namespace host

@@ -30,10 +30,10 @@ template <typename LinearOperator,
 void multiply(LinearOperator&  A,
               MatrixOrVector1& B,
               MatrixOrVector2& C,
-              cusp::detail::unknown_format_tag)
+              cusp::unknown_format)
 {
-    // invoke linear_operator multiplication method
-    A(B,C);
+  // user-defined LinearOperator
+  A(B,C);
 }
 
 template <typename LinearOperator,
@@ -42,13 +42,13 @@ template <typename LinearOperator,
 void multiply(LinearOperator&  A,
               MatrixOrVector1& B,
               MatrixOrVector2& C,
-              cusp::detail::known_format_tag)
+              cusp::known_format)
 {
-    cusp::detail::dispatch::multiply
-        (A, B, C,
-         typename LinearOperator::memory_space(),
-         typename MatrixOrVector1::memory_space(),
-         typename MatrixOrVector2::memory_space());
+  // built-in format
+  cusp::detail::dispatch::multiply(A, B, C,
+                                   typename LinearOperator::memory_space(),
+                                   typename MatrixOrVector1::memory_space(),
+                                   typename MatrixOrVector2::memory_space());
 }
 
 } // end namespace detail
@@ -60,13 +60,13 @@ void multiply(LinearOperator&  A,
               MatrixOrVector1& B,
               MatrixOrVector2& C)
 {
-    // TODO check that dimensions are compatible
+  // TODO check that dimensions are compatible
 
-    typedef typename LinearOperator::value_type   ValueType;
-    typedef typename LinearOperator::memory_space MemorySpace;
+  typedef typename LinearOperator::value_type   ValueType;
+  typedef typename LinearOperator::memory_space MemorySpace;
 
-    cusp::detail::multiply(A, B, C,
-            typename cusp::detail::matrix_format<LinearOperator>::type());
+  cusp::detail::multiply(A, B, C,
+                         typename LinearOperator::format());
 }
 
 } // end namespace cusp

@@ -14,37 +14,31 @@
  *  limitations under the License.
  */
 
+
+/*! \file format.h
+ *  \brief Format types
+ */
+
 #pragma once
 
 #include <cusp/detail/config.h>
 
-#include <thrust/detail/type_traits.h>
-
 namespace cusp
 {
-namespace detail
-{
 
-using thrust::detail::true_type;
-using thrust::detail::false_type;
+struct known_format {};
+struct unknown_format {};
 
-template <typename T>
-class is_coo_matrix;
+struct dense_format : public known_format {};
+struct array1d_format : public dense_format {};
+struct array2d_format : public dense_format {};
 
-template <typename T>
-class is_csr_matrix;
+struct sparse_format : public known_format {};
+struct coo_format : public sparse_format {};
+struct csr_format : public sparse_format {};
+struct dia_format : public sparse_format {};
+struct ell_format : public sparse_format {};
+struct hyb_format : public sparse_format {};
 
-template <typename T>
-class is_dia_matrix;
-
-template <typename T>
-class is_ell_matrix;
-
-template <typename T>
-class is_hyb_matrix;
-
-} // end namespace detail
 } // end namespace cusp
-
-#include <cusp/detail/matrix_traits.inl>
 

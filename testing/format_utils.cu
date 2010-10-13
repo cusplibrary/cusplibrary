@@ -1,6 +1,12 @@
 #include <unittest/unittest.h>
 
+#include <cusp/array2d.h>
+#include <cusp/coo_matrix.h>
 #include <cusp/csr_matrix.h>
+#include <cusp/dia_matrix.h>
+#include <cusp/ell_matrix.h>
+#include <cusp/hyb_matrix.h>
+
 #include <cusp/detail/format_utils.h>
 
 template <class Space>

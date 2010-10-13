@@ -22,6 +22,7 @@
 
 #include <cusp/detail/config.h>
 
+#include <cusp/format.h>
 #include <cusp/array1d.h>
 #include <cusp/detail/matrix_base.h>
 
@@ -74,7 +75,7 @@ namespace cusp
  *
  */
     template <typename IndexType, typename ValueType, class MemorySpace>
-    class coo_matrix : public detail::matrix_base<IndexType,ValueType,MemorySpace>
+    class coo_matrix : public detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::coo_format>
     {
         public:
         template<typename MemorySpace2>
@@ -104,14 +105,7 @@ namespace cusp
          */
         coo_matrix(IndexType num_rows, IndexType num_cols, IndexType num_entries);
     
-        /*! Construct a \p coo_matrix from another \p coo_matrix.
-         *
-         *  \param matrix Another \p coo_matrix.
-         */
-        template <typename IndexType2, typename ValueType2, typename MemorySpace2>
-        coo_matrix(const coo_matrix<IndexType2, ValueType2, MemorySpace2>& matrix);
-        
-        /*! Construct a \p coo_matrix from another matrix format.
+        /*! Construct a \p coo_matrix from another matrix.
          *
          *  \param matrix Another sparse or dense matrix.
          */
@@ -126,14 +120,7 @@ namespace cusp
          */
         void swap(coo_matrix& matrix);
 
-        /*! Assignment from another \p coo_matrix.
-         *
-         *  \param matrix Another \p coo_matrix with possibly different IndexType and ValueType.
-         */
-        template <typename IndexType2, typename ValueType2, typename MemorySpace2>
-        coo_matrix& operator=(const coo_matrix<IndexType2, ValueType2, MemorySpace2>& matrix);
-
-        /*! Assignment from another matrix format.
+        /*! Assignment from another matrix.
          *
          *  \param matrix Another sparse or dense matrix.
          */

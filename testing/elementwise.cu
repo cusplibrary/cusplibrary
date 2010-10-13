@@ -3,6 +3,10 @@
 #include <cusp/elementwise.h>
 
 #include <cusp/coo_matrix.h>
+#include <cusp/csr_matrix.h>
+#include <cusp/dia_matrix.h>
+#include <cusp/ell_matrix.h>
+#include <cusp/hyb_matrix.h>
 #include <cusp/gallery/poisson.h>
 #include <cusp/gallery/random.h>
 
@@ -97,9 +101,9 @@ void TestAdd(void)
         }
     }
     
-    SparseMatrix A = DenseMatrix(2,2);
-    SparseMatrix B = DenseMatrix(2,3); 
-    SparseMatrix C = DenseMatrix(3,2); 
+    SparseMatrix A = DenseMatrix(2,2,1);
+    SparseMatrix B = DenseMatrix(2,3,1); 
+    SparseMatrix C = DenseMatrix(3,2,1); 
     SparseMatrix D;
 
     ASSERT_THROWS(cusp::add(A,B,D), cusp::invalid_input_exception);
@@ -143,9 +147,9 @@ void TestSubtract(void)
         }
     }
 
-    SparseMatrix A = DenseMatrix(2,2);
-    SparseMatrix B = DenseMatrix(2,3); 
-    SparseMatrix C = DenseMatrix(3,2); 
+    SparseMatrix A = DenseMatrix(2,2,1);
+    SparseMatrix B = DenseMatrix(2,3,1); 
+    SparseMatrix C = DenseMatrix(3,2,1); 
     SparseMatrix D;
 
     ASSERT_THROWS(cusp::subtract(A,B,D), cusp::invalid_input_exception);

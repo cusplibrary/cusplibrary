@@ -14,21 +14,23 @@
  *  limitations under the License.
  */
 
-
+/*! \file copy.h
+ *  \brief Performs (deep) copy operations between containers and views.
+ */
+    
 #pragma once
 
 #include <cusp/detail/config.h>
 
 namespace cusp
 {
-namespace detail
-{
 
-template <typename SourceType, typename DestinationType>
-void convert(const SourceType& src, DestinationType& dst);
+// must have the same format!
+// will resize() as necessary
+template <typename T1, typename T2>
+void copy(const T1& src, T2& dst);
 
-} // end namespace detail
 } // end namespace cusp
 
-#include <cusp/detail/convert.inl>
+#include <cusp/detail/copy.inl>
 

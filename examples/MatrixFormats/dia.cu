@@ -1,4 +1,4 @@
-#include <cusp/csr_matrix.h>
+#include <cusp/dia_matrix.h>
 #include <cusp/print.h>
 
 int main(void)

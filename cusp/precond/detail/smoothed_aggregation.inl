@@ -376,7 +376,6 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace>
 {
 	IndexType num_levels = levels.size();
 
-	std::cout << "multilevel solver stats" << std::endl;
 	std::cout << "\tNumber of Levels:\t" << num_levels << std::endl;
 	std::cout << "\tOperator Complexity:\t" << operator_complexity() << std::endl;
 	std::cout << "\tGrid Complexity:\t" << grid_complexity() << std::endl;

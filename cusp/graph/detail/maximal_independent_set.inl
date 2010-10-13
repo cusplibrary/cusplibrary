@@ -1,8 +1,8 @@
 #include <cusp/detail/device/generalized_spmv/csr_scalar.h>
 
-#include <cusp/csr_matrix.h>
 #include <cusp/array1d.h>
 #include <cusp/exception.h>
+#include <cusp/csr_matrix.h>
 
 #include <thrust/count.h>
 #include <thrust/transform.h>
@@ -50,18 +50,25 @@ struct process_nodes
     }
 };
 
-template <typename IndexType, typename ValueType, typename MemorySpace, typename ArrayType>
-size_t maximal_independent_set(const cusp::csr_matrix<IndexType,ValueType,MemorySpace>& A,
-                                     ArrayType& stencil,
-                               size_t k)
+//////////////
+// CSR Path //
+//////////////
+
+template <typename MatrixType, typename ArrayType>
+size_t maximal_independent_set(const MatrixType& A,
+                               ArrayType& stencil,
+                               size_t k,
+                               cusp::csr_format)
 {
+    typedef typename MatrixType::index_type   IndexType;
+    typedef typename MatrixType::value_type   ValueType;
+    typedef typename MatrixType::memory_space MemorySpace;
     typedef unsigned int RandomType;
     typedef unsigned int NodeStateType;
         
     if(A.num_rows != A.num_cols)
         throw cusp::invalid_input_exception("matrix must be square");
     
-    // throw if A.num_rows != A.num_cols
     const IndexType N = A.num_rows;
 
     cusp::array1d<RandomType,MemorySpace> random_values(N);
@@ -98,6 +105,7 @@ size_t maximal_independent_set(const cusp::csr_matrix<IndexType,ValueType,Memory
             cusp::array1d<RandomType,MemorySpace>    last_values(maximal_values);
             cusp::array1d<IndexType,MemorySpace>     last_indices(maximal_indices);
 
+            // TODO replace with call to generalized method
             cusp::detail::device::cuda::spmv_csr_scalar
                 (A.num_rows,
                  A.row_offsets.begin(), A.column_indices.begin(), thrust::constant_iterator<int>(1),  // XXX should we mask explicit zeros? (e.g. DIA, array2d)
@@ -106,7 +114,6 @@ size_t maximal_independent_set(const cusp::csr_matrix<IndexType,ValueType,Memory
                  thrust::make_zip_iterator(thrust::make_tuple(maximal_states.begin(), maximal_values.begin(), maximal_indices.begin())),
                  thrust::identity<Tuple>(), thrust::project2nd<Tuple,Tuple>(), thrust::maximum<Tuple>());
         }
-
 
         // label local maxima as MIS nodes and neighbors of MIS nodes as non-MIS nodes
         thrust::for_each(thrust::make_zip_iterator(thrust::make_tuple(thrust::counting_iterator<IndexType>(0), states.begin(), maximal_states.begin(), maximal_indices.begin())),
@@ -122,7 +129,30 @@ size_t maximal_independent_set(const cusp::csr_matrix<IndexType,ValueType,Memory
     return num_iterations;
 }
 
+//////////////////
+// General Path //
+//////////////////
+template <typename MatrixType, typename ArrayType, typename MatrixFormat>
+size_t maximal_independent_set(const MatrixType& A,
+                               ArrayType& stencil,
+                               size_t k,
+                               MatrixType)
+{
+  typedef typename MatrixType::index_type   IndexType;
+  typedef typename MatrixType::value_type   ValueType;
+  typedef typename MatrixType::memory_space MemorySpace;
+
+  // convert matrix to CSR format and 
+  cusp::csr_matrix<IndexType,ValueType,MemorySpace> A_csr(A);
+
+  return cusp::graph::maximal_independent_set(A_csr, stencil, k);
+}
+
 } // end namespace detail
+
+/////////////////
+// Entry Point //
+/////////////////
 
 template <typename MatrixType, typename ArrayType>
 size_t maximal_independent_set(MatrixType& A, ArrayType& stencil, size_t k)
@@ -136,7 +166,7 @@ size_t maximal_independent_set(MatrixType& A, ArrayType& stencil, size_t k)
     }
     else
     {
-        return cusp::graph::detail::maximal_independent_set(A, stencil, k);
+        return cusp::graph::detail::maximal_independent_set(A, stencil, k, typename MatrixType::format());
     }
 }
 

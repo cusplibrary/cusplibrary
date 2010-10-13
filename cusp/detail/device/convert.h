@@ -17,12 +17,9 @@
 
 #pragma once
 
+#include <cusp/format.h>
 #include <cusp/coo_matrix.h>
 #include <cusp/csr_matrix.h>
-#include <cusp/dia_matrix.h>
-#include <cusp/ell_matrix.h>
-#include <cusp/hyb_matrix.h>
-#include <cusp/array2d.h>
 
 #include <cusp/detail/format_utils.h>
 
@@ -30,10 +27,6 @@
 //#include <cusp/detail/host/conversion_utils.h>
 
 #include <cusp/detail/host/convert.h>
-
-#include <algorithm>
-#include <string>
-#include <stdexcept>
 
 namespace cusp
 {
@@ -44,26 +37,17 @@ namespace device
 
 // Device Conversion Functions
 // COO <- CSR
-//     <- Array
 // CSR <- COO
-//     <- DIA
-//     <- ELL
-//     <- HYB
-//     <- Array
-// DIA <- CSR
-// ELL <- CSR
-// HYB <- CSR
-// Array <- COO
-//       <- CSR
-//       <- Array (different Orientation)
+// 
+// All other conversions happen on the host
 
 /////////
 // COO //
 /////////
 template <typename Matrix1, typename Matrix2>
 void convert(const Matrix1& src, Matrix2& dst,
-             cusp::detail::csr_format_tag,
-             cusp::detail::coo_format_tag)
+             cusp::csr_format,
+             cusp::coo_format)
 {
     typedef typename Matrix2::index_type IndexType;
     typedef typename Matrix2::value_type ValueType;
@@ -82,8 +66,8 @@ void convert(const Matrix1& src, Matrix2& dst,
 /////////
 template <typename Matrix1, typename Matrix2>
 void convert(const Matrix1& src, Matrix2& dst,
-             cusp::detail::coo_format_tag,
-             cusp::detail::csr_format_tag)
+             cusp::coo_format,
+             cusp::csr_format)
 {
     typedef typename Matrix2::index_type IndexType;
     typedef typename Matrix2::value_type ValueType;
@@ -141,8 +125,8 @@ template <typename Matrix1, typename Matrix2>
 void convert(const Matrix1& src, Matrix2& dst)
 {
     cusp::detail::device::convert(src, dst,
-            typename cusp::detail::matrix_format<Matrix1>::type(),
-            typename cusp::detail::matrix_format<Matrix2>::type());
+            typename Matrix1::format(),
+            typename Matrix2::format());
 }
 
 } // end namespace device

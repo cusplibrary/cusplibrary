@@ -19,15 +19,15 @@
 
 #include <cusp/detail/config.h>
 
-#include <thrust/detail/vector_base.h>
+#include <cusp/format.h>
 
 #include <thrust/host_vector.h>
-#include <thrust/device_vector.h>
-#include <vector>
-
 #include <thrust/device_allocator.h>
-
 #include <thrust/iterator/iterator_traits.h>
+#include <thrust/device_vector.h>
+#include <thrust/detail/vector_base.h>
+
+#include <vector>
 
 namespace cusp
 {
@@ -69,6 +69,7 @@ namespace cusp
 
         public:
             typedef MemorySpace memory_space;
+            typedef cusp::array1d_format format;
 
             typedef typename thrust::detail::vector_base<T,Alloc> Parent;
             typedef typename Parent::size_type  size_type;
