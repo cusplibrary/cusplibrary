@@ -23,13 +23,9 @@
 #include <cusp/exception.h>
 
 #include <thrust/copy.h>
-#include <thrust/host_vector.h>
 #include <thrust/device_allocator.h>
 #include <thrust/iterator/iterator_traits.h>
-#include <thrust/device_vector.h>
 #include <thrust/detail/vector_base.h>
-
-#include <vector>
 
 namespace cusp
 {
@@ -71,7 +67,7 @@ namespace cusp
           typedef typename Parent::value_type value_type;
   
           array1d(void) : Parent() {}
-          
+
           explicit array1d(size_type n)
               : Parent()
           {
@@ -86,40 +82,23 @@ namespace cusp
 #endif
               }
           }
-  
-          array1d(size_type n, const value_type &value) 
-              : Parent(n, value) {}
-  
-          array1d(const array1d &v)
-              : Parent(v) {}
-  
-          template<typename OtherT, typename OtherAlloc>
-              array1d(const array1d<OtherT,OtherAlloc> &v)
-              : Parent(v) {}
-  
-          template<typename OtherT, typename OtherAlloc>
-              array1d &operator=(const array1d<OtherT,OtherAlloc> &v)
-              { Parent::operator=(v); return *this; }
-  
-          template<typename OtherT, typename OtherAlloc>
-          array1d(const thrust::detail::vector_base<OtherT,OtherAlloc> &v)
-              : Parent(v) {}
           
-          template<typename OtherT, typename OtherAlloc>
-              array1d &operator=(const thrust::detail::vector_base<OtherT,OtherAlloc> &v)
-              { Parent::operator=(v); return *this;}
-  
-          template<typename OtherT, typename OtherAlloc>
-              array1d(const std::vector<OtherT,OtherAlloc> &v)
-              : Parent(v) {}
-  
-          template<typename OtherT, typename OtherAlloc>
-              array1d &operator=(const std::vector<OtherT,OtherAlloc> &v)
-              { Parent::operator=(v); return *this;}
-  
+          array1d(size_type n, const value_type &value) 
+            : Parent(n, value) {}
+
+          template<typename Array>
+            array1d(const Array& a, typename thrust::detail::enable_if<!thrust::detail::is_convertible<Array,size_type>::value>::type * = 0)
+            : Parent(a.begin(), a.end()) {}
+
           template<typename InputIterator>
-              array1d(InputIterator first, InputIterator last)
-              : Parent(first, last) {}
+            array1d(InputIterator first, InputIterator last)
+            : Parent(first, last) {}
+
+          template<typename Array>
+            array1d &operator=(const Array& a)
+            { Parent::assign(a.begin(), a.end()); return *this; }
+
+          // TODO specialize resize()
   };
   
   template <typename RandomAccessIterator>
@@ -127,38 +106,47 @@ namespace cusp
   {
     public:
       // what about const_iterator and const_reference?
-      typedef RandomAccessIterator                                            iterator;
-      typedef cusp::array1d_format                                            format;
-      typedef typename thrust::iterator_reference<RandomAccessIterator>::type reference;
-      typedef typename thrust::iterator_value<RandomAccessIterator>::type     value_type;
-      typedef typename thrust::iterator_space<RandomAccessIterator>::type     memory_space;
+      typedef RandomAccessIterator                                             iterator;
+      typedef cusp::array1d_format                                             format;
+      typedef typename thrust::iterator_reference<RandomAccessIterator>::type  reference;
+      typedef typename thrust::iterator_difference<RandomAccessIterator>::type difference_type;
+      typedef typename thrust::iterator_value<RandomAccessIterator>::type      value_type;
+      typedef typename thrust::iterator_space<RandomAccessIterator>::type      memory_space;
   
       // is this right?
       typedef size_t size_type;
+      
+      array1d_view(void)
+        : m_begin(), m_size(0), m_capacity(0) {}
   
+      template <typename Array>
+      array1d_view(Array& a)
+        : m_begin(a.begin()), m_size(a.size()), m_capacity(a.capacity()) {}
+ 
+      // should these be templated?
       array1d_view(RandomAccessIterator first, RandomAccessIterator last)
         : m_begin(first), m_size(last - first), m_capacity(last - first) {}
       
       template <typename Array>
-      array1d_view &operator=(const Array &a)
+      array1d_view &operator=(Array &a)
       {
-        // TODO check size() == a.size()
-        thrust::copy(a.begin(), a.end(), begin());
+        m_begin    = a.begin();
+        m_size     = a.size();
+        m_capacity = a.capacity();
         return *this;
       }
  
-      // XXX is this correct?  do we need const_reference?
-      reference operator[](size_type n) const
+      reference operator[](difference_type n) const
       {
         return m_begin[n];
       }
   
-      iterator begin(void)
+      iterator begin(void) const
       {
         return m_begin;
       }
   
-      iterator end(void)
+      iterator end(void) const
       {
         return m_begin + m_size;
       }
@@ -183,12 +171,18 @@ namespace cusp
           // XXX is not_implemented_exception the right choice?
           throw cusp::not_implemented_exception("array1d_view cannot resize() larger than capacity()");
       }
-  
+
     protected:
       iterator  m_begin;
       size_type m_size;
       size_type m_capacity;
   };
+
+  template <typename Array>
+  array1d_view<typename Array::iterator> make_array1d_view(Array& a)
+  {
+    return array1d_view<typename Array::iterator>(a.begin(), a.end());
+  }
   
   template <typename Iterator>
   array1d_view<Iterator> make_array1d_view(Iterator first, Iterator last)

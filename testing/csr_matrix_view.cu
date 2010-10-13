@@ -1,0 +1,85 @@
+#include <unittest/unittest.h>
+
+#include <cusp/csr_matrix.h>
+#include <cusp/multiply.h>
+
+typedef int                                                           IndexType;
+typedef float                                                         ValueType;
+typedef cusp::host_memory                                             MemorySpace;
+typedef typename cusp::csr_matrix<IndexType,ValueType,MemorySpace>    Matrix;
+typedef typename cusp::array1d<IndexType,MemorySpace>::iterator       IndexIterator;
+typedef typename cusp::array1d<ValueType,MemorySpace>::iterator       ValueIterator;
+typedef typename cusp::array1d_view<IndexIterator>                    IndexView;
+typedef typename cusp::array1d_view<ValueIterator>                    ValueView;
+typedef typename cusp::csr_matrix_view<IndexView,IndexView,ValueView> View;
+
+// TODO test make_csr_matrix_view
+
+void TestCsrMatrixView(void)
+{
+  Matrix M(3, 2, 6);
+
+  View V(3, 2, 6,
+      cusp::make_array1d_view(M.row_offsets.begin(),    M.row_offsets.end()),
+      cusp::make_array1d_view(M.column_indices.begin(), M.column_indices.end()),
+      cusp::make_array1d_view(M.values.begin(),         M.values.end()));
+
+  ASSERT_EQUAL(V.num_rows,    3);
+  ASSERT_EQUAL(V.num_cols,    2);
+  ASSERT_EQUAL(V.num_entries, 6);
+
+  ASSERT_EQUAL_QUIET(V.row_offsets.begin(),    M.row_offsets.begin());
+  ASSERT_EQUAL_QUIET(V.row_offsets.end(),      M.row_offsets.end());
+  ASSERT_EQUAL_QUIET(V.column_indices.begin(), M.column_indices.begin());
+  ASSERT_EQUAL_QUIET(V.column_indices.end(),   M.column_indices.end());
+  ASSERT_EQUAL_QUIET(V.values.begin(),         M.values.begin());
+  ASSERT_EQUAL_QUIET(V.values.end(),           M.values.end());
+  
+  View W(M);
+  
+  ASSERT_EQUAL(W.num_rows,    3);
+  ASSERT_EQUAL(W.num_cols,    2);
+  ASSERT_EQUAL(W.num_entries, 6);
+
+  ASSERT_EQUAL_QUIET(W.row_offsets.begin(),    M.row_offsets.begin());
+  ASSERT_EQUAL_QUIET(W.row_offsets.end(),      M.row_offsets.end());
+  ASSERT_EQUAL_QUIET(W.column_indices.begin(), M.column_indices.begin());
+  ASSERT_EQUAL_QUIET(W.column_indices.end(),   M.column_indices.end());
+  ASSERT_EQUAL_QUIET(W.values.begin(),         M.values.begin());
+  ASSERT_EQUAL_QUIET(W.values.end(),           M.values.end());
+}
+DECLARE_UNITTEST(TestCsrMatrixView);
+
+
+void TestCsrMatrixViewAssignment(void)
+{
+  Matrix M(3, 2, 6);
+
+  View V = M;
+
+  ASSERT_EQUAL(V.num_rows,    3);
+  ASSERT_EQUAL(V.num_cols,    2);
+  ASSERT_EQUAL(V.num_entries, 6);
+
+  ASSERT_EQUAL_QUIET(V.row_offsets.begin(),    M.row_offsets.begin());
+  ASSERT_EQUAL_QUIET(V.row_offsets.end(),      M.row_offsets.end());
+  ASSERT_EQUAL_QUIET(V.column_indices.begin(), M.column_indices.begin());
+  ASSERT_EQUAL_QUIET(V.column_indices.end(),   M.column_indices.end());
+  ASSERT_EQUAL_QUIET(V.values.begin(),         M.values.begin());
+  ASSERT_EQUAL_QUIET(V.values.end(),           M.values.end());
+
+  View W = V;
+  
+  ASSERT_EQUAL(W.num_rows,    3);
+  ASSERT_EQUAL(W.num_cols,    2);
+  ASSERT_EQUAL(W.num_entries, 6);
+
+  ASSERT_EQUAL_QUIET(W.row_offsets.begin(),    M.row_offsets.begin());
+  ASSERT_EQUAL_QUIET(W.row_offsets.end(),      M.row_offsets.end());
+  ASSERT_EQUAL_QUIET(W.column_indices.begin(), M.column_indices.begin());
+  ASSERT_EQUAL_QUIET(W.column_indices.end(),   M.column_indices.end());
+  ASSERT_EQUAL_QUIET(W.values.begin(),         M.values.begin());
+  ASSERT_EQUAL_QUIET(W.values.end(),           M.values.end());
+}
+DECLARE_UNITTEST(TestCsrMatrixViewAssignment);
+

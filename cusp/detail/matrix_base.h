@@ -46,6 +46,10 @@ namespace detail
             matrix_base()
                 : num_rows(0), num_cols(0), num_entries(0) {}
             
+            template <typename Matrix>
+            matrix_base(const Matrix& m)
+                : num_rows(m.num_rows), num_cols(m.num_cols), num_entries(m.num_entries) {}
+
             matrix_base(IndexType rows, IndexType cols)
                 : num_rows(rows), num_cols(cols), num_entries(0) {}
 
