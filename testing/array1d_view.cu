@@ -10,26 +10,116 @@ void TestArray1dView(void)
 {
   typedef typename cusp::array1d<int, MemorySpace> Array;
   typedef typename Array::iterator                 Iterator;
-  typedef cusp::array1d_view<Iterator>             View;
+  typedef typename Array::const_iterator           ConstIterator;
 
-  Array A(4);
-  A[0] = 10; A[1] = 20; A[2] = 30; A[3] = 40;
+  // view to container
+  {
+    typedef cusp::array1d_view<Iterator> View;
 
-  View V(A.begin(), A.end());
+    Array A(4);
+    A[0] = 10; A[1] = 20; A[2] = 30; A[3] = 40;
 
-  ASSERT_EQUAL(V.size(),     4);
-  ASSERT_EQUAL(V.capacity(), 4);
-  ASSERT_EQUAL(V[0], 10);
-  ASSERT_EQUAL(V[1], 20);
-  ASSERT_EQUAL(V[2], 30);
-  ASSERT_EQUAL(V[3], 40);
-  ASSERT_EQUAL_QUIET(V.begin(), A.begin());
-  ASSERT_EQUAL_QUIET(V.end(),   A.end());
+    View V(A.begin(), A.end());
 
-  V[1] = 17;
+    ASSERT_EQUAL(V.size(),     4);
+    ASSERT_EQUAL(V.capacity(), 4);
+    ASSERT_EQUAL(V[0], 10);
+    ASSERT_EQUAL(V[1], 20);
+    ASSERT_EQUAL(V[2], 30);
+    ASSERT_EQUAL(V[3], 40);
+    ASSERT_EQUAL_QUIET(V.begin(), A.begin());
+    ASSERT_EQUAL_QUIET(V.end(),   A.end());
 
-  ASSERT_EQUAL(V[1], 17);
-  ASSERT_EQUAL(A[1], 17);
+    V[1] = 17;
+
+    ASSERT_EQUAL(V[1], 17);
+    ASSERT_EQUAL(A[1], 17);
+    
+    View W(A.begin(), A.end());
+    ASSERT_EQUAL(W.size(),     4);
+    ASSERT_EQUAL(W.capacity(), 4);
+    ASSERT_EQUAL_QUIET(W.begin(), A.begin());
+    ASSERT_EQUAL_QUIET(W.end(),   A.end());
+  }
+  
+  // view to const container
+  {
+    typedef cusp::array1d_view<ConstIterator> View;
+
+    const Array A(4, 10);
+
+    View V(A.begin(), A.end());
+
+    ASSERT_EQUAL(V.size(),     4);
+    ASSERT_EQUAL(V.capacity(), 4);
+    ASSERT_EQUAL(V[0], 10);
+    ASSERT_EQUAL(V[1], 10);
+    ASSERT_EQUAL(V[2], 10);
+    ASSERT_EQUAL(V[3], 10);
+    ASSERT_EQUAL_QUIET(V.begin(), A.begin());
+    ASSERT_EQUAL_QUIET(V.end(),   A.end());
+    
+    View W(A.begin(), A.end());
+    ASSERT_EQUAL(W.size(),     4);
+    ASSERT_EQUAL(W.capacity(), 4);
+    ASSERT_EQUAL_QUIET(W.begin(), A.begin());
+    ASSERT_EQUAL_QUIET(W.end(),   A.end());
+  }
+
+  // const view to container
+  {
+    typedef const cusp::array1d_view<Iterator> View;
+
+    Array A(4);
+    A[0] = 10; A[1] = 20; A[2] = 30; A[3] = 40;
+
+    View V(A);
+
+    ASSERT_EQUAL(V.size(),     4);
+    ASSERT_EQUAL(V.capacity(), 4);
+    ASSERT_EQUAL(V[0], 10);
+    ASSERT_EQUAL(V[1], 20);
+    ASSERT_EQUAL(V[2], 30);
+    ASSERT_EQUAL(V[3], 40);
+    ASSERT_EQUAL_QUIET(V.begin(), A.begin());
+    ASSERT_EQUAL_QUIET(V.end(),   A.end());
+
+    V[1] = 17;
+
+    ASSERT_EQUAL(V[1], 17);
+    ASSERT_EQUAL(A[1], 17);
+    
+    View W(A.begin(), A.end());
+    ASSERT_EQUAL(W.size(),     4);
+    ASSERT_EQUAL(W.capacity(), 4);
+    ASSERT_EQUAL_QUIET(W.begin(), A.begin());
+    ASSERT_EQUAL_QUIET(W.end(),   A.end());
+  }
+
+  // const view to const container
+  {
+    typedef const cusp::array1d_view<ConstIterator> View;
+
+    const Array A(4, 10);
+
+    View V(A);
+
+    ASSERT_EQUAL(V.size(),     4);
+    ASSERT_EQUAL(V.capacity(), 4);
+    ASSERT_EQUAL(V[0], 10);
+    ASSERT_EQUAL(V[1], 10);
+    ASSERT_EQUAL(V[2], 10);
+    ASSERT_EQUAL(V[3], 10);
+    ASSERT_EQUAL_QUIET(V.begin(), A.begin());
+    ASSERT_EQUAL_QUIET(V.end(),   A.end());
+    
+    View W(A.begin(), A.end());
+    ASSERT_EQUAL(W.size(),     4);
+    ASSERT_EQUAL(W.capacity(), 4);
+    ASSERT_EQUAL_QUIET(W.begin(), A.begin());
+    ASSERT_EQUAL_QUIET(W.end(),   A.end());
+  }
+
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestArray1dView);
 
@@ -94,7 +184,7 @@ void TestArray1dViewAssignment(void)
   ASSERT_EQUAL_QUIET(V.begin(), B.begin());
   ASSERT_EQUAL_QUIET(V.end(),   B.end());
 
-  View W = V;
+  const View W = V;
   
   ASSERT_EQUAL(W.size(),     8);
   ASSERT_EQUAL(W.capacity(), 8);
