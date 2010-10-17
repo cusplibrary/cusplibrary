@@ -33,6 +33,54 @@ namespace device
 namespace cuda
 {
 
+//template <int BLOCK_SIZE,
+//          typename SizeType,
+//          typename IndexIterator1,
+//          typename IndexIterator2,
+//          typename ValueIterator1,
+//          typename ValueIterator2,
+//          typename ValueIterator4,
+//          typename BinaryFunction1,
+//          typename BinaryFunction2>
+//__launch_bounds__(BLOCK_SIZE,1)
+//__global__
+//void spmv_coo_kernel(SizeType        num_entries,
+//                     IndexIterator1  row_indices,
+//                     IndexIterator2  column_indices,
+//                     ValueIterator1  values,
+//                     ValueIterator2  x, 
+//                     ValueIterator4  z,
+//                     BinaryFunction1 combine,
+//                     BinaryFunction2 reduce)
+//{
+//  typedef typename thrust::iterator_value<IndexIterator1>::type IndexType1;
+//  typedef typename thrust::iterator_value<IndexIterator2>::type IndexType2;
+//  typedef typename thrust::iterator_value<ValueIterator1>::type ValueType1;
+//  typedef typename thrust::iterator_value<ValueIterator2>::type ValueType2;
+//  typedef typename thrust::iterator_value<ValueIterator4>::type ValueType4;
+//
+//  if (threadIdx.x == 0)
+//  {
+//    for (SizeType i = 0; i < num_entries; i++)
+//    {
+//      IndexType1 i   = thrust::detail::device::dereference(row_indices);
+//      IndexType2 j   = thrust::detail::device::dereference(column_indices);
+//      ValueType1 Aij = thrust::detail::device::dereference(values);
+//
+//      ValueIterator2 tmp_x = x + j;  ValueType2 xj = thrust::detail::device::dereference(tmp_x);
+//      ValueIterator4 tmp_z = z + i;  ValueType4 zi = thrust::detail::device::dereference(tmp_z);
+//
+//      thrust::detail::device::dereference(tmp_z) = reduce(zi, combine(Aij, xj));
+//
+//      ++row_indices;
+//      ++column_indices;
+//      ++values;
+//    }
+//  }
+//}
+
+const int K = 5;
+
 template <int BLOCK_SIZE,
           typename SizeType,
           typename IndexIterator1,
@@ -59,9 +107,141 @@ void spmv_coo_kernel(SizeType        num_entries,
   typedef typename thrust::iterator_value<ValueIterator2>::type ValueType2;
   typedef typename thrust::iterator_value<ValueIterator4>::type ValueType4;
 
+  __shared__ IndexType1 rows[K][BLOCK_SIZE + 1];
+  __shared__ ValueType4 vals[K][BLOCK_SIZE + 1];
+
+  __shared__ IndexType1 row_carry;
+  __shared__ ValueType4 val_carry;
+
+  __syncthreads(); // is this really necessary?
+
+  SizeType interval_begin = 0;
+  SizeType interval_end   = num_entries;
+
+  SizeType unit_size = K * BLOCK_SIZE;
+ 
+  SizeType base = interval_begin;
+
+  row_indices    += base;
+  column_indices += base;
+  values         += base;
+
+  // process full units
+  while(base + unit_size < interval_end)
+  {
+    // read data
+    for(int k = 0; k < K; k++)
+    {
+      int offset = BLOCK_SIZE * k + threadIdx.x;
+
+      IndexIterator1 _i   = row_indices    + offset;
+      IndexIterator2 _j   = column_indices + offset;
+      ValueIterator1 _Aij = values         + offset;
+
+      ValueIterator2 _xj = x + thrust::detail::device::dereference(_j);
+
+      rows[offset % K][offset / K] = thrust::detail::device::dereference(_i);
+      vals[offset % K][offset / K] = combine(thrust::detail::device::dereference(_Aij), thrust::detail::device::dereference(_xj));
+    }
+
+    // carry in
+    if (threadIdx.x == 0 && base != interval_begin)
+    {
+      if (row_carry == rows[0][0])
+      {
+        // row continues into this unit
+        vals[0][0] = reduce(val_carry, vals[0][0]);
+      }
+      else
+      {
+        // row terminates in previous unit
+        ValueIterator4 _zj = z + row_carry;
+        thrust::detail::device::dereference(_zj) = reduce(thrust::detail::device::dereference(_zj), val_carry);
+      }
+    }
+      
+    __syncthreads();
+
+    // process local values
+    for(int k = 1; k < K; k++)
+    {
+      if (rows[k][threadIdx.x] == rows[k - 1][threadIdx.x])
+        vals[k][threadIdx.x] = reduce(vals[k - 1][threadIdx.x], vals[k][threadIdx.x]);
+    }
+
+    __syncthreads();
+
+    // process across block
+    
+    // TODO replace with parallel implementation
+    if (threadIdx.x == 0)
+    {
+      for(int i = 1; i < BLOCK_SIZE; i++)
+      {
+        if (rows[K - 1][i] == rows[K - 1][i - 1])
+          vals[K - 1][i] = reduce(vals[K - 1][i - 1], vals[K - 1][i]);
+      }
+    
+    }
+
+    __syncthreads();
+
+    if (threadIdx.x == 0)
+    {
+      // update carry and sentinel value
+      row_carry = rows[0][BLOCK_SIZE] = rows[K - 1][BLOCK_SIZE - 1];
+      val_carry = vals[0][BLOCK_SIZE] = vals[K - 1][BLOCK_SIZE - 1];
+    }
+    else
+    {
+      // update local values
+      for(int k = 0; k < K - 1; k++)
+      {
+        IndexType1 row = rows[K - 1][threadIdx.x - 1];
+        ValueType4 val = vals[K - 1][threadIdx.x - 1];
+
+        if(rows[k][threadIdx.x] == row)
+        {
+          vals[k][threadIdx.x] = reduce(val, vals[k][threadIdx.x]);
+        }
+      }
+    }
+
+    __syncthreads();
+
+    // write data
+    for(int k = 0; k < K; k++)
+    {
+      int offset = BLOCK_SIZE * k + threadIdx.x;
+
+      if (rows[offset % K][offset / K] != rows[(offset + 1) % K][(offset + 1) / K])
+      {
+        // row terminates
+        ValueIterator4 _zj = z + rows[offset % K][offset / K];
+        thrust::detail::device::dereference(_zj) = reduce(thrust::detail::device::dereference(_zj), vals[offset % K][offset / K]);
+      }
+    }
+
+    // advance iterators
+    base           += unit_size;
+    row_indices    += unit_size;
+    column_indices += unit_size;
+    values         += unit_size;
+
+    __syncthreads();
+  }
+
+
+  // process the tail
   if (threadIdx.x == 0)
   {
-    for (SizeType i = 0; i < num_entries; i++)
+    if (base != interval_begin)
+    {
+      ValueIterator4 _zj = z + row_carry;
+      thrust::detail::device::dereference(_zj) = reduce(thrust::detail::device::dereference(_zj), val_carry);
+    }
+
+    while(base < num_entries)
     {
       IndexType1 i   = thrust::detail::device::dereference(row_indices);
       IndexType2 j   = thrust::detail::device::dereference(column_indices);
@@ -71,7 +251,8 @@ void spmv_coo_kernel(SizeType        num_entries,
       ValueIterator4 tmp_z = z + i;  ValueType4 zi = thrust::detail::device::dereference(tmp_z);
 
       thrust::detail::device::dereference(tmp_z) = reduce(zi, combine(Aij, xj));
-
+    
+      ++base;
       ++row_indices;
       ++column_indices;
       ++values;
@@ -101,7 +282,7 @@ void spmv_coo(SizeType        num_rows,
               BinaryFunction1 combine,
               BinaryFunction2 reduce)
 {
-  const SizeType block_size = 256;
+  const SizeType block_size = 128;
   //const SizeType max_blocks = cusp::detail::device::arch::max_active_blocks(spmv_coo_scalar_kernel<block_size, SizeType, IndexIterator1, IndexIterator2, ValueIterator1, ValueIterator2, ValueIterator4, BinaryFunction1, BinaryFunction2>, block_size, (size_t) 0);
   const SizeType num_blocks = 1; //std::min(max_blocks, DIVIDE_INTO(num_entries, block_size));
 
