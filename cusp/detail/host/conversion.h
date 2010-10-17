@@ -303,7 +303,7 @@ void dia_to_csr(const Matrix1& src, Matrix2& dst)
         {
             const IndexType j = i + src.diagonal_offsets[n];
 
-            if(j >= 0 && j < src.num_cols && src.values(i,n) != 0)
+            if(j >= 0 && j < src.num_cols && src.values(i,n) != ValueType(0))
                 num_entries++;
         }
     }
@@ -324,7 +324,7 @@ void dia_to_csr(const Matrix1& src, Matrix2& dst)
             {
                 const ValueType value = src.values(i, n);
 
-                if (value != 0)
+                if (value != ValueType(0))
                 {
                     dst.column_indices[num_entries] = j;
                     dst.values[num_entries] = value;
@@ -532,7 +532,7 @@ void array_to_coo(const Matrix1& src, Matrix2& dst)
     {
         for(size_t j = 0; j < src.num_cols; j++)
         {
-            if (src(i,j) != 0)
+	  if (src(i,j) != ValueType(0))
             {
                 dst.row_indices[nnz]    = i;
                 dst.column_indices[nnz] = j;
@@ -561,7 +561,7 @@ void array_to_csr(const Matrix1& src, Matrix2& dst)
 
         for(size_t j = 0; j < src.num_cols; j++)
         {
-            if (src(i,j) != 0){
+	  if (src(i,j) != ValueType(0)){
                 dst.column_indices[num_entries] = j;
                 dst.values[num_entries]         = src(i,j);
                 num_entries++;

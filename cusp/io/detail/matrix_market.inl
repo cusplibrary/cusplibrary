@@ -18,6 +18,7 @@
 #pragma once
 
 #include <cusp/coo_matrix.h>
+#include <cusp/complex.h>
 #include <cusp/exception.h>
 
 #include <thrust/sort.h>
@@ -72,6 +73,18 @@ void check_matrix_market_type(const cusp::coo_matrix<I,double,M>& coo, const std
     if( type=="complex" )
         throw cusp::io_exception("complex-valued matrices incompatible with 'double' containers");
     // else: integer, real, and pattern are all allowed
+}
+
+template<typename I, typename M>
+void check_matrix_market_type(const cusp::coo_matrix<I,cusp::complex<float>,M>& coo, const std::string& type)
+{
+    // complex containers can hold for real and complex matrices
+}
+
+template<typename I, typename M>
+void check_matrix_market_type(const cusp::coo_matrix<I,cusp::complex<double>,M>& coo, const std::string& type)
+{
+    // complex containers can hold for real and complex matrices
 }
 
 // TODO: Add ValueType=complex case here when complex data is supported
@@ -144,6 +157,52 @@ void read_matrix_market_file(cusp::coo_matrix<IndexType,ValueType,cusp::host_mem
     read_matrix_market_stream(coo, file);
 }
 
+
+
+template <typename IndexType, typename ValueType>
+struct if_type_is_complex{
+  static void read_array(int & num_entries_read, const int num_entries, std::istream & file, 
+			 cusp::array2d<ValueType,cusp::host_memory,cusp::column_major> & dense){
+    throw cusp::not_implemented_exception("Cannot read complex MatrixMarket data type"
+					  " without using a complex container");
+  }
+  static void read_coordinate(int & num_entries_read, const int num_entries, std::istream & file, 
+			      cusp::coo_matrix<IndexType,ValueType,cusp::host_memory> & coo){
+    throw cusp::not_implemented_exception("Cannot read complex MatrixMarket data type"
+					  " without using a complex container");
+  }
+};
+
+template <typename IndexType, typename ValueType>
+struct if_type_is_complex<IndexType,cusp::complex<ValueType> >{
+  static void read_array(int & num_entries_read, const int num_entries, std::istream & file, 
+			 cusp::array2d<cusp::complex<ValueType>,cusp::host_memory,cusp::column_major> & dense){
+    while(num_entries_read < num_entries && !file.eof())
+      {
+	ValueType v;
+	file >> v;
+	dense.values[num_entries_read].real(v);
+	file >> v;
+	dense.values[num_entries_read].imag(v);
+	num_entries_read++;
+      }
+  }
+  static void read_coordinate(int & num_entries_read, const int num_entries, std::istream & file, 
+			      cusp::coo_matrix<IndexType,cusp::complex<ValueType>,cusp::host_memory> & coo){
+    while(num_entries_read < coo.num_entries && !file.eof())
+      {
+	file >> coo.row_indices[num_entries_read];
+	file >> coo.column_indices[num_entries_read];
+	ValueType v;
+	file >> v;
+	coo.values[num_entries_read].real(v);
+	file >> v;
+	coo.values[num_entries_read].imag(v);
+	num_entries_read++;
+      }
+  }
+};
+
 template <typename IndexType, typename ValueType>
 void read_matrix_market_stream(cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& coo, std::istream& file)
 {
@@ -198,7 +257,7 @@ void read_matrix_market_stream(cusp::coo_matrix<IndexType,ValueType,cusp::host_m
         } 
         else if (banner.type == "complex")
         {
-            throw cusp::not_implemented_exception("complex MatrixMarket data type is not supported");
+	  if_type_is_complex<IndexType,ValueType>::read_array(num_entries_read,num_entries,file,dense); 
         }
         else
         {
@@ -257,7 +316,7 @@ void read_matrix_market_stream(cusp::coo_matrix<IndexType,ValueType,cusp::host_m
         } 
         else if (banner.type == "complex")
         {
-            throw cusp::not_implemented_exception("complex MatrixMarket data type is not supported");
+	  if_type_is_complex<IndexType,ValueType>::read_coordinate(num_entries_read,num_entries,file,coo); 
         }
         else
         {
