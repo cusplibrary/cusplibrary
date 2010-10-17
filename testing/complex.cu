@@ -368,6 +368,73 @@ bool device_supports_double(void)
     return properties.major >= 1 && properties.minor >= 3;
 }
 
+template <typename MemorySpace>
+void TestComplexRealConversion()
+{
+  typedef float                Real;
+  typedef cusp::complex<float> Complex;
+
+  cusp::array1d<Real, MemorySpace>    real_values(4);
+  cusp::array1d<Complex, MemorySpace> complex_values(4);
+
+  // test real->complex conversion
+  real_values[0] = 0;
+  real_values[1] = 1;
+  real_values[2] = 2;
+  real_values[3] = 3;
+  
+  complex_values = real_values;
+
+  ASSERT_EQUAL((Complex) complex_values[0], Complex(0,0));
+  ASSERT_EQUAL((Complex) complex_values[1], Complex(1,0));
+  ASSERT_EQUAL((Complex) complex_values[2], Complex(2,0));
+  ASSERT_EQUAL((Complex) complex_values[3], Complex(3,0));
+
+  // test complex->real conversion
+  complex_values[0] = Complex(10,50);
+  complex_values[1] = Complex(20,60);
+  complex_values[2] = Complex(30,70);
+  complex_values[3] = Complex(40,80);
+
+  real_values = complex_values;
+
+  ASSERT_EQUAL(real_values[0], (Real) 10);
+  ASSERT_EQUAL(real_values[1], (Real) 20);
+  ASSERT_EQUAL(real_values[2], (Real) 30);
+  ASSERT_EQUAL(real_values[3], (Real) 40);
+}
+DECLARE_HOST_DEVICE_UNITTEST(TestComplexRealConversion);
+
+
+template <typename ValueType>
+struct TestComplexStdComplexConversion
+{
+  void operator()(void)
+  {
+    typedef std::complex<ValueType>  StdComplex;
+    typedef cusp::complex<ValueType> CuspComplex;
+
+    ASSERT_EQUAL(CuspComplex(StdComplex(0,0)), CuspComplex(0,0));
+    ASSERT_EQUAL(CuspComplex(StdComplex(0,1)), CuspComplex(0,1));
+    ASSERT_EQUAL(CuspComplex(StdComplex(1,0)), CuspComplex(1,0));
+    ASSERT_EQUAL(CuspComplex(StdComplex(1,2)), CuspComplex(1,2));
+
+    // can't test StdComplex(CuspComplex(...)) due to constructor ambiguity
+
+    { StdComplex a(0,0); CuspComplex b = a;  ASSERT_EQUAL(b, CuspComplex(0,0)); }
+    { StdComplex a(0,1); CuspComplex b = a;  ASSERT_EQUAL(b, CuspComplex(0,1)); }
+    { StdComplex a(1,0); CuspComplex b = a;  ASSERT_EQUAL(b, CuspComplex(1,0)); }
+    { StdComplex a(1,2); CuspComplex b = a;  ASSERT_EQUAL(b, CuspComplex(1,2)); }
+
+    { CuspComplex a(0,0); StdComplex b = a;  ASSERT_EQUAL(b, StdComplex(0,0)); }
+    { CuspComplex a(0,1); StdComplex b = a;  ASSERT_EQUAL(b, StdComplex(0,1)); }
+    { CuspComplex a(1,0); StdComplex b = a;  ASSERT_EQUAL(b, StdComplex(1,0)); }
+    { CuspComplex a(1,2); StdComplex b = a;  ASSERT_EQUAL(b, StdComplex(1,2)); }
+  }
+};
+SimpleUnitTest<TestComplexStdComplexConversion, unittest::type_list<float,double> > TestComplexStdComplexConversionInstance;
+
+
 template <typename ValueType>
 void TestComplex()
 {
@@ -390,8 +457,6 @@ void TestComplex()
     compareWithStd<ValueType>(cusp::polar<ValueType>(ValueType(1),theta));
   }
 }
-
-
 DECLARE_NUMERIC_UNITTEST(TestComplex);
 
 
