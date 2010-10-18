@@ -223,10 +223,11 @@ void TestSmoothedAggregation(void)
         cusp::array1d<ValueType,MemorySpace> b = unittest::random_samples<ValueType>(A.num_rows);
         cusp::array1d<ValueType,MemorySpace> x = unittest::random_samples<ValueType>(A.num_rows);
     
-        M.solve(b,x);
+        cusp::convergence_monitor<ValueType> monitor(b, 40, 1e-5);
+        M.solve(b,x,monitor);
 
-        // TODO make solve take a monitor
-        // TODO test convergence
+        ASSERT_EQUAL(monitor.converged(), true);
+        ASSERT_EQUAL(monitor.geometric_rate() < 0.9, true);
     }
 
     // test as preconditioner

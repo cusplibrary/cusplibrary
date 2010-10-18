@@ -258,8 +258,6 @@ class convergence_monitor : public default_monitor<Real>
 {
     typedef cusp::default_monitor<Real> super;
 
-    cusp::array1d<Real,cusp::host_memory> residuals;
-
     public:
     /*! Construct a \p convergence_monitor for a given right-hand-side \p b
      *
@@ -275,6 +273,9 @@ class convergence_monitor : public default_monitor<Real>
      *
      *  \tparam VectorType vector
      */
+
+    cusp::array1d<Real,cusp::host_memory> residuals;
+
     template <typename Vector>
     convergence_monitor(const Vector& b, size_t iteration_limit = 500, Real relative_tolerance = 1e-5, Real absolute_tolerance = 0)
         : super(b, iteration_limit, relative_tolerance, absolute_tolerance)

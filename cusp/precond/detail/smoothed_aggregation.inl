@@ -16,6 +16,7 @@
 
 #include <cusp/blas.h>
 #include <cusp/multiply.h>
+#include <cusp/monitor.h>
 #include <cusp/transpose.h>
 #include <cusp/graph/maximal_independent_set.h>
 #include <cusp/precond/diagonal.h>
@@ -292,7 +293,18 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace>::operator()(const Arr
 
 template <typename IndexType, typename ValueType, typename MemorySpace>
 void smoothed_aggregation<IndexType,ValueType,MemorySpace>::solve(const cusp::array1d<ValueType,MemorySpace>& b,
-                                                                               cusp::array1d<ValueType,MemorySpace>& x) const
+                                                                        cusp::array1d<ValueType,MemorySpace>& x) const
+{
+    cusp::default_monitor<ValueType> monitor(b);
+
+    solve(b, x, monitor);
+}
+
+template <typename IndexType, typename ValueType, typename MemorySpace>
+template <typename Monitor>
+void smoothed_aggregation<IndexType,ValueType,MemorySpace>::solve(const cusp::array1d<ValueType,MemorySpace>& b,
+                                                                        cusp::array1d<ValueType,MemorySpace>& x,
+                                                                        Monitor& monitor ) const
 {
     // TODO check sizes
     const cusp::coo_matrix<IndexType,ValueType,MemorySpace> & A = levels[0].A;
@@ -301,25 +313,17 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace>::solve(const cusp::ar
 
     // compute initial residual norm
     cusp::multiply(A,x,residual);
-    cusp::blas::axpby(b, residual, residual, 1.0f, -1.0f);
-    ValueType last_norm = cusp::blas::nrm2(residual);
+    cusp::blas::axpby(b, residual, residual, ValueType(1), ValueType(-1));
 
-    //printf("%10.8f\n", last_norm);
-
-    // perform 25 V-cycles
-    for (int i = 0; i < 25; i++)
-    {
-        _solve(b, x, 0);
+    while(!monitor.finished(residual))
+    {   
+        _solve(b, x, 0); 
 
         // compute residual norm
         cusp::multiply(A,x,residual);
-        cusp::blas::axpby(b, residual, residual, 1.0f, -1.0f);
-        ValueType norm = cusp::blas::nrm2(residual);
-
-        //printf("%10.8f  %6.4f\n", norm, norm/last_norm);
-
-        last_norm = norm;
-    }
+        cusp::blas::axpby(b, residual, residual, ValueType(1), ValueType(-1));
+        ++monitor;
+    }   
 }
 
 template <typename IndexType, typename ValueType, typename MemorySpace>
