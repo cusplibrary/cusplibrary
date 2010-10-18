@@ -23,6 +23,9 @@
 
 #include <thrust/iterator/iterator_traits.h>
 #include <thrust/detail/device/dereference.h>
+#include <thrust/detail/device/cuda/partition.h>
+
+#include <cusp/print.h> // TODO REMOVE
 
 namespace cusp
 {
@@ -102,9 +105,41 @@ void scan_by_key(const IndexType * rows, ValueType * vals, BinaryFunction binary
 //  }
 //}
 
-const int K = 5;
+template <int BLOCK_SIZE,
+          typename SizeType,
+          typename ValueIterator4,
+          typename BinaryFunction2,
+          typename OutputIterator1,
+          typename OutputIterator2>
+__launch_bounds__(BLOCK_SIZE,1)
+__global__
+void spmv_coo_kernel_postprocess(SizeType        num_blocks,
+                                 ValueIterator4  z,
+                                 BinaryFunction2 reduce,
+                                 OutputIterator1 row_carries,
+                                 OutputIterator2 val_carries)
+{
+  typedef typename thrust::iterator_value<OutputIterator1>::type IndexType;
+  typedef typename thrust::iterator_value<OutputIterator2>::type ValueType;
+
+  if (threadIdx.x == 0)
+  {
+    for(SizeType i = 0; i < num_blocks; i++)
+    {
+      IndexType j = thrust::detail::device::dereference(row_carries);
+      ValueType v = thrust::detail::device::dereference(val_carries);
+
+      ValueIterator4 zj = z + j;
+      thrust::detail::device::dereference(zj) = reduce(thrust::detail::device::dereference(zj), v);
+
+      ++row_carries;
+      ++val_carries;
+    }
+  }
+}
 
 template <int BLOCK_SIZE,
+          int K,
           typename SizeType,
           typename IndexIterator1,
           typename IndexIterator2,
@@ -112,17 +147,22 @@ template <int BLOCK_SIZE,
           typename ValueIterator2,
           typename ValueIterator4,
           typename BinaryFunction1,
-          typename BinaryFunction2>
+          typename BinaryFunction2,
+          typename OutputIterator1,
+          typename OutputIterator2>
 __launch_bounds__(BLOCK_SIZE,1)
 __global__
 void spmv_coo_kernel(SizeType        num_entries,
+                     SizeType        interval_size,
                      IndexIterator1  row_indices,
                      IndexIterator2  column_indices,
                      ValueIterator1  values,
                      ValueIterator2  x, 
                      ValueIterator4  z,
                      BinaryFunction1 combine,
-                     BinaryFunction2 reduce)
+                     BinaryFunction2 reduce,
+                     OutputIterator1 row_carries,
+                     OutputIterator2 val_carries)
 {
   typedef typename thrust::iterator_value<IndexIterator1>::type IndexType1;
   typedef typename thrust::iterator_value<IndexIterator2>::type IndexType2;
@@ -138,8 +178,8 @@ void spmv_coo_kernel(SizeType        num_entries,
 
   __syncthreads(); // is this really necessary?
 
-  SizeType interval_begin = 0;
-  SizeType interval_end   = num_entries;
+  SizeType interval_begin = interval_size * blockIdx.x;
+  SizeType interval_end   = min(interval_begin + interval_size, num_entries);
 
   SizeType unit_size = K * BLOCK_SIZE;
  
@@ -345,12 +385,18 @@ void spmv_coo_kernel(SizeType        num_entries,
     }
   }
 
-  // TODO copy carry_row carry_val to memory
-
   __syncthreads();
 
-  ValueIterator4 _zj = z + row_carry;
-  thrust::detail::device::dereference(_zj) = reduce(thrust::detail::device::dereference(_zj), val_carry);
+  if (threadIdx.x == 0)
+  {
+    // write interval carry out
+    row_carries += blockIdx.x;
+    val_carries += blockIdx.x;
+
+    thrust::detail::device::dereference(row_carries) = row_carry;
+    thrust::detail::device::dereference(val_carries) = val_carry;
+  }
+
 }
 
 template <typename SizeType,
@@ -375,20 +421,45 @@ void spmv_coo(SizeType        num_rows,
               BinaryFunction1 combine,
               BinaryFunction2 reduce)
 {
-  const SizeType block_size = 32;
-  //const SizeType max_blocks = cusp::detail::device::arch::max_active_blocks(spmv_coo_scalar_kernel<block_size, SizeType, IndexIterator1, IndexIterator2, ValueIterator1, ValueIterator2, ValueIterator4, BinaryFunction1, BinaryFunction2>, block_size, (size_t) 0);
-  const SizeType num_blocks = 1; //std::min(max_blocks, DIVIDE_INTO(num_entries, block_size));
+  typedef typename thrust::iterator_value<IndexIterator2>::type IndexType2;
+  typedef typename thrust::iterator_value<ValueIterator4>::type ValueType4;
+  typedef typename cusp::array1d<IndexType2, cusp::device_memory>::iterator OutputIterator1;
+  typedef typename cusp::array1d<ValueType4, cusp::device_memory>::iterator OutputIterator2;
 
   thrust::transform(y, y + num_rows, z, initialize);
 
   if (num_entries == 0) return;
 
+  const SizeType K          = 5;
+  const SizeType block_size = 128;
+  const SizeType unit_size  = K * block_size;
+  const SizeType max_blocks = cusp::detail::device::arch::max_active_blocks(spmv_coo_kernel<block_size, K, SizeType, IndexIterator1, IndexIterator2, ValueIterator1, ValueIterator2, ValueIterator4, BinaryFunction1, BinaryFunction2, OutputIterator1, OutputIterator2>, block_size, (size_t) 0);
+    
+  thrust::pair<SizeType, SizeType> splitting = thrust::detail::device::cuda::uniform_interval_splitting<SizeType>(num_entries, unit_size, max_blocks);
+  const SizeType interval_size = splitting.first;
+  const SizeType num_blocks    = splitting.second;
+
+  cusp::array1d<IndexType2, cusp::device_memory> row_carries(num_blocks);
+  cusp::array1d<ValueType4, cusp::device_memory> val_carries(num_blocks);
+
   // note: we don't need to pass y or initialize
-  spmv_coo_kernel<block_size><<<num_blocks, block_size>>>
+  spmv_coo_kernel<block_size, K><<<num_blocks, block_size>>>
     (num_entries,
+     interval_size,
      row_indices, column_indices, values,
      x, z,
-     combine, reduce);
+     combine, reduce,
+     row_carries.begin(), val_carries.begin());
+  
+//  std::cout << "row_carries" << std::endl;
+//  cusp::print_matrix(row_carries);
+//  std::cout << "val_carries" << std::endl;
+//  cusp::print_matrix(val_carries);
+
+  spmv_coo_kernel_postprocess<block_size><<<1,block_size>>>
+    (num_blocks, z, reduce,
+     row_carries.begin(), val_carries.begin());
+
 }
 
 } // end namespace cuda

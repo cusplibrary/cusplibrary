@@ -136,9 +136,9 @@ void _TestGeneralizedSpMV(void)
     const TestMatrix& M = matrices[i];
 
     // allocate vectors
-    cusp::array1d<ValueType, MemorySpace> x = unittest::random_samples<bool>(M.num_cols);
+    cusp::array1d<ValueType, MemorySpace> x = unittest::random_integers<bool>(M.num_cols);
     cusp::array1d<ValueType, MemorySpace> y(M.num_rows,0);
-    cusp::array1d<ValueType, MemorySpace> z = unittest::random_samples<char>(M.num_rows);
+    cusp::array1d<ValueType, MemorySpace> z = unittest::random_integers<char>(M.num_rows);
 
     generalized_spmv(M, x, y, z, thrust::identity<ValueType>(), thrust::multiplies<ValueType>(), thrust::plus<ValueType>());
   
