@@ -77,8 +77,9 @@ void generalized_spmv(const Matrix& A,
 template <typename TestMatrix>
 void _TestGeneralizedSpMV(void)
 {
-  typedef typename TestMatrix::memory_space MemorySpace;
+  typedef typename TestMatrix::index_type   IndexType;
   typedef typename TestMatrix::value_type   ValueType;
+  typedef typename TestMatrix::memory_space MemorySpace;
 
   {
     // initialize example matrix
@@ -113,27 +114,23 @@ void _TestGeneralizedSpMV(void)
     ASSERT_EQUAL(z[4], 131.0f);
   }
  
-  cusp::array1d<TestMatrix, cusp::host_memory> matrices;
+  typedef typename cusp::coo_matrix<IndexType,ValueType,cusp::host_memory> HostMatrix;
+  cusp::array1d<HostMatrix, cusp::host_memory> matrices;
 
-  TestMatrix A; cusp::gallery::poisson5pt(A,   5,   5);
-  TestMatrix B; cusp::gallery::poisson5pt(B,  10,  10);
-  TestMatrix C; cusp::gallery::poisson5pt(C, 117, 113);
-  TestMatrix D; cusp::gallery::random( 21,  23,   5, D);
-  TestMatrix E; cusp::gallery::random( 45,  37,  15, E);
-  TestMatrix F; cusp::gallery::random(129, 127,  40, F);
-  TestMatrix G; cusp::gallery::random(355, 378, 234, G);
-    
-  matrices.push_back(A);
-  matrices.push_back(B);
-  matrices.push_back(C);
-  matrices.push_back(D);
-  matrices.push_back(E);
-  matrices.push_back(F);
-  matrices.push_back(G);
+  { HostMatrix M; cusp::gallery::poisson5pt(M,   5,   5);   matrices.push_back(M); }
+  { HostMatrix M; cusp::gallery::poisson5pt(M,  10,  10);   matrices.push_back(M); } 
+  { HostMatrix M; cusp::gallery::poisson5pt(M, 117, 113);   matrices.push_back(M); } 
+  { HostMatrix M; cusp::gallery::poisson5pt(M, 313, 444);   matrices.push_back(M); } 
+  { HostMatrix M; cusp::gallery::poisson5pt(M, 876, 321);   matrices.push_back(M); } 
+  { HostMatrix M; cusp::gallery::random( 21,  23,   5, M);  matrices.push_back(M); }
+  { HostMatrix M; cusp::gallery::random( 45,  37,  15, M);  matrices.push_back(M); }
+  { HostMatrix M; cusp::gallery::random(129, 127,  40, M);  matrices.push_back(M); }
+  { HostMatrix M; cusp::gallery::random(355, 378, 234, M);  matrices.push_back(M); }
+  { HostMatrix M; cusp::gallery::random(512, 512, 276, M);  matrices.push_back(M); }
  
   for(size_t i = 0; i < matrices.size(); i++)
   {
-    const TestMatrix& M = matrices[i];
+    TestMatrix M = matrices[i];
 
     // allocate vectors
     cusp::array1d<ValueType, MemorySpace> x = unittest::random_integers<bool>(M.num_cols);
