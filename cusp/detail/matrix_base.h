@@ -17,7 +17,7 @@
 
 #pragma once
 
-#include <thrust/version.h>
+#include <cusp/detail/config.h>
 
 #if THRUST_VERSION < 100300
 #include <thrust/utility.h>

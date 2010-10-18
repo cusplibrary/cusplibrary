@@ -33,6 +33,29 @@ namespace device
 namespace cuda
 {
 
+template <int BLOCK_SIZE,
+          typename IndexType,
+          typename ValueType,
+          typename BinaryFunction>
+          __forceinline__
+          __device__
+void scan_by_key(const IndexType * rows, ValueType * vals, BinaryFunction binary_op)
+{
+    const IndexType row = rows[threadIdx.x];
+          ValueType val = vals[threadIdx.x];
+
+    if (BLOCK_SIZE >   1) { if(threadIdx.x >=   1 && row == rows[threadIdx.x -   1 ]) { val = binary_op(vals[threadIdx.x -   1], val); } __syncthreads(); vals[threadIdx.x] = val; __syncthreads(); }
+    if (BLOCK_SIZE >   2) { if(threadIdx.x >=   2 && row == rows[threadIdx.x -   2 ]) { val = binary_op(vals[threadIdx.x -   2], val); } __syncthreads(); vals[threadIdx.x] = val; __syncthreads(); }
+    if (BLOCK_SIZE >   4) { if(threadIdx.x >=   4 && row == rows[threadIdx.x -   4 ]) { val = binary_op(vals[threadIdx.x -   4], val); } __syncthreads(); vals[threadIdx.x] = val; __syncthreads(); }
+    if (BLOCK_SIZE >   8) { if(threadIdx.x >=   8 && row == rows[threadIdx.x -   8 ]) { val = binary_op(vals[threadIdx.x -   8], val); } __syncthreads(); vals[threadIdx.x] = val; __syncthreads(); }
+    if (BLOCK_SIZE >  16) { if(threadIdx.x >=  16 && row == rows[threadIdx.x -  16 ]) { val = binary_op(vals[threadIdx.x -  16], val); } __syncthreads(); vals[threadIdx.x] = val; __syncthreads(); }
+    if (BLOCK_SIZE >  32) { if(threadIdx.x >=  32 && row == rows[threadIdx.x -  32 ]) { val = binary_op(vals[threadIdx.x -  32], val); } __syncthreads(); vals[threadIdx.x] = val; __syncthreads(); }
+    if (BLOCK_SIZE >  64) { if(threadIdx.x >=  64 && row == rows[threadIdx.x -  64 ]) { val = binary_op(vals[threadIdx.x -  64], val); } __syncthreads(); vals[threadIdx.x] = val; __syncthreads(); }
+    if (BLOCK_SIZE > 128) { if(threadIdx.x >= 128 && row == rows[threadIdx.x - 128 ]) { val = binary_op(vals[threadIdx.x - 128], val); } __syncthreads(); vals[threadIdx.x] = val; __syncthreads(); }
+    if (BLOCK_SIZE > 256) { if(threadIdx.x >= 256 && row == rows[threadIdx.x - 256 ]) { val = binary_op(vals[threadIdx.x - 256], val); } __syncthreads(); vals[threadIdx.x] = val; __syncthreads(); }  
+    if (BLOCK_SIZE > 512) { if(threadIdx.x >= 512 && row == rows[threadIdx.x - 512 ]) { val = binary_op(vals[threadIdx.x - 512], val); } __syncthreads(); vals[threadIdx.x] = val; __syncthreads(); }  
+}
+
 //template <int BLOCK_SIZE,
 //          typename SizeType,
 //          typename IndexIterator1,
@@ -127,7 +150,7 @@ void spmv_coo_kernel(SizeType        num_entries,
   values         += base;
 
   // process full units
-  while(base + unit_size < interval_end)
+  while(base + unit_size <= interval_end)
   {
     // read data
     for(int k = 0; k < K; k++)
@@ -172,19 +195,7 @@ void spmv_coo_kernel(SizeType        num_entries,
     __syncthreads();
 
     // process across block
-    
-    // TODO replace with parallel implementation
-    if (threadIdx.x == 0)
-    {
-      for(int i = 1; i < BLOCK_SIZE; i++)
-      {
-        if (rows[K - 1][i] == rows[K - 1][i - 1])
-          vals[K - 1][i] = reduce(vals[K - 1][i - 1], vals[K - 1][i]);
-      }
-    
-    }
-
-    __syncthreads();
+    scan_by_key<BLOCK_SIZE>(rows[K - 1], vals[K - 1], reduce);
 
     if (threadIdx.x == 0)
     {
@@ -230,7 +241,6 @@ void spmv_coo_kernel(SizeType        num_entries,
 
     __syncthreads();
   }
-
 
   // process the tail
   if (threadIdx.x == 0)
