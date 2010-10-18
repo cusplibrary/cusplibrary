@@ -112,42 +112,39 @@ void _TestGeneralizedSpMV(void)
     ASSERT_EQUAL(z[3], 510.0f);
     ASSERT_EQUAL(z[4], 131.0f);
   }
-  
-  
-  {
-    TestMatrix A;
+ 
+  cusp::array1d<TestMatrix, cusp::host_memory> matrices;
 
-    cusp::gallery::poisson5pt(A, 117, 113);
+  TestMatrix A; cusp::gallery::poisson5pt(A,   5,   5);
+  TestMatrix B; cusp::gallery::poisson5pt(B,  10,  10);
+  TestMatrix C; cusp::gallery::poisson5pt(C, 117, 113);
+  TestMatrix D; cusp::gallery::random( 21,  23,   5, D);
+  TestMatrix E; cusp::gallery::random( 45,  37,  15, E);
+  TestMatrix F; cusp::gallery::random(129, 127,  40, F);
+  TestMatrix G; cusp::gallery::random(355, 378, 234, G);
+    
+  matrices.push_back(A);
+  matrices.push_back(B);
+  matrices.push_back(C);
+  matrices.push_back(D);
+  matrices.push_back(E);
+  matrices.push_back(F);
+  matrices.push_back(G);
+ 
+  for(size_t i = 0; i < matrices.size(); i++)
+  {
+    const TestMatrix& M = matrices[i];
 
     // allocate vectors
-    cusp::array1d<ValueType, MemorySpace> x = unittest::random_samples<bool>(A.num_cols);
-    cusp::array1d<ValueType, MemorySpace> y(A.num_rows,0);
-    cusp::array1d<ValueType, MemorySpace> z = unittest::random_samples<char>(A.num_rows);
+    cusp::array1d<ValueType, MemorySpace> x = unittest::random_samples<bool>(M.num_cols);
+    cusp::array1d<ValueType, MemorySpace> y(M.num_rows,0);
+    cusp::array1d<ValueType, MemorySpace> z = unittest::random_samples<char>(M.num_rows);
 
-    generalized_spmv(A, x, y, z, thrust::identity<ValueType>(), thrust::multiplies<ValueType>(), thrust::plus<ValueType>());
+    generalized_spmv(M, x, y, z, thrust::identity<ValueType>(), thrust::multiplies<ValueType>(), thrust::plus<ValueType>());
   
     // compute reference
-    cusp::array1d<ValueType, MemorySpace> reference(A.num_rows,0);
-    cusp::multiply(A, x, reference);
-
-    ASSERT_EQUAL(z, reference);
-  }
-  
-  {
-    TestMatrix A;
-
-    cusp::gallery::random(128, 128, 40, A);
-
-    // allocate vectors
-    cusp::array1d<ValueType, MemorySpace> x = unittest::random_samples<bool>(A.num_cols);
-    cusp::array1d<ValueType, MemorySpace> y(A.num_rows,0);
-    cusp::array1d<ValueType, MemorySpace> z = unittest::random_samples<char>(A.num_rows);
-
-    generalized_spmv(A, x, y, z, thrust::identity<ValueType>(), thrust::multiplies<ValueType>(), thrust::plus<ValueType>());
-  
-    // compute reference
-    cusp::array1d<ValueType, MemorySpace> reference(A.num_rows,0);
-    cusp::multiply(A, x, reference);
+    cusp::array1d<ValueType, MemorySpace> reference(M.num_rows,0);
+    cusp::multiply(M, x, reference);
 
     ASSERT_EQUAL(z, reference);
   }
