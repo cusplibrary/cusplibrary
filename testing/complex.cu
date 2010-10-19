@@ -365,7 +365,7 @@ bool device_supports_double(void)
     if(error)
       throw thrust::system_error(error, thrust::cuda_category());
 
-    return properties.major >= 1 && properties.minor >= 3;
+    return properties.major >= 2 || (properties.major == 1 && properties.minor >= 3);
 }
 
 template <typename MemorySpace>
