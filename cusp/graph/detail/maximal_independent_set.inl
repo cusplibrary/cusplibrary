@@ -1,4 +1,20 @@
-#include <cusp/detail/device/generalized_spmv/csr_scalar.h>
+/*
+ *  Copyright 2008-2009 NVIDIA Corporation
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
+#include <cusp/detail/device/generalized_spmv/coo_flat.h>
 
 #include <cusp/array1d.h>
 #include <cusp/exception.h>
@@ -51,14 +67,14 @@ struct process_nodes
 };
 
 //////////////
-// CSR Path //
+// COO Path //
 //////////////
 
 template <typename MatrixType, typename ArrayType>
 size_t maximal_independent_set(const MatrixType& A,
                                ArrayType& stencil,
                                size_t k,
-                               cusp::csr_format)
+                               cusp::coo_format)
 {
     typedef typename MatrixType::index_type   IndexType;
     typedef typename MatrixType::value_type   ValueType;
@@ -89,13 +105,13 @@ size_t maximal_independent_set(const MatrixType& A,
     while (thrust::count(states.begin(), states.end(), 1) > 0)
     {
         // find the largest (state,value,index) 1-ring neighbor for each node
-        cusp::detail::device::cuda::spmv_csr_scalar
-            (A.num_rows,
-             A.row_offsets.begin(), A.column_indices.begin(), thrust::constant_iterator<int>(1),  // XXX should we mask explicit zeros? (e.g. DIA, array2d)
+        cusp::detail::device::cuda::spmv_coo
+            (A.num_rows, A.num_entries,
+             A.row_indices.begin(), A.column_indices.begin(), thrust::constant_iterator<int>(1),  // XXX should we mask explicit zeros? (e.g. DIA, array2d)
              thrust::make_zip_iterator(thrust::make_tuple(states.begin(), random_values.begin(), thrust::counting_iterator<IndexType>(0))),
              thrust::make_zip_iterator(thrust::make_tuple(states.begin(), random_values.begin(), thrust::counting_iterator<IndexType>(0))),
              thrust::make_zip_iterator(thrust::make_tuple(maximal_states.begin(), maximal_values.begin(), maximal_indices.begin())),
-             thrust::identity<Tuple>(), thrust::project2nd<Tuple,Tuple>(), thrust::maximum<Tuple>());
+             thrust::project2nd<Tuple,Tuple>(), thrust::maximum<Tuple>());
 
         // find the largest (state,value,index) k-ring neighbor for each node (if k > 1)
         for(size_t ring = 1; ring < k; ring++)
@@ -106,13 +122,13 @@ size_t maximal_independent_set(const MatrixType& A,
             cusp::array1d<IndexType,MemorySpace>     last_indices(maximal_indices);
 
             // TODO replace with call to generalized method
-            cusp::detail::device::cuda::spmv_csr_scalar
-                (A.num_rows,
-                 A.row_offsets.begin(), A.column_indices.begin(), thrust::constant_iterator<int>(1),  // XXX should we mask explicit zeros? (e.g. DIA, array2d)
+            cusp::detail::device::cuda::spmv_coo
+                (A.num_rows, A.num_entries,
+                 A.row_indices.begin(), A.column_indices.begin(), thrust::constant_iterator<int>(1),  // XXX should we mask explicit zeros? (e.g. DIA, array2d)
                  thrust::make_zip_iterator(thrust::make_tuple(last_states.begin(), last_values.begin(), last_indices.begin())),
                  thrust::make_zip_iterator(thrust::make_tuple(last_states.begin(), last_values.begin(), last_indices.begin())),
                  thrust::make_zip_iterator(thrust::make_tuple(maximal_states.begin(), maximal_values.begin(), maximal_indices.begin())),
-                 thrust::identity<Tuple>(), thrust::project2nd<Tuple,Tuple>(), thrust::maximum<Tuple>());
+                 thrust::project2nd<Tuple,Tuple>(), thrust::maximum<Tuple>());
         }
 
         // label local maxima as MIS nodes and neighbors of MIS nodes as non-MIS nodes
@@ -143,9 +159,9 @@ size_t maximal_independent_set(const MatrixType& A,
   typedef typename MatrixType::memory_space MemorySpace;
 
   // convert matrix to CSR format and 
-  cusp::csr_matrix<IndexType,ValueType,MemorySpace> A_csr(A);
+  cusp::coo_matrix<IndexType,ValueType,MemorySpace> A_coo(A);
 
-  return cusp::graph::maximal_independent_set(A_csr, stencil, k);
+  return cusp::graph::maximal_independent_set(A_coo, stencil, k);
 }
 
 } // end namespace detail

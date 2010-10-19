@@ -57,15 +57,15 @@ namespace krylov
 // are specific to CG-M
 namespace detail_m
 {
-  // computes new \zeta
+  // computes new \zeta, \beta
   template <typename ScalarType>
-    struct KERNEL_Z
+    struct KERNEL_ZB
   {
     ScalarType beta_m1;
     ScalarType beta_0;
     ScalarType alpha_0;
 
-    KERNEL_Z(ScalarType _beta_m1, ScalarType _beta_0, ScalarType _alpha_0)
+    KERNEL_ZB(ScalarType _beta_m1, ScalarType _beta_0, ScalarType _alpha_0)
       : beta_m1(_beta_m1), beta_0(_beta_0), alpha_0(_alpha_0)
     {}
 
@@ -74,29 +74,13 @@ namespace detail_m
       void operator()(Tuple t)
     {
       // compute \zeta_1^\sigma
-      thrust::get<0>(t)=thrust::get<1>(t)*thrust::get<2>(t)*beta_m1/
-                        (beta_0*alpha_0*(thrust::get<2>(t)-thrust::get<1>(t))
-                         +beta_m1*thrust::get<2>(t)*(ScalarType(1)-
-                                                     beta_0*thrust::get<3>(t)));
-    }
-  };
-
-  // computes new \beta
-  template <typename ScalarType>
-    struct KERNEL_B
-  {
-    ScalarType beta_0;
-
-    KERNEL_B(ScalarType _beta_0) : beta_0(_beta_0)
-    {}
-
-    template <typename Tuple>
-    __host__ __device__
-      void operator()(Tuple t)
-    {
-      // compute \beta_0^\sigma
-      thrust::get<0>(t)=beta_0*thrust::get<1>(t)/thrust::get<2>(t);
-      //thrust::get<0>(t)=thrust::get<1>(t);
+      ScalarType z1, b0, z0=thrust::get<2>(t), zm1 = thrust::get<3>(t),
+		 sigma = thrust::get<4>(t);
+      z1 = z0*zm1*beta_m1/(beta_0*alpha_0*(zm1-z0)
+                         +beta_m1*zm1*(ScalarType(1)-beta_0*sigma));
+      b0 = beta_0*z1/z0;
+      thrust::get<0>(t) = z1;
+      thrust::get<1>(t) = b0;
     }
   };
 
@@ -138,7 +122,7 @@ namespace detail_m
     }
   };
 
-  //computes new s_0
+  // computes new s_0
   template <typename ScalarType>
     struct KERNEL_S
   {
@@ -157,91 +141,84 @@ namespace detail_m
     }
   };
 
-  //computes new chi_0^s
+  // computes new \chi_0^\sigma \rho_1^\sigma
   template <typename ScalarType>
-    struct KERNEL_CHI
+    struct KERNEL_CHIRHO
   {
     ScalarType chi_0;
-    KERNEL_CHI(ScalarType _chi_0) : chi_0(_chi_0)
+    KERNEL_CHIRHO(ScalarType _chi_0) : chi_0(_chi_0)
     {}
 
     template <typename Tuple>
     __host__ __device__
       void operator()(Tuple t)
     {
-      thrust::get<0>(t)=chi_0/(ScalarType(1.0)+chi_0*thrust::get<1>(t));
-    }
-  };
-
-  //computes new rho_1^s
-  template <typename ScalarType>
-    struct KERNEL_RHO
-  {
-    ScalarType chi_0;
-    KERNEL_RHO(ScalarType _chi_0) : chi_0(_chi_0)
-    {}
-
-    template <typename Tuple>
-    __host__ __device__
-      void operator()(Tuple t)
-    {
-      thrust::get<0>(t)=thrust::get<1>(t)/
-	                (ScalarType(1.0)+chi_0*thrust::get<2>(t));
-			//(ScalarType(1.0)+chi_0*thrust::get<2>(t));
+      ScalarType den = ScalarType(1.0)+chi_0*thrust::get<3>(t);
+      thrust::get<0>(t)=chi_0/den;
+      thrust::get<1>(t)=thrust::get<2>(t)/den;
     }
   };
 
   // computes new s
   template <typename ScalarType>
-    struct KERNEL_SS : thrust::binary_function<int, ScalarType, ScalarType>
+    struct KERNEL_XS
   {
     int N;
-    const ScalarType *raw_ptr_beta_0_s;
-    const ScalarType *raw_ptr_chi_0_s;
-    const ScalarType *raw_ptr_rho_0_s;
-    const ScalarType *raw_ptr_zeta_0_s;
-    const ScalarType *raw_ptr_alpha_1_s;
-    const ScalarType *raw_ptr_rho_1_s;
-    const ScalarType *raw_ptr_zeta_1_s;
-    const ScalarType *raw_ptr_r_0;
-    const ScalarType *raw_ptr_r_1;
-    const ScalarType *raw_ptr_w_1;
+    const ScalarType *rp_beta_0_s;
+    const ScalarType *rp_chi_0_s;
+    const ScalarType *rp_rho_0_s;
+    const ScalarType *rp_zeta_0_s;
+    const ScalarType *rp_alpha_1_s;
+    const ScalarType *rp_rho_1_s;
+    const ScalarType *rp_zeta_1_s;
+    const ScalarType *rp_r_0;
+    const ScalarType *rp_r_1;
+    const ScalarType *rp_w_1;
 
-    KERNEL_SS(int _N, const ScalarType *_raw_ptr_beta_0_s,
-              const ScalarType *_raw_ptr_chi_0_s,
-              const ScalarType *_raw_ptr_rho_0_s,
-              const ScalarType *_raw_ptr_zeta_0_s,
-              const ScalarType *_raw_ptr_alpha_1_s,
-              const ScalarType *_raw_ptr_rho_1_s,
-              const ScalarType *_raw_ptr_zeta_1_s,
-              const ScalarType *_raw_ptr_r_0,
-              const ScalarType *_raw_ptr_r_1,
-              const ScalarType *_raw_ptr_w_1) :
+    KERNEL_XS(int _N, const ScalarType *_rp_beta_0_s,
+              const ScalarType *_rp_chi_0_s,
+              const ScalarType *_rp_rho_0_s,
+              const ScalarType *_rp_zeta_0_s,
+              const ScalarType *_rp_alpha_1_s,
+              const ScalarType *_rp_rho_1_s,
+              const ScalarType *_rp_zeta_1_s,
+              const ScalarType *_rp_r_0,
+              const ScalarType *_rp_r_1,
+              const ScalarType *_rp_w_1) :
 	     N(_N),
-             raw_ptr_beta_0_s(_raw_ptr_beta_0_s),
-             raw_ptr_chi_0_s(_raw_ptr_chi_0_s),
-             raw_ptr_rho_0_s(_raw_ptr_rho_0_s),
-             raw_ptr_zeta_0_s(_raw_ptr_zeta_0_s),
-             raw_ptr_alpha_1_s(_raw_ptr_alpha_1_s),
-             raw_ptr_rho_1_s(_raw_ptr_rho_1_s),
-             raw_ptr_zeta_1_s(_raw_ptr_zeta_1_s),
-             raw_ptr_r_0(_raw_ptr_r_0),
-             raw_ptr_r_1(_raw_ptr_r_1),
-             raw_ptr_w_1(_raw_ptr_w_1)
+             rp_beta_0_s(_rp_beta_0_s),
+             rp_chi_0_s(_rp_chi_0_s),
+             rp_rho_0_s(_rp_rho_0_s),
+             rp_zeta_0_s(_rp_zeta_0_s),
+             rp_alpha_1_s(_rp_alpha_1_s),
+             rp_rho_1_s(_rp_rho_1_s),
+             rp_zeta_1_s(_rp_zeta_1_s),
+             rp_r_0(_rp_r_0),
+             rp_r_1(_rp_r_1),
+             rp_w_1(_rp_w_1)
    {}
 
+    template <typename Tuple>
     __host__ __device__
-      ScalarType operator()(int index, ScalarType val)
+      void operator()(Tuple t)
     {
-      unsigned int N_s = index / N;
-      unsigned int N_n = index % N;
+      int index = thrust::get<2>(t);
+      int N_s = index / N;
+      int N_n = index % N;
       
       // return the transformed result
-      return raw_ptr_zeta_1_s[N_s]*raw_ptr_rho_1_s[N_s]*raw_ptr_r_1[N_n]
-	      +raw_ptr_alpha_1_s[N_s]*
-	      (val-raw_ptr_chi_0_s[N_s]*raw_ptr_rho_0_s[N_s]
-	       /raw_ptr_beta_0_s[N_s]*(raw_ptr_zeta_1_s[N_s]*raw_ptr_w_1[N_n]
-		       -raw_ptr_zeta_0_s[N_s]*raw_ptr_r_0[N_n]));
+      ScalarType z1s = rp_zeta_1_s[N_s];
+      ScalarType b0s = rp_beta_0_s[N_s];
+      ScalarType c0s = rp_chi_0_s[N_s];
+      ScalarType w1 = rp_w_1[N_n];
+      ScalarType s_0 = thrust::get<0>(t);
+
+      thrust::get<1>(t) = thrust::get<1>(t)-b0s*s_0
+	                    +c0s*rp_rho_0_s[N_s]*z1s*w1;
+      thrust::get<0>(t) = z1s*rp_rho_1_s[N_s]*rp_r_1[N_n]
+	      +rp_alpha_1_s[N_s]*
+	      (s_0-c0s*rp_rho_0_s[N_s]
+	       /b0s*(z1s*w1-rp_zeta_0_s[N_s]*rp_r_0[N_n]));
 	    
     }
   };
@@ -284,9 +261,6 @@ namespace detail_m
       return val-raw_ptr_beta_0_s[N_s]*raw_ptr_s_0_s[index]
 	      +raw_ptr_chi_0_s[N_s]*raw_ptr_rho_0_s[N_s]
 	      *raw_ptr_zeta_1_s[N_s]*raw_ptr_w_1[N_n];
-      /*
-      return val-raw_ptr_beta_0_s[N_s];
-      */
     }
   };
 
@@ -348,76 +322,44 @@ namespace detail_m
 // a struct from cusp::krylov::detail_m.
 namespace trans_m
 {
-  // compute \zeta_1^\sigma, using iterators
-  // uses detail_m::KERNEL_Z
+  // compute \zeta_1^\sigma, \beta_0^\sigma using iterators
+  // uses detail_m::KERNEL_ZB
   template <typename InputIterator1, typename InputIterator2,
             typename InputIterator3,
-	    typename OutputIterator1,
+	    typename OutputIterator1, typename OutputIterator2,
 	    typename ScalarType>
-  void compute_z_m(InputIterator1 z_0_s_b, InputIterator1 z_0_s_e,
+  void compute_zb_m(InputIterator1 z_0_s_b, InputIterator1 z_0_s_e,
 		InputIterator2 z_m1_s_b, InputIterator3 sig_b,
-		OutputIterator1 z_1_s_b,
+		OutputIterator1 z_1_s_b, OutputIterator2 b_0_s_b,
 		ScalarType beta_m1, ScalarType beta_0, ScalarType alpha_0)
   {
     size_t N = z_0_s_e - z_0_s_b;
     thrust::for_each(
-    thrust::make_zip_iterator(thrust::make_tuple(z_1_s_b,z_0_s_b,z_m1_s_b,sig_b)),
-    thrust::make_zip_iterator(thrust::make_tuple(z_1_s_b,z_0_s_b,z_m1_s_b,sig_b))+N,
-    cusp::krylov::detail_m::KERNEL_Z<ScalarType>(beta_m1,beta_0,alpha_0)
+    thrust::make_zip_iterator(thrust::make_tuple(z_1_s_b,b_0_s_b,z_0_s_b,z_m1_s_b,sig_b)),
+    thrust::make_zip_iterator(thrust::make_tuple(z_1_s_b,b_0_s_b,z_0_s_b,z_m1_s_b,sig_b))+N,
+    cusp::krylov::detail_m::KERNEL_ZB<ScalarType>(beta_m1,beta_0,alpha_0)
     );
   }
 
-  // compute \beta_0^\sigma, using iterators
-  // uses detail_m::KERNEL_B
-  template <typename InputIterator1, typename InputIterator2,
-	    typename OutputIterator1,
-	    typename ScalarType>
-  void compute_b_m(InputIterator1 z_1_s_b, InputIterator1 z_1_s_e,
-		InputIterator2 z_0_s_b, OutputIterator1 beta_0_s_b,
-		ScalarType beta_0)
-  {
-    size_t N = z_1_s_e - z_1_s_b;
-
-    thrust::for_each(
-    thrust::make_zip_iterator(thrust::make_tuple(beta_0_s_b,z_1_s_b,z_0_s_b)),
-    thrust::make_zip_iterator(thrust::make_tuple(beta_0_s_b,z_1_s_b,z_0_s_b))+N,
-    cusp::krylov::detail_m::KERNEL_B<ScalarType>(beta_0)
-    );
-  }
-
-  // compute \zeta_1^\sigma, using arrays
+  // compute \zeta_1^\sigma, \beta_0^\sigma using arrays
   template <typename Array1, typename Array2, typename Array3,
-            typename Array4, typename ScalarType>
-  void compute_z_m(const Array1& z_0_s, const Array2& z_m1_s,
-		const Array3& sig, Array4& z_1_s,
+            typename Array4, typename Array5, typename ScalarType>
+  void compute_zb_m(const Array1& z_0_s, const Array2& z_m1_s,
+		const Array3& sig, Array4& z_1_s, Array5& b_0_s,
 		ScalarType beta_m1, ScalarType beta_0, ScalarType alpha_0)
   {
     // sanity checks
     cusp::blas::detail::assert_same_dimensions(z_0_s,z_m1_s,z_1_s);
-    cusp::blas::detail::assert_same_dimensions(z_1_s,sig);
+    cusp::blas::detail::assert_same_dimensions(z_1_s,b_0_s,sig);
 
     // compute
-    cusp::krylov::trans_m::compute_z_m(z_0_s.begin(),z_0_s.end(),
-		    z_m1_s.begin(),sig.begin(),z_1_s.begin(),
+    cusp::krylov::trans_m::compute_zb_m(z_0_s.begin(),z_0_s.end(),
+		    z_m1_s.begin(),sig.begin(),z_1_s.begin(),b_0_s.begin(),
                     beta_m1,beta_0,alpha_0);
 
   }
 
-  // \beta_0^\sigma using arrays
-  template <typename Array1, typename Array2, typename Array3,
-            typename ScalarType>
-  void compute_b_m(const Array1& z_1_s, const Array2& z_0_s,
-		Array3& beta_0_s, ScalarType beta_0)
-  {
-    // sanity checks
-    cusp::blas::detail::assert_same_dimensions(z_1_s,z_0_s,beta_0_s);
-
-    // compute
-    cusp::krylov::trans_m::compute_b_m(z_1_s.begin(),z_1_s.end(),
-		    z_0_s.begin(),beta_0_s.begin(),beta_0);
-  }
-
-  // compute \alpha_0^\sigma, and swap \zeta_i^\sigma using iterators
+  // compute \alpha_0^\sigma using iterators
   // uses detail_m::KERNEL_A
   template <typename InputIterator1, typename InputIterator2,
             typename InputIterator3, typename OutputIterator,
@@ -434,7 +376,7 @@ namespace trans_m
     cusp::krylov::detail_m::KERNEL_A<ScalarType>(beta_0,alpha_0));
   }
 
-  // compute \alpha_0^\sigma, and swap \zeta_i^\sigma using arrays
+  // compute \alpha_0^\sigma using arrays
   template <typename Array1, typename Array2, typename Array3,
             typename Array4, typename ScalarType>
   void compute_a_m(const Array1& z_0_s, const Array2& z_1_s,
@@ -451,58 +393,24 @@ namespace trans_m
                 beta_0, alpha_0);
   }
 
-  // compute x^\sigma
-  // uses detail_m::KERNEL_X
-  template <typename Array1, typename Array2, typename Array3,
-            typename Array4, typename Array5, typename Array6, typename Array7>
-  void compute_x_m(const Array1& beta_0_s, const Array2& chi_0_s,
-                const Array3& rho_0_s, const Array4& zeta_1_s,
-                const Array5& w_1, const Array6& s_0_s, Array7& x_0_s)
-  {
-    // sanity check
-    cusp::blas::detail::assert_same_dimensions(beta_0_s,chi_0_s,rho_0_s);
-    cusp::blas::detail::assert_same_dimensions(rho_0_s,zeta_1_s);
-    cusp::blas::detail::assert_same_dimensions(s_0_s,x_0_s);
-
-    size_t N = w_1.end()-w_1.begin();
-    size_t N_s = beta_0_s.end()-beta_0_s.begin();
-    size_t N_t = x_0_s.end()-x_0_s.begin();
-    assert (N_t == N*N_s);
-
-    // counting iterators to pass to thrust::transform
-    thrust::counting_iterator<int> counter(0);
-
-    // get raw pointers for passing to kernels
-    typedef typename Array1::value_type   ScalarType;
-    const ScalarType *raw_ptr_beta_0_s = thrust::raw_pointer_cast(beta_0_s.data());
-    const ScalarType *raw_ptr_chi_0_s  = thrust::raw_pointer_cast(chi_0_s.data());
-    const ScalarType *raw_ptr_rho_0_s  = thrust::raw_pointer_cast(rho_0_s.data());
-    const ScalarType *raw_ptr_zeta_1_s = thrust::raw_pointer_cast(zeta_1_s.data());
-    const ScalarType *raw_ptr_w_1      = thrust::raw_pointer_cast(w_1.data());
-    const ScalarType *raw_ptr_s_0_s    = thrust::raw_pointer_cast(s_0_s.data());
-
-    // compute x
-    thrust::transform(counter,counter+N_t,x_0_s.begin(),x_0_s.begin(),
-    cusp::krylov::detail_m::KERNEL_X<ScalarType>(N,raw_ptr_beta_0_s,raw_ptr_chi_0_s,raw_ptr_rho_0_s,raw_ptr_zeta_1_s,raw_ptr_w_1,raw_ptr_s_0_s));
-  }
-  
-  // compute s^\sigma
-  // uses detail_m::KERNEL_SS
+  // compute x^\sigma, s^\sigma
+  // uses detail_m::KERNEL_XS
   template <typename Array1, typename Array2, typename Array3, typename Array4,
 	   typename Array5, typename Array6, typename Array7, typename Array8,
-	   typename Array9, typename Array10, typename Array11>
-  void compute_s_m(const Array1& beta_0_s, const Array2& chi_0_s,
+	   typename Array9, typename Array10, typename Array11,typename Array12>
+  void compute_xs_m(const Array1& beta_0_s, const Array2& chi_0_s,
                 const Array3& rho_0_s, const Array4& zeta_0_s,
                 const Array5& alpha_1_s, const Array6& rho_1_s,
 		const Array7& zeta_1_s,
                 const Array8& r_0, Array9& r_1,
-                const Array10& w_1, Array11& s_0_s)
+                const Array10& w_1, Array11& s_0_s, Array12& x)
   {
     // sanity check
     cusp::blas::detail::assert_same_dimensions(beta_0_s,chi_0_s,rho_0_s);
     cusp::blas::detail::assert_same_dimensions(beta_0_s,zeta_0_s,zeta_1_s);
     cusp::blas::detail::assert_same_dimensions(alpha_1_s,rho_1_s,zeta_1_s);
     cusp::blas::detail::assert_same_dimensions(r_0,r_1,w_1);
+    cusp::blas::detail::assert_same_dimensions(s_0_s,x);
 
     size_t N = w_1.end()-w_1.begin();
     size_t N_s = beta_0_s.end()-beta_0_s.begin();
@@ -510,7 +418,7 @@ namespace trans_m
     assert (N_t == N*N_s);
 
     // counting iterators to pass to thrust::transform
-    thrust::counting_iterator<int> counter(0);
+    thrust::counting_iterator<int> count(0);
 
     // get raw pointers for passing to kernels
     typedef typename Array1::value_type   ScalarType;
@@ -526,8 +434,10 @@ namespace trans_m
     const ScalarType *raw_ptr_w_1       = thrust::raw_pointer_cast(w_1.data());
 
     // compute x
-    thrust::transform(counter,counter+N_t,s_0_s.begin(),s_0_s.begin(),
-    cusp::krylov::detail_m::KERNEL_SS<ScalarType>(N, raw_ptr_beta_0_s, raw_ptr_chi_0_s, raw_ptr_rho_0_s, raw_ptr_zeta_0_s, raw_ptr_alpha_1_s, raw_ptr_rho_1_s, raw_ptr_zeta_1_s, raw_ptr_r_0, raw_ptr_r_1, raw_ptr_w_1));
+    thrust::for_each(
+    thrust::make_zip_iterator(thrust::make_tuple(s_0_s.begin(),x.begin(),count)),
+    thrust::make_zip_iterator(thrust::make_tuple(s_0_s.begin(),x.begin(),count))+N_t,
+    cusp::krylov::detail_m::KERNEL_XS<ScalarType>(N, raw_ptr_beta_0_s, raw_ptr_chi_0_s, raw_ptr_rho_0_s, raw_ptr_zeta_0_s, raw_ptr_alpha_1_s, raw_ptr_rho_1_s, raw_ptr_zeta_1_s, raw_ptr_r_0, raw_ptr_r_1, raw_ptr_w_1));
   }
 
   template <typename InputIterator1, typename InputIterator2,
@@ -608,53 +518,33 @@ namespace trans_m
 		    As.begin(),s_0.begin(),alpha_1,chi_0);
   }
 
-  template <typename InputIterator, typename OutputIterator,
-	    typename ScalarType>
-  void compute_chi_m(InputIterator sigma_b, InputIterator sigma_e,
-		     OutputIterator chi_0_s_b, ScalarType chi_0)
-  {
-    size_t N = sigma_e-sigma_b;
-    thrust::for_each(
-    thrust::make_zip_iterator(thrust::make_tuple(chi_0_s_b,sigma_b)),
-    thrust::make_zip_iterator(thrust::make_tuple(chi_0_s_b,sigma_b))+N,
-    cusp::krylov::detail_m::KERNEL_CHI<ScalarType>(chi_0));
-  }
-
-  template <typename Array1, typename Array2, typename ScalarType>
-  void compute_chi_m(const Array1& sigma, Array2& chi_0_s, ScalarType chi_0)
-  {
-    // sanity checks
-    cusp::blas::detail::assert_same_dimensions(sigma,chi_0_s);
-
-    // compute
-    cusp::krylov::trans_m::compute_chi_m(sigma.begin(),sigma.end(),
-		    chi_0_s.begin(),chi_0);
-  }
-
   template <typename InputIterator1, typename InputIterator2,
-	    typename OutputIterator, typename ScalarType>
-  void compute_rho_m(InputIterator1 rho_0_s_b, InputIterator1 rho_0_s_e,
-		     InputIterator2 sigma_b, OutputIterator rho_1_s_b,
+	   typename OutputIterator1, typename OutputIterator2,
+	   typename ScalarType>
+  void compute_chirho_m(InputIterator1 rho_0_s_b, InputIterator1 rho_0_s_e,
+		     InputIterator2 sigma_b,
+		     OutputIterator1 chi_0_s_b, OutputIterator2 rho_1_s_b,
 		     ScalarType chi_0)
   {
     size_t N = rho_0_s_e-rho_0_s_b;
     thrust::for_each(
-    thrust::make_zip_iterator(thrust::make_tuple(rho_1_s_b,rho_0_s_b,sigma_b)),
-    thrust::make_zip_iterator(thrust::make_tuple(rho_1_s_b,rho_0_s_b,sigma_b))+N,
-    cusp::krylov::detail_m::KERNEL_RHO<ScalarType>(chi_0));
+    thrust::make_zip_iterator(thrust::make_tuple(chi_0_s_b,rho_1_s_b,rho_0_s_b,sigma_b)),
+    thrust::make_zip_iterator(thrust::make_tuple(chi_0_s_b,rho_1_s_b,rho_0_s_b,sigma_b))+N,
+    cusp::krylov::detail_m::KERNEL_CHIRHO<ScalarType>(chi_0));
   }
 
-  template <typename Array1, typename Array2, typename Array3,
+  template <typename Array1, typename Array2, typename Array3, typename Array4,
 	    typename ScalarType>
-  void compute_rho_m(const Array1& rho_0_s, const Array2& sigma,
-		  Array3& rho_1_s, ScalarType chi_0)
+  void compute_chirho_m(const Array1& rho_0_s, const Array2& sigma,
+		  Array3& chi_0_s, Array4& rho_1_s, ScalarType chi_0)
   {
     // sanity checks
     cusp::blas::detail::assert_same_dimensions(sigma,rho_0_s,rho_1_s);
+    cusp::blas::detail::assert_same_dimensions(chi_0_s,rho_1_s);
 
     // compute
-    cusp::krylov::trans_m::compute_rho_m(rho_0_s.begin(),rho_0_s.end(),
-		    sigma.begin(),rho_1_s.begin(),chi_0);
+    cusp::krylov::trans_m::compute_chirho_m(rho_0_s.begin(),rho_0_s.end(),
+		    sigma.begin(),chi_0_s.begin(),rho_1_s.begin(),chi_0);
   }
 
   // multiple copy of array to another array
@@ -726,16 +616,12 @@ void bicgstab_m(LinearOperator& A,
   //clock_t start = clock();
 
   // w has data used in computing the soln.
-  cusp::array1d<ValueType,MemorySpace> w_0(N);
   cusp::array1d<ValueType,MemorySpace> w_1(N);
-  cusp::array1d<ValueType,MemorySpace> w_i(N);
+  cusp::array1d<ValueType,MemorySpace> w_0(N);
 
   // stores residuals
   cusp::array1d<ValueType,MemorySpace> r_0(N);
   cusp::array1d<ValueType,MemorySpace> r_1(N);
-
-  // used in iterates
-  cusp::array1d<ValueType,MemorySpace> xx_0(N,ValueType(0));
 
   // used in iterates
   cusp::array1d<ValueType,MemorySpace> s_0(N);
@@ -767,8 +653,8 @@ void bicgstab_m(LinearOperator& A,
 
   // set up the initial conditions for the iteration
   cusp::blas::copy(b,r_0);
-  cusp::blas::copy(b,w_0);
-  cusp::blas::copy(w_0,w_i);
+  cusp::blas::copy(b,w_1);
+  cusp::blas::copy(w_1,w_0);
 
   // set up the intitial guess
   cusp::blas::fill(x.begin(),x.end(),ValueType(0));
@@ -791,11 +677,9 @@ void bicgstab_m(LinearOperator& A,
     beta_0 = ValueType(-1.0)/phi_0;
     delta_0 = delta_1;
 
-    // compute \zeta_1^\sigma
-    cusp::krylov::trans_m::compute_z_m(z_0_s, z_m1_s, sigma, z_1_s,
+    // compute \zeta_1^\sigma, \beta_0^\sigma
+    cusp::krylov::trans_m::compute_zb_m(z_0_s, z_m1_s, sigma, z_1_s, beta_0_s,
                                       beta_m1, beta_0, alpha_0);
-    // compute \beta_0^\sigma
-    cusp::krylov::trans_m::compute_b_m(z_1_s, z_0_s, beta_0_s, beta_0);
 
     // call w_1 kernel
     cusp::krylov::trans_m::compute_w_1_m(r_0, As, w_1, beta_0);
@@ -806,42 +690,37 @@ void bicgstab_m(LinearOperator& A,
     // compute chi_0
     chi_0 = cusp::blas::dotc(Aw,w_1)/cusp::blas::dotc(Aw,Aw);
 
-    // compute shifted rho, chi
-    cusp::krylov::trans_m::compute_chi_m(sigma,chi_0_s,chi_0);
-    cusp::krylov::trans_m::compute_rho_m(rho_0_s,sigma,rho_1_s,chi_0);
-
     // compute new residual
     cusp::krylov::trans_m::compute_r_1_m(w_1,Aw,r_1,chi_0);
 
-    // compute the new solution
-    cusp::krylov::trans_m::compute_x_m(beta_0_s, chi_0_s, rho_0_s, z_1_s,
-		    w_1, s_0_s, x);
-
     // compute the new delta
-    delta_1 = cusp::blas::dotc(w_i,r_1);
-
+    delta_1 = cusp::blas::dotc(w_0,r_1);
+ 
     // compute new alpha
     alpha_0 = -beta_0*delta_1/delta_0/chi_0;
 
-    // calculate \alpha_0^\sigma
-    cusp::krylov::trans_m::compute_a_m(z_0_s, z_1_s, beta_0_s,
-                                      alpha_0_s, beta_0, alpha_0);
-
     // compute s_0
     cusp::krylov::trans_m::compute_s_0_m(r_1,As,s_0,alpha_0,chi_0);
-
-    // compute s_0^sigma
-    cusp::krylov::trans_m::compute_s_m(beta_0_s, chi_0_s, rho_0_s, z_0_s,
-		    alpha_0_s, rho_1_s, z_1_s, r_0, r_1, w_1, s_0_s);
 
     // compute As
     cusp::multiply(A,s_0,As);
 
     // compute new phi
-    phi_0 = cusp::blas::dotc(w_i,As)/delta_1;
+    phi_0 = cusp::blas::dotc(w_0,As)/delta_1;
 
-    // recycle w_i and r_i
-    cusp::blas::copy(w_1,w_0);
+    // compute shifted rho, chi
+    cusp::krylov::trans_m::compute_chirho_m(rho_0_s,sigma,chi_0_s,rho_1_s,
+		    chi_0);
+
+    // calculate \alpha_0^\sigma
+    cusp::krylov::trans_m::compute_a_m(z_0_s, z_1_s, beta_0_s,
+                                      alpha_0_s, beta_0, alpha_0);
+
+    // compute the new solution and s_0^sigma
+    cusp::krylov::trans_m::compute_xs_m(beta_0_s, chi_0_s, rho_0_s, z_0_s,
+		    alpha_0_s, rho_1_s, z_1_s, r_0, r_1, w_1, s_0_s, x);
+
+    // recycle r_i
     cusp::blas::copy(r_1,r_0);
 
     // recycle \zeta_i^\sigma
@@ -855,14 +734,6 @@ void bicgstab_m(LinearOperator& A,
 
   }// finished iteration
 
-  //cudaThreadSynchronize();
-
-  // MFLOPs excludes BLAS operations
-  //double elapsed = ((double) (clock() - start)) / CLOCKS_PER_SEC;
-  //double MFLOPs = 2* ((double) i * (double) A.num_entries)/ (1e6 * elapsed);
-  //printf("-iteration completed in %lfms  ( > %6.2lf MFLOPs )\n",1000*elapsed, MFLOPs );
-
-  
 } // end cg_m
 
 } // end namespace krylov

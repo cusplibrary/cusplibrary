@@ -58,15 +58,15 @@ namespace krylov
 // are specific to CG-M
 namespace detail_m
 {
-  // computes new \zeta
+  // computes new \zeta, \beta
   template <typename ScalarType>
-    struct KERNEL_Z
+    struct KERNEL_ZB
   {
     ScalarType beta_m1;
     ScalarType beta_0;
     ScalarType alpha_0;
 
-    KERNEL_Z(ScalarType _beta_m1, ScalarType _beta_0, ScalarType _alpha_0)
+    KERNEL_ZB(ScalarType _beta_m1, ScalarType _beta_0, ScalarType _alpha_0)
       : beta_m1(_beta_m1), beta_0(_beta_0), alpha_0(_alpha_0)
     {}
 
@@ -75,29 +75,13 @@ namespace detail_m
       void operator()(Tuple t)
     {
       // compute \zeta_1^\sigma
-      thrust::get<0>(t)=thrust::get<1>(t)*thrust::get<2>(t)*beta_m1/
-                        (beta_0*alpha_0*(thrust::get<2>(t)-thrust::get<1>(t))
-                         +beta_m1*thrust::get<2>(t)*(ScalarType(1)-
-                                                     beta_0*thrust::get<3>(t)));
-    }
-  };
-
-  // computes new \beta
-  template <typename ScalarType>
-    struct KERNEL_B
-  {
-    ScalarType beta_0;
-
-    KERNEL_B(ScalarType _beta_0) : beta_0(_beta_0)
-    {}
-
-    template <typename Tuple>
-    __host__ __device__
-      void operator()(Tuple t)
-    {
-      // compute \beta_0^\sigma
-      thrust::get<0>(t)=beta_0*thrust::get<1>(t)/thrust::get<2>(t);
-      //thrust::get<0>(t)=thrust::get<1>(t);
+      ScalarType z1, b0, z0=thrust::get<2>(t), zm1 = thrust::get<3>(t),
+		 sigma = thrust::get<4>(t);
+      z1 = z0*zm1*beta_m1/(beta_0*alpha_0*(zm1-z0)
+                         +beta_m1*zm1*(ScalarType(1)-beta_0*sigma));
+      b0 = beta_0*z1/z0;
+      thrust::get<0>(t) = z1;
+      thrust::get<1>(t) = b0;
     }
   };
 
@@ -126,50 +110,36 @@ namespace detail_m
 
   // computes new x
   template <typename ScalarType>
-    struct KERNEL_X : thrust::binary_function<int, ScalarType, ScalarType>
-  {
-    int N;
-    const ScalarType *beta_0_s;
-    const ScalarType *r_0;
-    const ScalarType *p_0_s;
-
-    KERNEL_X(int _N, const ScalarType *_beta_0_s,
-		    const ScalarType *_p_0_s) : N(_N),
-	            beta_0_s(_beta_0_s), p_0_s(_p_0_s)
-   {}
-
-    __host__ __device__
-      ScalarType operator()(int index, ScalarType val)
-    {
-      unsigned int N_s = index / N;
-      
-      // return the transformed result
-      return val-beta_0_s[N_s]*p_0_s[index];
-    }
-  };
-
-  // computes new p
-  template <typename ScalarType>
-    struct KERNEL_P : thrust::binary_function<int, ScalarType, ScalarType>
+    struct KERNEL_XP
   {
     int N;
     const ScalarType *alpha_0_s;
+    const ScalarType *beta_0_s;
     const ScalarType *z_1_s;
     const ScalarType *r_0;
 
-    KERNEL_P(int _N, const ScalarType *_alpha_0_s,
-		    const ScalarType *_z_1_s, const ScalarType *_r_0):
-	    N(_N), alpha_0_s(_alpha_0_s), z_1_s(_z_1_s), r_0(_r_0)
-    {}
+    KERNEL_XP(int _N, const ScalarType *_alpha_0_s, const ScalarType *_beta_0_s,
+		    const ScalarType *_z_1_s, const ScalarType *_r_0) :
+	            N(_N), alpha_0_s(_alpha_0_s),
+	            beta_0_s(_beta_0_s), z_1_s(_z_1_s), r_0(_r_0) {}
 
+    template <typename Tuple>
     __host__ __device__
-      ScalarType operator()(int index, ScalarType val)
+      void operator()(Tuple t)
     {
-      unsigned int N_s = index / N;
-      unsigned int N_i = index % N;
-      
       // return the transformed result
-      return z_1_s[N_s]*r_0[N_i]+alpha_0_s[N_s]*val;
+      ScalarType x = thrust::get<0>(t);
+      ScalarType p_0 = thrust::get<1>(t);
+      int index = thrust::get<2>(t);
+
+      int N_s = index / N;
+      int N_i = index % N;
+      
+      x = x-beta_0_s[N_s]*p_0;
+      p_0 = z_1_s[N_s]*r_0[N_i]+alpha_0_s[N_s]*p_0;
+
+      thrust::get<0>(t) = x;
+      thrust::get<1>(t) = p_0;
     }
   };
 
@@ -193,6 +163,33 @@ namespace detail_m
 
   };
 
+  struct KERNEL_DCOPY
+  {
+    KERNEL_DCOPY() {}
+
+    template <typename Tuple>
+    __host__ __device__
+      void operator()(Tuple t)
+    {
+      thrust::get<2>(t)=thrust::get<1>(t);
+      thrust::get<1>(t)=thrust::get<0>(t);
+    }
+  };
+
+  template <typename T>
+    struct XPAY : public thrust::binary_function<T,T,T>
+  {
+    T alpha;
+
+    XPAY(T _alpha) : alpha(_alpha) {}
+
+    __host__ __device__
+      T operator()(T x, T y)
+    {
+      return x + alpha * y;
+    }
+  };
+
 } // end namespace detail_m
 
 // Methods in this namespace are all routines that involve using
@@ -206,73 +203,41 @@ namespace detail_m
 // a struct from cusp::krylov::detail_m.
 namespace trans_m
 {
-  // compute \zeta_1^\sigma, using iterators
-  // uses detail_m::KERNEL_Z
+  // compute \zeta_1^\sigma, \beta_0^\sigma using iterators
+  // uses detail_m::KERNEL_ZB
   template <typename InputIterator1, typename InputIterator2,
             typename InputIterator3,
-	    typename OutputIterator1,
+	    typename OutputIterator1, typename OutputIterator2,
 	    typename ScalarType>
-  void compute_z_m(InputIterator1 z_0_s_b, InputIterator1 z_0_s_e,
+  void compute_zb_m(InputIterator1 z_0_s_b, InputIterator1 z_0_s_e,
 		InputIterator2 z_m1_s_b, InputIterator3 sig_b,
-		OutputIterator1 z_1_s_b,
+		OutputIterator1 z_1_s_b, OutputIterator2 b_0_s_b,
 		ScalarType beta_m1, ScalarType beta_0, ScalarType alpha_0)
   {
     size_t N = z_0_s_e - z_0_s_b;
     thrust::for_each(
-    thrust::make_zip_iterator(thrust::make_tuple(z_1_s_b,z_0_s_b,z_m1_s_b,sig_b)),
-    thrust::make_zip_iterator(thrust::make_tuple(z_1_s_b,z_0_s_b,z_m1_s_b,sig_b))+N,
-    cusp::krylov::detail_m::KERNEL_Z<ScalarType>(beta_m1,beta_0,alpha_0)
+    thrust::make_zip_iterator(thrust::make_tuple(z_1_s_b,b_0_s_b,z_0_s_b,z_m1_s_b,sig_b)),
+    thrust::make_zip_iterator(thrust::make_tuple(z_1_s_b,b_0_s_b,z_0_s_b,z_m1_s_b,sig_b))+N,
+    cusp::krylov::detail_m::KERNEL_ZB<ScalarType>(beta_m1,beta_0,alpha_0)
     );
   }
 
-  // compute \beta_0^\sigma, using iterators
-  // uses detail_m::KERNEL_B
-  template <typename InputIterator1, typename InputIterator2,
-	    typename OutputIterator1,
-	    typename ScalarType>
-  void compute_b_m(InputIterator1 z_1_s_b, InputIterator1 z_1_s_e,
-		InputIterator2 z_0_s_b, OutputIterator1 beta_0_s_b,
-		ScalarType beta_0)
-  {
-    size_t N = z_1_s_e - z_1_s_b;
-
-    thrust::for_each(
-    thrust::make_zip_iterator(thrust::make_tuple(beta_0_s_b,z_1_s_b,z_0_s_b)),
-    thrust::make_zip_iterator(thrust::make_tuple(beta_0_s_b,z_1_s_b,z_0_s_b))+N,
-    cusp::krylov::detail_m::KERNEL_B<ScalarType>(beta_0)
-    );
-  }
-
-  // compute \zeta_1^\sigma, using arrays
+  // compute \zeta_1^\sigma, \beta_0^\sigma using arrays
   template <typename Array1, typename Array2, typename Array3,
-            typename Array4, typename ScalarType>
-  void compute_z_m(const Array1& z_0_s, const Array2& z_m1_s,
-		const Array3& sig, Array4& z_1_s,
+            typename Array4, typename Array5, typename ScalarType>
+  void compute_zb_m(const Array1& z_0_s, const Array2& z_m1_s,
+		const Array3& sig, Array4& z_1_s, Array5& b_0_s,
 		ScalarType beta_m1, ScalarType beta_0, ScalarType alpha_0)
   {
     // sanity checks
     cusp::blas::detail::assert_same_dimensions(z_0_s,z_m1_s,z_1_s);
-    cusp::blas::detail::assert_same_dimensions(z_1_s,sig);
+    cusp::blas::detail::assert_same_dimensions(z_1_s,b_0_s,sig);
 
     // compute
-    cusp::krylov::trans_m::compute_z_m(z_0_s.begin(),z_0_s.end(),
-		    z_m1_s.begin(),sig.begin(),z_1_s.begin(),
+    cusp::krylov::trans_m::compute_zb_m(z_0_s.begin(),z_0_s.end(),
+		    z_m1_s.begin(),sig.begin(),z_1_s.begin(),b_0_s.begin(),
                     beta_m1,beta_0,alpha_0);
 
-  }
-
-  // \beta_0^\sigma using arrays
-  template <typename Array1, typename Array2, typename Array3,
-            typename ScalarType>
-  void compute_b_m(const Array1& z_1_s, const Array2& z_0_s,
-		Array3& beta_0_s, ScalarType beta_0)
-  {
-    // sanity checks
-    cusp::blas::detail::assert_same_dimensions(z_1_s,z_0_s,beta_0_s);
-
-    // compute
-    cusp::krylov::trans_m::compute_b_m(z_1_s.begin(),z_1_s.end(),
-		    z_0_s.begin(),beta_0_s.begin(),beta_0);
   }
 
   // compute \alpha_0^\sigma, and swap \zeta_i^\sigma using iterators
@@ -312,7 +277,7 @@ namespace trans_m
   // compute x^\sigma, p^\sigma
   // this is currently done by calling two different kernels... this is likely
   // not optimal
-  // uses detail_m::KERNEL_X, detail_m::KERNEL_P
+  // uses detail_m::KERNEL_XP
   template <typename Array1, typename Array2, typename Array3,
             typename Array4, typename Array5, typename Array6>
   void compute_xp_m(const Array1& alpha_0_s, const Array2& z_1_s,
@@ -328,8 +293,7 @@ namespace trans_m
     assert (N_t == N*N_s);
 
     // counting iterators to pass to thrust::transform
-    thrust::counting_iterator<int> counter_1(0);
-    thrust::counting_iterator<int> counter_2(0);
+    thrust::counting_iterator<int> counter(0);
 
     // get raw pointers for passing to kernels
     typedef typename Array1::value_type   ScalarType;
@@ -337,17 +301,26 @@ namespace trans_m
     const ScalarType *raw_ptr_z_1_s     = thrust::raw_pointer_cast(z_1_s.data());
     const ScalarType *raw_ptr_beta_0_s  = thrust::raw_pointer_cast(beta_0_s.data());
     const ScalarType *raw_ptr_r_0       = thrust::raw_pointer_cast(r_0.data());
-    const ScalarType *raw_ptr_p_0_s     = thrust::raw_pointer_cast(p_0_s.data());
 
     // compute new x,p
-    // this might be more efficiently done with a single kernel (?)
+    thrust::for_each(
+    thrust::make_zip_iterator(thrust::make_tuple(x_0_s.begin(),p_0_s.begin(),counter)),
+    thrust::make_zip_iterator(thrust::make_tuple(x_0_s.begin(),p_0_s.begin(),counter))+N_t,
+    cusp::krylov::detail_m::KERNEL_XP<ScalarType>(N,raw_ptr_alpha_0_s,raw_ptr_beta_0_s,raw_ptr_z_1_s,raw_ptr_r_0));
+  }
 
-    // compute x
-    thrust::transform(counter_1,counter_1+N_t,x_0_s.begin(),x_0_s.begin(),
-    cusp::krylov::detail_m::KERNEL_X<ScalarType>(N,raw_ptr_beta_0_s,raw_ptr_p_0_s));
-    // compute p
-    thrust::transform(counter_2,counter_2+N_t,p_0_s.begin(),p_0_s.begin(),
-    cusp::krylov::detail_m::KERNEL_P<ScalarType>(N,raw_ptr_alpha_0_s,raw_ptr_z_1_s,raw_ptr_r_0));
+  template <typename Array1, typename Array2, typename Array3>
+  void doublecopy(const Array1& s, Array2& sd, Array3& d)
+  {
+    // sanity check
+    cusp::blas::detail::assert_same_dimensions(s,sd,d);
+    size_t N = s.end()-s.begin();
+
+    // recycle
+    thrust::for_each(
+    thrust::make_zip_iterator(thrust::make_tuple(s.begin(),sd.begin(),d.begin())),
+    thrust::make_zip_iterator(thrust::make_tuple(s.begin(),sd.begin(),d.begin()))+N,
+    cusp::krylov::detail_m::KERNEL_DCOPY());
   }
 
   // multiple copy of array to another array
@@ -374,8 +347,30 @@ namespace trans_m
 
   }
 
-} // end namespace trans_m
+  template <typename ForwardIterator1,
+            typename ForwardIterator2,
+            typename ScalarType>
+    void xpay(ForwardIterator1 first1,
+              ForwardIterator1 last1,
+              ForwardIterator2 first2,
+              ScalarType alpha)
+  {
+    thrust::transform(first1, last1, first2, first2, detail_m::XPAY<ScalarType>(alpha));
+  }
+  
+  template <typename Array1,
+            typename Array2,
+            typename ScalarType>
+  void xpay(const Array1& x,
+            Array2& y,
+            ScalarType alpha)
+  {
+    cusp::blas::detail::assert_same_dimensions(x, y);
+    cusp::krylov::trans_m::xpay(x.begin(), x.end(), y.begin(), alpha);
+  }
 
+
+} // end namespace trans_m
 
 
 // CG-M routine that uses the default monitor to determine completion
@@ -434,8 +429,6 @@ void cg_m(LinearOperator& A,
   cusp::array1d<ValueType,MemorySpace> r_0(N);
   // used in iterates
   cusp::array1d<ValueType,MemorySpace> p_0(N);
-  // used in iterates
-  cusp::array1d<ValueType,MemorySpace> xx_0(N,ValueType(0));
 
   // stores parameters used in the iteration
   cusp::array1d<ValueType,MemorySpace> z_m1_s(N_s,ValueType(1));
@@ -448,7 +441,7 @@ void cg_m(LinearOperator& A,
   // stores parameters used in the iteration for the undeformed system
   ValueType beta_m1, beta_0(ValueType(1));
   ValueType alpha_0(ValueType(0));
-  ValueType alpha_0_inv;
+  //ValueType alpha_0_inv;
 
   // stores the value of the matrix-vector product we have to compute
   cusp::array1d<ValueType,MemorySpace> Ap(N);
@@ -491,19 +484,14 @@ void cg_m(LinearOperator& A,
     // compute the new residual
     cusp::blas::axpy(Ap,r_0,beta_0);
 
-    // compute \zeta_1^\sigma
-    cusp::krylov::trans_m::compute_z_m(z_0_s, z_m1_s, sigma, z_1_s,
-                                      beta_m1, beta_0, alpha_0);
-    // compute \beta_0^\sigma
-    cusp::krylov::trans_m::compute_b_m(z_1_s, z_0_s, beta_0_s, beta_0);
+    // compute \zeta_1^\sigma, \beta_0^\sigma
+    cusp::krylov::trans_m::compute_zb_m(z_0_s, z_m1_s, sigma, z_1_s, beta_0_s,
+		    beta_m1, beta_0, alpha_0);
 
     // compute \alpha_0
     rsq_1 = cusp::blas::dotc(r_0,r_0);
     alpha_0 = rsq_1/rsq_0;
-    alpha_0_inv = rsq_0/rsq_1;
-    cusp::blas::axpy(p_0,xx_0,-beta_0);
-    cusp::blas::axpy(r_0,p_0,alpha_0_inv);
-    cusp::blas::scal(p_0,alpha_0);
+    cusp::krylov::trans_m::xpay(r_0,p_0,alpha_0);
     
     // calculate \alpha_0^\sigma
     cusp::krylov::trans_m::compute_a_m(z_0_s, z_1_s, beta_0_s,
@@ -514,21 +502,12 @@ void cg_m(LinearOperator& A,
                                       x, p_0_s);
 
     // recycle \zeta_i^\sigma
-    cusp::blas::copy(z_0_s,z_m1_s);
-    cusp::blas::copy(z_1_s,z_0_s);
+    cusp::krylov::trans_m::doublecopy(z_1_s,z_0_s,z_m1_s);
     
     ++monitor;
 
   }// finished iteration
 
-  //cudaThreadSynchronize();
-
-  // MFLOPs excludes BLAS operations
-  //double elapsed = ((double) (clock() - start)) / CLOCKS_PER_SEC;
-  //double MFLOPs = 2* ((double) i * (double) A.num_entries)/ (1e6 * elapsed);
-  //printf("-iteration completed in %lfms  ( > %6.2lf MFLOPs )\n",1000*elapsed, MFLOPs );
-
-  
 } // end cg_m
 
 } // end namespace krylov

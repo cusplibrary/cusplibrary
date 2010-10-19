@@ -14,18 +14,16 @@
  *  limitations under the License.
  */
 
-
-
 #pragma once
 
-#include <cusp/coo_matrix.h>
-#include <cusp/detail/device/common.h>
+#include <cusp/detail/device/arch.h>
 #include <cusp/detail/device/utils.h>
-#include <cusp/detail/device/texture.h>
-#include <cusp/detail/device/spmv/coo_serial.h>
 
-#include <thrust/functional.h>
-#include <thrust/experimental/arch.h>
+#include <thrust/copy.h>
+
+#include <thrust/iterator/iterator_traits.h>
+#include <thrust/detail/device/dereference.h>
+#include <thrust/detail/device/cuda/partition.h>
 
 namespace cusp
 {
@@ -33,361 +31,492 @@ namespace detail
 {
 namespace device
 {
-
-// segmented reduction in shared memory
-template <typename IndexType, typename ValueType, typename BinaryFunction2>
-__device__
-ValueType segreduce_warp(const IndexType thread_lane,
-                         IndexType row, ValueType val, IndexType * rows, ValueType * vals,
-                         BinaryFunction2 reduce)
+namespace cuda
 {
-    rows[threadIdx.x] = row;
-    vals[threadIdx.x] = val;
 
-    if( thread_lane >=  1 && row == rows[threadIdx.x -  1] ) { vals[threadIdx.x] = val = reduce(val, vals[threadIdx.x -  1]); } 
-    if( thread_lane >=  2 && row == rows[threadIdx.x -  2] ) { vals[threadIdx.x] = val = reduce(val, vals[threadIdx.x -  2]); }
-    if( thread_lane >=  4 && row == rows[threadIdx.x -  4] ) { vals[threadIdx.x] = val = reduce(val, vals[threadIdx.x -  4]); }
-    if( thread_lane >=  8 && row == rows[threadIdx.x -  8] ) { vals[threadIdx.x] = val = reduce(val, vals[threadIdx.x -  8]); }
-    if( thread_lane >= 16 && row == rows[threadIdx.x - 16] ) { vals[threadIdx.x] = val = reduce(val, vals[threadIdx.x - 16]); }
-
-    return val;
-}
-
-template <typename IndexType, typename ValueType, typename BinaryFunction2>
-__device__ void segreduce_block(const IndexType * idx, ValueType * vals,
-                                BinaryFunction2 reduce)
-{
-    // TODO properly support general reduce() method
-    ValueType left = 0;
-    if( threadIdx.x >=   1 && idx[threadIdx.x] == idx[threadIdx.x -   1] ) { left = vals[threadIdx.x -   1]; } __syncthreads(); vals[threadIdx.x] = reduce(left, vals[threadIdx.x]); left = 0; __syncthreads();  
-    if( threadIdx.x >=   2 && idx[threadIdx.x] == idx[threadIdx.x -   2] ) { left = vals[threadIdx.x -   2]; } __syncthreads(); vals[threadIdx.x] = reduce(left, vals[threadIdx.x]); left = 0; __syncthreads();
-    if( threadIdx.x >=   4 && idx[threadIdx.x] == idx[threadIdx.x -   4] ) { left = vals[threadIdx.x -   4]; } __syncthreads(); vals[threadIdx.x] = reduce(left, vals[threadIdx.x]); left = 0; __syncthreads();
-    if( threadIdx.x >=   8 && idx[threadIdx.x] == idx[threadIdx.x -   8] ) { left = vals[threadIdx.x -   8]; } __syncthreads(); vals[threadIdx.x] = reduce(left, vals[threadIdx.x]); left = 0; __syncthreads();
-    if( threadIdx.x >=  16 && idx[threadIdx.x] == idx[threadIdx.x -  16] ) { left = vals[threadIdx.x -  16]; } __syncthreads(); vals[threadIdx.x] = reduce(left, vals[threadIdx.x]); left = 0; __syncthreads();
-    if( threadIdx.x >=  32 && idx[threadIdx.x] == idx[threadIdx.x -  32] ) { left = vals[threadIdx.x -  32]; } __syncthreads(); vals[threadIdx.x] = reduce(left, vals[threadIdx.x]); left = 0; __syncthreads();  
-    if( threadIdx.x >=  64 && idx[threadIdx.x] == idx[threadIdx.x -  64] ) { left = vals[threadIdx.x -  64]; } __syncthreads(); vals[threadIdx.x] = reduce(left, vals[threadIdx.x]); left = 0; __syncthreads();
-    if( threadIdx.x >= 128 && idx[threadIdx.x] == idx[threadIdx.x - 128] ) { left = vals[threadIdx.x - 128]; } __syncthreads(); vals[threadIdx.x] = reduce(left, vals[threadIdx.x]); left = 0; __syncthreads();
-    if( threadIdx.x >= 256 && idx[threadIdx.x] == idx[threadIdx.x - 256] ) { left = vals[threadIdx.x - 256]; } __syncthreads(); vals[threadIdx.x] = reduce(left, vals[threadIdx.x]); left = 0; __syncthreads();
-}
-
-
-//////////////////////////////////////////////////////////////////////////////
-// COO SpMV kernel which flattens data irregularity (segmented reduction)
-//////////////////////////////////////////////////////////////////////////////
-//
-// spmv_coo_flat
-//   The input coo_matrix must be sorted by row.  Columns within each row
-//   may appear in any order and duplicate entries are also acceptable.
-//   This sorted COO format is easily obtained by expanding the row pointer
-//   of a CSR matrix (csr.Ap) into proper row indices and then copying 
-//   the arrays containing the CSR column indices (csr.Aj) and nonzero values
-//   (csr.Ax) verbatim.  A segmented reduction is used to compute the per-row
-//   sums.
-//
-// spmv_coo_flat_tex
-//   Same as spmv_coo_flat, except that the texture cache is 
-//   used for accessing the x vector.
-//
-
-
-// spmv_coo_flat_kernel
-//
-// In this kernel each warp processes an interval of the nonzero values.
-// For example, if the matrix contains 128 nonzero values and there are
-// two warps and interval_size is 64, then the first warp (warp_id == 0)
-// will process the first set of 64 values (interval [0, 64)) and the 
-// second warp will process // the second set of 64 values 
-// (interval [64, 128)).  Note that the  number of nonzeros is not always
-// a multiple of 32 (the warp size) or 32 * the number of active warps,
-// so the last active warp will not always process a "full" interval of
-// interval_size.
-// 
-// The first thread in each warp (thread_lane == 0) has a special role:
-// it is responsible for keeping track of the "carry" values from one
-// iteration to the next.  The carry values consist of the row index and
-// partial sum from the previous batch of 32 elements.  In the example 
-// mentioned before with two warps and 128 nonzero elements, the first
-// warp iterates twice and looks at the carry of the first iteration to
-// decide whether to include this partial sum into the current batch.
-// Specifically, if a row extends over a 32-element boundary, then the
-// partial sum is carried over into the new 32-element batch.  If,
-// on the other hand, the _last_ row index of the previous batch (the carry)
-// differs from the _first_ row index of the current batch (the row
-// read by the thread with thread_lane == 0), then the partial sum
-// is written out to memory.
-//
-// Each warp iterates over its interval, processing 32 elements at a time.
-// For each batch of 32 elements, the warp does the following
-//  1) Fetch the row index, column index, and value for a matrix entry.  These
-//     values are loaded from I[n], J[n], and V[n] respectively.
-//     The row entry is stored in the shared memory array idx.
-//  2) Fetch the corresponding entry from the input vector.  Specifically, for a 
-//     nonzero entry (i,j) in the matrix, the thread must load the value x[j]
-//     from memory.  We use the function fetch_x to control whether the texture
-//     cache is used to load the value (UseCache == True) or whether a normal
-//     global load is used (UseCache == False).
-//  3) The matrix value A(i,j) (which was stored in V[n]) is multiplied by the 
-//     value x[j] and stored in the shared memory array val.
-//  4) The first thread in the warp (thread_lane == 0) considers the "carry"
-//     row index and either includes the carried sum in its own sum, or it
-//     updates the output vector (y) with the carried sum.
-//  5) With row indices in the shared array idx and sums in the shared array
-//     val, the warp conducts a segmented scan.  The segmented scan operation
-//     looks at the row entries for each thread (stored in idx) to see whether
-//     two values belong to the same segment (segments correspond to matrix rows).
-//     Consider the following example which consists of 3 segments
-//     (note: this example uses a warp size of 16 instead of the usual 32)
-//
-//           0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15   # thread_lane
-//     idx [ 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2]  # row indices
-//     val [ 4, 6, 5, 0, 8, 3, 2, 8, 3, 1, 4, 9, 2, 5, 2, 4]  # A(i,j) * x(j)
-//
-//     After the segmented scan the result will be
-//
-//     val [ 4,10,15,15,23,26, 2,10,13,14, 4,13,15,20,22,26]  # A(i,j) * x(j)
-//
-//  6) After the warp computes the segmented scan operation 
-//     each thread except for the last (thread_lane == 31) looks
-//     at the row index of the next thread (threadIdx.x + 1) to 
-//     see if the segment ends here, or continues into the 
-//     next thread.  The thread at the end of the segment writes
-//     the sum into the output vector (y) at the corresponding row
-//     index.
-//  7) The last thread in each warp (thread_lane == 31) writes
-//     its row index and partial sum into the designated spote in the
-//     carry_idx and carry_val arrays.  The carry arrays are indexed
-//     by warp_lane which is a number in [0, BLOCK_SIZE / 32).
-//  
-//  These steps are repeated until the warp reaches the end of its interval.
-//  The carry values at the end of each interval are written to arrays 
-//  temp_rows and temp_vals, which are processed by a second kernel.
-//
-template <unsigned int BLOCK_SIZE, bool UseCache,
+template <int BLOCK_SIZE,
           typename IndexType,
           typename ValueType,
-          typename UnaryFunction,
+          typename BinaryFunction>
+          __forceinline__
+          __device__
+void scan_by_key(const IndexType * rows, ValueType * vals, BinaryFunction binary_op)
+{
+    const IndexType row = rows[threadIdx.x];
+          ValueType val = vals[threadIdx.x];
+
+    if (BLOCK_SIZE >   1) { if(threadIdx.x >=   1 && row == rows[threadIdx.x -   1 ]) { val = binary_op(vals[threadIdx.x -   1], val); } __syncthreads(); vals[threadIdx.x] = val; __syncthreads(); }
+    if (BLOCK_SIZE >   2) { if(threadIdx.x >=   2 && row == rows[threadIdx.x -   2 ]) { val = binary_op(vals[threadIdx.x -   2], val); } __syncthreads(); vals[threadIdx.x] = val; __syncthreads(); }
+    if (BLOCK_SIZE >   4) { if(threadIdx.x >=   4 && row == rows[threadIdx.x -   4 ]) { val = binary_op(vals[threadIdx.x -   4], val); } __syncthreads(); vals[threadIdx.x] = val; __syncthreads(); }
+    if (BLOCK_SIZE >   8) { if(threadIdx.x >=   8 && row == rows[threadIdx.x -   8 ]) { val = binary_op(vals[threadIdx.x -   8], val); } __syncthreads(); vals[threadIdx.x] = val; __syncthreads(); }
+    if (BLOCK_SIZE >  16) { if(threadIdx.x >=  16 && row == rows[threadIdx.x -  16 ]) { val = binary_op(vals[threadIdx.x -  16], val); } __syncthreads(); vals[threadIdx.x] = val; __syncthreads(); }
+    if (BLOCK_SIZE >  32) { if(threadIdx.x >=  32 && row == rows[threadIdx.x -  32 ]) { val = binary_op(vals[threadIdx.x -  32], val); } __syncthreads(); vals[threadIdx.x] = val; __syncthreads(); }
+    if (BLOCK_SIZE >  64) { if(threadIdx.x >=  64 && row == rows[threadIdx.x -  64 ]) { val = binary_op(vals[threadIdx.x -  64], val); } __syncthreads(); vals[threadIdx.x] = val; __syncthreads(); }
+    if (BLOCK_SIZE > 128) { if(threadIdx.x >= 128 && row == rows[threadIdx.x - 128 ]) { val = binary_op(vals[threadIdx.x - 128], val); } __syncthreads(); vals[threadIdx.x] = val; __syncthreads(); }
+    if (BLOCK_SIZE > 256) { if(threadIdx.x >= 256 && row == rows[threadIdx.x - 256 ]) { val = binary_op(vals[threadIdx.x - 256], val); } __syncthreads(); vals[threadIdx.x] = val; __syncthreads(); }  
+    if (BLOCK_SIZE > 512) { if(threadIdx.x >= 512 && row == rows[threadIdx.x - 512 ]) { val = binary_op(vals[threadIdx.x - 512], val); } __syncthreads(); vals[threadIdx.x] = val; __syncthreads(); }  
+}
+
+template <int BLOCK_SIZE,
+          typename IndexType,
+          typename ValueType,
+          typename BinaryFunction,
+          typename SizeType>
+          __forceinline__
+          __device__
+void scan_by_key(const IndexType * rows, ValueType * vals, BinaryFunction binary_op, SizeType N)
+{
+    const IndexType row = rows[threadIdx.x];
+          ValueType val = vals[threadIdx.x];
+
+    if (BLOCK_SIZE >   1) { if(threadIdx.x < N && threadIdx.x >=   1 && row == rows[threadIdx.x -   1 ]) { val = binary_op(vals[threadIdx.x -   1], val); } __syncthreads(); vals[threadIdx.x] = val; __syncthreads(); }
+    if (BLOCK_SIZE >   2) { if(threadIdx.x < N && threadIdx.x >=   2 && row == rows[threadIdx.x -   2 ]) { val = binary_op(vals[threadIdx.x -   2], val); } __syncthreads(); vals[threadIdx.x] = val; __syncthreads(); }
+    if (BLOCK_SIZE >   4) { if(threadIdx.x < N && threadIdx.x >=   4 && row == rows[threadIdx.x -   4 ]) { val = binary_op(vals[threadIdx.x -   4], val); } __syncthreads(); vals[threadIdx.x] = val; __syncthreads(); }
+    if (BLOCK_SIZE >   8) { if(threadIdx.x < N && threadIdx.x >=   8 && row == rows[threadIdx.x -   8 ]) { val = binary_op(vals[threadIdx.x -   8], val); } __syncthreads(); vals[threadIdx.x] = val; __syncthreads(); }
+    if (BLOCK_SIZE >  16) { if(threadIdx.x < N && threadIdx.x >=  16 && row == rows[threadIdx.x -  16 ]) { val = binary_op(vals[threadIdx.x -  16], val); } __syncthreads(); vals[threadIdx.x] = val; __syncthreads(); }
+    if (BLOCK_SIZE >  32) { if(threadIdx.x < N && threadIdx.x >=  32 && row == rows[threadIdx.x -  32 ]) { val = binary_op(vals[threadIdx.x -  32], val); } __syncthreads(); vals[threadIdx.x] = val; __syncthreads(); }
+    if (BLOCK_SIZE >  64) { if(threadIdx.x < N && threadIdx.x >=  64 && row == rows[threadIdx.x -  64 ]) { val = binary_op(vals[threadIdx.x -  64], val); } __syncthreads(); vals[threadIdx.x] = val; __syncthreads(); }
+    if (BLOCK_SIZE > 128) { if(threadIdx.x < N && threadIdx.x >= 128 && row == rows[threadIdx.x - 128 ]) { val = binary_op(vals[threadIdx.x - 128], val); } __syncthreads(); vals[threadIdx.x] = val; __syncthreads(); }
+    if (BLOCK_SIZE > 256) { if(threadIdx.x < N && threadIdx.x >= 256 && row == rows[threadIdx.x - 256 ]) { val = binary_op(vals[threadIdx.x - 256], val); } __syncthreads(); vals[threadIdx.x] = val; __syncthreads(); }  
+    if (BLOCK_SIZE > 512) { if(threadIdx.x < N && threadIdx.x >= 512 && row == rows[threadIdx.x - 512 ]) { val = binary_op(vals[threadIdx.x - 512], val); } __syncthreads(); vals[threadIdx.x] = val; __syncthreads(); }  
+}
+
+
+template <int BLOCK_SIZE,
+          typename SizeType,
+          typename ValueIterator4,
+          typename BinaryFunction2,
+          typename OutputIterator1,
+          typename OutputIterator2>
+__launch_bounds__(BLOCK_SIZE,1)
+__global__
+void spmv_coo_kernel_postprocess(SizeType        num_outputs,
+                                 ValueIterator4  z,
+                                 BinaryFunction2 reduce,
+                                 OutputIterator1 row_carries,
+                                 OutputIterator2 val_carries)
+{
+  typedef typename thrust::iterator_value<OutputIterator1>::type IndexType;
+  typedef typename thrust::iterator_value<OutputIterator2>::type ValueType;
+
+  __shared__ IndexType rows[BLOCK_SIZE + 1];
+  __shared__ ValueType vals[BLOCK_SIZE + 1];
+  
+  __shared__ IndexType row_carry;
+  __shared__ ValueType val_carry;
+
+  __syncthreads();
+
+  SizeType base = 0;
+
+  row_carries += threadIdx.x;
+  val_carries += threadIdx.x;
+
+  while(base + BLOCK_SIZE <= num_outputs)
+  {
+    rows[threadIdx.x] = thrust::detail::device::dereference(row_carries);
+    vals[threadIdx.x] = thrust::detail::device::dereference(val_carries);
+
+    // carry in
+    if(threadIdx.x == 0 && base != 0)
+    {
+      if (row_carry == rows[0])
+      {
+        vals[0] = reduce(val_carry, vals[0]);
+      }
+      else
+      {
+        // row terminates in previous unit
+        ValueIterator4 zj = z + row_carry;
+        thrust::detail::device::dereference(zj) = reduce(thrust::detail::device::dereference(zj), val_carry);
+      }
+    }
+
+    __syncthreads();
+
+    scan_by_key<BLOCK_SIZE>(rows, vals, reduce);
+
+    if (threadIdx.x == BLOCK_SIZE - 1)
+    {
+      row_carry = rows[BLOCK_SIZE - 1];
+      val_carry = vals[BLOCK_SIZE - 1];
+    }
+    else
+    {
+      if(rows[threadIdx.x] != rows[threadIdx.x + 1])
+      {
+        // row terminates in current unit
+        ValueIterator4 zj = z + rows[threadIdx.x];
+        thrust::detail::device::dereference(zj) = reduce(thrust::detail::device::dereference(zj), vals[threadIdx.x]);
+      }
+    }
+
+    base        += BLOCK_SIZE;
+    row_carries += BLOCK_SIZE;
+    val_carries += BLOCK_SIZE;
+
+    __syncthreads();
+  }
+
+  if(base < num_outputs)
+  {
+    SizeType offset_end = num_outputs - base;
+
+    if (threadIdx.x < offset_end)
+    {
+      rows[threadIdx.x] = thrust::detail::device::dereference(row_carries);
+      vals[threadIdx.x] = thrust::detail::device::dereference(val_carries);
+    }
+
+    // carry in
+    if(threadIdx.x == 0 && base != 0)
+    {
+      if (row_carry == rows[0])
+      {
+        vals[0] = reduce(val_carry, vals[0]);
+      }
+      else
+      {
+        // row terminates in previous unit
+        ValueIterator4 zj = z + row_carry;
+        thrust::detail::device::dereference(zj) = reduce(thrust::detail::device::dereference(zj), val_carry);
+      }
+    }
+
+    __syncthreads();
+
+    scan_by_key<BLOCK_SIZE>(rows, vals, reduce, offset_end);
+    
+    if(threadIdx.x < offset_end)
+    {
+      if(threadIdx.x == offset_end - 1 || rows[threadIdx.x] != rows[threadIdx.x + 1])
+      {
+        // row terminates in current unit or we're at the end of input
+        ValueIterator4 zj = z + rows[threadIdx.x];
+        thrust::detail::device::dereference(zj) = reduce(thrust::detail::device::dereference(zj), vals[threadIdx.x]);
+      }
+    }
+  }
+}
+
+template <int BLOCK_SIZE,
+          int K,
+          typename SizeType,
+          typename IndexIterator1,
+          typename IndexIterator2,
+          typename ValueIterator1,
+          typename ValueIterator2,
+          typename ValueIterator4,
           typename BinaryFunction1,
-          typename BinaryFunction2>
+          typename BinaryFunction2,
+          typename OutputIterator1,
+          typename OutputIterator2>
+__launch_bounds__(BLOCK_SIZE,1)
 __global__
-void spmv_coo_flat_kernel(const IndexType num_nonzeros,
-                          const IndexType interval_size,
-                          const IndexType * I, 
-                          const IndexType * J, 
-                          const ValueType * V, 
-                          const ValueType * x, 
-                                ValueType * y,
-                                IndexType * temp_rows,
-                                ValueType * temp_vals,
-                          UnaryFunction   initialize,
-                          BinaryFunction1 combine,
-                          BinaryFunction2 reduce)
+void spmv_coo_kernel(SizeType        num_entries,
+                     SizeType        interval_size,
+                     IndexIterator1  row_indices,
+                     IndexIterator2  column_indices,
+                     ValueIterator1  values,
+                     ValueIterator2  x, 
+                     ValueIterator4  z,
+                     BinaryFunction1 combine,
+                     BinaryFunction2 reduce,
+                     OutputIterator1 row_carries,
+                     OutputIterator2 val_carries)
 {
-    __shared__ IndexType rows[BLOCK_SIZE];
-    __shared__ ValueType vals[BLOCK_SIZE];
+  typedef typename thrust::iterator_value<IndexIterator1>::type IndexType1;
+  typedef typename thrust::iterator_value<IndexIterator2>::type IndexType2;
+  typedef typename thrust::iterator_value<ValueIterator1>::type ValueType1;
+  typedef typename thrust::iterator_value<ValueIterator2>::type ValueType2;
+  typedef typename thrust::iterator_value<ValueIterator4>::type ValueType4;
 
-    const IndexType thread_id   = BLOCK_SIZE * blockIdx.x + threadIdx.x;                 // global thread index
-    const IndexType thread_lane = threadIdx.x & (WARP_SIZE-1);                           // thread index within the warp
-    const IndexType warp_id     = thread_id   / WARP_SIZE;                               // global warp index
+  __shared__ IndexType1 rows[K][BLOCK_SIZE + 1];
+  __shared__ ValueType4 vals[K][BLOCK_SIZE + 1];
 
-    const IndexType interval_begin = warp_id * interval_size;                            // warp's offset into I,J,V
-    const IndexType interval_end   = min(interval_begin + interval_size, num_nonzeros);  // end of warps's work
+  __shared__ IndexType1 row_carry;
+  __shared__ ValueType4 val_carry;
 
-    if(interval_begin >= interval_end)                                                   // warp has no work to do 
-        return;
+  __syncthreads(); // is this really necessary?
 
-    if (thread_lane == 31)
-    {
-        // initialize the carry in values
-        rows[threadIdx.x] = I[interval_begin]; 
-        vals[threadIdx.x] = 0;
-    }
+  SizeType interval_begin = interval_size * blockIdx.x;
+  SizeType interval_end   = min(interval_begin + interval_size, num_entries);
+
+  SizeType unit_size = K * BLOCK_SIZE;
  
-    // TODO break out first iteration to avoid initialization issues
+  SizeType base = interval_begin;
 
-    for(IndexType n = interval_begin + thread_lane; n < interval_end; n += WARP_SIZE)
+  row_indices    += base;
+  column_indices += base;
+  values         += base;
+
+  // process full units
+  while(base + unit_size <= interval_end)
+  {
+    // read data
+    for(int k = 0; k < K; k++)
     {
-        IndexType row = I[n];                                             // row index (i)
-        ValueType val = combine(V[n], fetch_x<UseCache>(J[n], x));        // A(i,j) * x(j)
-        
-        if (thread_lane == 0)
-        {
-            if(row == rows[threadIdx.x + 31])
-                val = reduce(val, vals[threadIdx.x + 31]);                // row continues
-            else
-                y[rows[threadIdx.x + 31]] = reduce(y[rows[threadIdx.x + 31]], vals[threadIdx.x + 31]);       // row terminated
-        }
-        
-        val = segreduce_warp(thread_lane, row, val, rows, vals, reduce);  // segmented reduction in shared memory
+      int offset = BLOCK_SIZE * k + threadIdx.x;
 
-        if(thread_lane < 31 && row != rows[threadIdx.x + 1])
-            y[row] = reduce(y[row], val);                                 // row terminated
+      IndexIterator1 _i   = row_indices    + offset;
+      IndexIterator2 _j   = column_indices + offset;
+      ValueIterator1 _Aij = values         + offset;
+
+      ValueIterator2 _xj = x + thrust::detail::device::dereference(_j);
+
+      rows[offset % K][offset / K] = thrust::detail::device::dereference(_i);
+      vals[offset % K][offset / K] = combine(thrust::detail::device::dereference(_Aij), thrust::detail::device::dereference(_xj));
     }
 
-    if(thread_lane == 31)
+    // carry in
+    if (threadIdx.x == 0 && base != interval_begin)
     {
-        // write the carry out values
-        temp_rows[warp_id] = rows[threadIdx.x];
-        temp_vals[warp_id] = vals[threadIdx.x];
+      if (row_carry == rows[0][0])
+      {
+        // row continues into this unit
+        vals[0][0] = reduce(val_carry, vals[0][0]);
+      }
+      else
+      {
+        // row terminates in previous unit
+        ValueIterator4 _zj = z + row_carry;
+        thrust::detail::device::dereference(_zj) = reduce(thrust::detail::device::dereference(_zj), val_carry);
+      }
     }
-}
+      
+    __syncthreads();
 
+    // process local values
+    for(int k = 1; k < K; k++)
+    {
+      if (rows[k][threadIdx.x] == rows[k - 1][threadIdx.x])
+        vals[k][threadIdx.x] = reduce(vals[k - 1][threadIdx.x], vals[k][threadIdx.x]);
+    }
 
-// The second level of the segmented reduction operation
-template <unsigned int BLOCK_SIZE,
-          typename IndexType,
-          typename ValueType,
-          typename BinaryFunction2>
-__global__
-void spmv_coo_reduce_update_kernel(const IndexType num_warps,
-                                   const IndexType * temp_rows,
-                                   const ValueType * temp_vals,
-                                         ValueType * y,
-                                   BinaryFunction2 reduce)
-{
-    __shared__ IndexType rows[BLOCK_SIZE + 1];    
-    __shared__ ValueType vals[BLOCK_SIZE + 1];    
+    __syncthreads();
 
-    const IndexType end = num_warps - (num_warps & (BLOCK_SIZE - 1));
+    // process across block
+    scan_by_key<BLOCK_SIZE>(rows[K - 1], vals[K - 1], reduce);
 
     if (threadIdx.x == 0)
     {
-        rows[BLOCK_SIZE] = (IndexType) -1;
-        vals[BLOCK_SIZE] = (ValueType)  0;
+      // update carry and sentinel value
+      row_carry = rows[0][BLOCK_SIZE] = rows[K - 1][BLOCK_SIZE - 1];
+      val_carry = vals[0][BLOCK_SIZE] = vals[K - 1][BLOCK_SIZE - 1];
     }
-    
+    else
+    {
+      // update local values
+      for(int k = 0; k < K - 1; k++)
+      {
+        IndexType1 row = rows[K - 1][threadIdx.x - 1];
+        ValueType4 val = vals[K - 1][threadIdx.x - 1];
+
+        if(rows[k][threadIdx.x] == row)
+        {
+          vals[k][threadIdx.x] = reduce(val, vals[k][threadIdx.x]);
+        }
+      }
+    }
+
     __syncthreads();
 
-    IndexType i = threadIdx.x;
-
-    while (i < end)
+    // write data
+    for(int k = 0; k < K; k++)
     {
-        // do full blocks
-        rows[threadIdx.x] = temp_rows[i];
-        vals[threadIdx.x] = temp_vals[i];
+      int offset = BLOCK_SIZE * k + threadIdx.x;
 
-        __syncthreads();
-
-        segreduce_block(rows, vals, reduce);
-
-        if (rows[threadIdx.x] != rows[threadIdx.x + 1])
-            y[rows[threadIdx.x]] = reduce(y[rows[threadIdx.x]], vals[threadIdx.x]);
-
-        __syncthreads();
-
-        i += BLOCK_SIZE; 
+      if (rows[offset % K][offset / K] != rows[(offset + 1) % K][(offset + 1) / K])
+      {
+        // row terminates
+        ValueIterator4 _zj = z + rows[offset % K][offset / K];
+        thrust::detail::device::dereference(_zj) = reduce(thrust::detail::device::dereference(_zj), vals[offset % K][offset / K]);
+      }
     }
 
-    if (end < num_warps)
+    // advance iterators
+    base           += unit_size;
+    row_indices    += unit_size;
+    column_indices += unit_size;
+    values         += unit_size;
+
+    __syncthreads();
+  }
+
+  // process partial unit
+  if(base < interval_end)
+  {
+    int offset_end = interval_end - base;
+
+    // read data
+    for(int k = 0; k < K; k++)
     {
-        if (i < num_warps)
-        {
-            rows[threadIdx.x] = temp_rows[i];
-            vals[threadIdx.x] = temp_vals[i];
-        }
-        else
-        {
-            rows[threadIdx.x] = (IndexType) -1;
-            vals[threadIdx.x] = (ValueType)  0;
-        }
+      int offset = BLOCK_SIZE * k + threadIdx.x;
 
-        __syncthreads();
-   
-        segreduce_block(rows, vals, reduce);
+      if (offset < offset_end)
+      {
+        IndexIterator1 _i   = row_indices    + offset;
+        IndexIterator2 _j   = column_indices + offset;
+        ValueIterator1 _Aij = values         + offset;
 
-        if (i < num_warps)
-            if (rows[threadIdx.x] != rows[threadIdx.x + 1])
-                y[rows[threadIdx.x]] = reduce(y[rows[threadIdx.x]], vals[threadIdx.x]);
+        ValueIterator2 _xj = x + thrust::detail::device::dereference(_j);
+
+        rows[offset % K][offset / K] = thrust::detail::device::dereference(_i);
+        vals[offset % K][offset / K] = combine(thrust::detail::device::dereference(_Aij), thrust::detail::device::dereference(_xj));
+      }
     }
-}
-
-
-template <typename IndexType, typename ValueType, bool UseCache>
-void __spmv_coo_flat(const coo_matrix<IndexType,ValueType,cusp::device_memory>& coo, 
-                     const ValueType * d_x, 
-                           ValueType * d_y)
-{
-    const IndexType * I = thrust::raw_pointer_cast(&coo.row_indices[0]);
-    const IndexType * J = thrust::raw_pointer_cast(&coo.column_indices[0]);
-    const ValueType * V = thrust::raw_pointer_cast(&coo.values[0]);
-
-    if(coo.num_entries == 0)
-    {
-        // empty matrix
-        return;
-    }
-    else if (coo.num_entries < WARP_SIZE)
-    {
-        // small matrix
-        // TODO pass functors here
-        spmv_coo_serial_kernel<IndexType,ValueType> <<<1,1>>>
-            (coo.num_entries, I, J, V, d_x, d_y);
-        return;
-    }
-
-// TODO support general initialize() transformation here
-//    thrust::transform(thrust::make_device_ptr(d_y), thrust::make_device_ptr(d_y) + coo.num_rows,
-//                      thrust::make_device_ptr(d_y),
-//                      thrust::identity<ValueType>());
-
-    //TODO Determine optimal BLOCK_SIZE and MAX_BLOCKS
-    const unsigned int BLOCK_SIZE = 256;
-    const unsigned int MAX_BLOCKS = MAX_THREADS / (2 * BLOCK_SIZE);
-//    const unsigned int MAX_BLOCKS = thrust::experimental::arch::max_active_blocks(spmv_coo_flat_kernel<IndexType, ValueType, BLOCK_SIZE, UseCache>, BLOCK_SIZE, (size_t) 0);
-    const unsigned int WARPS_PER_BLOCK = BLOCK_SIZE / WARP_SIZE;
-
-    const unsigned int num_units  = coo.num_entries / WARP_SIZE; 
-    const unsigned int num_warps  = std::min(num_units, WARPS_PER_BLOCK * MAX_BLOCKS);
-    const unsigned int num_blocks = DIVIDE_INTO(num_warps, WARPS_PER_BLOCK);
-    const unsigned int num_iters  = DIVIDE_INTO(num_units, num_warps);
     
-    const unsigned int interval_size = WARP_SIZE * num_iters;
+    // carry in
+    if (threadIdx.x == 0 && base != interval_begin)
+    {
+      if (row_carry == rows[0][0])
+      {
+        // row continues into this unit
+        vals[0][0] = reduce(val_carry, vals[0][0]);
+      }
+      else
+      {
+        // row terminates in previous unit
+        ValueIterator4 _zj = z + row_carry;
+        thrust::detail::device::dereference(_zj) = reduce(thrust::detail::device::dereference(_zj), val_carry);
+      }
+    }
+      
+    __syncthreads();
 
-    const IndexType tail = num_units * WARP_SIZE; // do the last few nonzeros separately (fewer than WARP_SIZE elements)
+    // process local values
+    for(int k = 1; k < K; k++)
+    {
+      int offset = K * threadIdx.x + k;
 
-    const unsigned int active_warps = (interval_size == 0) ? 0 : DIVIDE_INTO(tail, interval_size);
+      if (offset < offset_end)
+      {
+        if (rows[k][threadIdx.x] == rows[k - 1][threadIdx.x])
+          vals[k][threadIdx.x] = reduce(vals[k - 1][threadIdx.x], vals[k][threadIdx.x]);
+      }
+    }
 
-    if (UseCache)
-        bind_x(d_x);
+    __syncthreads();
 
-    cusp::array1d<IndexType,cusp::device_memory> temp_rows(active_warps);
-    cusp::array1d<ValueType,cusp::device_memory> temp_vals(active_warps);
+    // process across block
+    scan_by_key<BLOCK_SIZE>(rows[K - 1], vals[K - 1], reduce, offset_end);
 
-    spmv_coo_flat_kernel<BLOCK_SIZE, UseCache, IndexType, ValueType> <<<num_blocks, BLOCK_SIZE>>>
-        (tail, interval_size, I, J, V, d_x, d_y,
-         thrust::raw_pointer_cast(&temp_rows[0]), thrust::raw_pointer_cast(&temp_vals[0]),
-         thrust::identity<ValueType>(), thrust::multiplies<ValueType>(), thrust::plus<ValueType>());
+    if (threadIdx.x == 0)
+    {
+      // update carry and sentinel value
+      row_carry = rows[offset_end % K][offset_end / K] = rows[(offset_end - 1) % K][(offset_end - 1) / K];
+      val_carry = vals[offset_end % K][offset_end / K] = vals[(offset_end - 1) % K][(offset_end - 1) / K];
+    }
+    else
+    {
+      // update local values
+      for(int k = 0; k < K - 1; k++)
+      {
+        int offset = K * threadIdx.x + k;
 
-    spmv_coo_serial_kernel<IndexType,ValueType> <<<1,1>>>
-        (coo.num_entries - tail, I + tail, J + tail, V + tail, d_x, d_y);
+        if (offset < offset_end)
+        {
+          IndexType1 row = rows[K - 1][threadIdx.x - 1];
+          ValueType4 val = vals[K - 1][threadIdx.x - 1];
 
-    spmv_coo_reduce_update_kernel<512, IndexType, ValueType> <<<1, 512>>>
-        (active_warps,
-         thrust::raw_pointer_cast(&temp_rows[0]), thrust::raw_pointer_cast(&temp_vals[0]),
-         d_y,
-         thrust::plus<ValueType>());
+          if(rows[k][threadIdx.x] == row)
+          {
+            vals[k][threadIdx.x] = reduce(val, vals[k][threadIdx.x]);
+          }
+        }
+      }
+    }
 
-    if (UseCache)
-        unbind_x(d_x);
+    __syncthreads();
+
+    // write data
+    for(int k = 0; k < K; k++)
+    {
+      int offset = BLOCK_SIZE * k + threadIdx.x;
+       
+      if (offset < offset_end)
+      {
+        if (rows[offset % K][offset / K] != rows[(offset + 1) % K][(offset + 1) / K])
+        {
+          // row terminates
+          ValueIterator4 _zj = z + rows[offset % K][offset / K];
+          thrust::detail::device::dereference(_zj) = reduce(thrust::detail::device::dereference(_zj), vals[offset % K][offset / K]);
+        }
+      }
+    }
+  }
+
+  __syncthreads();
+
+  if (threadIdx.x == 0)
+  {
+    // write interval carry out
+    row_carries += blockIdx.x;
+    val_carries += blockIdx.x;
+
+    thrust::detail::device::dereference(row_carries) = row_carry;
+    thrust::detail::device::dereference(val_carries) = val_carry;
+  }
+
 }
 
-template <typename IndexType, typename ValueType>
-void spmv_coo_flat(const coo_matrix<IndexType,ValueType,cusp::device_memory>& coo, 
-                   const ValueType * d_x, 
-                         ValueType * d_y)
-{ 
-    __spmv_coo_flat<IndexType, ValueType, false>(coo, d_x, d_y);
+template <typename SizeType,
+          typename IndexIterator1,
+          typename IndexIterator2,
+          typename ValueIterator1,
+          typename ValueIterator2,
+          typename ValueIterator3,
+          typename ValueIterator4,
+          typename BinaryFunction1,
+          typename BinaryFunction2>
+void spmv_coo(SizeType        num_rows,
+              SizeType        num_entries,
+              IndexIterator1  row_indices,
+              IndexIterator2  column_indices,
+              ValueIterator1  values,
+              ValueIterator2  x, 
+              ValueIterator3  y,
+              ValueIterator4  z,
+              BinaryFunction1 combine,
+              BinaryFunction2 reduce)
+{
+  typedef typename thrust::iterator_value<IndexIterator2>::type IndexType2;
+  typedef typename thrust::iterator_value<ValueIterator4>::type ValueType4;
+  typedef typename cusp::array1d<IndexType2, cusp::device_memory>::iterator OutputIterator1;
+  typedef typename cusp::array1d<ValueType4, cusp::device_memory>::iterator OutputIterator2;
+
+  thrust::copy(y, y + num_rows, z);
+
+  if (num_entries == 0) return;
+
+  const SizeType K          = 5;
+  const SizeType block_size = 128;
+  const SizeType unit_size  = K * block_size;
+  const SizeType max_blocks = cusp::detail::device::arch::max_active_blocks(spmv_coo_kernel<block_size, K, SizeType, IndexIterator1, IndexIterator2, ValueIterator1, ValueIterator2, ValueIterator4, BinaryFunction1, BinaryFunction2, OutputIterator1, OutputIterator2>, block_size, (size_t) 0);
+    
+  thrust::pair<SizeType, SizeType> splitting = thrust::detail::device::cuda::uniform_interval_splitting<SizeType>(num_entries, unit_size, max_blocks);
+  const SizeType interval_size = splitting.first;
+  const SizeType num_blocks    = splitting.second;
+
+  cusp::array1d<IndexType2, cusp::device_memory> row_carries(num_blocks);
+  cusp::array1d<ValueType4, cusp::device_memory> val_carries(num_blocks);
+
+  // note: we don't need to pass y
+  spmv_coo_kernel<block_size, K><<<num_blocks, block_size>>>
+    (num_entries,
+     interval_size,
+     row_indices, column_indices, values,
+     x, z,
+     combine, reduce,
+     row_carries.begin(), val_carries.begin());
+
+  // process the per-interval results
+  spmv_coo_kernel_postprocess<block_size><<<1,block_size>>>
+    (num_blocks, z, reduce,
+     row_carries.begin(), val_carries.begin());
 }
 
-
-template <typename IndexType, typename ValueType>
-void spmv_coo_flat_tex(const coo_matrix<IndexType,ValueType,cusp::device_memory>& coo, 
-                       const ValueType * d_x, 
-                             ValueType * d_y)
-{ 
-    __spmv_coo_flat<IndexType, ValueType, true>(coo, d_x, d_y);
-}
-
-
+} // end namespace cuda
 } // end namespace device
 } // end namespace detail
 } // end namespace cusp

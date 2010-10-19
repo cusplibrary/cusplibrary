@@ -352,11 +352,7 @@ class ruge_stuben_solver
 
         // compute C/F splitting
         cusp::array1d<int,cusp::device_memory> splitting(A.num_rows);
-        {
-            // TODO implement MIS for coo_matrix
-            cusp::csr_matrix<int,float,cusp::device_memory> csr(A);
-            cusp::graph::maximal_independent_set(csr, splitting);
-        }
+        cusp::graph::maximal_independent_set(A, splitting);
 
         //    // TODO XXX XXX XXX remove
         //    for(int i = 0; i < splitting.size(); i++)

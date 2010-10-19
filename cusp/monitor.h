@@ -179,8 +179,7 @@ class default_monitor
     size_t iteration_count_;
 };
 
-
-/*! \p default_monitor is similar to \p default monitor except that
+/*! \p verbose_monitor is similar to \p default monitor except that
  * it displays the solver status during iteration and reports a 
  * summary after iteration has stopped.
  *
@@ -240,6 +239,92 @@ class verbose_monitor : public default_monitor<Real>
         {
             return false;
         }
+    }
+};
+/*! \}
+ */
+
+
+/*! \p convergence_monitor is similar to \p default monitor except that
+ * it displays the solver status during iteration and reports a 
+ * summary after iteration has stopped.
+ *
+ * \tparam Real real-valued type (e.g. \c float or \c double).
+ *
+ * \see \p default_monitor
+ */
+template <typename Real>
+class convergence_monitor : public default_monitor<Real>
+{
+    typedef cusp::default_monitor<Real> super;
+
+    public:
+    /*! Construct a \p convergence_monitor for a given right-hand-side \p b
+     *
+     *  The \p convergence_monitor terminates iteration when the residual norm
+     *  satisfies the condition
+     *       ||b - A x|| <= absolute_tolerance + relative_tolerance * ||b||
+     *  or when the iteration limit is reached.
+     *
+     *  \param b right-hand-side of the linear system A x = b
+     *  \param iteration_limit maximum number of solver iterations to allow
+     *  \param relative_tolerance determines convergence criteria
+     *  \param absolute_tolerance determines convergence criteria
+     *
+     *  \tparam VectorType vector
+     */
+
+    cusp::array1d<Real,cusp::host_memory> residuals;
+
+    template <typename Vector>
+    convergence_monitor(const Vector& b, size_t iteration_limit = 500, Real relative_tolerance = 1e-5, Real absolute_tolerance = 0)
+        : super(b, iteration_limit, relative_tolerance, absolute_tolerance)
+    {
+    }
+    
+    template <typename Vector>
+    bool finished(const Vector& r)
+    {
+        super::r_norm = cusp::blas::nrm2(r);
+	residuals.push_back(super::r_norm);
+
+        return super::converged() || super::iteration_count() >= super::iteration_limit();
+    }
+
+    void print(void)
+    {
+        std::cout << "Solver will continue until ";
+        std::cout << "residual norm " << super::tolerance() << " or reaching ";
+        std::cout << super::iteration_limit() << " iterations " << std::endl;
+
+        std::cout << "Ran " << super::iteration_count();
+	std::cout << " iterations with a final residual of ";
+	std::cout << super::r_norm << std::endl;
+
+	std::cout << "geometric convergence factor : " << geometric_rate() << std::endl;
+	std::cout << "immediate convergence factor : " << immediate_rate() << std::endl;
+	std::cout << "average convergence factor   : " << average_rate() << std::endl;
+    }
+
+    Real immediate_rate(void)
+    {
+	size_t num = residuals.size();	
+	return residuals[num-1] / residuals[num-2]; 
+    }
+
+    Real geometric_rate(void)
+    {
+	size_t num = residuals.size();	
+	return std::pow(residuals[num-1] / residuals[0], 1.0/num); 
+    }
+
+    Real average_rate(void)
+    {
+	size_t num = residuals.size();	
+    	cusp::array1d<Real,cusp::host_memory> avg_vec(num-1);
+	thrust::transform(residuals.begin() + 1, residuals.end(), residuals.begin(), avg_vec.begin(), thrust::divides<Real>());
+  	Real sum = thrust::reduce(avg_vec.begin(), avg_vec.end(), Real(0), thrust::plus<Real>());
+	return sum / num;
     }
 };
 /*! \}

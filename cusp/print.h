@@ -22,6 +22,7 @@
 #include <cusp/array2d.h>
 #include <cusp/coo_matrix.h>
 #include <cusp/csr_matrix.h>
+#include <cusp/complex.h>
 
 #include <iostream>
 #include <iomanip>
@@ -84,11 +85,12 @@ void print_matrix(const cusp::array1d<ValueType, MemorySpace>& dense)
     std::cout << "\n";
 }
 
+
 template <typename MatrixType>
 void print_matrix(const MatrixType& matrix)
 {
-    cusp::coo_matrix<int, float, cusp::host_memory> coo(matrix);
-    print_matrix(coo);
+  cusp::coo_matrix<int, typename MatrixType::value_type, cusp::host_memory> coo(matrix);
+  print_matrix(coo);
 }
 
 } // end namespace cusp
