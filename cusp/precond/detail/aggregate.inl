@@ -14,10 +14,12 @@
  *  limitations under the License.
  */
 
-#include <cusp/csr_matrix.h>
 #include <cusp/coo_matrix.h>
+#include <cusp/detail/device/generalized_spmv/coo_flat.h>
+
 #include <thrust/count.h>
 #include <thrust/fill.h>
+#include <thrust/scan.h>
 
 namespace cusp
 {
@@ -32,11 +34,9 @@ void mis_to_aggregates(const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& 
                        const ArrayType& mis,
                              ArrayType& aggregates)
 {
-    // 
     const IndexType N = C.num_rows;
 
     // (2,i) mis (0,i) non-mis
-    cusp::csr_matrix<IndexType,ValueType,MemorySpace> A(C);
 
     // current (ring,index)
     ArrayType mis1(N);
@@ -48,9 +48,9 @@ void mis_to_aggregates(const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& 
     typedef thrust::tuple<T,T> Tuple;
 
     // find the largest (mis[j],j) 1-ring neighbor for each node
-    cusp::detail::device::cuda::spmv_csr_scalar
-        (A.num_rows,
-         A.row_offsets.begin(), A.column_indices.begin(), thrust::constant_iterator<int>(1),  // XXX should we mask explicit zeros? (e.g. DIA, array2d)
+    cusp::detail::device::cuda::spmv_coo
+        (C.num_rows, C.num_entries,
+         C.row_indices.begin(), C.column_indices.begin(), thrust::constant_iterator<int>(1),  // XXX should we mask explicit zeros? (e.g. DIA, array2d)
          thrust::make_zip_iterator(thrust::make_tuple(mis.begin(), thrust::counting_iterator<IndexType>(0))),
          thrust::make_zip_iterator(thrust::make_tuple(mis.begin(), thrust::counting_iterator<IndexType>(0))),
          thrust::make_zip_iterator(thrust::make_tuple(mis1.begin(), idx1.begin())),
@@ -60,9 +60,9 @@ void mis_to_aggregates(const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& 
     thrust::transform(mis.begin(), mis.end(), mis1.begin(), mis1.begin(), thrust::plus<typename ArrayType::value_type>());
 
     // find the largest (mis[j],j) 2-ring neighbor for each node
-    cusp::detail::device::cuda::spmv_csr_scalar
-        (A.num_rows,
-         A.row_offsets.begin(), A.column_indices.begin(), thrust::constant_iterator<int>(1),  // XXX should we mask explicit zeros? (e.g. DIA, array2d)
+    cusp::detail::device::cuda::spmv_coo
+        (C.num_rows, C.num_entries,
+         C.row_indices.begin(), C.column_indices.begin(), thrust::constant_iterator<int>(1),  // XXX should we mask explicit zeros? (e.g. DIA, array2d)
          thrust::make_zip_iterator(thrust::make_tuple(mis1.begin(), idx1.begin())),
          thrust::make_zip_iterator(thrust::make_tuple(mis1.begin(), idx1.begin())),
          thrust::make_zip_iterator(thrust::make_tuple(mis2.begin(), idx2.begin())),
@@ -95,14 +95,11 @@ void standard_aggregation(const cusp::coo_matrix<IndexType,ValueType,cusp::devic
 
     const size_t N = C.num_rows;
 
-    cusp::array1d<IndexType,cusp::device_memory> mis(N);
     // compute MIS(2)
-    {
-        // TODO implement MIS for coo_matrix
-        cusp::csr_matrix<IndexType,ValueType,cusp::device_memory> csr(C);
-        cusp::graph::maximal_independent_set(csr, mis, 2);
-    }
+    cusp::array1d<IndexType,cusp::device_memory> mis(N);
+    cusp::graph::maximal_independent_set(C, mis, 2);
 
+    // compute aggregates from MIS(2)
     mis_to_aggregates(C, mis, aggregates);
 }
 

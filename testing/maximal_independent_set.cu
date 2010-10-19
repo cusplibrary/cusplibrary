@@ -88,9 +88,9 @@ void _TestMaximalIndependentSet(const ExampleMatrix& example_matrix)
     }
 }
 
-void TestMaximalIndependentSetCsrDevice(void)
+void TestMaximalIndependentSetCooDevice(void)
 {
-    typedef cusp::csr_matrix<int,float,cusp::device_memory> TestMatrix;
+    typedef cusp::coo_matrix<int,float,cusp::device_memory> TestMatrix;
    
     // note: examples should be {0,1} matrices with 1s on the diagonal
 
@@ -128,6 +128,6 @@ void TestMaximalIndependentSetCsrDevice(void)
     _TestMaximalIndependentSet<TestMatrix>(D);
     _TestMaximalIndependentSet<TestMatrix>(E);
 }
-DECLARE_UNITTEST(TestMaximalIndependentSetCsrDevice);
+DECLARE_UNITTEST(TestMaximalIndependentSetCooDevice);
 // TODO replace with DECLARE_SPARSE_MATRIX_UNITTEST
 

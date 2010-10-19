@@ -29,9 +29,6 @@
 #include <thrust/gather.h>
 #include <thrust/reduce.h>
 #include <thrust/sort.h>
-#include <thrust/scan.h>
-
-#include <cusp/csr_matrix.h> // TODO remove this when generic spmv works for COO matrices
 
 namespace cusp
 {
