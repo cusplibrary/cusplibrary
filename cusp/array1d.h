@@ -19,44 +19,20 @@
 
 #include <cusp/detail/config.h>
 
+#include <cusp/memory.h>
 #include <cusp/format.h>
 #include <cusp/exception.h>
 
-#include <thrust/copy.h>
-#include <thrust/device_allocator.h>
-#include <thrust/iterator/iterator_traits.h>
 #include <thrust/detail/vector_base.h>
 
 namespace cusp
 {
-  typedef thrust::device_space_tag device_memory;
-  typedef thrust::host_space_tag   host_memory;
-  
-   template<typename T, typename MemorySpace>
-   struct choose_memory_allocator
-      : thrust::detail::eval_if<
-          thrust::detail::is_convertible<MemorySpace, host_memory>::value,
-  
-          thrust::detail::identity_< std::allocator<T> >,
-  
-          // XXX add backend-specific allocators here?
-  
-          thrust::detail::eval_if<
-            thrust::detail::is_convertible<MemorySpace, device_memory>::value,
-  
-            thrust::detail::identity_< thrust::device_malloc_allocator<T> >,
-  
-            thrust::detail::identity_< MemorySpace >
-          >
-        >
-  {};
-  
-  
+
   template <typename T, typename MemorySpace>
-  class array1d : public thrust::detail::vector_base<T, typename choose_memory_allocator<T, MemorySpace>::type>
+  class array1d : public thrust::detail::vector_base<T, typename cusp::default_memory_allocator<T, MemorySpace>::type>
   {
       private:
-          typedef typename choose_memory_allocator<T, MemorySpace>::type Alloc;
+          typedef typename cusp::default_memory_allocator<T, MemorySpace>::type Alloc;
   
       public:
           typedef MemorySpace memory_space;
