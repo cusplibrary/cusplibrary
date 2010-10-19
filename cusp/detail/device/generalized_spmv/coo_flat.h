@@ -19,7 +19,7 @@
 #include <cusp/detail/device/arch.h>
 #include <cusp/detail/device/utils.h>
 
-#include <thrust/transform.h>
+#include <thrust/copy.h>
 
 #include <thrust/iterator/iterator_traits.h>
 #include <thrust/detail/device/dereference.h>
@@ -467,7 +467,6 @@ template <typename SizeType,
           typename ValueIterator2,
           typename ValueIterator3,
           typename ValueIterator4,
-          typename UnaryFunction,
           typename BinaryFunction1,
           typename BinaryFunction2>
 void spmv_coo(SizeType        num_rows,
@@ -478,7 +477,6 @@ void spmv_coo(SizeType        num_rows,
               ValueIterator2  x, 
               ValueIterator3  y,
               ValueIterator4  z,
-              UnaryFunction   initialize,
               BinaryFunction1 combine,
               BinaryFunction2 reduce)
 {
@@ -487,7 +485,7 @@ void spmv_coo(SizeType        num_rows,
   typedef typename cusp::array1d<IndexType2, cusp::device_memory>::iterator OutputIterator1;
   typedef typename cusp::array1d<ValueType4, cusp::device_memory>::iterator OutputIterator2;
 
-  thrust::transform(y, y + num_rows, z, initialize);
+  thrust::copy(y, y + num_rows, z);
 
   if (num_entries == 0) return;
 
@@ -503,7 +501,7 @@ void spmv_coo(SizeType        num_rows,
   cusp::array1d<IndexType2, cusp::device_memory> row_carries(num_blocks);
   cusp::array1d<ValueType4, cusp::device_memory> val_carries(num_blocks);
 
-  // note: we don't need to pass y or initialize
+  // note: we don't need to pass y
   spmv_coo_kernel<block_size, K><<<num_blocks, block_size>>>
     (num_entries,
      interval_size,

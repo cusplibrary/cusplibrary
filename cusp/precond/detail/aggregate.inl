@@ -54,7 +54,7 @@ void mis_to_aggregates(const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& 
          thrust::make_zip_iterator(thrust::make_tuple(mis.begin(), thrust::counting_iterator<IndexType>(0))),
          thrust::make_zip_iterator(thrust::make_tuple(mis.begin(), thrust::counting_iterator<IndexType>(0))),
          thrust::make_zip_iterator(thrust::make_tuple(mis1.begin(), idx1.begin())),
-         thrust::identity<Tuple>(), thrust::project2nd<Tuple,Tuple>(), thrust::maximum<Tuple>());
+         thrust::project2nd<Tuple,Tuple>(), thrust::maximum<Tuple>());
 
     // boost mis0 values so they win in second round
     thrust::transform(mis.begin(), mis.end(), mis1.begin(), mis1.begin(), thrust::plus<typename ArrayType::value_type>());
@@ -66,7 +66,7 @@ void mis_to_aggregates(const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& 
          thrust::make_zip_iterator(thrust::make_tuple(mis1.begin(), idx1.begin())),
          thrust::make_zip_iterator(thrust::make_tuple(mis1.begin(), idx1.begin())),
          thrust::make_zip_iterator(thrust::make_tuple(mis2.begin(), idx2.begin())),
-         thrust::identity<Tuple>(), thrust::project2nd<Tuple,Tuple>(), thrust::maximum<Tuple>());
+         thrust::project2nd<Tuple,Tuple>(), thrust::maximum<Tuple>());
 
     // enumerate the MIS nodes
     cusp::array1d<IndexType,MemorySpace> mis_enum(N);

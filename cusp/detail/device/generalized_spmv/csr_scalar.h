@@ -40,7 +40,6 @@ template <int BLOCK_SIZE,
           typename ValueIterator2,
           typename ValueIterator3,
           typename ValueIterator4,
-          typename UnaryFunction,
           typename BinaryFunction1,
           typename BinaryFunction2>
 __launch_bounds__(BLOCK_SIZE,1)
@@ -52,7 +51,6 @@ void spmv_csr_scalar_kernel(SizeType        num_rows,
                             ValueIterator2  x, 
                             ValueIterator3  y,
                             ValueIterator4  z,
-                            UnaryFunction   initialize,
                             BinaryFunction1 combine,
                             BinaryFunction2 reduce)
 {
@@ -70,8 +68,7 @@ void spmv_csr_scalar_kernel(SizeType        num_rows,
   {
     IndexIterator1 r0 = row_offsets; r0 += i;      IndexType1 row_start = thrust::detail::device::dereference(r0); // row_offsets[i]
     IndexIterator1 r1 = row_offsets; r1 += i + 1;  IndexType1 row_end   = thrust::detail::device::dereference(r1); // row_offsets[i + 1]
-
-    ValueIterator3 y0 = y; y0 += i;  ValueType4 sum = initialize(thrust::detail::device::dereference(y0));         // initialize(y[i])
+    ValueIterator3 y0 = y;           y0 += i;      ValueType4 sum       = thrust::detail::device::dereference(y0); // sum = y[i]
 
     for (IndexType2 jj = row_start; jj < row_end; jj++)
     {
@@ -94,7 +91,6 @@ template <typename SizeType,
           typename ValueIterator2,
           typename ValueIterator3,
           typename ValueIterator4,
-          typename UnaryFunction,
           typename BinaryFunction1,
           typename BinaryFunction2>
 void spmv_csr_scalar(SizeType        num_rows,
@@ -104,19 +100,18 @@ void spmv_csr_scalar(SizeType        num_rows,
                      ValueIterator2  x, 
                      ValueIterator3  y,
                      ValueIterator4  z,
-                     UnaryFunction   initialize,
                      BinaryFunction1 combine,
                      BinaryFunction2 reduce)
 {
     const SizeType block_size = 256;
-    const SizeType max_blocks = cusp::detail::device::arch::max_active_blocks(spmv_csr_scalar_kernel<block_size, SizeType, IndexIterator1, IndexIterator2, ValueIterator1, ValueIterator2, ValueIterator3, ValueIterator4, UnaryFunction, BinaryFunction1, BinaryFunction2>, block_size, (size_t) 0);
+    const SizeType max_blocks = cusp::detail::device::arch::max_active_blocks(spmv_csr_scalar_kernel<block_size, SizeType, IndexIterator1, IndexIterator2, ValueIterator1, ValueIterator2, ValueIterator3, ValueIterator4, BinaryFunction1, BinaryFunction2>, block_size, (size_t) 0);
     const SizeType num_blocks = std::min(max_blocks, DIVIDE_INTO(num_rows, block_size));
     
     spmv_csr_scalar_kernel<block_size><<<num_blocks, block_size>>>
         (num_rows,
          row_offsets, column_indices, values,
          x, y, z,
-         initialize, combine, reduce);
+         combine, reduce);
 }
 
 } // end namespace cuda

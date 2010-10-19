@@ -95,7 +95,7 @@ size_t maximal_independent_set(const MatrixType& A,
              thrust::make_zip_iterator(thrust::make_tuple(states.begin(), random_values.begin(), thrust::counting_iterator<IndexType>(0))),
              thrust::make_zip_iterator(thrust::make_tuple(states.begin(), random_values.begin(), thrust::counting_iterator<IndexType>(0))),
              thrust::make_zip_iterator(thrust::make_tuple(maximal_states.begin(), maximal_values.begin(), maximal_indices.begin())),
-             thrust::identity<Tuple>(), thrust::project2nd<Tuple,Tuple>(), thrust::maximum<Tuple>());
+             thrust::project2nd<Tuple,Tuple>(), thrust::maximum<Tuple>());
 
         // find the largest (state,value,index) k-ring neighbor for each node (if k > 1)
         for(size_t ring = 1; ring < k; ring++)
@@ -112,7 +112,7 @@ size_t maximal_independent_set(const MatrixType& A,
                  thrust::make_zip_iterator(thrust::make_tuple(last_states.begin(), last_values.begin(), last_indices.begin())),
                  thrust::make_zip_iterator(thrust::make_tuple(last_states.begin(), last_values.begin(), last_indices.begin())),
                  thrust::make_zip_iterator(thrust::make_tuple(maximal_states.begin(), maximal_values.begin(), maximal_indices.begin())),
-                 thrust::identity<Tuple>(), thrust::project2nd<Tuple,Tuple>(), thrust::maximum<Tuple>());
+                 thrust::project2nd<Tuple,Tuple>(), thrust::maximum<Tuple>());
         }
 
         // label local maxima as MIS nodes and neighbors of MIS nodes as non-MIS nodes

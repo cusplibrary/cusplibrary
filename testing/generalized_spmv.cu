@@ -14,14 +14,12 @@ template <typename Matrix,
           typename Array1,
           typename Array2,
           typename Array3,
-          typename UnaryFunction,
           typename BinaryFunction1,
           typename BinaryFunction2>
 void generalized_spmv(const Matrix& A,
                       const Array1& x,
                       const Array2& y,
                             Array3& z,
-                      UnaryFunction   initialize,
                       BinaryFunction1 combine,
                       BinaryFunction2 reduce,
                       cusp::csr_format)
@@ -30,21 +28,19 @@ void generalized_spmv(const Matrix& A,
         (A.num_rows,
          A.row_offsets.begin(), A.column_indices.begin(), A.values.begin(),
          x.begin(), y.begin(), z.begin(),
-         initialize, combine, reduce);
+         combine, reduce);
 }
 
 template <typename Matrix,
           typename Array1,
           typename Array2,
           typename Array3,
-          typename UnaryFunction,
           typename BinaryFunction1,
           typename BinaryFunction2>
 void generalized_spmv(const Matrix& A,
                       const Array1& x,
                       const Array2& y,
                             Array3& z,
-                      UnaryFunction   initialize,
                       BinaryFunction1 combine,
                       BinaryFunction2 reduce,
                       cusp::coo_format)
@@ -53,25 +49,23 @@ void generalized_spmv(const Matrix& A,
         (A.num_rows, A.num_entries,
          A.row_indices.begin(), A.column_indices.begin(), A.values.begin(),
          x.begin(), y.begin(), z.begin(),
-         initialize, combine, reduce);
+         combine, reduce);
 }
 
 template <typename Matrix,
           typename Array1,
           typename Array2,
           typename Array3,
-          typename UnaryFunction,
           typename BinaryFunction1,
           typename BinaryFunction2>
 void generalized_spmv(const Matrix& A,
                       const Array1& x,
                       const Array2& y,
                             Array3& z,
-                      UnaryFunction   initialize,
                       BinaryFunction1 combine,
                       BinaryFunction2 reduce)
 {
-  generalized_spmv(A, x, y, z, initialize, combine, reduce, typename Matrix::format());
+  generalized_spmv(A, x, y, z, combine, reduce, typename Matrix::format());
 }
 
 template <typename TestMatrix>
@@ -105,7 +99,7 @@ void _TestGeneralizedSpMV(void)
     x[3] = 4.0f; y[3] = 40.0f;
                  y[4] = 50.0f;
 
-    generalized_spmv(test_matrix, x, y, z, thrust::identity<ValueType>(), thrust::multiplies<ValueType>(), thrust::plus<ValueType>());
+    generalized_spmv(test_matrix, x, y, z, thrust::multiplies<ValueType>(), thrust::plus<ValueType>());
 
     ASSERT_EQUAL(z[0], 183.0f);
     ASSERT_EQUAL(z[1],  74.0f);
@@ -137,7 +131,7 @@ void _TestGeneralizedSpMV(void)
     cusp::array1d<ValueType, MemorySpace> y(M.num_rows,0);
     cusp::array1d<ValueType, MemorySpace> z = unittest::random_integers<char>(M.num_rows);
 
-    generalized_spmv(M, x, y, z, thrust::identity<ValueType>(), thrust::multiplies<ValueType>(), thrust::plus<ValueType>());
+    generalized_spmv(M, x, y, z, thrust::multiplies<ValueType>(), thrust::plus<ValueType>());
   
     // compute reference
     cusp::array1d<ValueType, MemorySpace> reference(M.num_rows,0);
