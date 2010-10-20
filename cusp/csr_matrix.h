@@ -85,37 +85,6 @@ template <typename Array1,
     }
 };
 
-template <typename IndexType,
-          typename Array1,
-          typename Array2,
-          typename Array3>
-csr_matrix_view<Array1,Array2,Array3,IndexType>
-make_csr_matrix_view(IndexType num_rows,
-                     IndexType num_cols,
-                     IndexType num_entries,
-                     Array1 row_offsets,
-                     Array2 column_indices,
-                     Array3 values)
-{
-  return csr_matrix_view<Array1,Array2,Array3,IndexType>
-    (num_rows, num_cols, num_entries,
-     row_offsets, column_indices, values);
-}
-
-// TODO implement this variant of make_csr_matrix view 
-// will require additional typedefs in csr_matrix and csr_matrix_view
-//
-//template <typename Matrix>
-//csr_matrix_view<cusp::array1d_view<Matrix::Matrix::Array1,Array2,Array3,IndexType>
-//make_csr_matrix_view(Matrix& m)
-//{
-//  return csr_matrix_view<Array1,Array2,Array3,IndexType>
-//    (m.num_rows, m.num_cols, m.num_entries,
-//     cusp::make_array1d_view(m.row_offsets),
-//     cusp::make_array1d_view(m.column_indices),
-//     cusp::make_array1d_view(m.values));
-//}
-
 /*! \addtogroup containers Containers 
  *  \addtogroup sparse_matrix_formats Sparse Matrices
  *  \ingroup containers
@@ -223,6 +192,66 @@ make_csr_matrix_view(IndexType num_rows,
     }; // class csr_matrix
 /*! \}
  */
+
+
+/* Convenience functions */
+
+template <typename IndexType,
+          typename Array1,
+          typename Array2,
+          typename Array3>
+csr_matrix_view<Array1,Array2,Array3,IndexType>
+make_csr_matrix_view(IndexType num_rows,
+                     IndexType num_cols,
+                     IndexType num_entries,
+                     Array1 row_offsets,
+                     Array2 column_indices,
+                     Array3 values)
+{
+  return csr_matrix_view<Array1,Array2,Array3,IndexType>
+    (num_rows, num_cols, num_entries,
+     row_offsets, column_indices, values);
+}
+
+template <typename Array1,
+          typename Array2,
+          typename Array3,
+          typename IndexType,
+          typename ValueType,
+          typename MemorySpace>
+csr_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>
+make_csr_matrix_view(const csr_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>& m)
+{
+  return csr_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>(m);
+}
+    
+template <typename IndexType, typename ValueType, class MemorySpace>
+csr_matrix_view < cusp::array1d_view< typename cusp::array1d<IndexType,MemorySpace>::iterator >,
+                  cusp::array1d_view< typename cusp::array1d<IndexType,MemorySpace>::iterator >,
+                  cusp::array1d_view< typename cusp::array1d<ValueType,MemorySpace>::iterator >,
+                  IndexType, ValueType, MemorySpace>
+make_csr_matrix_view(csr_matrix<IndexType,ValueType,MemorySpace>& m)
+{
+  return make_csr_matrix_view
+    (m.num_rows, m.num_cols, m.num_entries,
+     make_array1d_view(m.row_offsets),
+     make_array1d_view(m.column_indices),
+     make_array1d_view(m.values));
+}
+
+template <typename IndexType, typename ValueType, class MemorySpace>
+csr_matrix_view < cusp::array1d_view< typename cusp::array1d<IndexType,MemorySpace>::const_iterator >,
+                  cusp::array1d_view< typename cusp::array1d<IndexType,MemorySpace>::const_iterator >,
+                  cusp::array1d_view< typename cusp::array1d<ValueType,MemorySpace>::const_iterator >,
+                  IndexType, ValueType, MemorySpace>
+make_csr_matrix_view(const csr_matrix<IndexType,ValueType,MemorySpace>& m)
+{
+  return make_csr_matrix_view
+    (m.num_rows, m.num_cols, m.num_entries,
+     make_array1d_view(m.row_offsets),
+     make_array1d_view(m.column_indices),
+     make_array1d_view(m.values));
+}
 
 } // end namespace cusp
 

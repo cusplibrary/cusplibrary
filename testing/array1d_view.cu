@@ -130,25 +130,76 @@ void TestMakeArray1dView(void)
   typedef typename cusp::array1d<int, MemorySpace> Array;
   typedef typename Array::iterator                 Iterator;
   typedef cusp::array1d_view<Iterator>             View;
+  typedef const Array                              ConstArray;
+  typedef typename Array::const_iterator           ConstIterator;
+  typedef cusp::array1d_view<ConstIterator>        ConstView;
 
-  Array A(4);
-  A[0] = 10; A[1] = 20; A[2] = 30; A[3] = 40;
+  // construct from iterators  
+  {
+    Array A(4);
 
-  View V = cusp::make_array1d_view(A);
+    View V = cusp::make_array1d_view(A.begin(), A.end());
 
-  ASSERT_EQUAL(V.size(),     4);
-  ASSERT_EQUAL(V.capacity(), 4);
-  ASSERT_EQUAL(V[0], 10);
-  ASSERT_EQUAL(V[1], 20);
-  ASSERT_EQUAL(V[2], 30);
-  ASSERT_EQUAL(V[3], 40);
-  ASSERT_EQUAL_QUIET(V.begin(), A.begin());
-  ASSERT_EQUAL_QUIET(V.end(),   A.end());
+    ASSERT_EQUAL(V.size(),     4);
+    ASSERT_EQUAL(V.capacity(), 4);
+    ASSERT_EQUAL_QUIET(V.begin(), A.begin());
+    ASSERT_EQUAL_QUIET(V.end(),   A.end());
+   
+    // check that view::iterator is mutable
+    V[1] = 17;
 
-  V[1] = 17;
+    ASSERT_EQUAL(V[1], 17);
+    ASSERT_EQUAL(A[1], 17);
+  }
 
-  ASSERT_EQUAL(V[1], 17);
-  ASSERT_EQUAL(A[1], 17);
+  // construct from container
+  {
+    Array A(4);
+
+    View V = cusp::make_array1d_view(A);
+
+    ASSERT_EQUAL(V.size(),     4);
+    ASSERT_EQUAL(V.capacity(), 4);
+    ASSERT_EQUAL_QUIET(V.begin(), A.begin());
+    ASSERT_EQUAL_QUIET(V.end(),   A.end());
+   
+    // check that view::iterator is mutable
+    V[1] = 17;
+
+    ASSERT_EQUAL(V[1], 17);
+    ASSERT_EQUAL(A[1], 17);
+  }
+
+  // construct from const container
+  {
+    ConstArray A(4);
+
+    ConstView V = cusp::make_array1d_view(A);
+
+    ASSERT_EQUAL(V.size(),     4);
+    ASSERT_EQUAL(V.capacity(), 4);
+    ASSERT_EQUAL_QUIET(V.begin(), A.begin());
+    ASSERT_EQUAL_QUIET(V.end(),   A.end());
+  }
+  
+  // construct from view
+  {
+    Array A(4);
+
+    View X = cusp::make_array1d_view(A);
+    View V = cusp::make_array1d_view(X);
+
+    ASSERT_EQUAL(V.size(),     4);
+    ASSERT_EQUAL(V.capacity(), 4);
+    ASSERT_EQUAL_QUIET(V.begin(), A.begin());
+    ASSERT_EQUAL_QUIET(V.end(),   A.end());
+   
+    // check that view::iterator is mutable
+    V[1] = 17;
+
+    ASSERT_EQUAL(V[1], 17);
+    ASSERT_EQUAL(A[1], 17);
+  }
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestMakeArray1dView);
 

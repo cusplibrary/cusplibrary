@@ -13,8 +13,6 @@ typedef typename cusp::array1d_view<IndexIterator>                    IndexView;
 typedef typename cusp::array1d_view<ValueIterator>                    ValueView;
 typedef typename cusp::csr_matrix_view<IndexView,IndexView,ValueView> View;
 
-// TODO test make_csr_matrix_view
-
 void TestCsrMatrixView(void)
 {
   Matrix M(3, 2, 6);
@@ -83,3 +81,82 @@ void TestCsrMatrixViewAssignment(void)
 }
 DECLARE_UNITTEST(TestCsrMatrixViewAssignment);
 
+void TestMakeCsrMatrixView(void)
+{
+  // construct view from parts
+  {
+    Matrix M(3, 2, 6);
+
+    View V =
+      cusp::make_csr_matrix_view(3, 2, 6,
+          cusp::make_array1d_view(M.row_offsets),
+          cusp::make_array1d_view(M.column_indices),
+          cusp::make_array1d_view(M.values));
+    
+    ASSERT_EQUAL(V.num_rows,    3);
+    ASSERT_EQUAL(V.num_cols,    2);
+    ASSERT_EQUAL(V.num_entries, 6);
+
+    ASSERT_EQUAL_QUIET(V.row_offsets.begin(),    M.row_offsets.begin());
+    ASSERT_EQUAL_QUIET(V.row_offsets.end(),      M.row_offsets.end());
+    ASSERT_EQUAL_QUIET(V.column_indices.begin(), M.column_indices.begin());
+    ASSERT_EQUAL_QUIET(V.column_indices.end(),   M.column_indices.end());
+    ASSERT_EQUAL_QUIET(V.values.begin(),         M.values.begin());
+    ASSERT_EQUAL_QUIET(V.values.end(),           M.values.end());
+  }
+  
+  // construct view from matrix
+  {
+    Matrix M(3, 2, 6);
+
+    View V = cusp::make_csr_matrix_view(M);
+    
+    ASSERT_EQUAL(V.num_rows,    3);
+    ASSERT_EQUAL(V.num_cols,    2);
+    ASSERT_EQUAL(V.num_entries, 6);
+
+    ASSERT_EQUAL_QUIET(V.row_offsets.begin(),    M.row_offsets.begin());
+    ASSERT_EQUAL_QUIET(V.row_offsets.end(),      M.row_offsets.end());
+    ASSERT_EQUAL_QUIET(V.column_indices.begin(), M.column_indices.begin());
+    ASSERT_EQUAL_QUIET(V.column_indices.end(),   M.column_indices.end());
+    ASSERT_EQUAL_QUIET(V.values.begin(),         M.values.begin());
+    ASSERT_EQUAL_QUIET(V.values.end(),           M.values.end());
+  }
+  
+  // construct view from view
+  {
+    Matrix M(3, 2, 6);
+
+    View X = cusp::make_csr_matrix_view(M);
+    View V = cusp::make_csr_matrix_view(X);
+    
+    ASSERT_EQUAL(V.num_rows,    3);
+    ASSERT_EQUAL(V.num_cols,    2);
+    ASSERT_EQUAL(V.num_entries, 6);
+
+    ASSERT_EQUAL_QUIET(V.row_offsets.begin(),    M.row_offsets.begin());
+    ASSERT_EQUAL_QUIET(V.row_offsets.end(),      M.row_offsets.end());
+    ASSERT_EQUAL_QUIET(V.column_indices.begin(), M.column_indices.begin());
+    ASSERT_EQUAL_QUIET(V.column_indices.end(),   M.column_indices.end());
+    ASSERT_EQUAL_QUIET(V.values.begin(),         M.values.begin());
+    ASSERT_EQUAL_QUIET(V.values.end(),           M.values.end());
+  }
+ 
+  // construct view from const matrix
+  {
+    const Matrix M(3, 2, 6);
+    
+    ASSERT_EQUAL(cusp::make_csr_matrix_view(M).num_rows,    3);
+    ASSERT_EQUAL(cusp::make_csr_matrix_view(M).num_cols,    2);
+    ASSERT_EQUAL(cusp::make_csr_matrix_view(M).num_entries, 6);
+
+    ASSERT_EQUAL_QUIET(cusp::make_csr_matrix_view(M).row_offsets.begin(),    M.row_offsets.begin());
+    ASSERT_EQUAL_QUIET(cusp::make_csr_matrix_view(M).row_offsets.end(),      M.row_offsets.end());
+    ASSERT_EQUAL_QUIET(cusp::make_csr_matrix_view(M).column_indices.begin(), M.column_indices.begin());
+    ASSERT_EQUAL_QUIET(cusp::make_csr_matrix_view(M).column_indices.end(),   M.column_indices.end());
+    ASSERT_EQUAL_QUIET(cusp::make_csr_matrix_view(M).values.begin(),         M.values.begin());
+    ASSERT_EQUAL_QUIET(cusp::make_csr_matrix_view(M).values.end(),           M.values.end());
+  }
+
+}
+DECLARE_UNITTEST(TestMakeCsrMatrixView);

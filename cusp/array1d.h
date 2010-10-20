@@ -153,17 +153,29 @@ namespace cusp
       size_type m_size;
       size_type m_capacity;
   };
-
-  template <typename Array>
-  array1d_view<typename Array::iterator> make_array1d_view(Array& a)
-  {
-    return array1d_view<typename Array::iterator>(a.begin(), a.end());
-  }
   
   template <typename Iterator>
   array1d_view<Iterator> make_array1d_view(Iterator first, Iterator last)
   {
     return array1d_view<Iterator>(first, last);
+  }
+
+  template <typename Array>
+  array1d_view<typename Array::iterator> make_array1d_view(Array& a)
+  {
+    return make_array1d_view(a.begin(), a.end());
+  }
+  
+  template <typename T, typename MemorySpace>
+  array1d_view<typename array1d<T,MemorySpace>::iterator> make_array1d_view(array1d<T,MemorySpace>& a)
+  {
+    return make_array1d_view(a.begin(), a.end());
+  }
+  
+  template <typename T, typename MemorySpace>
+  array1d_view<typename array1d<T,MemorySpace>::const_iterator> make_array1d_view(const array1d<T,MemorySpace>& a)
+  {
+    return make_array1d_view(a.begin(), a.end());
   }
   
 } // end namespace cusp
