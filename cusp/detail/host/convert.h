@@ -86,8 +86,8 @@ void convert(const Matrix1& src, Matrix2& dst,
     typedef typename Matrix1::index_type IndexType;
     typedef typename Matrix1::value_type ValueType;
     cusp::csr_matrix<IndexType,ValueType,cusp::host_memory> csr;
-    cusp::detail::convert(src, csr);
-    cusp::detail::convert(csr, dst);
+    cusp::convert(src, csr);
+    cusp::convert(csr, dst);
 }
 
 /////////
@@ -153,8 +153,8 @@ void convert(const Matrix1& src, Matrix2& dst,
     typedef typename Matrix1::index_type IndexType;
     typedef typename Matrix1::value_type ValueType;
     cusp::csr_matrix<IndexType,ValueType,cusp::host_memory> csr;
-    cusp::detail::convert(src, csr);
-    cusp::detail::convert(csr, dst);
+    cusp::convert(src, csr);
+    cusp::convert(csr, dst);
 }
 
 /////////
@@ -187,8 +187,8 @@ void convert(const Matrix1& src, Matrix2& dst,
     typedef typename Matrix1::index_type IndexType;
     typedef typename Matrix1::value_type ValueType;
     cusp::csr_matrix<IndexType,ValueType,cusp::host_memory> csr;
-    cusp::detail::convert(src, csr);
-    cusp::detail::convert(csr, dst);
+    cusp::convert(src, csr);
+    cusp::convert(csr, dst);
 }
 
 /////////
@@ -213,8 +213,8 @@ void convert(const Matrix1& src, Matrix2& dst,
     typedef typename Matrix1::index_type IndexType;
     typedef typename Matrix1::value_type ValueType;
     cusp::csr_matrix<IndexType,ValueType,cusp::host_memory> csr;
-    cusp::detail::convert(src, csr);
-    cusp::detail::convert(csr, dst);
+    cusp::convert(src, csr);
+    cusp::convert(csr, dst);
 }
 
 ///////////
@@ -246,8 +246,8 @@ void convert(const Matrix1& src, Matrix2& dst,
     typedef typename Matrix1::index_type IndexType;
     typedef typename Matrix1::value_type ValueType;
     cusp::csr_matrix<IndexType,ValueType,cusp::host_memory> csr;
-    cusp::detail::convert(src, csr);
-    cusp::detail::convert(csr, dst);
+    cusp::convert(src, csr);
+    cusp::convert(csr, dst);
 }
 
 

@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-#include <cusp/detail/convert.h>
+#include <cusp/convert.h>
 
 #include <thrust/sort.h>
 #include <thrust/iterator/zip_iterator.h>
@@ -49,7 +49,7 @@ template <typename MatrixType>
 coo_matrix<IndexType,ValueType,MemorySpace>
     ::coo_matrix(const MatrixType& matrix)
     {
-        cusp::detail::convert(matrix, *this);
+        cusp::convert(matrix, *this);
     }
 
 //////////////////////
@@ -91,7 +91,7 @@ template <typename MatrixType>
     coo_matrix<IndexType,ValueType,MemorySpace>
     ::operator=(const MatrixType& matrix)
     {
-        cusp::detail::convert(matrix, *this);
+        cusp::convert(matrix, *this);
         
         return *this;
     }

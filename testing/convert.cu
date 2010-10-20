@@ -1,5 +1,7 @@
 #include <unittest/unittest.h>
 
+#include <cusp/convert.h>
+
 #include <cusp/array2d.h>
 #include <cusp/coo_matrix.h>
 #include <cusp/csr_matrix.h>
@@ -155,8 +157,9 @@ void TestConversion(DestinationType dst, HostSourceType src)
 
         initialize_conversion_example(src);
 
-        {  DestinationType dst(src);              verify_conversion_example(dst);  cusp::assert_is_valid_matrix(dst); }
-        {  DestinationType dst;       dst = src;  verify_conversion_example(dst);  cusp::assert_is_valid_matrix(dst); }
+        {  DestinationType dst(src);                           verify_conversion_example(dst);  cusp::assert_is_valid_matrix(dst); }
+        {  DestinationType dst;       dst = src;               verify_conversion_example(dst);  cusp::assert_is_valid_matrix(dst); }
+        {  DestinationType dst;       cusp::convert(src,dst);  verify_conversion_example(dst);  cusp::assert_is_valid_matrix(dst); }
     }
 
     {
@@ -164,8 +167,9 @@ void TestConversion(DestinationType dst, HostSourceType src)
 
         initialize_conversion_example(src);
 
-        {  DestinationType dst(src);              verify_conversion_example(dst);  cusp::assert_is_valid_matrix(dst); }
-        {  DestinationType dst;       dst = src;  verify_conversion_example(dst);  cusp::assert_is_valid_matrix(dst); }
+        {  DestinationType dst(src);                           verify_conversion_example(dst);  cusp::assert_is_valid_matrix(dst); }
+        {  DestinationType dst;       dst = src;               verify_conversion_example(dst);  cusp::assert_is_valid_matrix(dst); }
+        {  DestinationType dst;       cusp::convert(src,dst);  verify_conversion_example(dst);  cusp::assert_is_valid_matrix(dst); }
     }
     
 }

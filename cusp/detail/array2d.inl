@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-#include <cusp/detail/convert.h>
+#include <cusp/convert.h>
 
 namespace cusp
 {
@@ -48,7 +48,7 @@ template <typename MatrixType>
 array2d<ValueType,MemorySpace,Orientation>
     ::array2d(const MatrixType& matrix)
     {
-        cusp::detail::convert(matrix, *this);
+        cusp::convert(matrix, *this);
     }
 
 //////////////////////
@@ -83,7 +83,7 @@ template <typename MatrixType>
     array2d<ValueType,MemorySpace,Orientation>
     ::operator=(const MatrixType& matrix)
     {
-        cusp::detail::convert(matrix, *this);
+        cusp::convert(matrix, *this);
         
         return *this;
     }

@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-#include <cusp/detail/convert.h>
+#include <cusp/convert.h>
 
 namespace cusp
 {
@@ -42,7 +42,7 @@ template <typename MatrixType>
 csr_matrix<IndexType,ValueType,MemorySpace>
     ::csr_matrix(const MatrixType& matrix)
     {
-        cusp::detail::convert(matrix, *this);
+        cusp::convert(matrix, *this);
     }
 
 //////////////////////
@@ -83,7 +83,7 @@ template <typename MatrixType>
     csr_matrix<IndexType,ValueType,MemorySpace>
     ::operator=(const MatrixType& matrix)
     {
-        cusp::detail::convert(matrix, *this);
+        cusp::convert(matrix, *this);
         
         return *this;
     }

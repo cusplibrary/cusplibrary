@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-#include <cusp/detail/convert.h>
+#include <cusp/convert.h>
 #include <cusp/detail/utils.h>
 
 namespace cusp
@@ -44,7 +44,7 @@ template <typename MatrixType>
 dia_matrix<IndexType,ValueType,MemorySpace>
     ::dia_matrix(const MatrixType& matrix)
     {
-        cusp::detail::convert(matrix, *this);
+        cusp::convert(matrix, *this);
     }
 
 //////////////////////
@@ -85,7 +85,7 @@ template <typename MatrixType>
     dia_matrix<IndexType,ValueType,MemorySpace>
     ::operator=(const MatrixType& matrix)
     {
-        cusp::detail::convert(matrix, *this);
+        cusp::convert(matrix, *this);
         
         return *this;
     }

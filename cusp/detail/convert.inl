@@ -43,7 +43,11 @@ void convert(const SourceType& src, DestinationType& dst,
       typename DestinationType::memory_space());
 }
 
+} // end namespace detail
 
+/////////////////
+// Entry Point //
+/////////////////
 template <typename SourceType, typename DestinationType>
 void convert(const SourceType& src, DestinationType& dst)
 {
@@ -52,6 +56,5 @@ void convert(const SourceType& src, DestinationType& dst)
       typename DestinationType::format());
 }
 
-} // end namespace detail
 } // end namespace cusp
 

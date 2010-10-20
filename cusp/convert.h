@@ -21,13 +21,10 @@
 
 namespace cusp
 {
-namespace detail
-{
 
 template <typename SourceType, typename DestinationType>
 void convert(const SourceType& src, DestinationType& dst);
 
-} // end namespace detail
 } // end namespace cusp
 
 #include <cusp/detail/convert.inl>
