@@ -19,6 +19,7 @@
 
 #include <cusp/detail/config.h>
 
+#include <cusp/memory.h>
 #include <cusp/format.h>
 #include <cusp/array1d.h>
 #include <cusp/detail/matrix_base.h>
@@ -73,17 +74,17 @@ namespace cusp
     }
 
     template<typename ValueType, class MemorySpace, class Orientation = cusp::row_major>
-    class array2d : public detail::matrix_base<int,ValueType,MemorySpace,cusp::array2d_format>
+    class array2d : public cusp::detail::matrix_base<int,ValueType,MemorySpace,cusp::array2d_format>
     {
-        public:
-        typedef typename cusp::choose_memory_allocator<ValueType, MemorySpace>::type value_allocator_type;
+        typedef typename cusp::array1d<ValueType, MemorySpace> values_array_type;
 
+        public:
         typedef Orientation orientation;
         
         template<typename MemorySpace2>
         struct rebind { typedef array2d<ValueType, MemorySpace2, Orientation> type; };
        
-        cusp::array1d<ValueType, value_allocator_type> values;
+        cusp::array1d<ValueType, MemorySpace> values;
        
         // construct empty matrix
         array2d();
@@ -98,12 +99,12 @@ namespace cusp
         template <typename MatrixType>
         array2d(const MatrixType& matrix);
         
-        typename value_allocator_type::reference operator()(const int i, const int j)
+        typename values_array_type::reference operator()(const int i, const int j)
         { 
             return values[detail::index_of(i, j, this->num_rows, this->num_cols, orientation())];
         }
 
-        typename value_allocator_type::const_reference operator()(const int i, const int j) const
+        typename values_array_type::const_reference operator()(const int i, const int j) const
         { 
             return values[detail::index_of(i, j, this->num_rows, this->num_cols, orientation())];
         }
