@@ -66,27 +66,76 @@ struct process_nodes
     }
 };
 
-//////////////
-// COO Path //
-//////////////
-
-template <typename MatrixType, typename ArrayType>
-size_t maximal_independent_set(const MatrixType& A,
-                               ArrayType& stencil,
-                               size_t k,
-                               cusp::coo_format)
+  
+template <typename Matrix, typename IndexType>
+void deactivate_neighbors(const Matrix& A, const IndexType i, const size_t k, cusp::array1d<bool,cusp::host_memory>& active)
 {
-    typedef typename MatrixType::index_type   IndexType;
-    typedef typename MatrixType::value_type   ValueType;
-    typedef typename MatrixType::memory_space MemorySpace;
+  active[i] = false;
+
+  if (k == 0) return;
+
+  for(IndexType jj = A.row_offsets[i]; jj < A.row_offsets[i + 1]; jj++)
+  {
+    IndexType j = A.column_indices[jj];
+
+    if (active[j])
+      deactivate_neighbors(A, j, k - 1, active);
+  }
+
+}
+
+
+  
+////////////////
+// Host Paths //
+////////////////
+      
+template <typename Matrix, typename ArrayType>
+size_t maximal_independent_set(const Matrix& A, ArrayType& stencil, size_t k,
+                               cusp::csr_format, cusp::host_memory)
+{
+  typedef typename Matrix::index_type   IndexType;
+  
+  const IndexType N = A.num_rows;
+
+  stencil.resize(N);
+
+  thrust::fill(stencil.begin(), stencil.end(), 0);
+  
+  cusp::array1d<bool,cusp::host_memory> active(N, true);
+
+  size_t set_size = 0;
+  
+  // pick MIS-k nodes greedily and deactivate all their k-neighbors
+  for(IndexType i = 0; i < N; i++)
+  {
+    if (active[i])
+    {
+      stencil[i] = 1;
+      set_size++;
+      deactivate_neighbors(A, i, k, active);
+    }
+  }
+
+  return set_size;
+}
+
+//////////////////
+// Device Paths //
+//////////////////
+
+template <typename Matrix, typename ArrayType>
+size_t maximal_independent_set(const Matrix& A, ArrayType& stencil, size_t k,
+                               cusp::coo_format, cusp::device_memory)
+{
+    typedef typename Matrix::index_type   IndexType;
+    typedef typename Matrix::value_type   ValueType;
+    typedef typename Matrix::memory_space MemorySpace;
     typedef unsigned int RandomType;
     typedef unsigned int NodeStateType;
         
-    if(A.num_rows != A.num_cols)
-        throw cusp::invalid_input_exception("matrix must be square");
-    
     const IndexType N = A.num_rows;
-
+    
     cusp::array1d<RandomType,MemorySpace> random_values(N);
     thrust::transform(thrust::counting_iterator<IndexType>(0), thrust::counting_iterator<IndexType>(N), 
                       random_values.begin(),
@@ -138,30 +187,34 @@ size_t maximal_independent_set(const MatrixType& A,
 
         num_iterations++;
     }
+    
+    // resize output
+    stencil.resize(N);
 
     // mark all mis nodes
     thrust::transform(states.begin(), states.end(), thrust::constant_iterator<NodeStateType>(2), stencil.begin(), thrust::equal_to<NodeStateType>());
 
-    return num_iterations;
+    // return the size of the MIS
+    return thrust::count(stencil.begin(), stencil.end(), typename ArrayType::value_type(1));
 }
+
 
 //////////////////
 // General Path //
 //////////////////
-template <typename MatrixType, typename ArrayType, typename MatrixFormat>
-size_t maximal_independent_set(const MatrixType& A,
-                               ArrayType& stencil,
-                               size_t k,
-                               MatrixType)
+
+template <typename Matrix, typename ArrayType,
+          typename Format, typename MemorySpace>
+size_t maximal_independent_set(const Matrix& A, ArrayType& stencil, size_t k,
+                               Format, MemorySpace)
 {
-  typedef typename MatrixType::index_type   IndexType;
-  typedef typename MatrixType::value_type   ValueType;
-  typedef typename MatrixType::memory_space MemorySpace;
+  typedef typename Matrix::index_type   IndexType;
+  typedef typename Matrix::value_type   ValueType;
 
-  // convert matrix to CSR format and 
-  cusp::coo_matrix<IndexType,ValueType,MemorySpace> A_coo(A);
+  // convert matrix to CSR format and compute on the host
+  cusp::csr_matrix<IndexType,ValueType,cusp::host_memory> A_csr(A);
 
-  return cusp::graph::maximal_independent_set(A_coo, stencil, k);
+  return cusp::graph::maximal_independent_set(A_csr, stencil, k);
 }
 
 } // end namespace detail
@@ -170,10 +223,11 @@ size_t maximal_independent_set(const MatrixType& A,
 // Entry Point //
 /////////////////
 
-template <typename MatrixType, typename ArrayType>
-size_t maximal_independent_set(MatrixType& A, ArrayType& stencil, size_t k)
+template <typename Matrix, typename ArrayType>
+size_t maximal_independent_set(const Matrix& A, ArrayType& stencil, size_t k)
 {
-    // TODO check sizes
+    if(A.num_rows != A.num_cols)
+        throw cusp::invalid_input_exception("matrix must be square");
 
     if (k == 0)
     {
@@ -182,7 +236,7 @@ size_t maximal_independent_set(MatrixType& A, ArrayType& stencil, size_t k)
     }
     else
     {
-        return cusp::graph::detail::maximal_independent_set(A, stencil, k, typename MatrixType::format());
+        return cusp::graph::detail::maximal_independent_set(A, stencil, k, typename Matrix::format(), typename Matrix::memory_space());
     }
 }
 

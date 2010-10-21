@@ -2,8 +2,14 @@
 
 #include <cusp/graph/maximal_independent_set.h>
 
-#include <cusp/gallery/poisson.h> 
+#include <cusp/array2d.h>
+#include <cusp/coo_matrix.h>
+#include <cusp/csr_matrix.h>
+#include <cusp/dia_matrix.h>
+#include <cusp/ell_matrix.h>
+#include <cusp/hyb_matrix.h>
 #include <cusp/multiply.h>
+#include <cusp/gallery/poisson.h> 
 
 // check whether the MIS is valid
 template <typename MatrixType, typename ArrayType>
@@ -23,7 +29,7 @@ bool is_valid_mis(MatrixType& A, ArrayType& stencil)
         IndexType num_mis_neighbors = 0;
         for(IndexType jj = csr.row_offsets[i]; jj < csr.row_offsets[i + 1]; jj++)
         {
-            IndexType j = A.column_indices[jj];
+            IndexType j = csr.column_indices[jj];
            
             // XXX if/when MIS code filters explicit zeros we need to do that here too
 
@@ -65,19 +71,16 @@ void _TestMaximalIndependentSet(const ExampleMatrix& example_matrix)
 
     {
         // compute MIS
-        size_t num_iterations = cusp::graph::maximal_independent_set(test_matrix, stencil);
-
-        //std::cout << "MIS(1) computed in " << num_iterations << " iterations" << std::endl;
+        size_t num_nodes = cusp::graph::maximal_independent_set(test_matrix, stencil);
 
         // check MIS for default k=1
         ASSERT_EQUAL(is_valid_mis(test_matrix, stencil), true);
+        ASSERT_EQUAL(thrust::count(stencil.begin(), stencil.end(), 1), num_nodes);
     }
 
     {
         // compute MIS(2)
-        size_t num_iterations = cusp::graph::maximal_independent_set(test_matrix, stencil, 2);
-
-        //std::cout << "MIS(2) computed in " << num_iterations << " iterations" << std::endl;
+        size_t num_nodes = cusp::graph::maximal_independent_set(test_matrix, stencil, 2);
 
         // check MIS(2)
         cusp::coo_matrix<int,float,MemorySpace> A(example_matrix);
@@ -85,13 +88,12 @@ void _TestMaximalIndependentSet(const ExampleMatrix& example_matrix)
         cusp::multiply(A, A, A2);
 
         ASSERT_EQUAL(is_valid_mis(A2, stencil), true);
+        ASSERT_EQUAL(thrust::count(stencil.begin(), stencil.end(), 1), num_nodes);
     }
 }
-
-void TestMaximalIndependentSetCooDevice(void)
+template <typename TestMatrix>
+void TestMaximalIndependentSet(void)
 {
-    typedef cusp::coo_matrix<int,float,cusp::device_memory> TestMatrix;
-   
     // note: examples should be {0,1} matrices with 1s on the diagonal
 
     // two components of two nodes
@@ -114,11 +116,11 @@ void TestMaximalIndependentSetCooDevice(void)
     // empty graph
     cusp::array2d<float,cusp::host_memory> D(6,6,0);
 
-    TestMatrix E;
+    cusp::coo_matrix<int,float,cusp::host_memory> E;
     cusp::gallery::poisson5pt(E, 3, 3);
     thrust::fill(E.values.begin(), E.values.end(), 1.0f);
     
-    TestMatrix F;
+    cusp::coo_matrix<int,float,cusp::host_memory> F;
     cusp::gallery::poisson5pt(F, 13, 17);
     thrust::fill(F.values.begin(), F.values.end(), 1.0f);
 
@@ -128,6 +130,5 @@ void TestMaximalIndependentSetCooDevice(void)
     _TestMaximalIndependentSet<TestMatrix>(D);
     _TestMaximalIndependentSet<TestMatrix>(E);
 }
-DECLARE_UNITTEST(TestMaximalIndependentSetCooDevice);
-// TODO replace with DECLARE_SPARSE_MATRIX_UNITTEST
+DECLARE_SPARSE_MATRIX_UNITTEST(TestMaximalIndependentSet);
 
