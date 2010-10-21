@@ -1,5 +1,11 @@
 #include <unittest/unittest.h>
+
 #include <cusp/array1d.h>
+
+#include <vector>
+
+#include <thrust/host_vector.h>
+#include <thrust/device_vector.h>
 
 template <typename MemorySpace>
 void TestArray1d(void)
@@ -54,6 +60,77 @@ void TestArray1dConstructor(void)
     ASSERT_EQUAL(cd[1], 10);
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestArray1dConstructor);
+
+
+template <typename MemorySpace>
+void TestArray1dInteroperability(void)
+{
+  typedef typename cusp::array1d<int, MemorySpace> Array;
+  typedef typename std::vector<int>                Vector;
+  typedef typename thrust::host_vector<int>        HostVector;
+  typedef typename thrust::device_vector<int>      DeviceVector;
+
+  // construct from std::vector
+  { 
+    Vector v(2,10);
+
+    Array a(v);
+    ASSERT_EQUAL(a.size(), 2);
+    ASSERT_EQUAL(a[0], 10);
+    ASSERT_EQUAL(a[1], 10);
+
+    Array b = v;
+    ASSERT_EQUAL(b.size(), 2);
+    ASSERT_EQUAL(b[0], 10);
+    ASSERT_EQUAL(b[1], 10);
+    
+    Array c(v.begin(), v.end());
+    ASSERT_EQUAL(c.size(), 2);
+    ASSERT_EQUAL(c[0], 10);
+    ASSERT_EQUAL(c[1], 10);
+  }
+  
+  // construct from thrust::host_vector
+  { 
+    HostVector v(2,10);
+
+    Array a(v);
+    ASSERT_EQUAL(a.size(), 2);
+    ASSERT_EQUAL(a[0], 10);
+    ASSERT_EQUAL(a[1], 10);
+
+    Array b = v;
+    ASSERT_EQUAL(b.size(), 2);
+    ASSERT_EQUAL(b[0], 10);
+    ASSERT_EQUAL(b[1], 10);
+    
+    Array c(v.begin(), v.end());
+    ASSERT_EQUAL(c.size(), 2);
+    ASSERT_EQUAL(c[0], 10);
+    ASSERT_EQUAL(c[1], 10);
+  }
+  
+  // construct from thrust::device_vector
+  { 
+    DeviceVector v(2,10);
+
+    Array a(v);
+    ASSERT_EQUAL(a.size(), 2);
+    ASSERT_EQUAL(a[0], 10);
+    ASSERT_EQUAL(a[1], 10);
+
+    Array b = v;
+    ASSERT_EQUAL(b.size(), 2);
+    ASSERT_EQUAL(b[0], 10);
+    ASSERT_EQUAL(b[1], 10);
+    
+    Array c(v.begin(), v.end());
+    ASSERT_EQUAL(c.size(), 2);
+    ASSERT_EQUAL(c[0], 10);
+    ASSERT_EQUAL(c[1], 10);
+  }
+}
+DECLARE_HOST_DEVICE_UNITTEST(TestArray1dInteroperability);
 
 
 template <typename MemorySpace>
