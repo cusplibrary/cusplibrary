@@ -2,6 +2,10 @@
 
 #include <cusp/array1d.h>
 
+#include <vector>
+
+#include <thrust/host_vector.h>
+#include <thrust/device_vector.h>
 #include <thrust/iterator/counting_iterator.h>
 #include <thrust/iterator/zip_iterator.h>
 
@@ -11,6 +15,9 @@ void TestArray1dView(void)
   typedef typename cusp::array1d<int, MemorySpace> Array;
   typedef typename Array::iterator                 Iterator;
   typedef typename Array::const_iterator           ConstIterator;
+  typedef typename std::vector<int>                Vector;
+  typedef typename thrust::host_vector<int>        HostVector;
+  typedef typename thrust::device_vector<int>      DeviceVector;
 
   // view to container
   {
@@ -118,6 +125,91 @@ void TestArray1dView(void)
     ASSERT_EQUAL(W.capacity(), 4);
     ASSERT_EQUAL_QUIET(W.begin(), A.begin());
     ASSERT_EQUAL_QUIET(W.end(),   A.end());
+  }
+  
+  
+  // view to std::vector
+  {
+    typedef cusp::array1d_view<Vector::iterator> View;
+
+    Vector A(4);
+
+    View V(A);
+
+    ASSERT_EQUAL(V.size(),     4);
+    ASSERT_EQUAL(V.capacity(), 4);
+    ASSERT_EQUAL_QUIET(V.begin(), A.begin());
+    ASSERT_EQUAL_QUIET(V.end(),   A.end());
+    
+    View W(A.begin(), A.end());
+
+    ASSERT_EQUAL(W.size(),     4);
+    ASSERT_EQUAL(W.capacity(), 4);
+    ASSERT_EQUAL_QUIET(W.begin(), A.begin());
+    ASSERT_EQUAL_QUIET(W.end(),   A.end());
+    
+    View U = A;
+    
+    ASSERT_EQUAL(U.size(),     4);
+    ASSERT_EQUAL(U.capacity(), 4);
+    ASSERT_EQUAL_QUIET(U.begin(), A.begin());
+    ASSERT_EQUAL_QUIET(U.end(),   A.end());
+  }
+  
+  // view to thrust::host_vector
+  {
+    typedef cusp::array1d_view<HostVector::iterator> View;
+
+    HostVector A(4);
+
+    View V(A);
+
+    ASSERT_EQUAL(V.size(),     4);
+    ASSERT_EQUAL(V.capacity(), 4);
+    ASSERT_EQUAL_QUIET(V.begin(), A.begin());
+    ASSERT_EQUAL_QUIET(V.end(),   A.end());
+    
+    View W(A.begin(), A.end());
+
+    ASSERT_EQUAL(W.size(),     4);
+    ASSERT_EQUAL(W.capacity(), 4);
+    ASSERT_EQUAL_QUIET(W.begin(), A.begin());
+    ASSERT_EQUAL_QUIET(W.end(),   A.end());
+    
+    View U = A;
+    
+    ASSERT_EQUAL(U.size(),     4);
+    ASSERT_EQUAL(U.capacity(), 4);
+    ASSERT_EQUAL_QUIET(U.begin(), A.begin());
+    ASSERT_EQUAL_QUIET(U.end(),   A.end());
+  }
+
+  // view to thrust::device_vector
+  {
+    typedef cusp::array1d_view<DeviceVector::iterator> View;
+
+    DeviceVector A(4);
+
+    View V(A);
+
+    ASSERT_EQUAL(V.size(),     4);
+    ASSERT_EQUAL(V.capacity(), 4);
+    ASSERT_EQUAL_QUIET(V.begin(), A.begin());
+    ASSERT_EQUAL_QUIET(V.end(),   A.end());
+    
+    View W(A.begin(), A.end());
+
+    ASSERT_EQUAL(W.size(),     4);
+    ASSERT_EQUAL(W.capacity(), 4);
+    ASSERT_EQUAL_QUIET(W.begin(), A.begin());
+    ASSERT_EQUAL_QUIET(W.end(),   A.end());
+    
+    View U = A;
+    
+    ASSERT_EQUAL(U.size(),     4);
+    ASSERT_EQUAL(U.capacity(), 4);
+    ASSERT_EQUAL_QUIET(U.begin(), A.begin());
+    ASSERT_EQUAL_QUIET(U.end(),   A.end());
   }
 
 }
