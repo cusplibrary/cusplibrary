@@ -70,7 +70,16 @@ void _TestMaximalIndependentSet(const ExampleMatrix& example_matrix)
     cusp::array1d<int, MemorySpace> stencil(test_matrix.num_rows);
 
     {
-        // compute MIS
+        // compute MIS(0)
+        size_t num_nodes = cusp::graph::maximal_independent_set(test_matrix, stencil, 0);
+
+        // check MIS(0)
+        ASSERT_EQUAL(thrust::count(stencil.begin(), stencil.end(), 1), num_nodes);
+        ASSERT_EQUAL(num_nodes, test_matrix.num_rows);
+    }
+
+    {
+        // compute MIS(1)
         size_t num_nodes = cusp::graph::maximal_independent_set(test_matrix, stencil);
 
         // check MIS for default k=1
