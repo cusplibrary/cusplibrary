@@ -3,7 +3,7 @@
 
 int main(void)
 {
-    // allocate storage for (4,3) matrix with 4 nonzeros
+    // allocate storage for (4,3) matrix with 6 nonzeros
     cusp::csr_matrix<int,float,cusp::host_memory> A(4,3,6);
 
     // initialize matrix entries on host
