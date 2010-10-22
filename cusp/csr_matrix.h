@@ -29,69 +29,13 @@
 namespace cusp
 {
 
-template <typename Array1,
-          typename Array2,
-          typename Array3,
-          typename IndexType   = typename Array1::value_type,
-          typename ValueType   = typename Array3::value_type,
-          typename MemorySpace = typename Array1::memory_space> // TODO use minimum_space<1,2,3>::type
-          class csr_matrix_view : public cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::csr_format>
-{
-  typedef cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::csr_format> Parent;
-  public:
-    /*! Storage for the row offsets of the CSR data structure.  Also called the "row pointer" array.
-     */
-    Array1 row_offsets;
-    
-    /*! Storage for the column indices of the CSR data structure.
-     */
-    Array2 column_indices;
-    
-    /*! Storage for the nonzero entries of the CSR data structure.
-     */
-    Array3 values;
-
-    // construct empty view
-    csr_matrix_view(void)
-      : Parent() {}
-
-    // construct from existing CSR matrix or view
-    template <typename Matrix>
-    csr_matrix_view(Matrix& A)
-      : Parent(A),
-        row_offsets(A.row_offsets),
-        column_indices(A.column_indices),
-        values(A.values) {}
-
-    // should we reorder these? all but num_cols can be inferred automatically
-    // OTOH consistency with csr_matrix might be preferable
-    csr_matrix_view(IndexType num_rows,
-                    IndexType num_cols,
-                    IndexType num_entries,
-                    Array1 row_offsets,
-                    Array2 column_indices,
-                    Array3 values)
-      : Parent(num_rows, num_cols, num_entries),
-        row_offsets(row_offsets),
-        column_indices(column_indices),
-        values(values) {}
-
-    void resize(IndexType num_rows, IndexType num_cols, IndexType num_entries)
-    {
-      Parent::resize(num_rows, num_cols, num_entries);
-      row_offsets.resize(num_rows + 1);
-      column_indices.resize(num_entries);
-      values.resize(num_entries);
-    }
-};
-
 /*! \addtogroup containers Containers 
  *  \addtogroup sparse_matrix_formats Sparse Matrices
  *  \ingroup containers
  *  \{
  */
 
-/*! \p csr_matrix : Compressed Sparse Row matrix format
+/*! \p csr_matrix : Compressed Sparse Row matrix container
  *
  * \tparam IndexType Type used for matrix indices (e.g. \c int).
  * \tparam ValueType Type used for matrix values (e.g. \c float).
@@ -136,63 +80,129 @@ template <typename Array1,
  *  \endcode
  *
  */
-    template <typename IndexType, typename ValueType, class MemorySpace>
-    class csr_matrix : public detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::csr_format>
-    {
-        public:
-        template<typename MemorySpace2>
-        struct rebind { typedef csr_matrix<IndexType, ValueType, MemorySpace2> type; };
-        
-        /*! Storage for the row offsets of the CSR data structure.  Also called the "row pointer" array.
-         */
-        cusp::array1d<IndexType, MemorySpace> row_offsets;
-        
-        /*! Storage for the column indices of the CSR data structure.
-         */
-        cusp::array1d<IndexType, MemorySpace> column_indices;
-        
-        /*! Storage for the nonzero entries of the CSR data structure.
-         */
-        cusp::array1d<ValueType, MemorySpace> values;
+template <typename IndexType, typename ValueType, class MemorySpace>
+class csr_matrix : public detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::csr_format>
+{
+  public:
+    template<typename MemorySpace2>
+    struct rebind { typedef csr_matrix<IndexType, ValueType, MemorySpace2> type; };
     
+    /*! Storage for the row offsets of the CSR data structure.  Also called the "row pointer" array.
+     */
+    cusp::array1d<IndexType, MemorySpace> row_offsets;
     
-        /*! Construct an empty \p csr_matrix.
-         */
-        csr_matrix();
+    /*! Storage for the column indices of the CSR data structure.
+     */
+    cusp::array1d<IndexType, MemorySpace> column_indices;
     
-        /*! Construct a \p csr_matrix with a specific shape and number of nonzero entries.
-         *
-         *  \param num_rows Number of rows.
-         *  \param num_cols Number of columns.
-         *  \param num_entries Number of nonzero matrix entries.
-         */
-        csr_matrix(IndexType num_rows, IndexType num_cols, IndexType num_entries);
-    
-        /*! Construct a \p csr_matrix from another matrix.
-         *
-         *  \param matrix Another sparse or dense matrix.
-         */
-        template <typename MatrixType>
-        csr_matrix(const MatrixType& matrix);
-        
-        void resize(IndexType num_rows, IndexType num_cols, IndexType num_entries);
+    /*! Storage for the nonzero entries of the CSR data structure.
+     */
+    cusp::array1d<ValueType, MemorySpace> values;
 
-        /*! Swap the contents of two \p csr_matrix objects.
-         *
-         *  \param matrix Another \p csr_matrix with the same IndexType and ValueType.
-         */
-        void swap(csr_matrix& matrix);
-        
-        /*! Assignment from another matrix.
-         *
-         *  \param matrix Another sparse or dense matrix.
-         */
-        template <typename MatrixType>
-        csr_matrix& operator=(const MatrixType& matrix);
-    }; // class csr_matrix
+
+    /*! Construct an empty \p csr_matrix.
+     */
+    csr_matrix();
+
+    /*! Construct a \p csr_matrix with a specific shape and number of nonzero entries.
+     *
+     *  \param num_rows Number of rows.
+     *  \param num_cols Number of columns.
+     *  \param num_entries Number of nonzero matrix entries.
+     */
+    csr_matrix(IndexType num_rows, IndexType num_cols, IndexType num_entries);
+
+    /*! Construct a \p csr_matrix from another matrix.
+     *
+     *  \param matrix Another sparse or dense matrix.
+     */
+    template <typename MatrixType>
+    csr_matrix(const MatrixType& matrix);
+    
+    void resize(IndexType num_rows, IndexType num_cols, IndexType num_entries);
+
+    /*! Swap the contents of two \p csr_matrix objects.
+     *
+     *  \param matrix Another \p csr_matrix with the same IndexType and ValueType.
+     */
+    void swap(csr_matrix& matrix);
+    
+    /*! Assignment from another matrix.
+     *
+     *  \param matrix Another sparse or dense matrix.
+     */
+    template <typename MatrixType>
+    csr_matrix& operator=(const MatrixType& matrix);
+}; // class csr_matrix
 /*! \}
  */
 
+
+/*! \addtogroup views Views
+ *  \addtogroup sparse_matrix_formats Sparse Matrices
+ *  \ingroup views
+ *  \{
+ */
+
+/*! \p csr_matrix_view : Compressed Sparse Row (CSR) matrix view
+ *
+ * TODO document
+ *
+ */
+template <typename Array1,
+          typename Array2,
+          typename Array3,
+          typename IndexType   = typename Array1::value_type,
+          typename ValueType   = typename Array3::value_type,
+          typename MemorySpace = typename Array1::memory_space> // TODO use minimum_space<1,2,3>::type
+          class csr_matrix_view : public cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::csr_format>
+{
+  typedef cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::csr_format> Parent;
+  public:
+    /*! Storage for the row offsets of the CSR data structure.  Also called the "row pointer" array.
+     */
+    Array1 row_offsets;
+    
+    /*! Storage for the column indices of the CSR data structure.
+     */
+    Array2 column_indices;
+    
+    /*! Storage for the nonzero entries of the CSR data structure.
+     */
+    Array3 values;
+
+    // construct empty view
+    csr_matrix_view(void)
+      : Parent() {}
+
+    // construct from existing CSR matrix or view
+    template <typename Matrix>
+    csr_matrix_view(Matrix& A)
+      : Parent(A),
+        row_offsets(A.row_offsets),
+        column_indices(A.column_indices),
+        values(A.values) {}
+
+    // TODO check sizes here
+    csr_matrix_view(IndexType num_rows,
+                    IndexType num_cols,
+                    IndexType num_entries,
+                    Array1 row_offsets,
+                    Array2 column_indices,
+                    Array3 values)
+      : Parent(num_rows, num_cols, num_entries),
+        row_offsets(row_offsets),
+        column_indices(column_indices),
+        values(values) {}
+
+    void resize(IndexType num_rows, IndexType num_cols, IndexType num_entries)
+    {
+      Parent::resize(num_rows, num_cols, num_entries);
+      row_offsets.resize(num_rows + 1);
+      column_indices.resize(num_entries);
+      values.resize(num_entries);
+    }
+};
 
 /* Convenience functions */
 
@@ -252,6 +262,8 @@ make_csr_matrix_view(const csr_matrix<IndexType,ValueType,MemorySpace>& m)
      make_array1d_view(m.column_indices),
      make_array1d_view(m.values));
 }
+/*! \}
+ */
 
 } // end namespace cusp
 

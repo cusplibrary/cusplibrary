@@ -26,9 +26,8 @@
 
 namespace cusp
 {
-  
-  typedef thrust::device_space_tag device_memory;
-  typedef thrust::host_space_tag   host_memory;
+  typedef thrust::host_space_tag                host_memory;
+  typedef thrust::detail::cuda_device_space_tag device_memory;
   
    template<typename T, typename MemorySpace>
    struct default_memory_allocator
