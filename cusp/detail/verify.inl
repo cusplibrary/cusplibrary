@@ -14,6 +14,7 @@
  *  limitations under the License.
  */
 
+#include <cusp/format.h>
 #include <cusp/exception.h>
 
 #include <thrust/count.h>

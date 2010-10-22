@@ -23,6 +23,8 @@
 #include <cusp/format.h>
 #include <cusp/exception.h>
 
+#include <thrust/host_vector.h>
+#include <thrust/device_vector.h>
 #include <thrust/detail/vector_base.h>
 
 namespace cusp
