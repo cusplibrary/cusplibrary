@@ -76,15 +76,15 @@ namespace cusp
     template<typename ValueType, class MemorySpace, class Orientation = cusp::row_major>
     class array2d : public cusp::detail::matrix_base<int,ValueType,MemorySpace,cusp::array2d_format>
     {
-        typedef typename cusp::array1d<ValueType, MemorySpace> values_array_type;
-
         public:
         typedef Orientation orientation;
         
         template<typename MemorySpace2>
         struct rebind { typedef array2d<ValueType, MemorySpace2, Orientation> type; };
+        
+        typedef typename cusp::array1d<ValueType, MemorySpace> values_array_type;
        
-        cusp::array1d<ValueType, MemorySpace> values;
+        values_array_type values;
        
         // construct empty matrix
         array2d();

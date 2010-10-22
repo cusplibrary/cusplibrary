@@ -80,18 +80,23 @@ class coo_matrix : public detail::matrix_base<IndexType,ValueType,MemorySpace,cu
     public:
     template<typename MemorySpace2>
     struct rebind { typedef coo_matrix<IndexType, ValueType, MemorySpace2> type; };
+   
+    // array typedefs
+    typedef typename cusp::array1d<IndexType, MemorySpace> row_indices_array_type;
+    typedef typename cusp::array1d<IndexType, MemorySpace> column_indices_array_type;
+    typedef typename cusp::array1d<ValueType, MemorySpace> values_array_type;
 
     /*! Storage for the row indices of the COO data structure.
      */
-    cusp::array1d<IndexType, MemorySpace> row_indices;
+    row_indices_array_type row_indices;
     
     /*! Storage for the column indices of the COO data structure.
      */
-    cusp::array1d<IndexType, MemorySpace> column_indices;
+    column_indices_array_type column_indices;
 
     /*! Storage for the nonzero entries of the COO data structure.
      */
-    cusp::array1d<ValueType, MemorySpace> values;
+    values_array_type values;
 
     /*! Construct an empty \p coo_matrix.
      */
@@ -156,17 +161,21 @@ template <typename Array1,
 {
   typedef cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::coo_format> Parent;
   public:
+    typedef Array1 row_indices_array_type;
+    typedef Array2 column_indices_array_type;
+    typedef Array3 values_array_type;
+
     /*! View of the row indices of the COO data structure.  Also called the "row pointer" array.
      */
-    Array1 row_indices;
+    row_indices_array_type row_indices;
     
     /*! View of the column indices of the COO data structure.
      */
-    Array2 column_indices;
+    column_indices_array_type column_indices;
     
     /*! View for the nonzero entries of the COO data structure.
      */
-    Array3 values;
+    values_array_type values;
 
     // construct empty view
     coo_matrix_view(void)

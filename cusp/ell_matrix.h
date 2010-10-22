@@ -95,6 +95,9 @@ namespace cusp
         public:
         template<typename MemorySpace2>
         struct rebind { typedef ell_matrix<IndexType, ValueType, MemorySpace2> type; };
+        
+        typedef typename cusp::array2d<IndexType, MemorySpace, cusp::column_major> column_indices_array_type;
+        typedef typename cusp::array2d<ValueType, MemorySpace, cusp::column_major> values_array_type;
 
         /*! Value used to pad the rows of the column_indices array.
          */
@@ -102,11 +105,11 @@ namespace cusp
         
         /*! Storage for the column indices of the ELL data structure.
          */
-        cusp::array2d<IndexType, MemorySpace, cusp::column_major> column_indices;
+        column_indices_array_type column_indices;
 
         /*! Storage for the nonzero entries of the ELL data structure.
          */
-        cusp::array2d<ValueType, MemorySpace, cusp::column_major> values;
+        values_array_type values;
     
         /*! Construct an empty \p ell_matrix.
          */

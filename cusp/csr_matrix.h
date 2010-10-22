@@ -86,18 +86,22 @@ class csr_matrix : public detail::matrix_base<IndexType,ValueType,MemorySpace,cu
   public:
     template<typename MemorySpace2>
     struct rebind { typedef csr_matrix<IndexType, ValueType, MemorySpace2> type; };
+
+    typedef typename cusp::array1d<IndexType, MemorySpace> row_offsets_array_type;
+    typedef typename cusp::array1d<IndexType, MemorySpace> column_indices_array_type;
+    typedef typename cusp::array1d<ValueType, MemorySpace> values_array_type;
     
     /*! Storage for the row offsets of the CSR data structure.  Also called the "row pointer" array.
      */
-    cusp::array1d<IndexType, MemorySpace> row_offsets;
+    row_offsets_array_type row_offsets;
     
     /*! Storage for the column indices of the CSR data structure.
      */
-    cusp::array1d<IndexType, MemorySpace> column_indices;
+    column_indices_array_type column_indices;
     
     /*! Storage for the nonzero entries of the CSR data structure.
      */
-    cusp::array1d<ValueType, MemorySpace> values;
+    values_array_type values;
 
 
     /*! Construct an empty \p csr_matrix.
@@ -159,17 +163,21 @@ template <typename Array1,
 {
   typedef cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::csr_format> Parent;
   public:
+    typedef Array1 row_offsets_array_type;
+    typedef Array2 column_indices_array_type;
+    typedef Array3 values_array_type;
+
     /*! Storage for the row offsets of the CSR data structure.  Also called the "row pointer" array.
      */
-    Array1 row_offsets;
+    row_offsets_array_type row_offsets;
     
     /*! Storage for the column indices of the CSR data structure.
      */
-    Array2 column_indices;
+    column_indices_array_type column_indices;
     
     /*! Storage for the nonzero entries of the CSR data structure.
      */
-    Array3 values;
+    values_array_type values;
 
     // construct empty view
     csr_matrix_view(void)

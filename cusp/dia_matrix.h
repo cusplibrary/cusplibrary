@@ -102,14 +102,17 @@ namespace cusp
         
         template<typename MemorySpace2>
         struct rebind { typedef dia_matrix<IndexType, ValueType, MemorySpace2> type; };
+    
+        typedef typename cusp::array1d<IndexType, MemorySpace>                     diagonal_offsets_array_type;
+        typedef typename cusp::array2d<ValueType, MemorySpace, cusp::column_major> values_array_type;
 
         /*! Storage for the diagonal offsets.
          */
-        cusp::array1d<IndexType, MemorySpace> diagonal_offsets;
+        diagonal_offsets_array_type diagonal_offsets;
         
         /*! Storage for the nonzero entries of the DIA data structure.
          */
-        cusp::array2d<ValueType, MemorySpace, cusp::column_major> values;
+        values_array_type values;
             
         /*! Construct an empty \p dia_matrix.
          */
