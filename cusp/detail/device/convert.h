@@ -106,12 +106,14 @@ void convert(const Matrix1& src, Matrix2& dst,
              MatrixFormat2)
 {
     // transfer to host, convert on host, and transfer back to device
-    typedef typename Matrix1::template rebind<cusp::host_memory>::type      HostSourceType;
-    typedef typename Matrix2::template rebind<cusp::host_memory>::type HostDestinationType;
+    typedef typename Matrix1::container SourceContainerType;
+    typedef typename Matrix2::container DestinationContainerType;
+    typedef typename DestinationContainerType::template rebind<cusp::host_memory>::type HostDestinationContainerType;
+    typedef typename SourceContainerType::template      rebind<cusp::host_memory>::type HostSourceContainerType;
 
-    HostSourceType tmp1(src);
+    HostSourceContainerType tmp1(src);
 
-    HostDestinationType tmp2;
+    HostDestinationContainerType tmp2;
 
     cusp::detail::host::convert(tmp1, tmp2);
 

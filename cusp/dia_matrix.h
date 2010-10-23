@@ -101,7 +101,10 @@ namespace cusp
         // TODO statically assert is_signed<IndexType>
         
         template<typename MemorySpace2>
-        struct rebind { typedef dia_matrix<IndexType, ValueType, MemorySpace2> type; };
+        struct rebind { typedef cusp::dia_matrix<IndexType, ValueType, MemorySpace2> type; };
+    
+        // equivalent container type
+        typedef typename cusp::dia_matrix<IndexType, ValueType, MemorySpace> container;
     
         typedef typename cusp::array1d<IndexType, MemorySpace>                     diagonal_offsets_array_type;
         typedef typename cusp::array2d<ValueType, MemorySpace, cusp::column_major> values_array_type;

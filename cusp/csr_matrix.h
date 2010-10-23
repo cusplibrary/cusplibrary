@@ -85,7 +85,10 @@ class csr_matrix : public detail::matrix_base<IndexType,ValueType,MemorySpace,cu
 {
   public:
     template<typename MemorySpace2>
-    struct rebind { typedef csr_matrix<IndexType, ValueType, MemorySpace2> type; };
+    struct rebind { typedef cusp::csr_matrix<IndexType, ValueType, MemorySpace2> type; };
+    
+    // equivalent container type
+    typedef typename cusp::csr_matrix<IndexType, ValueType, MemorySpace> container;
 
     typedef typename cusp::array1d<IndexType, MemorySpace> row_offsets_array_type;
     typedef typename cusp::array1d<IndexType, MemorySpace> column_indices_array_type;

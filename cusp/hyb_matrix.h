@@ -120,7 +120,10 @@ namespace cusp
     {
         public:
         template<typename MemorySpace2>
-        struct rebind { typedef hyb_matrix<IndexType, ValueType, MemorySpace2> type; };
+        struct rebind { typedef cusp::hyb_matrix<IndexType, ValueType, MemorySpace2> type; };
+        
+        // equivalent container type
+        typedef typename cusp::hyb_matrix<IndexType, ValueType, MemorySpace> container;
 
         /*! Storage for the \p ell_matrix portion.
          */

@@ -80,7 +80,10 @@ namespace cusp
         typedef Orientation orientation;
         
         template<typename MemorySpace2>
-        struct rebind { typedef array2d<ValueType, MemorySpace2, Orientation> type; };
+        struct rebind { typedef cusp::array2d<ValueType, MemorySpace2, Orientation> type; };
+        
+        // equivalent container type
+        typedef typename cusp::array2d<ValueType, MemorySpace, Orientation> container;
         
         typedef typename cusp::array1d<ValueType, MemorySpace> values_array_type;
        

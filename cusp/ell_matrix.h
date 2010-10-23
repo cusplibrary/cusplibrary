@@ -94,7 +94,10 @@ namespace cusp
     {
         public:
         template<typename MemorySpace2>
-        struct rebind { typedef ell_matrix<IndexType, ValueType, MemorySpace2> type; };
+        struct rebind { typedef cusp::ell_matrix<IndexType, ValueType, MemorySpace2> type; };
+        
+        // equivalent container type
+        typedef typename cusp::ell_matrix<IndexType, ValueType, MemorySpace> container;
         
         typedef typename cusp::array2d<IndexType, MemorySpace, cusp::column_major> column_indices_array_type;
         typedef typename cusp::array2d<ValueType, MemorySpace, cusp::column_major> values_array_type;
