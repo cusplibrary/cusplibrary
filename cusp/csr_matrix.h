@@ -166,6 +166,9 @@ template <typename Array1,
 {
   typedef cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::csr_format> Parent;
   public:
+    // equivalent container type
+    typedef typename cusp::csr_matrix<IndexType, ValueType, MemorySpace> container;
+
     typedef Array1 row_offsets_array_type;
     typedef Array2 column_indices_array_type;
     typedef Array3 values_array_type;

@@ -73,8 +73,8 @@ int main(void)
   //    [30 20 10]
 
   // print matrix entries
-  //cusp::print_matrix(A); // TODO enable this
-  //cusp::print_matrix(B); // TODO enable this
+  cusp::print_matrix(A);
+  cusp::print_matrix(B);
 
   return 0;
 }
