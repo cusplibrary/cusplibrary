@@ -4,21 +4,25 @@
 template <class Space>
 void TestHybMatrixBasicConstructor(void)
 {
-    cusp::hyb_matrix<int, float, Space> matrix(10, 10, 50, 13, 5, 16);
+    cusp::hyb_matrix<int, float, Space> matrix(10, 10, 42, 13, 5, 16);
     
     ASSERT_EQUAL(matrix.num_rows,                 10);
     ASSERT_EQUAL(matrix.num_cols,                 10);
-    ASSERT_EQUAL(matrix.num_entries,              63);
+    ASSERT_EQUAL(matrix.num_entries,              55);
 
-    ASSERT_EQUAL(matrix.ell.num_rows,             10);
-    ASSERT_EQUAL(matrix.ell.num_cols,             10);
-    ASSERT_EQUAL(matrix.ell.num_entries,          50);
-    ASSERT_EQUAL(matrix.ell.column_indices.num_entries, 80);
-    ASSERT_EQUAL(matrix.ell.values.num_entries,         80);
+    ASSERT_EQUAL(matrix.ell.num_rows,                10);
+    ASSERT_EQUAL(matrix.ell.num_cols,                10);
+    ASSERT_EQUAL(matrix.ell.num_entries,             42);
+    ASSERT_EQUAL(matrix.ell.column_indices.num_rows, 10);
+    ASSERT_EQUAL(matrix.ell.column_indices.num_cols,  5);
+    ASSERT_EQUAL(matrix.ell.column_indices.pitch,    16);
+    ASSERT_EQUAL(matrix.ell.values.num_rows,         10);
+    ASSERT_EQUAL(matrix.ell.values.num_cols,          5);
+    ASSERT_EQUAL(matrix.ell.values.pitch,            16);
 
-    ASSERT_EQUAL(matrix.coo.num_rows,             10);
-    ASSERT_EQUAL(matrix.coo.num_cols,             10);
-    ASSERT_EQUAL(matrix.coo.num_entries,          13);
+    ASSERT_EQUAL(matrix.coo.num_rows,              10);
+    ASSERT_EQUAL(matrix.coo.num_cols,              10);
+    ASSERT_EQUAL(matrix.coo.num_entries,           13);
     ASSERT_EQUAL(matrix.coo.row_indices.size(),    13);
     ASSERT_EQUAL(matrix.coo.column_indices.size(), 13);
     ASSERT_EQUAL(matrix.coo.values.size(),         13);
@@ -51,11 +55,15 @@ void TestHybMatrixCopyConstructor(void)
     ASSERT_EQUAL(copy_of_matrix.num_cols,    4);
     ASSERT_EQUAL(copy_of_matrix.num_entries, 8);
 
-    ASSERT_EQUAL(copy_of_matrix.ell.num_rows,              3);
-    ASSERT_EQUAL(copy_of_matrix.ell.num_cols,              4);
-    ASSERT_EQUAL(copy_of_matrix.ell.num_entries,           5);
-    ASSERT_EQUAL(copy_of_matrix.ell.column_indices.num_entries, 6);
-    ASSERT_EQUAL(copy_of_matrix.ell.values.num_entries,         6);
+    ASSERT_EQUAL(copy_of_matrix.ell.num_rows,                 3);
+    ASSERT_EQUAL(copy_of_matrix.ell.num_cols,                 4);
+    ASSERT_EQUAL(copy_of_matrix.ell.num_entries,              5);
+    ASSERT_EQUAL(copy_of_matrix.ell.column_indices.num_rows,  3);
+    ASSERT_EQUAL(copy_of_matrix.ell.column_indices.num_cols,  2);
+    ASSERT_EQUAL(copy_of_matrix.ell.column_indices.pitch,     3);
+    ASSERT_EQUAL(copy_of_matrix.ell.values.num_rows,          3);
+    ASSERT_EQUAL(copy_of_matrix.ell.values.num_cols,          2);
+    ASSERT_EQUAL(copy_of_matrix.ell.values.pitch,             3);
     ASSERT_EQUAL_QUIET(copy_of_matrix.ell.column_indices, matrix.ell.column_indices);
     ASSERT_EQUAL_QUIET(copy_of_matrix.ell.values,         matrix.ell.values);
     
@@ -73,21 +81,25 @@ void TestHybMatrixResize(void)
 {
     cusp::hyb_matrix<int, float, Space> matrix;
     
-    matrix.resize(10, 10, 50, 13, 5, 16);
+    matrix.resize(10, 10, 42, 13, 5, 16);
     
     ASSERT_EQUAL(matrix.num_rows,                 10);
     ASSERT_EQUAL(matrix.num_cols,                 10);
-    ASSERT_EQUAL(matrix.num_entries,              63);
+    ASSERT_EQUAL(matrix.num_entries,              55);
+    
+    ASSERT_EQUAL(matrix.ell.num_rows,                10);
+    ASSERT_EQUAL(matrix.ell.num_cols,                10);
+    ASSERT_EQUAL(matrix.ell.num_entries,             42);
+    ASSERT_EQUAL(matrix.ell.column_indices.num_rows, 10);
+    ASSERT_EQUAL(matrix.ell.column_indices.num_cols,  5);
+    ASSERT_EQUAL(matrix.ell.column_indices.pitch,    16);
+    ASSERT_EQUAL(matrix.ell.values.num_rows,         10);
+    ASSERT_EQUAL(matrix.ell.values.num_cols,          5);
+    ASSERT_EQUAL(matrix.ell.values.pitch,            16);
 
-    ASSERT_EQUAL(matrix.ell.num_rows,             10);
-    ASSERT_EQUAL(matrix.ell.num_cols,             10);
-    ASSERT_EQUAL(matrix.ell.num_entries,          50);
-    ASSERT_EQUAL(matrix.ell.column_indices.num_entries, 80);
-    ASSERT_EQUAL(matrix.ell.values.num_entries,         80);
-
-    ASSERT_EQUAL(matrix.coo.num_rows,             10);
-    ASSERT_EQUAL(matrix.coo.num_cols,             10);
-    ASSERT_EQUAL(matrix.coo.num_entries,          13);
+    ASSERT_EQUAL(matrix.coo.num_rows,              10);
+    ASSERT_EQUAL(matrix.coo.num_cols,              10);
+    ASSERT_EQUAL(matrix.coo.num_entries,           13);
     ASSERT_EQUAL(matrix.coo.row_indices.size(),    13);
     ASSERT_EQUAL(matrix.coo.column_indices.size(), 13);
     ASSERT_EQUAL(matrix.coo.values.size(),         13);

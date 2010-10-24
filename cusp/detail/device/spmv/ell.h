@@ -39,7 +39,7 @@ __global__ void
 spmv_ell_kernel(const IndexType num_rows, 
                 const IndexType num_cols, 
                 const IndexType num_cols_per_row,
-                const IndexType stride,
+                const IndexType pitch,
                 const IndexType * Aj,
                 const ValueType * Ax, 
                 const ValueType * x, 
@@ -66,7 +66,7 @@ spmv_ell_kernel(const IndexType num_rows,
                 sum += A_ij * fetch_x<UseCache>(col, x);
             }
 
-            offset += stride;
+            offset += pitch;
         }
 
         y[row] = sum;
@@ -87,15 +87,18 @@ void __spmv_ell(const Matrix&    A,
     const size_t MAX_BLOCKS = cusp::detail::device::arch::max_active_blocks(spmv_ell_kernel<IndexType,ValueType,BLOCK_SIZE,UseCache>, BLOCK_SIZE, (size_t) 0);
     const size_t NUM_BLOCKS = std::min<size_t>(MAX_BLOCKS, DIVIDE_INTO(A.num_rows, BLOCK_SIZE));
 
-    const IndexType stride              = A.column_indices.num_rows;
+    const IndexType pitch               = A.column_indices.pitch;
     const IndexType num_entries_per_row = A.column_indices.num_cols;
+
+    // TODO generalize this
+    assert(A.column_indices.pitch == A.values.pitch);
     
     if (UseCache)
         bind_x(x);
 
     spmv_ell_kernel<IndexType,ValueType,BLOCK_SIZE,UseCache> <<<NUM_BLOCKS, BLOCK_SIZE>>>
         (A.num_rows, A.num_cols,
-         num_entries_per_row, stride,
+         num_entries_per_row, pitch,
          thrust::raw_pointer_cast(&A.column_indices.values[0]), 
          thrust::raw_pointer_cast(&A.values.values[0]),
          x, y);

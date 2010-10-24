@@ -159,10 +159,13 @@ void extract_diagonal(const Matrix& A, Array& output, cusp::ell_format)
     // initialize output to zero
     thrust::fill(output.begin(), output.end(), ValueType(0));
 
+    // TODO completely ignore padded values either by remapping indices or zipping w/ predicate
+    // TODO fuse everything into the scatter_if
+
     // compute ELL row indices
     cusp::array1d<IndexType,MemorySpace> row_indices(A.column_indices.values.size());
     thrust::transform(thrust::counting_iterator<int>(0), thrust::counting_iterator<int>(A.column_indices.values.size()),
-            row_indices.begin(), row_operator<int,IndexType>(A.column_indices.num_rows));
+            row_indices.begin(), row_operator<int,IndexType>(A.column_indices.pitch));
 
     // determine which matrix entries correspond to the matrix diagonal
     cusp::array1d<unsigned int,MemorySpace> is_diagonal(A.column_indices.values.size());

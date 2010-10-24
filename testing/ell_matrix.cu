@@ -10,11 +10,13 @@ void TestEllMatrixBasicConstructor(void)
     ASSERT_EQUAL(matrix.num_cols,              2);
     ASSERT_EQUAL(matrix.num_entries,           6);
     ASSERT_EQUAL(matrix.column_indices.num_cols,    2);
-    ASSERT_EQUAL(matrix.column_indices.num_rows,    4);
-    ASSERT_EQUAL(matrix.column_indices.num_entries, 8);
+    ASSERT_EQUAL(matrix.column_indices.num_rows,    3);
+    ASSERT_EQUAL(matrix.column_indices.pitch,       4);
+    ASSERT_EQUAL(matrix.column_indices.num_entries, 6);
     ASSERT_EQUAL(matrix.values.num_cols,    2);
-    ASSERT_EQUAL(matrix.values.num_rows,    4);
-    ASSERT_EQUAL(matrix.values.num_entries, 8);
+    ASSERT_EQUAL(matrix.values.num_rows,    3);
+    ASSERT_EQUAL(matrix.values.pitch,       4);
+    ASSERT_EQUAL(matrix.values.num_entries, 6);
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestEllMatrixBasicConstructor);
 
@@ -37,6 +39,8 @@ void TestEllMatrixCopyConstructor(void)
     ASSERT_EQUAL(copy_of_matrix.num_rows,              3);
     ASSERT_EQUAL(copy_of_matrix.num_cols,              2);
     ASSERT_EQUAL(copy_of_matrix.num_entries,           6);
+    ASSERT_EQUAL(copy_of_matrix.column_indices.pitch,  4);
+    ASSERT_EQUAL(copy_of_matrix.values.pitch,          4);
     ASSERT_EQUAL_QUIET(copy_of_matrix.column_indices, matrix.column_indices);
     ASSERT_EQUAL_QUIET(copy_of_matrix.values,         matrix.values);
 }
@@ -63,14 +67,18 @@ void TestEllMatrixSwap(void)
     ASSERT_EQUAL(A.num_rows,              3);
     ASSERT_EQUAL(A.num_cols,              1);
     ASSERT_EQUAL(A.num_entries,           3);
-    ASSERT_EQUAL_QUIET(A.column_indices, B_copy.column_indices);
-    ASSERT_EQUAL_QUIET(A.values,         B_copy.values);
+    ASSERT_EQUAL_QUIET(A.column_indices,       B_copy.column_indices);
+    ASSERT_EQUAL_QUIET(A.column_indices.pitch, B_copy.column_indices.pitch);
+    ASSERT_EQUAL_QUIET(A.values,               B_copy.values);
+    ASSERT_EQUAL_QUIET(A.values.pitch,         B_copy.values.pitch);
     
     ASSERT_EQUAL(B.num_rows,              1);
     ASSERT_EQUAL(B.num_cols,              2);
     ASSERT_EQUAL(B.num_entries,           2);
-    ASSERT_EQUAL_QUIET(B.column_indices, A_copy.column_indices);
-    ASSERT_EQUAL_QUIET(B.values,         A_copy.values);
+    ASSERT_EQUAL_QUIET(B.column_indices,       A_copy.column_indices);
+    ASSERT_EQUAL_QUIET(B.values,               A_copy.values);
+    ASSERT_EQUAL_QUIET(B.column_indices,       A_copy.column_indices);
+    ASSERT_EQUAL_QUIET(B.column_indices.pitch, A_copy.column_indices.pitch);
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestEllMatrixSwap);
 
@@ -79,17 +87,19 @@ void TestEllMatrixResize(void)
 {
     cusp::ell_matrix<int, float, Space> matrix;
     
-    matrix.resize(3, 2, 6, 2, 4);
+    matrix.resize(3, 2, 5, 2, 4);
 
-    ASSERT_EQUAL(matrix.num_rows,              3);
-    ASSERT_EQUAL(matrix.num_cols,              2);
-    ASSERT_EQUAL(matrix.num_entries,           6);
+    ASSERT_EQUAL(matrix.num_rows,                   3);
+    ASSERT_EQUAL(matrix.num_cols,                   2);
+    ASSERT_EQUAL(matrix.num_entries,                5);
+    ASSERT_EQUAL(matrix.column_indices.num_rows,    3);
     ASSERT_EQUAL(matrix.column_indices.num_cols,    2);
-    ASSERT_EQUAL(matrix.column_indices.num_rows,    4);
-    ASSERT_EQUAL(matrix.column_indices.num_entries, 8);
-    ASSERT_EQUAL(matrix.values.num_cols,    2);
-    ASSERT_EQUAL(matrix.values.num_rows,    4);
-    ASSERT_EQUAL(matrix.values.num_entries, 8);
+    ASSERT_EQUAL(matrix.column_indices.num_entries, 6);
+    ASSERT_EQUAL(matrix.column_indices.pitch,       4);
+    ASSERT_EQUAL(matrix.values.num_rows,            3);
+    ASSERT_EQUAL(matrix.values.num_cols,            2);
+    ASSERT_EQUAL(matrix.values.pitch,               4);
+    ASSERT_EQUAL(matrix.values.num_entries,         6);
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestEllMatrixResize);
 
