@@ -101,21 +101,21 @@ bool is_valid_matrix(const MatrixType& A,
     typedef typename MatrixType::index_type IndexType;
 
     // we could relax some of these conditions if necessary
-    if (A.row_indices.size() != A.num_entries)
+    if (A.row_indices.size() != (size_t) A.num_entries)
     {
         ostream << "size of row_indices (" << A.row_indices.size() << ") "
                 << "should be equal to num_entries (" << A.num_entries << ")";
         return false;
     }
     
-    if (A.column_indices.size() != A.num_entries)
+    if (A.column_indices.size() != (size_t) A.num_entries)
     {
         ostream << "size of column_indices (" << A.column_indices.size() << ") "
                 << "should be equal to num_entries (" << A.num_entries << ")";
         return false;
     }
     
-    if (A.values.size() != A.num_entries)
+    if (A.values.size() != (size_t) A.num_entries)
     {
         ostream << "size of values (" << A.column_indices.size() << ") "
                 << "should be equal to num_entries (" << A.num_entries << ")";
@@ -171,14 +171,14 @@ bool is_valid_matrix(const MatrixType& A,
 
     // we could relax some of these conditions if necessary
     
-    if (A.row_offsets.size() != A.num_rows + 1)
+    if (A.row_offsets.size() != (size_t) A.num_rows + 1)
     {
         ostream << "size of row_offsets (" << A.row_offsets.size() << ") "
                 << "should be equal to num_rows + 1 (" << (A.num_rows + 1) << ")";
         return false;
     }
     
-    if (A.row_offsets.front() != 0)
+    if (A.row_offsets.front() != IndexType(0))
     {
         ostream << "first value in row_offsets (" << A.row_offsets.front() << ") "
                 << "should be equal to 0";
@@ -192,14 +192,14 @@ bool is_valid_matrix(const MatrixType& A,
         return false;
     }
     
-    if (A.column_indices.size() != A.num_entries)
+    if (A.column_indices.size() != (size_t) A.num_entries)
     {
         ostream << "size of column_indices (" << A.column_indices.size() << ") "
                 << "should be equal to num_entries (" << A.num_entries << ")";
         return false;
     }
     
-    if (A.values.size() != A.num_entries)
+    if (A.values.size() != (size_t) A.num_entries)
     {
         ostream << "size of values (" << A.column_indices.size() << ") "
                 << "should be equal to num_entries (" << A.num_entries << ")";
@@ -366,12 +366,14 @@ bool is_valid_matrix(const MatrixType& A,
         return false;
     }
     
-    if (A.num_entries != A.values.size())
+    if ((size_t) A.num_entries != A.values.size())
     {
         ostream << "num_entries (" << A.num_entries << ") ";
         ostream << "should agree with size of values array (" << A.values.size() << ")";
         return false;
     }
+    
+    // TODO check .pitch
 
     return true;
 }

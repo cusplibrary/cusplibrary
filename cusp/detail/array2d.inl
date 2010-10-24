@@ -27,26 +27,39 @@ namespace cusp
 template<typename ValueType, class MemorySpace, class Orientation>
 template <typename MatrixType>
 array2d<ValueType,MemorySpace,Orientation>
-    ::array2d(const MatrixType& matrix)
-    {
-        cusp::convert(matrix, *this);
-    }
+  ::array2d(const MatrixType& matrix)
+  {
+    cusp::convert(matrix, *this);
+  }
 
 //////////////////////
 // Member Functions //
 //////////////////////
 
 template <typename ValueType, class MemorySpace, class Orientation>
+array2d<ValueType,MemorySpace,Orientation>&
+array2d<ValueType,MemorySpace,Orientation>
+  ::operator=(const array2d<ValueType,MemorySpace,Orientation>& matrix)
+  {
+    cusp::convert(matrix, *this);
+
+    return *this;
+  }
+
+template <typename ValueType, class MemorySpace, class Orientation>
 template <typename MatrixType>
 array2d<ValueType,MemorySpace,Orientation>&
 array2d<ValueType,MemorySpace,Orientation>
-::operator=(const MatrixType& matrix)
-{
+  ::operator=(const MatrixType& matrix)
+  {
     cusp::convert(matrix, *this);
-    
-    return *this;
-}
 
+    return *this;
+  }
+
+/////////////////////
+// Other Functions //
+/////////////////////
 
 template<typename ValueType1, typename MemorySpace1, typename Orientation1,
          typename ValueType2, typename MemorySpace2, typename Orientation2>

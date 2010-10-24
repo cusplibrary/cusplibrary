@@ -90,7 +90,7 @@ IndexType compute_optimal_entries_per_row(const cusp::csr_matrix<IndexType,Value
     for(IndexType i = 0, rows = csr.num_rows; i < max_cols_per_row; i++)
     {
         rows -= histogram[i];  //number of rows of length > i
-        if(relative_speed * rows < csr.num_rows || rows < breakeven_threshold)
+        if(relative_speed * rows < csr.num_rows || (size_t) rows < breakeven_threshold)
         {
             num_cols_per_row = i;
             break;

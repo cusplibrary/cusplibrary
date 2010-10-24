@@ -232,12 +232,6 @@ void convert(const Matrix1& src, Matrix2& dst,
              cusp::array2d_format)
 {    cusp::detail::host::coo_to_array(src, dst);    }
 
-template <typename Matrix1, typename Matrix2>
-void convert(const Matrix1& src, Matrix2& dst,
-             cusp::array2d_format,
-             cusp::array2d_format)
-{    cusp::detail::host::array_to_array(src, dst);   }
-
 template <typename Matrix1, typename Matrix2, typename MatrixFormat1>
 void convert(const Matrix1& src, Matrix2& dst,
              MatrixFormat1,

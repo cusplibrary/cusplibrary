@@ -211,7 +211,7 @@ void csr_to_hyb(const Matrix1& src, Matrix2& dst,
         IndexType jj = src.row_offsets[i];
 
         // copy up to num_cols_per_row values of row i into the ELL
-        while(jj < src.row_offsets[i+1] && n < num_entries_per_row)
+        while(jj < src.row_offsets[i+1] && (size_t) n < num_entries_per_row)
         {
             dst.ell.column_indices(i,n) = src.column_indices[jj];
             dst.ell.values(i,n)         = src.values[jj];
@@ -257,7 +257,7 @@ void csr_to_ell(const Matrix1& src, Matrix2& dst,
         IndexType jj = src.row_offsets[i];
 
         // copy up to num_cols_per_row values of row i into the ELL
-        while(jj < src.row_offsets[i+1] && n < num_entries_per_row)
+        while(jj < src.row_offsets[i+1] && (size_t) n < num_entries_per_row)
         {
             dst.column_indices(i,n) = src.column_indices[jj];
             dst.values(i,n)         = src.values[jj];
@@ -506,70 +506,60 @@ void hyb_to_csr(const Matrix1& src, Matrix2& dst)
 // Dense Conversions //
 ///////////////////////
 template <typename Matrix1, typename Matrix2>
-void array_to_array(const Matrix1& src, Matrix2& dst)
-{
-    dst.resize(src.num_rows, src.num_cols);
-
-    for(size_t i = 0; i < src.num_rows; i++)
-        for(size_t j = 0; j < src.num_cols; j++)
-            dst(i,j) = src(i,j);
-}
-
-
-template <typename Matrix1, typename Matrix2>
 void array_to_coo(const Matrix1& src, Matrix2& dst)
 {
-    typedef typename Matrix2::index_type IndexType;
-    typedef typename Matrix2::value_type ValueType;
-    
-    IndexType nnz = src.num_entries - thrust::count(src.values.begin(), src.values.end(), ValueType(0));
+  typedef typename Matrix2::index_type IndexType;
+  typedef typename Matrix2::value_type ValueType;
 
-    dst.resize(src.num_rows, src.num_cols, nnz);
+  IndexType nnz = src.num_entries - thrust::count(src.values.begin(), src.values.end(), ValueType(0));
 
-    nnz = 0;
+  dst.resize(src.num_rows, src.num_cols, nnz);
 
-    for(size_t i = 0; i < src.num_rows; i++)
+  nnz = 0;
+
+  for(int i = 0; i < src.num_rows; i++)
+  {
+    for(int j = 0; j < src.num_cols; j++)
     {
-        for(size_t j = 0; j < src.num_cols; j++)
-        {
-	  if (src(i,j) != ValueType(0))
-            {
-                dst.row_indices[nnz]    = i;
-                dst.column_indices[nnz] = j;
-                dst.values[nnz]         = src(i,j);
-                nnz++;
-            }
-        }
+      if (src(i,j) != ValueType(0))
+      {
+        dst.row_indices[nnz]    = i;
+        dst.column_indices[nnz] = j;
+        dst.values[nnz]         = src(i,j);
+        nnz++;
+      }
     }
+  }
 }
 
 template <typename Matrix1, typename Matrix2>
 void array_to_csr(const Matrix1& src, Matrix2& dst)
 {
-    typedef typename Matrix2::index_type IndexType;
-    typedef typename Matrix2::value_type ValueType;
-    
-    IndexType nnz = src.num_entries - thrust::count(src.values.begin(), src.values.end(), ValueType(0));
+  typedef typename Matrix2::index_type IndexType;
+  typedef typename Matrix2::value_type ValueType;
+  
+  IndexType nnz = src.num_entries - thrust::count(src.values.begin(), src.values.end(), ValueType(0));
 
-    dst.resize(src.num_rows, src.num_cols, nnz);
+  dst.resize(src.num_rows, src.num_cols, nnz);
 
-    IndexType num_entries = 0;
+  IndexType num_entries = 0;
 
-    for(size_t i = 0; i < src.num_rows; i++)
+  for(int i = 0; i < src.num_rows; i++)
+  {
+    dst.row_offsets[i] = num_entries;
+
+    for(int j = 0; j < src.num_cols; j++)
     {
-        dst.row_offsets[i] = num_entries;
-
-        for(size_t j = 0; j < src.num_cols; j++)
-        {
-	  if (src(i,j) != ValueType(0)){
-                dst.column_indices[num_entries] = j;
-                dst.values[num_entries]         = src(i,j);
-                num_entries++;
-            }
-        }
+      if (src(i,j) != ValueType(0))
+      {
+        dst.column_indices[num_entries] = j;
+        dst.values[num_entries]         = src(i,j);
+        num_entries++;
+      }
     }
+  }
 
-    dst.row_offsets[src.num_rows] = num_entries;
+  dst.row_offsets[src.num_rows] = num_entries;
 }
 
 } // end namespace host

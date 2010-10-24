@@ -103,16 +103,30 @@ void copy(const T1& src, T2& dst,
 template <typename T1, typename T2, typename Orientation>
 void copy_array2d(const T1& src, T2& dst, Orientation)
 {
-  copy_matrix_dimensions(src, dst);
-  dst.resize(src.num_rows, src.num_cols, src.pitch);
-  cusp::copy(src.values, dst.values);
+  // will preserve destination pitch if possible
+  dst.resize(src.num_rows, src.num_cols);
+
+  if (dst.pitch == src.pitch)
+  {
+    cusp::copy(src.values, dst.values);
+  }
+  else
+  {
+    thrust::counting_iterator<size_t> begin(0);
+    thrust::counting_iterator<size_t> end(src.num_entries);
+
+    cusp::detail::logical_to_physical_functor<size_t, Orientation> func1(src.num_rows, src.num_cols, src.pitch);
+    cusp::detail::logical_to_physical_functor<size_t, Orientation> func2(dst.num_rows, dst.num_cols, dst.pitch);
+
+    thrust::copy(thrust::make_permutation_iterator(src.values.begin(), thrust::make_transform_iterator(begin, func1)),
+                 thrust::make_permutation_iterator(src.values.begin(), thrust::make_transform_iterator(end,   func1)),
+                 thrust::make_permutation_iterator(dst.values.begin(), thrust::make_transform_iterator(begin, func2)));
+  }
 }
 
 template <typename T1, typename T2, typename Orientation1, typename Orientation2>
 void copy_array2d(const T1& src, T2& dst, Orientation1, Orientation2)
 {
-  copy_matrix_dimensions(src, dst);
-  
   // note: pitch does not carry over when orientation differs
   dst.resize(src.num_rows, src.num_cols);
   

@@ -112,26 +112,23 @@ void transpose(const MatrixType1& A, MatrixType2& At,
 }
 
 
-// convert a linear index to a linear index in the transpose
-template <typename T, typename SourceOrientation, typename DestinationOrientation>
-struct transpose_index : public thrust::unary_function<T, T>
+// convert logical linear index in the (tranposed) destination into a physical index in the source
+template <typename IndexType, typename Orientation1, typename Orientation2>
+struct transpose_index_functor : public thrust::unary_function<IndexType,IndexType>
 {
-    T m, n; // destination dimensions
+  IndexType num_rows, num_cols, pitch; // source dimensions
 
-    __host__ __device__
-    transpose_index(T _m, T _n) : m(_m), n(_n) {}
+  transpose_index_functor(IndexType num_rows, IndexType num_cols, IndexType pitch)
+    : num_rows(num_rows), num_cols(num_cols), pitch(pitch) {}
 
-    __host__ __device__
-    T operator()(T linear_index)
-    {
-        T i = cusp::detail::linear_index_to_row_index(linear_index, m, n, DestinationOrientation());
-        T j = cusp::detail::linear_index_to_col_index(linear_index, m, n, DestinationOrientation());
-        
-        // TODO use real pitch
-        T pitch = cusp::detail::minor_dimension(n, m, SourceOrientation());
-
-        return cusp::detail::index_of(j, i, pitch, SourceOrientation());
-    }
+  __host__ __device__
+  IndexType operator()(IndexType linear_index)
+  {
+      IndexType i = cusp::detail::linear_index_to_row_index(linear_index, num_cols, num_rows, Orientation2());
+      IndexType j = cusp::detail::linear_index_to_col_index(linear_index, num_cols, num_rows, Orientation2());
+      
+      return cusp::detail::index_of(j, i, pitch, Orientation1());
+  }
 };
 
 // Array2d format 
@@ -140,26 +137,21 @@ void transpose(const MatrixType1& A, MatrixType2& At,
                cusp::array2d_format,
                cusp::array2d_format)
 {
-    typedef typename MatrixType1::orientation SourceOrientation;
-    typedef typename MatrixType2::orientation DestinationOrientation;
+  typedef typename MatrixType1::orientation Orientation1;
+  typedef typename MatrixType2::orientation Orientation2;
 
-    At.resize(A.num_cols, A.num_rows);
+  At.resize(A.num_cols, A.num_rows);
 
-    thrust::counting_iterator<size_t> begin(0);
-    thrust::counting_iterator<size_t> end(A.values.size());
+  thrust::counting_iterator<size_t> begin(0);
+  thrust::counting_iterator<size_t> end(A.num_entries);
 
-#if THRUST_VERSION >= 100300
-    thrust::gather(thrust::make_transform_iterator(begin, transpose_index<size_t, SourceOrientation, DestinationOrientation>(At.num_rows, At.num_cols)),
-                   thrust::make_transform_iterator(end,   transpose_index<size_t, SourceOrientation, DestinationOrientation>(At.num_rows, At.num_cols)),
-                   A.values.begin(),
-                   At.values.begin());
-#else
-    // TODO remove this when Thrust v1.2.x is unsupported
-    thrust::next::gather(thrust::make_transform_iterator(begin, transpose_index<size_t, SourceOrientation, DestinationOrientation>(At.num_rows, At.num_cols)),
-                         thrust::make_transform_iterator(end,   transpose_index<size_t, SourceOrientation, DestinationOrientation>(At.num_rows, At.num_cols)),
-                         A.values.begin(),
-                         At.values.begin());
-#endif
+  // prefer coalesced writes to coalesced reads
+  cusp::detail::transpose_index_functor    <size_t, Orientation1, Orientation2> func1(A.num_rows,  A.num_cols,  A.pitch);
+  cusp::detail::logical_to_physical_functor<size_t, Orientation2>               func2(At.num_rows, At.num_cols, At.pitch);
+
+  thrust::copy(thrust::make_permutation_iterator(A.values.begin(),  thrust::make_transform_iterator(begin, func1)),
+               thrust::make_permutation_iterator(A.values.begin(),  thrust::make_transform_iterator(end,   func1)),
+               thrust::make_permutation_iterator(At.values.begin(), thrust::make_transform_iterator(begin, func2)));
 }
 
 

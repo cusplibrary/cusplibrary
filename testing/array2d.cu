@@ -315,3 +315,28 @@ void TestArray2dEquality(void)
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestArray2dEquality);
 
+template <class Space>
+void TestArray2dCopySemantics(void)
+{
+  // check that destination .pitch is respected
+  cusp::array2d<float, Space> A(3, 2);
+  A(0,0) = 1; A(0,1) = 2;
+  A(1,0) = 3; A(1,1) = 4;
+  A(2,0) = 5; A(2,1) = 6;
+
+  cusp::array2d<float, Space> B; B.resize(3, 2, 4);
+
+  B = A;
+
+  ASSERT_EQUAL_QUIET(A, B);
+  ASSERT_EQUAL(B.pitch, 4);
+
+  cusp::array2d<float, Space> C; C.resize(3, 2, 4);
+
+  cusp::copy(A, C);
+
+  ASSERT_EQUAL_QUIET(A, C);
+  ASSERT_EQUAL(C.pitch, 4);
+}
+DECLARE_HOST_DEVICE_UNITTEST(TestArray2dCopySemantics);
+

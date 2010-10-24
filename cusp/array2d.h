@@ -140,6 +140,7 @@ namespace detail
 } // end namespace detail
 
 // TODO document mapping of (i,j) onto values[pitch * i + j] or values[pitch * j + i]
+// TODO document that array2d operations will try to respect .pitch of destination argument
 
 template<typename ValueType, class MemorySpace, class Orientation = cusp::row_major>
 class array2d : public cusp::detail::matrix_base<int,ValueType,MemorySpace,cusp::array2d_format>
@@ -178,7 +179,7 @@ class array2d : public cusp::detail::matrix_base<int,ValueType,MemorySpace,cusp:
       pitch(cusp::detail::minor_dimension(num_rows, num_cols, orientation())),
       values(num_rows * num_cols, value) {}
 
-  // construct from a different matrix
+  // construct from another matrix
   template <typename MatrixType>
   array2d(const MatrixType& matrix);
 
@@ -207,6 +208,10 @@ class array2d : public cusp::detail::matrix_base<int,ValueType,MemorySpace,cusp:
 
   void resize(int num_rows, int num_cols)
   {
+    // preserve .pitch if possible
+    if (this->num_rows == num_rows && this->num_cols == num_cols)
+      return;
+
     resize(num_rows, num_cols, cusp::detail::minor_dimension(num_rows, num_cols, orientation()));
   }
 
@@ -216,6 +221,8 @@ class array2d : public cusp::detail::matrix_base<int,ValueType,MemorySpace,cusp:
     thrust::swap(this->pitch, matrix.pitch);
     values.swap(matrix.values);
   }
+  
+  array2d& operator=(const array2d& matrix);
 
   template <typename MatrixType>
   array2d& operator=(const MatrixType& matrix);
@@ -282,6 +289,10 @@ class array2d_view : public cusp::detail::matrix_base<int, typename Array::value
 
   void resize(int num_rows, int num_cols)
   {
+    // preserve .pitch if possible
+    if (this->num_rows == num_rows && this->num_cols == num_cols)
+      return;
+
     resize(num_rows, num_cols, cusp::detail::minor_dimension(num_rows, num_cols, orientation()));
   }
 

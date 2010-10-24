@@ -47,10 +47,11 @@ void verify_result(const MatrixType& matrix)
 }
 
 
-template <class MatrixType>
-void TestTranspose(MatrixType mtx)
+template <typename Matrix1, typename Matrix2>
+void TestTranspose(void)
 {
-    MatrixType A, At;
+    Matrix1 A;
+    Matrix2 At;
 
     initialize_matrix(A);
     
@@ -67,15 +68,46 @@ void TestTranspose(MatrixType mtx)
 template <class Space>
 void TestTransposeArray2d(void)
 {
-    TestTranspose(cusp::array2d<float, Space, cusp::row_major>());
-    TestTranspose(cusp::array2d<float, Space, cusp::column_major>());
+  typedef typename cusp::array2d<float, Space, cusp::row_major>    RowMajor;
+  typedef typename cusp::array2d<float, Space, cusp::column_major> ColumnMajor;
+
+  TestTranspose<RowMajor,    RowMajor>();
+  TestTranspose<ColumnMajor, ColumnMajor>();
+  TestTranspose<RowMajor,    ColumnMajor>();
+  TestTranspose<ColumnMajor, RowMajor>();
+
+  // test with non-trivial pitch
+  {
+    RowMajor A(4,3); A.resize(4,3,5);
+    A(0,0) = 10.25;  A(0,1) = 11.00;  A(0,2) =  0.00; 
+    A(1,0) =  0.00;  A(1,1) =  0.00;  A(1,2) = 12.50; 
+    A(2,0) = 13.75;  A(2,1) =  0.00;  A(2,2) = 14.00; 
+    A(3,0) =  0.00;  A(3,1) = 16.50;  A(3,2) =  0.00; 
+
+    { RowMajor    At;  cusp::transpose(A, At);  verify_result(At); }
+    { ColumnMajor At;  cusp::transpose(A, At);  verify_result(At); }
+    { RowMajor    At;  At.resize(3,4,5); cusp::transpose(A, At);  verify_result(At); ASSERT_EQUAL(At.pitch, 5); }
+    { ColumnMajor At;  At.resize(3,4,5); cusp::transpose(A, At);  verify_result(At); ASSERT_EQUAL(At.pitch, 5); }
+  }
+  {
+    ColumnMajor A(4,3); A.resize(4,3,5);
+    A(0,0) = 10.25;  A(0,1) = 11.00;  A(0,2) =  0.00; 
+    A(1,0) =  0.00;  A(1,1) =  0.00;  A(1,2) = 12.50; 
+    A(2,0) = 13.75;  A(2,1) =  0.00;  A(2,2) = 14.00; 
+    A(3,0) =  0.00;  A(3,1) = 16.50;  A(3,2) =  0.00; 
+
+    { RowMajor    At;  cusp::transpose(A, At);  verify_result(At); }
+    { ColumnMajor At;  cusp::transpose(A, At);  verify_result(At); }
+    { RowMajor    At;  At.resize(3,4,5); cusp::transpose(A, At);  verify_result(At); ASSERT_EQUAL(At.pitch, 5); }
+    { ColumnMajor At;  At.resize(3,4,5); cusp::transpose(A, At);  verify_result(At); ASSERT_EQUAL(At.pitch, 5); }
+  }
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestTransposeArray2d);
 
 template <class SparseMatrix>
 void TestTranspose(void)
 {
-    TestTranspose(SparseMatrix());
+    TestTranspose<SparseMatrix, SparseMatrix>();
 }
 DECLARE_SPARSE_MATRIX_UNITTEST(TestTranspose);
 
