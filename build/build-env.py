@@ -54,9 +54,9 @@ OldEnvironment = Environment;
 # this dictionary maps the name of a compiler program to a dictionary mapping the name of
 # a compiler switch of interest to the specific switch implementing the feature
 gCompilerOptions = {
-    'gcc' : {'warn_all' : '-Wall', 'optimization' : '-O2', 'debug' : '-g',  'exception_handling' : '',      'omp' : '-fopenmp'},
-    'g++' : {'warn_all' : '-Wall', 'optimization' : '-O2', 'debug' : '-g',  'exception_handling' : '',      'omp' : '-fopenmp'},
-    'cl'  : {'warn_all' : '/Wall', 'optimization' : '/Ox', 'debug' : ['/Zi', '-D_DEBUG', '/MTd'], 'exception_handling' : '/EHsc', 'omp' : '/openmp'}
+    'gcc' : {'warn_all' : '-Wall', 'warn_errors' : '-Werror', 'optimization' : '-O2', 'debug' : '-g',  'exception_handling' : '',      'omp' : '-fopenmp'},
+    'g++' : {'warn_all' : '-Wall', 'warn_errors' : '-Werror', 'optimization' : '-O2', 'debug' : '-g',  'exception_handling' : '',      'omp' : '-fopenmp'},
+    'cl'  : {'warn_all' : '/Wall', 'warn_errors' : '/WX',     'optimization' : '/Ox', 'debug' : ['/Zi', '-D_DEBUG', '/MTd'], 'exception_handling' : '/EHsc', 'omp' : '/openmp'}
   }
 
 
@@ -69,7 +69,7 @@ gLinkerOptions = {
   }
 
 
-def getCFLAGS(mode, backend, warn, CC):
+def getCFLAGS(mode, backend, warn, warnings_as_errors, CC):
   result = []
   if mode == 'release':
     # turn on optimization
@@ -89,10 +89,14 @@ def getCFLAGS(mode, backend, warn, CC):
     # turn on all warnings
     result.append(gCompilerOptions[CC]['warn_all'])
 
+  if warnings_as_errors:
+    # treat warnings as errors
+    result.append(gCompilerOptions[CC]['warn_errors'])
+
   return result
 
 
-def getCXXFLAGS(mode, backend, warn, CXX):
+def getCXXFLAGS(mode, backend, warn, warnings_as_errors, CXX):
   result = []
   if mode == 'release':
     # turn on optimization
@@ -113,6 +117,10 @@ def getCXXFLAGS(mode, backend, warn, CXX):
   if warn:
     # turn on all warnings
     result.append(gCompilerOptions[CXX]['warn_all'])
+
+  if warnings_as_errors:
+    # treat warnings as errors
+    result.append(gCompilerOptions[CXX]['warn_errors'])
 
   return result
 
@@ -160,10 +168,16 @@ def Environment():
 
   # add a variable to handle compute capability
   vars.Add(EnumVariable('arch', 'Compute capability code generation', 'sm_10',
-                        allowed_values = ('sm_10', 'sm_11', 'sm_12', 'sm_13', 'sm_20')))
+                        allowed_values = ('sm_10', 'sm_11', 'sm_12', 'sm_13', 'sm_20', 'sm_21')))
 
   # add a variable to handle warnings
-  vars.Add(BoolVariable('Wall', 'Turn on all compilation warnings', 0))
+  if os.name == 'posix':
+    vars.Add(BoolVariable('Wall', 'Enable all compilation warnings', 1))
+  else:
+    vars.Add(BoolVariable('Wall', 'Enable all compilation warnings', 0))
+
+  # add a variable to treat warnings as errors
+  vars.Add(BoolVariable('Werror', 'Treat warnings as errors', 0))
 
   # create an Environment
   env = OldEnvironment(tools = getTools(), variables = vars)
@@ -182,10 +196,10 @@ def Environment():
   env.Append(CXXFLAGS = ['-DTHRUST_DEVICE_BACKEND=%s' % backend_define])
 
   # get C compiler switches
-  env.Append(CFLAGS = getCFLAGS(env['mode'], env['backend'], env['Wall'], env.subst('$CC')))
+  env.Append(CFLAGS = getCFLAGS(env['mode'], env['backend'], env['Wall'], env['Werror'], env.subst('$CC')))
 
   # get CXX compiler switches
-  env.Append(CXXFLAGS = getCXXFLAGS(env['mode'], env['backend'], env['Wall'], env.subst('$CXX')))
+  env.Append(CXXFLAGS = getCXXFLAGS(env['mode'], env['backend'], env['Wall'], env['Werror'], env.subst('$CXX')))
 
   # get NVCC compiler switches
   env.Append(NVCCFLAGS = getNVCCFLAGS(env['mode'], env['backend'], env['arch']))
@@ -198,19 +212,18 @@ def Environment():
   env.Append(LIBPATH = [cuda_lib_path])
   env.Append(CPPPATH = [cuda_inc_path])
 
-  # set Ocelot lib path
+  # link against backend-specific runtimes
+  # XXX we shouldn't have to link against cudart unless we're using the
+  #     cuda runtime, but cudafe inserts some dependencies when compiling .cu files
+  # XXX ideally this gets handled in nvcc.py if possible
+  env.Append(LIBS = 'cudart')
+
   if env['backend'] == 'ocelot':
     if os.name == 'posix':
       env.Append(LIBPATH = ['/usr/local/lib'])
     else:
       raise ValueError, "Unknown OS.  What is the Ocelot library path?"
-
-  # add CUDA runtime library
-  # XXX ideally this gets handled in nvcc.py if possible
-  env.Append(LIBS = 'cudart')
-
-  # link against omp if necessary
-  if env['backend'] == 'omp':
+  elif env['backend'] == 'omp':
     if os.name == 'posix':
       env.Append(LIBS = ['gomp'])
     elif os.name == 'nt':
