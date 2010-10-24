@@ -23,25 +23,6 @@ namespace cusp
 // Constructors //
 //////////////////
 
-// construct empty matrix
-template<typename ValueType, class MemorySpace, class Orientation>
-array2d<ValueType,MemorySpace,Orientation>
-    ::array2d() {}
-
-// construct matrix with given shape and number of entries
-template<typename ValueType, class MemorySpace, class Orientation>
-array2d<ValueType,MemorySpace,Orientation>
-    ::array2d(int num_rows, int num_cols)
-        : detail::matrix_base<int,ValueType,MemorySpace,cusp::array2d_format>(num_rows, num_cols, num_rows * num_cols),
-          values(num_rows * num_cols) {}
-
-// construct matrix with given shape and number of entries and fill with a given value
-template<typename ValueType, class MemorySpace, class Orientation>
-array2d<ValueType,MemorySpace,Orientation>
-    ::array2d(int num_rows, int num_cols, const ValueType& value)
-        : detail::matrix_base<int,ValueType,MemorySpace,cusp::array2d_format>(num_rows, num_cols, num_rows * num_cols),
-          values(num_rows * num_cols, value) {}
-
 // construct from a different matrix
 template<typename ValueType, class MemorySpace, class Orientation>
 template <typename MatrixType>
@@ -54,28 +35,6 @@ array2d<ValueType,MemorySpace,Orientation>
 //////////////////////
 // Member Functions //
 //////////////////////
-
-template<typename ValueType, class MemorySpace, class Orientation>
-    void
-    array2d<ValueType,MemorySpace,Orientation>
-    ::resize(int num_rows, int num_cols)
-{
-    this->num_rows    = num_rows;
-    this->num_cols    = num_cols;
-    this->num_entries = num_rows * num_cols;
-
-    values.resize(num_rows * num_cols);
-}
-
-template<typename ValueType, class MemorySpace, class Orientation>
-    void
-    array2d<ValueType,MemorySpace,Orientation>
-    ::swap(array2d<ValueType,MemorySpace,Orientation> & matrix)
-{
-    detail::matrix_base<int,ValueType,MemorySpace,cusp::array2d_format>::swap(matrix);
-
-    values.swap(matrix.values);
-}
 
 template <typename ValueType, class MemorySpace, class Orientation>
 template <typename MatrixType>

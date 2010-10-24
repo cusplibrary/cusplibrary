@@ -124,7 +124,10 @@ struct gather_index : public thrust::unary_function<T, T>
         T i = cusp::detail::linear_index_to_row_index(linear_index, m, n, DestinationOrientation());
         T j = cusp::detail::linear_index_to_col_index(linear_index, m, n, DestinationOrientation());
 
-        return cusp::detail::index_of(i, j, m, n, SourceOrientation());
+        // TODO use real pitch
+        T pitch = cusp::detail::minor_dimension(m, n, SourceOrientation());
+        
+        return cusp::detail::index_of(i, j, pitch, SourceOrientation());
     }
 };
 

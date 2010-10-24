@@ -126,8 +126,11 @@ struct transpose_index : public thrust::unary_function<T, T>
     {
         T i = cusp::detail::linear_index_to_row_index(linear_index, m, n, DestinationOrientation());
         T j = cusp::detail::linear_index_to_col_index(linear_index, m, n, DestinationOrientation());
+        
+        // TODO use real pitch
+        T pitch = cusp::detail::minor_dimension(n, m, SourceOrientation());
 
-        return cusp::detail::index_of(j, i, n, m, SourceOrientation());
+        return cusp::detail::index_of(j, i, pitch, SourceOrientation());
     }
 };
 
