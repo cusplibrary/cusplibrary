@@ -60,7 +60,7 @@ __global__ void
 spmv_dia_kernel(const IndexType num_rows, 
                 const IndexType num_cols, 
                 const IndexType num_diagonals,
-                const IndexType stride,
+                const IndexType pitch,
                 const IndexType * diagonal_offsets,
                 const ValueType * values,
                 const ValueType * x, 
@@ -87,7 +87,7 @@ spmv_dia_kernel(const IndexType num_rows,
             ValueType sum = (base == 0) ? 0 : y[row];
     
             // index into values array
-            IndexType idx = row + stride * base;
+            IndexType idx = row + pitch * base;
     
             for(IndexType n = 0; n < chunk_size; n++)
             {
@@ -99,7 +99,7 @@ spmv_dia_kernel(const IndexType num_rows,
                     sum += A_ij * fetch_x<UseCache>(col, x);
                 }
         
-                idx += stride;
+                idx += pitch;
             }
     
             y[row] = sum;
@@ -125,7 +125,7 @@ void __spmv_dia(const Matrix&    A,
     const size_t NUM_BLOCKS = std::min<size_t>(MAX_BLOCKS, DIVIDE_INTO(A.num_rows, BLOCK_SIZE));
    
     const IndexType num_diagonals = A.values.num_cols;
-    const IndexType stride        = A.values.num_rows;
+    const IndexType pitch         = A.values.pitch;
 
     // TODO can this be removed?
     if (num_diagonals == 0)
@@ -139,7 +139,7 @@ void __spmv_dia(const Matrix&    A,
         bind_x(x);
   
     spmv_dia_kernel<IndexType, ValueType, BLOCK_SIZE, UseCache> <<<NUM_BLOCKS, BLOCK_SIZE>>>
-        (A.num_rows, A.num_cols, num_diagonals, stride,
+        (A.num_rows, A.num_cols, num_diagonals, pitch,
          thrust::raw_pointer_cast(&A.diagonal_offsets[0]),
          thrust::raw_pointer_cast(&A.values.values[0]),
          x, y);

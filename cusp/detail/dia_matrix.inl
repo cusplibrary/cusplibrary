@@ -35,8 +35,11 @@ dia_matrix<IndexType,ValueType,MemorySpace>
     ::dia_matrix(IndexType num_rows, IndexType num_cols, IndexType num_entries,
                  IndexType num_diagonals, IndexType alignment)
         : detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::dia_format>(num_rows, num_cols, num_entries),
-          diagonal_offsets(num_diagonals),
-          values(detail::round_up(num_rows, alignment), num_diagonals) {}
+          diagonal_offsets(num_diagonals)
+    {
+      // TODO use array2d constructor when it can accept pitch
+      values.resize(num_rows, num_diagonals, detail::round_up(num_rows, alignment));
+    }
 
 // construct from a different matrix
 template <typename IndexType, typename ValueType, class MemorySpace>
@@ -63,7 +66,7 @@ template <typename IndexType, typename ValueType, class MemorySpace>
         this->num_entries   = num_entries;
 
         diagonal_offsets.resize(num_diagonals);
-        values.resize(detail::round_up(num_rows, alignment), num_diagonals);
+        values.resize(num_rows, num_diagonals, detail::round_up(num_rows, alignment));
     }
 
 // swap matrix contents

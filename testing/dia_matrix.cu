@@ -4,63 +4,69 @@
 template <class Space>
 void TestDiaMatrixBasicConstructor(void)
 {
-    cusp::dia_matrix<int, float, Space> matrix(4, 4, 7, 3, 1);
+  cusp::dia_matrix<int, float, Space> matrix(4, 5, 7, 3, 8);
 
-    ASSERT_EQUAL(matrix.num_rows,              4);
-    ASSERT_EQUAL(matrix.num_cols,              4);
-    ASSERT_EQUAL(matrix.num_entries,           7);
-    ASSERT_EQUAL(matrix.diagonal_offsets.size(),  3);
-    ASSERT_EQUAL(matrix.values.num_entries,      12);
+  ASSERT_EQUAL(matrix.num_rows,                4);
+  ASSERT_EQUAL(matrix.num_cols,                5);
+  ASSERT_EQUAL(matrix.num_entries,             7);
+  ASSERT_EQUAL(matrix.diagonal_offsets.size(), 3);
+  ASSERT_EQUAL(matrix.values.num_rows,         4);
+  ASSERT_EQUAL(matrix.values.num_cols,         3);
+  ASSERT_EQUAL(matrix.values.pitch,            8);
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestDiaMatrixBasicConstructor);
 
 template <class Space>
 void TestDiaMatrixCopyConstructor(void)
 {
-    cusp::dia_matrix<int, float, Space> matrix(4, 4, 7, 3, 1);
+  cusp::dia_matrix<int, float, Space> matrix(4, 5, 7, 3, 1);
 
-    matrix.diagonal_offsets[0] = -2;
-    matrix.diagonal_offsets[1] =  0;
-    matrix.diagonal_offsets[2] =  1;
+  matrix.diagonal_offsets[0] = -2;
+  matrix.diagonal_offsets[1] =  0;
+  matrix.diagonal_offsets[2] =  1;
 
-    matrix.values.values[ 0] =  0; 
-    matrix.values.values[ 1] =  0; 
-    matrix.values.values[ 2] = 13; 
-    matrix.values.values[ 3] = 16; 
-    matrix.values.values[ 4] = 10; 
-    matrix.values.values[ 5] =  0; 
-    matrix.values.values[ 6] = 14; 
-    matrix.values.values[ 7] =  0; 
-    matrix.values.values[ 8] = 11; 
-    matrix.values.values[ 9] = 12; 
-    matrix.values.values[10] = 15; 
-    matrix.values.values[11] =  0; 
-    
-    cusp::dia_matrix<int, float, Space> copy_of_matrix(matrix);
+  matrix.values.values[ 0] =  0; 
+  matrix.values.values[ 1] =  0; 
+  matrix.values.values[ 2] = 13; 
+  matrix.values.values[ 3] = 16; 
+  matrix.values.values[ 4] = 10; 
+  matrix.values.values[ 5] =  0; 
+  matrix.values.values[ 6] = 14; 
+  matrix.values.values[ 7] =  0; 
+  matrix.values.values[ 8] = 11; 
+  matrix.values.values[ 9] = 12; 
+  matrix.values.values[10] = 15; 
+  matrix.values.values[11] =  0; 
+  
+  cusp::dia_matrix<int, float, Space> copy_of_matrix(matrix);
 
-    ASSERT_EQUAL(copy_of_matrix.num_rows,              4);
-    ASSERT_EQUAL(copy_of_matrix.num_cols,              4);
-    ASSERT_EQUAL(copy_of_matrix.num_entries,           7);
-    ASSERT_EQUAL(copy_of_matrix.diagonal_offsets.size(),  3);
-    ASSERT_EQUAL(copy_of_matrix.values.num_entries,      12);
+  ASSERT_EQUAL(copy_of_matrix.num_rows,                 4);
+  ASSERT_EQUAL(copy_of_matrix.num_cols,                 5);
+  ASSERT_EQUAL(copy_of_matrix.num_entries,              7);
+  ASSERT_EQUAL(copy_of_matrix.diagonal_offsets.size(),  3);
+  ASSERT_EQUAL(copy_of_matrix.values.num_rows,          4);
+  ASSERT_EQUAL(copy_of_matrix.values.num_cols,          3);
+  ASSERT_EQUAL(copy_of_matrix.values.pitch,             4);
 
-    ASSERT_EQUAL(copy_of_matrix.diagonal_offsets, matrix.diagonal_offsets);
-    ASSERT_EQUAL_QUIET(copy_of_matrix.values,           matrix.values);
+  ASSERT_EQUAL(copy_of_matrix.diagonal_offsets, matrix.diagonal_offsets);
+  ASSERT_EQUAL_QUIET(copy_of_matrix.values,           matrix.values);
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestDiaMatrixCopyConstructor);
 
 template <class Space>
 void TestDiaMatrixResize(void)
 {
-    cusp::dia_matrix<int, float, Space> matrix;
-    
-    matrix.resize(4, 4, 7, 3, 16);
+  cusp::dia_matrix<int, float, Space> matrix;
+  
+  matrix.resize(4, 5, 7, 3, 8);
 
-    ASSERT_EQUAL(matrix.num_rows,              4);
-    ASSERT_EQUAL(matrix.num_cols,              4);
-    ASSERT_EQUAL(matrix.num_entries,           7);
-    ASSERT_EQUAL(matrix.diagonal_offsets.size(),  3);
-    ASSERT_EQUAL(matrix.values.num_entries,      48);
+  ASSERT_EQUAL(matrix.num_rows,                4);
+  ASSERT_EQUAL(matrix.num_cols,                5);
+  ASSERT_EQUAL(matrix.num_entries,             7);
+  ASSERT_EQUAL(matrix.diagonal_offsets.size(), 3);
+  ASSERT_EQUAL(matrix.values.num_rows,         4);
+  ASSERT_EQUAL(matrix.values.num_cols,         3);
+  ASSERT_EQUAL(matrix.values.pitch,            8);
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestDiaMatrixResize);
 

@@ -162,7 +162,7 @@ void generate_matrix_from_stencil(      cusp::dia_matrix<IndexType,ValueType,Mem
     //std::cout << std::endl;
     
     cusp::array1d<IndexType,cusp::host_memory> offsets(stencil.size(), 0);
-    for(IndexType i = 0; i < offsets.size(); i++)
+    for(size_t i = 0; i < offsets.size(); i++)
     {
         cusp::array1d<IndexType,cusp::host_memory> stencil_indices(num_dimensions);
         detail::unpack_tuple(thrust::get<0>(stencil[i]), stencil_indices.begin());
@@ -185,7 +185,7 @@ void generate_matrix_from_stencil(      cusp::dia_matrix<IndexType,ValueType,Mem
     {
         thrust::transform(thrust::counting_iterator<IndexType>(0),
                           thrust::counting_iterator<IndexType>(num_rows),
-                          matrix.values.values.begin() + matrix.values.num_rows * i, 
+                          matrix.values.values.begin() + matrix.values.pitch * i, 
                           detail::fill_diagonal_entries<IndexType,ValueType,StencilPoint,GridDimension>(stencil[i], grid));
     }
 

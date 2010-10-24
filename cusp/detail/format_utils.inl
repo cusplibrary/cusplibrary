@@ -137,8 +137,8 @@ void extract_diagonal(const Matrix& A, Array& output, cusp::dia_format)
         if(diagonal_offsets[i] == 0)
         {
             // diagonal found, copy to output and return
-            thrust::copy(A.values.values.begin() + A.values.num_rows * i,
-                         A.values.values.begin() + A.values.num_rows * i + output.size(),
+            thrust::copy(A.values.values.begin() + A.values.pitch * i,
+                         A.values.values.begin() + A.values.pitch * i + output.size(),
                          output.begin());
             return;
         }
