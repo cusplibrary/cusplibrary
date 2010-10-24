@@ -38,31 +38,40 @@ array2d<ValueType,MemorySpace,Orientation>
 
 template <typename ValueType, class MemorySpace, class Orientation>
 template <typename MatrixType>
-    array2d<ValueType,MemorySpace,Orientation>&
-    array2d<ValueType,MemorySpace,Orientation>
-    ::operator=(const MatrixType& matrix)
-    {
-        cusp::convert(matrix, *this);
-        
-        return *this;
-    }
+array2d<ValueType,MemorySpace,Orientation>&
+array2d<ValueType,MemorySpace,Orientation>
+::operator=(const MatrixType& matrix)
+{
+    cusp::convert(matrix, *this);
+    
+    return *this;
+}
+
 
 template<typename ValueType1, typename MemorySpace1, typename Orientation1,
-         typename ValueType2, typename MemorySpace2>
+         typename ValueType2, typename MemorySpace2, typename Orientation2>
 bool operator==(const array2d<ValueType1,MemorySpace1,Orientation1>& lhs,
-                const array2d<ValueType2,MemorySpace2,Orientation1>& rhs)
+                const array2d<ValueType2,MemorySpace2,Orientation2>& rhs)
 {
-    // TODO generalize to mixed orientations
-    if (lhs.num_rows != rhs.num_rows || lhs.num_cols != rhs.num_cols)
-        return false;
+  if (lhs.num_rows != rhs.num_rows || lhs.num_cols != rhs.num_cols)
+      return false;
+  
+  thrust::counting_iterator<size_t> begin(0);
+  thrust::counting_iterator<size_t> end(lhs.num_entries);
 
-    return lhs.values == rhs.values;
+  cusp::detail::logical_to_physical_functor      <size_t, Orientation1>               func1(lhs.num_rows, lhs.num_cols, lhs.pitch);
+  cusp::detail::logical_to_other_physical_functor<size_t, Orientation1, Orientation2> func2(rhs.num_rows, rhs.num_cols, rhs.pitch);
+
+  // like a boss
+  return thrust::equal(thrust::make_permutation_iterator(lhs.values.begin(), thrust::make_transform_iterator(begin, func1)),
+                       thrust::make_permutation_iterator(lhs.values.begin(), thrust::make_transform_iterator(end,   func1)),
+                       thrust::make_permutation_iterator(rhs.values.begin(), thrust::make_transform_iterator(begin, func2)));
 }
 
 template<typename ValueType1, typename MemorySpace1, typename Orientation1,
-         typename ValueType2, typename MemorySpace2>
+         typename ValueType2, typename MemorySpace2, typename Orientation2>
 bool operator!=(const array2d<ValueType1,MemorySpace1,Orientation1>& lhs,
-                const array2d<ValueType2,MemorySpace2,Orientation1>& rhs)
+                const array2d<ValueType2,MemorySpace2,Orientation2>& rhs)
 {
     return !(lhs == rhs);
 }

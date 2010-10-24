@@ -101,60 +101,31 @@ void copy(const T1& src, T2& dst,
   
 // same orientation
 template <typename T1, typename T2, typename Orientation>
-void copy_array2d(const T1& src, T2& dst,
-                  Orientation)
+void copy_array2d(const T1& src, T2& dst, Orientation)
 {
   copy_matrix_dimensions(src, dst);
+  dst.resize(src.num_rows, src.num_cols, src.pitch);
   cusp::copy(src.values, dst.values);
 }
 
-
-// convert a linear index to a linear index in the transpose
-template <typename T, typename SourceOrientation, typename DestinationOrientation>
-struct gather_index : public thrust::unary_function<T, T>
-{
-    T m, n; // destination dimensions
-
-    __host__ __device__
-    gather_index(T _m, T _n) : m(_m), n(_n) {}
-
-    __host__ __device__
-    T operator()(T linear_index)
-    {
-        T i = cusp::detail::linear_index_to_row_index(linear_index, m, n, DestinationOrientation());
-        T j = cusp::detail::linear_index_to_col_index(linear_index, m, n, DestinationOrientation());
-
-        // TODO use real pitch
-        T pitch = cusp::detail::minor_dimension(m, n, SourceOrientation());
-        
-        return cusp::detail::index_of(i, j, pitch, SourceOrientation());
-    }
-};
-
-template <typename T1, typename T2, typename SourceOrientation, typename DestinationOrientation>
-void copy_array2d(const T1& src, T2& dst,
-                  SourceOrientation,
-                  DestinationOrientation)
+template <typename T1, typename T2, typename Orientation1, typename Orientation2>
+void copy_array2d(const T1& src, T2& dst, Orientation1, Orientation2)
 {
   copy_matrix_dimensions(src, dst);
-  dst.resize(src.num_rows, src.num_cols);
-   
-  // TODO support non-trivial stride
-  thrust::counting_iterator<size_t> begin(0);
-  thrust::counting_iterator<size_t> end(src.values.size());
   
-#if THRUST_VERSION >= 100300
-  thrust::gather(thrust::make_transform_iterator(begin, gather_index<size_t, SourceOrientation, DestinationOrientation>(dst.num_rows, dst.num_cols)),
-                 thrust::make_transform_iterator(end,   gather_index<size_t, SourceOrientation, DestinationOrientation>(dst.num_rows, dst.num_cols)),
-                 src.values.begin(),
-                 dst.values.begin());
-#else
-  // TODO remove this when Thrust v1.2.x is unsupported
-  thrust::next::gather(thrust::make_transform_iterator(begin, gather_index<size_t, SourceOrientation, DestinationOrientation>(dst.num_rows, dst.num_cols)),
-                       thrust::make_transform_iterator(end,   gather_index<size_t, SourceOrientation, DestinationOrientation>(dst.num_rows, dst.num_cols)),
-                       src.values.begin(),
-                       dst.values.begin());
-#endif
+  // note: pitch does not carry over when orientation differs
+  dst.resize(src.num_rows, src.num_cols);
+  
+  thrust::counting_iterator<size_t> begin(0);
+  thrust::counting_iterator<size_t> end(src.num_entries);
+
+  // prefer coalesced writes to coalesced reads
+  cusp::detail::logical_to_other_physical_functor<size_t, Orientation2, Orientation1> func1(src.num_rows, src.num_cols, src.pitch);
+  cusp::detail::logical_to_physical_functor      <size_t, Orientation2>               func2(dst.num_rows, dst.num_cols, dst.pitch);
+
+  thrust::copy(thrust::make_permutation_iterator(src.values.begin(), thrust::make_transform_iterator(begin, func1)),
+               thrust::make_permutation_iterator(src.values.begin(), thrust::make_transform_iterator(end,   func1)),
+               thrust::make_permutation_iterator(dst.values.begin(), thrust::make_transform_iterator(begin, func2)));
 }
 
 template <typename T1, typename T2>

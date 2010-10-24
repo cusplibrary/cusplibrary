@@ -24,6 +24,10 @@
 #include <cusp/array1d.h>
 #include <cusp/detail/matrix_base.h>
 
+#include <thrust/functional.h>
+
+// TODO move indexing stuff to /detail/
+
 namespace cusp
 {
     struct row_major    {};
@@ -31,6 +35,14 @@ namespace cusp
     
 namespace detail
 {
+  // (i,j) -> major dimension
+  // (i,j) -> minor dimension
+  // logical n -> (i,j)
+  // (i,j) -> logical n
+  // (i,j) -> physical n
+  // logical n -> physical n
+  // logical n -> physical n (translated)
+  
   template <typename IndexType>
   __host__ __device__
   IndexType minor_dimension(IndexType num_rows, IndexType num_cols, row_major)    { return num_cols; }
@@ -47,7 +59,7 @@ namespace detail
   __host__ __device__
   IndexType major_dimension(IndexType num_rows, IndexType num_cols, column_major) { return num_cols; }
 
-  // TODO distinguish between logical and physical linear locations (for nontrivial stride)
+  // convert logical linear index into a logical (i,j) index
   template <typename IndexType>
   __host__ __device__
   IndexType linear_index_to_row_index(IndexType linear_index, IndexType num_rows, IndexType num_cols, row_major)    { return linear_index / num_cols; }
@@ -64,6 +76,7 @@ namespace detail
   __host__ __device__
   IndexType linear_index_to_col_index(IndexType linear_index, IndexType num_rows, IndexType num_cols, column_major)    { return linear_index / num_rows; }
 
+  // convert a logical (i,j) index into a physical linear index
   template <typename IndexType>
   __host__ __device__
   IndexType index_of(IndexType i, IndexType j, IndexType pitch, row_major)    { return i * pitch + j; }
@@ -71,83 +84,141 @@ namespace detail
   template <typename IndexType>
   __host__ __device__
   IndexType index_of(IndexType i, IndexType j, IndexType pitch, column_major) { return j * pitch + i; }
+  
+  template <typename IndexType, typename Orientation>
+  __host__ __device__
+  IndexType logical_to_physical(IndexType linear_index, IndexType num_rows, IndexType num_cols, IndexType pitch, Orientation)
+  {
+    IndexType i = linear_index_to_row_index(linear_index, num_rows, num_cols, Orientation());
+    IndexType j = linear_index_to_col_index(linear_index, num_rows, num_cols, Orientation());
+    
+    return index_of(i, j, pitch, Orientation());
+  }
+
+  // convert logical linear index in the source into a physical linear index in the destination
+  template <typename IndexType, typename Orientation1, typename Orientation2>
+  __host__ __device__
+  IndexType logical_to_other_physical(IndexType linear_index, IndexType num_rows, IndexType num_cols, IndexType pitch, Orientation1, Orientation2)
+  { 
+    IndexType i = linear_index_to_row_index(linear_index, num_rows, num_cols, Orientation1());
+    IndexType j = linear_index_to_col_index(linear_index, num_rows, num_cols, Orientation1());
+
+    return index_of(i, j, pitch, Orientation2());
+  }
+  
+  // functors 
+  template <typename IndexType, typename Orientation>
+  struct logical_to_physical_functor : public thrust::unary_function<IndexType,IndexType>
+  {
+    IndexType num_rows, num_cols, pitch;
+  
+    logical_to_physical_functor(IndexType num_rows, IndexType num_cols, IndexType pitch)
+      : num_rows(num_rows), num_cols(num_cols), pitch(pitch) {}
+  
+    __host__ __device__
+    IndexType operator()(const IndexType i) const
+    {
+      return logical_to_physical(i, num_rows, num_cols, pitch, Orientation());
+    }
+  };
+
+  template <typename IndexType, typename Orientation1, typename Orientation2>
+  struct logical_to_other_physical_functor : public thrust::unary_function<IndexType,IndexType>
+  {
+    IndexType num_rows, num_cols, pitch;
+  
+    logical_to_other_physical_functor(IndexType num_rows, IndexType num_cols, IndexType pitch)
+      : num_rows(num_rows), num_cols(num_cols), pitch(pitch) {}
+  
+    __host__ __device__
+    IndexType operator()(const IndexType i) const
+    {
+      return logical_to_other_physical(i, num_rows, num_cols, pitch, Orientation1(), Orientation2());
+    }
+  };
 
 } // end namespace detail
+
+// TODO document mapping of (i,j) onto values[pitch * i + j] or values[pitch * j + i]
 
 template<typename ValueType, class MemorySpace, class Orientation = cusp::row_major>
 class array2d : public cusp::detail::matrix_base<int,ValueType,MemorySpace,cusp::array2d_format>
 {
   typedef typename cusp::detail::matrix_base<int,ValueType,MemorySpace,cusp::array2d_format> Parent;
 
-    public:
-    typedef Orientation orientation;
-    
-    template<typename MemorySpace2>
+  public:
+  typedef Orientation orientation;
+
+  template<typename MemorySpace2>
     struct rebind { typedef cusp::array2d<ValueType, MemorySpace2, Orientation> type; };
-    
-    // equivalent container type
-    typedef typename cusp::array2d<ValueType, MemorySpace, Orientation> container;
-    
-    typedef typename cusp::array1d<ValueType, MemorySpace> values_array_type;
-   
-    values_array_type values;
-    
-    // minor_dimension + padding
-    int pitch;
-   
-    // construct empty matrix
-    array2d()
-      : Parent(), pitch(0), values(0) {}
 
-    // construct matrix with given shape and number of entries
-    array2d(int num_rows, int num_cols)
-      : Parent(num_rows, num_cols, num_rows * num_cols),
-        pitch(cusp::detail::minor_dimension(num_rows, num_cols, orientation())),
-        values(num_rows * num_cols) {}
-    
-    // construct matrix with given shape and number of entries and fill with a given value
-    array2d(int num_rows, int num_cols, const ValueType& value)
-      : Parent(num_rows, num_cols, num_rows * num_cols),
-        pitch(cusp::detail::minor_dimension(num_rows, num_cols, orientation())),
-        values(num_rows * num_cols, value) {}
-    
-    // construct from a different matrix
-    template <typename MatrixType>
-    array2d(const MatrixType& matrix);
-    
-    typename values_array_type::reference operator()(const int i, const int j)
-    { 
-      return values[cusp::detail::index_of(i, j, this->pitch, orientation())];
-    }
+  // equivalent container type
+  typedef typename cusp::array2d<ValueType, MemorySpace, Orientation> container;
 
-    typename values_array_type::const_reference operator()(const int i, const int j) const
-    { 
-      return values[cusp::detail::index_of(i, j, this->pitch, orientation())];
-    }
-    
-    void resize(int num_rows, int num_cols, int pitch)
-    {
-      values.resize(pitch * cusp::detail::major_dimension(num_rows, num_cols, orientation()));
-      this->num_rows    = num_rows;
-      this->num_cols    = num_cols;
-      this->pitch       = pitch; 
-      this->num_entries = num_rows * num_cols;
-    }
+  typedef typename cusp::array1d<ValueType, MemorySpace> values_array_type;
 
-    void resize(int num_rows, int num_cols)
-    {
-      resize(num_rows, num_cols, cusp::detail::minor_dimension(num_rows, num_cols, orientation()));
-    }
+  values_array_type values;
 
-    void swap(array2d& matrix)
-    {
-      Parent::swap(matrix);
-      thrust::swap(this->pitch, matrix.pitch);
-      values.swap(matrix.values);
-    }
-    
-    template <typename MatrixType>
-    array2d& operator=(const MatrixType& matrix);
+  // minor_dimension + padding
+  int pitch;
+
+  // construct empty matrix
+  array2d()
+    : Parent(), pitch(0), values(0) {}
+
+  // construct matrix with given shape and number of entries
+  array2d(int num_rows, int num_cols)
+    : Parent(num_rows, num_cols, num_rows * num_cols),
+      pitch(cusp::detail::minor_dimension(num_rows, num_cols, orientation())),
+      values(num_rows * num_cols) {}
+
+  // construct matrix with given shape and number of entries and fill with a given value
+  array2d(int num_rows, int num_cols, const ValueType& value)
+    : Parent(num_rows, num_cols, num_rows * num_cols),
+      pitch(cusp::detail::minor_dimension(num_rows, num_cols, orientation())),
+      values(num_rows * num_cols, value) {}
+
+  // construct from a different matrix
+  template <typename MatrixType>
+  array2d(const MatrixType& matrix);
+
+  typename values_array_type::reference operator()(const int i, const int j)
+  { 
+    return values[cusp::detail::index_of(i, j, pitch, orientation())];
+  }
+
+  typename values_array_type::const_reference operator()(const int i, const int j) const
+  { 
+    return values[cusp::detail::index_of(i, j, pitch, orientation())];
+  }
+
+  void resize(int num_rows, int num_cols, int pitch)
+  {
+    if (pitch < cusp::detail::minor_dimension(num_rows, num_cols, orientation()))
+      throw cusp::invalid_input_exception("pitch cannot be less than minor dimension");
+
+    values.resize(pitch * cusp::detail::major_dimension(num_rows, num_cols, orientation()));
+
+    this->num_rows    = num_rows;
+    this->num_cols    = num_cols;
+    this->pitch       = pitch; 
+    this->num_entries = num_rows * num_cols;
+  }
+
+  void resize(int num_rows, int num_cols)
+  {
+    resize(num_rows, num_cols, cusp::detail::minor_dimension(num_rows, num_cols, orientation()));
+  }
+
+  void swap(array2d& matrix)
+  {
+    Parent::swap(matrix);
+    thrust::swap(this->pitch, matrix.pitch);
+    values.swap(matrix.values);
+  }
+
+  template <typename MatrixType>
+  array2d& operator=(const MatrixType& matrix);
 
 }; // class array2d
     
@@ -188,17 +259,21 @@ class array2d_view : public cusp::detail::matrix_base<int, typename Array::value
 
   typename values_array_type::reference operator()(const int i, const int j)
   { 
-    return values[detail::index_of(i, j, this->pitch, orientation())];
+    return values[detail::index_of(i, j, pitch, orientation())];
   }
 
   typename values_array_type::const_reference operator()(const int i, const int j) const
   { 
-    return values[detail::index_of(i, j, this->pitch, orientation())];
+    return values[detail::index_of(i, j, pitch, orientation())];
   }
     
   void resize(int num_rows, int num_cols, int pitch)
   {
+    if (pitch < cusp::detail::minor_dimension(num_rows, num_cols, orientation()))
+      throw cusp::invalid_input_exception("pitch cannot be less than minor dimension");
+
     values.resize(pitch * cusp::detail::major_dimension(num_rows, num_cols, orientation()));
+
     this->num_rows    = num_rows;
     this->num_cols    = num_cols;
     this->pitch       = pitch; 
