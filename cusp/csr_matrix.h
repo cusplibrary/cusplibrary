@@ -161,7 +161,7 @@ template <typename Array1,
           typename Array3,
           typename IndexType   = typename Array1::value_type,
           typename ValueType   = typename Array3::value_type,
-          typename MemorySpace = typename Array1::memory_space> // TODO use minimum_space<1,2,3>::type
+          typename MemorySpace = typename cusp::minimum_space<typename Array1::memory_space, typename Array2::memory_space, typename Array3::memory_space>::type >
           class csr_matrix_view : public cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::csr_format>
 {
   typedef cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::csr_format> Parent;

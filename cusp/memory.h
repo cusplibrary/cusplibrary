@@ -19,34 +19,23 @@
 
 #include <cusp/detail/config.h>
 
-#include <memory>
-
-#include <thrust/device_allocator.h>
 #include <thrust/iterator/iterator_traits.h>
 
 namespace cusp
 {
-  typedef thrust::host_space_tag                host_memory;
-  typedef thrust::detail::cuda_device_space_tag device_memory;
+
+  typedef thrust::host_space_tag                   host_memory;
+  typedef thrust::detail::default_device_space_tag device_memory;
+  typedef thrust::any_space_tag                    any_memory;
+   
+  template<typename T, typename MemorySpace>
+  struct default_memory_allocator;
   
-   template<typename T, typename MemorySpace>
-   struct default_memory_allocator
-      : thrust::detail::eval_if<
-          thrust::detail::is_convertible<MemorySpace, host_memory>::value,
-  
-          thrust::detail::identity_< std::allocator<T> >,
-  
-          // XXX add backend-specific allocators here?
-  
-          thrust::detail::eval_if<
-            thrust::detail::is_convertible<MemorySpace, device_memory>::value,
-  
-            thrust::detail::identity_< thrust::device_malloc_allocator<T> >,
-  
-            thrust::detail::identity_< MemorySpace >
-          >
-        >
-  {};
-  
+  template <typename MemorySpace1, typename MemorySpace2=any_memory, typename MemorySpace3=any_memory>
+  struct minimum_space;
+
+
 } // end namespace cusp
+
+#include <cusp/detail/memory.inl>
 
