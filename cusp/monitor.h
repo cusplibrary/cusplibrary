@@ -315,7 +315,7 @@ class convergence_monitor : public default_monitor<Real>
     Real geometric_rate(void)
     {
 	size_t num = residuals.size();	
-	return std::pow(residuals[num-1] / residuals[0], 1.0/num); 
+	return std::pow(residuals[num-1] / residuals[0], Real(1.0)/num); 
     }
 
     Real average_rate(void)

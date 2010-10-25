@@ -490,7 +490,8 @@ void spmv_coo(SizeType        num_rows,
 
   if (num_entries == 0) return;
 
-  const SizeType K          = 5;
+  // TODO pick K and/or block_size based on sizeof(ValueType4)
+  const SizeType K          = 3;
   const SizeType block_size = 128;
   const SizeType unit_size  = K * block_size;
   const SizeType max_blocks = cusp::detail::device::arch::max_active_blocks(spmv_coo_kernel<block_size, K, SizeType, IndexIterator1, IndexIterator2, ValueIterator1, ValueIterator2, ValueIterator4, BinaryFunction1, BinaryFunction2, OutputIterator1, OutputIterator2>, block_size, (size_t) 0);
