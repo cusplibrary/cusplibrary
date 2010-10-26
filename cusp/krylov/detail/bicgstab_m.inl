@@ -594,6 +594,8 @@ void bicgstab_m(LinearOperator& A,
         VectorType1& x, VectorType2& b, VectorType3& sigma,
         Monitor& monitor)
 {
+  CUSP_PROFILE_SCOPED();
+
   //
   // This bit is initialization of the solver.
   //

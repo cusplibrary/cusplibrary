@@ -63,6 +63,8 @@ namespace gallery
 template <typename MatrixType>
 void poisson5pt(      MatrixType& matrix, size_t m, size_t n)
 {
+    CUSP_PROFILE_SCOPED();
+
     typedef typename MatrixType::index_type IndexType;
     typedef typename MatrixType::value_type ValueType; 
     typedef thrust::tuple<IndexType,IndexType>    StencilIndex;

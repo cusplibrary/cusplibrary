@@ -200,6 +200,7 @@ void axpy(const Array1& x,
                 Array2& y,
           ScalarType alpha)
 {
+    CUSP_PROFILE_SCOPED();
     detail::assert_same_dimensions(x, y);
     cusp::blas::axpy(x.begin(), x.end(), y.begin(), alpha);
 }
@@ -229,6 +230,7 @@ void axpby(const Array1& x,
           ScalarType alpha,
           ScalarType beta)
 {
+    CUSP_PROFILE_SCOPED();
     detail::assert_same_dimensions(x, y, z);
     cusp::blas::axpby(x.begin(), x.end(), y.begin(), z.begin(), alpha, beta);
 }
@@ -247,6 +249,7 @@ void axpbypcz(InputIterator1 first1,
               ScalarType beta,
               ScalarType gamma)
 {
+    CUSP_PROFILE_SCOPED();
     size_t N = last1 - first1;
     thrust::for_each(thrust::make_zip_iterator(thrust::make_tuple(first1, first2, first3, output)),
                      thrust::make_zip_iterator(thrust::make_tuple(first1, first2, first3, output)) + N,
@@ -266,6 +269,7 @@ void axpbypcz(const Array1& x,
               ScalarType beta,
               ScalarType gamma)
 {
+    CUSP_PROFILE_SCOPED();
     detail::assert_same_dimensions(x, y, z, output);
     cusp::blas::axpbypcz(x.begin(), x.end(), y.begin(), z.begin(), output.begin(), alpha, beta, gamma);
 }
@@ -290,6 +294,7 @@ void xmy(const Array1& x,
          const Array2& y,
                Array3& output)
 {
+    CUSP_PROFILE_SCOPED();
     detail::assert_same_dimensions(x, y, output);
     cusp::blas::xmy(x.begin(), x.end(), y.begin(), output.begin());
 }
@@ -308,6 +313,7 @@ template <typename Array1,
 void copy(const Array1& x,
                 Array2& y)
 {
+    CUSP_PROFILE_SCOPED();
     detail::assert_same_dimensions(x, y);
     cusp::blas::copy(x.begin(), x.end(), y.begin());
 }
@@ -332,6 +338,7 @@ typename Array1::value_type
     dot(const Array1& x,
         const Array2& y)
 {
+    CUSP_PROFILE_SCOPED();
     detail::assert_same_dimensions(x, y);
     return cusp::blas::dot(x.begin(), x.end(), y.begin());
 }
@@ -358,6 +365,7 @@ typename Array1::value_type
     dotc(const Array1& x,
          const Array2& y)
 {
+    CUSP_PROFILE_SCOPED();
     detail::assert_same_dimensions(x, y);
     return cusp::blas::dotc(x.begin(), x.end(), y.begin());
 }
@@ -378,6 +386,7 @@ template <typename Array,
 void fill(Array& x,
           ScalarType alpha)
 {
+    CUSP_PROFILE_SCOPED();
     cusp::blas::fill(x.begin(), x.end(), alpha);
 }
 
@@ -401,6 +410,7 @@ template <typename Array>
 typename Array::value_type
     nrm2(const Array& x)
 {
+    CUSP_PROFILE_SCOPED();
     return cusp::blas::nrm2(x.begin(), x.end());
 }
 
@@ -424,6 +434,7 @@ template <typename Array>
 typename Array::value_type
     nrmmax(const Array& x)
 {
+    CUSP_PROFILE_SCOPED();
     return cusp::blas::nrmmax(x.begin(), x.end());
 }
 
@@ -442,6 +453,7 @@ template <typename Array,
 void scal(Array& array,
           ScalarType alpha)
 {
+    CUSP_PROFILE_SCOPED();
     cusp::blas::scal(array.begin(), array.end(), alpha);
 }
 

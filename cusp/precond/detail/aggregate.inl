@@ -34,53 +34,54 @@ void mis_to_aggregates(const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& 
                        const ArrayType& mis,
                              ArrayType& aggregates)
 {
-    const IndexType N = C.num_rows;
+  CUSP_PROFILE_SCOPED();
+  const IndexType N = C.num_rows;
 
-    // (2,i) mis (0,i) non-mis
+  // (2,i) mis (0,i) non-mis
 
-    // current (ring,index)
-    ArrayType mis1(N);
-    ArrayType idx1(N);
-    ArrayType mis2(N);
-    ArrayType idx2(N);
+  // current (ring,index)
+  ArrayType mis1(N);
+  ArrayType idx1(N);
+  ArrayType mis2(N);
+  ArrayType idx2(N);
 
-    typedef typename ArrayType::value_type T;
-    typedef thrust::tuple<T,T> Tuple;
+  typedef typename ArrayType::value_type T;
+  typedef thrust::tuple<T,T> Tuple;
 
-    // find the largest (mis[j],j) 1-ring neighbor for each node
-    cusp::detail::device::cuda::spmv_coo
-        (C.num_rows, C.num_entries,
-         C.row_indices.begin(), C.column_indices.begin(), thrust::constant_iterator<int>(1),  // XXX should we mask explicit zeros? (e.g. DIA, array2d)
-         thrust::make_zip_iterator(thrust::make_tuple(mis.begin(), thrust::counting_iterator<IndexType>(0))),
-         thrust::make_zip_iterator(thrust::make_tuple(mis.begin(), thrust::counting_iterator<IndexType>(0))),
-         thrust::make_zip_iterator(thrust::make_tuple(mis1.begin(), idx1.begin())),
-         thrust::project2nd<Tuple,Tuple>(), thrust::maximum<Tuple>());
+  // find the largest (mis[j],j) 1-ring neighbor for each node
+  cusp::detail::device::cuda::spmv_coo
+      (C.num_rows, C.num_entries,
+       C.row_indices.begin(), C.column_indices.begin(), thrust::constant_iterator<int>(1),  // XXX should we mask explicit zeros? (e.g. DIA, array2d)
+       thrust::make_zip_iterator(thrust::make_tuple(mis.begin(), thrust::counting_iterator<IndexType>(0))),
+       thrust::make_zip_iterator(thrust::make_tuple(mis.begin(), thrust::counting_iterator<IndexType>(0))),
+       thrust::make_zip_iterator(thrust::make_tuple(mis1.begin(), idx1.begin())),
+       thrust::project2nd<Tuple,Tuple>(), thrust::maximum<Tuple>());
 
-    // boost mis0 values so they win in second round
-    thrust::transform(mis.begin(), mis.end(), mis1.begin(), mis1.begin(), thrust::plus<typename ArrayType::value_type>());
+  // boost mis0 values so they win in second round
+  thrust::transform(mis.begin(), mis.end(), mis1.begin(), mis1.begin(), thrust::plus<typename ArrayType::value_type>());
 
-    // find the largest (mis[j],j) 2-ring neighbor for each node
-    cusp::detail::device::cuda::spmv_coo
-        (C.num_rows, C.num_entries,
-         C.row_indices.begin(), C.column_indices.begin(), thrust::constant_iterator<int>(1),  // XXX should we mask explicit zeros? (e.g. DIA, array2d)
-         thrust::make_zip_iterator(thrust::make_tuple(mis1.begin(), idx1.begin())),
-         thrust::make_zip_iterator(thrust::make_tuple(mis1.begin(), idx1.begin())),
-         thrust::make_zip_iterator(thrust::make_tuple(mis2.begin(), idx2.begin())),
-         thrust::project2nd<Tuple,Tuple>(), thrust::maximum<Tuple>());
+  // find the largest (mis[j],j) 2-ring neighbor for each node
+  cusp::detail::device::cuda::spmv_coo
+      (C.num_rows, C.num_entries,
+       C.row_indices.begin(), C.column_indices.begin(), thrust::constant_iterator<int>(1),  // XXX should we mask explicit zeros? (e.g. DIA, array2d)
+       thrust::make_zip_iterator(thrust::make_tuple(mis1.begin(), idx1.begin())),
+       thrust::make_zip_iterator(thrust::make_tuple(mis1.begin(), idx1.begin())),
+       thrust::make_zip_iterator(thrust::make_tuple(mis2.begin(), idx2.begin())),
+       thrust::project2nd<Tuple,Tuple>(), thrust::maximum<Tuple>());
 
-    // enumerate the MIS nodes
-    cusp::array1d<IndexType,MemorySpace> mis_enum(N);
-    thrust::exclusive_scan(mis.begin(), mis.end(), mis_enum.begin());
+  // enumerate the MIS nodes
+  cusp::array1d<IndexType,MemorySpace> mis_enum(N);
+  thrust::exclusive_scan(mis.begin(), mis.end(), mis_enum.begin());
 
 #if THRUST_VERSION >= 100300
-    thrust::gather(idx2.begin(), idx2.end(),
-                   mis_enum.begin(),
-                   aggregates.begin());
+  thrust::gather(idx2.begin(), idx2.end(),
+                 mis_enum.begin(),
+                 aggregates.begin());
 #else
-    // TODO remove this when Thrust v1.2.x is unsupported
-    thrust::next::gather(idx2.begin(), idx2.end(),
-                         mis_enum.begin(),
-                         aggregates.begin());
+  // TODO remove this when Thrust v1.2.x is unsupported
+  thrust::next::gather(idx2.begin(), idx2.end(),
+                       mis_enum.begin(),
+                       aggregates.begin());
 #endif    
 } // mis_to_aggregates()
 
@@ -90,17 +91,18 @@ template <typename IndexType, typename ValueType,
 void standard_aggregation(const cusp::coo_matrix<IndexType,ValueType,cusp::device_memory>& C,
                           ArrayType& aggregates)
 {
-    // TODO check sizes
-    // TODO label singletons with a -1
+  CUSP_PROFILE_SCOPED();
+  // TODO check sizes
+  // TODO label singletons with a -1
 
-    const size_t N = C.num_rows;
+  const size_t N = C.num_rows;
 
-    // compute MIS(2)
-    cusp::array1d<IndexType,cusp::device_memory> mis(N);
-    cusp::graph::maximal_independent_set(C, mis, 2);
+  // compute MIS(2)
+  cusp::array1d<IndexType,cusp::device_memory> mis(N);
+  cusp::graph::maximal_independent_set(C, mis, 2);
 
-    // compute aggregates from MIS(2)
-    mis_to_aggregates(C, mis, aggregates);
+  // compute aggregates from MIS(2)
+  mis_to_aggregates(C, mis, aggregates);
 }
 
 template <typename IndexType, typename ValueType,
@@ -108,6 +110,8 @@ template <typename IndexType, typename ValueType,
 void standard_aggregation(const cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& C,
               				    ArrayType& aggregates)
 {
+  CUSP_PROFILE_SCOPED();
+
   IndexType next_aggregate = 1; // number of aggregates + 1
 
   // TODO work with COO directly instead of converting to CSR
@@ -229,3 +233,4 @@ void standard_aggregation(const cusp::coo_matrix<IndexType,ValueType,cusp::host_
 } // end namespace detail
 } // end namespace precond
 } // end namespace cusp
+

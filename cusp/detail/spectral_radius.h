@@ -58,6 +58,8 @@ struct hash_01
 template <typename Matrix>    
 double estimate_spectral_radius(const Matrix& A, size_t k = 20)
 {
+    CUSP_PROFILE_SCOPED();
+
     typedef typename Matrix::index_type   IndexType;
     typedef typename Matrix::value_type   ValueType;
     typedef typename Matrix::memory_space MemorySpace;

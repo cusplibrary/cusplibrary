@@ -31,6 +31,8 @@ namespace detail
 template <typename OffsetArray, typename IndexArray>
 void offsets_to_indices(const OffsetArray& offsets, IndexArray& indices)
 {
+    CUSP_PROFILE_SCOPED();
+
     typedef typename OffsetArray::value_type OffsetType;
 
     // convert compressed row offsets into uncompressed row indices
@@ -44,6 +46,8 @@ void offsets_to_indices(const OffsetArray& offsets, IndexArray& indices)
 template <typename IndexArray, typename OffsetArray>
 void indices_to_offsets(const IndexArray& indices, OffsetArray& offsets)
 {
+    CUSP_PROFILE_SCOPED();
+
     typedef typename OffsetArray::value_type OffsetType;
 
     // convert uncompressed row indices into compressed row offsets
@@ -77,6 +81,8 @@ struct row_operator : public std::unary_function<T,IndexType>
 template <typename Matrix, typename Array>
 void extract_diagonal(const Matrix& A, Array& output, cusp::coo_format)
 {
+    CUSP_PROFILE_SCOPED();
+
     typedef typename Matrix::index_type  IndexType;
     typedef typename Array::value_type   ValueType;
     typedef typename Array::memory_space MemorySpace;  // TODO remove
@@ -232,6 +238,8 @@ void extract_diagonal(const Matrix& A, Array& output, cusp::hyb_format)
 template <typename Matrix, typename Array>
 void extract_diagonal(const Matrix& A, Array& output)
 {
+    CUSP_PROFILE_SCOPED();
+
     output.resize(thrust::min(A.num_rows, A.num_cols));
 
     // dispatch on matrix format

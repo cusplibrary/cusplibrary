@@ -28,3 +28,15 @@
 #error "Thrust v1.2.0 or newer is required"
 #endif 
 
+// hooks for profiling
+#if defined(CUSP_PROFILE_ENABLED)
+// profiling enabled
+#define CUSP_PROFILE_SCOPED()  PROFILE_SCOPED()
+#define CUSP_PROFILE_DUMP()    cusp::detail::profiler::dump()
+#include <cusp/detail/profiler.h>
+#else
+// profiling disabled
+#define CUSP_PROFILE_SCOPED()
+#define CUSP_PROFILE_DUMP()
+#endif
+

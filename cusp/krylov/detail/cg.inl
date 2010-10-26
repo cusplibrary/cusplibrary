@@ -67,6 +67,8 @@ void cg(LinearOperator& A,
         Monitor& monitor,
         Preconditioner& M)
 {
+    CUSP_PROFILE_SCOPED();
+
     typedef typename LinearOperator::value_type   ValueType;
     typedef typename LinearOperator::memory_space MemorySpace;
 

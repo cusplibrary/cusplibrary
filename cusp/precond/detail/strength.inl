@@ -211,6 +211,8 @@ void symmetric_strength_of_connection(const Matrix1& A, Matrix2& S, const double
 template <typename Matrix1, typename Matrix2>
 void symmetric_strength_of_connection(const Matrix1& A, Matrix2& S, const double theta)
 {
+  CUSP_PROFILE_SCOPED();
+
   if (theta == 0.0)
   {
     // everything is a strong connection
