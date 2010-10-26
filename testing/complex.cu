@@ -6,13 +6,13 @@
 
 #define ASSERT_COMPLEX_ALMOST_EQUAL(X,Y) {unittest::assert_almost_equal((X.real()),(Y.real()), __FILE__, __LINE__);unittest::assert_almost_equal((X.imag()),(Y.imag()), __FILE__, __LINE__);}
 
-#ifdef __GNUC__
 template< typename T1, typename T2 >
 struct is_same_type      { enum { result = false }; };
 
 template< typename T>
 struct is_same_type<T,T> { enum { result = true }; };
 
+#ifdef __GNUC__
 extern "C"{
   float __complex__ cacosf(float __complex__ z);
   double __complex__ cacos(double __complex__ z);
