@@ -65,8 +65,11 @@ template <typename ValueType, typename MemorySpace>
 template <typename ValueType, typename MemorySpace>
 template<typename MatrixType>
     jacobi<ValueType,MemorySpace>
-    ::jacobi(const MatrixType& A, ValueType omega) : default_omega(omega)
+    ::jacobi(const MatrixType& A, ValueType omega)
+        : default_omega(omega), temp(A.num_rows)
     {
+        CUSP_PROFILE_SCOPED();
+
         // extract the main diagonal
         cusp::detail::extract_diagonal(A, diagonal);
     }
@@ -75,7 +78,7 @@ template<typename MatrixType>
 template <typename ValueType, typename MemorySpace>
 template<typename MatrixType, typename VectorType1, typename VectorType2>
     void jacobi<ValueType,MemorySpace>
-    ::operator()(const MatrixType& A, const VectorType1& b, VectorType2& x) const
+    ::operator()(const MatrixType& A, const VectorType1& b, VectorType2& x)
     {
         jacobi<ValueType,MemorySpace>::operator()(A,b,x,default_omega);
     }
@@ -84,17 +87,16 @@ template<typename MatrixType, typename VectorType1, typename VectorType2>
 template <typename ValueType, typename MemorySpace>
 template<typename MatrixType, typename VectorType1, typename VectorType2>
     void jacobi<ValueType,MemorySpace>
-    ::operator()(const MatrixType& A, const VectorType1& b, VectorType2& x, ValueType omega) const
+    ::operator()(const MatrixType& A, const VectorType1& b, VectorType2& x, ValueType omega)
     {
-        // TODO see if preallocating y is noticably faster
-        cusp::array1d<ValueType,MemorySpace> y(x.size());
+        CUSP_PROFILE_SCOPED();
 
         // y <- A*x
-        cusp::multiply(A, x, y);
+        cusp::multiply(A, x, temp);
         
         // x <- x + D^-1 (b - y)
-        thrust::transform(thrust::make_zip_iterator(thrust::make_tuple(x.begin(), diagonal.begin(), b.begin(), y.begin())),
-                          thrust::make_zip_iterator(thrust::make_tuple(x.end(),   diagonal.end(),   b.end(),   y.end())),
+        thrust::transform(thrust::make_zip_iterator(thrust::make_tuple(x.begin(), diagonal.begin(), b.begin(), temp.begin())),
+                          thrust::make_zip_iterator(thrust::make_tuple(x.end(),   diagonal.end(),   b.end(),   temp.end())),
                           x.begin(),
                           detail::jacobi_functor<ValueType>(omega));
     }

@@ -34,6 +34,7 @@ class jacobi
 {
     ValueType default_omega;
     cusp::array1d<ValueType, MemorySpace> diagonal;
+    cusp::array1d<ValueType,MemorySpace> temp;
 
 public:
     jacobi();
@@ -42,10 +43,10 @@ public:
     jacobi(const MatrixType& A, ValueType omega=1.0);
     
     template <typename MatrixType, typename VectorType1, typename VectorType2>
-    void operator()(const MatrixType& A, const VectorType1& b, VectorType2& x) const;
+    void operator()(const MatrixType& A, const VectorType1& b, VectorType2& x);
         
     template <typename MatrixType, typename VectorType1, typename VectorType2>
-    void operator()(const MatrixType& A, const VectorType1& b, VectorType2& x, ValueType omega) const;
+    void operator()(const MatrixType& A, const VectorType1& b, VectorType2& x, ValueType omega);
 };
 
 } // end namespace relaxation

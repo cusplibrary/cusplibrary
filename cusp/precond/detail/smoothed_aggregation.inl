@@ -288,7 +288,7 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace>::extend_hierarchy(voi
     
 template <typename IndexType, typename ValueType, typename MemorySpace>
 template <typename Array1, typename Array2>
-void smoothed_aggregation<IndexType,ValueType,MemorySpace>::operator()(const Array1& x, Array2& y) const
+void smoothed_aggregation<IndexType,ValueType,MemorySpace>::operator()(const Array1& x, Array2& y)
 {
   CUSP_PROFILE_SCOPED();
   // perform 1 V-cycle
@@ -298,7 +298,7 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace>::operator()(const Arr
 
 template <typename IndexType, typename ValueType, typename MemorySpace>
 void smoothed_aggregation<IndexType,ValueType,MemorySpace>::solve(const cusp::array1d<ValueType,MemorySpace>& b,
-                                                                        cusp::array1d<ValueType,MemorySpace>& x) const
+                                                                        cusp::array1d<ValueType,MemorySpace>& x)
 {
   CUSP_PROFILE_SCOPED();
 
@@ -311,7 +311,7 @@ template <typename IndexType, typename ValueType, typename MemorySpace>
 template <typename Monitor>
 void smoothed_aggregation<IndexType,ValueType,MemorySpace>::solve(const cusp::array1d<ValueType,MemorySpace>& b,
                                                                         cusp::array1d<ValueType,MemorySpace>& x,
-                                                                        Monitor& monitor ) const
+                                                                        Monitor& monitor )
 {
   CUSP_PROFILE_SCOPED();
 
@@ -339,7 +339,7 @@ template <typename IndexType, typename ValueType, typename MemorySpace>
 void smoothed_aggregation<IndexType,ValueType,MemorySpace>
 ::_solve(const cusp::array1d<ValueType,MemorySpace>& b,
                cusp::array1d<ValueType,MemorySpace>& x,
-         const int i) const
+         const int i)
 {
   CUSP_PROFILE_SCOPED();
 
