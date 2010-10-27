@@ -272,9 +272,17 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace>::extend_hierarchy(voi
     cusp::multiply(R, AP, RAP);
   }
 
+  #ifndef USE_POLY_SMOOTHER
   //  4/3 * 1/rho is a good default, where rho is the spectral radius of D^-1(A)
   ValueType omega = (4.0f/3.0f) / rho_DinvA;
   levels.back().smoother = cusp::relaxation::jacobi<ValueType, MemorySpace>(A, omega);
+  #else
+  cusp::array1d<ValueType,cusp::host_memory> coeff;
+  ValueType rho = cusp::detail::estimate_spectral_radius(A);
+  cusp::relaxation::detail::chebyshev_polynomial_coefficients(rho,coeff);
+  levels.back().smoother = cusp::relaxation::polynomial<ValueType, MemorySpace>(A, coeff);
+  #endif
+
   levels.back().aggregates.swap(aggregates);
   levels.back().R.swap(R);
   levels.back().P.swap(P);

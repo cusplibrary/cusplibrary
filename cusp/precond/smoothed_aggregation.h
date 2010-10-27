@@ -28,6 +28,7 @@
 
 #include <cusp/coo_matrix.h>
 #include <cusp/relaxation/jacobi.h>
+#include <cusp/relaxation/polynomial.h>
 
 #include <cusp/detail/lu.h>
 
@@ -61,7 +62,11 @@ class smoothed_aggregation : public cusp::linear_operator<ValueType, MemorySpace
         cusp::array1d<ValueType,MemorySpace> b;               // per-level rhs
         cusp::array1d<ValueType,MemorySpace> residual;        // per-level residual
         
+	#ifndef USE_POLY_SMOOTHER
         cusp::relaxation::jacobi<ValueType,MemorySpace> smoother;
+	#else
+        cusp::relaxation::polynomial<ValueType,MemorySpace> smoother;
+	#endif
        
         ValueType rho;                                        // spectral radius
     };
