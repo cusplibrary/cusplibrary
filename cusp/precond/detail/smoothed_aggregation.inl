@@ -299,12 +299,12 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace>::extend_hierarchy(voi
     
 template <typename IndexType, typename ValueType, typename MemorySpace>
 template <typename Array1, typename Array2>
-void smoothed_aggregation<IndexType,ValueType,MemorySpace>::operator()(const Array1& x, Array2& y)
+void smoothed_aggregation<IndexType,ValueType,MemorySpace>::operator()(const Array1& b, Array2& x)
 {
   CUSP_PROFILE_SCOPED();
+
   // perform 1 V-cycle
-  thrust::fill(y.begin(), y.end(), typename Array1::value_type(0));
-  _solve(x, y, 0);
+  _solve(b, x, 0);
 }
 
 template <typename IndexType, typename ValueType, typename MemorySpace>
@@ -328,18 +328,23 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace>::solve(const cusp::ar
 
   // TODO check sizes
   const cusp::coo_matrix<IndexType,ValueType,MemorySpace> & A = levels[0].A;
+ 
+  // use simple iteration
+  cusp::array1d<ValueType,MemorySpace> update(A.num_rows);
+  cusp::array1d<ValueType,MemorySpace> residual(A.num_rows);
 
-  cusp::array1d<ValueType,MemorySpace>& residual = levels[0].residual;
-
-  // compute initial residual norm
+  // compute initial residual
   cusp::multiply(A,x,residual);
   cusp::blas::axpby(b, residual, residual, ValueType(1), ValueType(-1));
 
   while(!monitor.finished(residual))
   {   
-      _solve(b, x, 0); 
+      _solve(residual, update, 0); 
 
-      // compute residual norm
+      // x += M * r
+      cusp::blas::axpy(update, x, ValueType(1));
+
+      // update residual
       cusp::multiply(A,x,residual);
       cusp::blas::axpby(b, residual, residual, ValueType(1), ValueType(-1));
       ++monitor;
@@ -373,11 +378,8 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace>
     cusp::array1d<ValueType,MemorySpace>& coarse_b = levels[i + 1].b;
     cusp::array1d<ValueType,MemorySpace>& coarse_x = levels[i + 1].x;
 
-    cusp::blas::fill(coarse_x, 0); // TODO make this the responsibility of the next level
-
-    // TODO optimize Jacobi smoother during pre-smoothing (just do x = D^1 * b)
     // presmooth
-    levels[i].smoother(A,b,x);
+    levels[i].smoother.presmooth(A,b,x);
 
     // compute residual <- b - A*x
     cusp::multiply(A, x, residual);
@@ -394,7 +396,7 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace>
     cusp::blas::axpy(residual, x, 1.0f);
 
     // postsmooth
-    levels[i].smoother(A,b,x);
+    levels[i].smoother.postsmooth(A,b,x);
   }
 }
 
