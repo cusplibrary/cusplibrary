@@ -278,12 +278,15 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace>::extend_hierarchy(voi
   levels.back().aggregates.swap(aggregates);
   levels.back().R.swap(R);
   levels.back().P.swap(P);
+  levels.back().residual.resize(levels.back().A.num_rows);
 
   //std::cout << "omega " << omega << std::endl;
 
   levels.push_back(level());
   levels.back().A.swap(RAP);
   levels.back().B.swap(B_coarse);
+  levels.back().x.resize(levels.back().A.num_rows);
+  levels.back().b.resize(levels.back().A.num_rows);
 }
     
 template <typename IndexType, typename ValueType, typename MemorySpace>
@@ -318,7 +321,7 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace>::solve(const cusp::ar
   // TODO check sizes
   const cusp::coo_matrix<IndexType,ValueType,MemorySpace> & A = levels[0].A;
 
-  cusp::array1d<ValueType,MemorySpace> residual(A.num_rows);  // TODO eliminate temporaries
+  cusp::array1d<ValueType,MemorySpace>& residual = levels[0].residual;
 
   // compute initial residual norm
   cusp::multiply(A,x,residual);
@@ -358,11 +361,13 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace>
     const cusp::coo_matrix<IndexType,ValueType,MemorySpace> & A = levels[i].A;
     const cusp::coo_matrix<IndexType,ValueType,MemorySpace> & P = levels[i].P;
 
-    cusp::array1d<ValueType,MemorySpace> residual(P.num_rows);  // TODO eliminate temporaries
-    cusp::array1d<ValueType,MemorySpace> coarse_b(P.num_cols);
-    cusp::array1d<ValueType,MemorySpace> coarse_x(P.num_cols, 0);
+    cusp::array1d<ValueType,MemorySpace>& residual = levels[i].residual;
+    cusp::array1d<ValueType,MemorySpace>& coarse_b = levels[i + 1].b;
+    cusp::array1d<ValueType,MemorySpace>& coarse_x = levels[i + 1].x;
 
-    // Jacobi smoother throws a warning at compile (warning: expression has no effect)
+    cusp::blas::fill(coarse_x, 0); // TODO make this the responsibility of the next level
+
+    // TODO optimize Jacobi smoother during pre-smoothing (just do x = D^1 * b)
     // presmooth
     levels[i].smoother(A,b,x);
 

@@ -57,6 +57,9 @@ class smoothed_aggregation : public cusp::linear_operator<ValueType, MemorySpace
         cusp::coo_matrix<IndexType,ValueType,MemorySpace> P;  // prolongation operator
         cusp::array1d<IndexType,MemorySpace> aggregates;      // aggregates
         cusp::array1d<ValueType,MemorySpace> B;               // near-nullspace candidates
+        cusp::array1d<ValueType,MemorySpace> x;               // per-level solution
+        cusp::array1d<ValueType,MemorySpace> b;               // per-level rhs
+        cusp::array1d<ValueType,MemorySpace> residual;        // per-level residual
         
         cusp::relaxation::jacobi<ValueType,MemorySpace> smoother;
        
