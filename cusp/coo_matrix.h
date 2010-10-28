@@ -131,11 +131,21 @@ namespace cusp
          */
         void sort_by_row(void);
         
+        /*! Sort matrix elements by row and column index
+         */
+        void sort_by_row_and_column(void);
+        
         /*! Determine whether matrix elements are sorted by row index
          *
          *  \return \c false, if the row indices are unsorted; \c true, otherwise.
          */
         bool is_sorted_by_row(void);
+        
+        /*! Determine whether matrix elements are sorted by row and column index
+         *
+         *  \return \c false, if the row and column indices are unsorted; \c true, otherwise.
+         */
+        bool is_sorted_by_row_and_column(void);
     }; // class coo_matrix
 /*! \}
  */

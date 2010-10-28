@@ -107,7 +107,7 @@ DECLARE_UNITTEST(TestCooMatrixRebind);
 template <class Space>
 void TestCooMatrixSortByRow(void)
 {
-    cusp::coo_matrix<int, float, Space> A(5, 2, 4);
+    cusp::coo_matrix<int, float, Space> A(5, 5, 4);
     
     A.row_indices[0] = 3; A.column_indices[0] = 1; A.values[0] = 1;
     A.row_indices[1] = 4; A.column_indices[1] = 2; A.values[1] = 2;
@@ -124,9 +124,34 @@ void TestCooMatrixSortByRow(void)
 DECLARE_HOST_DEVICE_UNITTEST(TestCooMatrixSortByRow);
 
 template <class Space>
+void TestCooMatrixSortByRowAndColumn(void)
+{
+    cusp::coo_matrix<int, float, Space> A(5, 5, 7);
+    
+    A.row_indices[0] = 3; A.column_indices[0] = 1; A.values[0] = 1;
+    A.row_indices[1] = 4; A.column_indices[1] = 2; A.values[1] = 2;
+    A.row_indices[2] = 1; A.column_indices[2] = 3; A.values[2] = 3;
+    A.row_indices[3] = 2; A.column_indices[3] = 2; A.values[3] = 4;
+    A.row_indices[4] = 1; A.column_indices[4] = 2; A.values[4] = 5;
+    A.row_indices[5] = 0; A.column_indices[5] = 3; A.values[5] = 6;
+    A.row_indices[6] = 2; A.column_indices[6] = 1; A.values[6] = 7;
+
+    A.sort_by_row_and_column();
+    
+    ASSERT_EQUAL(A.row_indices[0], 0); ASSERT_EQUAL(A.column_indices[0], 3); ASSERT_EQUAL(A.values[0], 6);
+    ASSERT_EQUAL(A.row_indices[1], 1); ASSERT_EQUAL(A.column_indices[1], 2); ASSERT_EQUAL(A.values[1], 5);
+    ASSERT_EQUAL(A.row_indices[2], 1); ASSERT_EQUAL(A.column_indices[2], 3); ASSERT_EQUAL(A.values[2], 3);
+    ASSERT_EQUAL(A.row_indices[3], 2); ASSERT_EQUAL(A.column_indices[3], 1); ASSERT_EQUAL(A.values[3], 7);
+    ASSERT_EQUAL(A.row_indices[4], 2); ASSERT_EQUAL(A.column_indices[4], 2); ASSERT_EQUAL(A.values[4], 4);
+    ASSERT_EQUAL(A.row_indices[5], 3); ASSERT_EQUAL(A.column_indices[5], 1); ASSERT_EQUAL(A.values[5], 1);
+    ASSERT_EQUAL(A.row_indices[6], 4); ASSERT_EQUAL(A.column_indices[6], 2); ASSERT_EQUAL(A.values[6], 2);
+}
+DECLARE_HOST_DEVICE_UNITTEST(TestCooMatrixSortByRowAndColumn);
+
+template <class Space>
 void TestCooMatrixIsSortedByRow(void)
 {
-    cusp::coo_matrix<int, float, Space> A(5, 2, 4);
+    cusp::coo_matrix<int, float, Space> A(5, 5, 4);
     
     A.row_indices[0] = 3; A.column_indices[0] = 1; A.values[0] = 1;
     A.row_indices[1] = 4; A.column_indices[1] = 2; A.values[1] = 2;
@@ -140,4 +165,22 @@ void TestCooMatrixIsSortedByRow(void)
     ASSERT_EQUAL(A.is_sorted_by_row(), true);
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestCooMatrixIsSortedByRow);
+
+template <class Space>
+void TestCooMatrixIsSortedByRowAndColumn(void)
+{
+    cusp::coo_matrix<int, float, Space> A(5, 5, 4);
+    
+    A.row_indices[0] = 3; A.column_indices[0] = 1; A.values[0] = 1;
+    A.row_indices[1] = 4; A.column_indices[1] = 2; A.values[1] = 2;
+    A.row_indices[2] = 1; A.column_indices[2] = 3; A.values[2] = 3;
+    A.row_indices[3] = 2; A.column_indices[3] = 4; A.values[3] = 4;
+
+    ASSERT_EQUAL(A.is_sorted_by_row_and_column(), false);
+
+    A.sort_by_row_and_column();
+    
+    ASSERT_EQUAL(A.is_sorted_by_row_and_column(), true);
+}
+DECLARE_HOST_DEVICE_UNITTEST(TestCooMatrixIsSortedByRowAndColumn);
 
