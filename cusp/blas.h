@@ -19,6 +19,8 @@
 
 #include <cusp/detail/config.h>
 
+#include <cusp/complex.h>
+
 #include <thrust/iterator/iterator_traits.h>
 
 namespace cusp
@@ -162,12 +164,12 @@ void fill(Array& array,
 
 
 template <typename InputIterator>
-typename thrust::iterator_value<InputIterator>::type
+typename norm_type<typename thrust::iterator_value<InputIterator>::type>::type
     nrm2(InputIterator first,
          InputIterator last);
 
 template <typename Array>
-typename Array::value_type
+typename norm_type<typename Array::value_type>::type
     nrm2(const Array& array);
 
 

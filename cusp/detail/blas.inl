@@ -100,11 +100,31 @@ namespace detail
             __host__ __device__
                 T operator()(T x)
                 { 
-                    // TODO actually handle complex numbers
                     return x;
                 }
         };
-    
+
+    template <typename T>
+        struct conjugate<cusp::complex<T> > : public thrust::unary_function<cusp::complex<T>,
+									    cusp::complex<T> >
+        {
+            __host__ __device__
+	        cusp::complex<T> operator()(cusp::complex<T> x)
+                { 
+		    return cusp::conj(x);
+                }
+        };
+
+    // square<T> computes the square of a number f(x) -> x*conj(x)
+    template <typename T>
+        struct norm_squared : public thrust::unary_function<T,T>
+        {
+            __host__ __device__
+                T operator()(T x)
+                { 
+  		    return x * conjugate<T>()(x);
+                }
+        };    
     template <typename T>
         struct SCAL : public thrust::unary_function<T,T>
         {
@@ -392,13 +412,13 @@ void fill(Array& x,
 
 
 template <typename InputIterator>
-typename thrust::iterator_value<InputIterator>::type
+typename norm_type<typename thrust::iterator_value<InputIterator>::type>::type
     nrm2(InputIterator first,
          InputIterator last)
 {
     typedef typename thrust::iterator_value<InputIterator>::type ValueType;
 
-    detail::square<ValueType> unary_op;
+    detail::norm_squared<ValueType> unary_op;
     thrust::plus<ValueType>   binary_op;
 
     ValueType init = 0;
@@ -407,7 +427,7 @@ typename thrust::iterator_value<InputIterator>::type
 }
 
 template <typename Array>
-typename Array::value_type
+typename norm_type<typename Array::value_type>::type
     nrm2(const Array& x)
 {
     CUSP_PROFILE_SCOPED();
