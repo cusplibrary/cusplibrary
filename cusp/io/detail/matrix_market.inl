@@ -398,9 +398,7 @@ void read_matrix_market_stream(cusp::coo_matrix<IndexType,ValueType,cusp::host_m
         } // if (banner.symmetry != "general")
     
         // sort indices by (row,column)
-        thrust::sort_by_key(thrust::make_zip_iterator(thrust::make_tuple(coo.row_indices.begin(), coo.column_indices.begin())),
-                            thrust::make_zip_iterator(thrust::make_tuple(coo.row_indices.end(),   coo.column_indices.end())),
-                            coo.values.begin());
+        coo.sort_by_row_and_column();
     } 
     else 
     {
