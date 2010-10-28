@@ -14,6 +14,7 @@
  *  limitations under the License.
  */
     
+#include <cusp/copy.h>
 #include <cusp/format.h>
 #include <cusp/array1d.h>
 
@@ -21,7 +22,10 @@
 #include <thrust/extrema.h>
 #include <thrust/binary_search.h>
 #include <thrust/transform.h>
+#include <thrust/gather.h>
 #include <thrust/scatter.h>
+#include <thrust/sequence.h>
+#include <thrust/sort.h>
 
 namespace cusp
 {
@@ -244,6 +248,41 @@ void extract_diagonal(const Matrix& A, Array& output)
 
     // dispatch on matrix format
     extract_diagonal(A, output, typename Matrix::format());
+}
+
+
+template <typename Array1, typename Array2>
+void sort_by_row_and_column(Array1& rows, Array1& columns, Array2& values)
+{
+    CUSP_PROFILE_SCOPED();
+
+    typedef typename Array1::value_type IndexType;
+    typedef typename Array2::value_type ValueType;
+    typedef typename Array1::memory_space MemorySpace;
+        
+    size_t N = rows.size();
+
+    cusp::array1d<IndexType,MemorySpace> permutation(N);
+    thrust::sequence(permutation.begin(), permutation.end());
+  
+    // compute permutation and sort by (I,J)
+    {
+        cusp::array1d<IndexType,MemorySpace> temp(columns);
+        thrust::sort_by_key(temp.begin(), temp.end(), permutation.begin());
+
+        cusp::copy(rows, temp);
+        thrust::gather(permutation.begin(), permutation.end(), temp.begin(), rows.begin());
+        thrust::sort_by_key(rows.begin(), rows.end(), permutation.begin());
+
+        cusp::copy(columns, temp);
+        thrust::gather(permutation.begin(), permutation.end(), temp.begin(), columns.begin());
+    }
+
+    // use permutation to reorder the values
+    {
+        cusp::array1d<ValueType,MemorySpace> temp(values);
+        thrust::gather(permutation.begin(), permutation.end(), temp.begin(), values.begin());
+    }
 }
 
 } // end namespace detail

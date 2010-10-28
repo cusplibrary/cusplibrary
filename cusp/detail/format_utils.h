@@ -30,6 +30,9 @@ void indices_to_offsets(const IndexArray& indices, OffsetArray& offsets);
     
 template <typename MatrixType, typename ArrayType>
 void extract_diagonal(const MatrixType& A, ArrayType& output);
+
+template <typename Array1, typename Array2>
+void sort_by_row_and_column(Array1& rows, Array1& columns, Array2& values);
     
 } // end namespace detail
 } // end namespace cusp

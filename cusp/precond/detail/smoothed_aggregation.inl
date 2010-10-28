@@ -22,13 +22,14 @@
 #include <cusp/precond/diagonal.h>
 #include <cusp/precond/aggregate.h>
 #include <cusp/precond/strength.h>
+
+#include <cusp/detail/format_utils.h>
 #include <cusp/detail/spectral_radius.h>
 
 #include <thrust/extrema.h>
 #include <thrust/transform.h>
 #include <thrust/gather.h>
 #include <thrust/reduce.h>
-#include <thrust/sort.h>
 
 namespace cusp
 {
@@ -178,12 +179,7 @@ void smooth_prolongator(const cusp::coo_matrix<IndexType,ValueType,MemorySpace>&
   thrust::copy(T.values.begin(),         T.values.end(),         temp.values.begin()         + S.num_entries);
 
   // sort by (I,J)
-  {
-    // TODO use explicit permuation and temporary arrays for efficiency
-    thrust::sort_by_key(temp.column_indices.begin(), temp.column_indices.end(), thrust::make_zip_iterator(thrust::make_tuple(temp.row_indices.begin(),    temp.values.begin())));
-    thrust::sort_by_key(temp.row_indices.begin(),    temp.row_indices.end(),    thrust::make_zip_iterator(thrust::make_tuple(temp.column_indices.begin(), temp.values.begin())));
-  }
-
+  cusp::detail::sort_by_row_and_column(temp.row_indices, temp.column_indices, temp.values);
 
   // compute unique number of nonzeros in the output
   // throws a warning at compile (warning: expression has no effect)

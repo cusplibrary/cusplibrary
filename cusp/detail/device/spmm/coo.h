@@ -21,7 +21,6 @@
 #include <thrust/gather.h>
 #include <thrust/scan.h>
 #include <thrust/scatter.h>
-#include <thrust/sort.h>
 #include <thrust/transform.h>
 #include <thrust/reduce.h>
 #include <thrust/inner_product.h>
@@ -144,13 +143,8 @@ void spmm_coo(const Matrix1& A,
                       V.begin(),
                       thrust::multiplies<ValueType>());
 
-    // sort by (I,J)
-    {
-        // TODO use explicit permuation and temporary arrays for efficiency
-        thrust::sort_by_key(J.begin(), J.end(), thrust::make_zip_iterator(thrust::make_tuple(I.begin(), V.begin())));
-        thrust::sort_by_key(I.begin(), I.end(), thrust::make_zip_iterator(thrust::make_tuple(J.begin(), V.begin())));
-    }
-
+    // sort (I,J,V) tuples by (I,J)
+    cusp::detail::sort_by_row_and_column(I, J, V);
 
     // compute unique number of nonzeros in the output
     IndexType NNZ = thrust::inner_product(thrust::make_zip_iterator(thrust::make_tuple(I.begin(), J.begin())),
