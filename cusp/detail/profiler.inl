@@ -14,9 +14,6 @@
  *  limitations under the License.
  */
 
-#define __PROFILER_SMP__
-#define __PROFILER_CONSOLIDATE_THREADS__
-
 #if defined(_WIN32)
         #define _CRT_SECURE_NO_WARNINGS
         #define copystring _strdup
@@ -27,6 +24,7 @@
 #endif
 
 #include <stdio.h>
+#include <ctype.h>
 #include <string.h>
 #include <cuda.h>
 
@@ -56,8 +54,8 @@
 #else
         #include <sched.h>
         #define yield() sched_yield();
-        #define printfu64() "%llu"
-        #define PRINTFU64() "%llu"
+        #define printfu64() "%lu"
+        #define PRINTFU64() "%lu"
         #define pathslash() '/'
         #define PATHSLASH() '/'
         #define threadlocal __thread
@@ -84,19 +82,19 @@ namespace profiler
                 return ( x + 1 );
         }
 
-        template< class type >
-        inline void zeroarray( type *array, size_t count ) {
-                memset( array, 0, count * sizeof( type ) );
+        template< class T >
+        inline void zeroarray( T* array, size_t count ) {
+                memset( array, 0, count * sizeof( T ) );
         }
 
-        template< class type >
-        inline type *makepointer( type *base, size_t byteoffset ) {
-                return (type *)((const char *)base + byteoffset);
+        template< class T >
+        inline T* makepointer( T* base, size_t byteoffset ) {
+                return (T*)((const char *)base + byteoffset);
         }
 
-        template< class type >
-        inline void swapitems( type &a, type &b ) {
-                type tmp = a;
+        template< class T >
+        inline void swapitems( T& a, T& b ) {
+                T tmp = a;
                 a = b;
                 b = tmp;
         }
@@ -109,18 +107,18 @@ namespace profiler
 		void Release() {}
 		bool TryAcquire() { return false; }
 		bool TryRelease() { return false; }
-		u32 Value() const { return 0; }
-		u32 dummy;
+		size_t Value() const { return 0; }
+		size_t dummy;
 	};
 
 
-        template< class type >
-        inline const type &min( const type &a, const type &b ) {
+        template< class T >
+        inline const T& min( const T& a, const T& b ) {
                 return ( a < b ) ? a : b;
         }
 
-        template< class type >
-        inline const type &max( const type &a, const type &b ) {
+        template< class T >
+        inline const T& max( const T& a, const T& b ) {
                 return ( a < b ) ? b : a;
         }
 
@@ -130,38 +128,50 @@ namespace profiler
         =============
         */
 
-        template< class type >
-        struct Buffer {
+        template< class T >
+        struct Buffer 
+	{
+        protected:
+                T* mBuffer;
+                size_t mAlloc, mItems;
+
+	public:
                 Buffer() : mBuffer(NULL), mAlloc(0), mItems(0) { Resize( 4 ); }
                 Buffer( size_t size ) : mBuffer(NULL), mAlloc(0), mItems(0) { Resize( size ); }
+
                 ~Buffer() { free( mBuffer ); }
 
                 void Clear() { mItems = ( 0 ); }
-                type *Data() { return ( mBuffer ); }
+                T* Data() { return ( mBuffer ); }
                 void EnsureCapacity( size_t capacity ) { if ( capacity >= mAlloc ) Resize( capacity * 2 ); }
-                type *Last() { return ( &mBuffer[ mItems - 1 ] ); }
-                void Push( const type &item ) { EnsureCapacity( mItems + 1 ); mBuffer[ mItems++ ] = ( item ); }
-                type &Pop() { return ( mBuffer[ --mItems ] ); }
+                T* Last() { return ( &mBuffer[ mItems - 1 ] ); }
+                void Push( const T& item ) { EnsureCapacity( mItems + 1 ); mBuffer[ mItems++ ] = ( item ); }
+                T& Pop() { return ( mBuffer[ --mItems ] ); }
 
-                void Resize( size_t newsize ) {
+                void Resize( size_t newsize ) 
+		{
                         mAlloc = nextpow2( newsize );
-                        mBuffer = (type *)realloc( mBuffer, mAlloc * sizeof( type ) );
+                        mBuffer = (T*)realloc( mBuffer, mAlloc * sizeof( T ) );
                 }
 
                 size_t Size() const { return mItems; }
 
                 template< class Compare >
-                void Sort( Compare comp ) {
+                void Sort( Compare comp ) 
+		{
                         if ( mItems <= 1 )
                                 return;
                        
                         Buffer scratch( mItems );
 
                         // merge sort with scratch buffer
-                        type *src = Data(), *dst = scratch.Data();
-                        for( size_t log = 2; log < mItems * 2; log *= 2 ) {
-                                type *out = dst;
-                                for( size_t i = 0; i < mItems; i += log ) {
+                        T* src = Data();
+			T* dst = scratch.Data();
+                        for( size_t log = 2; log < mItems * 2; log *= 2 ) 
+			{
+                                T* out = dst;
+                                for( size_t i = 0; i < mItems; i += log ) 
+				{
                                         size_t lo = i, lo2 = min( i + log / 2, mItems );
                                         size_t hi = lo2, hi2 = min( lo + log, mItems );
                                         while ( ( lo < lo2 ) && ( hi < hi2 ) )
@@ -178,7 +188,8 @@ namespace profiler
                 }
 
                 template< class Mapto >
-                void ForEachByRef( Mapto &mapto, size_t limit ) {
+                void ForEachByRef( Mapto &mapto, size_t limit ) 
+		{
                         limit = ( limit < mItems ) ? limit : mItems;
                         size_t last = limit - 1;
                         for ( size_t i = 0; i < limit; ++i )
@@ -188,12 +199,9 @@ namespace profiler
                 template< class Mapto > void ForEach( Mapto mapto, size_t limit ) { ForEachByRef( mapto, limit ); }
                 template< class Mapto > void ForEach( Mapto mapto ) { ForEachByRef( mapto, mItems ); }
 
-                type &operator[] ( size_t index ) { return ( mBuffer[ index ] ); }
-                const type &operator[] ( size_t index ) const { return ( mBuffer[ index ] ); }
+                T& operator[] ( size_t index ) { return ( mBuffer[ index ] ); }
+                const T& operator[] ( size_t index ) const { return ( mBuffer[ index ] ); }
 
-        protected:
-                type *mBuffer;
-                size_t mAlloc, mItems;
         };      
 
         /*
@@ -202,92 +210,180 @@ namespace profiler
         =============
         */
 
-        struct Caller {
-                struct foreach {
+        struct Caller 
+	{
+
+	protected:
+                const char *mName;
+                cusp::detail::timer mTimer;
+                size_t mBucketCount, mNumChildren;
+                Caller **mBuckets, *mParent;
+
+                bool mActive;
+                unsigned long mChildTicks;
+
+        public:
+                // caller
+                static Buffer<char> mFormatter;
+
+                // global
+                static double mTimerOverhead, mRdtscOverhead;
+                static double mGlobalDuration;
+
+                static struct Max 
+		{
+		public:
+                        enum f64Enum { SelfMs = 0, Ms, Avg, SelfAvg, f64Enums };
+                        enum u64Enum { Calls = 0, TotalCalls, u64Enums };
+
+                        void reset() 
+			{
+                                memset( this, 0, sizeof( *this ) );
+                        }
+
+                        void check( u64Enum e, unsigned long u ) { if ( u64fields[e] < u ) u64fields[e] = u; if ( e == Calls ) u64fields[TotalCalls] += u; }
+                        void check( f64Enum e, double f ) { if ( f64fields[e] < f ) f64fields[e] = f; }
+
+                        const unsigned long &operator() ( u64Enum e ) const { return u64fields[e]; }
+                        const double &operator() ( f64Enum e ) const { return f64fields[e]; }
+
+                protected:
+                        unsigned long u64fields[u64Enums];
+                        double f64fields[f64Enums];
+
+                } maxStats;
+
+                // per thread state
+                struct ThreadState 
+		{
+                        CASLock threadLock;
+                        bool requireThreadLock;
+                        Caller *activeCaller;
+                };
+               
+                static threadlocal ThreadState thisThread;
+
+                struct foreach 
+		{
                         // Adds each Caller to the specified buckets
-                        struct AddToNewBuckets {
-                                AddToNewBuckets( Caller **buckets, size_t bucket_count ) : mBuckets(buckets), mBucketCount(bucket_count) {}
-                                void operator()( Caller *item ) {
-                                        FindEmptyChildSlot( mBuckets, mBucketCount, item->mName ) = item;
-                                }
+                        struct AddToNewBuckets 
+			{
                                 Caller **mBuckets;
                                 size_t mBucketCount;
+
+                                AddToNewBuckets( Caller **buckets, size_t bucket_count ) : mBuckets(buckets), mBucketCount(bucket_count) {}
+
+                                void operator()( Caller *item ) 
+				{
+                                        FindEmptyChildSlot( mBuckets, mBucketCount, item->mName ) = item;
+                                }
                         };
 
 
                         // Destructs a Caller
-                        struct Deleter {
-                                void operator()( Caller *item ) {
+                        struct Deleter 
+			{
+                                void operator()( Caller *item ) 
+				{
                                         delete item;
                                 }
                         };
 
                         // Merges a Caller with the root
-                        struct Merger {
+                        struct Merger 
+			{
+                                Caller *mRoot;
+
                                 Merger( Caller *root ) : mRoot(root) {}
-                                void addFrom( Caller *item ) { (*this)( item ); }
-                                void operator()( Caller *item ) {
+
+                                void addFrom( Caller *item ) 
+				{ 
+					(*this)( item ); 
+				}
+
+                                void operator()( Caller *item ) 
+				{
                                         Caller *child = mRoot->FindOrCreate( item->GetName() );
                                         child->GetTimer() += item->GetTimer();
                                         child->SetParent( item->GetParent() );
                                         item->ForEachNonEmpty( Merger( child ) );
                                 }
-                                Caller *mRoot;
                         };
 
                         // Prints a Caller
-                        struct Printer {
-                                Printer( size_t indent ) : mIndent(indent) { }
-                                void operator()( Caller *item, bool islast ) const {
+                        struct Printer 
+			{
+                                size_t mIndent;
+
+                                Printer( size_t indent ) : mIndent(indent) {}
+
+                                void operator()( Caller *item, bool islast ) const 
+				{
                                         item->Print( mIndent, islast );
                                 }
-                                size_t mIndent;
                         };
 
                         // Sums Caller's milliseconds
-                        struct SumMilliseconds {
+                        struct SumMilliseconds 
+			{
+                                double sum;
+
                                 SumMilliseconds() : sum(0) {}
-                                void operator()( Caller *item ) {
+
+                                void operator()( Caller *item ) 
+				{
                                         sum += ( item->mTimer.milliseconds );
                                 }
-                                double sum;
                         };
 
 			
-                        struct SoftReset { 
-                                void operator()( Caller *item ) { 
+                        struct SoftReset 
+			{ 
+                                void operator()( Caller *item ) 
+				{ 
                                         item->GetTimer().soft_reset();
                                         //item->ForEach( soft_reset() );
                                 } 
                         };
 
 
-                        struct UpdateTopMaxStats {
+                        struct UpdateTopMaxStats 
+			{
                                 UpdateTopMaxStats() { maxStats.reset(); }
-                                void operator()( Caller *item, bool islast ) {
+
+                                void operator()( Caller *item, bool islast ) 
+				{
                                         if ( !item->GetParent() )
                                                 return;
                                         maxStats.check( Max::Calls, item->mTimer.calls );
                                 }
                         };
+
                 }; // foreach
 
 
-                struct compare {
-                        struct Milliseconds {
-                                bool operator()( const Caller *a, const Caller *b ) const {
+                struct compare 
+		{
+                        struct Milliseconds 
+			{
+                                bool operator()( const Caller *a, const Caller *b ) const 
+				{
                                         return ( a->mTimer.milliseconds > b->mTimer.milliseconds );
                                 }
                         };
 
-                        struct SelfTicks {
-                                bool operator()( const Caller *a, const Caller *b ) const {
+                        struct SelfTicks 
+			{
+                                bool operator()( const Caller *a, const Caller *b ) const 
+				{
                                         return ( ( a->mTimer.milliseconds - a->mChildTicks ) > ( b->mTimer.milliseconds - b->mChildTicks ) );
                                 }
                         };
 
-                        struct Calls {
-                                bool operator()( const Caller *a, const Caller *b ) const {
+                        struct Calls 
+			{
+                                bool operator()( const Caller *a, const Caller *b ) const 
+				{
                                         return ( a->mTimer.calls > b->mTimer.calls );
                                 }
                         };
@@ -295,15 +391,20 @@ namespace profiler
 
 
                 /*
-                        Since Caller.mTimer.ticks is inclusive of all children, summing the first level
-                        children of a Caller to Caller.mChildTicks is an accurate total of the complete
-                        child tree.
+                 *       Since Caller.mTimer.ticks is inclusive of all children, summing the first level
+                 *       children of a Caller to Caller.mChildTicks is an accurate total of the complete
+                 *       child tree.
+		 *
+                 *       mTotals is used to keep track of total ticks by Caller excluding children
+                 */
+                struct ComputeChildTicks 
+		{
+                        Caller &mTotals;
 
-                        mTotals is used to keep track of total ticks by Caller excluding children
-                */
-                struct ComputeChildTicks {
                         ComputeChildTicks( Caller &totals ) : mTotals(totals) { maxStats.reset(); }
-                        void operator()( Caller *item ) {
+
+                        void operator()( Caller *item ) 
+			{
                                 foreach::SumMilliseconds sumchildren;
                                 item->ForEachByRefNonEmpty( sumchildren );
                                 item->mChildTicks = ( sumchildren.sum );
@@ -315,7 +416,8 @@ namespace profiler
                                 totalitem.SetParent( item->GetParent() );
 
                                 // don't include the root node in the max stats
-                                if ( item->GetParent() ) {
+                                if ( item->GetParent() ) 
+				{
                                         maxStats.check( Max::SelfMs, selfticks );
                                         maxStats.check( Max::Calls, item->mTimer.calls );
                                         maxStats.check( Max::Ms, item->mTimer.milliseconds );
@@ -324,21 +426,27 @@ namespace profiler
                                 // compute child ticks for all children of children of this caller
                                 item->ForEachByRefNonEmpty( *this );
                         }
-                        Caller &mTotals;
                 };
 
                 /*
-                        Format a Caller's information. ComputeChildTicks will need to be used on the Root
-                        to generate mChildTicks for all Callers
-                */
-                struct Format {
-                        Format( const char *prefix ) : mPrefix(prefix) {}
-                        void operator()( Caller *item, bool islast ) const {
-                                double ms = item->mTimer.milliseconds;
-                                printf( "%s %.2f ms, %lu calls: %s\n",
-                                        mPrefix, ms, item->mTimer.calls, item->mName );
-                        }
+                 *  Format a Caller's information. ComputeChildTicks will need to be used on the Root
+                 *  to generate mChildTicks for all Callers
+                 */
+                struct Format 
+		{
                         const char *mPrefix;
+
+                        Format( const char *prefix ) : mPrefix(prefix) {}
+
+                        void operator()( Caller *item, bool islast ) const 
+			{
+                                double ms = item->mTimer.milliseconds;
+				char * hyphen = strrchr(item->mName,'(');
+				int size = hyphen-item->mName;
+				
+                                printf( "%s %.2f ms, %lu calls: %.*s\n",
+                                        mPrefix, ms, item->mTimer.calls, size, item->mName );
+                        }
                 };
 
                 /*
@@ -346,18 +454,21 @@ namespace profiler
                 */
 
                 // we're guaranteed to be null because of calloc. ONLY create Callers with "new"!
-                Caller( const char *name, Caller *parent = NULL ) {
+                Caller( const char *name, Caller *parent = NULL ) 
+		{
                         mName = name;
                         mParent = parent;
                         Resize( 2 ); // mBuckets must always exist and mBucketCount >= 2!
                 }
                
-                ~Caller() {
+                ~Caller() 
+		{
                         ForEach( foreach::Deleter() );
                         free( mBuckets );
                 }
 
-                void CopyToListNonEmpty( Buffer<Caller *> &list ) {
+                void CopyToListNonEmpty( Buffer<Caller *> &list ) 
+		{
                         list.Clear();
 
                         for ( size_t i = 0; i < mBucketCount; ++i )
@@ -365,9 +476,11 @@ namespace profiler
                                         list.Push( mBuckets[ i ] );
                 }
 
-                inline Caller *FindOrCreate( const char *name ) {
+                inline Caller *FindOrCreate( const char *name ) 
+		{
                         size_t index = ( GetBucket( name, mBucketCount ) ), mask = ( mBucketCount - 1 );
-                        for ( Caller *caller = mBuckets[index]; caller; caller = mBuckets[index & mask] ) {
+                        for ( Caller *caller = mBuckets[index]; caller; caller = mBuckets[index & mask] ) 
+			{
                                 if ( caller->mName == name )
                                         return caller;
                                
@@ -375,65 +488,74 @@ namespace profiler
                         }
 
                         // didn't find the caller, lock this thread and mutate
-                        AcquirePerThreadLock();
                         EnsureCapacity( ++mNumChildren );
                         Caller *&slot = FindEmptyChildSlot( mBuckets, mBucketCount, name );
                         slot = new Caller( name, this );
-                        ReleasePerThreadLock();
                         return slot;
                 }
 
                 template< class Mapto >
-                void ForEachByRef( Mapto &mapto ) {
+                void ForEachByRef( Mapto &mapto ) 
+		{
                         for ( size_t i = 0; i < mBucketCount; ++i )
                                 if ( mBuckets[ i ] )
                                         mapto( mBuckets[ i ] );
                 }
 
                 template< class Mapto >
-                void ForEachByRefNonEmpty( Mapto &mapto ) {
+                void ForEachByRefNonEmpty( Mapto &mapto ) 
+		{
                         for ( size_t i = 0; i < mBucketCount; ++i )
                                 if ( mBuckets[ i ] && !mBuckets[ i ]->GetTimer().is_empty() )
                                         mapto( mBuckets[ i ] );
                 }
 
                 template< class Mapto >
-                void ForEach( Mapto mapto ) {
+                void ForEach( Mapto mapto ) 
+		{
                         ForEachByRef( mapto );
                 }
 
                 template< class Mapto >
-                void ForEachNonEmpty( Mapto mapto ) {
+                void ForEachNonEmpty( Mapto mapto ) 
+		{
                         ForEachByRefNonEmpty( mapto );
                 }
 
-                inline Caller *GetParent() {
+                inline Caller *GetParent() 
+		{
                         return mParent;
                 }
 
-                cusp::detail::timer &GetTimer() {
+                cusp::detail::timer &GetTimer() 
+		{
                         return mTimer;
                 }
 
-                const char *GetName() const {
+                const char *GetName() const 
+		{
                         return mName;
                 }
 
-                bool IsActive() const {
+                bool IsActive() const 
+		{
                         return mActive;
                 }
 
-                void Print( size_t indent = 0, bool islast = false ) {
+                void Print( size_t indent = 0, bool islast = false ) 
+		{
                         Buffer<Caller *> children( mNumChildren );
                         CopyToListNonEmpty( children );
 
                         mFormatter.EnsureCapacity( indent + 3 );
                         char *fmt = ( &mFormatter[indent] );
                        
-                        if ( indent ) {
+                        if ( indent ) 
+			{
                                 fmt[-2] = ( islast ) ? ' ' : '|';
                                 fmt[-1] = ( islast ) ? '\\' : ' ';
                         }
+
                         fmt[0] = ( children.Size() ) ? '+' : '-';
                         fmt[1] = ( '-' );
                         fmt[2] = ( 0 );
@@ -443,13 +565,15 @@ namespace profiler
                         if ( indent && islast )
                                 fmt[-2] = fmt[-1] = ' ';
 
-                        if ( children.Size() ) {
+                        if ( children.Size() ) 
+			{
                                 children.Sort( compare::Milliseconds() );
                                 children.ForEach( foreach::Printer(indent+2) );
                         }
                 }
 
-                void PrintTopStats( size_t nitems ) {
+                void PrintTopStats( size_t nitems ) 
+		{
                         nitems = ( nitems > mNumChildren ) ? mNumChildren : nitems;
                         printf( "\ntop %lu functions (self time)\n", (size_t )nitems );
                         Buffer<Caller *> sorted( mNumChildren );
@@ -458,7 +582,8 @@ namespace profiler
                         sorted.ForEach( Format(">"), nitems );
                 }
 
-                void Resize( size_t new_size ) {
+                void Resize( size_t new_size ) 
+		{
                         new_size = ( new_size < mBucketCount ) ? mBucketCount << 1 : nextpow2( new_size - 1 );
                         Caller **new_buckets = (Caller **)calloc( new_size, sizeof( Caller* ) );
                         ForEach( foreach::AddToNewBuckets( new_buckets, new_size ) );
@@ -468,125 +593,75 @@ namespace profiler
                         mBucketCount = ( new_size );
                 }
 
-                void Reset() {
+                void Reset() 
+		{
                         ForEach( foreach::Deleter() );
                         zeroarray( mBuckets, mBucketCount );
                         mNumChildren = ( 0 );
                         mTimer.reset();                
                 }
 
-                void SetActive( bool active ) {
+                void SetActive( bool active ) 
+		{
                         mActive = active;
                 }
 
-                void SetParent( Caller *parent ) {
+                void SetParent( Caller *parent ) 
+		{
                         mParent = parent;
                 }
 
-		void SoftReset() {
+		void SoftReset() 
+		{
                         mTimer.soft_reset();
                         ForEach( foreach::SoftReset() );
                 }
 
-                void Start() {
+                void Start() 
+		{
                         mTimer.start();
                 }
 
-                void Stop() {
+                void Stop() 
+		{
                         mTimer.stop();
                 }
 
-                void *operator new ( size_t size ) {
+                void *operator new ( size_t size ) 
+		{
                         return calloc( size, 1 );
                 }
 
-                void operator delete ( void *p ) {
+                void operator delete ( void *p ) 
+		{
                         free( p );
                 }
 
-
-                /* Acquire the caller lock for this thread */
-
-                inline static void AcquirePerThreadLock() {
-		#if defined(__PROFILER_SMP__)
-                        if ( thisThread.requireThreadLock )
-                                thisThread.threadLock.Acquire();
-		#endif
-                }
-
-                inline static void ReleasePerThreadLock() {
-		#if defined(__PROFILER_SMP__)
-                        if ( thisThread.requireThreadLock )
-                                thisThread.threadLock.Release();
-		#endif
-                }
-
         protected:
-                static inline Caller *&FindEmptyChildSlot( Caller **buckets, size_t bucket_count, const char *name ) {
+                static inline Caller *&FindEmptyChildSlot( Caller **buckets, size_t bucket_count, const char *name ) 
+		{
                         size_t index = ( GetBucket( name, bucket_count ) ), mask = ( bucket_count - 1 );
                         Caller **caller = &buckets[index];
+
                         for ( ; *caller; caller = &buckets[index & mask] )
                                 index = ( index + 1 );
+
                         return *caller;
                 }
 
-                inline static size_t GetBucket( const char *name, size_t bucket_count ) {
+                inline static size_t GetBucket( const char *name, size_t bucket_count ) 
+		{
                         return size_t( ( ( (size_t )name >> 5 ) /* * 2654435761 */ ) & ( bucket_count - 1 ) );
                 }
 
-                inline void EnsureCapacity( size_t capacity ) {
+                inline void EnsureCapacity( size_t capacity ) 
+		{
                         if ( capacity < ( mBucketCount / 2 ) )
                                 return;
                         Resize( capacity );
                 }
 
-                const char *mName;
-                cusp::detail::timer mTimer;
-                size_t mBucketCount, mNumChildren;
-                Caller **mBuckets, *mParent;
-
-                bool mActive;
-                u64 mChildTicks;
-
-        public:
-                // caller
-                static Buffer<char> mFormatter;
-
-                // global
-                static double mTimerOverhead, mRdtscOverhead;
-                static double mGlobalDuration;
-                static struct Max {
-                        enum f64Enum { SelfMs = 0, Ms, Avg, SelfAvg, f64Enums };
-                        enum u64Enum { Calls = 0, TotalCalls, u64Enums };
-
-                        void reset() {
-                                memset( this, 0, sizeof( *this ) );
-                        }
-
-                        void check( u64Enum e, u64 u ) { if ( u64fields[e] < u ) u64fields[e] = u; if ( e == Calls ) u64fields[TotalCalls] += u; }
-                        void check( f64Enum e, double f ) { if ( f64fields[e] < f ) f64fields[e] = f; }
-
-                        const u64 &operator() ( u64Enum e ) const { return u64fields[e]; }
-                        const double &operator() ( f64Enum e ) const { return f64fields[e]; }
-
-                protected:
-                        u64 u64fields[u64Enums];
-                        double f64fields[f64Enums];
-                } maxStats;
-
-                // per thread state
-                struct ThreadState {
-                        CASLock threadLock;
-                        bool requireThreadLock;
-                        Caller *activeCaller;
-                };
-               
-                static threadlocal ThreadState thisThread;
         };
-
-
-
-
 
 
 	#if defined(__PROFILER_ENABLED__)
@@ -597,7 +672,8 @@ namespace profiler
         Buffer<char> Caller::mFormatter( 64 );
         char *programName = NULL, *commandLine = NULL;
 
-        void detectByArgs( int argc, const char *argv[] ) {
+        void detectByArgs( int argc, const char *argv[] ) 
+	{
                 const char *path = argv[0], *finalSlash = path, *iter = path;
                 for ( ; *iter; ++iter )
                         finalSlash = ( *iter == PATHSLASH() ) ? iter + 1 : finalSlash;
@@ -606,7 +682,8 @@ namespace profiler
                 programName = copystring( finalSlash );
                
                 size_t width = 0;
-                for ( int i = 1; i < argc; i++ ) {
+                for ( int i = 1; i < argc; i++ ) 
+		{
                         size_t len = strlen( argv[i] );
                         commandLine = (char *)realloc( commandLine, width + len + 1 );
                         memcpy( commandLine + width, argv[i], len );
@@ -617,7 +694,8 @@ namespace profiler
                         commandLine[width - 1] = '\x0';
         }
 
-        void detectWinMain( const char *cmdLine ) {
+        void detectWinMain( const char *cmdLine ) 
+	{
 	#if defined(_MSC_VER)
                 char path[1024], *finalSlash = path, *iter = path;
                 GetModuleFileName( NULL, path, 1023 );
@@ -639,10 +717,12 @@ namespace profiler
         ============
         */
 
-        struct Root {
-                Root( Caller *caller, Caller::ThreadState *ts ) : root(caller), threadState(ts) {}
+        struct Root 
+	{
                 Caller *root;
                 Caller::ThreadState *threadState;
+
+                Root( Caller *caller, Caller::ThreadState *ts ) : root(caller), threadState(ts) {}
         };
 
         struct GlobalThreadList {
@@ -656,13 +736,15 @@ namespace profiler
                         delete list;
                 }
 
-                void AcquireGlobalLock() {
+                void AcquireGlobalLock() 
+		{
                         threadsLock.Acquire();
                         if ( !list )
                                 list = new Buffer<Root>;
                 }
 
-                void ReleaseGlobalLock() {
+                void ReleaseGlobalLock() 
+		{
                         threadsLock.Release();
                 }
 
@@ -679,30 +761,33 @@ namespace profiler
                 Thread Dumping
         */
 
-        struct PrintfDumper {
-                void Init() {
-                }
+        struct PrintfDumper 
+	{
+                void Init() {}
+                void Finish() {}
 
-                void GlobalInfo( f32 rawDuration ) {
+                void GlobalInfo( float rawDuration ) 
+		{
                         printf( "> Raw run time %.2f milliseconds\n", rawDuration );
                 }
 
-                void ThreadsInfo( u64 totalCalls, double timerOverhead ) {
+                void ThreadsInfo( unsigned long totalCalls, double timerOverhead ) 
+		{
                         printf( "> Total calls " PRINTFU64() ", per call overhead %.2f msecs, estimated overhead %.2f msecs\n\n",
                                 totalCalls, timerOverhead, timerOverhead * totalCalls );
                 }
 
-                void PrintThread( Caller *root ) {
+                void PrintThread( Caller *root ) 
+		{
                         root->Print();
                         printf( "\n\n" );
                 }
 
-                void PrintAccumulated( Caller *accumulated ) {
+                void PrintAccumulated( Caller *accumulated ) 
+		{
                         accumulated->PrintTopStats( 50 );
                 }
 
-                void Finish() {
-                }
         };
 
         template< class Dumper >
@@ -779,72 +864,43 @@ namespace profiler
                 delete packer;
         }
 
-        void resetThreads() {
+        void resetThreads() 
+	{
         	cudaEventDestroy(globalStart);
         	cudaEventCreate(&globalStart); 
 
-		#if defined(__PROFILER_SMP__)
-                threads.AcquireGlobalLock();
-
-                Buffer<Root> &threadsref = *threads.list;
-                size_t cnt = threadsref.Size(), last = cnt - 1;
-                for ( size_t i = 0; i < cnt; i++ ) {
-                        Root &thread = threadsref[i];
-                        if ( !thread.root->IsActive() ) {
-                                // thread isn't active, remove it
-                                delete thread.root;
-                                Root removed = threadsref.Pop();
-                                if ( i != last )
-                                        thread = removed;
-                                last--;
-                                cnt--;
-                                i--;
-                        } else {
-                                thread.threadState->threadLock.Acquire();
-                                thread.root->SoftReset();
-                                Caller *iter = thread.threadState->activeCaller;
-                                for ( ; iter; iter = iter->GetParent() )
-                                        iter->GetTimer().calls = 1;
-                                thread.threadState->threadLock.Release();
-                        }
-                }
-
-                threads.ReleaseGlobalLock();
-		#else
                 if ( root )
                         root->SoftReset();
-		#endif
         }
 
-        void enterThread( const char *name ) {
+        void enterThread( const char *name ) 
+	{
                 Caller *tmp = new Caller( name );
 
                 threads.AcquireGlobalLock();
                 threads.list->Push( Root( tmp, &Caller::thisThread ) );
 
-                Caller::AcquirePerThreadLock();
                 Caller::thisThread.activeCaller = tmp;
                 tmp->Start();
                 tmp->SetActive( true );
                 root = tmp;
-                Caller::ReleasePerThreadLock();
 
                 threads.ReleaseGlobalLock();
         }
 
-        void exitThread() {
+        void exitThread() 
+	{
                 threads.AcquireGlobalLock();
 
-                Caller::AcquirePerThreadLock();
                 root->Stop();
                 root->SetActive( false );
                 Caller::thisThread.activeCaller = NULL;
-                Caller::ReleasePerThreadLock();
 
                 threads.ReleaseGlobalLock();
         }
 
-        inline void fastcall enterCaller( const char *name ) {
+        inline void fastcall enterCaller( const char *name ) 
+	{
                 Caller *parent = Caller::thisThread.activeCaller;
                 if ( !parent )
                         return;
@@ -854,7 +910,8 @@ namespace profiler
                 Caller::thisThread.activeCaller = active;
         }
 
-        inline void exitCaller() {
+        inline void exitCaller() 
+	{
                 Caller *active = Caller::thisThread.activeCaller;
                 if ( !active )
                         return;
@@ -863,33 +920,39 @@ namespace profiler
                 Caller::thisThread.activeCaller = active->GetParent();
         }
 
-        inline void pauseCaller() {
+        inline void pauseCaller() 
+	{
                 Caller *iter = Caller::thisThread.activeCaller;
                 for ( ; iter; iter = iter->GetParent() )
                         iter->GetTimer().pause();
         }
 
-        inline void unpauseCaller() {
+        inline void unpauseCaller() 
+	{
                 Caller *iter = Caller::thisThread.activeCaller;
                 for ( ; iter; iter = iter->GetParent() )
                         iter->GetTimer().unpause();
         }
 
         // enter the main thread automatically
-        struct MakeRoot {
-                MakeRoot() {
+        struct MakeRoot 
+	{
+                MakeRoot() 
+		{
                         // get an idea of how long timer calls / rdtsc takes
                         const size_t reps = 1000;
-                        for ( size_t tries = 0; tries < 20; tries++ ) {
-                                cusp::detail::timer t, t2;
-                                t.start();
-                                for ( size_t i = 0; i < reps; i++ ) {
+                        for ( size_t tries = 0; tries < 20; tries++ ) 
+			{
+                                cusp::detail::timer t1, t2;
+                                t1.start();
+                                for ( size_t i = 0; i < reps; i++ ) 
+				{
                                         t2.start();
                                         t2.stop();
                                 }
-                                t.stop();
+                                t1.stop();
                                 double avg = double(t2.milliseconds)/double(reps);
-                                avg = double(t.milliseconds)/double(reps);
+                                avg = double(t1.milliseconds)/double(reps);
                                 Caller::mTimerOverhead = avg;
                         }
 
@@ -898,7 +961,8 @@ namespace profiler
                         enterThread( "/Main" );
                 }
 
-                ~MakeRoot() {
+                ~MakeRoot() 
+		{
                         free( programName );
                         free( commandLine );
                 }
@@ -912,7 +976,7 @@ namespace profiler
         void fastcall pause() { pauseCaller(); }
         void fastcall unpause() { unpauseCaller(); }
         void reset() { resetThreads(); }
-#else
+	#else
         void detect( int argc, const char *argv[] ) {}
         void detect( const char *commandLine ) {}
         void dump() {}
@@ -921,7 +985,7 @@ namespace profiler
         void fastcall pause() {}
         void fastcall unpause() {}
         void reset() {}
-#endif
+	#endif
 
 } // end namespace profiler
 } // end namespace detail

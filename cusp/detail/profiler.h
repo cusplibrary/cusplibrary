@@ -88,29 +88,6 @@ namespace detail
 {
 namespace profiler
 {
-
-        /*
-        =============
-        Types that won't conflict with the rest of the system
-        =============
-        */
-        typedef float f32;
-        typedef double f64;
-        typedef unsigned char u8;
-        typedef unsigned short u16;
-        typedef unsigned int u32;
-        #if defined(_MSC_VER)
-                typedef unsigned __int64 u64;
-        #else
-                typedef unsigned long long u64;
-        #endif
-
-        template< class type1, class type2 >
-        f64 average( type1 sum, type2 count ) {
-                return ( count ) ? f64(sum)/f64(count) : 0;
-        }
-
-
         /*
         =============
         Interface functions
@@ -126,12 +103,14 @@ namespace profiler
         void fastcall unpause();
         void reset();
 
-        struct Scoped {
+        struct Scoped 
+	{
                 Scoped( const char *name ) { PROFILE_START_RAW( name ); }
                 ~Scoped() { PROFILE_STOP(); }
         };
 
-        struct ScopedPause {
+        struct ScopedPause 
+	{
                 ScopedPause() { PROFILE_PAUSE(); }
                 ~ScopedPause() { PROFILE_UNPAUSE(); }
         };
