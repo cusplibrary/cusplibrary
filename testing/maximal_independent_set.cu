@@ -132,12 +132,18 @@ void TestMaximalIndependentSet(void)
     cusp::coo_matrix<int,float,cusp::host_memory> F;
     cusp::gallery::poisson5pt(F, 13, 17);
     thrust::fill(F.values.begin(), F.values.end(), 1.0f);
+    
+    cusp::coo_matrix<int,float,cusp::host_memory> G;
+    cusp::gallery::poisson5pt(G, 105, 107);
+    thrust::fill(G.values.begin(), G.values.end(), 1.0f);
 
     _TestMaximalIndependentSet<TestMatrix>(A);
     _TestMaximalIndependentSet<TestMatrix>(B);
     _TestMaximalIndependentSet<TestMatrix>(C);
     _TestMaximalIndependentSet<TestMatrix>(D);
     _TestMaximalIndependentSet<TestMatrix>(E);
+    _TestMaximalIndependentSet<TestMatrix>(F);
+    _TestMaximalIndependentSet<TestMatrix>(G);
 }
 DECLARE_SPARSE_MATRIX_UNITTEST(TestMaximalIndependentSet);
 

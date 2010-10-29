@@ -69,20 +69,25 @@ struct process_nodes
 
   
 template <typename Matrix, typename IndexType>
-void deactivate_neighbors(const Matrix& A, const IndexType i, const size_t k, cusp::array1d<bool,cusp::host_memory>& active)
+void propagate_distances(const Matrix& A,
+                         const IndexType i,
+                         const size_t d,
+                         const size_t k,
+                         cusp::array1d<size_t,cusp::host_memory>& distance)
 {
-  active[i] = false;
+  distance[i] = d;
 
-  if (k == 0) return;
-
-  for(IndexType jj = A.row_offsets[i]; jj < A.row_offsets[i + 1]; jj++)
+  if (d < k)
   {
-    IndexType j = A.column_indices[jj];
+    for(IndexType jj = A.row_offsets[i]; jj < A.row_offsets[i + 1]; jj++)
+    {
+      IndexType j = A.column_indices[jj];
 
-    if (active[j])
-      deactivate_neighbors(A, j, k - 1, active);
+      // update only if necessary
+      if (d + 1 < distance[j])
+        propagate_distances(A, j, d + 1, k, distance);
+    }
   }
-
 }
 
 template <typename NodeStateType>
@@ -119,26 +124,31 @@ size_t maximal_independent_set(const Matrix& A, ArrayType& stencil, size_t k,
   
   const IndexType N = A.num_rows;
 
-  stencil.resize(N);
+  // distance to nearest MIS node
+  cusp::array1d<size_t,cusp::host_memory> distance(N, k + 1);
 
-  thrust::fill(stencil.begin(), stencil.end(), 0);
-  
-  cusp::array1d<bool,cusp::host_memory> active(N, true);
-
-  size_t set_size = 0;
+  // count number of MIS nodes
+  size_t set_nodes = 0;
   
   // pick MIS-k nodes greedily and deactivate all their k-neighbors
   for(IndexType i = 0; i < N; i++)
   {
-    if (active[i])
+    if (distance[i] > k)
     {
-      stencil[i] = 1;
-      set_size++;
-      deactivate_neighbors(A, i, k, active);
+      set_nodes++;
+
+      // reset distances on all k-ring neighbors 
+      propagate_distances(A, i, 0, k, distance);
     }
   }
+  
+  // write output
+  stencil.resize(N);
 
-  return set_size;
+  for (IndexType i = 0; i < N; i++)
+      stencil[i] = distance[i] == 0;
+
+  return set_nodes;
 }
 
 //////////////////
@@ -171,7 +181,7 @@ size_t maximal_independent_set(const Matrix& A, ArrayType& stencil, size_t k,
     cusp::array1d<IndexType,MemorySpace>     maximal_indices(N);
 
     // TODO choose threshold in a more principled manner
-    size_t compaction_threshold = (N < 10000) ? 0 : (N / 10);  // 5 is faster
+    size_t compaction_threshold = 0; //(N < 10000) ? 0 : (N / 10);  // 5 is faster
     size_t active_nodes = N;
 
     do
