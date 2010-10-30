@@ -165,6 +165,16 @@ void fill(Array& array,
 
 template <typename InputIterator>
 typename norm_type<typename thrust::iterator_value<InputIterator>::type>::type
+    nrm1(InputIterator first,
+         InputIterator last);
+
+template <typename Array>
+typename norm_type<typename Array::value_type>::type
+    nrm1(const Array& array);
+
+
+template <typename InputIterator>
+typename norm_type<typename thrust::iterator_value<InputIterator>::type>::type
     nrm2(InputIterator first,
          InputIterator last);
 

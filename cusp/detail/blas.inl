@@ -413,6 +413,30 @@ void fill(Array& x,
 
 template <typename InputIterator>
 typename norm_type<typename thrust::iterator_value<InputIterator>::type>::type
+    nrm1(InputIterator first,
+         InputIterator last)
+{
+    typedef typename thrust::iterator_value<InputIterator>::type ValueType;
+
+    detail::absolute<ValueType> unary_op;
+    thrust::plus<ValueType>     binary_op;
+
+    ValueType init = 0;
+
+    return thrust::transform_reduce(first, last, unary_op, init, binary_op);
+}
+
+template <typename Array>
+typename norm_type<typename Array::value_type>::type
+    nrm1(const Array& x)
+{
+    CUSP_PROFILE_SCOPED();
+    return cusp::blas::nrm1(x.begin(), x.end());
+}
+
+
+template <typename InputIterator>
+typename norm_type<typename thrust::iterator_value<InputIterator>::type>::type
     nrm2(InputIterator first,
          InputIterator last)
 {

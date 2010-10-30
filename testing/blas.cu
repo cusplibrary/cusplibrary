@@ -263,6 +263,25 @@ DECLARE_HOST_DEVICE_UNITTEST(TestFill);
 
 
 template <class MemorySpace>
+void TestNrm1(void)
+{
+    cusp::array1d<float, MemorySpace> x(6);
+
+    x[0] =  7.0f;
+    x[1] =  5.0f;
+    x[2] =  4.0f;
+    x[3] = -3.0f;
+    x[4] =  0.0f;
+    x[5] =  1.0f;
+
+    ASSERT_EQUAL(cusp::blas::nrm1(x.begin(), x.end()), 20.0f);
+
+    ASSERT_EQUAL(cusp::blas::nrm1(x), 20.0f);
+}
+DECLARE_HOST_DEVICE_UNITTEST(TestNrm1);
+
+
+template <class MemorySpace>
 void TestNrm2(void)
 {
     cusp::array1d<float, MemorySpace> x(6);
