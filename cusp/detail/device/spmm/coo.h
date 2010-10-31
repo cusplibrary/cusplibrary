@@ -27,6 +27,10 @@
 #include <thrust/iterator/zip_iterator.h>
 #include <thrust/iterator/permutation_iterator.h>
 
+#include <list>
+
+#include <cusp/print.h> // TODO remove
+
 #if (THRUST_VERSION < 100300)
 // TODO remove this when Thrust v1.2.x is unsupported
 #include <thrust/segmented_scan.h>
@@ -38,6 +42,120 @@ namespace detail
 {
 namespace device
 {
+
+template <typename Matrix1,
+          typename Matrix2,
+          typename Matrix3,
+          typename Array1,
+          typename Array2>
+void coo_spmm_helper(size_t workspace_size,
+                     size_t begin_row,
+                     size_t end_row,
+                     size_t begin_segment,
+                     size_t end_segment,
+                     const Matrix1& A,
+                     const Matrix2& B,
+                           Matrix3& C,
+                     const Array1& B_row_offsets,
+                     const Array1& segment_lengths,
+                     const Array1& output_ptr,
+                           Array1& A_gather_locations,
+                           Array1& B_gather_locations,
+                           Array1& I,
+                           Array1& J,
+                           Array2& V)
+{
+    typedef typename Array1::value_type IndexType;
+    typedef typename Array2::value_type ValueType;
+
+    A_gather_locations.resize(workspace_size);
+    B_gather_locations.resize(workspace_size);
+    I.resize(workspace_size);
+    J.resize(workspace_size);
+    V.resize(workspace_size);
+  
+    // nothing to do
+    if (workspace_size == 0)
+    {
+        C.resize(A.num_rows, B.num_cols, 0);
+        return;
+    }
+
+    // compute gather locations of intermediate format
+    thrust::fill(A_gather_locations.begin(), A_gather_locations.end(), 0);
+    thrust::scatter_if(thrust::counting_iterator<IndexType>(begin_segment), thrust::counting_iterator<IndexType>(end_segment),
+                       output_ptr.begin() + begin_segment, 
+                       segment_lengths.begin() + begin_segment,
+                       A_gather_locations.begin() - output_ptr[begin_segment]);
+    thrust::inclusive_scan(A_gather_locations.begin(), A_gather_locations.end(), A_gather_locations.begin(), thrust::maximum<IndexType>());
+  
+    // compute gather locations of intermediate format
+    thrust::fill(B_gather_locations.begin(), B_gather_locations.end(), 1);
+    thrust::scatter_if(thrust::make_permutation_iterator(B_row_offsets.begin(), A.column_indices.begin()) + begin_segment,
+                       thrust::make_permutation_iterator(B_row_offsets.begin(), A.column_indices.begin()) + end_segment,
+                       output_ptr.begin() + begin_segment,
+//                       thrust::make_transform_iterator(output_ptr.begin(), subtract_constant<IndexType>(begin + begin_segment,
+                       segment_lengths.begin() + begin_segment,
+                       B_gather_locations.begin() - output_ptr[begin_segment]);
+#if THRUST_VERSION >= 100300
+    thrust::inclusive_scan_by_key(A_gather_locations.begin(), A_gather_locations.end(),
+                                  B_gather_locations.begin(),
+                                  B_gather_locations.begin());
+
+#else
+    // TODO remove this when Thrust v1.2.x is unsupported
+    thrust::experimental::inclusive_segmented_scan(B_gather_locations.begin(), B_gather_locations.end(),
+                                                   A_gather_locations.begin(),
+                                                   B_gather_locations.begin());
+#endif
+    
+#if THRUST_VERSION >= 100300
+    thrust::gather(A_gather_locations.begin(), A_gather_locations.end(),
+                   A.row_indices.begin(),
+                   I.begin());
+    thrust::gather(B_gather_locations.begin(), B_gather_locations.end(),
+                   B.column_indices.begin(),
+                   J.begin());
+#else
+    // TODO remove this when Thrust v1.2.x is unsupported
+    thrust::next::gather(A_gather_locations.begin(), A_gather_locations.end(),
+                         A.row_indices.begin(),
+                         I.begin());
+    thrust::next::gather(B_gather_locations.begin(), B_gather_locations.end(),
+                         B.column_indices.begin(),
+                         J.begin());
+#endif    
+
+    thrust::transform(thrust::make_permutation_iterator(A.values.begin(), A_gather_locations.begin()),
+                      thrust::make_permutation_iterator(A.values.begin(), A_gather_locations.end()),
+                      thrust::make_permutation_iterator(B.values.begin(), B_gather_locations.begin()),
+                      V.begin(),
+                      thrust::multiplies<ValueType>());
+
+    // sort (I,J,V) tuples by (I,J)
+    cusp::detail::sort_by_row_and_column(I, J, V);
+
+    // compute unique number of nonzeros in the output
+    IndexType NNZ = thrust::inner_product(thrust::make_zip_iterator(thrust::make_tuple(I.begin(), J.begin())),
+                                          thrust::make_zip_iterator(thrust::make_tuple(I.end (),  J.end()))   - 1,
+                                          thrust::make_zip_iterator(thrust::make_tuple(I.begin(), J.begin())) + 1,
+                                          IndexType(0),
+                                          thrust::plus<IndexType>(),
+                                          thrust::not_equal_to< thrust::tuple<IndexType,IndexType> >()) + 1;
+
+    // allocate space for output
+    C.resize(A.num_rows, B.num_cols, NNZ);
+
+    // sum values with the same (i,j)
+    thrust::reduce_by_key(thrust::make_zip_iterator(thrust::make_tuple(I.begin(), J.begin())),
+                          thrust::make_zip_iterator(thrust::make_tuple(I.end(),   J.end())),
+                          V.begin(),
+                          thrust::make_zip_iterator(thrust::make_tuple(C.row_indices.begin(), C.column_indices.begin())),
+                          C.values.begin(),
+                          thrust::equal_to< thrust::tuple<IndexType,IndexType> >(),
+                          thrust::plus<ValueType>());
+}
+
 
 template <typename Matrix1,
           typename Matrix2,
@@ -86,85 +204,122 @@ void spmm_coo(const Matrix1& A,
     output_ptr[A.num_entries] = output_ptr[A.num_entries - 1] + segment_lengths[A.num_entries - 1]; // XXX is this necessary?
 
     IndexType coo_num_nonzeros = output_ptr[A.num_entries];
-    
-    // enumerate the segments in the intermediate format corresponding to each entry A(i,j)
-    // XXX could be done with offset_to_index instead
-    cusp::array1d<IndexType,MemorySpace> segments(coo_num_nonzeros, 0);
-    thrust::scatter_if(thrust::counting_iterator<IndexType>(0), thrust::counting_iterator<IndexType>(A.num_entries),
-                       output_ptr.begin(), 
-                       segment_lengths.begin(),
-                       segments.begin());
-    thrust::inclusive_scan(segments.begin(), segments.end(), segments.begin(), thrust::maximum<IndexType>());
+
+    // TODO choose this based on device memory capacity
+    size_t workspace_capacity = thrust::min<size_t>(coo_num_nonzeros, 16 << 20);
+
+    // workspace arrays
+    cusp::array1d<IndexType,MemorySpace> A_gather_locations;
+    cusp::array1d<IndexType,MemorySpace> B_gather_locations;
+    cusp::array1d<IndexType,MemorySpace> I;
+    cusp::array1d<IndexType,MemorySpace> J;
+    cusp::array1d<ValueType,MemorySpace> V;
+
+    // TODO catch bad_alloc and fallback to host
    
-    // compute gather locations of intermediate format
-    cusp::array1d<IndexType,MemorySpace> gather_locations(coo_num_nonzeros, 1);
-    thrust::scatter_if(thrust::make_permutation_iterator(B_row_offsets.begin(), A.column_indices.begin()),
-                       thrust::make_permutation_iterator(B_row_offsets.begin(), A.column_indices.begin()) + A.num_entries,
+    if (coo_num_nonzeros <= workspace_capacity)
+    {
+        // compute C = A * B in one step
+        size_t begin_row      = 0;
+        size_t end_row        = A.num_rows;
+        size_t begin_segment  = 0;
+        size_t end_segment    = A.num_entries;
+        size_t workspace_size = coo_num_nonzeros;
+
+        coo_spmm_helper(workspace_size,
+                        begin_row, end_row,
+                        begin_segment, end_segment,
+                        A, B, C,
+                        B_row_offsets,
+                        segment_lengths, output_ptr,
+                        A_gather_locations, B_gather_locations,
+                        I, J, V);
+    }
+    else
+    {
+        // decompose C = A * B into several C[slice,:] = A[slice,:] * B operations
+        typedef typename cusp::coo_matrix<IndexType,ValueType,MemorySpace> Container;
+        typedef typename std::list<Container> ContainerList;
+
+        // storage for C[slice,:] partial results
+        ContainerList slices;
+
+        // compute row offsets for A
+        cusp::array1d<IndexType,MemorySpace> A_row_offsets(A.num_rows + 1);
+        cusp::detail::indices_to_offsets(A.row_indices, A_row_offsets);
+    
+        // compute worspace requirements for each row
+        cusp::array1d<IndexType,MemorySpace> cummulative_row_workspace(A.num_rows);
+        thrust::gather(A_row_offsets.begin() + 1, A_row_offsets.end(),
                        output_ptr.begin(),
-                       segment_lengths.begin(),
-                       gather_locations.begin());
-#if THRUST_VERSION >= 100300
-    thrust::inclusive_scan_by_key(segments.begin(), segments.end(),
-                                  gather_locations.begin(),
-                                  gather_locations.begin());
+                       cummulative_row_workspace.begin());
 
-#else
-    // TODO remove this when Thrust v1.2.x is unsupported
-    thrust::experimental::inclusive_segmented_scan(gather_locations.begin(), gather_locations.end(),
-                                                   segments.begin(),
-                                                   gather_locations.begin());
-#endif
+        size_t begin_row = 0;
+        size_t total_work = 0;
+
+        while (begin_row < size_t(A.num_rows))
+        {
+            Container C_slice;
     
-    // compute column entries and values of intermediate format
-    cusp::array1d<IndexType,MemorySpace> I(coo_num_nonzeros);
-    cusp::array1d<IndexType,MemorySpace> J(coo_num_nonzeros);
-    cusp::array1d<ValueType,MemorySpace> V(coo_num_nonzeros);
-    
-#if THRUST_VERSION >= 100300
-    thrust::gather(segments.begin(), segments.end(),
-                   A.row_indices.begin(),
-                   I.begin());
-    thrust::gather(gather_locations.begin(), gather_locations.end(),
-                   B.column_indices.begin(),
-                   J.begin());
-#else
-    // TODO remove this when Thrust v1.2.x is unsupported
-    thrust::next::gather(segments.begin(), segments.end(),
-                         A.row_indices.begin(),
-                         I.begin());
-    thrust::next::gather(gather_locations.begin(), gather_locations.end(),
-                         B.column_indices.begin(),
-                         J.begin());
-#endif    
+            // find largest end_row such that the capacity of [begin_row, end_row) fits in the workspace_capacity
+            size_t end_row = thrust::upper_bound(cummulative_row_workspace.begin() + begin_row, cummulative_row_workspace.end(),
+                                                 total_work + IndexType(workspace_capacity)) - cummulative_row_workspace.begin();
 
-    thrust::transform(thrust::make_permutation_iterator(A.values.begin(), segments.begin()),
-                      thrust::make_permutation_iterator(A.values.begin(), segments.begin()) + coo_num_nonzeros,
-                      thrust::make_permutation_iterator(B.values.begin(), gather_locations.begin()),
-                      V.begin(),
-                      thrust::multiplies<ValueType>());
+            size_t begin_segment = A_row_offsets[begin_row];
+            size_t end_segment   = A_row_offsets[end_row];
+        
+            // TODO
+            //if (begin_row == end_row)
+            //    // workspace wasn't large enough, throw cusp::memory_allocation_failure?
 
-    // sort (I,J,V) tuples by (I,J)
-    cusp::detail::sort_by_row_and_column(I, J, V);
+            size_t workspace_size = output_ptr[end_segment] - output_ptr[begin_segment];
+            total_work += workspace_size;
+            
+            //std::cout << "begin_row " << begin_row << " end_row " << end_row << " workspace_size " << workspace_size << std::endl;
 
-    // compute unique number of nonzeros in the output
-    IndexType NNZ = thrust::inner_product(thrust::make_zip_iterator(thrust::make_tuple(I.begin(), J.begin())),
-                                          thrust::make_zip_iterator(thrust::make_tuple(I.end (),  J.end()))   - 1,
-                                          thrust::make_zip_iterator(thrust::make_tuple(I.begin(), J.begin())) + 1,
-                                          IndexType(0),
-                                          thrust::plus<IndexType>(),
-                                          thrust::not_equal_to< thrust::tuple<IndexType,IndexType> >()) + 1;
+            assert(end_row > begin_row);
+            assert(workspace_size <= workspace_capacity);
 
-    // allocate space for output
-    C.resize(A.num_rows, B.num_cols, NNZ);
+            coo_spmm_helper(workspace_size,
+                            begin_row, end_row,
+                            begin_segment, end_segment,
+                            A, B, C_slice,
+                            B_row_offsets,
+                            segment_lengths, output_ptr,
+                            A_gather_locations, B_gather_locations,
+                            I, J, V);
 
-    // sum values with the same (i,j)
-    thrust::reduce_by_key(thrust::make_zip_iterator(thrust::make_tuple(I.begin(), J.begin())),
-                          thrust::make_zip_iterator(thrust::make_tuple(I.end(),   J.end())),
-                          V.begin(),
-                          thrust::make_zip_iterator(thrust::make_tuple(C.row_indices.begin(), C.column_indices.begin())),
-                          C.values.begin(),
-                          thrust::equal_to< thrust::tuple<IndexType,IndexType> >(),
-                          thrust::plus<ValueType>());
+            slices.push_back(Container());
+            slices.back().swap(C_slice);
+
+            begin_row = end_row;
+        }
+
+        // deallocate workspace
+        A_gather_locations.clear(); A_gather_locations.shrink_to_fit();  
+        B_gather_locations.clear(); B_gather_locations.shrink_to_fit();
+        I.clear();                  I.shrink_to_fit();
+        J.clear();                  J.shrink_to_fit();
+        V.clear();                  V.shrink_to_fit();
+
+        // compute total output size
+        size_t C_num_entries = 0;
+        for(typename ContainerList::iterator iter = slices.begin(); iter != slices.end(); ++iter)
+            C_num_entries += iter->num_entries;
+
+        // resize output
+        C.resize(A.num_rows, B.num_cols, C_num_entries);
+       
+        // copy slices into output
+        size_t base = 0;
+        for(typename ContainerList::iterator iter = slices.begin(); iter != slices.end(); ++iter)
+        {
+            thrust::copy(iter->row_indices.begin(),    iter->row_indices.end(),    C.row_indices.begin()    + base);
+            thrust::copy(iter->column_indices.begin(), iter->column_indices.end(), C.column_indices.begin() + base);
+            thrust::copy(iter->values.begin(),         iter->values.end(),         C.values.begin()         + base);
+            base += iter->num_entries;
+        }
+    }
 }
 
 } // end namespace device
