@@ -177,8 +177,8 @@ size_t maximal_independent_set(const Matrix& A, ArrayType& stencil, size_t k,
     typedef typename Matrix::index_type   IndexType;
     typedef typename Matrix::value_type   ValueType;
     typedef typename Matrix::memory_space MemorySpace;
-    typedef unsigned int RandomType;
-    typedef unsigned int NodeStateType;
+    typedef unsigned int  RandomType;
+    typedef unsigned char NodeStateType;
         
     const IndexType N = A.num_rows;
     
@@ -195,9 +195,9 @@ size_t maximal_independent_set(const Matrix& A, ArrayType& stencil, size_t k,
     cusp::array1d<RandomType,MemorySpace>    maximal_values(N);
     cusp::array1d<IndexType,MemorySpace>     maximal_indices(N);
 
-    cusp::array1d<NodeStateType,MemorySpace> last_states(maximal_states);
-    cusp::array1d<RandomType,MemorySpace>    last_values(maximal_values);
-    cusp::array1d<IndexType,MemorySpace>     last_indices(maximal_indices);
+    cusp::array1d<NodeStateType,MemorySpace> last_states;
+    cusp::array1d<RandomType,MemorySpace>    last_values;
+    cusp::array1d<IndexType,MemorySpace>     last_indices;;
 
     // TODO choose threshold in a more principled manner
     size_t compaction_threshold = 0; // (N < 10000) ? 0 : (N / 10);
@@ -208,7 +208,7 @@ size_t maximal_independent_set(const Matrix& A, ArrayType& stencil, size_t k,
         // find the largest (state,value,index) 1-ring neighbor for each node
         cusp::detail::device::cuda::spmv_coo
             (A.num_rows, A.num_entries,
-             A.row_indices.begin(), A.column_indices.begin(), thrust::constant_iterator<int>(1),  // XXX should we mask explicit zeros? (e.g. DIA, array2d)
+             A.row_indices.begin(), A.column_indices.begin(), thrust::constant_iterator<Tuple>(Tuple(0,0)),  // XXX should we mask explicit zeros? (e.g. DIA, array2d)
              thrust::make_zip_iterator(thrust::make_tuple(states.begin(), random_values.begin(), thrust::counting_iterator<IndexType>(0))),
              thrust::make_zip_iterator(thrust::make_tuple(states.begin(), random_values.begin(), thrust::counting_iterator<IndexType>(0))),
              thrust::make_zip_iterator(thrust::make_tuple(maximal_states.begin(), maximal_values.begin(), maximal_indices.begin())),
@@ -224,7 +224,7 @@ size_t maximal_independent_set(const Matrix& A, ArrayType& stencil, size_t k,
             // TODO replace with call to generalized method
             cusp::detail::device::cuda::spmv_coo
                 (A.num_rows, A.num_entries,
-                 A.row_indices.begin(), A.column_indices.begin(), thrust::constant_iterator<int>(1),  // XXX should we mask explicit zeros? (e.g. DIA, array2d)
+                 A.row_indices.begin(), A.column_indices.begin(), thrust::constant_iterator<Tuple>(Tuple(0,0)),  // XXX should we mask explicit zeros? (e.g. DIA, array2d)
                  thrust::make_zip_iterator(thrust::make_tuple(last_states.begin(), last_values.begin(), last_indices.begin())),
                  thrust::make_zip_iterator(thrust::make_tuple(last_states.begin(), last_values.begin(), last_indices.begin())),
                  thrust::make_zip_iterator(thrust::make_tuple(maximal_states.begin(), maximal_values.begin(), maximal_indices.begin())),
