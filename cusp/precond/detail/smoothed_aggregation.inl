@@ -207,7 +207,8 @@ void smooth_prolongator(const cusp::coo_matrix<IndexType,ValueType,MemorySpace>&
 
 
 template <typename IndexType, typename ValueType, typename MemorySpace>
-smoothed_aggregation<IndexType,ValueType,MemorySpace>::smoothed_aggregation(const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& A)
+smoothed_aggregation<IndexType,ValueType,MemorySpace>::smoothed_aggregation(const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& A, const ValueType theta)
+    : theta(theta)
 {
   CUSP_PROFILE_SCOPED();
 
@@ -235,7 +236,7 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace>::extend_hierarchy(voi
 
   // compute stength of connection matrix
   cusp::coo_matrix<IndexType,ValueType,MemorySpace> C;
-  detail::symmetric_strength_of_connection(A,C);
+  detail::symmetric_strength_of_connection(A, C, theta);
 
   // compute spectral radius of diag(C)^-1 * C
   ValueType rho_DinvA = detail::estimate_rho_Dinv_A(A);
@@ -248,9 +249,7 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace>::extend_hierarchy(voi
   cusp::coo_matrix<IndexType,ValueType,MemorySpace> T;
   cusp::array1d<ValueType,MemorySpace>              B_coarse;
   detail::fit_candidates(aggregates, B, T, B_coarse);
-
-  //cusp::io::write_matrix_market_file(T, "/home/nathan/Desktop/AMG/T0.mtx");
-
+  
   // compute prolongation operator
   cusp::coo_matrix<IndexType,ValueType,MemorySpace> P;
   detail::smooth_prolongator(A, T, P, (ValueType) (4.0/3.0), rho_DinvA);  // TODO if C != A then compute rho_Dinv_C

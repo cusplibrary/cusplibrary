@@ -75,9 +75,11 @@ class smoothed_aggregation : public cusp::linear_operator<ValueType, MemorySpace
         
     cusp::detail::lu_solver<ValueType, cusp::host_memory> LU;
 
+    ValueType theta;
+
     public:
 
-    smoothed_aggregation(const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& A);
+    smoothed_aggregation(const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& A, const ValueType theta=0);
 
     
     template <typename Array1, typename Array2>
