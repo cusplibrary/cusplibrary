@@ -22,6 +22,7 @@
 #include <cusp/precond/diagonal.h>
 #include <cusp/precond/aggregate.h>
 #include <cusp/precond/strength.h>
+#include <cusp/krylov/arnoldi.h>
 
 #include <cusp/detail/format_utils.h>
 #include <cusp/detail/spectral_radius.h>
@@ -66,7 +67,7 @@ double estimate_rho_Dinv_A(const MatrixType& A)
 
     Dinv_A<MatrixType> Dinv_A(A);
 
-    return cusp::detail::estimate_spectral_radius(Dinv_A);
+    return cusp::detail::ritz_spectral_radius(Dinv_A);
 }
 
 
@@ -273,7 +274,7 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace>::extend_hierarchy(voi
   levels.back().smoother = cusp::relaxation::jacobi<ValueType, MemorySpace>(A, omega);
   #else
   cusp::array1d<ValueType,cusp::host_memory> coeff;
-  ValueType rho = cusp::detail::estimate_spectral_radius(A);
+  ValueType rho = cusp::detail::ritz_spectral_radius(A);
   cusp::relaxation::detail::chebyshev_polynomial_coefficients(rho,coeff);
   levels.back().smoother = cusp::relaxation::polynomial<ValueType, MemorySpace>(A, coeff);
   #endif
