@@ -28,6 +28,7 @@
 
 #include <cusp/coo_matrix.h>
 #include <cusp/relaxation/jacobi.h>
+#include <cusp/relaxation/polynomial.h>
 
 #include <cusp/detail/lu.h>
 
@@ -57,8 +58,15 @@ class smoothed_aggregation : public cusp::linear_operator<ValueType, MemorySpace
         cusp::coo_matrix<IndexType,ValueType,MemorySpace> P;  // prolongation operator
         cusp::array1d<IndexType,MemorySpace> aggregates;      // aggregates
         cusp::array1d<ValueType,MemorySpace> B;               // near-nullspace candidates
+        cusp::array1d<ValueType,MemorySpace> x;               // per-level solution
+        cusp::array1d<ValueType,MemorySpace> b;               // per-level rhs
+        cusp::array1d<ValueType,MemorySpace> residual;        // per-level residual
         
+	#ifndef USE_POLY_SMOOTHER
         cusp::relaxation::jacobi<ValueType,MemorySpace> smoother;
+	#else
+        cusp::relaxation::polynomial<ValueType,MemorySpace> smoother;
+	#endif
        
         ValueType rho;                                        // spectral radius
     };
@@ -67,21 +75,23 @@ class smoothed_aggregation : public cusp::linear_operator<ValueType, MemorySpace
         
     cusp::detail::lu_solver<ValueType, cusp::host_memory> LU;
 
+    ValueType theta;
+
     public:
 
-    smoothed_aggregation(const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& A);
+    smoothed_aggregation(const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& A, const ValueType theta=0);
 
     
     template <typename Array1, typename Array2>
-    void operator()(const Array1& x, Array2& y) const;
+    void operator()(const Array1& x, Array2& y);
 
     void solve(const cusp::array1d<ValueType,MemorySpace>& b,
-                     cusp::array1d<ValueType,MemorySpace>& x) const;
+                     cusp::array1d<ValueType,MemorySpace>& x);
 
     template<typename Monitor>
     void solve(const cusp::array1d<ValueType,MemorySpace>& b,
                      cusp::array1d<ValueType,MemorySpace>& x,
-                     Monitor& monitor ) const;
+                     Monitor& monitor );
 
     void print( void );
 
@@ -95,7 +105,7 @@ class smoothed_aggregation : public cusp::linear_operator<ValueType, MemorySpace
 
     void _solve(const cusp::array1d<ValueType,MemorySpace>& b,
                       cusp::array1d<ValueType,MemorySpace>& x,
-                const int i) const;
+                const int i);
 };
 /*! \}
  */

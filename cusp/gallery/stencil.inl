@@ -192,7 +192,7 @@ void generate_matrix_from_stencil(      cusp::dia_matrix<IndexType,ValueType,Mem
     matrix.num_entries = matrix.values.values.size() - thrust::count(matrix.values.values.begin(), matrix.values.values.end(), ValueType(0));
 }
 
-
+// TODO add an entry point and make this the default path
 template <typename MatrixType,
           typename StencilPoint,
           typename GridDimension>
@@ -200,6 +200,8 @@ void generate_matrix_from_stencil(      MatrixType& matrix,
                                   const cusp::array1d<StencilPoint,cusp::host_memory>& stencil,
                                   const GridDimension& grid)
 {
+    CUSP_PROFILE_SCOPED();
+
     typedef typename MatrixType::index_type   IndexType;
     typedef typename MatrixType::value_type   ValueType;
     typedef typename MatrixType::memory_space MemorySpace;

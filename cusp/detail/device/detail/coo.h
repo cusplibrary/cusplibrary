@@ -18,9 +18,9 @@
 #pragma once
 
 #include <cusp/array1d.h>
+#include <cusp/detail/format_utils.h>
 
 #include <thrust/functional.h>
-#include <thrust/sort.h>
 #include <thrust/reduce.h>
 #include <thrust/inner_product.h>
 #include <thrust/iterator/zip_iterator.h>
@@ -64,9 +64,8 @@ void coo_elementwise_transform_simple(const Matrix1& A,
     // apply transformation to B's values 
     thrust::transform(B.values.begin(), B.values.end(), vals.begin() + A_nnz, op);
 
-    // TODO use explicit permuation and temporary arrays for efficiency
-    thrust::sort_by_key(cols.begin(), cols.end(), thrust::make_zip_iterator(thrust::make_tuple(rows.begin(), vals.begin())));
-    thrust::sort_by_key(rows.begin(), rows.end(), thrust::make_zip_iterator(thrust::make_tuple(cols.begin(), vals.begin())));
+    // sort by (I,J)
+    cusp::detail::sort_by_row_and_column(rows, cols, vals);
     
     // compute unique number of nonzeros in the output
     IndexType C_nnz = thrust::inner_product(thrust::make_zip_iterator(thrust::make_tuple(rows.begin(), cols.begin())),

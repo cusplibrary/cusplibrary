@@ -177,6 +177,8 @@ void transpose(const MatrixType1& A, MatrixType2& At,
 template <typename MatrixType1, typename MatrixType2>
 void transpose(const MatrixType1& A, MatrixType2& At)
 {
+    CUSP_PROFILE_SCOPED();
+
     cusp::detail::transpose(A, At,
                             typename MatrixType1::format(),
                             typename MatrixType2::format());

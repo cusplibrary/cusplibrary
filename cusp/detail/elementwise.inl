@@ -41,6 +41,8 @@ void add(const Matrix1& A,
          const Matrix2& B,
                Matrix3& C)
 {
+    CUSP_PROFILE_SCOPED();
+
     // TODO replace with cusp::detail::assert_same_dimensions(A,B);
     if(A.num_rows != B.num_rows || A.num_cols != B.num_cols)
         throw cusp::invalid_input_exception("array dimensions do not match");
@@ -59,6 +61,8 @@ void subtract(const Matrix1& A,
               const Matrix2& B,
                     Matrix3& C)
 {
+    CUSP_PROFILE_SCOPED();
+
     // TODO replace with cusp::detail::assert_same_dimensions(A,B);
     if(A.num_rows != B.num_rows || A.num_cols != B.num_cols)
         throw cusp::invalid_input_exception("array dimensions do not match");

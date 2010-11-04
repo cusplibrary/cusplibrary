@@ -60,6 +60,8 @@ void multiply(LinearOperator&  A,
               MatrixOrVector1& B,
               MatrixOrVector2& C)
 {
+  CUSP_PROFILE_SCOPED();
+
   // TODO check that dimensions are compatible
 
   typedef typename LinearOperator::value_type   ValueType;

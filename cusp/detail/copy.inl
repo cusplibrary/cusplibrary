@@ -162,6 +162,8 @@ void copy(const T1& src, T2& dst,
 template <typename T1, typename T2>
 void copy(const T1& src, T2& dst)
 {
+  CUSP_PROFILE_SCOPED();
+
   cusp::detail::copy(src, dst, typename T1::format(), typename T2::format());
 }
 

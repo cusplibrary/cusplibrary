@@ -22,13 +22,15 @@
 #include <cusp/precond/diagonal.h>
 #include <cusp/precond/aggregate.h>
 #include <cusp/precond/strength.h>
+#include <cusp/krylov/arnoldi.h>
+
+#include <cusp/detail/format_utils.h>
 #include <cusp/detail/spectral_radius.h>
 
 #include <thrust/extrema.h>
 #include <thrust/transform.h>
 #include <thrust/gather.h>
 #include <thrust/reduce.h>
-#include <thrust/sort.h>
 
 namespace cusp
 {
@@ -65,7 +67,7 @@ double estimate_rho_Dinv_A(const MatrixType& A)
 
     Dinv_A<MatrixType> Dinv_A(A);
 
-    return cusp::detail::estimate_spectral_radius(Dinv_A);
+    return cusp::detail::ritz_spectral_radius(Dinv_A);
 }
 
 
@@ -92,38 +94,39 @@ void fit_candidates(const Array1& aggregates,
                           cusp::coo_matrix<IndexType,ValueType,MemorySpace>& Q,
                           Array3& R)
 {
-    // TODO handle case w/ unaggregated nodes (marked w/ -1)
-    IndexType num_aggregates = *thrust::max_element(aggregates.begin(), aggregates.end()) + 1;
+  CUSP_PROFILE_SCOPED();
+  // TODO handle case w/ unaggregated nodes (marked w/ -1)
+  IndexType num_aggregates = *thrust::max_element(aggregates.begin(), aggregates.end()) + 1;
 
-    Q.resize(aggregates.size(), num_aggregates, aggregates.size());
-    R.resize(num_aggregates);
+  Q.resize(aggregates.size(), num_aggregates, aggregates.size());
+  R.resize(num_aggregates);
 
-    // gather values into Q
-    thrust::sequence(Q.row_indices.begin(), Q.row_indices.end());
-    thrust::copy(aggregates.begin(), aggregates.end(), Q.column_indices.begin());
-    thrust::copy(B.begin(), B.end(), Q.values.begin());
-                          
-    // compute norm over each aggregate
-    {
-        // compute Qt
-        cusp::coo_matrix<IndexType,ValueType,MemorySpace> Qt;  cusp::transpose(Q, Qt);
+  // gather values into Q
+  thrust::sequence(Q.row_indices.begin(), Q.row_indices.end());
+  thrust::copy(aggregates.begin(), aggregates.end(), Q.column_indices.begin());
+  thrust::copy(B.begin(), B.end(), Q.values.begin());
+                        
+  // compute norm over each aggregate
+  {
+    // compute Qt
+    cusp::coo_matrix<IndexType,ValueType,MemorySpace> Qt;  cusp::transpose(Q, Qt);
 
-        // compute sum of squares for each column of Q (rows of Qt)
-        cusp::array1d<IndexType, MemorySpace> temp(num_aggregates);
-        thrust::reduce_by_key(Qt.row_indices.begin(), Qt.row_indices.end(),
-                              thrust::make_transform_iterator(Qt.values.begin(), square<ValueType>()),
-                              temp.begin(),
-                              R.begin());
+    // compute sum of squares for each column of Q (rows of Qt)
+    cusp::array1d<IndexType, MemorySpace> temp(num_aggregates);
+    thrust::reduce_by_key(Qt.row_indices.begin(), Qt.row_indices.end(),
+                          thrust::make_transform_iterator(Qt.values.begin(), square<ValueType>()),
+                          temp.begin(),
+                          R.begin());
 
-        // compute square root of each column sum
-        thrust::transform(R.begin(), R.end(), R.begin(), sqrt_functor<ValueType>());
-    }
+    // compute square root of each column sum
+    thrust::transform(R.begin(), R.end(), R.begin(), sqrt_functor<ValueType>());
+  }
 
-    // rescale columns of Q
-    thrust::transform(Q.values.begin(), Q.values.end(),
-                      thrust::make_permutation_iterator(R.begin(), Q.column_indices.begin()),
-                      Q.values.begin(),
-                      thrust::divides<ValueType>());
+  // rescale columns of Q
+  thrust::transform(Q.values.begin(), Q.values.end(),
+                    thrust::make_permutation_iterator(R.begin(), Q.column_indices.begin()),
+                    Q.values.begin(),
+                    thrust::divides<ValueType>());
 }
 
 
@@ -137,238 +140,260 @@ void smooth_prolongator(const cusp::coo_matrix<IndexType,ValueType,MemorySpace>&
                         const ValueType omega = 4.0/3.0,
                         const ValueType rho_Dinv_S = 0.0)
 {
-    // TODO handle case with unaggregated nodes
-    assert(T.num_entries == T.num_rows);
+  CUSP_PROFILE_SCOPED();
 
-    const ValueType lambda = omega / (rho_Dinv_S == 0.0 ? estimate_rho_Dinv_A(S) : rho_Dinv_S);
+  // TODO handle case with unaggregated nodes
+  assert(T.num_entries == T.num_rows);
 
-    // temp <- lambda * S(i,j) * T(j,k)
-    cusp::coo_matrix<IndexType,ValueType,MemorySpace> temp(S.num_rows, T.num_cols, S.num_entries + T.num_entries);
-    thrust::copy(S.row_indices.begin(), S.row_indices.end(), temp.row_indices.begin());
+  const ValueType lambda = omega / (rho_Dinv_S == 0.0 ? estimate_rho_Dinv_A(S) : rho_Dinv_S);
+
+  // temp <- lambda * S(i,j) * T(j,k)
+  cusp::coo_matrix<IndexType,ValueType,MemorySpace> temp(S.num_rows, T.num_cols, S.num_entries + T.num_entries);
+  thrust::copy(S.row_indices.begin(), S.row_indices.end(), temp.row_indices.begin());
 #if THRUST_VERSION >= 100300
-    thrust::gather(S.column_indices.begin(), S.column_indices.end(), T.column_indices.begin(), temp.column_indices.begin());
+  thrust::gather(S.column_indices.begin(), S.column_indices.end(), T.column_indices.begin(), temp.column_indices.begin());
 #else
-    // TODO remove this when Thrust v1.2.x is unsupported
-    thrust::next::gather(S.column_indices.begin(), S.column_indices.end(), T.column_indices.begin(), temp.column_indices.begin());
+  // TODO remove this when Thrust v1.2.x is unsupported
+  thrust::next::gather(S.column_indices.begin(), S.column_indices.end(), T.column_indices.begin(), temp.column_indices.begin());
 #endif 
-    thrust::transform(S.values.begin(), S.values.end(),
-                      thrust::make_permutation_iterator(T.values.begin(), S.column_indices.begin()),
-                      temp.values.begin(),
-                      thrust::multiplies<ValueType>());
+  thrust::transform(S.values.begin(), S.values.end(),
+                    thrust::make_permutation_iterator(T.values.begin(), S.column_indices.begin()),
+                    temp.values.begin(),
+                    thrust::multiplies<ValueType>());
+  thrust::transform(temp.values.begin(), temp.values.begin() + S.num_entries,
+                    thrust::constant_iterator<ValueType>(-lambda),
+                    temp.values.begin(),
+                    thrust::multiplies<ValueType>());
+  // temp <- D^-1
+  {
+    cusp::array1d<ValueType, MemorySpace> D(S.num_rows);
+    cusp::detail::extract_diagonal(S, D);
     thrust::transform(temp.values.begin(), temp.values.begin() + S.num_entries,
-                      thrust::constant_iterator<ValueType>(-lambda),
+                      thrust::make_permutation_iterator(D.begin(), S.row_indices.begin()),
                       temp.values.begin(),
-                      thrust::multiplies<ValueType>());
-    // temp <- D^-1
-    {
-        cusp::array1d<ValueType, MemorySpace> D(S.num_rows);
-        cusp::detail::extract_diagonal(S, D);
-        thrust::transform(temp.values.begin(), temp.values.begin() + S.num_entries,
-                          thrust::make_permutation_iterator(D.begin(), S.row_indices.begin()),
-                          temp.values.begin(),
-                          thrust::divides<ValueType>());
-    }
+                      thrust::divides<ValueType>());
+  }
 
-    // temp <- temp + T
-    thrust::copy(T.row_indices.begin(),    T.row_indices.end(),    temp.row_indices.begin()    + S.num_entries);
-    thrust::copy(T.column_indices.begin(), T.column_indices.end(), temp.column_indices.begin() + S.num_entries);
-    thrust::copy(T.values.begin(),         T.values.end(),         temp.values.begin()         + S.num_entries);
+  // temp <- temp + T
+  thrust::copy(T.row_indices.begin(),    T.row_indices.end(),    temp.row_indices.begin()    + S.num_entries);
+  thrust::copy(T.column_indices.begin(), T.column_indices.end(), temp.column_indices.begin() + S.num_entries);
+  thrust::copy(T.values.begin(),         T.values.end(),         temp.values.begin()         + S.num_entries);
 
-    // sort by (I,J)
-    {
-        // TODO use explicit permuation and temporary arrays for efficiency
-        thrust::sort_by_key(temp.column_indices.begin(), temp.column_indices.end(), thrust::make_zip_iterator(thrust::make_tuple(temp.row_indices.begin(),    temp.values.begin())));
-        thrust::sort_by_key(temp.row_indices.begin(),    temp.row_indices.end(),    thrust::make_zip_iterator(thrust::make_tuple(temp.column_indices.begin(), temp.values.begin())));
-    }
+  // sort by (I,J)
+  cusp::detail::sort_by_row_and_column(temp.row_indices, temp.column_indices, temp.values);
 
+  // compute unique number of nonzeros in the output
+  // throws a warning at compile (warning: expression has no effect)
+  IndexType NNZ = thrust::inner_product(thrust::make_zip_iterator(thrust::make_tuple(temp.row_indices.begin(), temp.column_indices.begin())),
+                                        thrust::make_zip_iterator(thrust::make_tuple(temp.row_indices.end (),  temp.column_indices.end()))   - 1,
+                                        thrust::make_zip_iterator(thrust::make_tuple(temp.row_indices.begin(), temp.column_indices.begin())) + 1,
+                                        IndexType(0),
+                                        thrust::plus<IndexType>(),
+                                        thrust::not_equal_to< thrust::tuple<IndexType,IndexType> >()) + 1;
 
-    // compute unique number of nonzeros in the output
-    // throws a warning at compile (warning: expression has no effect)
-    IndexType NNZ = thrust::inner_product(thrust::make_zip_iterator(thrust::make_tuple(temp.row_indices.begin(), temp.column_indices.begin())),
-                                          thrust::make_zip_iterator(thrust::make_tuple(temp.row_indices.end (),  temp.column_indices.end()))   - 1,
-                                          thrust::make_zip_iterator(thrust::make_tuple(temp.row_indices.begin(), temp.column_indices.begin())) + 1,
-                                          IndexType(0),
-                                          thrust::plus<IndexType>(),
-                                          thrust::not_equal_to< thrust::tuple<IndexType,IndexType> >()) + 1;
+  // allocate space for output
+  P.resize(temp.num_rows, temp.num_cols, NNZ);
 
-    // allocate space for output
-    P.resize(temp.num_rows, temp.num_cols, NNZ);
-
-    // sum values with the same (i,j)
-    thrust::reduce_by_key(thrust::make_zip_iterator(thrust::make_tuple(temp.row_indices.begin(), temp.column_indices.begin())),
-                          thrust::make_zip_iterator(thrust::make_tuple(temp.row_indices.end(),   temp.column_indices.end())),
-                          temp.values.begin(),
-                          thrust::make_zip_iterator(thrust::make_tuple(P.row_indices.begin(), P.column_indices.begin())),
-                          P.values.begin(),
-                          thrust::equal_to< thrust::tuple<IndexType,IndexType> >(),
-                          thrust::plus<ValueType>());
+  // sum values with the same (i,j)
+  thrust::reduce_by_key(thrust::make_zip_iterator(thrust::make_tuple(temp.row_indices.begin(), temp.column_indices.begin())),
+                        thrust::make_zip_iterator(thrust::make_tuple(temp.row_indices.end(),   temp.column_indices.end())),
+                        temp.values.begin(),
+                        thrust::make_zip_iterator(thrust::make_tuple(P.row_indices.begin(), P.column_indices.begin())),
+                        P.values.begin(),
+                        thrust::equal_to< thrust::tuple<IndexType,IndexType> >(),
+                        thrust::plus<ValueType>());
 }
 
 } // end namespace detail
 
 
 template <typename IndexType, typename ValueType, typename MemorySpace>
-smoothed_aggregation<IndexType,ValueType,MemorySpace>::smoothed_aggregation(const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& A)
+smoothed_aggregation<IndexType,ValueType,MemorySpace>::smoothed_aggregation(const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& A, const ValueType theta)
+    : theta(theta)
 {
-    levels.reserve(20); // avoid reallocations which force matrix copies
+  CUSP_PROFILE_SCOPED();
 
-    levels.push_back(typename smoothed_aggregation<IndexType,ValueType,MemorySpace>::level());
-    levels.back().A = A; // copy
-    levels.back().B.resize(A.num_rows, 1.0f);
+  levels.reserve(20); // avoid reallocations which force matrix copies
 
-    while (levels.back().A.num_rows > 100)
-        extend_hierarchy();
+  levels.push_back(typename smoothed_aggregation<IndexType,ValueType,MemorySpace>::level());
+  levels.back().A = A; // copy
+  levels.back().B.resize(A.num_rows, 1.0f);
 
-    // TODO make lu_solver accept sparse input
-    cusp::array2d<ValueType,cusp::host_memory> coarse_dense(levels.back().A);
-    LU = cusp::detail::lu_solver<ValueType, cusp::host_memory>(coarse_dense);
+  while (levels.back().A.num_rows > 100)
+    extend_hierarchy();
+
+  // TODO make lu_solver accept sparse input
+  cusp::array2d<ValueType,cusp::host_memory> coarse_dense(levels.back().A);
+  LU = cusp::detail::lu_solver<ValueType, cusp::host_memory>(coarse_dense);
 }
 
 template <typename IndexType, typename ValueType, typename MemorySpace>
 void smoothed_aggregation<IndexType,ValueType,MemorySpace>::extend_hierarchy(void)
 {
-    const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& A = levels.back().A;
-    const cusp::array1d<ValueType,MemorySpace>&              B = levels.back().B;
+  CUSP_PROFILE_SCOPED();
 
-    // compute stength of connection matrix
-    cusp::coo_matrix<IndexType,ValueType,MemorySpace> C;
-    detail::symmetric_strength_of_connection(A,C);
+  const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& A = levels.back().A;
+  const cusp::array1d<ValueType,MemorySpace>&              B = levels.back().B;
 
-    // compute spectral radius of diag(C)^-1 * C
-    ValueType rho_DinvA = detail::estimate_rho_Dinv_A(A);
+  // compute stength of connection matrix
+  cusp::coo_matrix<IndexType,ValueType,MemorySpace> C;
+  detail::symmetric_strength_of_connection(A, C, theta);
 
-    // compute aggregates
-    cusp::array1d<IndexType,MemorySpace> aggregates(C.num_rows,0);
-    detail::standard_aggregation(C, aggregates);
+  // compute spectral radius of diag(C)^-1 * C
+  ValueType rho_DinvA = detail::estimate_rho_Dinv_A(A);
 
-    // compute tenative prolongator and coarse nullspace vector
-    cusp::coo_matrix<IndexType,ValueType,MemorySpace> T;
-    cusp::array1d<ValueType,MemorySpace>              B_coarse;
-    detail::fit_candidates(aggregates, B, T, B_coarse);
+  // compute aggregates
+  cusp::array1d<IndexType,MemorySpace> aggregates(C.num_rows,0);
+  detail::standard_aggregation(C, aggregates);
 
-    //cusp::io::write_matrix_market_file(T, "/home/nathan/Desktop/AMG/T0.mtx");
+  // compute tenative prolongator and coarse nullspace vector
+  cusp::coo_matrix<IndexType,ValueType,MemorySpace> T;
+  cusp::array1d<ValueType,MemorySpace>              B_coarse;
+  detail::fit_candidates(aggregates, B, T, B_coarse);
+  
+  // compute prolongation operator
+  cusp::coo_matrix<IndexType,ValueType,MemorySpace> P;
+  detail::smooth_prolongator(A, T, P, (ValueType) (4.0/3.0), rho_DinvA);  // TODO if C != A then compute rho_Dinv_C
 
-    // compute prolongation operator
-    cusp::coo_matrix<IndexType,ValueType,MemorySpace> P;
-    detail::smooth_prolongator(A, T, P, (ValueType) (4.0/3.0), rho_DinvA);  // TODO if C != A then compute rho_Dinv_C
+  // compute restriction operator (transpose of prolongator)
+  cusp::coo_matrix<IndexType,ValueType,MemorySpace> R;
+  cusp::transpose(P,R);
 
-    // compute restriction operator (transpose of prolongator)
-    cusp::coo_matrix<IndexType,ValueType,MemorySpace> R;
-    cusp::transpose(P,R);
+  // construct Galerkin product R*A*P
+  cusp::coo_matrix<IndexType,ValueType,MemorySpace> RAP;
+  {
+    // TODO test speed of R * (A * P) vs. (R * A) * P
+    cusp::coo_matrix<IndexType,ValueType,MemorySpace> AP;
+    cusp::multiply(A, P, AP);
+    cusp::multiply(R, AP, RAP);
+  }
 
-    // construct Galerkin product R*A*P
-    cusp::coo_matrix<IndexType,ValueType,MemorySpace> RAP;
-    {
-        // TODO test speed of R * (A * P) vs. (R * A) * P
-        cusp::coo_matrix<IndexType,ValueType,MemorySpace> AP;
-        cusp::multiply(A, P, AP);
-        cusp::multiply(R, AP, RAP);
-    }
+  #ifndef USE_POLY_SMOOTHER
+  //  4/3 * 1/rho is a good default, where rho is the spectral radius of D^-1(A)
+  ValueType omega = (4.0f/3.0f) / rho_DinvA;
+  levels.back().smoother = cusp::relaxation::jacobi<ValueType, MemorySpace>(A, omega);
+  #else
+  cusp::array1d<ValueType,cusp::host_memory> coeff;
+  ValueType rho = cusp::detail::ritz_spectral_radius(A);
+  cusp::relaxation::detail::chebyshev_polynomial_coefficients(rho,coeff);
+  levels.back().smoother = cusp::relaxation::polynomial<ValueType, MemorySpace>(A, coeff);
+  #endif
 
-    //  4/3 * 1/rho is a good default, where rho is the spectral radius of D^-1(A)
-    ValueType omega = (4.0f/3.0f) / rho_DinvA;
-    levels.back().smoother = cusp::relaxation::jacobi<ValueType, MemorySpace>(A, omega);
-    levels.back().aggregates.swap(aggregates);
-    levels.back().R.swap(R);
-    levels.back().P.swap(P);
+  levels.back().aggregates.swap(aggregates);
+  levels.back().R.swap(R);
+  levels.back().P.swap(P);
+  levels.back().residual.resize(levels.back().A.num_rows);
 
-    //std::cout << "omega " << omega << std::endl;
+  //std::cout << "omega " << omega << std::endl;
 
-    levels.push_back(level());
-    levels.back().A.swap(RAP);
-    levels.back().B.swap(B_coarse);
+  levels.push_back(level());
+  levels.back().A.swap(RAP);
+  levels.back().B.swap(B_coarse);
+  levels.back().x.resize(levels.back().A.num_rows);
+  levels.back().b.resize(levels.back().A.num_rows);
 }
     
 template <typename IndexType, typename ValueType, typename MemorySpace>
 template <typename Array1, typename Array2>
-void smoothed_aggregation<IndexType,ValueType,MemorySpace>::operator()(const Array1& x, Array2& y) const
+void smoothed_aggregation<IndexType,ValueType,MemorySpace>::operator()(const Array1& b, Array2& x)
 {
-    // perform 1 V-cycle
-    thrust::fill(y.begin(), y.end(), typename Array1::value_type(0));
-    _solve(x, y, 0);
+  CUSP_PROFILE_SCOPED();
+
+  // perform 1 V-cycle
+  _solve(b, x, 0);
 }
 
 template <typename IndexType, typename ValueType, typename MemorySpace>
 void smoothed_aggregation<IndexType,ValueType,MemorySpace>::solve(const cusp::array1d<ValueType,MemorySpace>& b,
-                                                                        cusp::array1d<ValueType,MemorySpace>& x) const
+                                                                        cusp::array1d<ValueType,MemorySpace>& x)
 {
-    cusp::default_monitor<ValueType> monitor(b);
+  CUSP_PROFILE_SCOPED();
 
-    solve(b, x, monitor);
+  cusp::default_monitor<ValueType> monitor(b);
+
+  solve(b, x, monitor);
 }
 
 template <typename IndexType, typename ValueType, typename MemorySpace>
 template <typename Monitor>
 void smoothed_aggregation<IndexType,ValueType,MemorySpace>::solve(const cusp::array1d<ValueType,MemorySpace>& b,
                                                                         cusp::array1d<ValueType,MemorySpace>& x,
-                                                                        Monitor& monitor ) const
+                                                                        Monitor& monitor )
 {
-    // TODO check sizes
-    const cusp::coo_matrix<IndexType,ValueType,MemorySpace> & A = levels[0].A;
+  CUSP_PROFILE_SCOPED();
 
-    cusp::array1d<ValueType,MemorySpace> residual(A.num_rows);  // TODO eliminate temporaries
+  // TODO check sizes
+  const cusp::coo_matrix<IndexType,ValueType,MemorySpace> & A = levels[0].A;
+ 
+  // use simple iteration
+  cusp::array1d<ValueType,MemorySpace> update(A.num_rows);
+  cusp::array1d<ValueType,MemorySpace> residual(A.num_rows);
 
-    // compute initial residual norm
-    cusp::multiply(A,x,residual);
-    cusp::blas::axpby(b, residual, residual, ValueType(1), ValueType(-1));
+  // compute initial residual
+  cusp::multiply(A,x,residual);
+  cusp::blas::axpby(b, residual, residual, ValueType(1), ValueType(-1));
 
-    while(!monitor.finished(residual))
-    {   
-        _solve(b, x, 0); 
+  while(!monitor.finished(residual))
+  {   
+      _solve(residual, update, 0); 
 
-        // compute residual norm
-        cusp::multiply(A,x,residual);
-        cusp::blas::axpby(b, residual, residual, ValueType(1), ValueType(-1));
-        ++monitor;
-    }   
+      // x += M * r
+      cusp::blas::axpy(update, x, ValueType(1));
+
+      // update residual
+      cusp::multiply(A,x,residual);
+      cusp::blas::axpby(b, residual, residual, ValueType(1), ValueType(-1));
+      ++monitor;
+  }   
 }
 
 template <typename IndexType, typename ValueType, typename MemorySpace>
 void smoothed_aggregation<IndexType,ValueType,MemorySpace>
 ::_solve(const cusp::array1d<ValueType,MemorySpace>& b,
                cusp::array1d<ValueType,MemorySpace>& x,
-         const int i) const
+         const int i)
 {
-    if (i + 1 == levels.size())
-    {
-        // coarse grid solve
-        // TODO streamline
-        cusp::array1d<ValueType,cusp::host_memory> temp_b(b);
-        cusp::array1d<ValueType,cusp::host_memory> temp_x(x.size());
-        LU(temp_b, temp_x);
-        x = temp_x;
-    }
-    else
-    {
-        const cusp::coo_matrix<IndexType,ValueType,MemorySpace> & R = levels[i].R;
-        const cusp::coo_matrix<IndexType,ValueType,MemorySpace> & A = levels[i].A;
-        const cusp::coo_matrix<IndexType,ValueType,MemorySpace> & P = levels[i].P;
+  CUSP_PROFILE_SCOPED();
 
-        cusp::array1d<ValueType,MemorySpace> residual(P.num_rows);  // TODO eliminate temporaries
-        cusp::array1d<ValueType,MemorySpace> coarse_b(P.num_cols);
-        cusp::array1d<ValueType,MemorySpace> coarse_x(P.num_cols, 0);
+  if (i + 1 == levels.size())
+  {
+    // coarse grid solve
+    // TODO streamline
+    cusp::array1d<ValueType,cusp::host_memory> temp_b(b);
+    cusp::array1d<ValueType,cusp::host_memory> temp_x(x.size());
+    LU(temp_b, temp_x);
+    x = temp_x;
+  }
+  else
+  {
+    const cusp::coo_matrix<IndexType,ValueType,MemorySpace> & R = levels[i].R;
+    const cusp::coo_matrix<IndexType,ValueType,MemorySpace> & A = levels[i].A;
+    const cusp::coo_matrix<IndexType,ValueType,MemorySpace> & P = levels[i].P;
 
-    	// Jacobi smoother throws a warning at compile (warning: expression has no effect)
-        // presmooth
-        levels[i].smoother(A,b,x);
+    cusp::array1d<ValueType,MemorySpace>& residual = levels[i].residual;
+    cusp::array1d<ValueType,MemorySpace>& coarse_b = levels[i + 1].b;
+    cusp::array1d<ValueType,MemorySpace>& coarse_x = levels[i + 1].x;
 
-        // compute residual <- b - A*x
-        cusp::multiply(A, x, residual);
-        cusp::blas::axpby(b, residual, residual, 1.0f, -1.0f);
+    // presmooth
+    levels[i].smoother.presmooth(A,b,x);
 
-        // restrict to coarse grid
-        cusp::multiply(R, residual, coarse_b);
+    // compute residual <- b - A*x
+    cusp::multiply(A, x, residual);
+    cusp::blas::axpby(b, residual, residual, 1.0f, -1.0f);
 
-        // compute coarse grid solution
-        _solve(coarse_b, coarse_x, i + 1);
+    // restrict to coarse grid
+    cusp::multiply(R, residual, coarse_b);
 
-        // apply coarse grid correction 
-        cusp::multiply(P, coarse_x, residual);
-        cusp::blas::axpy(residual, x, 1.0f);
+    // compute coarse grid solution
+    _solve(coarse_b, coarse_x, i + 1);
 
-        // postsmooth
-        levels[i].smoother(A,b,x);
-    }
+    // apply coarse grid correction 
+    cusp::multiply(P, coarse_x, residual);
+    cusp::blas::axpy(residual, x, 1.0f);
+
+    // postsmooth
+    levels[i].smoother.postsmooth(A,b,x);
+  }
 }
 
 template <typename IndexType, typename ValueType, typename MemorySpace>
@@ -383,14 +408,16 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace>
 	std::cout << "\tlevel\tunknowns\tnonzeros:\t" << std::endl;
 
 	IndexType nnz = 0;
+
 	for( IndexType index = 0; index < levels.size(); index++ )
 		nnz += levels[index].A.num_entries;
 
-	for( IndexType index = 0; index < levels.size(); index++ ){
+	for( IndexType index = 0; index < levels.size(); index++ )
+  {
 		double percent = (double)levels[index].A.num_entries / nnz;
 		std::cout << "\t" << index << "\t" << levels[index].A.num_cols << "\t\t" \
-		<< levels[index].A.num_entries << " \t[" << 100*percent << "%]" \
-		<< std::endl;
+              << levels[index].A.num_entries << " \t[" << 100*percent << "%]" \
+              << std::endl;
 	}
 } 
 

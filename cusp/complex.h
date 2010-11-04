@@ -244,6 +244,15 @@ namespace cusp
       }
       return is;
     }
+
+template <typename T>
+  struct norm_type {
+    typedef T type; 
+  };
+ template <typename T>
+   struct norm_type< complex<T> > { 
+   typedef T type;
+ };
   
 template <typename ValueType>
 struct complex

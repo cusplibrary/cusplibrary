@@ -14,6 +14,7 @@
  *  limitations under the License.
  */
     
+#include <cusp/copy.h>
 #include <cusp/format.h>
 #include <cusp/array1d.h>
 
@@ -21,7 +22,10 @@
 #include <thrust/extrema.h>
 #include <thrust/binary_search.h>
 #include <thrust/transform.h>
+#include <thrust/gather.h>
 #include <thrust/scatter.h>
+#include <thrust/sequence.h>
+#include <thrust/sort.h>
 
 namespace cusp
 {
@@ -31,6 +35,8 @@ namespace detail
 template <typename OffsetArray, typename IndexArray>
 void offsets_to_indices(const OffsetArray& offsets, IndexArray& indices)
 {
+    CUSP_PROFILE_SCOPED();
+
     typedef typename OffsetArray::value_type OffsetType;
 
     // convert compressed row offsets into uncompressed row indices
@@ -44,6 +50,8 @@ void offsets_to_indices(const OffsetArray& offsets, IndexArray& indices)
 template <typename IndexArray, typename OffsetArray>
 void indices_to_offsets(const IndexArray& indices, OffsetArray& offsets)
 {
+    CUSP_PROFILE_SCOPED();
+
     typedef typename OffsetArray::value_type OffsetType;
 
     // convert uncompressed row indices into compressed row offsets
@@ -77,6 +85,8 @@ struct row_operator : public std::unary_function<T,IndexType>
 template <typename Matrix, typename Array>
 void extract_diagonal(const Matrix& A, Array& output, cusp::coo_format)
 {
+    CUSP_PROFILE_SCOPED();
+
     typedef typename Matrix::index_type  IndexType;
     typedef typename Array::value_type   ValueType;
     typedef typename Array::memory_space MemorySpace;  // TODO remove
@@ -235,10 +245,73 @@ void extract_diagonal(const Matrix& A, Array& output, cusp::hyb_format)
 template <typename Matrix, typename Array>
 void extract_diagonal(const Matrix& A, Array& output)
 {
+    CUSP_PROFILE_SCOPED();
+
     output.resize(thrust::min(A.num_rows, A.num_cols));
 
     // dispatch on matrix format
     extract_diagonal(A, output, typename Matrix::format());
+}
+
+template <typename Array1, typename Array2>
+void sort_by_row(Array1& rows, Array1& columns, Array2& values)
+{
+    CUSP_PROFILE_SCOPED();
+
+    typedef typename Array1::value_type IndexType;
+    typedef typename Array2::value_type ValueType;
+    typedef typename Array1::memory_space MemorySpace;
+        
+    size_t N = rows.size();
+
+    cusp::array1d<IndexType,MemorySpace> permutation(N);
+    thrust::sequence(permutation.begin(), permutation.end());
+  
+    // compute permutation that sorts the rows
+    thrust::sort_by_key(rows.begin(), rows.end(), permutation.begin());
+
+    // copy columns and values to temporary buffers
+    cusp::array1d<IndexType,MemorySpace> temp1(columns);
+    cusp::array1d<ValueType,MemorySpace> temp2(values);
+        
+    // use permutation to reorder the values
+    thrust::gather(permutation.begin(), permutation.end(),
+                   thrust::make_zip_iterator(thrust::make_tuple(temp1.begin(),   temp2.begin())),
+                   thrust::make_zip_iterator(thrust::make_tuple(columns.begin(), values.begin())));
+}
+
+template <typename Array1, typename Array2>
+void sort_by_row_and_column(Array1& rows, Array1& columns, Array2& values)
+{
+    CUSP_PROFILE_SCOPED();
+
+    typedef typename Array1::value_type IndexType;
+    typedef typename Array2::value_type ValueType;
+    typedef typename Array1::memory_space MemorySpace;
+        
+    size_t N = rows.size();
+
+    cusp::array1d<IndexType,MemorySpace> permutation(N);
+    thrust::sequence(permutation.begin(), permutation.end());
+  
+    // compute permutation and sort by (I,J)
+    {
+        cusp::array1d<IndexType,MemorySpace> temp(columns);
+        thrust::stable_sort_by_key(temp.begin(), temp.end(), permutation.begin());
+
+        cusp::copy(rows, temp);
+        thrust::gather(permutation.begin(), permutation.end(), temp.begin(), rows.begin());
+        thrust::stable_sort_by_key(rows.begin(), rows.end(), permutation.begin());
+
+        cusp::copy(columns, temp);
+        thrust::gather(permutation.begin(), permutation.end(), temp.begin(), columns.begin());
+    }
+
+    // use permutation to reorder the values
+    {
+        cusp::array1d<ValueType,MemorySpace> temp(values);
+        thrust::gather(permutation.begin(), permutation.end(), temp.begin(), values.begin());
+    }
 }
 
 } // end namespace detail

@@ -230,6 +230,7 @@ void TestSmoothedAggregation(void)
         cusp::array1d<ValueType,MemorySpace> b = unittest::random_samples<ValueType>(A.num_rows);
         cusp::array1d<ValueType,MemorySpace> x = unittest::random_samples<ValueType>(A.num_rows);
     
+        // set stopping criteria (iteration_limit = 40, relative_tolerance = 1e-5)
         cusp::convergence_monitor<ValueType> monitor(b, 40, 1e-5);
         M.solve(b,x,monitor);
 

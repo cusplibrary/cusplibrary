@@ -28,7 +28,49 @@
 #include <string>
 #include <sstream>
 #include <iostream>
+
+#ifdef __APPLE__
+
+#include <stdio.h>
+
+#define OUT_FILE_TYPE FILE *
+
+#define CREATE_OUT_FILE(file,filename) FILE* file = fopen(filename, "w+");
+
+#define WRITE_OUT_FILE(file,data) do{ \
+    					fprintf(file, "%s", data); \
+    					fclose(outfile); \
+		  		  }while(0);
+
+#define READ_FILE(stream,filename) do{ \
+					FILE * infile = fopen(filename,"r"); \
+					fseek(infile,0,SEEK_END); \
+					size_t file_size = ftell(infile); \
+					fseek(infile,0,SEEK_SET); \
+					char * buffer = new char [file_size]; \
+					fread(buffer, file_size, sizeof(char), infile); \
+					fclose(infile); \
+					stream.write(buffer, file_size); \
+					delete[] buffer; \
+		  		  }while(0);
+
+#else
+
 #include <fstream>
+
+#define OUT_FILE_TYPE std::ostream&
+
+#define CREATE_OUT_FILE(file,filename) std::ofstream file(filename);
+
+#define WRITE_OUT_FILE(file,data) file << data;
+
+#define READ_FILE(stream,filename) do{ \
+					std::ifstream infile(filename); \
+					stream << infile.rdbuf(); \
+					infile.close(); \
+		  		}while(0);
+
+#endif
 
 namespace cusp
 {
@@ -138,9 +180,11 @@ inline void read_matrix_market_banner(matrix_market_banner& banner, std::istream
 
 inline void read_matrix_market_banner(matrix_market_banner& banner, const std::string& filename)
 {
-    std::ifstream file(filename.c_str());
+    std::stringstream file (std::stringstream::in | std::stringstream::out);
 
-    if (!file)
+    READ_FILE(file,filename.c_str())
+
+    if (!file.good())
         throw cusp::io_exception(std::string("invalid file: [") + filename + std::string("]"));
 
     read_matrix_market_banner(banner, file);
@@ -149,9 +193,11 @@ inline void read_matrix_market_banner(matrix_market_banner& banner, const std::s
 template <typename IndexType, typename ValueType>
 void read_matrix_market_file(cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& coo, const std::string& filename)
 {
-    std::ifstream file(filename.c_str());
+    std::stringstream file (std::stringstream::in | std::stringstream::out);
 
-    if (!file)
+    READ_FILE(file,filename.c_str())
+
+    if (!file.good())
         throw cusp::io_exception(std::string("invalid file name: [") + filename + std::string("]"));
 
     read_matrix_market_stream(coo, file);
@@ -398,9 +444,7 @@ void read_matrix_market_stream(cusp::coo_matrix<IndexType,ValueType,cusp::host_m
         } // if (banner.symmetry != "general")
     
         // sort indices by (row,column)
-        thrust::sort_by_key(thrust::make_zip_iterator(thrust::make_tuple(coo.row_indices.begin(), coo.column_indices.begin())),
-                            thrust::make_zip_iterator(thrust::make_tuple(coo.row_indices.end(),   coo.column_indices.end())),
-                            coo.values.begin());
+        coo.sort_by_row_and_column();
     } 
     else 
     {
@@ -410,8 +454,9 @@ void read_matrix_market_stream(cusp::coo_matrix<IndexType,ValueType,cusp::host_m
 }
 
 template <typename IndexType, typename ValueType>
-void write_matrix_market_stream(const cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& coo, std::ostream& file)
+void write_matrix_market_stream(const cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& coo, OUT_FILE_TYPE outfile)
 {
+    std::stringstream file (std::stringstream::in | std::stringstream::out);
     file << "%%MatrixMarket matrix coordinate real general\n";
     file << "\t" << coo.num_rows << "\t" << coo.num_cols << "\t" << coo.num_entries << "\n";
 
@@ -421,13 +466,16 @@ void write_matrix_market_stream(const cusp::coo_matrix<IndexType,ValueType,cusp:
         file << (coo.column_indices[i] + 1) << " ";
         file <<  coo.values[i]              << "\n";
     }
+
+    std::string file_data(file.str());
+    WRITE_OUT_FILE(outfile, file_data.c_str())
 }
 
 template <typename IndexType, typename ValueType>
 void write_matrix_market_file(const cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& coo, const std::string& filename)
 {
     // read file contents line by line
-    std::ofstream file(filename.c_str());
+    CREATE_OUT_FILE(file,filename.c_str())
 
     if (!file)
         throw cusp::io_exception(std::string("unable to open file name: [") + filename + std::string("] for writing"));
@@ -469,7 +517,7 @@ void write_matrix_market_file(const MatrixType& mtx, const std::string& filename
 }
 
 template <typename MatrixType>
-void write_matrix_market_stream(const MatrixType& mtx, std::ostream& out)
+void write_matrix_market_stream(const MatrixType& mtx, OUT_FILE_TYPE out)
 {
     typedef typename MatrixType::index_type IndexType;
     typedef typename MatrixType::value_type ValueType;
