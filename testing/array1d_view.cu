@@ -363,6 +363,13 @@ void TestArray1dViewResize(void)
   ASSERT_EQUAL_QUIET(V.begin(), A.begin());
   ASSERT_EQUAL_QUIET(V.end(),   A.begin() + 2);
   
+  V.resize(4);
+  
+  ASSERT_EQUAL(V.size(),     4);
+  ASSERT_EQUAL(V.capacity(), 4);
+  ASSERT_EQUAL_QUIET(V.begin(), A.begin());
+  ASSERT_EQUAL_QUIET(V.end(),   A.begin() + 4);
+  
   ASSERT_THROWS(V.resize(5), cusp::not_implemented_exception);
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestArray1dViewResize);

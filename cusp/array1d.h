@@ -100,6 +100,10 @@ namespace cusp
       template <typename Array>
       array1d_view(Array& a)
         : m_begin(a.begin()), m_size(a.size()), m_capacity(a.capacity()) {}
+      
+      template <typename Array>
+      array1d_view(const Array& a)
+        : m_begin(a.begin()), m_size(a.size()), m_capacity(a.capacity()) {}
  
       // should these be templated?
       array1d_view(RandomAccessIterator first, RandomAccessIterator last)
@@ -143,7 +147,7 @@ namespace cusp
       //      i.e.  void resize(size_type new_size, value_type x = value_type())
       void resize(size_type new_size)
       {
-        if (new_size < m_capacity)
+        if (new_size <= m_capacity)
           m_size = new_size;
         else
           // XXX is not_implemented_exception the right choice?
@@ -162,8 +166,8 @@ namespace cusp
     return array1d_view<Iterator>(first, last);
   }
 
-  template <typename Array>
-  array1d_view<typename Array::iterator> make_array1d_view(Array& a)
+  template <typename Iterator>
+  array1d_view<Iterator> make_array1d_view(const array1d_view<Iterator>& a)
   {
     return make_array1d_view(a.begin(), a.end());
   }

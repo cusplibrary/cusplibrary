@@ -61,11 +61,14 @@ array2d<ValueType,MemorySpace,Orientation>
 // Other Functions //
 /////////////////////
 
-template<typename ValueType1, typename MemorySpace1, typename Orientation1,
-         typename ValueType2, typename MemorySpace2, typename Orientation2>
-bool operator==(const array2d<ValueType1,MemorySpace1,Orientation1>& lhs,
-                const array2d<ValueType2,MemorySpace2,Orientation2>& rhs)
+namespace detail
 {
+template <typename Array1, typename Array2>
+bool array2d_equal(const Array1& lhs, const Array2& rhs)
+{
+  typedef typename Array1::orientation Orientation1;
+  typedef typename Array2::orientation Orientation2;
+
   if (lhs.num_rows != rhs.num_rows || lhs.num_cols != rhs.num_cols)
       return false;
   
@@ -80,10 +83,68 @@ bool operator==(const array2d<ValueType1,MemorySpace1,Orientation1>& lhs,
                        thrust::make_permutation_iterator(lhs.values.begin(), thrust::make_transform_iterator(end,   func1)),
                        thrust::make_permutation_iterator(rhs.values.begin(), thrust::make_transform_iterator(begin, func2)));
 }
+  
+} // end namespace detail
+
+template<typename ValueType1, typename MemorySpace1, typename Orientation1,
+         typename ValueType2, typename MemorySpace2, typename Orientation2>
+bool operator==(const array2d<ValueType1,MemorySpace1,Orientation1>& lhs,
+                const array2d<ValueType2,MemorySpace2,Orientation2>& rhs)
+{
+  return cusp::detail::array2d_equal(lhs, rhs);
+}
+
+template<typename Array1, typename Orientation1,
+         typename Array2, typename Orientation2>
+bool operator==(const array2d_view<Array1,Orientation1>& lhs,
+                const array2d_view<Array2,Orientation2>& rhs)
+{
+  return cusp::detail::array2d_equal(lhs, rhs);
+}
+
+template<typename ValueType1, typename MemorySpace1, typename Orientation1,
+         typename Array2, typename Orientation2>
+bool operator==(const array2d<ValueType1,MemorySpace1,Orientation1>& lhs,
+                const array2d_view<Array2,Orientation2>& rhs)
+{
+  return cusp::detail::array2d_equal(lhs, rhs);
+}
+
+template<typename Array1, typename Orientation1,
+         typename ValueType2, typename MemorySpace2, typename Orientation2>
+bool operator==(const array2d_view<Array1,Orientation1>& lhs,
+                const array2d<ValueType2,MemorySpace2,Orientation2>& rhs)
+{
+  return cusp::detail::array2d_equal(lhs, rhs);
+}
 
 template<typename ValueType1, typename MemorySpace1, typename Orientation1,
          typename ValueType2, typename MemorySpace2, typename Orientation2>
 bool operator!=(const array2d<ValueType1,MemorySpace1,Orientation1>& lhs,
+                const array2d<ValueType2,MemorySpace2,Orientation2>& rhs)
+{
+    return !(lhs == rhs);
+}
+
+template<typename Array1, typename Orientation1,
+         typename Array2, typename Orientation2>
+bool operator!=(const array2d_view<Array1,Orientation1>& lhs,
+                const array2d_view<Array2,Orientation2>& rhs)
+{
+    return !(lhs == rhs);
+}
+
+template<typename ValueType1, typename MemorySpace1, typename Orientation1,
+         typename Array2, typename Orientation2>
+bool operator!=(const array2d<ValueType1,MemorySpace1,Orientation1>& lhs,
+                const array2d_view<Array2,Orientation2>& rhs)
+{
+    return !(lhs == rhs);
+}
+
+template<typename Array1, typename Orientation1,
+         typename ValueType2, typename MemorySpace2, typename Orientation2>
+bool operator!=(const array2d_view<Array1,Orientation1>& lhs,
                 const array2d<ValueType2,MemorySpace2,Orientation2>& rhs)
 {
     return !(lhs == rhs);

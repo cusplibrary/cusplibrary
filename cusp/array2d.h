@@ -256,6 +256,8 @@ class array2d_view : public cusp::detail::matrix_base<int, typename Array::value
   // TODO handle different Orientation (pitch = major)
   //template <typename Array2, typename Orientation2>
   //array2d_view(const array2d_view<Array2,Orientation2>& A)
+  
+  // TODO check values.size()
 
   // construct from array2d container
   array2d_view(      array2d<typename Parent::value_type, typename Parent::memory_space, orientation>& a)
@@ -264,16 +266,19 @@ class array2d_view : public cusp::detail::matrix_base<int, typename Array::value
   array2d_view(const array2d<typename Parent::value_type, typename Parent::memory_space, orientation>& a)
     : Parent(a), values(a.values), pitch(a.pitch) {}
 
-  typename values_array_type::reference operator()(const int i, const int j)
+  template <typename Array2>
+  array2d_view(int num_rows, int num_cols, int pitch, Array2& values)
+   : Parent(num_rows, num_cols, num_rows * num_cols), pitch(pitch), values(values) {}
+  
+  template <typename Array2>
+  array2d_view(int num_rows, int num_cols, int pitch, const Array2& values)
+   : Parent(num_rows, num_cols, num_rows * num_cols), pitch(pitch), values(values) {}
+
+  typename values_array_type::reference operator()(const int i, const int j) const
   { 
     return values[detail::index_of(i, j, pitch, orientation())];
   }
 
-  typename values_array_type::const_reference operator()(const int i, const int j) const
-  { 
-    return values[detail::index_of(i, j, pitch, orientation())];
-  }
-    
   void resize(int num_rows, int num_cols, int pitch)
   {
     if (pitch < cusp::detail::minor_dimension(num_rows, num_cols, orientation()))
@@ -297,6 +302,36 @@ class array2d_view : public cusp::detail::matrix_base<int, typename Array::value
   }
 
 }; // class array2d_view
+
+
+
+template <typename Iterator, typename Orientation>
+array2d_view<typename cusp::array1d_view<Iterator>,Orientation>
+make_array2d_view(int num_rows, int num_cols, int pitch, const cusp::array1d_view<Iterator>& values, Orientation)
+{
+  return array2d_view<typename cusp::array1d_view<Iterator>,Orientation>(num_rows, num_cols, pitch, values);
+}
+  
+template <typename Array, typename Orientation>
+array2d_view<Array,Orientation>
+make_array2d_view(const array2d_view<Array, Orientation>& a)
+{
+  return array2d_view<Array,Orientation>(a);
+}
+
+template<typename ValueType, class MemorySpace, class Orientation>
+array2d_view<typename cusp::array1d_view<typename cusp::array1d<ValueType,MemorySpace>::iterator >, Orientation>
+make_array2d_view(cusp::array2d<ValueType,MemorySpace,Orientation>& a)
+{
+  return cusp::make_array2d_view(a.num_rows, a.num_cols, a.pitch, cusp::make_array1d_view(a.values), Orientation());
+}
+
+template<typename ValueType, class MemorySpace, class Orientation>
+array2d_view<typename cusp::array1d_view<typename cusp::array1d<ValueType,MemorySpace>::const_iterator >, Orientation>
+make_array2d_view(const cusp::array2d<ValueType,MemorySpace,Orientation>& a)
+{
+  return cusp::make_array2d_view(a.num_rows, a.num_cols, a.pitch, cusp::make_array1d_view(a.values), Orientation());
+}
 
 } // end namespace cusp
 
