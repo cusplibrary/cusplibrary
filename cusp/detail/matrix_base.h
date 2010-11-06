@@ -56,6 +56,13 @@ namespace detail
             matrix_base(IndexType rows, IndexType cols, IndexType entries)
                 : num_rows(rows), num_cols(cols), num_entries(entries) {}
 
+            void resize(IndexType rows, IndexType cols, IndexType entries)
+            {
+                num_rows = rows;
+                num_cols = cols;
+                num_entries = entries;
+            }
+
             void swap(matrix_base& base)
             {
                 thrust::swap(num_rows,    base.num_rows);

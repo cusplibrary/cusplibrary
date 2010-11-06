@@ -55,33 +55,6 @@ ell_matrix<IndexType,ValueType,MemorySpace>
 // Member Functions //
 //////////////////////
 
-// resize matrix shape and storage
-template <typename IndexType, typename ValueType, class MemorySpace>
-    void
-    ell_matrix<IndexType,ValueType,MemorySpace>
-    ::resize(IndexType num_rows, IndexType num_cols, IndexType num_entries,
-             IndexType num_entries_per_row, IndexType alignment)
-    {
-        this->num_rows    = num_rows;
-        this->num_cols    = num_cols;
-        this->num_entries = num_entries;
-
-        column_indices.resize(num_rows, num_entries_per_row, detail::round_up(num_rows, alignment));
-        values.resize        (num_rows, num_entries_per_row, detail::round_up(num_rows, alignment));
-    }
-
-// swap matrix contents
-template <typename IndexType, typename ValueType, class MemorySpace>
-    void
-    ell_matrix<IndexType,ValueType,MemorySpace>
-    ::swap(ell_matrix& matrix)
-    {
-        detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::ell_format>::swap(matrix);
-
-        column_indices.swap(matrix.column_indices);
-        values.swap(matrix.values);
-    }
-
 // assignment from another matrix
 template <typename IndexType, typename ValueType, class MemorySpace>
 template <typename MatrixType>
@@ -93,6 +66,60 @@ template <typename MatrixType>
         
         return *this;
     }
+
+///////////////////////////
+// Convenience Functions //
+///////////////////////////
+
+template <typename IndexType,
+          typename Array1,
+          typename Array2>
+ell_matrix_view<Array1,Array2,IndexType>
+make_ell_matrix_view(IndexType num_rows,
+                     IndexType num_cols,
+                     IndexType num_entries,
+                     Array1 column_indices,
+                     Array2 values)
+{
+  return ell_matrix_view<Array1,Array2,IndexType>
+    (num_rows, num_cols, num_entries,
+     column_indices, values);
+}
+
+template <typename Array1,
+          typename Array2,
+          typename IndexType,
+          typename ValueType,
+          typename MemorySpace>
+ell_matrix_view<Array1,Array2,IndexType,ValueType,MemorySpace>
+make_ell_matrix_view(const ell_matrix_view<Array1,Array2,IndexType,ValueType,MemorySpace>& m)
+{
+  return ell_matrix_view<Array1,Array2,IndexType,ValueType,MemorySpace>(m);
+}
+    
+template <typename IndexType, typename ValueType, class MemorySpace>
+ell_matrix_view <typename cusp::array2d_view<typename cusp::array1d_view<typename cusp::array1d<IndexType,MemorySpace>::iterator >, cusp::column_major>,
+                 typename cusp::array2d_view<typename cusp::array1d_view<typename cusp::array1d<ValueType,MemorySpace>::iterator >, cusp::column_major>,
+                 IndexType, ValueType, MemorySpace>
+make_ell_matrix_view(ell_matrix<IndexType,ValueType,MemorySpace>& m)
+{
+  return make_ell_matrix_view
+    (m.num_rows, m.num_cols, m.num_entries,
+     cusp::make_array2d_view(m.column_indices),
+     cusp::make_array2d_view(m.values));
+}
+
+template <typename IndexType, typename ValueType, class MemorySpace>
+ell_matrix_view <typename cusp::array2d_view<typename cusp::array1d_view<typename cusp::array1d<IndexType,MemorySpace>::const_iterator >, cusp::column_major>,
+                 typename cusp::array2d_view<typename cusp::array1d_view<typename cusp::array1d<ValueType,MemorySpace>::const_iterator >, cusp::column_major>,
+                 IndexType, ValueType, MemorySpace>
+make_ell_matrix_view(const ell_matrix<IndexType,ValueType,MemorySpace>& m)
+{
+  return make_ell_matrix_view
+    (m.num_rows, m.num_cols, m.num_entries,
+     cusp::make_array2d_view(m.column_indices),
+     cusp::make_array2d_view(m.values));
+}
 
 } // end namespace cusp
 
