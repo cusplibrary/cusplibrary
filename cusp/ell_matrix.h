@@ -119,7 +119,7 @@ namespace cusp
     
         /*! Construct an empty \p ell_matrix.
          */
-        ell_matrix();
+        ell_matrix() {}
     
         /*! Construct an \p ell_matrix with a specific shape, number of nonzero entries,
          *  and maximum number of nonzero entries per row.
@@ -131,7 +131,13 @@ namespace cusp
          *  \param alignment Amount of padding used to align the data structure (default 32).
          */
         ell_matrix(IndexType num_rows, IndexType num_cols, IndexType num_entries,
-                   IndexType num_entries_per_row, IndexType alignment = 32);
+                   IndexType num_entries_per_row, IndexType alignment = 32)
+          : Parent(num_rows, num_cols, num_entries)
+        {
+          // TODO use array2d constructor when it can accept pitch
+          column_indices.resize(num_rows, num_entries_per_row, detail::round_up(num_rows, alignment));
+          values.resize        (num_rows, num_entries_per_row, detail::round_up(num_rows, alignment));
+        }
     
         /*! Construct an \p ell_matrix from another matrix.
          *

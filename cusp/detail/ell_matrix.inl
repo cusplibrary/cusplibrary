@@ -24,24 +24,6 @@ namespace cusp
 // Constructors //
 //////////////////
         
-// construct empty matrix
-template <typename IndexType, typename ValueType, class MemorySpace>
-ell_matrix<IndexType,ValueType,MemorySpace>
-    ::ell_matrix()
-        : detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::ell_format>() {}
-
-// construct matrix with given shape and number of entries
-template <typename IndexType, typename ValueType, class MemorySpace>
-ell_matrix<IndexType,ValueType,MemorySpace>
-    ::ell_matrix(IndexType num_rows, IndexType num_cols, IndexType num_entries,
-                 IndexType num_entries_per_row, IndexType alignment)
-        : detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::ell_format>(num_rows, num_cols, num_entries)
-    {
-      // TODO use array2d constructor when it can accept pitch
-      column_indices.resize(num_rows, num_entries_per_row, detail::round_up(num_rows, alignment));
-      values.resize        (num_rows, num_entries_per_row, detail::round_up(num_rows, alignment));
-    }
-
 // construct from a different matrix
 template <typename IndexType, typename ValueType, class MemorySpace>
 template <typename MatrixType>

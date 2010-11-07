@@ -83,6 +83,7 @@ namespace cusp
 template <typename IndexType, typename ValueType, class MemorySpace>
 class csr_matrix : public detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::csr_format>
 {
+  typedef cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::csr_format> Parent;
   public:
     template<typename MemorySpace2>
     struct rebind { typedef cusp::csr_matrix<IndexType, ValueType, MemorySpace2> type; };
@@ -109,7 +110,7 @@ class csr_matrix : public detail::matrix_base<IndexType,ValueType,MemorySpace,cu
 
     /*! Construct an empty \p csr_matrix.
      */
-    csr_matrix();
+    csr_matrix() {}
 
     /*! Construct a \p csr_matrix with a specific shape and number of nonzero entries.
      *
@@ -117,7 +118,9 @@ class csr_matrix : public detail::matrix_base<IndexType,ValueType,MemorySpace,cu
      *  \param num_cols Number of columns.
      *  \param num_entries Number of nonzero matrix entries.
      */
-    csr_matrix(IndexType num_rows, IndexType num_cols, IndexType num_entries);
+    csr_matrix(IndexType num_rows, IndexType num_cols, IndexType num_entries)
+      : Parent(num_rows, num_cols, num_entries),
+        row_offsets(num_rows + 1), column_indices(num_entries), values(num_entries) {}
 
     /*! Construct a \p csr_matrix from another matrix.
      *
@@ -126,13 +129,25 @@ class csr_matrix : public detail::matrix_base<IndexType,ValueType,MemorySpace,cu
     template <typename MatrixType>
     csr_matrix(const MatrixType& matrix);
     
-    void resize(IndexType num_rows, IndexType num_cols, IndexType num_entries);
+    void resize(IndexType num_rows, IndexType num_cols, IndexType num_entries)
+    {
+      Parent::resize(num_rows, num_cols, num_entries);
+      row_offsets.resize(num_rows + 1);
+      column_indices.resize(num_entries);
+      values.resize(num_entries);
+    }
 
     /*! Swap the contents of two \p csr_matrix objects.
      *
      *  \param matrix Another \p csr_matrix with the same IndexType and ValueType.
      */
-    void swap(csr_matrix& matrix);
+    void swap(csr_matrix& matrix)
+    {
+      Parent::swap(matrix);
+      row_offsets.swap(matrix.row_offsets);
+      column_indices.swap(matrix.column_indices);
+      values.swap(matrix.values);
+    }
     
     /*! Assignment from another matrix.
      *

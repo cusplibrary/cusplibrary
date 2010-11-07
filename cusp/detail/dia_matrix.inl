@@ -24,23 +24,6 @@ namespace cusp
 // Constructors //
 //////////////////
         
-// construct empty matrix
-template <typename IndexType, typename ValueType, class MemorySpace>
-dia_matrix<IndexType,ValueType,MemorySpace>
-    ::dia_matrix() {}
-
-// construct matrix with given shape and number of entries
-template <typename IndexType, typename ValueType, class MemorySpace>
-dia_matrix<IndexType,ValueType,MemorySpace>
-    ::dia_matrix(IndexType num_rows, IndexType num_cols, IndexType num_entries,
-                 IndexType num_diagonals, IndexType alignment)
-        : detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::dia_format>(num_rows, num_cols, num_entries),
-          diagonal_offsets(num_diagonals)
-    {
-      // TODO use array2d constructor when it can accept pitch
-      values.resize(num_rows, num_diagonals, detail::round_up(num_rows, alignment));
-    }
-
 // construct from a different matrix
 template <typename IndexType, typename ValueType, class MemorySpace>
 template <typename MatrixType>
@@ -54,33 +37,6 @@ dia_matrix<IndexType,ValueType,MemorySpace>
 // Member Functions //
 //////////////////////
 
-// resize matrix shape and storage
-template <typename IndexType, typename ValueType, class MemorySpace>
-    void
-    dia_matrix<IndexType,ValueType,MemorySpace>
-    ::resize(IndexType num_rows, IndexType num_cols, IndexType num_entries,
-             IndexType num_diagonals, IndexType alignment)
-    {
-        this->num_rows      = num_rows;
-        this->num_cols      = num_cols;
-        this->num_entries   = num_entries;
-
-        diagonal_offsets.resize(num_diagonals);
-        values.resize(num_rows, num_diagonals, detail::round_up(num_rows, alignment));
-    }
-
-// swap matrix contents
-template <typename IndexType, typename ValueType, class MemorySpace>
-    void
-    dia_matrix<IndexType,ValueType,MemorySpace>
-    ::swap(dia_matrix& matrix)
-    {
-        detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::dia_format>::swap(matrix);
-
-        diagonal_offsets.swap(matrix.diagonal_offsets);
-        values.swap(matrix.values);
-    }
-
 // copy a matrix in a different format
 template <typename IndexType, typename ValueType, class MemorySpace>
 template <typename MatrixType>
@@ -93,6 +49,9 @@ template <typename MatrixType>
         return *this;
     }
 
+///////////////////////////
+// Convenience Functions //
+///////////////////////////
 
 template <typename IndexType,
           typename Array1,
@@ -143,7 +102,6 @@ make_dia_matrix_view(const dia_matrix<IndexType,ValueType,MemorySpace>& m)
      cusp::make_array1d_view(m.diagonal_offsets),
      cusp::make_array2d_view(m.values));
 }
-
 
 } // end namespace cusp
 

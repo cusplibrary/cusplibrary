@@ -77,7 +77,8 @@ namespace cusp
 template <typename IndexType, typename ValueType, class MemorySpace>
 class coo_matrix : public detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::coo_format>
 {
-    public:
+  typedef cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::coo_format> Parent;
+  public:
     template<typename MemorySpace2>
     struct rebind { typedef cusp::coo_matrix<IndexType, ValueType, MemorySpace2> type; };
         
@@ -103,7 +104,7 @@ class coo_matrix : public detail::matrix_base<IndexType,ValueType,MemorySpace,cu
 
     /*! Construct an empty \p coo_matrix.
      */
-    coo_matrix();
+    coo_matrix() {}
 
     /*! Construct a \p coo_matrix with a specific shape and number of nonzero entries.
      *
@@ -111,7 +112,9 @@ class coo_matrix : public detail::matrix_base<IndexType,ValueType,MemorySpace,cu
      *  \param num_cols Number of columns.
      *  \param num_entries Number of nonzero matrix entries.
      */
-    coo_matrix(IndexType num_rows, IndexType num_cols, IndexType num_entries);
+    coo_matrix(IndexType num_rows, IndexType num_cols, IndexType num_entries)
+      : Parent(num_rows, num_cols, num_entries),
+        row_indices(num_entries), column_indices(num_entries), values(num_entries) {}
 
     /*! Construct a \p coo_matrix from another matrix.
      *
@@ -120,13 +123,25 @@ class coo_matrix : public detail::matrix_base<IndexType,ValueType,MemorySpace,cu
     template <typename MatrixType>
     coo_matrix(const MatrixType& matrix);
 
-    void resize(IndexType num_rows, IndexType num_cols, IndexType num_entries);
+    void resize(IndexType num_rows, IndexType num_cols, IndexType num_entries)
+    {
+      Parent::resize(num_rows, num_cols, num_entries);
+      row_indices.resize(num_entries);
+      column_indices.resize(num_entries);
+      values.resize(num_entries);
+    }
 
     /*! Swap the contents of two \p coo_matrix objects.
      *
      *  \param matrix Another \p coo_matrix with the same IndexType and ValueType.
      */
-    void swap(coo_matrix& matrix);
+    void swap(coo_matrix& matrix)
+    {
+      Parent::swap(matrix);
+      row_indices.swap(matrix.row_indices);
+      column_indices.swap(matrix.column_indices);
+      values.swap(matrix.values);
+    }
 
     /*! Assignment from another matrix.
      *
@@ -224,6 +239,26 @@ template <typename Array1,
       column_indices.resize(num_entries);
       values.resize(num_entries);
     }
+    
+    /*! Sort matrix elements by row index
+     */
+    void sort_by_row(void);
+    
+    /*! Sort matrix elements by row and column index
+     */
+    void sort_by_row_and_column(void);
+    
+    /*! Determine whether matrix elements are sorted by row index
+     *
+     *  \return \c false, if the row indices are unsorted; \c true, otherwise.
+     */
+    bool is_sorted_by_row(void);
+    
+    /*! Determine whether matrix elements are sorted by row and column index
+     *
+     *  \return \c false, if the row and column indices are unsorted; \c true, otherwise.
+     */
+    bool is_sorted_by_row_and_column(void);
 };
 
 /* Convenience functions */

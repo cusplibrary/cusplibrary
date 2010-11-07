@@ -99,7 +99,8 @@ namespace cusp
     template <typename IndexType, typename ValueType, class MemorySpace>
     class dia_matrix : public detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::dia_format>
     {
-        public:
+      typedef cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::dia_format> Parent;
+      public:
         // TODO statically assert is_signed<IndexType>
         
         template<typename MemorySpace2>
@@ -121,7 +122,7 @@ namespace cusp
             
         /*! Construct an empty \p dia_matrix.
          */
-        dia_matrix();
+        dia_matrix() {}
 
         /*! Construct a \p dia_matrix with a specific shape, number of nonzero entries,
          *  and number of occupied diagonals.
@@ -133,7 +134,13 @@ namespace cusp
          *  \param alignment Amount of padding used to align the data structure (default 32).
          */
         dia_matrix(IndexType num_rows, IndexType num_cols, IndexType num_entries,
-                   IndexType num_diagonals, IndexType alignment = 32);
+                   IndexType num_diagonals, IndexType alignment = 32)
+          : Parent(num_rows, num_cols, num_entries),
+            diagonal_offsets(num_diagonals)
+          {
+            // TODO use array2d constructor when it can accept pitch
+            values.resize(num_rows, num_diagonals, detail::round_up(num_rows, alignment));
+          }
         
         /*! Construct a \p dia_matrix from another matrix.
          *
@@ -143,13 +150,31 @@ namespace cusp
         dia_matrix(const MatrixType& matrix);
         
         void resize(IndexType num_rows, IndexType num_cols, IndexType num_entries,
-                    IndexType num_diagonals, IndexType alignment = 32);
-
+                    IndexType num_diagonals)
+        {
+          Parent::resize(num_rows, num_cols, num_entries);
+          diagonal_offsets.resize(num_rows, num_diagonals);
+          values.resize(num_rows, num_diagonals);
+        }
+                   
+        void resize(IndexType num_rows, IndexType num_cols, IndexType num_entries,
+                    IndexType num_diagonals, IndexType alignment)
+        {
+          Parent::resize(num_rows, num_cols, num_entries);
+          diagonal_offsets.resize(num_diagonals);
+          values.resize(num_rows, num_diagonals, detail::round_up(num_rows, alignment));
+        }
+        
         /*! Swap the contents of two \p dia_matrix objects.
          *
          *  \param matrix Another \p dia_matrix with the same IndexType and ValueType.
          */
-        void swap(dia_matrix& matrix);
+        void swap(dia_matrix& matrix)
+        {
+          Parent::swap(matrix);
+          diagonal_offsets.swap(matrix.diagonal_offsets);
+          values.swap(matrix.values);
+        }
         
         /*! Assignment from another matrix.
          *
