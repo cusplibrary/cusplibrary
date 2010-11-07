@@ -30,8 +30,12 @@
 
 namespace cusp
 {
-    struct row_major    {};
-    struct column_major {};
+
+struct row_major    {};
+struct column_major {};
+
+// forward definitions
+template<typename Array, class Orientation> class array2d_view;
     
 namespace detail
 {
@@ -152,11 +156,20 @@ class array2d : public cusp::detail::matrix_base<int,ValueType,MemorySpace,cusp:
 
   template<typename MemorySpace2>
     struct rebind { typedef cusp::array2d<ValueType, MemorySpace2, Orientation> type; };
-
-  // equivalent container type
-  typedef typename cusp::array2d<ValueType, MemorySpace, Orientation> container;
-
+  
   typedef typename cusp::array1d<ValueType, MemorySpace> values_array_type;
+
+  /*! equivalent container type
+   */
+  typedef typename cusp::array2d<ValueType, MemorySpace, Orientation> container;
+  
+  /*! equivalent view type
+   */
+  typedef typename cusp::array2d_view<typename values_array_type::view, Orientation> view;
+  
+  /*! equivalent const_view type
+   */
+  typedef typename cusp::array2d_view<typename values_array_type::const_view, Orientation> const_view;
 
   values_array_type values;
 
@@ -236,13 +249,18 @@ class array2d_view : public cusp::detail::matrix_base<int, typename Array::value
   public:
   typedef Orientation orientation;
 
-  // equivalent container type
-  typedef typename cusp::array2d<typename Parent::value_type, typename Parent::memory_space, Orientation> container;
-
   typedef Array values_array_type;
 
   values_array_type values;
-
+  
+  /*! equivalent container type
+   */
+  typedef typename cusp::array2d<typename Parent::value_type, typename Parent::memory_space, Orientation> container;
+  
+  /*! equivalent view type
+   */
+  typedef typename cusp::array2d_view<Array, Orientation> view;
+  
   // minor_dimension + padding
   int pitch;
 

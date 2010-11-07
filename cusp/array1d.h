@@ -29,18 +29,32 @@
 
 namespace cusp
 {
+  // forward definitions
+  template <typename RandomAccessIterator> class array1d_view;
 
   template <typename T, typename MemorySpace>
   class array1d : public thrust::detail::vector_base<T, typename cusp::default_memory_allocator<T, MemorySpace>::type>
   {
       private:
           typedef typename cusp::default_memory_allocator<T, MemorySpace>::type Alloc;
+          typedef typename thrust::detail::vector_base<T,Alloc> Parent;
   
       public:
           typedef MemorySpace memory_space;
           typedef cusp::array1d_format format;
+
+          /*! equivalent container type
+           */
+          typedef typename cusp::array1d<T,MemorySpace> container;
+          
+          /*! equivalent view type
+           */
+          typedef typename cusp::array1d_view<typename Parent::iterator> view;
+          
+          /*! equivalent const_view type
+           */
+          typedef typename cusp::array1d_view<typename Parent::const_iterator> const_view;
   
-          typedef typename thrust::detail::vector_base<T,Alloc> Parent;
           typedef typename Parent::size_type  size_type;
           typedef typename Parent::value_type value_type;
   
@@ -90,6 +104,14 @@ namespace cusp
       typedef typename thrust::iterator_difference<RandomAccessIterator>::type difference_type;
       typedef typename thrust::iterator_value<RandomAccessIterator>::type      value_type;
       typedef typename thrust::iterator_space<RandomAccessIterator>::type      memory_space;
+          
+      /*! equivalent container type
+       */
+      typedef typename cusp::array1d<value_type,memory_space> container;
+      
+      /*! equivalent view type
+       */
+      typedef typename cusp::array1d_view<RandomAccessIterator> view;
   
       // is this right?
       typedef size_t size_type;
@@ -173,13 +195,13 @@ namespace cusp
   }
   
   template <typename T, typename MemorySpace>
-  array1d_view<typename array1d<T,MemorySpace>::iterator> make_array1d_view(array1d<T,MemorySpace>& a)
+  typename array1d<T,MemorySpace>::view make_array1d_view(array1d<T,MemorySpace>& a)
   {
     return make_array1d_view(a.begin(), a.end());
   }
   
   template <typename T, typename MemorySpace>
-  array1d_view<typename array1d<T,MemorySpace>::const_iterator> make_array1d_view(const array1d<T,MemorySpace>& a)
+  typename array1d<T,MemorySpace>::const_view make_array1d_view(const array1d<T,MemorySpace>& a)
   {
     return make_array1d_view(a.begin(), a.end());
   }

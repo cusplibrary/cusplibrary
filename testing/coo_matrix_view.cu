@@ -118,6 +118,8 @@ void TestMakeCooMatrixView(void)
     ASSERT_EQUAL(V.num_cols,    2);
     ASSERT_EQUAL(V.num_entries, 6);
 
+    V.row_indices[0] = 0;  V.column_indices[0] = 1;  V.values[0] = 2;
+
     ASSERT_EQUAL_QUIET(V.row_indices.begin(),    M.row_indices.begin());
     ASSERT_EQUAL_QUIET(V.row_indices.end(),      M.row_indices.end());
     ASSERT_EQUAL_QUIET(V.column_indices.begin(), M.column_indices.begin());
@@ -135,6 +137,8 @@ void TestMakeCooMatrixView(void)
     ASSERT_EQUAL(V.num_rows,    3);
     ASSERT_EQUAL(V.num_cols,    2);
     ASSERT_EQUAL(V.num_entries, 6);
+
+    V.row_indices[0] = 0;  V.column_indices[0] = 1;  V.values[0] = 2;
 
     ASSERT_EQUAL_QUIET(V.row_indices.begin(),    M.row_indices.begin());
     ASSERT_EQUAL_QUIET(V.row_indices.end(),      M.row_indices.end());
@@ -154,6 +158,8 @@ void TestMakeCooMatrixView(void)
     ASSERT_EQUAL(V.num_rows,    3);
     ASSERT_EQUAL(V.num_cols,    2);
     ASSERT_EQUAL(V.num_entries, 6);
+
+    V.row_indices[0] = 0;  V.column_indices[0] = 1;  V.values[0] = 2;
 
     ASSERT_EQUAL_QUIET(V.row_indices.begin(),    M.row_indices.begin());
     ASSERT_EQUAL_QUIET(V.row_indices.end(),      M.row_indices.end());

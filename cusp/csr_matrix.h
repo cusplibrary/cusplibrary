@@ -29,6 +29,9 @@
 namespace cusp
 {
 
+// forward definition
+template <typename Array1, typename Array2, typename Array3, typename IndexType, typename ValueType, typename MemorySpace> class csr_matrix_view;
+
 /*! \addtogroup containers Containers 
  *  \addtogroup sparse_matrix_formats Sparse Matrices
  *  \ingroup containers
@@ -88,12 +91,27 @@ class csr_matrix : public detail::matrix_base<IndexType,ValueType,MemorySpace,cu
     template<typename MemorySpace2>
     struct rebind { typedef cusp::csr_matrix<IndexType, ValueType, MemorySpace2> type; };
     
-    // equivalent container type
-    typedef typename cusp::csr_matrix<IndexType, ValueType, MemorySpace> container;
-
     typedef typename cusp::array1d<IndexType, MemorySpace> row_offsets_array_type;
     typedef typename cusp::array1d<IndexType, MemorySpace> column_indices_array_type;
     typedef typename cusp::array1d<ValueType, MemorySpace> values_array_type;
+    
+    /*! equivalent container type
+     */
+    typedef typename cusp::csr_matrix<IndexType, ValueType, MemorySpace> container;
+
+    /*! equivalent view type
+     */
+    typedef typename cusp::csr_matrix_view<typename row_offsets_array_type::view,
+                                           typename column_indices_array_type::view,
+                                           typename values_array_type::view,
+                                           IndexType, ValueType, MemorySpace> view;
+    
+    /*! equivalent const_view type
+     */
+    typedef typename cusp::csr_matrix_view<typename row_offsets_array_type::const_view,
+                                           typename column_indices_array_type::const_view,
+                                           typename values_array_type::const_view,
+                                           IndexType, ValueType, MemorySpace> const_view;
     
     /*! Storage for the row offsets of the CSR data structure.  Also called the "row pointer" array.
      */
@@ -181,12 +199,17 @@ class csr_matrix_view : public cusp::detail::matrix_base<IndexType,ValueType,Mem
 {
   typedef cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::csr_format> Parent;
   public:
-    // equivalent container type
-    typedef typename cusp::csr_matrix<IndexType, ValueType, MemorySpace> container;
-
     typedef Array1 row_offsets_array_type;
     typedef Array2 column_indices_array_type;
     typedef Array3 values_array_type;
+    
+    /*! equivalent container type
+     */
+    typedef typename cusp::csr_matrix<IndexType, ValueType, MemorySpace> container;
+
+    /*! equivalent view type
+     */
+    typedef typename cusp::csr_matrix_view<Array1, Array2, Array3, IndexType, ValueType, MemorySpace> view;
 
     /*! Storage for the row offsets of the CSR data structure.  Also called the "row pointer" array.
      */
@@ -265,10 +288,7 @@ make_csr_matrix_view(const csr_matrix_view<Array1,Array2,Array3,IndexType,ValueT
 }
     
 template <typename IndexType, typename ValueType, class MemorySpace>
-csr_matrix_view < cusp::array1d_view< typename cusp::array1d<IndexType,MemorySpace>::iterator >,
-                  cusp::array1d_view< typename cusp::array1d<IndexType,MemorySpace>::iterator >,
-                  cusp::array1d_view< typename cusp::array1d<ValueType,MemorySpace>::iterator >,
-                  IndexType, ValueType, MemorySpace>
+typename csr_matrix<IndexType,ValueType,MemorySpace>::view
 make_csr_matrix_view(csr_matrix<IndexType,ValueType,MemorySpace>& m)
 {
   return make_csr_matrix_view
@@ -279,10 +299,7 @@ make_csr_matrix_view(csr_matrix<IndexType,ValueType,MemorySpace>& m)
 }
 
 template <typename IndexType, typename ValueType, class MemorySpace>
-csr_matrix_view < cusp::array1d_view< typename cusp::array1d<IndexType,MemorySpace>::const_iterator >,
-                  cusp::array1d_view< typename cusp::array1d<IndexType,MemorySpace>::const_iterator >,
-                  cusp::array1d_view< typename cusp::array1d<ValueType,MemorySpace>::const_iterator >,
-                  IndexType, ValueType, MemorySpace>
+typename csr_matrix<IndexType,ValueType,MemorySpace>::const_view
 make_csr_matrix_view(const csr_matrix<IndexType,ValueType,MemorySpace>& m)
 {
   return make_csr_matrix_view

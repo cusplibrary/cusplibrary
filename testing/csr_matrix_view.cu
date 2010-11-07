@@ -117,6 +117,8 @@ void TestMakeCsrMatrixView(void)
     ASSERT_EQUAL(V.num_rows,    3);
     ASSERT_EQUAL(V.num_cols,    2);
     ASSERT_EQUAL(V.num_entries, 6);
+    
+    V.row_offsets[0] = 0;  V.column_indices[0] = 1;  V.values[0] = 2;
 
     ASSERT_EQUAL_QUIET(V.row_offsets.begin(),    M.row_offsets.begin());
     ASSERT_EQUAL_QUIET(V.row_offsets.end(),      M.row_offsets.end());
@@ -135,6 +137,8 @@ void TestMakeCsrMatrixView(void)
     ASSERT_EQUAL(V.num_rows,    3);
     ASSERT_EQUAL(V.num_cols,    2);
     ASSERT_EQUAL(V.num_entries, 6);
+    
+    V.row_offsets[0] = 0;  V.column_indices[0] = 1;  V.values[0] = 2;
 
     ASSERT_EQUAL_QUIET(V.row_offsets.begin(),    M.row_offsets.begin());
     ASSERT_EQUAL_QUIET(V.row_offsets.end(),      M.row_offsets.end());
@@ -154,6 +158,8 @@ void TestMakeCsrMatrixView(void)
     ASSERT_EQUAL(V.num_rows,    3);
     ASSERT_EQUAL(V.num_cols,    2);
     ASSERT_EQUAL(V.num_entries, 6);
+
+    V.row_offsets[0] = 0;  V.column_indices[0] = 1;  V.values[0] = 2;
 
     ASSERT_EQUAL_QUIET(V.row_offsets.begin(),    M.row_offsets.begin());
     ASSERT_EQUAL_QUIET(V.row_offsets.end(),      M.row_offsets.end());

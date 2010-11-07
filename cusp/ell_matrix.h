@@ -38,6 +38,7 @@ namespace cusp
     struct column_major;
     template<typename ValueType, class MemorySpace, class Orientation> class array2d;
     template<typename Array, class Orientation>                        class array2d_view;
+    template <typename Array1, typename Array2, typename IndexType, typename ValueType, typename MemorySpace> class ell_matrix_view;
 
 /*! \p ell_matrix : ELLPACK/ITPACK matrix format
  *
@@ -99,11 +100,25 @@ namespace cusp
         template<typename MemorySpace2>
         struct rebind { typedef cusp::ell_matrix<IndexType, ValueType, MemorySpace2> type; };
         
-        // equivalent container type
-        typedef typename cusp::ell_matrix<IndexType, ValueType, MemorySpace> container;
-        
         typedef typename cusp::array2d<IndexType, MemorySpace, cusp::column_major> column_indices_array_type;
         typedef typename cusp::array2d<ValueType, MemorySpace, cusp::column_major> values_array_type;
+        
+        /*! equivalent container type
+         */
+        typedef typename cusp::ell_matrix<IndexType, ValueType, MemorySpace> container;
+    
+        /*! equivalent view type
+         */
+        typedef typename cusp::ell_matrix_view<typename column_indices_array_type::view,
+                                               typename values_array_type::view,
+                                               IndexType, ValueType, MemorySpace> view;
+        
+        /*! equivalent const_view type
+         */
+        typedef typename cusp::ell_matrix_view<typename column_indices_array_type::const_view,
+                                               typename values_array_type::const_view,
+                                               IndexType, ValueType, MemorySpace> const_view;
+
 
         /*! Value used to pad the rows of the column_indices array.
          */
@@ -193,11 +208,16 @@ namespace cusp
     {
       typedef cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::ell_format> Parent;
       public:
-        // equivalent container type
-        typedef typename cusp::ell_matrix<IndexType, ValueType, MemorySpace> container;
-        
         typedef Array1 column_indices_array_type;
         typedef Array2 values_array_type;
+        
+        /*! equivalent container type
+         */
+        typedef typename cusp::ell_matrix<IndexType, ValueType, MemorySpace> container;
+    
+        /*! equivalent view type
+         */
+        typedef typename cusp::ell_matrix_view<Array1, Array2, IndexType, ValueType, MemorySpace> view;
 
         /*! Value used to pad the rows of the column_indices array.
          */
@@ -272,15 +292,11 @@ ell_matrix_view<Array1,Array2,IndexType,ValueType,MemorySpace>
 make_ell_matrix_view(const ell_matrix_view<Array1,Array2,IndexType,ValueType,MemorySpace>& m);
     
 template <typename IndexType, typename ValueType, class MemorySpace>
-ell_matrix_view <typename cusp::array2d_view<typename cusp::array1d_view<typename cusp::array1d<IndexType,MemorySpace>::iterator >, cusp::column_major>,
-                 typename cusp::array2d_view<typename cusp::array1d_view<typename cusp::array1d<ValueType,MemorySpace>::iterator >, cusp::column_major>,
-                 IndexType, ValueType, MemorySpace>
+typename ell_matrix<IndexType,ValueType,MemorySpace>::view
 make_ell_matrix_view(ell_matrix<IndexType,ValueType,MemorySpace>& m);
 
 template <typename IndexType, typename ValueType, class MemorySpace>
-ell_matrix_view <typename cusp::array2d_view<typename cusp::array1d_view<typename cusp::array1d<IndexType,MemorySpace>::const_iterator >, cusp::column_major>,
-                 typename cusp::array2d_view<typename cusp::array1d_view<typename cusp::array1d<ValueType,MemorySpace>::const_iterator >, cusp::column_major>,
-                 IndexType, ValueType, MemorySpace>
+typename ell_matrix<IndexType,ValueType,MemorySpace>::const_view
 make_ell_matrix_view(const ell_matrix<IndexType,ValueType,MemorySpace>& m);
 
 } // end namespace cusp

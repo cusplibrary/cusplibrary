@@ -80,9 +80,7 @@ make_dia_matrix_view(const dia_matrix_view<Array1,Array2,IndexType,ValueType,Mem
 }
     
 template <typename IndexType, typename ValueType, class MemorySpace>
-dia_matrix_view <typename cusp::array1d_view<typename cusp::array1d<IndexType,MemorySpace>::iterator>,
-                 typename cusp::array2d_view<typename cusp::array1d_view<typename cusp::array1d<ValueType,MemorySpace>::iterator >, cusp::column_major>,
-                 IndexType, ValueType, MemorySpace>
+typename dia_matrix<IndexType,ValueType,MemorySpace>::view
 make_dia_matrix_view(dia_matrix<IndexType,ValueType,MemorySpace>& m)
 {
   return make_dia_matrix_view
@@ -92,9 +90,7 @@ make_dia_matrix_view(dia_matrix<IndexType,ValueType,MemorySpace>& m)
 }
 
 template <typename IndexType, typename ValueType, class MemorySpace>
-dia_matrix_view <typename cusp::array1d_view<typename cusp::array1d<IndexType,MemorySpace>::const_iterator>,
-                 typename cusp::array2d_view<typename cusp::array1d_view<typename cusp::array1d<ValueType,MemorySpace>::const_iterator >, cusp::column_major>,
-                 IndexType, ValueType, MemorySpace>
+typename dia_matrix<IndexType,ValueType,MemorySpace>::const_view
 make_dia_matrix_view(const dia_matrix<IndexType,ValueType,MemorySpace>& m)
 {
   return make_dia_matrix_view
