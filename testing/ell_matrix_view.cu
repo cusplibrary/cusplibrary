@@ -123,16 +123,23 @@ DECLARE_HOST_DEVICE_UNITTEST(TestEllMatrixViewAssignment);
 template <typename MemorySpace>
 void TestMakeEllMatrixView(void)
 {
-  typedef int                                                           IndexType;
-  typedef float                                                         ValueType;
-  typedef typename cusp::ell_matrix<IndexType,ValueType,MemorySpace>    Matrix;
-  typedef typename cusp::array1d<IndexType,MemorySpace>::iterator       IndexIterator;
-  typedef typename cusp::array1d<ValueType,MemorySpace>::iterator       ValueIterator;
-  typedef typename cusp::array1d_view<IndexIterator>                    IndexView1d;
-  typedef typename cusp::array1d_view<ValueIterator>                    ValueView1d;
-  typedef typename cusp::array2d_view<IndexView1d,cusp::column_major>   IndexView2d;
-  typedef typename cusp::array2d_view<ValueView1d,cusp::column_major>   ValueView2d;
-  typedef typename cusp::ell_matrix_view<IndexView2d,ValueView2d>       View;
+  typedef int                                                               IndexType;
+  typedef float                                                             ValueType;
+  typedef typename cusp::ell_matrix<IndexType,ValueType,MemorySpace>        Matrix;
+  typedef typename cusp::array1d<IndexType,MemorySpace>::iterator           IndexIterator;
+  typedef typename cusp::array1d<ValueType,MemorySpace>::iterator           ValueIterator;
+  typedef typename cusp::array1d_view<IndexIterator>                        IndexView1d;
+  typedef typename cusp::array1d_view<ValueIterator>                        ValueView1d;
+  typedef typename cusp::array2d_view<IndexView1d,cusp::column_major>       IndexView2d;
+  typedef typename cusp::array2d_view<ValueView1d,cusp::column_major>       ValueView2d;
+  typedef typename cusp::ell_matrix_view<IndexView2d,ValueView2d>           View;
+  typedef typename cusp::array1d<IndexType,MemorySpace>::const_iterator     ConstIndexIterator;
+  typedef typename cusp::array1d<ValueType,MemorySpace>::const_iterator     ConstValueIterator;
+  typedef typename cusp::array1d_view<ConstIndexIterator>                   ConstIndexView1d;
+  typedef typename cusp::array1d_view<ConstValueIterator>                   ConstValueView1d;
+  typedef typename cusp::array2d_view<ConstIndexView1d,cusp::column_major>  ConstIndexView2d;
+  typedef typename cusp::array2d_view<ConstValueView1d,cusp::column_major>  ConstValueView2d;
+  typedef typename cusp::ell_matrix_view<ConstIndexView2d,ConstValueView2d> ConstView;
 
   // construct view from parts
   {
@@ -146,6 +153,9 @@ void TestMakeEllMatrixView(void)
     ASSERT_EQUAL(V.num_rows,    3);
     ASSERT_EQUAL(V.num_cols,    2);
     ASSERT_EQUAL(V.num_entries, 6);
+    
+    V.column_indices(0,0) = 10;
+    V.values(0,0) = 20;
 
     ASSERT_EQUAL_QUIET(V.column_indices,   M.column_indices);
     ASSERT_EQUAL_QUIET(V.values,           M.values);
@@ -160,6 +170,9 @@ void TestMakeEllMatrixView(void)
     ASSERT_EQUAL(V.num_rows,    3);
     ASSERT_EQUAL(V.num_cols,    2);
     ASSERT_EQUAL(V.num_entries, 6);
+    
+    V.column_indices(0,0) = 10;
+    V.values(0,0) = 20;
     
     ASSERT_EQUAL_QUIET(V.column_indices,   M.column_indices);
     ASSERT_EQUAL_QUIET(V.values,           M.values);
@@ -176,25 +189,27 @@ void TestMakeEllMatrixView(void)
     ASSERT_EQUAL(V.num_cols,    2);
     ASSERT_EQUAL(V.num_entries, 6);
 
+    V.column_indices(0,0) = 10;
+    V.values(0,0) = 20;
+
+    ASSERT_EQUAL_QUIET(V.column_indices,   M.column_indices);
+    ASSERT_EQUAL_QUIET(V.values,           M.values);
+    
+  }
+ 
+  // construct view from const matrix
+  {
+    const Matrix M(3, 2, 6, 2);
+    
+    ConstView V = cusp::make_ell_matrix_view(M);
+    
+    ASSERT_EQUAL(cusp::make_ell_matrix_view(M).num_rows,    3);
+    ASSERT_EQUAL(cusp::make_ell_matrix_view(M).num_cols,    2);
+    ASSERT_EQUAL(cusp::make_ell_matrix_view(M).num_entries, 6);
+
     ASSERT_EQUAL_QUIET(V.column_indices,   M.column_indices);
     ASSERT_EQUAL_QUIET(V.values,           M.values);
   }
- 
-//  // construct view from const matrix
-//  {
-//    const Matrix M(3, 2, 6);
-//    
-//    ASSERT_EQUAL(cusp::make_ell_matrix_view(M).num_rows,    3);
-//    ASSERT_EQUAL(cusp::make_ell_matrix_view(M).num_cols,    2);
-//    ASSERT_EQUAL(cusp::make_ell_matrix_view(M).num_entries, 6);
-//
-//    ASSERT_EQUAL_QUIET(cusp::make_ell_matrix_view(M).row_offsets.begin(),    M.row_offsets.begin());
-//    ASSERT_EQUAL_QUIET(cusp::make_ell_matrix_view(M).row_offsets.end(),      M.row_offsets.end());
-//    ASSERT_EQUAL_QUIET(cusp::make_ell_matrix_view(M).column_indices.begin(), M.column_indices.begin());
-//    ASSERT_EQUAL_QUIET(cusp::make_ell_matrix_view(M).column_indices.end(),   M.column_indices.end());
-//    ASSERT_EQUAL_QUIET(cusp::make_ell_matrix_view(M).values.begin(),         M.values.begin());
-//    ASSERT_EQUAL_QUIET(cusp::make_ell_matrix_view(M).values.end(),           M.values.end());
-//  }
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestMakeEllMatrixView);
 

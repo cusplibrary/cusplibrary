@@ -93,5 +93,57 @@ template <typename MatrixType>
         return *this;
     }
 
+
+template <typename IndexType,
+          typename Array1,
+          typename Array2>
+dia_matrix_view<Array1,Array2,IndexType>
+make_dia_matrix_view(IndexType num_rows,
+                     IndexType num_cols,
+                     IndexType num_entries,
+                     Array1 diagonal_offsets,
+                     Array2 values)
+{
+  return dia_matrix_view<Array1,Array2,IndexType>
+    (num_rows, num_cols, num_entries,
+     diagonal_offsets, values);
+}
+
+template <typename Array1,
+          typename Array2,
+          typename IndexType,
+          typename ValueType,
+          typename MemorySpace>
+dia_matrix_view<Array1,Array2,IndexType,ValueType,MemorySpace>
+make_dia_matrix_view(const dia_matrix_view<Array1,Array2,IndexType,ValueType,MemorySpace>& m)
+{
+  return dia_matrix_view<Array1,Array2,IndexType>(m);
+}
+    
+template <typename IndexType, typename ValueType, class MemorySpace>
+dia_matrix_view <typename cusp::array1d_view<typename cusp::array1d<IndexType,MemorySpace>::iterator>,
+                 typename cusp::array2d_view<typename cusp::array1d_view<typename cusp::array1d<ValueType,MemorySpace>::iterator >, cusp::column_major>,
+                 IndexType, ValueType, MemorySpace>
+make_dia_matrix_view(dia_matrix<IndexType,ValueType,MemorySpace>& m)
+{
+  return make_dia_matrix_view
+    (m.num_rows, m.num_cols, m.num_entries,
+     cusp::make_array1d_view(m.diagonal_offsets),
+     cusp::make_array2d_view(m.values));
+}
+
+template <typename IndexType, typename ValueType, class MemorySpace>
+dia_matrix_view <typename cusp::array1d_view<typename cusp::array1d<IndexType,MemorySpace>::const_iterator>,
+                 typename cusp::array2d_view<typename cusp::array1d_view<typename cusp::array1d<ValueType,MemorySpace>::const_iterator >, cusp::column_major>,
+                 IndexType, ValueType, MemorySpace>
+make_dia_matrix_view(const dia_matrix<IndexType,ValueType,MemorySpace>& m)
+{
+  return make_dia_matrix_view
+    (m.num_rows, m.num_cols, m.num_entries,
+     cusp::make_array1d_view(m.diagonal_offsets),
+     cusp::make_array2d_view(m.values));
+}
+
+
 } // end namespace cusp
 

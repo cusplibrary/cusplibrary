@@ -25,6 +25,7 @@
 #include <cusp/array1d.h>
 #include <cusp/format.h>
 #include <cusp/detail/matrix_base.h>
+#include <cusp/detail/utils.h>
 
 namespace cusp
 {
@@ -38,6 +39,7 @@ namespace cusp
     // Forward definitions
     struct column_major;
     template<typename ValueType, class MemorySpace, class Orientation> class array2d;
+    template<typename Array, class Orientation>                        class array2d_view;
 
 /*! \p dia_matrix : Diagonal matrix format
  *
@@ -159,9 +161,101 @@ namespace cusp
 /*! \}
  */
     
+  template <typename Array1,
+            typename Array2,
+            typename IndexType   = typename Array1::value_type,
+            typename ValueType   = typename Array2::value_type,
+            typename MemorySpace = typename cusp::minimum_space<typename Array1::memory_space, typename Array2::memory_space>::type >
+    class dia_matrix_view : public detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::dia_format>
+    {
+      typedef cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::dia_format> Parent;
+      public:
+        // equivalent container type
+        typedef typename cusp::dia_matrix<IndexType, ValueType, MemorySpace> container;
+        
+        typedef Array1 diagonal_offsets_array_type;
+        typedef Array2 values_array_type;
+
+        /*! Storage for the diagonal offsets.
+         */
+        diagonal_offsets_array_type diagonal_offsets;
+
+        /*! Storage for the nonzero entries of the DIA data structure.
+         */
+        values_array_type values;
+    
+        /*! Construct an empty \p dia_matrix_view.
+         */
+        dia_matrix_view() {}
+    
+        template <typename OtherArray1, typename OtherArray2>
+        dia_matrix_view(IndexType num_rows, IndexType num_cols, IndexType num_entries,
+                        OtherArray1& diagonal_offsets, OtherArray2& values)
+        : Parent(num_rows, num_cols, num_entries), diagonal_offsets(diagonal_offsets), values(values) {}
+
+        template <typename OtherArray1, typename OtherArray2>
+        dia_matrix_view(IndexType num_rows, IndexType num_cols, IndexType num_entries,
+                        const OtherArray1& diagonal_offsets, const OtherArray2& values)
+        : Parent(num_rows, num_cols, num_entries), diagonal_offsets(diagonal_offsets), values(values) {}
+        
+        template <typename Matrix>
+        dia_matrix_view(Matrix& A)
+        : Parent(A), diagonal_offsets(A.diagonal_offsets), values(A.values) {}
+        
+        template <typename Matrix>
+        dia_matrix_view(const Matrix& A)
+        : Parent(A), diagonal_offsets(A.diagonal_offsets), values(A.values) {}
+        
+        void resize(IndexType num_rows, IndexType num_cols, IndexType num_entries,
+                    IndexType num_diagonals)
+        {
+          Parent::resize(num_rows, num_cols, num_entries);
+          diagonal_offsets.resize(num_rows, num_diagonals);
+          values.resize(num_rows, num_diagonals);
+        }
+                   
+        void resize(IndexType num_rows, IndexType num_cols, IndexType num_entries,
+                    IndexType num_diagonals, IndexType alignment)
+        {
+          Parent::resize(num_rows, num_cols, num_entries);
+          diagonal_offsets.resize(num_diagonals);
+          values.resize(num_rows, num_diagonals, detail::round_up(num_rows, alignment));
+        }
+    }; // class dia_matrix_view
+
+
+template <typename IndexType,
+          typename Array1,
+          typename Array2>
+dia_matrix_view<Array1,Array2,IndexType>
+make_dia_matrix_view(IndexType num_rows,
+                     IndexType num_cols,
+                     IndexType num_entries,
+                     Array1 diagonal_offsets,
+                     Array2 values);
+
+template <typename Array1,
+          typename Array2,
+          typename IndexType,
+          typename ValueType,
+          typename MemorySpace>
+dia_matrix_view<Array1,Array2,IndexType,ValueType,MemorySpace>
+make_dia_matrix_view(const dia_matrix_view<Array1,Array2,IndexType,ValueType,MemorySpace>& m);
+    
+template <typename IndexType, typename ValueType, class MemorySpace>
+dia_matrix_view <typename cusp::array1d_view<typename cusp::array1d<IndexType,MemorySpace>::iterator>,
+                 typename cusp::array2d_view<typename cusp::array1d_view<typename cusp::array1d<ValueType,MemorySpace>::iterator >, cusp::column_major>,
+                 IndexType, ValueType, MemorySpace>
+make_dia_matrix_view(dia_matrix<IndexType,ValueType,MemorySpace>& m);
+
+template <typename IndexType, typename ValueType, class MemorySpace>
+dia_matrix_view <typename cusp::array1d_view<typename cusp::array1d<IndexType,MemorySpace>::const_iterator>,
+                 typename cusp::array2d_view<typename cusp::array1d_view<typename cusp::array1d<ValueType,MemorySpace>::const_iterator >, cusp::column_major>,
+                 IndexType, ValueType, MemorySpace>
+make_dia_matrix_view(const dia_matrix<IndexType,ValueType,MemorySpace>& m);
+    
 } // end namespace cusp
 
 #include <cusp/array2d.h>
-
 #include <cusp/detail/dia_matrix.inl>
 

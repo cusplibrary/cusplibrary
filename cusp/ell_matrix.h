@@ -242,7 +242,7 @@ namespace cusp
           column_indices.resize(num_rows, num_entries_per_row, detail::round_up(num_rows, alignment));
           values.resize        (num_rows, num_entries_per_row, detail::round_up(num_rows, alignment));
         }
-    }; // class ell_matrix
+    }; // class ell_matrix_view
 /*! \}
  */
 
