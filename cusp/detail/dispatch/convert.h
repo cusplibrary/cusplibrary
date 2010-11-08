@@ -16,6 +16,7 @@
     
 #include <cusp/array1d.h>
 
+#include <cusp/copy.h>
 #include <cusp/detail/host/convert.h>
 #include <cusp/detail/device/convert.h>
 
@@ -49,7 +50,7 @@ void convert(const SourceType& src, DestinationType& dst, cusp::host_memory, cus
 
     cusp::detail::host::convert(src, tmp);
 
-    dst = tmp;
+    cusp::copy(tmp, dst);
 }
 
 /////////////////////////

@@ -11,6 +11,56 @@
 
 #include <cusp/verify.h>
 
+
+template <typename Matrix>
+void reset_view(Matrix& view, cusp::coo_format)
+{
+  thrust::fill(view.row_indices.begin(),    view.row_indices.end(),    -1);
+  thrust::fill(view.column_indices.begin(), view.column_indices.end(), -1);
+  thrust::fill(view.values.begin(),         view.values.end(),         -1);
+  view.resize(0,0,0);
+}
+
+template <typename Matrix>
+void reset_view(Matrix& view, cusp::csr_format)
+{
+  thrust::fill(view.row_offsets.begin(),    view.row_offsets.end(),    -1);
+  thrust::fill(view.column_indices.begin(), view.column_indices.end(), -1);
+  thrust::fill(view.values.begin(),         view.values.end(),         -1);
+  view.resize(0,0,0);
+}
+
+template <typename Matrix>
+void reset_view(Matrix& view, cusp::dia_format)
+{
+  thrust::fill(view.diagonal_offsets.begin(), view.diagonal_offsets.end(), -1);
+  thrust::fill(view.values.values.begin(),    view.values.values.end(),    -1);
+  view.resize(0,0,0,0);
+}
+
+template <typename Matrix>
+void reset_view(Matrix& view, cusp::ell_format)
+{
+  thrust::fill(view.column_indices.values.begin(), view.column_indices.values.end(), -1);
+  thrust::fill(view.values.values.begin(),         view.values.values.end(),         -1);
+  view.resize(0,0,0,0);
+}
+
+template <typename Matrix>
+void reset_view(Matrix& view, cusp::hyb_format)
+{
+  reset_view(view.ell, cusp::ell_format());
+  reset_view(view.coo, cusp::coo_format());
+  view.resize(0,0,0,0,0);
+}
+
+template <typename Matrix>
+void reset_view(Matrix& view, cusp::array2d_format)
+{
+  thrust::fill(view.values.begin(), view.values.end(), -1);
+  view.resize(0,0);
+}
+
 template <typename IndexType, typename ValueType, typename Space>
 void initialize_conversion_example(cusp::csr_matrix<IndexType, ValueType, Space> & csr)
 {
@@ -148,69 +198,97 @@ void verify_conversion_example(const MatrixType& matrix)
 
 
 template <class DestinationType, class HostSourceType>
-void TestConversion(DestinationType dst, HostSourceType src)
+void TestConversionToMatrixFormat(void)
 {
     typedef typename HostSourceType::template rebind<cusp::device_memory>::type DeviceSourceType;
-    
+    typedef typename HostSourceType::view   HostSourceViewType;
+    typedef typename DeviceSourceType::view DeviceSourceViewType;
+    typedef typename DestinationType::view  DestinationViewType;
+
     {
         HostSourceType src;
 
         initialize_conversion_example(src);
 
-        {  DestinationType dst(src);                           verify_conversion_example(dst);  cusp::assert_is_valid_matrix(dst); }
-        {  DestinationType dst;       dst = src;               verify_conversion_example(dst);  cusp::assert_is_valid_matrix(dst); }
-        {  DestinationType dst;       cusp::convert(src,dst);  verify_conversion_example(dst);  cusp::assert_is_valid_matrix(dst); }
+        HostSourceViewType view(src);
+
+        {  DestinationType dst(src);                            verify_conversion_example(dst);  cusp::assert_is_valid_matrix(dst); }
+        {  DestinationType dst;       dst = src;                verify_conversion_example(dst);  cusp::assert_is_valid_matrix(dst); }
+        {  DestinationType dst;       cusp::convert(src,dst);   verify_conversion_example(dst);  cusp::assert_is_valid_matrix(dst); }
+        {  DestinationType dst;       cusp::convert(src,dst);   verify_conversion_example(dst);  cusp::assert_is_valid_matrix(dst); }
+        {  DestinationType dst;       cusp::convert(view,dst);  verify_conversion_example(dst);  cusp::assert_is_valid_matrix(dst); }
     }
 
     {
         DeviceSourceType src;
 
         initialize_conversion_example(src);
+        
+        DeviceSourceViewType view(src);
 
-        {  DestinationType dst(src);                           verify_conversion_example(dst);  cusp::assert_is_valid_matrix(dst); }
-        {  DestinationType dst;       dst = src;               verify_conversion_example(dst);  cusp::assert_is_valid_matrix(dst); }
-        {  DestinationType dst;       cusp::convert(src,dst);  verify_conversion_example(dst);  cusp::assert_is_valid_matrix(dst); }
+        {  DestinationType dst(src);                            verify_conversion_example(dst);  cusp::assert_is_valid_matrix(dst); }
+        {  DestinationType dst;       dst = src;                verify_conversion_example(dst);  cusp::assert_is_valid_matrix(dst); }
+        {  DestinationType dst;       cusp::convert(src,dst);   verify_conversion_example(dst);  cusp::assert_is_valid_matrix(dst); }
+        {  DestinationType dst;       cusp::convert(view,dst);  verify_conversion_example(dst);  cusp::assert_is_valid_matrix(dst); }
+    }
+        
+    {
+        HostSourceType src;  initialize_conversion_example(src);
+
+        DestinationType dst(src);
+        DestinationViewType view(dst);
+
+        reset_view(view, typename DestinationViewType::format());
+        
+        cusp::convert(src, view);
+        
+        // check that view is correct
+        verify_conversion_example(view); cusp::assert_is_valid_matrix(view);
+        
+        // check that dst is correct (detects lightweight copies)
+        verify_conversion_example(dst);  cusp::assert_is_valid_matrix(dst);
     }
     
+    {
+        DeviceSourceType src;  initialize_conversion_example(src);
+
+        DestinationType dst(src);
+        DestinationViewType view(dst);
+
+        reset_view(view, typename DestinationViewType::format());
+        
+        cusp::convert(src, view);
+        
+        // check that view is correct
+        verify_conversion_example(view); cusp::assert_is_valid_matrix(view);
+        
+        // check that dst is correct (detects lightweight copies)
+        verify_conversion_example(dst);  cusp::assert_is_valid_matrix(dst);
+    }
 }
 
 
-template <typename DestinationMatrixType>
-void TestConversionTo(DestinationMatrixType dst)
+template <typename Matrix>
+void TestConversionToMatrix(void)
 {
-    TestConversion(DestinationMatrixType(), 
-                   cusp::coo_matrix<int, float, cusp::host_memory>());
-    TestConversion(DestinationMatrixType(), 
-                   cusp::csr_matrix<int, float, cusp::host_memory>());
-    TestConversion(DestinationMatrixType(), 
-                   cusp::dia_matrix<int, float, cusp::host_memory>());
-    TestConversion(DestinationMatrixType(), 
-                   cusp::ell_matrix<int, float, cusp::host_memory>());
-    TestConversion(DestinationMatrixType(), 
-                   cusp::hyb_matrix<int, float, cusp::host_memory>());
-    TestConversion(DestinationMatrixType(), 
-                   cusp::array2d<float, cusp::host_memory, cusp::row_major>());
-    TestConversion(DestinationMatrixType(), 
-                   cusp::array2d<float, cusp::host_memory, cusp::column_major>());
+    TestConversionToMatrixFormat<Matrix, cusp::coo_matrix<int, float, cusp::host_memory> >();
+    TestConversionToMatrixFormat<Matrix, cusp::csr_matrix<int, float, cusp::host_memory> >();
+    TestConversionToMatrixFormat<Matrix, cusp::dia_matrix<int, float, cusp::host_memory> >();
+    TestConversionToMatrixFormat<Matrix, cusp::ell_matrix<int, float, cusp::host_memory> >();
+    TestConversionToMatrixFormat<Matrix, cusp::hyb_matrix<int, float, cusp::host_memory> >();
+    TestConversionToMatrixFormat<Matrix, cusp::array2d<float, cusp::host_memory, cusp::row_major>    >();
+    TestConversionToMatrixFormat<Matrix, cusp::array2d<float, cusp::host_memory, cusp::column_major> >();
 }
 
 ///////////////////////////
 // Main Conversion Tests //
 ///////////////////////////
-template <class SparseMatrix>
+template <class Matrix>
 void TestConversionTo(void)
 {
-    TestConversionTo(SparseMatrix());
+    TestConversionToMatrix<Matrix>();
 }
-DECLARE_SPARSE_MATRIX_UNITTEST(TestConversionTo);
-
-template <class Space>
-void TestConversionToArray2d(void)
-{
-    TestConversionTo(cusp::array2d<float, Space, cusp::row_major>());
-    TestConversionTo(cusp::array2d<float, Space, cusp::column_major>());
-}
-DECLARE_HOST_DEVICE_UNITTEST(TestConversionToArray2d);
+DECLARE_MATRIX_UNITTEST(TestConversionTo);
 
 //////////////////////////////
 // Special Conversion Tests //

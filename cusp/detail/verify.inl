@@ -42,9 +42,14 @@ template <typename IndexVector>
 thrust::pair<typename IndexVector::value_type, typename IndexVector::value_type>
 index_range(const IndexVector& indices)
 {
-    // return a pair<> containing the min and max value in a range
-    thrust::pair<typename IndexVector::const_iterator, typename IndexVector::const_iterator> iter = thrust::minmax_element(indices.begin(), indices.end());
-    return thrust::make_pair(*iter.first, *iter.second);
+//    // return a pair<> containing the min and max value in a range
+//    thrust::pair<typename IndexVector::const_iterator, typename IndexVector::const_iterator> iter = thrust::minmax_element(indices.begin(), indices.end());
+//    return thrust::make_pair(*iter.first, *iter.second);
+   
+    // WAR lack of const_iterator in array1d_view
+    return thrust::make_pair
+      (*thrust::min_element(indices.begin(), indices.end()),
+       *thrust::max_element(indices.begin(), indices.end()));
 }
 
 template <typename IndexType>

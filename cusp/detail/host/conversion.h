@@ -114,8 +114,8 @@ void csr_to_coo(const Matrix1& src, Matrix2& dst)
         for(IndexType jj = src.row_offsets[i]; jj < src.row_offsets[i + 1]; jj++)
             dst.row_indices[jj] = i;
 
-    dst.column_indices = src.column_indices;
-    dst.values         = src.values;
+    cusp::copy(src.column_indices, dst.column_indices);
+    cusp::copy(src.values,         dst.values);
 }
 
 template <typename Matrix1, typename Matrix2>

@@ -24,57 +24,55 @@
 #include <cusp/array1d.h>
 #include <cusp/csr_matrix.h>
 
+#include <thrust/count.h>
+
+// TODO remove std::
+
 namespace cusp
 {
 namespace detail
 {
 namespace host
 {
-
-template <typename IndexType, typename ValueType>
-IndexType count_diagonals(const cusp::csr_matrix<IndexType, ValueType, cusp::host_memory> & csr)
+namespace detail
 {
-    std::vector<IndexType> occupied_diagonals(csr.num_rows + csr.num_cols, char(0));
 
-    for(IndexType i = 0; i < csr.num_rows; i++){
+template <typename Matrix>
+size_t count_diagonals(const Matrix& csr, cusp::csr_format)
+{
+    typedef typename Matrix::index_type IndexType;
+
+    std::vector<bool> occupied_diagonals(csr.num_rows + csr.num_cols, false);
+
+    for(size_t i = 0; i < csr.num_rows; i++)
+    {
         for(IndexType jj = csr.row_offsets[i]; jj < csr.row_offsets[i+1]; jj++){
             IndexType j = csr.column_indices[jj];
             IndexType diagonal_offset = (csr.num_rows - i) + j; //offset shifted by + num_rows
-            occupied_diagonals[diagonal_offset] = 1;
+            occupied_diagonals[diagonal_offset] = true;
         }
     }
 
-    return std::accumulate(occupied_diagonals.begin(), occupied_diagonals.end(), IndexType(0));
+    return thrust::count(occupied_diagonals.begin(), occupied_diagonals.end(), true);
 }
 
-template <typename IndexType, typename ValueType>
-IndexType compute_max_entries_per_row(const cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& csr)
+template <typename Matrix>
+size_t compute_max_entries_per_row(const Matrix& csr, cusp::csr_format)
 {
-    IndexType max_entries_per_row = 0;
-    for(IndexType i = 0; i < csr.num_rows; i++)
-        max_entries_per_row = std::max(max_entries_per_row, csr.row_offsets[i+1] - csr.row_offsets[i]); 
+    size_t max_entries_per_row = 0;
+    for(size_t i = 0; i < csr.num_rows; i++)
+        max_entries_per_row = std::max<size_t>(max_entries_per_row, csr.row_offsets[i+1] - csr.row_offsets[i]); 
     return max_entries_per_row;
 }
 
-
-////////////////////////////////////////////////////////////////////////////////
-//! Compute Optimal Number of Columns per Row in the ELL part of the HYB format
-//! Examines the distribution of nonzeros per row of the input CSR matrix to find
-//! the optimal tradeoff between the ELL and COO portions of the hybrid (HYB)
-//! sparse matrix format under the assumption that ELL performance is a fixed
-//! multiple of COO performance.  Furthermore, since ELL performance is also
-//! sensitive to the absolute number of rows (and COO is not), a threshold is
-//! used to ensure that the ELL portion contains enough rows to be worthwhile.
-//! The default values were chosen empirically for a GTX280.
-//!
-//! @param csr                  CSR matrix
-//! @param relative_speed       Speed of ELL relative to COO (e.g. 2.0 -> ELL is twice as fast)
-//! @param breakeven_threshold  Minimum threshold at which ELL is faster than COO
-////////////////////////////////////////////////////////////////////////////////
-template <typename IndexType, typename ValueType>
-IndexType compute_optimal_entries_per_row(const cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& csr,
-                                          float relative_speed = 3.0, size_t breakeven_threshold = 4096)
+template <typename Matrix>
+size_t compute_optimal_entries_per_row(const Matrix& csr,
+                                      float relative_speed,
+                                      size_t breakeven_threshold,
+                                      cusp::csr_format)
 {
+    typedef typename Matrix::index_type IndexType;
+    
     // compute maximum row length
     IndexType max_cols_per_row = 0;
     for(IndexType i = 0; i < csr.num_rows; i++)
@@ -98,6 +96,44 @@ IndexType compute_optimal_entries_per_row(const cusp::csr_matrix<IndexType,Value
     }
 
     return num_cols_per_row;
+}
+
+} // end namespace detail
+
+template <typename Matrix>
+size_t count_diagonals(const Matrix& m)
+{
+  return cusp::detail::host::detail::count_diagonals(m, typename Matrix::format());
+}
+
+template <typename Matrix>
+size_t compute_max_entries_per_row(const Matrix& m)
+{
+  return cusp::detail::host::detail::compute_max_entries_per_row(m, typename Matrix::format());
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+//! Compute Optimal Number of Columns per Row in the ELL part of the HYB format
+//! Examines the distribution of nonzeros per row of the input CSR matrix to find
+//! the optimal tradeoff between the ELL and COO portions of the hybrid (HYB)
+//! sparse matrix format under the assumption that ELL performance is a fixed
+//! multiple of COO performance.  Furthermore, since ELL performance is also
+//! sensitive to the absolute number of rows (and COO is not), a threshold is
+//! used to ensure that the ELL portion contains enough rows to be worthwhile.
+//! The default values were chosen empirically for a GTX280.
+//!
+//! @param csr                  CSR matrix
+//! @param relative_speed       Speed of ELL relative to COO (e.g. 2.0 -> ELL is twice as fast)
+//! @param breakeven_threshold  Minimum threshold at which ELL is faster than COO
+////////////////////////////////////////////////////////////////////////////////
+template <typename Matrix>
+size_t compute_optimal_entries_per_row(const Matrix& m,
+                                       float relative_speed = 3.0f,
+                                       size_t breakeven_threshold = 4096)
+{
+  return cusp::detail::host::detail::compute_optimal_entries_per_row
+    (m, relative_speed, breakeven_threshold, typename Matrix::format());
 }
 
 } // end namespace host

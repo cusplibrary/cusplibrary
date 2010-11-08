@@ -223,11 +223,11 @@ namespace cusp
          */
         const static IndexType invalid_index = static_cast<IndexType>(-1);
         
-        /*! Storage for the column indices of the ELL data structure.
+        /*! View to column indices of the ELL data structure.
          */
         column_indices_array_type column_indices;
 
-        /*! Storage for the nonzero entries of the ELL data structure.
+        /*! View to nonzero entries of the ELL data structure.
          */
         values_array_type values;
     

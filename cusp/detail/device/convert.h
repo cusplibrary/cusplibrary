@@ -49,16 +49,11 @@ void convert(const Matrix1& src, Matrix2& dst,
              cusp::csr_format,
              cusp::coo_format)
 {
-    typedef typename Matrix2::index_type IndexType;
-    typedef typename Matrix2::value_type ValueType;
+    dst.resize(src.num_rows, src.num_cols, src.num_entries);
 
-    cusp::coo_matrix<IndexType,ValueType,cusp::device_memory> tmp(src.num_rows, src.num_cols, src.num_entries);
-
-    cusp::detail::offsets_to_indices(src.row_offsets, tmp.row_indices);
-    tmp.column_indices = src.column_indices;
-    tmp.values = src.values;
-
-    dst.swap(tmp);
+    cusp::detail::offsets_to_indices(src.row_offsets, dst.row_indices);
+    cusp::copy(src.column_indices, dst.column_indices);
+    cusp::copy(src.values,         dst.values);
 }
 
 /////////
@@ -69,16 +64,11 @@ void convert(const Matrix1& src, Matrix2& dst,
              cusp::coo_format,
              cusp::csr_format)
 {
-    typedef typename Matrix2::index_type IndexType;
-    typedef typename Matrix2::value_type ValueType;
+    dst.resize(src.num_rows, src.num_cols, src.num_entries);
 
-    cusp::csr_matrix<IndexType,ValueType,cusp::device_memory> tmp(src.num_rows, src.num_cols, src.num_entries);
-
-    cusp::detail::indices_to_offsets(src.row_indices, tmp.row_offsets);
-    tmp.column_indices = src.column_indices;
-    tmp.values         = src.values;
-
-    dst.swap(tmp);
+    cusp::detail::indices_to_offsets(src.row_indices, dst.row_offsets);
+    cusp::copy(src.column_indices, dst.column_indices);
+    cusp::copy(src.values,         dst.values);
 }
 
 /////////
@@ -117,7 +107,7 @@ void convert(const Matrix1& src, Matrix2& dst,
 
     cusp::detail::host::convert(tmp1, tmp2);
 
-    dst = tmp2;
+    cusp::copy(tmp2, dst);
 }
 
 /////////////////

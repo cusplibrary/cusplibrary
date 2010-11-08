@@ -139,6 +139,16 @@ namespace cusp
         m_capacity = a.capacity();
         return *this;
       }
+    
+      reference front(void) const
+      {
+        return m_begin[0];
+      }
+      
+      reference back(void) const
+      {
+        return m_begin[size() - 1];
+      }
  
       reference operator[](difference_type n) const
       {

@@ -167,7 +167,7 @@ namespace cusp
                     IndexType num_diagonals)
         {
           Parent::resize(num_rows, num_cols, num_entries);
-          diagonal_offsets.resize(num_rows, num_diagonals);
+          diagonal_offsets.resize(num_diagonals);
           values.resize(num_rows, num_diagonals);
         }
                    
@@ -254,7 +254,7 @@ namespace cusp
                     IndexType num_diagonals)
         {
           Parent::resize(num_rows, num_cols, num_entries);
-          diagonal_offsets.resize(num_rows, num_diagonals);
+          diagonal_offsets.resize(num_diagonals);
           values.resize(num_rows, num_diagonals);
         }
                    
