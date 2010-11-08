@@ -209,7 +209,7 @@ void generate_matrix_from_stencil(      MatrixType& matrix,
     cusp::dia_matrix<IndexType,ValueType,MemorySpace> dia;
     generate_matrix_from_stencil(dia, stencil, grid);
 
-    matrix = dia;
+    cusp::convert(dia, matrix);
 }
                             
 } // end namespace gallery
