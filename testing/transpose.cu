@@ -50,14 +50,20 @@ void verify_result(const MatrixType& matrix)
 template <typename Matrix1, typename Matrix2>
 void TestTranspose(void)
 {
+    typedef typename Matrix1::view View1;
+    typedef typename Matrix2::view View2;
+
     Matrix1 A;
-    Matrix2 At;
 
     initialize_matrix(A);
     
-    cusp::transpose(A, At);
+    {             Matrix2 At; cusp::transpose(A, At); verify_result(At); }
+    { View1 V(A); Matrix2 At; cusp::transpose(V, At); verify_result(At); }
 
-    verify_result(At);
+    Matrix2 At;   cusp::transpose(A, At);
+
+    {             View2 Vt(At); cusp::transpose(A, Vt);  verify_result(Vt); }
+    { View1 V(A); View2 Vt(At); cusp::transpose(V, Vt);  verify_result(Vt); }
 }
 
 
@@ -66,7 +72,7 @@ void TestTranspose(void)
 // Instantiate Tests //
 ///////////////////////
 template <class Space>
-void TestTransposeArray2d(void)
+void TestTransposeArray2dVariablePitch(void)
 {
   typedef typename cusp::array2d<float, Space, cusp::row_major>    RowMajor;
   typedef typename cusp::array2d<float, Space, cusp::column_major> ColumnMajor;
@@ -102,12 +108,12 @@ void TestTransposeArray2d(void)
     { ColumnMajor At;  At.resize(3,4,5); cusp::transpose(A, At);  verify_result(At); ASSERT_EQUAL(At.pitch, 5); }
   }
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestTransposeArray2d);
+DECLARE_HOST_DEVICE_UNITTEST(TestTransposeArray2dVariablePitch);
 
-template <class SparseMatrix>
+template <class Matrix>
 void TestTranspose(void)
 {
-    TestTranspose<SparseMatrix, SparseMatrix>();
+    TestTranspose<Matrix, Matrix>();
 }
-DECLARE_SPARSE_MATRIX_UNITTEST(TestTranspose);
+DECLARE_MATRIX_UNITTEST(TestTranspose);
 

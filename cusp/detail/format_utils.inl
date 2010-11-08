@@ -253,13 +253,13 @@ void extract_diagonal(const Matrix& A, Array& output)
     extract_diagonal(A, output, typename Matrix::format());
 }
 
-template <typename Array1, typename Array2>
-void sort_by_row(Array1& rows, Array1& columns, Array2& values)
+template <typename Array1, typename Array2, typename Array3>
+void sort_by_row(Array1& rows, Array2& columns, Array3& values)
 {
     CUSP_PROFILE_SCOPED();
 
     typedef typename Array1::value_type IndexType;
-    typedef typename Array2::value_type ValueType;
+    typedef typename Array3::value_type ValueType;
     typedef typename Array1::memory_space MemorySpace;
         
     size_t N = rows.size();
@@ -280,13 +280,13 @@ void sort_by_row(Array1& rows, Array1& columns, Array2& values)
                    thrust::make_zip_iterator(thrust::make_tuple(columns.begin(), values.begin())));
 }
 
-template <typename Array1, typename Array2>
-void sort_by_row_and_column(Array1& rows, Array1& columns, Array2& values)
+template <typename Array1, typename Array2, typename Array3>
+void sort_by_row_and_column(Array1& rows, Array2& columns, Array3& values)
 {
     CUSP_PROFILE_SCOPED();
 
     typedef typename Array1::value_type IndexType;
-    typedef typename Array2::value_type ValueType;
+    typedef typename Array3::value_type ValueType;
     typedef typename Array1::memory_space MemorySpace;
         
     size_t N = rows.size();

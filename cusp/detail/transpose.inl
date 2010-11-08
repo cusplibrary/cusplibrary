@@ -42,32 +42,13 @@ void transpose(const MatrixType1& A, MatrixType2& At,
                cusp::coo_format,
                cusp::coo_format)
 {
-    typedef typename MatrixType2::index_type   IndexType2;
-    typedef typename MatrixType2::value_type   ValueType2;
-    typedef typename MatrixType2::memory_space MemorySpace2;
+    At.resize(A.num_cols, A.num_rows, A.num_entries);
 
-    cusp::coo_matrix<IndexType2,ValueType2,MemorySpace2> temp(A.num_cols, A.num_rows, A.num_entries);
+    cusp::copy(A.row_indices,    At.column_indices);
+    cusp::copy(A.column_indices, At.row_indices);
+    cusp::copy(A.values,         At.values);
 
-    cusp::array1d<IndexType2,MemorySpace2> permutation(A.num_entries);
-    thrust::sequence(permutation.begin(), permutation.end());
-
-    temp.row_indices = A.column_indices;
-
-    thrust::stable_sort_by_key(temp.row_indices.begin(), temp.row_indices.end(), permutation.begin());
-
-#if THRUST_VERSION >= 100300
-    // gather the permuted indices and values
-    thrust::gather(permutation.begin(), permutation.end(),
-                   thrust::make_zip_iterator(thrust::make_tuple(A.row_indices.begin(),       A.values.begin())),
-                   thrust::make_zip_iterator(thrust::make_tuple(temp.column_indices.begin(), temp.values.begin())));
-#else
-    // TODO remove this when Thrust v1.2.x is unsupported
-    thrust::next::gather(permutation.begin(), permutation.end(),
-                         thrust::make_zip_iterator(thrust::make_tuple(A.row_indices.begin(),       A.values.begin())),
-                         thrust::make_zip_iterator(thrust::make_tuple(temp.column_indices.begin(), temp.values.begin())));
-#endif
-
-    At.swap(temp);  // TODO make this a destructive .assign() or the like
+    At.sort_by_row();
 }
 
 
@@ -78,37 +59,18 @@ void transpose(const MatrixType1& A, MatrixType2& At,
                cusp::csr_format)
 {
     typedef typename MatrixType2::index_type   IndexType2;
-    typedef typename MatrixType2::value_type   ValueType2;
     typedef typename MatrixType2::memory_space MemorySpace2;
 
-    cusp::csr_matrix<IndexType2,ValueType2,MemorySpace2> temp(A.num_cols, A.num_rows, A.num_entries);
+    At.resize(A.num_cols, A.num_rows, A.num_entries);
+
+    cusp::detail::offsets_to_indices(A.row_offsets, At.column_indices);
+    cusp::copy(A.values, At.values);
+
+    cusp::array1d<IndexType2,MemorySpace2> At_row_indices(A.column_indices);
+
+    cusp::detail::sort_by_row(At_row_indices, At.column_indices, At.values);
     
-    cusp::array1d<IndexType2,MemorySpace2> permutation(A.num_entries);
-    thrust::sequence(permutation.begin(), permutation.end());
-    
-    // sort column indices of A
-    cusp::array1d<IndexType2,MemorySpace2> indices(A.column_indices);
-    thrust::stable_sort_by_key(indices.begin(), indices.end(), permutation.begin());
-
-    // compute row offsets of At
-    cusp::detail::indices_to_offsets(indices, temp.row_offsets);
-
-    // compute row indices of A
-    cusp::detail::offsets_to_indices(A.row_offsets, indices);
-   
-#if THRUST_VERSION >= 100300
-    // gather the permuted indices and values
-    thrust::gather(permutation.begin(), permutation.end(),
-                   thrust::make_zip_iterator(thrust::make_tuple(indices.begin(),             A.values.begin())),
-                   thrust::make_zip_iterator(thrust::make_tuple(temp.column_indices.begin(), temp.values.begin())));
-#else
-    // TODO remove this when Thrust v1.2.x is unsupported
-    thrust::next::gather(permutation.begin(), permutation.end(),
-                         thrust::make_zip_iterator(thrust::make_tuple(indices.begin(),             A.values.begin())),
-                         thrust::make_zip_iterator(thrust::make_tuple(temp.column_indices.begin(), temp.values.begin())));
-#endif
-
-    At.swap(temp);  // TODO make this a destructive .assign() or the like
+    cusp::detail::indices_to_offsets(At_row_indices, At.row_offsets);
 }
 
 
@@ -169,7 +131,7 @@ void transpose(const MatrixType1& A, MatrixType2& At,
     cusp::csr_matrix<IndexType, ValueType, MemorySpace> At_csr;
     cusp::transpose(A_csr, At_csr);
 
-    At = At_csr;
+    cusp::convert(At_csr, At);
 }
 
 } // end namespace detail
