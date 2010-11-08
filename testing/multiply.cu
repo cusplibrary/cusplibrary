@@ -32,6 +32,11 @@ void CompareSparseMatrixMatrixMultiply(DenseMatrixType A, DenseMatrixType B)
     cusp::multiply(_A, _B, _C);
     
     ASSERT_EQUAL(C == DenseMatrixType(_C), true);
+    
+    typename SparseMatrixType::view _Aview(_A), _Bview(_B), _Cview(_C);
+    cusp::multiply(_Aview, _Bview, _Cview);
+    
+    ASSERT_EQUAL(C == DenseMatrixType(_Cview), true);
 }
 
 template <typename TestMatrix>
@@ -126,18 +131,48 @@ void CompareSparseMatrixVectorMultiply(DenseMatrixType A)
     cusp::array1d<float, cusp::host_memory> y(A.num_rows, 10);
     for(size_t i = 0; i < x.size(); i++)
         x[i] = i % 10;
-  
-    // setup test input
-    SparseMatrixType _A(A);
-    cusp::array1d<float, MemorySpace> _x(x);
-    cusp::array1d<float, MemorySpace> _y(A.num_rows, 10);
 
+    // compute reference output
     cusp::multiply(A, x, y);
-    cusp::multiply(_A, _x, _y);
+  
+    // test container
+    {
+      SparseMatrixType _A(A);
+      cusp::array1d<float, MemorySpace> _x(x);
+      cusp::array1d<float, MemorySpace> _y(A.num_rows, 10);
+
+      cusp::multiply(_A, _x, _y);
+      
+      ASSERT_EQUAL(_y, y);
+    }
+
+    // test matrix view
+    {
+      SparseMatrixType _A(A);
+      cusp::array1d<float, MemorySpace> _x(x);
+      cusp::array1d<float, MemorySpace> _y(A.num_rows, 10);
+
+      typename SparseMatrixType::view _V(_A);
+      cusp::multiply(_V, _x, _y);
+      
+      ASSERT_EQUAL(_y, y);
+    }
     
-    ASSERT_EQUAL(_y, y);
+    // test array view
+    {
+      SparseMatrixType _A(A);
+      cusp::array1d<float, MemorySpace> _x(x);
+      cusp::array1d<float, MemorySpace> _y(A.num_rows, 10);
+
+      typename cusp::array1d<float, MemorySpace> _Vx(_x), _Vy(_y);
+      cusp::multiply(_A, _Vx, _Vy);
+      
+      ASSERT_EQUAL(_Vy, y);
+    }
 }
 
+
+// TODO use COO reference format and test larger problem sizes
 template <class TestMatrix>
 void TestSparseMatrixVectorMultiply()
 {

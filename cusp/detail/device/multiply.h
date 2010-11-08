@@ -205,7 +205,7 @@ void multiply(const Matrix1& A,
 
     cusp::detail::device::spmm_coo(A_,B_,C_);
 
-    C = C_;
+    cusp::convert(C_, C);
 }
 
 /////////////////

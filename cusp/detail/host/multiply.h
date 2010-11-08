@@ -222,7 +222,7 @@ void multiply(const Matrix1& A,
 
     cusp::detail::host::detail::spmm_csr(A_,B_,C_);
 
-    C = C_;
+    cusp::convert(C_, C);
 }
   
 /////////////////
