@@ -105,7 +105,7 @@ void csr_transform_elementwise(const Matrix1& A,
     // TODO replace with destructive assignment?
 
     temp.resize(A.num_rows, A.num_cols, nnz);
-    C = temp;
+    cusp::copy(temp, C);
 } // csr_transform_elementwise
 
 

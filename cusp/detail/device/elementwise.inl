@@ -136,7 +136,7 @@ void add(const Matrix1& A,
 
     cusp::detail::device::add(A_, B_, C_);
 
-    C = C_;
+    cusp::convert(C_, C);
 }
 
 template <typename Matrix1,
@@ -165,7 +165,7 @@ void subtract(const Matrix1& A,
 
     cusp::detail::device::subtract(A_, B_, C_);
 
-    C = C_;
+    cusp::convert(C_, C);
 }
 
 } // end namespace dispatch

@@ -123,7 +123,7 @@ void transform_elementwise(const Matrix1& A,
 
     cusp::detail::host::transform_elementwise(A_, B_, C_, op);
 
-    C = C_;
+    cusp::convert(C_, C);
 }
 
 } // end namespace dispatch

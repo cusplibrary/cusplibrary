@@ -93,10 +93,22 @@ void TestAdd(void)
                 DenseMatrix C;
                 cusp::add(A, B, C);
 
+                // test containers
                 SparseMatrix _A(A), _B(B), _C;
                 cusp::add(_A, _B, _C);
 
                 ASSERT_EQUAL(C == DenseMatrix(_C), true);
+
+                // test views
+                typename SparseMatrix::view _Aview(_A), _Bview(_B), _Cview(_C);
+
+                cusp::add(_Aview, _Bview, _C);
+
+                ASSERT_EQUAL(C == DenseMatrix(_Cview), true);
+
+                cusp::add(_Aview, _Bview, _Cview);
+
+                ASSERT_EQUAL(C == DenseMatrix(_Cview), true);
             }
         }
     }
