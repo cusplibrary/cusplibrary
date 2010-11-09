@@ -119,6 +119,13 @@ int main(void)
     std::cout << "\n y array, y = A * x" << std::endl;
     cusp::print_matrix(y);
   }
+  
+  // free device arrays
+  cudaFree(device_Ap);
+  cudaFree(device_Aj);
+  cudaFree(device_Ax);
+  cudaFree(device_x);
+  cudaFree(device_y);
 
   return 0;
 }

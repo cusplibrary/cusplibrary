@@ -120,25 +120,33 @@ namespace cusp
         : m_begin(), m_size(0), m_capacity(0) {}
   
       template <typename Array>
-      array1d_view(Array& a)
+      explicit array1d_view(Array& a)
         : m_begin(a.begin()), m_size(a.size()), m_capacity(a.capacity()) {}
       
       template <typename Array>
-      array1d_view(const Array& a)
+      explicit array1d_view(const Array& a)
         : m_begin(a.begin()), m_size(a.size()), m_capacity(a.capacity()) {}
  
       // should these be templated?
       array1d_view(RandomAccessIterator first, RandomAccessIterator last)
         : m_begin(first), m_size(last - first), m_capacity(last - first) {}
-      
-      template <typename Array>
-      array1d_view &operator=(Array &a)
+     
+      array1d_view& operator=(const array1d_view& a)
       {
         m_begin    = a.begin();
         m_size     = a.size();
         m_capacity = a.capacity();
         return *this;
       }
+
+      //template <typename Array>
+      //array1d_view &operator=(Array &a)
+      //{
+      //  m_begin    = a.begin();
+      //  m_size     = a.size();
+      //  m_capacity = a.capacity();
+      //  return *this;
+      //}
     
       reference front(void) const
       {

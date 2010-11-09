@@ -37,34 +37,28 @@ namespace blas
 
 namespace detail
 {
-    template <typename T1, typename MemorySpace1,
-              typename T2, typename MemorySpace2>
-    void assert_same_dimensions(const cusp::array1d<T1, MemorySpace1>& array1,
-                                const cusp::array1d<T2, MemorySpace2>& array2)
+    template <typename Array1, typename Array2>
+    void assert_same_dimensions(const Array1& array1,
+                                const Array2& array2)
     {
         if(array1.size() != array2.size())
             throw cusp::invalid_input_exception("array dimensions do not match");
     }
     
-    template <typename T1, typename MemorySpace1,
-              typename T2, typename MemorySpace2,
-              typename T3, typename MemorySpace3>
-    void assert_same_dimensions(const cusp::array1d<T1, MemorySpace1>& array1,
-                                const cusp::array1d<T2, MemorySpace2>& array2,
-                                const cusp::array1d<T3, MemorySpace3>& array3)
+    template <typename Array1, typename Array2, typename Array3>
+    void assert_same_dimensions(const Array1& array1,
+                                const Array2& array2,
+                                const Array3& array3)
     {
         assert_same_dimensions(array1, array2);
         assert_same_dimensions(array2, array3);
     }
     
-    template <typename T1, typename MemorySpace1,
-              typename T2, typename MemorySpace2,
-              typename T3, typename MemorySpace3,
-              typename T4, typename MemorySpace4>
-    void assert_same_dimensions(const cusp::array1d<T1, MemorySpace1>& array1,
-                                const cusp::array1d<T2, MemorySpace2>& array2,
-                                const cusp::array1d<T3, MemorySpace3>& array3,
-                                const cusp::array1d<T4, MemorySpace4>& array4)
+    template <typename Array1, typename Array2, typename Array3, typename Array4>
+    void assert_same_dimensions(const Array1& array1,
+                                const Array2& array2,
+                                const Array3& array3,
+                                const Array4& array4)
     {
         assert_same_dimensions(array1, array2);
         assert_same_dimensions(array2, array3);

@@ -148,7 +148,7 @@ void TestArray1dView(void)
     ASSERT_EQUAL_QUIET(W.begin(), A.begin());
     ASSERT_EQUAL_QUIET(W.end(),   A.end());
     
-    View U = A;
+    View U = View(A);
     
     ASSERT_EQUAL(U.size(),     4);
     ASSERT_EQUAL(U.capacity(), 4);
@@ -176,7 +176,7 @@ void TestArray1dView(void)
     ASSERT_EQUAL_QUIET(W.begin(), A.begin());
     ASSERT_EQUAL_QUIET(W.end(),   A.end());
     
-    View U = A;
+    View U = View(A);
     
     ASSERT_EQUAL(U.size(),     4);
     ASSERT_EQUAL(U.capacity(), 4);
@@ -204,7 +204,7 @@ void TestArray1dView(void)
     ASSERT_EQUAL_QUIET(W.begin(), A.begin());
     ASSERT_EQUAL_QUIET(W.end(),   A.end());
     
-    View U = A;
+    View U = View(A);
     
     ASSERT_EQUAL(U.size(),     4);
     ASSERT_EQUAL(U.capacity(), 4);
@@ -313,21 +313,21 @@ void TestArray1dViewAssignment(void)
   ASSERT_EQUAL_QUIET(V.begin(), A.begin());
   ASSERT_EQUAL_QUIET(V.end(),   A.end());
 
-  V = A;
+  V = View(A);
   
   ASSERT_EQUAL(V.size(),     4);
   ASSERT_EQUAL(V.capacity(), 4);
   ASSERT_EQUAL_QUIET(V.begin(), A.begin());
   ASSERT_EQUAL_QUIET(V.end(),   A.end());
   
-  V = B;
+  V = View(B);
   
   ASSERT_EQUAL(V.size(),     8);
   ASSERT_EQUAL(V.capacity(), 8);
   ASSERT_EQUAL_QUIET(V.begin(), B.begin());
   ASSERT_EQUAL_QUIET(V.end(),   B.end());
 
-  const View W = V;
+  const View W = View(V);
   
   ASSERT_EQUAL(W.size(),     8);
   ASSERT_EQUAL(W.capacity(), 8);
@@ -394,9 +394,9 @@ void TestArray1dViewSize(void)
 
   View W = V;
   
-  ASSERT_EQUAL(V.size(), 2);
+  ASSERT_EQUAL(W.size(), 2);
 
-  V = A;
+  V = View(A);
   
   ASSERT_EQUAL(V.size(), 4);
 }
@@ -419,7 +419,7 @@ void TestArray1dViewCapacity(void)
 
   A.resize(2);
 
-  V = A;
+  V = View(A);
   
   ASSERT_EQUAL(V.size(),     2);
   ASSERT_EQUAL(V.capacity(), 4);
