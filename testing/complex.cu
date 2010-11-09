@@ -347,6 +347,14 @@ __global__ void test_complex_compilation_kernel(cusp::complex<double> * a){
 }
 #endif
 
+bool compiled_architecture_supports_double(void){
+#if __CUDA_ARCH__ >= 130
+  return true;
+#else
+  return false;
+#endif
+}
+
 bool device_supports_double(void)
 {
     int current_device = -1;
@@ -448,7 +456,8 @@ void TestComplex()
   a = test_complex_compilation_entry<ValueType>();
   // Don't check for equality between host and device code when the 
   // hardware device does not support double precision 
-  if(is_same_type<ValueType,double>::result == false|| device_supports_double()){
+  if(is_same_type<ValueType,double>::result == false ||
+     (device_supports_double() && compiled_architecture_supports_double())){
     ASSERT_COMPLEX_ALMOST_EQUAL(a,b);
   }
   // Test twice the unit circle 
