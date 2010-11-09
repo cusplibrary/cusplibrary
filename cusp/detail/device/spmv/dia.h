@@ -84,7 +84,7 @@ spmv_dia_kernel(const IndexType num_rows,
         // process chunk
         for(IndexType row = thread_id; row < num_rows; row += grid_size)
         {
-            ValueType sum = (base == 0) ? 0 : y[row];
+            ValueType sum = (base == 0) ? ValueType(0) : y[row];
     
             // index into values array
             IndexType idx = row + stride * base;
