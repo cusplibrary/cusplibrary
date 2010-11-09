@@ -192,7 +192,7 @@ spmv_coo_flat_kernel(const IndexType num_nonzeros,
     {
         // initialize the carry in values
         rows[idx] = I[interval_begin]; 
-        vals[threadIdx.x] = 0;
+	vals[threadIdx.x] = ValueType(0);
     }
   
     for(IndexType n = interval_begin + thread_lane; n < interval_end; n += WARP_SIZE)
