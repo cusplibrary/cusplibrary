@@ -457,7 +457,13 @@ template <typename IndexType, typename ValueType>
 void write_matrix_market_stream(const cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& coo, OUT_FILE_TYPE outfile)
 {
     std::stringstream file (std::stringstream::in | std::stringstream::out);
-    file << "%%MatrixMarket matrix coordinate real general\n";
+    if(thrust::detail::is_same<ValueType,
+			       cusp::complex<typename norm_type<ValueType>::type> 
+			       >::value){
+      file << "%%MatrixMarket matrix coordinate complex general\n";
+    }else{
+      file << "%%MatrixMarket matrix coordinate real general\n";
+    }
     file << "\t" << coo.num_rows << "\t" << coo.num_cols << "\t" << coo.num_entries << "\n";
 
     for(IndexType i = 0; i < coo.num_entries; i++)
