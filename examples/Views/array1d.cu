@@ -3,6 +3,10 @@
 #include <cusp/copy.h>
 #include <cusp/print.h>
 
+// This example shows how to create views to an array container.
+// Views act like containers but do not own the underlying data.
+// Like pointers, views are *lightweight* objects that *reference* data.
+
 int main(void)
 {
   // define array container type
