@@ -71,13 +71,13 @@ class smoothed_aggregation : public cusp::linear_operator<ValueType, MemorySpace
         ValueType rho;                                        // spectral radius
     };
 
-    std::vector<level> levels;
         
     cusp::detail::lu_solver<ValueType, cusp::host_memory> LU;
 
     ValueType theta;
 
     public:
+    std::vector<level> levels;
 
     smoothed_aggregation(const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& A, const ValueType theta=0);
 
