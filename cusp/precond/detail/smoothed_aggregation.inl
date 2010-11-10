@@ -219,7 +219,7 @@ smoothed_aggregation<IndexType,ValueType,MemorySpace>::smoothed_aggregation(cons
   levels.back().A = A; // copy
   levels.back().B.resize(A.num_rows, 1.0f);
 
-  while (levels.back().A.num_rows > 10)
+  while (levels.back().A.num_rows > 100)
     extend_hierarchy();
 
   // TODO make lu_solver accept sparse input
