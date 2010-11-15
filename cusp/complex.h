@@ -323,10 +323,10 @@ public:
       return *this;
     }
 
-  __host__ __device__ inline ValueType real() const;
-  __host__ __device__ inline ValueType imag() const;
-  __host__ __device__ inline void real(ValueType);
-  __host__ __device__ inline void imag(ValueType);
+  __host__ __device__ inline ValueType real() const volatile;
+  __host__ __device__ inline ValueType imag() const volatile;
+  __host__ __device__ inline void real(ValueType) volatile;
+  __host__ __device__ inline void imag(ValueType) volatile;
 };
 
 // TODO make cuFloatComplex and cuDoubleComplex protected
@@ -362,6 +362,15 @@ public:
     }  
 
   // Member operators
+  template <typename T>
+    __host__ __device__
+    inline volatile complex<float>& operator=(const complex<T> z) volatile
+    {
+      real(z.real());
+      imag(z.imag());
+      return *this;
+    }
+
   template <typename T>
     __host__ __device__
     inline complex<float>& operator=(const complex<T> z)
@@ -402,10 +411,16 @@ public:
     }
 
   // Let the compiler synthesize the copy and assignment operators.
-  __host__ __device__ inline float real() const { return x; }
-  __host__ __device__ inline float imag() const { return y; }
-  __host__ __device__ inline void real(float re){ x = re; }
-  __host__ __device__ inline void imag(float im){ y = im; }
+  __host__ __device__ inline complex<float>(const volatile complex<float> & z)
+  {
+    real(z.real());
+    imag(z.imag());
+  }
+
+  __host__ __device__ inline float real() const volatile{ return x; }
+  __host__ __device__ inline float imag() const volatile{ return y; }
+  __host__ __device__ inline void real(float re)volatile{ x = re; }
+  __host__ __device__ inline void imag(float im)volatile{ y = im; }
 
   // cast operators
   __host__ __device__ inline operator float() const { return real(); }
@@ -445,6 +460,15 @@ public:
   // Member operators
   template <typename T>
     __host__ __device__
+    inline volatile complex<double>& operator=(const complex<T> z) volatile
+    {
+      real(z.real());
+      imag(z.imag());
+      return *this;
+    }
+
+  template <typename T>
+    __host__ __device__
     inline complex<double>& operator=(const complex<T> z)
     {
       real(z.real());
@@ -482,11 +506,17 @@ public:
       return *this;
     }
 
+  __host__ __device__ inline complex<double>(const volatile complex<double> & z)
+  {
+    real(z.real());
+    imag(z.imag());
+  }
+
   // Let the compiler synthesize the copy and assignment operators.
-  __host__ __device__ inline double real() const { return x; }
-  __host__ __device__ inline double imag() const { return y; }
-  __host__ __device__ inline void real(double re){ x = re; }
-  __host__ __device__ inline void imag(double im){ y = im; }
+  __host__ __device__ inline double real() const volatile { return x; }
+  __host__ __device__ inline double imag() const volatile { return y; }
+  __host__ __device__ inline void real(double re)volatile{ x = re; }
+  __host__ __device__ inline void imag(double im)volatile{ y = im; }
 
   // cast operators
   __host__ __device__ inline operator double() const { return real(); }
@@ -502,6 +532,20 @@ public:
   template<typename ValueType>
     inline complex<ValueType> operator+(const complex<ValueType>& lhs,
 					    const complex<ValueType>& rhs){
+    return complex<ValueType>(lhs.real()+rhs.real(),lhs.imag()+rhs.imag());
+    //  return cuCaddf(lhs,rhs);
+  }
+
+  template<typename ValueType>
+    inline complex<ValueType> operator+(complex<ValueType>& lhs,
+					    complex<ValueType>& rhs){
+    return complex<ValueType>(lhs.real()+rhs.real(),lhs.imag()+rhs.imag());
+    //  return cuCaddf(lhs,rhs);
+  }
+
+  template<typename ValueType>
+    inline complex<ValueType> operator+(volatile complex<ValueType>& lhs,
+					    volatile complex<ValueType>& rhs){
     return complex<ValueType>(lhs.real()+rhs.real(),lhs.imag()+rhs.imag());
     //  return cuCaddf(lhs,rhs);
   }
