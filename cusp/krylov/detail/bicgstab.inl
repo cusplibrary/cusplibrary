@@ -116,6 +116,12 @@ void bicgstab(LinearOperator& A,
         // s_j = r_j - alpha * AMp
         blas::axpby(r, AMp, s, ValueType(1), ValueType(-alpha));
 
+	if (monitor.finished(s)){
+	  // x += alpha*M*p_j
+	  blas::axpby(x, Mp, x, ValueType(1), ValueType(alpha));
+	  break;
+	}
+
         // Ms = M*s_j
         cusp::multiply(M, s, Ms);
         
