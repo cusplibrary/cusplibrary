@@ -19,6 +19,9 @@
 #include <cusp/detail/config.h>
 #include <cusp/gallery/stencil.h>
 
+#ifdef _WIN32
+#define _USE_MATH_DEFINES 1  // make sure M_PI is defined
+#endif
 #include <math.h>
 
 namespace cusp
