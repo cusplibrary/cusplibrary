@@ -537,15 +537,8 @@ public:
   }
 
   template<typename ValueType>
-    inline complex<ValueType> operator+(complex<ValueType>& lhs,
-					    complex<ValueType>& rhs){
-    return complex<ValueType>(lhs.real()+rhs.real(),lhs.imag()+rhs.imag());
-    //  return cuCaddf(lhs,rhs);
-  }
-
-  template<typename ValueType>
-    inline complex<ValueType> operator+(volatile complex<ValueType>& lhs,
-					    volatile complex<ValueType>& rhs){
+    inline complex<ValueType> operator+(const volatile complex<ValueType>& lhs,
+					    const volatile complex<ValueType>& rhs){
     return complex<ValueType>(lhs.real()+rhs.real(),lhs.imag()+rhs.imag());
     //  return cuCaddf(lhs,rhs);
   }
