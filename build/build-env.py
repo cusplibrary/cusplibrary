@@ -36,6 +36,37 @@ def get_cuda_paths():
 
   return (bin_path,lib_path,inc_path)
 
+def get_mkl_paths():
+  """Determines MKL {lib,include} paths
+  
+  returns (lib_path,inc_path)
+  """
+
+  arch = False
+  if platform.machine()[-2:] == '64':
+    arch64 = True
+
+  if 'MKLROOT' not in os.environ:
+    raise ValueError, "MKLROOT is not an environment variable"
+
+  # determine defaults
+  if os.name == 'nt':
+    raise ValueError, "Intel MKL support for Windows not implemented."
+  elif os.name == 'posix':
+    lib_base = os.environ['MKLROOT'] + '/lib'
+    dirs = os.listdir(lib_base)
+    for dir in dirs :
+	# select 64/32 bit MKL library path based on architecture
+	if arch64 == True and dir.find('64') > -1 :
+    	  lib_path = lib_base + '/' + dir
+	elif arch64 == False and dir.find('64') == -1 :
+    	  lib_path = lib_base + '/' + dir
+
+    inc_path = os.environ['MKLROOT'] + '/include'
+  else:
+    raise ValueError, 'Error: unknown OS.  Where is nvcc installed?'
+   
+  return (lib_path,inc_path)
 
 def getTools():
   result = []
@@ -69,7 +100,7 @@ gLinkerOptions = {
   }
 
 
-def getCFLAGS(mode, backend, warn, warnings_as_errors, CC):
+def getCFLAGS(mode, backend, warn, warnings_as_errors, hostspblas, CC):
   result = []
   if mode == 'release':
     # turn on optimization
@@ -93,10 +124,14 @@ def getCFLAGS(mode, backend, warn, warnings_as_errors, CC):
     # treat warnings as errors
     result.append(gCompilerOptions[CC]['warn_errors'])
 
+  # generate hostspblas code
+  if hostspblas == 'mkl':
+    result.append('-DINTEL_MKL_SPBLAS')
+
   return result
 
 
-def getCXXFLAGS(mode, backend, warn, warnings_as_errors, CXX):
+def getCXXFLAGS(mode, backend, warn, warnings_as_errors, hostspblas, CXX):
   result = []
   if mode == 'release':
     # turn on optimization
@@ -121,6 +156,10 @@ def getCXXFLAGS(mode, backend, warn, warnings_as_errors, CXX):
   if warnings_as_errors:
     # treat warnings as errors
     result.append(gCompilerOptions[CXX]['warn_errors'])
+
+  # generate hostspblas code
+  if hostspblas == 'mkl':
+    result.append('-DINTEL_MKL_SPBLAS')
 
   return result
 
@@ -179,6 +218,11 @@ def Environment():
   # add a variable to treat warnings as errors
   vars.Add(BoolVariable('Werror', 'Treat warnings as errors', 0))
 
+  # add a variable to handle the device backend
+  hostspblas_variable = EnumVariable('hostspblas', 'Host sparse math library', 'cusp',
+                                  allowed_values = ('cusp', 'mkl'))
+  vars.Add(hostspblas_variable)
+
   # create an Environment
   env = OldEnvironment(tools = getTools(), variables = vars)
 
@@ -196,10 +240,10 @@ def Environment():
   env.Append(CXXFLAGS = ['-DTHRUST_DEVICE_BACKEND=%s' % backend_define])
 
   # get C compiler switches
-  env.Append(CFLAGS = getCFLAGS(env['mode'], env['backend'], env['Wall'], env['Werror'], env.subst('$CC')))
+  env.Append(CFLAGS = getCFLAGS(env['mode'], env['backend'], env['Wall'], env['Werror'], env['hostspblas'], env.subst('$CC')))
 
   # get CXX compiler switches
-  env.Append(CXXFLAGS = getCXXFLAGS(env['mode'], env['backend'], env['Wall'], env['Werror'], env.subst('$CXX')))
+  env.Append(CXXFLAGS = getCXXFLAGS(env['mode'], env['backend'], env['Wall'], env['Werror'], env['hostspblas'], env.subst('$CXX')))
 
   # get NVCC compiler switches
   env.Append(NVCCFLAGS = getNVCCFLAGS(env['mode'], env['backend'], env['arch']))
@@ -230,6 +274,12 @@ def Environment():
       env.Append(LIBS = ['VCOMP'])
     else:
       raise ValueError, "Unknown OS.  What is the name of the OpenMP library?"
+
+  if env['hostspblas'] == 'mkl':
+    (mkl_lib_path,mkl_inc_path) = get_mkl_paths()
+    env.Append(CPPPATH = [mkl_inc_path])
+    env.Append(LIBPATH = [mkl_lib_path])
+    env.Append(LIBS = ['mkl_core', 'mkl_intel_lp64', 'mkl_gnu_thread', 'gomp'])
 
   # set thrust include path
   env.Append(CPPPATH = os.path.dirname(thisDir))

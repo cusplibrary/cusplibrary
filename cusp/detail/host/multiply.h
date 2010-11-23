@@ -21,7 +21,12 @@
 
 #include <cusp/detail/functional.h>
 
+#ifdef INTEL_MKL_SPBLAS
+#include <cusp/detail/host/spmv_mkl.h>
+#else
 #include <cusp/detail/host/spmv.h>
+#endif
+
 #include <cusp/detail/host/detail/coo.h>
 #include <cusp/detail/host/detail/csr.h>
 
