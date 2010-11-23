@@ -99,4 +99,9 @@ namespace cusp
     inline ValueType sqrt(ValueType x){
     return std::sqrt(x);
   }
+  template <typename ValueType>
+    __host__ __device__ 
+    inline ValueType abs(ValueType x){
+    return std::abs(x);
+  }
 }

@@ -83,7 +83,7 @@ namespace detail
             __host__ __device__
                 T operator()(T x)
                 { 
-                    return x < 0 ? -x : x;
+		    return abs(x);
                 }
         };
     
