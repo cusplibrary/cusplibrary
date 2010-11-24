@@ -119,8 +119,8 @@ void spmv_coo(const Matrix&  A,
     // TODO Check if  matrix dimensions allow conversion to 32-bit indexing (i.e. num_cols < 2^32)
     if( sizeof(IndexType) > 4 )
     {
-	cusp::array1d<unsigned int,cusp::host_memory> I_32(A.row_indices);
-	cusp::array1d<unsigned int,cusp::host_memory> J_32(A.column_indices);
+	cusp::array1d<MKL_INT,cusp::host_memory> I_32(A.row_indices);
+	cusp::array1d<MKL_INT,cusp::host_memory> J_32(A.column_indices);
 
     	MKL_INT * pI_32 = (MKL_INT *) thrust::raw_pointer_cast(&I_32[0]);
 	MKL_INT * pJ_32 = (MKL_INT *) thrust::raw_pointer_cast(&J_32[0]);
@@ -189,8 +189,8 @@ void spmv_csr(const Matrix&  A,
     // TODO Check if  matrix dimensions allow conversion to 32-bit indexing (i.e. num_cols < 2^32)
     if( sizeof(IndexType) > 4 )
     {
-	cusp::array1d<unsigned int,cusp::host_memory> P_32(A.row_offsets);
-	cusp::array1d<unsigned int,cusp::host_memory> J_32(A.column_indices);
+	cusp::array1d<MKL_INT,cusp::host_memory> P_32(A.row_offsets);
+	cusp::array1d<MKL_INT,cusp::host_memory> J_32(A.column_indices);
 
     	MKL_INT * pP_32 = (MKL_INT *) thrust::raw_pointer_cast(&P_32[0]);
 	MKL_INT * pJ_32 = (MKL_INT *) thrust::raw_pointer_cast(&J_32[0]);

@@ -42,7 +42,7 @@ def get_mkl_paths():
   returns (lib_path,inc_path)
   """
 
-  arch = False
+  arch64 = False
   if platform.machine()[-2:] == '64':
     arch64 = True
 
@@ -59,8 +59,13 @@ def get_mkl_paths():
 	# select 64/32 bit MKL library path based on architecture
 	if arch64 == True and dir.find('64') > -1 :
     	  lib_path = lib_base + '/' + dir
+	  break
 	elif arch64 == False and dir.find('64') == -1 :
     	  lib_path = lib_base + '/' + dir
+	  break
+
+    if lib_path == lib_base :
+      raise ValueError, 'Could not find MKL library directory which matches the arctitecture.'
 
     inc_path = os.environ['MKLROOT'] + '/include'
   else:
@@ -174,7 +179,7 @@ def getNVCCFLAGS(mode, backend, arch):
   return result
 
 
-def getLINKFLAGS(mode, backend, LINK):
+def getLINKFLAGS(mode, backend, hostspblas, LINK):
   result = []
   if mode == 'debug':
     # turn on debug mode
@@ -186,6 +191,9 @@ def getLINKFLAGS(mode, backend, LINK):
   # XXX make this portable
   if backend == 'ocelot':
     result.append(os.popen('OcelotConfig -l').read().split())
+
+  if hostspblas == 'mkl':
+    result.append('-fopenmp')
 
   return result
 
@@ -249,7 +257,7 @@ def Environment():
   env.Append(NVCCFLAGS = getNVCCFLAGS(env['mode'], env['backend'], env['arch']))
 
   # get linker switches
-  env.Append(LINKFLAGS = getLINKFLAGS(env['mode'], env['backend'], env.subst('$LINK')))
+  env.Append(LINKFLAGS = getLINKFLAGS(env['mode'], env['backend'], env['hostspblas'], env.subst('$LINK')))
    
   # get CUDA paths
   (cuda_exe_path,cuda_lib_path,cuda_inc_path) = get_cuda_paths()
@@ -276,10 +284,14 @@ def Environment():
       raise ValueError, "Unknown OS.  What is the name of the OpenMP library?"
 
   if env['hostspblas'] == 'mkl':
+    intel_lib = 'mkl_intel'
+    if platform.machine()[-2:] == '64':
+	intel_lib += '_lp64'
+    
     (mkl_lib_path,mkl_inc_path) = get_mkl_paths()
     env.Append(CPPPATH = [mkl_inc_path])
     env.Append(LIBPATH = [mkl_lib_path])
-    env.Append(LIBS = ['mkl_core', 'mkl_intel_lp64', 'mkl_gnu_thread', 'gomp'])
+    env.Append(LIBS = ['mkl_core', 'mkl_gnu_thread', intel_lib])
 
   # set thrust include path
   env.Append(CPPPATH = os.path.dirname(thisDir))
