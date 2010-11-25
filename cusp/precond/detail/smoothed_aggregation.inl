@@ -204,6 +204,21 @@ void smooth_prolongator(const cusp::coo_matrix<IndexType,ValueType,MemorySpace>&
                         thrust::plus<ValueType>());
 }
 
+template <typename IndexType, typename ValueType, typename MemorySpace, typename CsrView>
+void setup_view(cusp::coo_matrix<IndexType,ValueType,MemorySpace> & M,
+		CsrView & M_view, 
+		cusp::array1d<IndexType,MemorySpace> & row_offsets)
+{
+	CUSP_PROFILE_SCOPED();
+
+	row_offsets.resize(M.num_rows+1);
+	cusp::detail::indices_to_offsets(M.row_indices, row_offsets);
+	M_view = CsrView(M.num_rows, M.num_cols, M.num_entries,
+	cusp::make_array1d_view(row_offsets),
+	cusp::make_array1d_view(M.column_indices),
+	cusp::make_array1d_view(M.values));
+}
+
 } // end namespace detail
 
 
@@ -239,8 +254,9 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace>::extend_hierarchy(voi
   cusp::coo_matrix<IndexType,ValueType,MemorySpace> C;
   detail::symmetric_strength_of_connection(A, C, theta);
 
+  detail::setup_view( levels.back().A, levels.back().A_view, levels.back().A_row_offsets );
   // compute spectral radius of diag(C)^-1 * C
-  ValueType rho_DinvA = detail::estimate_rho_Dinv_A(A);
+  ValueType rho_DinvA = detail::estimate_rho_Dinv_A(levels.back().A_view);
 
   // compute aggregates
   cusp::array1d<IndexType,MemorySpace> aggregates(C.num_rows,0);
@@ -286,12 +302,17 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace>::extend_hierarchy(voi
 
   //std::cout << "omega " << omega << std::endl;
 
+  detail::setup_view( levels.back().R, levels.back().R_view, levels.back().R_row_offsets );
+  detail::setup_view( levels.back().P, levels.back().P_view, levels.back().P_row_offsets );
+
   levels.push_back(level());
   levels.back().A.swap(RAP);
   levels.back().B.swap(B_coarse);
   levels.back().x.resize(levels.back().A.num_rows);
   levels.back().b.resize(levels.back().A.num_rows);
+
 }
+
     
 template <typename IndexType, typename ValueType, typename MemorySpace>
 template <typename Array1, typename Array2>
@@ -322,8 +343,14 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace>::solve(const cusp::ar
 {
   CUSP_PROFILE_SCOPED();
 
+  // create a csr_matrix_view
+  typedef typename cusp::array1d<IndexType,MemorySpace>::iterator       IndexIterator;
+  typedef typename cusp::array1d<ValueType,MemorySpace>::iterator       ValueIterator;
+  typedef typename cusp::array1d_view<IndexIterator>                    IndexView;
+  typedef typename cusp::array1d_view<ValueIterator>                    ValueView;
+  typedef typename cusp::csr_matrix_view<IndexView,IndexView,ValueView> CsrView;
   // TODO check sizes
-  const cusp::coo_matrix<IndexType,ValueType,MemorySpace> & A = levels[0].A;
+  const CsrView & A = levels[0].A_view;
  
   // use simple iteration
   cusp::array1d<ValueType,MemorySpace> update(A.num_rows);
@@ -355,6 +382,12 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace>
 {
   CUSP_PROFILE_SCOPED();
 
+  typedef typename cusp::array1d<IndexType,MemorySpace>::iterator       IndexIterator;
+  typedef typename cusp::array1d<ValueType,MemorySpace>::iterator       ValueIterator;
+  typedef typename cusp::array1d_view<IndexIterator>                    IndexView;
+  typedef typename cusp::array1d_view<ValueIterator>                    ValueView;
+  typedef typename cusp::csr_matrix_view<IndexView,IndexView,ValueView> CsrView;
+
   if (i + 1 == levels.size())
   {
     // coarse grid solve
@@ -366,9 +399,9 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace>
   }
   else
   {
-    const cusp::coo_matrix<IndexType,ValueType,MemorySpace> & R = levels[i].R;
-    const cusp::coo_matrix<IndexType,ValueType,MemorySpace> & A = levels[i].A;
-    const cusp::coo_matrix<IndexType,ValueType,MemorySpace> & P = levels[i].P;
+    const CsrView & R = levels[i].R_view;
+    const CsrView & A = levels[i].A_view;
+    const CsrView & P = levels[i].P_view;
 
     cusp::array1d<ValueType,MemorySpace>& residual = levels[i].residual;
     cusp::array1d<ValueType,MemorySpace>& coarse_b = levels[i + 1].b;

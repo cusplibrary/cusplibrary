@@ -27,6 +27,7 @@
 #include <cusp/linear_operator.h>
 
 #include <cusp/coo_matrix.h>
+#include <cusp/csr_matrix.h>
 #include <cusp/relaxation/jacobi.h>
 #include <cusp/relaxation/polynomial.h>
 
@@ -62,6 +63,18 @@ class smoothed_aggregation : public cusp::linear_operator<ValueType, MemorySpace
         cusp::array1d<ValueType,MemorySpace> b;               // per-level rhs
         cusp::array1d<ValueType,MemorySpace> residual;        // per-level residual
         
+        cusp::array1d<IndexType,MemorySpace> R_row_offsets;   // R row offsets
+        cusp::array1d<IndexType,MemorySpace> A_row_offsets;   // A row offsets
+        cusp::array1d<IndexType,MemorySpace> P_row_offsets;   // P row offsets
+
+	typedef typename cusp::array1d<IndexType,MemorySpace>::iterator       IndexIterator;
+	typedef typename cusp::array1d<ValueType,MemorySpace>::iterator       ValueIterator;
+	typedef typename cusp::array1d_view<IndexIterator>                    IndexView;
+	typedef typename cusp::array1d_view<ValueIterator>                    ValueView;
+        cusp::csr_matrix_view<IndexView,IndexView,ValueView> R_view;  // restriction operator view
+        cusp::csr_matrix_view<IndexView,IndexView,ValueView> A_view;  // matrix view
+        cusp::csr_matrix_view<IndexView,IndexView,ValueView> P_view;  // prolongation operator view
+
 	#ifndef USE_POLY_SMOOTHER
         cusp::relaxation::jacobi<ValueType,MemorySpace> smoother;
 	#else
