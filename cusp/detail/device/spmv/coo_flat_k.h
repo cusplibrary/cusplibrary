@@ -19,13 +19,12 @@
 #pragma once
 
 #include <cusp/coo_matrix.h>
+#include <cusp/detail/device/arch.h>
 #include <cusp/detail/device/common.h>
 #include <cusp/detail/device/utils.h>
 #include <cusp/detail/device/texture.h>
 #include <cusp/detail/device/spmv/coo_serial.h>
 #include <cusp/detail/device/spmv/coo_flat.h>
-
-#include <thrust/experimental/arch.h>
 
 // Note: Unlike the other kernels this kernel implements y += A*x
 
