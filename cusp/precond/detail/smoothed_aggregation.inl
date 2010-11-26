@@ -269,7 +269,7 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace>::extend_hierarchy(voi
   
   // compute prolongation operator
   cusp::coo_matrix<IndexType,ValueType,MemorySpace> P;
-  detail::smooth_prolongator(A, T, P, (ValueType) (4.0/3.0), rho_DinvA);  // TODO if C != A then compute rho_Dinv_C
+  detail::smooth_prolongator(A, T, P, ValueType(4.0/3.0), rho_DinvA);  // TODO if C != A then compute rho_Dinv_C
 
   // compute restriction operator (transpose of prolongator)
   cusp::coo_matrix<IndexType,ValueType,MemorySpace> R;
@@ -286,7 +286,7 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace>::extend_hierarchy(voi
 
   #ifndef USE_POLY_SMOOTHER
   //  4/3 * 1/rho is a good default, where rho is the spectral radius of D^-1(A)
-  ValueType omega = (4.0f/3.0f) / rho_DinvA;
+  ValueType omega = ValueType(4.0/3.0) / rho_DinvA;
   levels.back().smoother = cusp::relaxation::jacobi<ValueType, MemorySpace>(A, omega);
   #else
   cusp::array1d<ValueType,cusp::host_memory> coeff;
@@ -358,18 +358,18 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace>::solve(const cusp::ar
 
   // compute initial residual
   cusp::multiply(A,x,residual);
-  cusp::blas::axpby(b, residual, residual, ValueType(1), ValueType(-1));
+  cusp::blas::axpby(b, residual, residual, ValueType(1.0), ValueType(-1.0));
 
   while(!monitor.finished(residual))
   {   
       _solve(residual, update, 0); 
 
       // x += M * r
-      cusp::blas::axpy(update, x, ValueType(1));
+      cusp::blas::axpy(update, x, ValueType(1.0));
 
       // update residual
       cusp::multiply(A,x,residual);
-      cusp::blas::axpby(b, residual, residual, ValueType(1), ValueType(-1));
+      cusp::blas::axpby(b, residual, residual, ValueType(1.0), ValueType(-1.0));
       ++monitor;
   }   
 }
@@ -412,7 +412,7 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace>
 
     // compute residual <- b - A*x
     cusp::multiply(A, x, residual);
-    cusp::blas::axpby(b, residual, residual, 1.0f, -1.0f);
+    cusp::blas::axpby(b, residual, residual, ValueType(1.0), ValueType(-1.0));
 
     // restrict to coarse grid
     cusp::multiply(R, residual, coarse_b);
@@ -422,7 +422,7 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace>
 
     // apply coarse grid correction 
     cusp::multiply(P, coarse_x, residual);
-    cusp::blas::axpy(residual, x, 1.0f);
+    cusp::blas::axpy(residual, x, ValueType(1.0));
 
     // postsmooth
     levels[i].smoother.postsmooth(A,b,x);
