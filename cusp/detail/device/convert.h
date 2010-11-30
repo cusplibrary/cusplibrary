@@ -20,13 +20,15 @@
 #include <cusp/format.h>
 #include <cusp/coo_matrix.h>
 #include <cusp/csr_matrix.h>
+#include <cusp/blas.h>
 
 #include <cusp/detail/format_utils.h>
-
-//#include <cusp/detail/device/conversion.h>
-//#include <cusp/detail/host/conversion_utils.h>
-
 #include <cusp/detail/host/convert.h>
+
+#include <thrust/inner_product.h>
+#include <thrust/scan.h>
+#include <thrust/scatter.h>
+#include <thrust/iterator/constant_iterator.h>
 
 namespace cusp
 {
@@ -78,6 +80,59 @@ void convert(const Matrix1& src, Matrix2& dst,
 /////////
 // ELL //
 /////////
+template <typename Matrix1, typename Matrix2>
+void convert(const Matrix1& src, Matrix2& dst,
+             cusp::csr_format,
+             cusp::ell_format)
+{
+  typedef typename Matrix2::index_type IndexType;
+  typedef typename Matrix2::value_type ValueType;
+
+  // TODO centralize this somehow
+  const size_t alignment = 32;
+
+  // compute maximum number of entries per row
+  IndexType num_entries_per_row = 
+    thrust::inner_product(src.row_offsets.begin() + 1, src.row_offsets.end(),
+        src.row_offsets.begin(),
+        IndexType(0),
+        thrust::maximum<IndexType>(),
+        thrust::minus<IndexType>());
+
+  // allocate output storage
+  dst.resize(src.num_rows, src.num_cols, src.num_entries, num_entries_per_row, alignment);
+
+  // expand row offsets into row indices
+  cusp::array1d<IndexType, cusp::device_memory> row_indices(src.num_entries);
+  cusp::detail::offsets_to_indices(src.row_offsets, row_indices);
+
+  // compute permutation from CSR index to ELL index
+  // first enumerate the entries within each row, e.g. [0, 1, 2, 0, 1, 2, 3, ...]
+  cusp::array1d<IndexType, cusp::device_memory> permutation(src.num_entries);
+  thrust::exclusive_scan_by_key(row_indices.begin(), row_indices.end(),
+                                thrust::constant_iterator<IndexType>(1),
+                                permutation.begin(),
+                                IndexType(0));
+  
+  // next, scale by pitch and add row index
+  cusp::blas::axpby(permutation, row_indices,
+                    permutation,
+                    IndexType(dst.column_indices.pitch),
+                    IndexType(1));
+
+  // fill output with padding
+  thrust::fill(dst.column_indices.values.begin(), dst.column_indices.values.end(), IndexType(-1));
+  thrust::fill(dst.values.values.begin(),         dst.values.values.end(),         ValueType(0));
+
+  // scatter CSR entries to ELL
+  thrust::scatter(src.column_indices.begin(), src.column_indices.end(),
+                  permutation.begin(),
+                  dst.column_indices.values.begin());
+  thrust::scatter(src.values.begin(), src.values.end(),
+                  permutation.begin(),
+                  dst.values.values.begin());
+}
+
 
 /////////
 // HYB //
