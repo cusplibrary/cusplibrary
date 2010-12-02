@@ -77,60 +77,84 @@ void convert(const Matrix1& src, Matrix2& dst,
 }
 
 
+template <typename IndexType>
+struct is_valid_ell_index
+{
+  const IndexType num_rows;
+
+  is_valid_ell_index(const IndexType num_rows)
+    : num_rows(num_rows) {}
+
+  template <typename Tuple>
+    __host__ __device__
+  bool operator()(const Tuple& t) const
+  {
+    const IndexType i = thrust::get<0>(t);
+    const IndexType j = thrust::get<1>(t);
+
+    return i < num_rows && j != IndexType(-1);
+  }
+};
+
+template <typename T>
+struct modulus_value : public thrust::unary_function<T,T>
+{
+  const T value;
+
+  modulus_value(const T value)
+    : value(value) {}
+
+    __host__ __device__
+  T operator()(const T& x) const
+  {
+    return x % value;
+  }
+};
+
+template <typename T>
+struct transpose_index_functor : public thrust::unary_function<T,T>
+{
+  const T num_entries_per_row;
+  const T pitch;
+
+  transpose_index_functor(const T pitch, const T num_entries_per_row)
+    : num_entries_per_row(num_entries_per_row), pitch(pitch) {}
+
+    __host__ __device__
+  T operator()(const T& n) const
+  {
+    return pitch * (n % num_entries_per_row) + n / num_entries_per_row;
+  }
+};
+
+
+
 template <typename Matrix1, typename Matrix2>
 void convert(const Matrix1& src, Matrix2& dst,
              cusp::ell_format,
              cusp::coo_format)
 {
-   typedef typename Matrix2::index_type IndexType;
+   typedef typename Matrix1::index_type IndexType;
+   
+   const IndexType pitch               = src.column_indices.pitch;
+   const IndexType num_entries_per_row = src.column_indices.num_cols;
+
+   // compute true number of nonzeros in ELL
+   const IndexType num_entries = 
+     thrust::count_if
+      (thrust::make_zip_iterator(thrust::make_tuple(thrust::make_transform_iterator(thrust::counting_iterator<IndexType>(0), modulus_value<IndexType>(pitch)), src.column_indices.values.begin())),
+       thrust::make_zip_iterator(thrust::make_tuple(thrust::make_transform_iterator(thrust::counting_iterator<IndexType>(0), modulus_value<IndexType>(pitch)), src.column_indices.values.begin())) + src.column_indices.values.size(),
+       is_valid_ell_index<IndexType>(src.num_rows));
 
    // allocate output storage
-   IndexType num_entries = src.column_indices.values.size();
    dst.resize(src.num_rows, src.num_cols, num_entries);
 
-   // form row indices 
-   IndexType num_entries_per_row = src.column_indices.num_cols;
-   cusp::array1d<IndexType, cusp::device_memory> row_offsets(src.num_rows+1);
-   thrust::sequence( row_offsets.begin(), row_offsets.end(), IndexType(0), num_entries_per_row ); 
-
-   // expand row offsets into row indices
-   cusp::detail::offsets_to_indices(row_offsets, dst.row_indices);
-
-   // compute column-major to row-major permutation
-   cusp::array1d<IndexType, cusp::device_memory> permutation(num_entries);
-   thrust::transform(thrust::counting_iterator<IndexType>(0), thrust::counting_iterator<IndexType>(0)+num_entries, 
-		     thrust::constant_iterator<IndexType>(num_entries_per_row), 
-		     permutation.begin(), 
-		     thrust::modulus<IndexType>());
-
-   // scale by pitch and add row index
-   cusp::blas::axpby(permutation, dst.row_indices,
-                     permutation,
-                     IndexType(src.column_indices.pitch),
-                     IndexType(1));
-
-   // store src.column_indices and src.values in row-major format in dst
-   thrust::gather(permutation.begin(), permutation.end(),
-		  thrust::make_zip_iterator(thrust::make_tuple(	src.column_indices.values.begin(), 
-					     			src.values.values.begin())),
-		  thrust::make_zip_iterator(thrust::make_tuple( dst.column_indices.begin(),
-					     			dst.values.begin())));
-
-   // copy only valid ELL entries to COO
-   thrust::copy_if(thrust::make_zip_iterator(thrust::make_tuple(dst.row_indices.begin(), 
-					     			dst.column_indices.begin(), 
-					     			dst.values.begin())),
-		   thrust::make_zip_iterator(thrust::make_tuple(dst.row_indices.end(),
-					     			dst.column_indices.end(),
-					     			dst.values.end())),
-                   dst.column_indices.begin(),
-		   thrust::make_zip_iterator(thrust::make_tuple(dst.row_indices.begin(),
-					     			dst.column_indices.begin(),
-					     			dst.values.begin())),
-       	    	   is_nonnegative());
-
-   // resize dst to remove discarded entries
-   dst.resize(dst.num_rows, dst.num_cols, src.num_entries);
+   // copy valid entries to COO format
+   thrust::copy_if
+     (thrust::make_permutation_iterator(thrust::make_zip_iterator(thrust::make_tuple(thrust::make_transform_iterator(thrust::counting_iterator<IndexType>(0), modulus_value<IndexType>(pitch)), src.column_indices.values.begin(), src.values.values.begin())), thrust::make_transform_iterator(thrust::counting_iterator<IndexType>(0), transpose_index_functor<IndexType>(pitch, num_entries_per_row))),
+      thrust::make_permutation_iterator(thrust::make_zip_iterator(thrust::make_tuple(thrust::make_transform_iterator(thrust::counting_iterator<IndexType>(0), modulus_value<IndexType>(pitch)), src.column_indices.values.begin(), src.values.values.begin())), thrust::make_transform_iterator(thrust::counting_iterator<IndexType>(0), transpose_index_functor<IndexType>(pitch, num_entries_per_row))) + src.column_indices.values.size(),
+      thrust::make_zip_iterator(thrust::make_tuple(dst.row_indices.begin(), dst.column_indices.begin(), dst.values.begin())),
+      is_valid_ell_index<IndexType>(src.num_rows));
 }
 
 
