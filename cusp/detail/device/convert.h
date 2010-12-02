@@ -234,23 +234,14 @@ void convert(const Matrix1& src, Matrix2& dst,
   typedef typename Matrix2::index_type IndexType;
   typedef typename Matrix2::value_type ValueType;
 
+  if (src.num_entries == 0)
+  {
+    dst.resize(src.num_rows, src.num_cols, src.num_entries, 0);
+    return;
+  }
+
   // TODO centralize this somehow
   const size_t alignment = 32;
-
-  // contract row indices into row offsets
-  cusp::array1d<IndexType, cusp::device_memory> row_offsets(src.num_rows+1);
-  cusp::detail::indices_to_offsets(src.row_indices, row_offsets);
-
-  // compute maximum number of entries per row
-  IndexType num_entries_per_row = 
-    thrust::inner_product(row_offsets.begin() + 1, row_offsets.end(),
-        row_offsets.begin(),
-        IndexType(0),
-        thrust::maximum<IndexType>(),
-        thrust::minus<IndexType>());
-
-  // allocate output storage
-  dst.resize(src.num_rows, src.num_cols, src.num_entries, num_entries_per_row, alignment);
 
   // compute permutation from COO index to ELL index
   // first enumerate the entries within each row, e.g. [0, 1, 2, 0, 1, 2, 3, ...]
@@ -259,6 +250,12 @@ void convert(const Matrix1& src, Matrix2& dst,
                                 thrust::constant_iterator<IndexType>(1),
                                 permutation.begin(),
                                 IndexType(0));
+ 
+  // compute maximum number of entries per row
+  IndexType num_entries_per_row = 1 + thrust::reduce(permutation.begin(), permutation.end(), IndexType(0), thrust::maximum<IndexType>());
+
+  // allocate output storage
+  dst.resize(src.num_rows, src.num_cols, src.num_entries, num_entries_per_row, alignment);
   
   // next, scale by pitch and add row index
   cusp::blas::axpby(permutation, src.row_indices,
