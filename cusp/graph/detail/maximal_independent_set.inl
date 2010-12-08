@@ -296,8 +296,8 @@ void compute_mis_states(const size_t k,
 // Host Paths //
 ////////////////
       
-template <typename Matrix, typename ArrayType>
-size_t maximal_independent_set(const Matrix& A, ArrayType& stencil, size_t k,
+template <typename Matrix, typename Array>
+size_t maximal_independent_set(const Matrix& A, Array& stencil, size_t k,
                                cusp::csr_format, cusp::host_memory)
 {
   typedef typename Matrix::index_type   IndexType;
@@ -335,8 +335,8 @@ size_t maximal_independent_set(const Matrix& A, ArrayType& stencil, size_t k,
 // Device Paths //
 //////////////////
 
-template <typename Matrix, typename ArrayType>
-size_t maximal_independent_set(const Matrix& A, ArrayType& stencil, size_t k,
+template <typename Matrix, typename Array>
+size_t maximal_independent_set(const Matrix& A, Array& stencil, size_t k,
                                cusp::coo_format, cusp::device_memory)
 {
     typedef typename Matrix::index_type   IndexType;
@@ -364,7 +364,7 @@ size_t maximal_independent_set(const Matrix& A, ArrayType& stencil, size_t k,
     thrust::transform(states.begin(), states.end(), thrust::constant_iterator<NodeStateType>(2), stencil.begin(), thrust::equal_to<NodeStateType>());
 
     // return the size of the MIS
-    return thrust::count(stencil.begin(), stencil.end(), typename ArrayType::value_type(true));
+    return thrust::count(stencil.begin(), stencil.end(), typename Array::value_type(true));
 }
 
 
@@ -372,9 +372,9 @@ size_t maximal_independent_set(const Matrix& A, ArrayType& stencil, size_t k,
 // General Path //
 //////////////////
 
-template <typename Matrix, typename ArrayType,
+template <typename Matrix, typename Array,
           typename Format, typename MemorySpace>
-size_t maximal_independent_set(const Matrix& A, ArrayType& stencil, size_t k,
+size_t maximal_independent_set(const Matrix& A, Array& stencil, size_t k,
                                Format, MemorySpace)
 {
   typedef typename Matrix::index_type   IndexType;
@@ -392,8 +392,8 @@ size_t maximal_independent_set(const Matrix& A, ArrayType& stencil, size_t k,
 // Entry Point //
 /////////////////
 
-template <typename Matrix, typename ArrayType>
-size_t maximal_independent_set(const Matrix& A, ArrayType& stencil, size_t k)
+template <typename Matrix, typename Array>
+size_t maximal_independent_set(const Matrix& A, Array& stencil, size_t k)
 {
     CUSP_PROFILE_SCOPED();
 
@@ -403,7 +403,7 @@ size_t maximal_independent_set(const Matrix& A, ArrayType& stencil, size_t k)
     if (k == 0)
     {
         stencil.resize(A.num_rows);
-        thrust::fill(stencil.begin(), stencil.end(), typename ArrayType::value_type(1));
+        thrust::fill(stencil.begin(), stencil.end(), typename Array::value_type(1));
         return stencil.size();
     }
     else
