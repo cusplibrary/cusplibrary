@@ -121,7 +121,7 @@ void arnoldi( const Matrix& A, Array2d& H, size_t k = 10 )
 
 	size_t N = A.num_rows;
 
-	IndexType maxiter = std::min( N, k );
+	size_t maxiter = std::min( N, k );
 	cusp::array1d<ValueType,MemorySpace> v0 = detail::random_samples<ValueType>(N);
 
 	ValueType norm_v0 = cusp::blas::nrm2(v0);
@@ -133,13 +133,13 @@ void arnoldi( const Matrix& A, Array2d& H, size_t k = 10 )
 
 	cusp::array1d<ValueType,MemorySpace> w(N,0);
 
-	IndexType j;
+	size_t j;
 
 	for( j = 0; j < maxiter; j++ )
 	{
 		cusp::multiply(A,V.back(),w);
 
-		for( IndexType i = 0; i < V.size(); i++ )
+		for(size_t i = 0; i < V.size(); i++ )
 		{
 			H_(i,j) =  cusp::blas::dot( V.at(i), w );
 			cusp::blas::axpy(V.at(i),w,-H_(i,j));
@@ -153,8 +153,8 @@ void arnoldi( const Matrix& A, Array2d& H, size_t k = 10 )
 	}
 
 	H.resize(j,j);
-	for( IndexType row = 0; row < j; row++ )
-		for( IndexType col = 0; col < j; col++ )
+	for( size_t row = 0; row < j; row++ )
+		for( size_t col = 0; col < j; col++ )
 			H(row,col) = H_(row,col);
 }
 

@@ -136,7 +136,7 @@ class csr_matrix : public detail::matrix_base<IndexType,ValueType,MemorySpace,cu
      *  \param num_cols Number of columns.
      *  \param num_entries Number of nonzero matrix entries.
      */
-    csr_matrix(IndexType num_rows, IndexType num_cols, IndexType num_entries)
+    csr_matrix(size_t num_rows, size_t num_cols, size_t num_entries)
       : Parent(num_rows, num_cols, num_entries),
         row_offsets(num_rows + 1), column_indices(num_entries), values(num_entries) {}
 
@@ -147,7 +147,7 @@ class csr_matrix : public detail::matrix_base<IndexType,ValueType,MemorySpace,cu
     template <typename MatrixType>
     csr_matrix(const MatrixType& matrix);
     
-    void resize(IndexType num_rows, IndexType num_cols, IndexType num_entries)
+    void resize(size_t num_rows, size_t num_cols, size_t num_entries)
     {
       Parent::resize(num_rows, num_cols, num_entries);
       row_offsets.resize(num_rows + 1);
@@ -236,9 +236,9 @@ class csr_matrix_view : public cusp::detail::matrix_base<IndexType,ValueType,Mem
         values(A.values) {}
 
     // TODO check sizes here
-    csr_matrix_view(IndexType num_rows,
-                    IndexType num_cols,
-                    IndexType num_entries,
+    csr_matrix_view(size_t num_rows,
+                    size_t num_cols,
+                    size_t num_entries,
                     Array1 row_offsets,
                     Array2 column_indices,
                     Array3 values)
@@ -247,7 +247,7 @@ class csr_matrix_view : public cusp::detail::matrix_base<IndexType,ValueType,Mem
         column_indices(column_indices),
         values(values) {}
 
-    void resize(IndexType num_rows, IndexType num_cols, IndexType num_entries)
+    void resize(size_t num_rows, size_t num_cols, size_t num_entries)
     {
       Parent::resize(num_rows, num_cols, num_entries);
       row_offsets.resize(num_rows + 1);
@@ -258,19 +258,18 @@ class csr_matrix_view : public cusp::detail::matrix_base<IndexType,ValueType,Mem
 
 /* Convenience functions */
 
-template <typename IndexType,
-          typename Array1,
+template <typename Array1,
           typename Array2,
           typename Array3>
-csr_matrix_view<Array1,Array2,Array3,IndexType>
-make_csr_matrix_view(IndexType num_rows,
-                     IndexType num_cols,
-                     IndexType num_entries,
+csr_matrix_view<Array1,Array2,Array3>
+make_csr_matrix_view(size_t num_rows,
+                     size_t num_cols,
+                     size_t num_entries,
                      Array1 row_offsets,
                      Array2 column_indices,
                      Array3 values)
 {
-  return csr_matrix_view<Array1,Array2,Array3,IndexType>
+  return csr_matrix_view<Array1,Array2,Array3>
     (num_rows, num_cols, num_entries,
      row_offsets, column_indices, values);
 }

@@ -314,7 +314,7 @@ void __spmv_coo_flat(const Matrix&    A,
         // empty matrix
         return;
     }
-    else if (A.num_entries < WARP_SIZE)
+    else if (A.num_entries < static_cast<size_t>(WARP_SIZE))
     {
         // small matrix
         spmv_coo_serial_kernel<IndexType,ValueType> <<<1,1>>>

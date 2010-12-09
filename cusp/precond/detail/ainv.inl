@@ -86,12 +86,12 @@ private:
     int child0 = (i+1)*2-1;
     int child1 = (i+1)*2;
 
-    while (child0 < this->row_heap.size() || child1 < this->row_heap.size()) {
+    while ((size_t) child0 < this->row_heap.size() || (size_t) child1 < this->row_heap.size()) {
       int min_child = child0; // this will be the child with the lowest value that is in-bounds.
-      if (child1 < this->row_heap.size() && less_than_abs(this->row_heap[child1].value, this->row_heap[child0].value))
+      if ((size_t) child1 < this->row_heap.size() && less_than_abs(this->row_heap[child1].value, this->row_heap[child0].value))
         min_child = child1;
       // if either child is lower, swap with whichever is smaller, otherwise we're done
-      if (less_than_abs(this->row_heap[child0].value, this->row_heap[i].value) || (child1 < this->row_heap.size() && less_than_abs(this->row_heap[child1].value, this->row_heap[i].value))) 
+      if (less_than_abs(this->row_heap[child0].value, this->row_heap[i].value) || ((size_t) child1 < this->row_heap.size() && less_than_abs(this->row_heap[child1].value, this->row_heap[i].value))) 
         this->heap_swap(i, min_child);
       else
         break;
@@ -160,7 +160,7 @@ public:
 
   void mult_by_scalar(ValueType scalar) {
     // since we already have a table of pointers into the map, this is O(n) via pointer chasing
-    for (int i=0; i < this->row_heap.size(); i++) {
+    for (int i=0; (size_t) i < this->row_heap.size(); i++) {
       this->row_heap[i].value *= scalar;
       this->row_heap[i].mapiter->second.value *= scalar;
     }
@@ -183,12 +183,12 @@ public:
 
   // these are here for the unit test only
   bool validate_heap() const {
-    for (int i=0; i < this->size(); i++) {
+    for (int i=0; (size_t) i < this->size(); i++) {
       int child0 = (i+1)*2-1;
       int child1 = (i+1)*2;
-      if (child0 < this->size() && !less_than_abs(this->row_heap[i].value, this->row_heap[child0].value))
+      if ((size_t) child0 < this->size() && !less_than_abs(this->row_heap[i].value, this->row_heap[child0].value))
         return false;
-      if (child1 < this->size() && !less_than_abs(this->row_heap[i].value, this->row_heap[child1].value))
+      if ((size_t) child1 < this->size() && !less_than_abs(this->row_heap[i].value, this->row_heap[child1].value))
         return false;
 
     }
@@ -327,7 +327,7 @@ void vector_add_inplace_drop(detail::ainv_matrix_row<IndexType, ValueType> &resu
         if (result.has_entry_at_index(i))
             result.add_to_value(i, term);
         else {
-          if (nonzeros_this_row < 0 || result.size() < nonzeros_this_row) {
+          if (nonzeros_this_row < 0 || result.size() < (size_t) nonzeros_this_row) {
             // there is an empty slot left, so just insert
             result.insert(i, term);
           }

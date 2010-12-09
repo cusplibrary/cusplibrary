@@ -174,20 +174,20 @@ class array2d : public cusp::detail::matrix_base<int,ValueType,MemorySpace,cusp:
   values_array_type values;
 
   // minor_dimension + padding
-  int pitch;
+  size_t pitch;
 
   // construct empty matrix
   array2d()
     : Parent(), pitch(0), values(0) {}
 
   // construct matrix with given shape and number of entries
-  array2d(int num_rows, int num_cols)
+  array2d(size_t num_rows, size_t num_cols)
     : Parent(num_rows, num_cols, num_rows * num_cols),
       pitch(cusp::detail::minor_dimension(num_rows, num_cols, orientation())),
       values(num_rows * num_cols) {}
 
   // construct matrix with given shape and number of entries and fill with a given value
-  array2d(int num_rows, int num_cols, const ValueType& value)
+  array2d(size_t num_rows, size_t num_cols, const ValueType& value)
     : Parent(num_rows, num_cols, num_rows * num_cols),
       pitch(cusp::detail::minor_dimension(num_rows, num_cols, orientation())),
       values(num_rows * num_cols, value) {}
@@ -196,17 +196,17 @@ class array2d : public cusp::detail::matrix_base<int,ValueType,MemorySpace,cusp:
   template <typename MatrixType>
   array2d(const MatrixType& matrix);
 
-  typename values_array_type::reference operator()(const int i, const int j)
+  typename values_array_type::reference operator()(const size_t i, const size_t j)
   { 
     return values[cusp::detail::index_of(i, j, pitch, orientation())];
   }
 
-  typename values_array_type::const_reference operator()(const int i, const int j) const
+  typename values_array_type::const_reference operator()(const size_t i, const size_t j) const
   { 
     return values[cusp::detail::index_of(i, j, pitch, orientation())];
   }
 
-  void resize(int num_rows, int num_cols, int pitch)
+  void resize(size_t num_rows, size_t num_cols, size_t pitch)
   {
     if (pitch < cusp::detail::minor_dimension(num_rows, num_cols, orientation()))
       throw cusp::invalid_input_exception("pitch cannot be less than minor dimension");
@@ -219,7 +219,7 @@ class array2d : public cusp::detail::matrix_base<int,ValueType,MemorySpace,cusp:
     this->num_entries = num_rows * num_cols;
   }
 
-  void resize(int num_rows, int num_cols)
+  void resize(size_t num_rows, size_t num_cols)
   {
     // preserve .pitch if possible
     if (this->num_rows == num_rows && this->num_cols == num_cols)
@@ -262,7 +262,7 @@ class array2d_view : public cusp::detail::matrix_base<int, typename Array::value
   typedef typename cusp::array2d_view<Array, Orientation> view;
   
   // minor_dimension + padding
-  int pitch;
+  size_t pitch;
 
   // construct empty view
   array2d_view(void)
@@ -285,19 +285,19 @@ class array2d_view : public cusp::detail::matrix_base<int, typename Array::value
     : Parent(a), values(a.values), pitch(a.pitch) {}
 
   template <typename Array2>
-  array2d_view(int num_rows, int num_cols, int pitch, Array2& values)
+  array2d_view(size_t num_rows, size_t num_cols, size_t pitch, Array2& values)
    : Parent(num_rows, num_cols, num_rows * num_cols), pitch(pitch), values(values) {}
   
   template <typename Array2>
-  array2d_view(int num_rows, int num_cols, int pitch, const Array2& values)
+  array2d_view(size_t num_rows, size_t num_cols, size_t pitch, const Array2& values)
    : Parent(num_rows, num_cols, num_rows * num_cols), pitch(pitch), values(values) {}
 
-  typename values_array_type::reference operator()(const int i, const int j) const
+  typename values_array_type::reference operator()(const size_t i, const size_t j) const
   { 
     return values[detail::index_of(i, j, pitch, orientation())];
   }
 
-  void resize(int num_rows, int num_cols, int pitch)
+  void resize(size_t num_rows, size_t num_cols, size_t pitch)
   {
     if (pitch < cusp::detail::minor_dimension(num_rows, num_cols, orientation()))
       throw cusp::invalid_input_exception("pitch cannot be less than minor dimension");
@@ -310,7 +310,7 @@ class array2d_view : public cusp::detail::matrix_base<int, typename Array::value
     this->num_entries = num_rows * num_cols;
   }
 
-  void resize(int num_rows, int num_cols)
+  void resize(size_t num_rows, size_t num_cols)
   {
     // preserve .pitch if possible
     if (this->num_rows == num_rows && this->num_cols == num_cols)
@@ -325,7 +325,7 @@ class array2d_view : public cusp::detail::matrix_base<int, typename Array::value
 
 template <typename Iterator, typename Orientation>
 array2d_view<typename cusp::array1d_view<Iterator>,Orientation>
-make_array2d_view(int num_rows, int num_cols, int pitch, const cusp::array1d_view<Iterator>& values, Orientation)
+make_array2d_view(size_t num_rows, size_t num_cols, size_t pitch, const cusp::array1d_view<Iterator>& values, Orientation)
 {
   return array2d_view<typename cusp::array1d_view<Iterator>,Orientation>(num_rows, num_cols, pitch, values);
 }

@@ -84,7 +84,7 @@ void classical_stength_of_connection(const cusp::coo_matrix<IndexType,ValueType,
     // TODO implement with generalized spmv on device
     cusp::coo_matrix<IndexType,ValueType,cusp::host_memory> A_copy(A);
     cusp::array1d<ValueType,cusp::host_memory> min_off_diagonal_copy(A.num_rows, 0);
-    for(IndexType n = 0; n < A_copy.num_entries; n++)
+    for(IndexType n = 0; n < (IndexType) A_copy.num_entries; n++)
     {
         IndexType i = A_copy.row_indices[n];
         IndexType j = A_copy.column_indices[n];
@@ -93,7 +93,7 @@ void classical_stength_of_connection(const cusp::coo_matrix<IndexType,ValueType,
             min_off_diagonal_copy[i] = std::min(min_off_diagonal_copy[i], A_copy.values[n]);
     }
     cusp::array1d<int,MemorySpace> stencil_copy(A.num_entries);
-    for(IndexType n = 0; n < A_copy.num_entries; n++)
+    for(IndexType n = 0; n < (IndexType) A_copy.num_entries; n++)
     {
         IndexType i = A_copy.row_indices[n];
         IndexType j = A_copy.column_indices[n];
@@ -409,7 +409,7 @@ class ruge_stuben_solver
         //printf("%10.8f\n", last_norm);
 
         // perform 25 V-cycles
-        for (unsigned int i = 0; i < 25; i++)
+        for (size_t i = 0; i < 25; i++)
         {
             _solve(b, x, 0);
 
@@ -426,7 +426,7 @@ class ruge_stuben_solver
 
     void _solve(const cusp::array1d<float,cusp::device_memory>& b,
                       cusp::array1d<float,cusp::device_memory>& x,
-                const int i)
+                const size_t i)
     {
         if (i + 1 == levels.size())
         {

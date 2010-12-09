@@ -39,9 +39,9 @@ namespace detail
             typedef Format      format;
             typedef MemorySpace memory_space;
 
-            index_type num_rows;
-            index_type num_cols;
-            index_type num_entries;
+            size_t num_rows;
+            size_t num_cols;
+            size_t num_entries;
             
             matrix_base()
                 : num_rows(0), num_cols(0), num_entries(0) {}

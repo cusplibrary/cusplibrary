@@ -36,8 +36,6 @@ int lu_factor(cusp::array2d<ValueType,MemorySpace,Orientation>& A,
     // For each row and column, k = 0, ..., n-1,
     for (int k = 0; k < n; k++)
     {
-        ValueType * p_k = &A.values[0] + k * n;
-
         // find the pivot row
         pivot[k] = k;
         ValueType max = std::fabs(A(k,k));

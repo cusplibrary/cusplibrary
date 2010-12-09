@@ -147,8 +147,8 @@ namespace cusp
          *  \param num_diagonals Number of occupied diagonals.
          *  \param alignment Amount of padding used to align the data structure (default 32).
          */
-        dia_matrix(IndexType num_rows, IndexType num_cols, IndexType num_entries,
-                   IndexType num_diagonals, IndexType alignment = 32)
+        dia_matrix(size_t num_rows, size_t num_cols, size_t num_entries,
+                   size_t num_diagonals, size_t alignment = 32)
           : Parent(num_rows, num_cols, num_entries),
             diagonal_offsets(num_diagonals)
           {
@@ -163,16 +163,16 @@ namespace cusp
         template <typename MatrixType>
         dia_matrix(const MatrixType& matrix);
         
-        void resize(IndexType num_rows, IndexType num_cols, IndexType num_entries,
-                    IndexType num_diagonals)
+        void resize(size_t num_rows, size_t num_cols, size_t num_entries,
+                    size_t num_diagonals)
         {
           Parent::resize(num_rows, num_cols, num_entries);
           diagonal_offsets.resize(num_diagonals);
           values.resize(num_rows, num_diagonals);
         }
                    
-        void resize(IndexType num_rows, IndexType num_cols, IndexType num_entries,
-                    IndexType num_diagonals, IndexType alignment)
+        void resize(size_t num_rows, size_t num_cols, size_t num_entries,
+                    size_t num_diagonals, size_t alignment)
         {
           Parent::resize(num_rows, num_cols, num_entries);
           diagonal_offsets.resize(num_diagonals);
@@ -233,12 +233,12 @@ namespace cusp
         dia_matrix_view() {}
     
         template <typename OtherArray1, typename OtherArray2>
-        dia_matrix_view(IndexType num_rows, IndexType num_cols, IndexType num_entries,
+        dia_matrix_view(size_t num_rows, size_t num_cols, size_t num_entries,
                         OtherArray1& diagonal_offsets, OtherArray2& values)
         : Parent(num_rows, num_cols, num_entries), diagonal_offsets(diagonal_offsets), values(values) {}
 
         template <typename OtherArray1, typename OtherArray2>
-        dia_matrix_view(IndexType num_rows, IndexType num_cols, IndexType num_entries,
+        dia_matrix_view(size_t num_rows, size_t num_cols, size_t num_entries,
                         const OtherArray1& diagonal_offsets, const OtherArray2& values)
         : Parent(num_rows, num_cols, num_entries), diagonal_offsets(diagonal_offsets), values(values) {}
         
@@ -250,16 +250,16 @@ namespace cusp
         dia_matrix_view(const Matrix& A)
         : Parent(A), diagonal_offsets(A.diagonal_offsets), values(A.values) {}
         
-        void resize(IndexType num_rows, IndexType num_cols, IndexType num_entries,
-                    IndexType num_diagonals)
+        void resize(size_t num_rows, size_t num_cols, size_t num_entries,
+                    size_t num_diagonals)
         {
           Parent::resize(num_rows, num_cols, num_entries);
           diagonal_offsets.resize(num_diagonals);
           values.resize(num_rows, num_diagonals);
         }
                    
-        void resize(IndexType num_rows, IndexType num_cols, IndexType num_entries,
-                    IndexType num_diagonals, IndexType alignment)
+        void resize(size_t num_rows, size_t num_cols, size_t num_entries,
+                    size_t num_diagonals, size_t alignment)
         {
           Parent::resize(num_rows, num_cols, num_entries);
           diagonal_offsets.resize(num_diagonals);
@@ -268,13 +268,12 @@ namespace cusp
     }; // class dia_matrix_view
 
 
-template <typename IndexType,
-          typename Array1,
+template <typename Array1,
           typename Array2>
-dia_matrix_view<Array1,Array2,IndexType>
-make_dia_matrix_view(IndexType num_rows,
-                     IndexType num_cols,
-                     IndexType num_entries,
+dia_matrix_view<Array1,Array2>
+make_dia_matrix_view(size_t num_rows,
+                     size_t num_cols,
+                     size_t num_entries,
                      Array1 diagonal_offsets,
                      Array2 values);
 

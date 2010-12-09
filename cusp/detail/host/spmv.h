@@ -29,10 +29,10 @@ void spmv_coo(const Matrix&  A,
     typedef typename Matrix::index_type  IndexType;
     typedef typename Vector2::value_type ValueType;
 
-    for(IndexType i = 0; i < A.num_rows; i++)
+    for(size_t i = 0; i < A.num_rows; i++)
         y[i] = initialize(y[i]);
 
-    for(IndexType n = 0; n < A.num_entries; n++)
+    for(size_t n = 0; n < A.num_entries; n++)
     {
         const IndexType& i   = A.row_indices[n];
         const IndexType& j   = A.column_indices[n];
@@ -78,7 +78,7 @@ void spmv_csr(const Matrix&  A,
     typedef typename Matrix::index_type  IndexType;
     typedef typename Vector2::value_type ValueType;
  
-    for(IndexType i = 0; i < A.num_rows; i++)
+    for(size_t i = 0; i < A.num_rows; i++)
     {
         const IndexType& row_start = A.row_offsets[i];
         const IndexType& row_end   = A.row_offsets[i+1];
@@ -134,12 +134,12 @@ void spmv_dia(const Matrix&  A,
     typedef typename Matrix::index_type  IndexType;
     typedef typename Vector2::value_type ValueType;
 
-    const IndexType& num_diagonals = A.values.num_cols;
+    const size_t num_diagonals = A.values.num_cols;
 
-    for(IndexType i = 0; i < A.num_rows; i++)
+    for(size_t i = 0; i < A.num_rows; i++)
         y[i] = initialize(y[i]);
 
-    for(IndexType i = 0; i < num_diagonals; i++)
+    for(size_t i = 0; i < num_diagonals; i++)
     {
         const IndexType& k = A.diagonal_offsets[i];
 
@@ -195,16 +195,16 @@ void spmv_ell(const Matrix&  A,
     typedef typename Matrix::index_type  IndexType;
     typedef typename Vector2::value_type ValueType;
 
-    const IndexType& num_entries_per_row = A.column_indices.num_cols;
+    const size_t& num_entries_per_row = A.column_indices.num_cols;
 
     const IndexType invalid_index = Matrix::invalid_index;
     
-    for(IndexType i = 0; i < A.num_rows; i++)
+    for(size_t i = 0; i < A.num_rows; i++)
         y[i] = initialize(y[i]);
 
-    for(IndexType n = 0; n < num_entries_per_row; n++)
+    for(size_t n = 0; n < num_entries_per_row; n++)
     {
-        for(IndexType i = 0; i < A.num_rows; i++)
+        for(size_t i = 0; i < A.num_rows; i++)
         {
             const IndexType& j   = A.column_indices(i, n);
             const ValueType& Aij = A.values(i,n);

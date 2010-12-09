@@ -241,7 +241,7 @@ void spmv_coo_kernel(SizeType        num_entries,
   __syncthreads(); // is this really necessary?
 
   SizeType interval_begin = interval_size * blockIdx.x;
-  SizeType interval_end   = min(interval_begin + interval_size, num_entries);
+  SizeType interval_end   = thrust::min(interval_begin + interval_size, num_entries);
 
   SizeType unit_size = K * BLOCK_SIZE;
  

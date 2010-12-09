@@ -74,18 +74,18 @@ size_t compute_optimal_entries_per_row(const Matrix& csr,
     typedef typename Matrix::index_type IndexType;
     
     // compute maximum row length
-    IndexType max_cols_per_row = 0;
-    for(IndexType i = 0; i < csr.num_rows; i++)
-        max_cols_per_row = std::max(max_cols_per_row, csr.row_offsets[i+1] - csr.row_offsets[i]); 
+    size_t max_cols_per_row = 0;
+    for(size_t i = 0; i < csr.num_rows; i++)
+        max_cols_per_row = std::max<size_t>(max_cols_per_row, csr.row_offsets[i+1] - csr.row_offsets[i]); 
 
     // compute distribution of nnz per row
     std::vector<IndexType> histogram(max_cols_per_row + 1, 0);
-    for(IndexType i = 0; i < csr.num_rows; i++)
+    for(size_t i = 0; i < csr.num_rows; i++)
         histogram[csr.row_offsets[i+1] - csr.row_offsets[i]]++;
 
     // compute optimal ELL column size 
-    IndexType num_cols_per_row = max_cols_per_row;
-    for(IndexType i = 0, rows = csr.num_rows; i < max_cols_per_row; i++)
+    size_t num_cols_per_row = max_cols_per_row;
+    for(size_t i = 0, rows = csr.num_rows; i < max_cols_per_row; i++)
     {
         rows -= histogram[i];  //number of rows of length > i
         if(relative_speed * rows < csr.num_rows || (size_t) rows < breakeven_threshold)

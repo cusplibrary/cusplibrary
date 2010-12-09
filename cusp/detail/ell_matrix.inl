@@ -53,17 +53,16 @@ template <typename MatrixType>
 // Convenience Functions //
 ///////////////////////////
 
-template <typename IndexType,
-          typename Array1,
+template <typename Array1,
           typename Array2>
-ell_matrix_view<Array1,Array2,IndexType>
-make_ell_matrix_view(IndexType num_rows,
-                     IndexType num_cols,
-                     IndexType num_entries,
+ell_matrix_view<Array1,Array2>
+make_ell_matrix_view(size_t num_rows,
+                     size_t num_cols,
+                     size_t num_entries,
                      Array1 column_indices,
                      Array2 values)
 {
-  return ell_matrix_view<Array1,Array2,IndexType>
+  return ell_matrix_view<Array1,Array2>
     (num_rows, num_cols, num_entries,
      column_indices, values);
 }

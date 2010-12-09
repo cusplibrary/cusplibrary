@@ -48,7 +48,11 @@ void diffusion(	MatrixType& matrix, size_t m, size_t n,
 	ValueType SS = S*S;
 	ValueType CS = C*S;
 
-	ValueType a,b,c,d,e;
+	ValueType a = 0;
+	ValueType b = 0;
+	ValueType c = 0;
+	ValueType d = 0;
+	ValueType e = 0;
 
 	if( method == cusp::FE )
 	{
@@ -72,6 +76,10 @@ void diffusion(	MatrixType& matrix, size_t m, size_t n,
 		d = -(eps*CC + SS);
 		e = 2.0 * (eps+1.0);
 	}
+  else
+  {
+    throw cusp::invalid_input_exception("unrecognized discretization method");
+  }
 
 	cusp::array1d<StencilPoint, cusp::host_memory> stencil;
 

@@ -203,7 +203,7 @@ void spmm_coo(const Matrix1& A,
                            IndexType(0));
     output_ptr[A.num_entries] = output_ptr[A.num_entries - 1] + segment_lengths[A.num_entries - 1]; // XXX is this necessary?
 
-    IndexType coo_num_nonzeros = output_ptr[A.num_entries];
+    size_t coo_num_nonzeros = output_ptr[A.num_entries];
 
     // TODO choose this based on device memory capacity
     size_t workspace_capacity = thrust::min<size_t>(coo_num_nonzeros, 16 << 20);

@@ -22,37 +22,12 @@ void TestIsValidMatrixCoo(void)
         cusp::coo_matrix<int, float, MemorySpace> M(A);
         ASSERT_EQUAL(cusp::is_valid_matrix(M), true);
     }
-    {
-        cusp::coo_matrix<int, float, MemorySpace> M(A);
-        M.num_rows = -1;
-        ASSERT_EQUAL(cusp::is_valid_matrix(M), false);
-    }
-    {
-        cusp::coo_matrix<int, float, MemorySpace> M(A);
-        M.num_cols = -1;
-        ASSERT_EQUAL(cusp::is_valid_matrix(M), false);
-    }
-    {
-        cusp::coo_matrix<int, float, MemorySpace> M(A);
-        M.num_entries = -1;
-        ASSERT_EQUAL(cusp::is_valid_matrix(M), false);
-    }
 
     // invalid row_indices
     {
         cusp::coo_matrix<int, float, MemorySpace> M(A);
         M.row_indices[0] = 1;
         M.row_indices[1] = 0;
-        ASSERT_EQUAL(cusp::is_valid_matrix(M), false);
-    }
-    {
-        cusp::coo_matrix<int, float, MemorySpace> M(A);
-        M.row_indices[0] = -1;
-        ASSERT_EQUAL(cusp::is_valid_matrix(M), false);
-    }
-    {
-        cusp::coo_matrix<int, float, MemorySpace> M(A);
-        M.row_indices[3] = 6;
         ASSERT_EQUAL(cusp::is_valid_matrix(M), false);
     }
     
@@ -83,21 +58,6 @@ void TestIsValidMatrixCsr(void)
     {
         cusp::csr_matrix<int, float, MemorySpace> M(A);
         ASSERT_EQUAL(cusp::is_valid_matrix(M), true);
-    }
-    {
-        cusp::csr_matrix<int, float, MemorySpace> M(A);
-        M.num_rows = -1;
-        ASSERT_EQUAL(cusp::is_valid_matrix(M), false);
-    }
-    {
-        cusp::csr_matrix<int, float, MemorySpace> M(A);
-        M.num_cols = -1;
-        ASSERT_EQUAL(cusp::is_valid_matrix(M), false);
-    }
-    {
-        cusp::csr_matrix<int, float, MemorySpace> M(A);
-        M.num_entries = -1;
-        ASSERT_EQUAL(cusp::is_valid_matrix(M), false);
     }
 
     // invalid row_offsets
@@ -138,21 +98,6 @@ void TestIsValidMatrixDia(void)
         cusp::dia_matrix<int, float, MemorySpace> M(A);
         ASSERT_EQUAL(cusp::is_valid_matrix(M), true);
     }
-    {
-        cusp::dia_matrix<int, float, MemorySpace> M(A);
-        M.num_rows = -1;
-        ASSERT_EQUAL(cusp::is_valid_matrix(M), false);
-    }
-    {
-        cusp::dia_matrix<int, float, MemorySpace> M(A);
-        M.num_cols = -1;
-        ASSERT_EQUAL(cusp::is_valid_matrix(M), false);
-    }
-    {
-        cusp::dia_matrix<int, float, MemorySpace> M(A);
-        M.num_entries = -1;
-        ASSERT_EQUAL(cusp::is_valid_matrix(M), false);
-    }
 
     // invalid shapes
     {
@@ -176,21 +121,6 @@ void TestIsValidMatrixEll(void)
     {
         cusp::ell_matrix<int, float, MemorySpace> M(A);
         ASSERT_EQUAL(cusp::is_valid_matrix(M), true);
-    }
-    {
-        cusp::ell_matrix<int, float, MemorySpace> M(A);
-        M.num_rows = -1;
-        ASSERT_EQUAL(cusp::is_valid_matrix(M), false);
-    }
-    {
-        cusp::ell_matrix<int, float, MemorySpace> M(A);
-        M.num_cols = -1;
-        ASSERT_EQUAL(cusp::is_valid_matrix(M), false);
-    }
-    {
-        cusp::ell_matrix<int, float, MemorySpace> M(A);
-        M.num_entries = -1;
-        ASSERT_EQUAL(cusp::is_valid_matrix(M), false);
     }
 
     // invalid shapes
@@ -249,21 +179,6 @@ void TestIsValidMatrixHyb(void)
         cusp::hyb_matrix<int, float, MemorySpace> M(A);
         ASSERT_EQUAL(cusp::is_valid_matrix(M), true);
     }
-    {
-        cusp::hyb_matrix<int, float, MemorySpace> M(A);
-        M.num_rows = -1;
-        ASSERT_EQUAL(cusp::is_valid_matrix(M), false);
-    }
-    {
-        cusp::hyb_matrix<int, float, MemorySpace> M(A);
-        M.num_cols = -1;
-        ASSERT_EQUAL(cusp::is_valid_matrix(M), false);
-    }
-    {
-        cusp::hyb_matrix<int, float, MemorySpace> M(A);
-        M.num_entries = -1;
-        ASSERT_EQUAL(cusp::is_valid_matrix(M), false);
-    }
 
     // invalid shapes
     {
@@ -299,21 +214,6 @@ void TestIsValidMatrixArray2d(void)
     {
         cusp::array2d<float, MemorySpace> M(A);
         ASSERT_EQUAL(cusp::is_valid_matrix(M), true);
-    }
-    {
-        cusp::array2d<float, MemorySpace> M(A);
-        M.num_rows = -1;
-        ASSERT_EQUAL(cusp::is_valid_matrix(M), false);
-    }
-    {
-        cusp::array2d<float, MemorySpace> M(A);
-        M.num_cols = -1;
-        ASSERT_EQUAL(cusp::is_valid_matrix(M), false);
-    }
-    {
-        cusp::array2d<float, MemorySpace> M(A);
-        M.num_entries = -1;
-        ASSERT_EQUAL(cusp::is_valid_matrix(M), false);
     }
 
     // invalid shapes

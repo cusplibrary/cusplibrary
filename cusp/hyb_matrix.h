@@ -254,9 +254,9 @@ namespace cusp
         hyb_matrix_view(const Matrix& A)
         : Parent(A), ell(A.ell), coo(A.coo) {}
     
-        void resize(IndexType num_rows, IndexType num_cols,
-                    IndexType num_ell_entries, IndexType num_coo_entries,
-                    IndexType num_entries_per_row, IndexType alignment = 32)
+        void resize(size_t num_rows, size_t num_cols,
+                    size_t num_ell_entries, size_t num_coo_entries,
+                    size_t num_entries_per_row, size_t alignment = 32)
         {
           Parent::resize(num_rows, num_cols, num_ell_entries + num_coo_entries);
           ell.resize(num_rows, num_cols, num_ell_entries, num_entries_per_row, alignment);

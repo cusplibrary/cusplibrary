@@ -130,7 +130,7 @@ class coo_matrix : public detail::matrix_base<IndexType,ValueType,MemorySpace,cu
      *  \param num_cols Number of columns.
      *  \param num_entries Number of nonzero matrix entries.
      */
-    coo_matrix(IndexType num_rows, IndexType num_cols, IndexType num_entries)
+    coo_matrix(size_t num_rows, size_t num_cols, size_t num_entries)
       : Parent(num_rows, num_cols, num_entries),
         row_indices(num_entries), column_indices(num_entries), values(num_entries) {}
 
@@ -141,7 +141,7 @@ class coo_matrix : public detail::matrix_base<IndexType,ValueType,MemorySpace,cu
     template <typename MatrixType>
     coo_matrix(const MatrixType& matrix);
 
-    void resize(IndexType num_rows, IndexType num_cols, IndexType num_entries)
+    void resize(size_t num_rows, size_t num_cols, size_t num_entries)
     {
       Parent::resize(num_rows, num_cols, num_entries);
       row_indices.resize(num_entries);
@@ -244,9 +244,9 @@ template <typename Array1,
         values(A.values) {}
   
     // TODO check sizes here
-    coo_matrix_view(IndexType num_rows,
-                    IndexType num_cols,
-                    IndexType num_entries,
+    coo_matrix_view(size_t num_rows,
+                    size_t num_cols,
+                    size_t num_entries,
                     Array1 row_indices,
                     Array2 column_indices,
                     Array3 values)
@@ -255,7 +255,7 @@ template <typename Array1,
         column_indices(column_indices),
         values(values) {}
 
-    void resize(IndexType num_rows, IndexType num_cols, IndexType num_entries)
+    void resize(size_t num_rows, size_t num_cols, size_t num_entries)
     {
       Parent::resize(num_rows, num_cols, num_entries);
       row_indices.resize(num_entries);
@@ -286,19 +286,18 @@ template <typename Array1,
 
 /* Convenience functions */
 
-template <typename IndexType,
-          typename Array1,
+template <typename Array1,
           typename Array2,
           typename Array3>
-coo_matrix_view<Array1,Array2,Array3,IndexType>
-make_coo_matrix_view(IndexType num_rows,
-                     IndexType num_cols,
-                     IndexType num_entries,
+coo_matrix_view<Array1,Array2,Array3>
+make_coo_matrix_view(size_t num_rows,
+                     size_t num_cols,
+                     size_t num_entries,
                      Array1 row_indices,
                      Array2 column_indices,
                      Array3 values)
 {
-  return coo_matrix_view<Array1,Array2,Array3,IndexType>
+  return coo_matrix_view<Array1,Array2,Array3>
     (num_rows, num_cols, num_entries,
      row_indices, column_indices, values);
 }

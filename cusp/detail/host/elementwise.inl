@@ -85,12 +85,10 @@ void transform_elementwise(const Matrix1& A,
                            cusp::array2d_format,
                            cusp::array2d_format)
 {
-    typedef typename Matrix3::index_type IndexType;
-
     C.resize(A.num_rows, A.num_cols);
 
-    for(IndexType i = 0; i < A.num_rows; i++)
-        for(IndexType j = 0; j < A.num_cols; j++)
+    for(size_t i = 0; i < A.num_rows; i++)
+        for(size_t j = 0; j < A.num_cols; j++)
             C(i,j) = op(A(i,j), B(i,j));
 }
 

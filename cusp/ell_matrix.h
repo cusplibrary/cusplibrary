@@ -146,8 +146,8 @@ namespace cusp
          *  \param num_entries_per_row Maximum number of nonzeros per row.
          *  \param alignment Amount of padding used to align the data structure (default 32).
          */
-        ell_matrix(IndexType num_rows, IndexType num_cols, IndexType num_entries,
-                   IndexType num_entries_per_row, IndexType alignment = 32)
+        ell_matrix(size_t num_rows, size_t num_cols, size_t num_entries,
+                   size_t num_entries_per_row, size_t alignment = 32)
           : Parent(num_rows, num_cols, num_entries)
         {
           // TODO use array2d constructor when it can accept pitch
@@ -162,16 +162,16 @@ namespace cusp
         template <typename MatrixType>
         ell_matrix(const MatrixType& matrix);
         
-        void resize(IndexType num_rows, IndexType num_cols, IndexType num_entries,
-                    IndexType num_entries_per_row)
+        void resize(size_t num_rows, size_t num_cols, size_t num_entries,
+                    size_t num_entries_per_row)
         {
           Parent::resize(num_rows, num_cols, num_entries);
           column_indices.resize(num_rows, num_entries_per_row);
           values.resize(num_rows, num_entries_per_row);
         }
                    
-        void resize(IndexType num_rows, IndexType num_cols, IndexType num_entries,
-                    IndexType num_entries_per_row, IndexType alignment)
+        void resize(size_t num_rows, size_t num_cols, size_t num_entries,
+                    size_t num_entries_per_row, size_t alignment)
         {
           Parent::resize(num_rows, num_cols, num_entries);
           column_indices.resize(num_rows, num_entries_per_row, detail::round_up(num_rows, alignment));
@@ -237,12 +237,12 @@ namespace cusp
         ell_matrix_view() {}
     
         template <typename OtherArray1, typename OtherArray2>
-        ell_matrix_view(IndexType num_rows, IndexType num_cols, IndexType num_entries,
+        ell_matrix_view(size_t num_rows, size_t num_cols, size_t num_entries,
                         OtherArray1& column_indices, OtherArray2& values)
         : Parent(num_rows, num_cols, num_entries), column_indices(column_indices), values(values) {}
 
         template <typename OtherArray1, typename OtherArray2>
-        ell_matrix_view(IndexType num_rows, IndexType num_cols, IndexType num_entries,
+        ell_matrix_view(size_t num_rows, size_t num_cols, size_t num_entries,
                         const OtherArray1& column_indices, const OtherArray2& values)
         : Parent(num_rows, num_cols, num_entries), column_indices(column_indices), values(values) {}
         
@@ -254,16 +254,16 @@ namespace cusp
         ell_matrix_view(const Matrix& A)
         : Parent(A), column_indices(A.column_indices), values(A.values) {}
         
-        void resize(IndexType num_rows, IndexType num_cols, IndexType num_entries,
-                    IndexType num_entries_per_row)
+        void resize(size_t num_rows, size_t num_cols, size_t num_entries,
+                    size_t num_entries_per_row)
         {
           Parent::resize(num_rows, num_cols, num_entries);
           column_indices.resize(num_rows, num_entries_per_row);
           values.resize(num_rows, num_entries_per_row);
         }
                    
-        void resize(IndexType num_rows, IndexType num_cols, IndexType num_entries,
-                    IndexType num_entries_per_row, IndexType alignment)
+        void resize(size_t num_rows, size_t num_cols, size_t num_entries,
+                    size_t num_entries_per_row, size_t alignment)
         {
           Parent::resize(num_rows, num_cols, num_entries);
           column_indices.resize(num_rows, num_entries_per_row, detail::round_up(num_rows, alignment));
@@ -274,13 +274,12 @@ namespace cusp
  */
 
   
-template <typename IndexType,
-          typename Array1,
+template <typename Array1,
           typename Array2>
-ell_matrix_view<Array1,Array2,IndexType>
-make_ell_matrix_view(IndexType num_rows,
-                     IndexType num_cols,
-                     IndexType num_entries,
+ell_matrix_view<Array1,Array2>
+make_ell_matrix_view(size_t num_rows,
+                     size_t num_cols,
+                     size_t num_entries,
                      Array1 column_indices,
                      Array2 values);
 

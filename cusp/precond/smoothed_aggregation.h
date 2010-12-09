@@ -118,7 +118,7 @@ class smoothed_aggregation : public cusp::linear_operator<ValueType, MemorySpace
 
     void _solve(const cusp::array1d<ValueType,MemorySpace>& b,
                       cusp::array1d<ValueType,MemorySpace>& x,
-                const int i);
+                const size_t i);
 };
 /*! \}
  */

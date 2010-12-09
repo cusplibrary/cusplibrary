@@ -47,11 +47,11 @@ void csr_transform_elementwise(const Matrix1& A,
    
     cusp::csr_matrix<IndexType,ValueType,cusp::host_memory> temp(A.num_rows, A.num_cols, A.num_entries + B.num_entries);
 
-    IndexType nnz = 0;
+    size_t nnz = 0;
 
     temp.row_offsets[0] = 0;
     
-    for(IndexType i = 0; i < A.num_rows; i++)
+    for(size_t i = 0; i < A.num_rows; i++)
     {
         IndexType head   = -2;
         IndexType length =  0;
@@ -109,28 +109,29 @@ void csr_transform_elementwise(const Matrix1& A,
 } // csr_transform_elementwise
 
 
-template <typename IndexType,
-          typename Array1, typename Array2,
+template <typename Array1, typename Array2,
           typename Array3, typename Array4>
-IndexType spmm_csr_pass1(const IndexType num_rows, const IndexType num_cols,
+size_t spmm_csr_pass1(const size_t num_rows, const size_t num_cols,
                          const Array1& A_row_offsets, const Array2& A_column_indices,
                          const Array3& B_row_offsets, const Array4& B_column_indices)
 {
+    typedef typename Array1::value_type IndexType1;
+    typedef typename Array2::value_type IndexType2;
+    
+    cusp::array1d<size_t, cusp::host_memory> mask(num_cols, static_cast<size_t>(-1));
+
     // Compute nnz in C (including explicit zeros)
+    size_t num_nonzeros = 0;
 
-    IndexType num_nonzeros = 0;
-
-    cusp::array1d<IndexType,cusp::host_memory> mask(num_cols, -1);
-
-    for(IndexType i = 0; i < num_rows; i++)
+    for(size_t i = 0; i < num_rows; i++)
     {
-        for(IndexType jj = A_row_offsets[i]; jj < A_row_offsets[i+1]; jj++)
+        for(IndexType1 jj = A_row_offsets[i]; jj < A_row_offsets[i+1]; jj++)
         {
-            IndexType j = A_column_indices[jj];
+            IndexType1 j = A_column_indices[jj];
 
-            for(IndexType kk = B_row_offsets[j]; kk < B_row_offsets[j+1]; kk++)
+            for(IndexType2 kk = B_row_offsets[j]; kk < B_row_offsets[j+1]; kk++)
             {
-                IndexType k = B_column_indices[kk];
+                IndexType2 k = B_column_indices[kk];
 
                 if(mask[k] != i)
                 {
@@ -144,31 +145,34 @@ IndexType spmm_csr_pass1(const IndexType num_rows, const IndexType num_cols,
     return num_nonzeros;
 }
 
-template <typename IndexType,
-          typename Array1, typename Array2, typename Array3,
+template <typename Array1, typename Array2, typename Array3,
           typename Array4, typename Array5, typename Array6,
           typename Array7, typename Array8, typename Array9>
-IndexType spmm_csr_pass2(const IndexType num_rows, const IndexType num_cols,
+size_t spmm_csr_pass2(const size_t num_rows, const size_t num_cols,
                          const Array1& A_row_offsets, const Array2& A_column_indices, const Array3& A_values,
                          const Array4& B_row_offsets, const Array5& B_column_indices, const Array6& B_values,
                                Array7& C_row_offsets,       Array8& C_column_indices,       Array9& C_values)
 {
+    typedef typename Array7::value_type IndexType;
     typedef typename Array9::value_type ValueType;
 
-    IndexType num_nonzeros = 0;
+    size_t num_nonzeros = 0;
+
+    const IndexType unseen = static_cast<IndexType>(-1);
+    const IndexType init   = static_cast<IndexType>(-2);  
 
     // Compute entries of C
-    cusp::array1d<IndexType,cusp::host_memory> next(num_cols, -1);
-    cusp::array1d<ValueType,cusp::host_memory> sums(num_cols,  0);
+    cusp::array1d<IndexType,cusp::host_memory> next(num_cols, unseen);
+    cusp::array1d<ValueType,cusp::host_memory> sums(num_cols, ValueType(0));
     
     num_nonzeros = 0;
     
     C_row_offsets[0] = 0;
     
-    for(IndexType i = 0; i < num_rows; i++)
+    for(size_t i = 0; i < num_rows; i++)
     {
-        IndexType head   = -2;
-        IndexType length =  0;
+        IndexType head   = init;
+        IndexType length =    0;
     
         IndexType jj_start = A_row_offsets[i];
         IndexType jj_end   = A_row_offsets[i+1];
@@ -187,29 +191,29 @@ IndexType spmm_csr_pass2(const IndexType num_rows, const IndexType num_cols,
     
                 sums[k] += v * B_values[kk];
     
-                if(next[k] == -1)
+                if(next[k] == unseen)
                 {
                     next[k] = head;                        
                     head  = k;
                     length++;
                 }
             }
-        }         
+        }
     
-        for(IndexType jj = 0; jj < length; jj++){
-    
-            if(sums[head] != 0)
+        for(IndexType jj = 0; jj < length; jj++)
+        {
+            if(sums[head] != ValueType(0))
             {
                 C_column_indices[num_nonzeros] = head;
                 C_values[num_nonzeros]         = sums[head];
                 num_nonzeros++;
             }
     
-            IndexType temp = head;                
-            head = next[head];
+            IndexType temp = head; head = next[head];
     
-            next[temp] = -1; //clear arrays
-            sums[temp] =  0;                              
+            // clear arrays
+            next[temp] = unseen; 
+            sums[temp] = ValueType(0);                              
         }
     
         C_row_offsets[i+1] = num_nonzeros;

@@ -378,7 +378,7 @@ template <typename IndexType, typename ValueType, typename MemorySpace>
 void smoothed_aggregation<IndexType,ValueType,MemorySpace>
 ::_solve(const cusp::array1d<ValueType,MemorySpace>& b,
                cusp::array1d<ValueType,MemorySpace>& x,
-         const int i)
+         const size_t i)
 {
   CUSP_PROFILE_SCOPED();
 
@@ -442,10 +442,10 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace>
 
 	IndexType nnz = 0;
 
-	for( IndexType index = 0; index < levels.size(); index++ )
+	for(size_t index = 0; index < levels.size(); index++)
 		nnz += levels[index].A.num_entries;
 
-	for( IndexType index = 0; index < levels.size(); index++ )
+	for(size_t index = 0; index < levels.size(); index++)
   {
 		double percent = (double)levels[index].A.num_entries / nnz;
 		std::cout << "\t" << index << "\t" << levels[index].A.num_cols << "\t\t" \
@@ -458,23 +458,23 @@ template <typename IndexType, typename ValueType, typename MemorySpace>
 double smoothed_aggregation<IndexType,ValueType,MemorySpace>
 ::operator_complexity( void )
 {
-	IndexType nnz = 0;
+	size_t nnz = 0;
 
-	for( IndexType index = 0; index < levels.size(); index++ )
+	for(size_t index = 0; index < levels.size(); index++)
 		nnz += levels[index].A.num_entries;
 
-	return (double) nnz / levels[0].A.num_entries;
+	return (double) nnz / (double) levels[0].A.num_entries;
 } 
 
 template <typename IndexType, typename ValueType, typename MemorySpace>
 double smoothed_aggregation<IndexType,ValueType,MemorySpace>
 ::grid_complexity( void )
 {
-	IndexType unknowns = 0;
-	for( IndexType index = 0; index < levels.size(); index++ )
+	size_t unknowns = 0;
+	for(size_t index = 0; index < levels.size(); index++)
 		unknowns += levels[index].A.num_rows;
 
-	return (double) unknowns / levels[0].A.num_rows;
+	return (double) unknowns / (double) levels[0].A.num_rows;
 } 
 
 } // end namespace precond

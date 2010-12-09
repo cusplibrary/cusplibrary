@@ -106,21 +106,21 @@ bool is_valid_matrix(const MatrixType& A,
     typedef typename MatrixType::index_type IndexType;
 
     // we could relax some of these conditions if necessary
-    if (A.row_indices.size() != (size_t) A.num_entries)
+    if (A.row_indices.size() != A.num_entries)
     {
         ostream << "size of row_indices (" << A.row_indices.size() << ") "
                 << "should be equal to num_entries (" << A.num_entries << ")";
         return false;
     }
     
-    if (A.column_indices.size() != (size_t) A.num_entries)
+    if (A.column_indices.size() != A.num_entries)
     {
         ostream << "size of column_indices (" << A.column_indices.size() << ") "
                 << "should be equal to num_entries (" << A.num_entries << ")";
         return false;
     }
     
-    if (A.values.size() != (size_t) A.num_entries)
+    if (A.values.size() != A.num_entries)
     {
         ostream << "size of values (" << A.column_indices.size() << ") "
                 << "should be equal to num_entries (" << A.num_entries << ")";
@@ -136,7 +136,7 @@ bool is_valid_matrix(const MatrixType& A,
             ostream << "row indices should be non-negative";
             return false;
         }
-        if (min_max_row.second >= A.num_rows)
+        if (static_cast<size_t>(min_max_row.second) >= A.num_rows)
         {
             ostream << "row indices should be less than num_row (" << A.num_rows << ")";
             return false;
@@ -156,7 +156,7 @@ bool is_valid_matrix(const MatrixType& A,
             ostream << "column indices should be non-negative";
             return false;
         }
-        if (min_max_col.second >= A.num_cols)
+        if (static_cast<size_t>(min_max_col.second) >= A.num_cols)
         {
             ostream << "column indices should be less than num_cols (" << A.num_cols << ")";
             return false;
@@ -176,7 +176,7 @@ bool is_valid_matrix(const MatrixType& A,
 
     // we could relax some of these conditions if necessary
     
-    if (A.row_offsets.size() != (size_t) A.num_rows + 1)
+    if (A.row_offsets.size() != A.num_rows + 1)
     {
         ostream << "size of row_offsets (" << A.row_offsets.size() << ") "
                 << "should be equal to num_rows + 1 (" << (A.num_rows + 1) << ")";
@@ -190,21 +190,22 @@ bool is_valid_matrix(const MatrixType& A,
         return false;
     }
 
-    if (A.row_offsets.back() != A.num_entries)
+    // TODO is this overly strict?
+    if (static_cast<size_t>(A.row_offsets.back()) != A.num_entries)
     {
         ostream << "last value in row_offsets (" << A.row_offsets.back() << ") "
                 << "should be equal to num_entries (" << A.num_entries << ")";
         return false;
     }
     
-    if (A.column_indices.size() != (size_t) A.num_entries)
+    if (A.column_indices.size() != A.num_entries)
     {
         ostream << "size of column_indices (" << A.column_indices.size() << ") "
                 << "should be equal to num_entries (" << A.num_entries << ")";
         return false;
     }
     
-    if (A.values.size() != (size_t) A.num_entries)
+    if (A.values.size() != A.num_entries)
     {
         ostream << "size of values (" << A.column_indices.size() << ") "
                 << "should be equal to num_entries (" << A.num_entries << ")";
@@ -228,7 +229,7 @@ bool is_valid_matrix(const MatrixType& A,
             ostream << "column indices should be non-negative";
             return false;
         }
-        if (min_max.second >= A.num_cols)
+        if (static_cast<size_t>(min_max.second) >= A.num_cols)
         {
             ostream << "column indices should be less than num_cols (" << A.num_cols << ")";
             return false;
@@ -286,18 +287,18 @@ bool is_valid_matrix(const MatrixType& A,
     }
 
     // count true number of entries in ell structure
-    IndexType true_num_entries = thrust::count_if(
-                                    thrust::make_zip_iterator
-                                    (
-                                        thrust::make_tuple(thrust::counting_iterator<IndexType>(0), 
-                                                           A.column_indices.values.begin())
-                                    ),
-                                    thrust::make_zip_iterator
-                                    (
-                                        thrust::make_tuple(thrust::counting_iterator<IndexType>(0), 
-                                                           A.column_indices.values.begin())
-                                    ) + A.column_indices.values.size(),
-                                    is_ell_entry<IndexType>(A.num_rows, A.column_indices.num_rows, invalid_index));
+    size_t true_num_entries = 
+      thrust::count_if(thrust::make_zip_iterator
+                       (
+                           thrust::make_tuple(thrust::counting_iterator<IndexType>(0), 
+                                              A.column_indices.values.begin())
+                       ),
+                       thrust::make_zip_iterator
+                       (
+                           thrust::make_tuple(thrust::counting_iterator<IndexType>(0), 
+                                              A.column_indices.values.begin())
+                       ) + A.column_indices.values.size(),
+                       is_ell_entry<IndexType>(A.num_rows, A.column_indices.num_rows, invalid_index));
 
     if (A.num_entries != true_num_entries)
     {
@@ -309,18 +310,18 @@ bool is_valid_matrix(const MatrixType& A,
     if (A.num_entries > 0)
     {
         // check that column indices are in [0, num_cols)
-        IndexType num_entries_in_bounds = thrust::count_if(
-                                              thrust::make_zip_iterator
-                                              (
-                                                  thrust::make_tuple(thrust::counting_iterator<IndexType>(0), 
-                                                                     A.column_indices.values.begin())
-                                              ),
-                                              thrust::make_zip_iterator
-                                              (
-                                                  thrust::make_tuple(thrust::counting_iterator<IndexType>(0), 
-                                                                     A.column_indices.values.begin())
-                                              ) + A.column_indices.values.size(),
-                                              is_ell_entry_in_bounds<IndexType>(A.num_rows, A.num_cols, A.column_indices.num_rows, invalid_index));
+        size_t num_entries_in_bounds =
+          thrust::count_if(thrust::make_zip_iterator
+                           (
+                               thrust::make_tuple(thrust::counting_iterator<IndexType>(0), 
+                                                  A.column_indices.values.begin())
+                           ),
+                           thrust::make_zip_iterator
+                           (
+                               thrust::make_tuple(thrust::counting_iterator<IndexType>(0), 
+                                                  A.column_indices.values.begin())
+                           ) + A.column_indices.values.size(),
+                           is_ell_entry_in_bounds<IndexType>(A.num_rows, A.num_cols, A.column_indices.num_rows, invalid_index));
         if (num_entries_in_bounds != true_num_entries)
         {
             ostream << "matrix contains (" << (true_num_entries - num_entries_in_bounds) << ") out-of-bounds column indices";
@@ -371,7 +372,7 @@ bool is_valid_matrix(const MatrixType& A,
         return false;
     }
     
-    if ((size_t) A.num_entries != A.values.size())
+    if (A.num_entries != A.values.size())
     {
         ostream << "num_entries (" << A.num_entries << ") ";
         ostream << "should agree with size of values array (" << A.values.size() << ")";
@@ -400,18 +401,7 @@ bool is_valid_matrix(const MatrixType& A)
 template <typename MatrixType, typename OutputStream>
 bool is_valid_matrix(const MatrixType& A, OutputStream& ostream)
 {
-    if ((A.num_rows < 0) || (A.num_cols < 0))
-    {
-        ostream << "matrix has invalid shape (" << A.num_rows << "," << A.num_cols << ")";
-        return false;
-    }
-    
-    if (A.num_entries < 0)
-    {
-        ostream << "matrix has invalid number of entries (" << A.num_entries << ")";
-        return false;
-    }
-
+    // dispatch on matrix format
     return detail::is_valid_matrix(A, ostream, typename MatrixType::format());
 }
 

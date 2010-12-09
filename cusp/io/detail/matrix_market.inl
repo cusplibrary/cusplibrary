@@ -207,12 +207,12 @@ void read_matrix_market_file(cusp::coo_matrix<IndexType,ValueType,cusp::host_mem
 
 template <typename IndexType, typename ValueType>
 struct if_type_is_complex{
-  static void read_array(int & num_entries_read, const int num_entries, std::istream & file, 
+  static void read_array(size_t & num_entries_read, const size_t num_entries, std::istream & file, 
 			 cusp::array2d<ValueType,cusp::host_memory,cusp::column_major> & dense){
     throw cusp::not_implemented_exception("Cannot read complex MatrixMarket data type"
 					  " without using a complex container");
   }
-  static void read_coordinate(int & num_entries_read, const int num_entries, std::istream & file, 
+  static void read_coordinate(size_t & num_entries_read, const int num_entries, std::istream & file, 
 			      cusp::coo_matrix<IndexType,ValueType,cusp::host_memory> & coo){
     throw cusp::not_implemented_exception("Cannot read complex MatrixMarket data type"
 					  " without using a complex container");
@@ -221,7 +221,7 @@ struct if_type_is_complex{
 
 template <typename IndexType, typename ValueType>
 struct if_type_is_complex<IndexType,cusp::complex<ValueType> >{
-  static void read_array(int & num_entries_read, const int num_entries, std::istream & file, 
+  static void read_array(size_t & num_entries_read, const size_t num_entries, std::istream & file, 
 			 cusp::array2d<cusp::complex<ValueType>,cusp::host_memory,cusp::column_major> & dense){
     while(num_entries_read < num_entries && !file.eof())
       {
@@ -233,7 +233,7 @@ struct if_type_is_complex<IndexType,cusp::complex<ValueType> >{
 	num_entries_read++;
       }
   }
-  static void read_coordinate(int & num_entries_read, const int num_entries, std::istream & file, 
+  static void read_coordinate(size_t & num_entries_read, const size_t num_entries, std::istream & file, 
 			      cusp::coo_matrix<IndexType,cusp::complex<ValueType>,cusp::host_memory> & coo){
     while(num_entries_read < coo.num_entries && !file.eof())
       {
@@ -277,16 +277,16 @@ void read_matrix_market_stream(cusp::coo_matrix<IndexType,ValueType,cusp::host_m
         if (tokens.size() != 2)
             throw cusp::io_exception("invalid MatrixMarket array format");
 
-        IndexType num_rows, num_cols;
+        size_t num_rows, num_cols;
 
         std::istringstream(tokens[0]) >> num_rows;
         std::istringstream(tokens[1]) >> num_cols;
   
         cusp::array2d<ValueType,cusp::host_memory,cusp::column_major> dense(num_rows, num_cols);
 
-        IndexType num_entries = num_rows * num_cols;
+        size_t num_entries = num_rows * num_cols;
 
-        IndexType num_entries_read = 0;
+        size_t num_entries_read = 0;
             
         // read file contents
         if (banner.type == "pattern")
@@ -303,7 +303,7 @@ void read_matrix_market_stream(cusp::coo_matrix<IndexType,ValueType,cusp::host_m
         } 
         else if (banner.type == "complex")
         {
-	  if_type_is_complex<IndexType,ValueType>::read_array(num_entries_read,num_entries,file,dense); 
+          if_type_is_complex<IndexType,ValueType>::read_array(num_entries_read,num_entries,file,dense); 
         }
         else
         {
@@ -328,7 +328,7 @@ void read_matrix_market_stream(cusp::coo_matrix<IndexType,ValueType,cusp::host_m
         if (tokens.size() != 3)
             throw cusp::io_exception("invalid MatrixMarket coordinate format");
 
-        IndexType num_rows, num_cols, num_entries;
+        size_t num_rows, num_cols, num_entries;
 
         std::istringstream(tokens[0]) >> num_rows;
         std::istringstream(tokens[1]) >> num_cols;
@@ -336,7 +336,7 @@ void read_matrix_market_stream(cusp::coo_matrix<IndexType,ValueType,cusp::host_m
   
         coo.resize(num_rows, num_cols, num_entries);
 
-        IndexType num_entries_read = 0;
+        size_t num_entries_read = 0;
 
         // read file contents
         if (banner.type == "pattern")
@@ -362,7 +362,7 @@ void read_matrix_market_stream(cusp::coo_matrix<IndexType,ValueType,cusp::host_m
         } 
         else if (banner.type == "complex")
         {
-	  if_type_is_complex<IndexType,ValueType>::read_coordinate(num_entries_read,num_entries,file,coo); 
+          if_type_is_complex<IndexType,ValueType>::read_coordinate(num_entries_read,num_entries,file,coo); 
         }
         else
         {
@@ -374,19 +374,19 @@ void read_matrix_market_stream(cusp::coo_matrix<IndexType,ValueType,cusp::host_m
 
 
         // check validity of row and column index data
-        IndexType min_row_index = *std::min_element(coo.row_indices.begin(), coo.row_indices.end());
-        IndexType max_row_index = *std::max_element(coo.row_indices.begin(), coo.row_indices.end());
-        IndexType min_col_index = *std::min_element(coo.column_indices.begin(), coo.column_indices.end());
-        IndexType max_col_index = *std::max_element(coo.column_indices.begin(), coo.column_indices.end());
+        size_t min_row_index = *std::min_element(coo.row_indices.begin(), coo.row_indices.end());
+        size_t max_row_index = *std::max_element(coo.row_indices.begin(), coo.row_indices.end());
+        size_t min_col_index = *std::min_element(coo.column_indices.begin(), coo.column_indices.end());
+        size_t max_col_index = *std::max_element(coo.column_indices.begin(), coo.column_indices.end());
 
         if (min_row_index < 1)            throw cusp::io_exception("found invalid row index (index < 1)");
         if (min_col_index < 1)            throw cusp::io_exception("found invalid column index (index < 1)");
-        if (min_row_index > coo.num_rows) throw cusp::io_exception("found invalid row index (index > num_rows)");
-        if (min_col_index > coo.num_cols) throw cusp::io_exception("found invalid column index (index > num_columns)");
+        if (max_row_index > coo.num_rows) throw cusp::io_exception("found invalid row index (index > num_rows)");
+        if (max_col_index > coo.num_cols) throw cusp::io_exception("found invalid column index (index > num_columns)");
 
 
         // convert base-1 indices to base-0
-        for(IndexType n = 0; n < coo.num_entries; n++)
+        for(size_t n = 0; n < coo.num_entries; n++)
         {
             coo.row_indices[n]    -= 1;
             coo.column_indices[n] -= 1;
@@ -396,21 +396,21 @@ void read_matrix_market_stream(cusp::coo_matrix<IndexType,ValueType,cusp::host_m
         // expand symmetric formats to "general" format
         if (banner.symmetry != "general")
         {
-            IndexType off_diagonals = 0;
+            size_t off_diagonals = 0;
 
-            for (IndexType n = 0; n < coo.num_entries; n++)
+            for (size_t n = 0; n < coo.num_entries; n++)
                 if(coo.row_indices[n] != coo.column_indices[n])
                     off_diagonals++;
 
-            IndexType general_num_entries = coo.num_entries + off_diagonals;
+            size_t general_num_entries = coo.num_entries + off_diagonals;
             
             cusp::coo_matrix<IndexType,ValueType,cusp::host_memory> general(num_rows, num_cols, general_num_entries);
            
             if (banner.symmetry == "symmetric")
             {
-                IndexType nnz = 0;
+                size_t nnz = 0;
 
-                for (IndexType n = 0; n < coo.num_entries; n++)
+                for (size_t n = 0; n < coo.num_entries; n++)
                 {
                     // copy entry over
                     general.row_indices[nnz]    = coo.row_indices[n];
@@ -466,7 +466,7 @@ void write_matrix_market_stream(const cusp::coo_matrix<IndexType,ValueType,cusp:
     }
     file << "\t" << coo.num_rows << "\t" << coo.num_cols << "\t" << coo.num_entries << "\n";
 
-    for(IndexType i = 0; i < coo.num_entries; i++)
+    for(size_t i = 0; i < coo.num_entries; i++)
     {
         file << (coo.row_indices[i]    + 1) << " ";
         file << (coo.column_indices[i] + 1) << " ";

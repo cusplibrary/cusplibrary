@@ -59,7 +59,7 @@ void symmetric_strength_of_connection(const Matrix1& A, Matrix2& S, const double
   IndexType num_entries = 0;
   
   // count num_entries in output
-  for(IndexType i = 0; i < A.num_rows; i++)
+  for(size_t i = 0; i < A.num_rows; i++)
   {
     const ValueType Aii = diagonal[i];
 
@@ -81,9 +81,8 @@ void symmetric_strength_of_connection(const Matrix1& A, Matrix2& S, const double
   // reset counter for second pass
   num_entries = 0;
 
-
   // copy strong connections to output
-  for(IndexType i = 0; i < A.num_rows; i++)
+  for(size_t i = 0; i < A.num_rows; i++)
   {
     const ValueType Aii = diagonal[i];
   

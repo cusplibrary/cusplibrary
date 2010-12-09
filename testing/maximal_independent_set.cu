@@ -24,12 +24,13 @@ bool is_valid_mis(MatrixType& A, ArrayType& stencil)
     // copy mis array to host
     cusp::array1d<int,cusp::host_memory> mis(stencil);
 
-    for (IndexType i = 0; i < csr.num_rows; i++)
+    for (size_t i = 0; i < csr.num_rows; i++)
     {
-        IndexType num_mis_neighbors = 0;
+        size_t num_mis_neighbors = 0;
+
         for(IndexType jj = csr.row_offsets[i]; jj < csr.row_offsets[i + 1]; jj++)
         {
-            IndexType j = csr.column_indices[jj];
+            size_t j = csr.column_indices[jj];
            
             // XXX if/when MIS code filters explicit zeros we need to do that here too
 
