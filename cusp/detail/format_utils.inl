@@ -25,12 +25,30 @@
 #include <thrust/gather.h>
 #include <thrust/scatter.h>
 #include <thrust/sequence.h>
+#include <thrust/scan.h>
 #include <thrust/sort.h>
 
 namespace cusp
 {
 namespace detail
 {
+
+template <typename IndexType>
+struct empty_row_functor
+{
+  typedef bool result_type;
+
+  template <typename Tuple>
+    __host__ __device__
+  bool operator()(const Tuple& t) const
+  {
+    const IndexType a = thrust::get<0>(t);
+    const IndexType b = thrust::get<1>(t);
+
+    return a != b;
+  }
+};
+
 
 template <typename OffsetArray, typename IndexArray>
 void offsets_to_indices(const OffsetArray& offsets, IndexArray& indices)
@@ -40,11 +58,15 @@ void offsets_to_indices(const OffsetArray& offsets, IndexArray& indices)
     typedef typename OffsetArray::value_type OffsetType;
 
     // convert compressed row offsets into uncompressed row indices
-    thrust::upper_bound(offsets.begin() + 1,
-                        offsets.end(),
-                        thrust::counting_iterator<OffsetType>(0),
-                        thrust::counting_iterator<OffsetType>(indices.size()),
-                        indices.begin());
+    thrust::fill(indices.begin(), indices.end(), OffsetType(0));
+    thrust::scatter_if( thrust::counting_iterator<OffsetType>(0),
+			thrust::counting_iterator<OffsetType>(offsets.size()-1),
+			offsets.begin(),
+                    	thrust::make_transform_iterator(
+                                thrust::make_zip_iterator( thrust::make_tuple( offsets.begin(), offsets.begin()+1 ) ),
+                                empty_row_functor<OffsetType>()),
+                    	indices.begin());
+    thrust::inclusive_scan(indices.begin(), indices.end(), indices.begin(), thrust::maximum<OffsetType>());
 }
 
 template <typename IndexArray, typename OffsetArray>
