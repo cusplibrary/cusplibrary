@@ -18,20 +18,13 @@
 #pragma once
 
 #include <cusp/format.h>
-#include <cusp/coo_matrix.h>
-#include <cusp/csr_matrix.h>
-#include <cusp/blas.h>
 
-#include <cusp/detail/format_utils.h>
 #include <cusp/detail/host/convert.h>
 
-#include <thrust/gather.h>
-#include <thrust/inner_product.h>
+#include <cusp/detail/device/conversion.h>
+#include <cusp/detail/device/conversion_utils.h>
+
 #include <thrust/scan.h>
-#include <thrust/scatter.h>
-#include <thrust/sequence.h>
-#include <thrust/iterator/constant_iterator.h>
-#include <thrust/iterator/counting_iterator.h>
 
 namespace cusp
 {
@@ -40,27 +33,6 @@ namespace detail
 namespace device
 {
 
-// Device Conversion Functions
-// COO <- CSR
-// COO <- ELL
-// CSR <- COO
-// CSR <- ELL
-// ELL <- CSR
-// ELL <- COO
-// 
-// All other conversions happen on the host
-
-struct is_nonnegative
-{
-  template<typename T>
-  __host__ __device__
-  bool operator()(T &x)
-  {
-    return x > T(-1);
-  } // end operator()()
-}; // end is_nonnegative
-
-
 /////////
 // COO //
 /////////
@@ -68,101 +40,19 @@ template <typename Matrix1, typename Matrix2>
 void convert(const Matrix1& src, Matrix2& dst,
              cusp::csr_format,
              cusp::coo_format)
-{
-    dst.resize(src.num_rows, src.num_cols, src.num_entries);
-
-    cusp::detail::offsets_to_indices(src.row_offsets, dst.row_indices);
-    cusp::copy(src.column_indices, dst.column_indices);
-    cusp::copy(src.values,         dst.values);
-}
-
-
-template <typename IndexType>
-struct is_valid_ell_index
-{
-  const IndexType num_rows;
-
-  is_valid_ell_index(const IndexType num_rows)
-    : num_rows(num_rows) {}
-
-  template <typename Tuple>
-    __host__ __device__
-  bool operator()(const Tuple& t) const
-  {
-    const IndexType i = thrust::get<0>(t);
-    const IndexType j = thrust::get<1>(t);
-
-    return i < num_rows && j != IndexType(-1);
-  }
-};
-
-template <typename T>
-struct modulus_value : public thrust::unary_function<T,T>
-{
-  const T value;
-
-  modulus_value(const T value)
-    : value(value) {}
-
-    __host__ __device__
-  T operator()(const T& x) const
-  {
-    return x % value;
-  }
-};
-
-template <typename T>
-struct transpose_index_functor : public thrust::unary_function<T,T>
-{
-  const T num_entries_per_row;
-  const T pitch;
-
-  transpose_index_functor(const T pitch, const T num_entries_per_row)
-    : num_entries_per_row(num_entries_per_row), pitch(pitch) {}
-
-    __host__ __device__
-  T operator()(const T& n) const
-  {
-    return pitch * (n % num_entries_per_row) + n / num_entries_per_row;
-  }
-};
-
-
+{    cusp::detail::device::csr_to_coo(src, dst);    }
 
 template <typename Matrix1, typename Matrix2>
 void convert(const Matrix1& src, Matrix2& dst,
              cusp::ell_format,
              cusp::coo_format)
-{
-   typedef typename Matrix1::index_type IndexType;
-   
-   const IndexType pitch               = src.column_indices.pitch;
-   const IndexType num_entries_per_row = src.column_indices.num_cols;
+{    cusp::detail::device::ell_to_coo(src, dst);    }
 
-   // define types used to programatically generate row_indices
-   typedef typename thrust::counting_iterator<IndexType> IndexIterator;
-   typedef typename thrust::transform_iterator<modulus_value<IndexType>, IndexIterator> RowIndexIterator;
-
-   RowIndexIterator row_indices_begin(IndexIterator(0), modulus_value<IndexType>(pitch));
-
-   // compute true number of nonzeros in ELL
-   const IndexType num_entries = 
-     thrust::count_if
-      (thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, src.column_indices.values.begin())),
-       thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, src.column_indices.values.begin())) + src.column_indices.values.size(),
-       is_valid_ell_index<IndexType>(src.num_rows));
-
-   // allocate output storage
-   dst.resize(src.num_rows, src.num_cols, num_entries);
-
-   // copy valid entries to COO format
-   thrust::copy_if
-     (thrust::make_permutation_iterator(thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, src.column_indices.values.begin(), src.values.values.begin())), thrust::make_transform_iterator(thrust::counting_iterator<IndexType>(0), transpose_index_functor<IndexType>(pitch, num_entries_per_row))),
-      thrust::make_permutation_iterator(thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, src.column_indices.values.begin(), src.values.values.begin())), thrust::make_transform_iterator(thrust::counting_iterator<IndexType>(0), transpose_index_functor<IndexType>(pitch, num_entries_per_row))) + src.column_indices.values.size(),
-      thrust::make_zip_iterator(thrust::make_tuple(dst.row_indices.begin(), dst.column_indices.begin(), dst.values.begin())),
-      is_valid_ell_index<IndexType>(src.num_rows));
-}
-
+template <typename Matrix1, typename Matrix2>
+void convert(const Matrix1& src, Matrix2& dst,
+             cusp::dia_format,
+             cusp::coo_format)
+{    cusp::detail::device::dia_to_coo(src, dst);    }
 
 /////////
 // CSR //
@@ -171,57 +61,61 @@ template <typename Matrix1, typename Matrix2>
 void convert(const Matrix1& src, Matrix2& dst,
              cusp::coo_format,
              cusp::csr_format)
-{
-    dst.resize(src.num_rows, src.num_cols, src.num_entries);
-
-    cusp::detail::indices_to_offsets(src.row_indices, dst.row_offsets);
-    cusp::copy(src.column_indices, dst.column_indices);
-    cusp::copy(src.values,         dst.values);
-}
+{    cusp::detail::device::coo_to_csr(src, dst);    }
 
 template <typename Matrix1, typename Matrix2>
 void convert(const Matrix1& src, Matrix2& dst,
              cusp::ell_format,
              cusp::csr_format)
-{
-   typedef typename Matrix1::index_type IndexType;
-   
-   const IndexType pitch               = src.column_indices.pitch;
-   const IndexType num_entries_per_row = src.column_indices.num_cols;
+{    cusp::detail::device::ell_to_csr(src, dst);    }
 
-   // define types used to programatically generate row_indices
-   typedef typename thrust::counting_iterator<IndexType> IndexIterator;
-   typedef typename thrust::transform_iterator<modulus_value<IndexType>, IndexIterator> RowIndexIterator;
+template <typename Matrix1, typename Matrix2>
+void convert(const Matrix1& src, Matrix2& dst,
+             cusp::dia_format,
+             cusp::csr_format)
+{    cusp::detail::device::dia_to_csr(src, dst);    }
 
-   RowIndexIterator row_indices_begin(IndexIterator(0), modulus_value<IndexType>(pitch));
-
-   // compute true number of nonzeros in ELL
-   const IndexType num_entries = 
-     thrust::count_if
-      (thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, src.column_indices.values.begin())),
-       thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, src.column_indices.values.begin())) + src.column_indices.values.size(),
-       is_valid_ell_index<IndexType>(src.num_rows));
-
-   // allocate output storage
-   dst.resize(src.num_rows, src.num_cols, num_entries);
-
-   // create temporary row_indices array to capture valid ELL row indices
-   cusp::array1d<IndexType, cusp::device_memory> row_indices(num_entries);
-
-   // copy valid entries to mixed COO/CSR format
-   thrust::copy_if
-     (thrust::make_permutation_iterator(thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, src.column_indices.values.begin(), src.values.values.begin())), thrust::make_transform_iterator(thrust::counting_iterator<IndexType>(0), transpose_index_functor<IndexType>(pitch, num_entries_per_row))),
-      thrust::make_permutation_iterator(thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, src.column_indices.values.begin(), src.values.values.begin())), thrust::make_transform_iterator(thrust::counting_iterator<IndexType>(0), transpose_index_functor<IndexType>(pitch, num_entries_per_row))) + src.column_indices.values.size(),
-      thrust::make_zip_iterator(thrust::make_tuple(row_indices.begin(), dst.column_indices.begin(), dst.values.begin())),
-      is_valid_ell_index<IndexType>(src.num_rows));
-
-   // convert COO row_indices to CSR row_offsets
-   cusp::detail::indices_to_offsets(row_indices, dst.row_offsets);
-}
 
 /////////
 // DIA //
 /////////
+template <typename Matrix1, typename Matrix2>
+void convert(const Matrix1& src, Matrix2& dst,
+             cusp::coo_format,
+             cusp::dia_format,
+             const float  max_fill  = 3.0,
+             const size_t alignment = 32)
+{
+    const size_t occupied_diagonals = cusp::detail::device::count_diagonals(src);
+
+    const float threshold  = 1e6; // 1M entries
+    const float size       = float(occupied_diagonals) * float(src.num_rows);
+    const float fill_ratio = size / std::max(1.0f, float(src.num_entries));
+
+    if (max_fill < fill_ratio && size > threshold)
+        throw cusp::format_conversion_exception("dia_matrix fill-in would exceed maximum tolerance");
+
+    cusp::detail::device::coo_to_dia(src, dst, alignment);
+}
+
+template <typename Matrix1, typename Matrix2>
+void convert(const Matrix1& src, Matrix2& dst,
+             cusp::csr_format,
+             cusp::dia_format,
+             const float  max_fill  = 3.0,
+             const size_t alignment = 32)
+{
+    const size_t occupied_diagonals = cusp::detail::device::count_diagonals(src);
+
+    const float threshold  = 1e6; // 1M entries
+    const float size       = float(occupied_diagonals) * float(src.num_rows);
+    const float fill_ratio = size / std::max(1.0f, float(src.num_entries));
+
+    if (max_fill < fill_ratio && size > threshold)
+        throw cusp::format_conversion_exception("dia_matrix fill-in would exceed maximum tolerance");
+
+    cusp::detail::device::csr_to_dia(src, dst, alignment);
+}
 
 /////////
 // ELL //
@@ -229,104 +123,39 @@ void convert(const Matrix1& src, Matrix2& dst,
 template <typename Matrix1, typename Matrix2>
 void convert(const Matrix1& src, Matrix2& dst,
              cusp::coo_format,
-             cusp::ell_format)
+             cusp::ell_format,
+             const float  max_fill  = 3.0,
+             const size_t alignment = 32)
 {
-  typedef typename Matrix2::index_type IndexType;
-  typedef typename Matrix2::value_type ValueType;
+    const size_t max_entries_per_row = cusp::detail::device::compute_max_entries_per_row(src);    
 
-  if (src.num_entries == 0)
-  {
-    dst.resize(src.num_rows, src.num_cols, src.num_entries, 0);
-    return;
-  }
+    const float threshold  = 1e6; // 1M entries
+    const float size       = float(max_entries_per_row) * float(src.num_rows);
+    const float fill_ratio = size / std::max(1.0f, float(src.num_entries));
 
-  // TODO centralize this somehow
-  const size_t alignment = 32;
+    if (max_fill < fill_ratio && size > threshold)
+        throw cusp::format_conversion_exception("ell_matrix fill-in would exceed maximum tolerance");
 
-  // compute permutation from COO index to ELL index
-  // first enumerate the entries within each row, e.g. [0, 1, 2, 0, 1, 2, 3, ...]
-  cusp::array1d<IndexType, cusp::device_memory> permutation(src.num_entries);
-  thrust::exclusive_scan_by_key(src.row_indices.begin(), src.row_indices.end(),
-                                thrust::constant_iterator<IndexType>(1),
-                                permutation.begin(),
-                                IndexType(0));
- 
-  // compute maximum number of entries per row
-  IndexType num_entries_per_row = 1 + thrust::reduce(permutation.begin(), permutation.end(), IndexType(0), thrust::maximum<IndexType>());
-
-  // allocate output storage
-  dst.resize(src.num_rows, src.num_cols, src.num_entries, num_entries_per_row, alignment);
-  
-  // next, scale by pitch and add row index
-  cusp::blas::axpby(permutation, src.row_indices,
-                    permutation,
-                    IndexType(dst.column_indices.pitch),
-                    IndexType(1));
-
-  // fill output with padding
-  thrust::fill(dst.column_indices.values.begin(), dst.column_indices.values.end(), IndexType(-1));
-  thrust::fill(dst.values.values.begin(),         dst.values.values.end(),         ValueType(0));
-
-  // scatter COO entries to ELL
-  thrust::scatter(src.column_indices.begin(), src.column_indices.end(),
-                  permutation.begin(),
-                  dst.column_indices.values.begin());
-  thrust::scatter(src.values.begin(), src.values.end(),
-                  permutation.begin(),
-                  dst.values.values.begin());
+    cusp::detail::device::coo_to_ell(src, dst, max_entries_per_row, alignment);
 }
 
 template <typename Matrix1, typename Matrix2>
 void convert(const Matrix1& src, Matrix2& dst,
              cusp::csr_format,
-             cusp::ell_format)
+             cusp::ell_format,
+             const float  max_fill  = 3.0,
+             const size_t alignment = 32)
 {
-  typedef typename Matrix2::index_type IndexType;
-  typedef typename Matrix2::value_type ValueType;
+    const size_t max_entries_per_row = cusp::detail::device::compute_max_entries_per_row(src);
+    
+    const float threshold  = 1e6; // 1M entries
+    const float size       = float(max_entries_per_row) * float(src.num_rows);
+    const float fill_ratio = size / std::max(1.0f, float(src.num_entries));
 
-  // TODO centralize this somehow
-  const size_t alignment = 32;
+    if (max_fill < fill_ratio && size > threshold)
+        throw cusp::format_conversion_exception("ell_matrix fill-in would exceed maximum tolerance");
 
-  // compute maximum number of entries per row
-  IndexType num_entries_per_row = 
-    thrust::inner_product(src.row_offsets.begin() + 1, src.row_offsets.end(),
-        src.row_offsets.begin(),
-        IndexType(0),
-        thrust::maximum<IndexType>(),
-        thrust::minus<IndexType>());
-
-  // allocate output storage
-  dst.resize(src.num_rows, src.num_cols, src.num_entries, num_entries_per_row, alignment);
-
-  // expand row offsets into row indices
-  cusp::array1d<IndexType, cusp::device_memory> row_indices(src.num_entries);
-  cusp::detail::offsets_to_indices(src.row_offsets, row_indices);
-
-  // compute permutation from CSR index to ELL index
-  // first enumerate the entries within each row, e.g. [0, 1, 2, 0, 1, 2, 3, ...]
-  cusp::array1d<IndexType, cusp::device_memory> permutation(src.num_entries);
-  thrust::exclusive_scan_by_key(row_indices.begin(), row_indices.end(),
-                                thrust::constant_iterator<IndexType>(1),
-                                permutation.begin(),
-                                IndexType(0));
-  
-  // next, scale by pitch and add row index
-  cusp::blas::axpby(permutation, row_indices,
-                    permutation,
-                    IndexType(dst.column_indices.pitch),
-                    IndexType(1));
-
-  // fill output with padding
-  thrust::fill(dst.column_indices.values.begin(), dst.column_indices.values.end(), IndexType(-1));
-  thrust::fill(dst.values.values.begin(),         dst.values.values.end(),         ValueType(0));
-
-  // scatter CSR entries to ELL
-  thrust::scatter(src.column_indices.begin(), src.column_indices.end(),
-                  permutation.begin(),
-                  dst.column_indices.values.begin());
-  thrust::scatter(src.values.begin(), src.values.end(),
-                  permutation.begin(),
-                  dst.values.values.begin());
+    cusp::detail::device::csr_to_ell(src, dst, max_entries_per_row, alignment);
 }
 
 
@@ -371,7 +200,7 @@ void convert(const Matrix1& src, Matrix2& dst)
             typename Matrix1::format(),
             typename Matrix2::format());
 }
-
+            
 } // end namespace device
 } // end namespace detail
 } // end namespace cusp
