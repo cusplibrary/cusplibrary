@@ -280,6 +280,7 @@ class convergence_monitor : public default_monitor<Real>
     convergence_monitor(const Vector& b, size_t iteration_limit = 500, Real relative_tolerance = 1e-5, Real absolute_tolerance = 0)
         : super(b, iteration_limit, relative_tolerance, absolute_tolerance)
     {
+	residuals.reserve(iteration_limit);
     }
     
     template <typename Vector>
@@ -324,7 +325,7 @@ class convergence_monitor : public default_monitor<Real>
     	cusp::array1d<Real,cusp::host_memory> avg_vec(num-1);
 	thrust::transform(residuals.begin() + 1, residuals.end(), residuals.begin(), avg_vec.begin(), thrust::divides<Real>());
   	Real sum = thrust::reduce(avg_vec.begin(), avg_vec.end(), Real(0), thrust::plus<Real>());
-	return sum / num;
+	return sum / Real(avg_vec.size());
     }
 };
 /*! \}
