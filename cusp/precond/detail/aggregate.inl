@@ -112,16 +112,12 @@ void standard_aggregation(const cusp::coo_matrix<IndexType,ValueType,cusp::devic
 
 template <typename IndexType, typename ValueType,
 	  typename ArrayType>
-void standard_aggregation(const cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& C,
+void standard_aggregation(const cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& C,
               				    ArrayType& aggregates)
 {
   CUSP_PROFILE_SCOPED();
 
   IndexType next_aggregate = 1; // number of aggregates + 1
-
-  // TODO work with COO directly instead of converting to CSR
-  cusp::array1d<IndexType,cusp::host_memory> row_offsets(C.num_rows + 1);
-  cusp::detail::indices_to_offsets(C.row_indices, row_offsets);
 
   // initialize aggregates to 0
   thrust::fill(aggregates.begin(), aggregates.end(), 0);
@@ -133,8 +129,8 @@ void standard_aggregation(const cusp::coo_matrix<IndexType,ValueType,cusp::host_
   {
     if(aggregates[i]){ continue; } //already marked
 
-    const IndexType row_start = row_offsets[i];
-    const IndexType row_end   = row_offsets[i+1];
+    const IndexType row_start = C.row_offsets[i];
+    const IndexType row_end   = C.row_offsets[i+1];
 
     //Determine whether all neighbors of this node are free (not already aggregates)
     bool has_aggregated_neighbors = false;
@@ -175,7 +171,7 @@ void standard_aggregation(const cusp::coo_matrix<IndexType,ValueType,cusp::host_
   for(IndexType i = 0; i < n_row; i++){
     if(aggregates[i]){ continue; } //already marked
 
-    for(IndexType jj = row_offsets[i]; jj < row_offsets[i+1]; jj++){
+    for(IndexType jj = C.row_offsets[i]; jj < C.row_offsets[i+1]; jj++){
       const IndexType j = C.column_indices[jj];
 
       const IndexType tj = aggregates[j];
@@ -204,8 +200,8 @@ void standard_aggregation(const cusp::coo_matrix<IndexType,ValueType,cusp::host_
     }
 
     // node i has not been aggregated
-    const IndexType row_start = row_offsets[i];
-    const IndexType row_end   = row_offsets[i+1];
+    const IndexType row_start = C.row_offsets[i];
+    const IndexType row_end   = C.row_offsets[i+1];
 
     aggregates[i] = next_aggregate;
 

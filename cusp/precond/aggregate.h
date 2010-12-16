@@ -40,7 +40,7 @@ namespace precond
 
 	template <typename IndexType, typename ValueType,
 		  typename ArrayType>
-	void standard_aggregation(const cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& C_coo,
+	void standard_aggregation(const cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& C,
 					ArrayType& aggregates);
 
 } // end namespace precond

@@ -43,20 +43,41 @@ namespace precond
  *  \{
  */
 
+template <typename IndexType, typename ValueType, typename MemorySpace>
+struct amg_container
+{
+};
+
+template <typename IndexType, typename ValueType>
+struct amg_container<IndexType,ValueType,cusp::host_memory>
+{
+    // use CSR on host
+    typedef typename cusp::csr_matrix<IndexType,ValueType,cusp::host_memory> type;
+};
+
+template <typename IndexType, typename ValueType>
+struct amg_container<IndexType,ValueType,cusp::device_memory>
+{
+    // use COO on device
+    typedef typename cusp::coo_matrix<IndexType,ValueType,cusp::device_memory> type;
+};
+
 /*! \p smoothed_aggregation : algebraic multigrid preconditoner based on
  *  smoothed aggregation
  *
  *  TODO
  */
-
 template <typename IndexType, typename ValueType, typename MemorySpace>
 class smoothed_aggregation : public cusp::linear_operator<ValueType, MemorySpace, IndexType>
 {
+
+    typedef typename amg_container<IndexType,ValueType,MemorySpace>::type AMGMatrix;
+
     struct level
     {
-        cusp::coo_matrix<IndexType,ValueType,MemorySpace> R;  // restriction operator
-        cusp::coo_matrix<IndexType,ValueType,MemorySpace> A;  // matrix
-        cusp::coo_matrix<IndexType,ValueType,MemorySpace> P;  // prolongation operator
+        AMGMatrix R;  // restriction operator
+        AMGMatrix A;  // matrix
+        AMGMatrix P;  // prolongation operator
         cusp::array1d<IndexType,MemorySpace> aggregates;      // aggregates
         cusp::array1d<ValueType,MemorySpace> B;               // near-nullspace candidates
         cusp::array1d<ValueType,MemorySpace> x;               // per-level solution
@@ -67,21 +88,11 @@ class smoothed_aggregation : public cusp::linear_operator<ValueType, MemorySpace
         cusp::array1d<IndexType,MemorySpace> A_row_offsets;   // A row offsets
         cusp::array1d<IndexType,MemorySpace> P_row_offsets;   // P row offsets
 
-	typedef typename cusp::array1d<IndexType,MemorySpace>::iterator       IndexIterator;
-	typedef typename cusp::array1d<ValueType,MemorySpace>::iterator       ValueIterator;
-	typedef typename cusp::array1d_view<IndexIterator>                    IndexView;
-	typedef typename cusp::array1d_view<ValueIterator>                    ValueView;
-        cusp::csr_matrix_view<IndexView,IndexView,ValueView> R_view;  // restriction operator view
-        cusp::csr_matrix_view<IndexView,IndexView,ValueView> A_view;  // matrix view
-        cusp::csr_matrix_view<IndexView,IndexView,ValueView> P_view;  // prolongation operator view
-
 	#ifndef USE_POLY_SMOOTHER
         cusp::relaxation::jacobi<ValueType,MemorySpace> smoother;
 	#else
         cusp::relaxation::polynomial<ValueType,MemorySpace> smoother;
 	#endif
-       
-        ValueType rho;                                        // spectral radius
     };
 
     std::vector<level> levels;

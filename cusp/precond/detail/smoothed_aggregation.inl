@@ -15,12 +15,14 @@
  */
 
 #include <cusp/blas.h>
+#include <cusp/elementwise.h>
 #include <cusp/multiply.h>
 #include <cusp/monitor.h>
 #include <cusp/transpose.h>
 #include <cusp/graph/maximal_independent_set.h>
 #include <cusp/precond/diagonal.h>
 #include <cusp/precond/aggregate.h>
+#include <cusp/precond/smooth.h>
 #include <cusp/precond/strength.h>
 #include <cusp/krylov/arnoldi.h>
 
@@ -87,11 +89,60 @@ struct sqrt_functor : thrust::unary_function<T,T>
 
 template <typename Array1,
           typename Array2,
-          typename IndexType, typename ValueType, typename MemorySpace,
+          typename IndexType, typename ValueType,
           typename Array3>
 void fit_candidates(const Array1& aggregates,
                     const Array2& B,
-                          cusp::coo_matrix<IndexType,ValueType,MemorySpace>& Q,
+                          cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& Q_,
+                          Array3& R)
+{
+  CUSP_PROFILE_SCOPED();
+  // TODO handle case w/ unaggregated nodes (marked w/ -1)
+  IndexType num_aggregates = *thrust::max_element(aggregates.begin(), aggregates.end()) + 1;
+
+  cusp::coo_matrix<IndexType,ValueType,cusp::host_memory> Q;
+  Q.resize(aggregates.size(), num_aggregates, aggregates.size());
+  R.resize(num_aggregates);
+
+  // gather values into Q
+  thrust::sequence(Q.row_indices.begin(), Q.row_indices.end());
+  thrust::copy(aggregates.begin(), aggregates.end(), Q.column_indices.begin());
+  thrust::copy(B.begin(), B.end(), Q.values.begin());
+                        
+  // compute norm over each aggregate
+  {
+    // compute Qt
+    cusp::coo_matrix<IndexType,ValueType,cusp::host_memory> Qt;  cusp::transpose(Q, Qt);
+
+    // compute sum of squares for each column of Q (rows of Qt)
+    cusp::array1d<IndexType, cusp::host_memory> temp(num_aggregates);
+    thrust::reduce_by_key(Qt.row_indices.begin(), Qt.row_indices.end(),
+                          thrust::make_transform_iterator(Qt.values.begin(), square<ValueType>()),
+                          temp.begin(),
+                          R.begin());
+
+    // compute square root of each column sum
+    thrust::transform(R.begin(), R.end(), R.begin(), sqrt_functor<ValueType>());
+  }
+
+  Q_.resize(Q.num_rows, Q.num_cols, Q.num_entries);
+  thrust::copy(Q.column_indices.begin(), Q.column_indices.end(), Q_.column_indices.begin());
+  cusp::detail::indices_to_offsets(Q.row_indices, Q_.row_offsets);
+
+  // rescale columns of Q
+  thrust::transform(Q.values.begin(), Q.values.end(),
+                    thrust::make_permutation_iterator(R.begin(), Q.column_indices.begin()),
+                    Q_.values.begin(),
+                    thrust::divides<ValueType>());
+}
+
+template <typename Array1,
+          typename Array2,
+          typename IndexType, typename ValueType,
+          typename Array3>
+void fit_candidates(const Array1& aggregates,
+                    const Array2& B,
+                          cusp::coo_matrix<IndexType,ValueType,cusp::device_memory>& Q,
                           Array3& R)
 {
   CUSP_PROFILE_SCOPED();
@@ -109,10 +160,10 @@ void fit_candidates(const Array1& aggregates,
   // compute norm over each aggregate
   {
     // compute Qt
-    cusp::coo_matrix<IndexType,ValueType,MemorySpace> Qt;  cusp::transpose(Q, Qt);
+    cusp::coo_matrix<IndexType,ValueType,cusp::device_memory> Qt;  cusp::transpose(Q, Qt);
 
     // compute sum of squares for each column of Q (rows of Qt)
-    cusp::array1d<IndexType, MemorySpace> temp(num_aggregates);
+    cusp::array1d<IndexType, cusp::device_memory> temp(num_aggregates);
     thrust::reduce_by_key(Qt.row_indices.begin(), Qt.row_indices.end(),
                           thrust::make_transform_iterator(Qt.values.begin(), square<ValueType>()),
                           temp.begin(),
@@ -129,96 +180,6 @@ void fit_candidates(const Array1& aggregates,
                     thrust::divides<ValueType>());
 }
 
-
-//   Smoothed (final) prolongator defined by P = (I - omega/rho(K) K) * T
-//   where K = diag(S)^-1 * S and rho(K) is an approximation to the 
-//   spectral radius of K.
-template <typename IndexType, typename ValueType, typename MemorySpace>
-void smooth_prolongator(const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& S,
-                        const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& T,
-                              cusp::coo_matrix<IndexType,ValueType,MemorySpace>& P,
-                        const ValueType omega = 4.0/3.0,
-                        const ValueType rho_Dinv_S = 0.0)
-{
-  CUSP_PROFILE_SCOPED();
-
-  // TODO handle case with unaggregated nodes
-  assert(T.num_entries == T.num_rows);
-
-  const ValueType lambda = omega / (rho_Dinv_S == 0.0 ? estimate_rho_Dinv_A(S) : rho_Dinv_S);
-
-  // temp <- lambda * S(i,j) * T(j,k)
-  cusp::coo_matrix<IndexType,ValueType,MemorySpace> temp(S.num_rows, T.num_cols, S.num_entries + T.num_entries);
-  thrust::copy(S.row_indices.begin(), S.row_indices.end(), temp.row_indices.begin());
-#if THRUST_VERSION >= 100300
-  thrust::gather(S.column_indices.begin(), S.column_indices.end(), T.column_indices.begin(), temp.column_indices.begin());
-#else
-  // TODO remove this when Thrust v1.2.x is unsupported
-  thrust::next::gather(S.column_indices.begin(), S.column_indices.end(), T.column_indices.begin(), temp.column_indices.begin());
-#endif 
-  thrust::transform(S.values.begin(), S.values.end(),
-                    thrust::make_permutation_iterator(T.values.begin(), S.column_indices.begin()),
-                    temp.values.begin(),
-                    thrust::multiplies<ValueType>());
-  thrust::transform(temp.values.begin(), temp.values.begin() + S.num_entries,
-                    thrust::constant_iterator<ValueType>(-lambda),
-                    temp.values.begin(),
-                    thrust::multiplies<ValueType>());
-  // temp <- D^-1
-  {
-    cusp::array1d<ValueType, MemorySpace> D(S.num_rows);
-    cusp::detail::extract_diagonal(S, D);
-    thrust::transform(temp.values.begin(), temp.values.begin() + S.num_entries,
-                      thrust::make_permutation_iterator(D.begin(), S.row_indices.begin()),
-                      temp.values.begin(),
-                      thrust::divides<ValueType>());
-  }
-
-  // temp <- temp + T
-  thrust::copy(T.row_indices.begin(),    T.row_indices.end(),    temp.row_indices.begin()    + S.num_entries);
-  thrust::copy(T.column_indices.begin(), T.column_indices.end(), temp.column_indices.begin() + S.num_entries);
-  thrust::copy(T.values.begin(),         T.values.end(),         temp.values.begin()         + S.num_entries);
-
-  // sort by (I,J)
-  cusp::detail::sort_by_row_and_column(temp.row_indices, temp.column_indices, temp.values);
-
-  // compute unique number of nonzeros in the output
-  // throws a warning at compile (warning: expression has no effect)
-  IndexType NNZ = thrust::inner_product(thrust::make_zip_iterator(thrust::make_tuple(temp.row_indices.begin(), temp.column_indices.begin())),
-                                        thrust::make_zip_iterator(thrust::make_tuple(temp.row_indices.end (),  temp.column_indices.end()))   - 1,
-                                        thrust::make_zip_iterator(thrust::make_tuple(temp.row_indices.begin(), temp.column_indices.begin())) + 1,
-                                        IndexType(0),
-                                        thrust::plus<IndexType>(),
-                                        thrust::not_equal_to< thrust::tuple<IndexType,IndexType> >()) + 1;
-
-  // allocate space for output
-  P.resize(temp.num_rows, temp.num_cols, NNZ);
-
-  // sum values with the same (i,j)
-  thrust::reduce_by_key(thrust::make_zip_iterator(thrust::make_tuple(temp.row_indices.begin(), temp.column_indices.begin())),
-                        thrust::make_zip_iterator(thrust::make_tuple(temp.row_indices.end(),   temp.column_indices.end())),
-                        temp.values.begin(),
-                        thrust::make_zip_iterator(thrust::make_tuple(P.row_indices.begin(), P.column_indices.begin())),
-                        P.values.begin(),
-                        thrust::equal_to< thrust::tuple<IndexType,IndexType> >(),
-                        thrust::plus<ValueType>());
-}
-
-template <typename IndexType, typename ValueType, typename MemorySpace, typename CsrView>
-void setup_view(cusp::coo_matrix<IndexType,ValueType,MemorySpace> & M,
-		CsrView & M_view, 
-		cusp::array1d<IndexType,MemorySpace> & row_offsets)
-{
-	CUSP_PROFILE_SCOPED();
-
-	row_offsets.resize(M.num_rows+1);
-	cusp::detail::indices_to_offsets(M.row_indices, row_offsets);
-	M_view = CsrView(M.num_rows, M.num_cols, M.num_entries,
-	cusp::make_array1d_view(row_offsets),
-	cusp::make_array1d_view(M.column_indices),
-	cusp::make_array1d_view(M.values));
-}
-
 } // end namespace detail
 
 
@@ -232,7 +193,7 @@ smoothed_aggregation<IndexType,ValueType,MemorySpace>::smoothed_aggregation(cons
 
   levels.push_back(typename smoothed_aggregation<IndexType,ValueType,MemorySpace>::level());
   levels.back().A = A; // copy
-  levels.back().B.resize(A.num_rows, 1.0f);
+  levels.back().B.resize(A.num_rows, ValueType(1.0));
 
   while (levels.back().A.num_rows > 100)
     extend_hierarchy();
@@ -247,39 +208,38 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace>::extend_hierarchy(voi
 {
   CUSP_PROFILE_SCOPED();
 
-  const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& A = levels.back().A;
+  const AMGMatrix& A = levels.back().A;
   const cusp::array1d<ValueType,MemorySpace>&              B = levels.back().B;
 
   // compute stength of connection matrix
-  cusp::coo_matrix<IndexType,ValueType,MemorySpace> C;
+  AMGMatrix C;
   detail::symmetric_strength_of_connection(A, C, theta);
 
-  detail::setup_view( levels.back().A, levels.back().A_view, levels.back().A_row_offsets );
   // compute spectral radius of diag(C)^-1 * C
-  ValueType rho_DinvA = detail::estimate_rho_Dinv_A(levels.back().A_view);
+  ValueType rho_DinvA = detail::estimate_rho_Dinv_A(A);
 
   // compute aggregates
   cusp::array1d<IndexType,MemorySpace> aggregates(C.num_rows,0);
   detail::standard_aggregation(C, aggregates);
 
   // compute tenative prolongator and coarse nullspace vector
-  cusp::coo_matrix<IndexType,ValueType,MemorySpace> T;
-  cusp::array1d<ValueType,MemorySpace>              B_coarse;
+  AMGMatrix 				T;
+  cusp::array1d<ValueType,MemorySpace>  B_coarse;
   detail::fit_candidates(aggregates, B, T, B_coarse);
   
   // compute prolongation operator
-  cusp::coo_matrix<IndexType,ValueType,MemorySpace> P;
+  AMGMatrix P;
   detail::smooth_prolongator(A, T, P, ValueType(4.0/3.0), rho_DinvA);  // TODO if C != A then compute rho_Dinv_C
 
   // compute restriction operator (transpose of prolongator)
-  cusp::coo_matrix<IndexType,ValueType,MemorySpace> R;
+  AMGMatrix R;
   cusp::transpose(P,R);
 
   // construct Galerkin product R*A*P
-  cusp::coo_matrix<IndexType,ValueType,MemorySpace> RAP;
+  AMGMatrix RAP;
   {
     // TODO test speed of R * (A * P) vs. (R * A) * P
-    cusp::coo_matrix<IndexType,ValueType,MemorySpace> AP;
+    AMGMatrix AP;
     cusp::multiply(A, P, AP);
     cusp::multiply(R, AP, RAP);
   }
@@ -301,9 +261,6 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace>::extend_hierarchy(voi
   levels.back().residual.resize(levels.back().A.num_rows);
 
   //std::cout << "omega " << omega << std::endl;
-
-  detail::setup_view( levels.back().R, levels.back().R_view, levels.back().R_row_offsets );
-  detail::setup_view( levels.back().P, levels.back().P_view, levels.back().P_row_offsets );
 
   levels.push_back(level());
   levels.back().A.swap(RAP);
@@ -343,14 +300,8 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace>::solve(const cusp::ar
 {
   CUSP_PROFILE_SCOPED();
 
-  // create a csr_matrix_view
-  typedef typename cusp::array1d<IndexType,MemorySpace>::iterator       IndexIterator;
-  typedef typename cusp::array1d<ValueType,MemorySpace>::iterator       ValueIterator;
-  typedef typename cusp::array1d_view<IndexIterator>                    IndexView;
-  typedef typename cusp::array1d_view<ValueIterator>                    ValueView;
-  typedef typename cusp::csr_matrix_view<IndexView,IndexView,ValueView> CsrView;
   // TODO check sizes
-  const CsrView & A = levels[0].A_view;
+  const AMGMatrix & A = levels[0].A;
  
   // use simple iteration
   cusp::array1d<ValueType,MemorySpace> update(A.num_rows);
@@ -382,12 +333,6 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace>
 {
   CUSP_PROFILE_SCOPED();
 
-  typedef typename cusp::array1d<IndexType,MemorySpace>::iterator       IndexIterator;
-  typedef typename cusp::array1d<ValueType,MemorySpace>::iterator       ValueIterator;
-  typedef typename cusp::array1d_view<IndexIterator>                    IndexView;
-  typedef typename cusp::array1d_view<ValueIterator>                    ValueView;
-  typedef typename cusp::csr_matrix_view<IndexView,IndexView,ValueView> CsrView;
-
   if (i + 1 == levels.size())
   {
     // coarse grid solve
@@ -399,9 +344,9 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace>
   }
   else
   {
-    const CsrView & R = levels[i].R_view;
-    const CsrView & A = levels[i].A_view;
-    const CsrView & P = levels[i].P_view;
+    const AMGMatrix & R = levels[i].R;
+    const AMGMatrix & A = levels[i].A;
+    const AMGMatrix & P = levels[i].P;
 
     cusp::array1d<ValueType,MemorySpace>& residual = levels[i].residual;
     cusp::array1d<ValueType,MemorySpace>& coarse_b = levels[i + 1].b;
