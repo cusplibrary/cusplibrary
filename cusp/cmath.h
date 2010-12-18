@@ -104,4 +104,9 @@ namespace cusp
     inline ValueType abs(ValueType x){
     return std::abs(x);
   }
+  template <typename ValueType>
+    __host__ __device__ 
+    inline ValueType conj(ValueType x){
+    return x;
+  }
 }
