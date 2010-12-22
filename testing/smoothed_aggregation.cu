@@ -18,7 +18,9 @@ void TestStandardAggregation(void)
 {
     // TODO make this test something, possibly disjoint things that must aggregate
 
-    cusp::coo_matrix<int,float,MemorySpace> A;
+    typedef typename cusp::precond::amg_container<int,float,MemorySpace>::type AMGMatrix;
+
+    AMGMatrix A;
     cusp::gallery::poisson5pt(A, 10, 10);
 
     cusp::array1d<int,MemorySpace> aggregates(A.num_rows);
@@ -64,6 +66,8 @@ DECLARE_HOST_DEVICE_UNITTEST(TestEstimateRhoDinvA);
 template <typename MemorySpace>
 void TestFitCandidates(void)
 {
+    typedef typename cusp::precond::amg_container<int,float,MemorySpace>::type AMGMatrix;
+
     // 2 aggregates with 2 nodes each
     {
         cusp::array1d<int,MemorySpace> aggregates(4);
@@ -77,7 +81,7 @@ void TestFitCandidates(void)
         B[2] = 3.0f;
         B[3] = 4.0f;
 
-        cusp::coo_matrix<int,float,MemorySpace> Q;
+        AMGMatrix Q;
         cusp::array1d<float,MemorySpace> R(2);
 
         cusp::precond::detail::fit_candidates(aggregates, B, Q, R);
@@ -105,7 +109,7 @@ void TestFitCandidates(void)
         aggregates[9] = 1;
         cusp::array1d<float,MemorySpace> B(10,1.0f);
 
-        cusp::coo_matrix<int,float,MemorySpace> Q;
+        AMGMatrix Q;
         cusp::array1d<float,MemorySpace> R(4);
    
         cusp::precond::detail::fit_candidates(aggregates, B, Q, R);
@@ -135,23 +139,29 @@ DECLARE_HOST_DEVICE_UNITTEST(TestFitCandidates);
 template <class MemorySpace>
 void TestSmoothProlongator(void)
 {
+    typedef typename cusp::precond::amg_container<int,float,MemorySpace>::type AMGMatrix;
+
     // simple example with diagonal S
     {
-        cusp::coo_matrix<int, float, MemorySpace> S(4,4,4);
-        S.row_indices[0] = 0; S.column_indices[0] = 0; S.values[0] = 1;
-        S.row_indices[1] = 1; S.column_indices[1] = 1; S.values[1] = 2;
-        S.row_indices[2] = 2; S.column_indices[2] = 2; S.values[2] = 3;
-        S.row_indices[3] = 3; S.column_indices[3] = 3; S.values[3] = 4;
+	cusp::coo_matrix<int,float,MemorySpace> _S(4,4,4);
+        _S.row_indices[0] = 0; _S.column_indices[0] = 0; _S.values[0] = 1;
+        _S.row_indices[1] = 1; _S.column_indices[1] = 1; _S.values[1] = 2;
+        _S.row_indices[2] = 2; _S.column_indices[2] = 2; _S.values[2] = 3;
+        _S.row_indices[3] = 3; _S.column_indices[3] = 3; _S.values[3] = 4;
+        AMGMatrix S(_S);
 
-        cusp::coo_matrix<int, float, MemorySpace> T(4,2,4);
-        T.row_indices[0] = 0; T.column_indices[0] = 0; T.values[0] = 0.5;
-        T.row_indices[1] = 1; T.column_indices[1] = 0; T.values[1] = 0.5;
-        T.row_indices[2] = 2; T.column_indices[2] = 1; T.values[2] = 0.5;
-        T.row_indices[3] = 3; T.column_indices[3] = 1; T.values[3] = 0.5;
+	cusp::coo_matrix<int,float,MemorySpace> _T(4,2,4);
+        _T.row_indices[0] = 0; _T.column_indices[0] = 0; _T.values[0] = 0.5;
+        _T.row_indices[1] = 1; _T.column_indices[1] = 0; _T.values[1] = 0.5;
+        _T.row_indices[2] = 2; _T.column_indices[2] = 1; _T.values[2] = 0.5;
+        _T.row_indices[3] = 3; _T.column_indices[3] = 1; _T.values[3] = 0.5;
+        AMGMatrix T(_T);
 
-        cusp::coo_matrix<int, float, MemorySpace> P;
+        AMGMatrix _P;
 
-        cusp::precond::detail::smooth_prolongator(S, T, P, 4.0f, 2.0f); 
+        cusp::precond::detail::smooth_prolongator(S, T, _P, 4.0f, 2.0f); 
+
+	cusp::coo_matrix<int,float,MemorySpace> P(_P);
 
         ASSERT_EQUAL(P.num_rows,    4);
         ASSERT_EQUAL(P.num_cols,    2);
@@ -170,27 +180,31 @@ void TestSmoothProlongator(void)
 
     // 1D Poisson problem w/ 4 points and 2 aggregates
     {
-        cusp::coo_matrix<int, float, MemorySpace> S(4,4,10);
-        S.row_indices[0] = 0; S.column_indices[0] = 0; S.values[0] = 2;
-        S.row_indices[1] = 0; S.column_indices[1] = 1; S.values[1] =-1;
-        S.row_indices[2] = 1; S.column_indices[2] = 0; S.values[2] =-1;
-        S.row_indices[3] = 1; S.column_indices[3] = 1; S.values[3] = 2;
-        S.row_indices[4] = 1; S.column_indices[4] = 2; S.values[4] =-1;
-        S.row_indices[5] = 2; S.column_indices[5] = 1; S.values[5] =-1;
-        S.row_indices[6] = 2; S.column_indices[6] = 2; S.values[6] = 2;
-        S.row_indices[7] = 2; S.column_indices[7] = 3; S.values[7] =-1;
-        S.row_indices[8] = 3; S.column_indices[8] = 2; S.values[8] =-1;
-        S.row_indices[9] = 3; S.column_indices[9] = 3; S.values[9] = 2;
+        cusp::coo_matrix<int,float,MemorySpace> _S(4,4,10);
+        _S.row_indices[0] = 0; _S.column_indices[0] = 0; _S.values[0] = 2;
+        _S.row_indices[1] = 0; _S.column_indices[1] = 1; _S.values[1] =-1;
+        _S.row_indices[2] = 1; _S.column_indices[2] = 0; _S.values[2] =-1;
+        _S.row_indices[3] = 1; _S.column_indices[3] = 1; _S.values[3] = 2;
+        _S.row_indices[4] = 1; _S.column_indices[4] = 2; _S.values[4] =-1;
+        _S.row_indices[5] = 2; _S.column_indices[5] = 1; _S.values[5] =-1;
+        _S.row_indices[6] = 2; _S.column_indices[6] = 2; _S.values[6] = 2;
+        _S.row_indices[7] = 2; _S.column_indices[7] = 3; _S.values[7] =-1;
+        _S.row_indices[8] = 3; _S.column_indices[8] = 2; _S.values[8] =-1;
+        _S.row_indices[9] = 3; _S.column_indices[9] = 3; _S.values[9] = 2;
+        AMGMatrix S(_S);
 
-        cusp::coo_matrix<int, float, MemorySpace> T(4,2,4);
-        T.row_indices[0] = 0; T.column_indices[0] = 0; T.values[0] = 0.5;
-        T.row_indices[1] = 1; T.column_indices[1] = 0; T.values[1] = 0.5;
-        T.row_indices[2] = 2; T.column_indices[2] = 1; T.values[2] = 0.5;
-        T.row_indices[3] = 3; T.column_indices[3] = 1; T.values[3] = 0.5;
+        cusp::coo_matrix<int,float,MemorySpace> _T(4,2,4);
+        _T.row_indices[0] = 0; _T.column_indices[0] = 0; _T.values[0] = 0.5;
+        _T.row_indices[1] = 1; _T.column_indices[1] = 0; _T.values[1] = 0.5;
+        _T.row_indices[2] = 2; _T.column_indices[2] = 1; _T.values[2] = 0.5;
+        _T.row_indices[3] = 3; _T.column_indices[3] = 1; _T.values[3] = 0.5;
+        AMGMatrix T(_T);
 
-        cusp::coo_matrix<int, float, MemorySpace> P;
+        AMGMatrix _P;
 
-        cusp::precond::detail::smooth_prolongator(S, T, P, 4.0f/3.0f, 1.8090169943749472f); 
+        cusp::precond::detail::smooth_prolongator(S, T, _P, 4.0f/3.0f, 1.8090169943749472f); 
+
+	cusp::coo_matrix<int,float,MemorySpace> P(_P);
 
         ASSERT_EQUAL(P.num_rows,    4);
         ASSERT_EQUAL(P.num_cols,    2);
