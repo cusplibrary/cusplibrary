@@ -21,6 +21,7 @@
 #include <cusp/coo_matrix.h>
 #include <cusp/csr_matrix.h>
 #include <cusp/format.h>
+#include <cusp/print.h>
 
 #include <cusp/detail/format_utils.h>
 #include <cusp/detail/device/conversion_utils.h>
@@ -259,11 +260,15 @@ void dia_to_coo(const Matrix1& src, Matrix2& dst)
 		   scan_offsets.begin(),
                    column_indices.begin());
 
+   cusp::array1d<IndexType, cusp::device_memory> scan_row_indices(num_entries);
+   cusp::detail::offsets_to_indices( scan_offsets, scan_row_indices );
    // enumerate the column entries, e.g. [-3, -3, -3, -1, -1, -1, 0, ...]
-   thrust::inclusive_scan(column_indices.begin(), 
-			  column_indices.end(), 
-			  column_indices.begin(), 
-			  thrust::maximum<IndexType>());
+   thrust::inclusive_scan_by_key(scan_row_indices.begin(), 
+				 scan_row_indices.end(),
+			  	 column_indices.begin(), 
+			  	 column_indices.begin(), 
+				 thrust::equal_to<IndexType>(),
+			  	 thrust::maximum<IndexType>());
 
    // enumerate the offsets within each column, e.g. [0, 1, 2, 0, 1, 2, 0, ...]
    cusp::array1d<IndexType, cusp::device_memory> column_offsets(num_entries);
@@ -368,11 +373,15 @@ void dia_to_csr(const Matrix1& src, Matrix2& dst)
 		   scan_offsets.begin(),
                    column_indices.begin());
 
+   cusp::array1d<IndexType, cusp::device_memory> scan_row_indices(num_entries);
+   cusp::detail::offsets_to_indices( scan_offsets, scan_row_indices );
    // enumerate the column entries, e.g. [-3, -3, -3, -1, -1, -1, 0, ...]
-   thrust::inclusive_scan(column_indices.begin(), 
-			  column_indices.end(), 
-			  column_indices.begin(), 
-			  thrust::maximum<IndexType>());
+   thrust::inclusive_scan_by_key(scan_row_indices.begin(), 
+				 scan_row_indices.end(),
+			  	 column_indices.begin(), 
+			  	 column_indices.begin(), 
+				 thrust::equal_to<IndexType>(),
+			  	 thrust::maximum<IndexType>());
 
    // enumerate the offsets within each column, e.g. [0, 1, 2, 0, 1, 2, 0, ...]
    cusp::array1d<IndexType, cusp::device_memory> column_offsets(num_entries);
