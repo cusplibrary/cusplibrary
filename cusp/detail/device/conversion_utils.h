@@ -85,14 +85,14 @@ struct speed_threshold_functor
   }
 };
 
-template <typename Array1d>
+template <typename Array1, typename Array2>
 size_t count_diagonals(const size_t num_rows, 
 		       const size_t num_cols,
 		       const size_t num_entries,
-		       const Array1d& row_indices,
-		       const Array1d& column_indices )
+		       const Array1& row_indices,
+		       const Array2& column_indices )
 {
-    typedef typename Array1d::value_type IndexType;
+    typedef typename Array1::value_type IndexType;
 
     cusp::array1d<IndexType,cusp::device_memory> values(num_rows+num_cols,IndexType(0));
 
