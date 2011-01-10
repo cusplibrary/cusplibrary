@@ -21,7 +21,6 @@
 #include <cusp/coo_matrix.h>
 #include <cusp/csr_matrix.h>
 #include <cusp/format.h>
-#include <cusp/print.h>
 
 #include <cusp/detail/format_utils.h>
 #include <cusp/detail/device/conversion_utils.h>
@@ -101,21 +100,6 @@ struct is_valid_coo_index
 };
 
 template <typename T>
-struct modulus_value : public thrust::unary_function<T,T>
-{
-  const T value;
-
-  modulus_value(const T value)
-    : value(value) {}
-
-    __host__ __device__
-  T operator()(const T& x) const
-  {
-    return x % value;
-  }
-};
-
-template <typename T>
 struct transpose_index_functor : public thrust::unary_function<T,T>
 {
   const T num_entries_per_row;
@@ -167,7 +151,52 @@ struct diagonal_index_functor : public thrust::unary_function<IndexType,IndexTyp
     const IndexType row  = thrust::get<0>(t);
     const IndexType diag = thrust::get<1>(t);
 
-    return (diag*pitch) + row;
+    return (diag * pitch) + row;
+  }
+};
+
+template <typename T>
+struct multiply_value : public thrust::unary_function<T,T>
+{
+  const T value;
+
+  multiply_value(const T value)
+    : value(value) {}
+
+    __host__ __device__
+  T operator()(const T& x) const
+  {
+    return x * value;
+  }
+};
+
+template <typename T>
+struct divide_value : public thrust::unary_function<T,T>
+{
+  const T value;
+
+  divide_value(const T value)
+    : value(value) {}
+
+    __host__ __device__
+  T operator()(const T& x) const
+  {
+    return x / value;
+  }
+};
+
+template <typename T>
+struct modulus_value : public thrust::unary_function<T,T>
+{
+  const T value;
+
+  modulus_value(const T value)
+    : value(value) {}
+
+    __host__ __device__
+  T operator()(const T& x) const
+  {
+    return x % value;
   }
 };
 
@@ -248,37 +277,20 @@ void dia_to_coo(const Matrix1& src, Matrix2& dst)
 
    RowIndexIterator row_indices_begin(IndexIterator(0), modulus_value<IndexType>(pitch));
 
-   cusp::array1d<IndexType, cusp::device_memory> scan_offsets(num_diagonals);
-   thrust::sequence( scan_offsets.begin(), scan_offsets.end(), IndexType(0), IndexType(src.values.num_rows) ); 
-
-   IndexType min = src.diagonal_offsets[0];
-   // fill column entries with 1 minus the smallest diagonal, e.g. [-4, -4, -4, -4, -4, -4, -4, ...]
-   cusp::array1d<IndexType, cusp::device_memory> column_indices(num_entries, min-1);
-   // scatter the diagonal offsets to the first entry in each column, e.g. [-3, -4, -4, -1, -4, -4, 0, ...]
+   cusp::array1d<IndexType, cusp::device_memory> column_indices(num_entries, IndexType(1));
    thrust::scatter(src.diagonal_offsets.begin(),
 		   src.diagonal_offsets.end(),
-		   scan_offsets.begin(),
+		   thrust::make_transform_iterator( 
+			thrust::counting_iterator<IndexType>(0), multiply_value<IndexType>(src.values.num_rows) ),
                    column_indices.begin());
 
-   cusp::array1d<IndexType, cusp::device_memory> scan_row_indices(num_entries);
-   cusp::detail::offsets_to_indices( scan_offsets, scan_row_indices );
-   // enumerate the column entries, e.g. [-3, -3, -3, -1, -1, -1, 0, ...]
-   thrust::inclusive_scan_by_key(scan_row_indices.begin(), 
-				 scan_row_indices.end(),
+   // enumerate the column entries, e.g. [-3, -2, -1, 0, -1, 0, 1, ...]
+   thrust::inclusive_scan_by_key(thrust::make_transform_iterator( thrust::counting_iterator<IndexType>(0), 
+								  divide_value<IndexType>(pitch) ), 
+   				 thrust::make_transform_iterator( thrust::counting_iterator<IndexType>(0), 
+								  divide_value<IndexType>(pitch) ) + num_entries, 
 			  	 column_indices.begin(), 
-			  	 column_indices.begin(), 
-				 thrust::equal_to<IndexType>(),
-			  	 thrust::maximum<IndexType>());
-
-   // enumerate the offsets within each column, e.g. [0, 1, 2, 0, 1, 2, 0, ...]
-   cusp::array1d<IndexType, cusp::device_memory> column_offsets(num_entries);
-   thrust::transform(thrust::counting_iterator<IndexType>(0), thrust::counting_iterator<IndexType>(num_entries), 
-                     thrust::constant_iterator<IndexType>(pitch), 
-                     column_offsets.begin(), 
-                     thrust::modulus<IndexType>());
-
-   // sum the indices and the offsets for the final column_indices array 
-   cusp::blas::axpy( column_offsets, column_indices, IndexType(1) );
+			  	 column_indices.begin());
 
    // copy valid entries to COO format
    thrust::copy_if
@@ -361,39 +373,22 @@ void dia_to_csr(const Matrix1& src, Matrix2& dst)
 
    RowIndexIterator row_indices_begin(IndexIterator(0), modulus_value<IndexType>(pitch));
 
-   cusp::array1d<IndexType, cusp::device_memory> scan_offsets(num_diagonals);
-   thrust::sequence( scan_offsets.begin(), scan_offsets.end(), IndexType(0), IndexType(src.values.num_rows) ); 
+   cusp::array1d<IndexType, cusp::device_memory> row_indices(num_entries);
+   cusp::array1d<IndexType, cusp::device_memory> column_indices(num_entries, IndexType(1));
 
-   IndexType min = src.diagonal_offsets[0];
-   // fill column entries with 1 minus the smallest diagonal, e.g. [-4, -4, -4, -4, -4, -4, -4, ...]
-   cusp::array1d<IndexType, cusp::device_memory> column_indices(num_entries, min-1);
-   // scatter the diagonal offsets to the first entry in each column, e.g. [-3, -4, -4, -1, -4, -4, 0, ...]
    thrust::scatter(src.diagonal_offsets.begin(),
 		   src.diagonal_offsets.end(),
-		   scan_offsets.begin(),
+		   thrust::make_transform_iterator( 
+			thrust::counting_iterator<IndexType>(0), multiply_value<IndexType>(src.values.num_rows) ),
                    column_indices.begin());
 
-   cusp::array1d<IndexType, cusp::device_memory> scan_row_indices(num_entries);
-   cusp::detail::offsets_to_indices( scan_offsets, scan_row_indices );
-   // enumerate the column entries, e.g. [-3, -3, -3, -1, -1, -1, 0, ...]
-   thrust::inclusive_scan_by_key(scan_row_indices.begin(), 
-				 scan_row_indices.end(),
+   // enumerate the column entries, e.g. [-3, -2, -1, 0, -1, 0, 1, ...]
+   thrust::inclusive_scan_by_key(thrust::make_transform_iterator( thrust::counting_iterator<IndexType>(0), 
+								  divide_value<IndexType>(pitch) ), 
+   				 thrust::make_transform_iterator( thrust::counting_iterator<IndexType>(0), 
+								  divide_value<IndexType>(pitch) ) + num_entries, 
 			  	 column_indices.begin(), 
-			  	 column_indices.begin(), 
-				 thrust::equal_to<IndexType>(),
-			  	 thrust::maximum<IndexType>());
-
-   // enumerate the offsets within each column, e.g. [0, 1, 2, 0, 1, 2, 0, ...]
-   cusp::array1d<IndexType, cusp::device_memory> column_offsets(num_entries);
-   thrust::transform(thrust::counting_iterator<IndexType>(0), thrust::counting_iterator<IndexType>(num_entries), 
-                     thrust::constant_iterator<IndexType>(pitch), 
-                     column_offsets.begin(), 
-                     thrust::modulus<IndexType>());
-
-   // sum the indices and the offsets for the final column_indices array 
-   cusp::blas::axpy( column_offsets, column_indices, IndexType(1) );
-
-   cusp::array1d<IndexType, cusp::device_memory> row_indices(num_entries);
+			  	 column_indices.begin());
 
    // copy valid entries to COO format
    thrust::copy_if
