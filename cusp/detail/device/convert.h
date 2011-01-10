@@ -24,8 +24,6 @@
 #include <cusp/detail/device/conversion.h>
 #include <cusp/detail/device/conversion_utils.h>
 
-#include <thrust/scan.h>
-
 namespace cusp
 {
 namespace detail
@@ -162,6 +160,29 @@ void convert(const Matrix1& src, Matrix2& dst,
 /////////
 // HYB //
 /////////
+
+template <typename Matrix1, typename Matrix2>
+void convert(const Matrix1& src, Matrix2& dst,
+             cusp::coo_format,
+             cusp::hyb_format,
+             const float  relative_speed      = 3.0,
+             const size_t breakeven_threshold = 4096)
+{
+    const size_t num_entries_per_row = cusp::detail::device::compute_optimal_entries_per_row(src, relative_speed, breakeven_threshold);
+    cusp::detail::device::coo_to_hyb(src, dst, num_entries_per_row);
+}
+
+template <typename Matrix1, typename Matrix2>
+void convert(const Matrix1& src, Matrix2& dst,
+             cusp::csr_format,
+             cusp::hyb_format,
+             const float  relative_speed      = 3.0,
+             const size_t breakeven_threshold = 4096)
+{
+    const size_t num_entries_per_row = cusp::detail::device::compute_optimal_entries_per_row(src, relative_speed, breakeven_threshold);
+    cusp::detail::device::csr_to_hyb(src, dst, num_entries_per_row);
+}
+
 
 ///////////
 // Array //

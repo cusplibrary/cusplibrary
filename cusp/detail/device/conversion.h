@@ -54,6 +54,8 @@ namespace device
 //     <- COO
 // DIA <- CSR
 //     <- COO
+// HYB <- CSR
+//     <- COO
 // 
 // All other conversions happen on the host
 
@@ -198,6 +200,28 @@ struct modulus_value : public thrust::unary_function<T,T>
   {
     return x % value;
   }
+};
+
+template <typename T>
+struct greater_than_or_equal_to
+{
+  const T num;
+
+  greater_than_or_equal_to(const T num)
+    : num(num) {}
+
+  __host__ __device__ bool operator()(const T &x) const {return x >= num;}
+};
+
+template <typename T>
+struct less_than
+{
+  const T num;
+
+  less_than(const T num)
+    : num(num) {}
+
+  __host__ __device__ bool operator()(const T &x) const {return x < num;}
 };
 
 template <typename IndexType>
@@ -610,6 +634,106 @@ void csr_to_ell(const Matrix1& src, Matrix2& dst,
 /////////
 // HYB //
 /////////
+
+template <typename Matrix1, typename Matrix2>
+void coo_to_hyb(const Matrix1& src, Matrix2& dst,
+                const size_t num_entries_per_row, const size_t alignment = 32)
+{
+  typedef typename Matrix2::index_type IndexType;
+  typedef typename Matrix2::value_type ValueType;
+
+  cusp::array1d<IndexType, cusp::device_memory> indices(src.num_entries);
+  thrust::exclusive_scan_by_key(src.row_indices.begin(), src.row_indices.end(),
+                                thrust::constant_iterator<IndexType>(1),
+                                indices.begin(),
+                                IndexType(0));
+
+  size_t num_coo_entries = thrust::count_if(indices.begin(), indices.end(), greater_than_or_equal_to<size_t>(num_entries_per_row));
+  size_t num_ell_entries = src.num_entries - num_coo_entries;
+
+  // allocate output storage
+  dst.resize(src.num_rows, src.num_cols, num_ell_entries, num_coo_entries, num_entries_per_row, alignment);
+
+  // fill output with padding
+  thrust::fill(dst.ell.column_indices.values.begin(), dst.ell.column_indices.values.end(), IndexType(-1));
+  thrust::fill(dst.ell.values.values.begin(),         dst.ell.values.values.end(),         ValueType(0));
+
+  thrust::copy_if(thrust::make_zip_iterator( thrust::make_tuple( src.row_indices.begin(), src.column_indices.begin(), src.values.begin() ) ),
+  		  thrust::make_zip_iterator( thrust::make_tuple( src.row_indices.end()  , src.column_indices.end()  , src.values.end()   ) ),
+                  indices.begin(),
+  		  thrust::make_zip_iterator( thrust::make_tuple( dst.coo.row_indices.begin(), dst.coo.column_indices.begin(), dst.coo.values.begin() ) ),
+		  greater_than_or_equal_to<size_t>(num_entries_per_row) );
+
+  // next, scale by pitch and add row index
+  cusp::blas::axpby(indices, src.row_indices,
+                    indices,
+                    IndexType(dst.ell.column_indices.pitch),
+                    IndexType(1));
+
+  // scatter CSR entries to ELL
+  thrust::scatter_if(src.column_indices.begin(), src.column_indices.end(),
+                     indices.begin(),
+                     indices.begin(),
+                     dst.ell.column_indices.values.begin(),
+		     less_than<size_t>(dst.ell.column_indices.values.size()));
+  thrust::scatter_if(src.values.begin(), src.values.end(),
+                     indices.begin(),
+                     indices.begin(),
+                     dst.ell.values.values.begin(),
+		     less_than<size_t>(dst.ell.values.values.size()));
+}
+
+template <typename Matrix1, typename Matrix2>
+void csr_to_hyb(const Matrix1& src, Matrix2& dst,
+                const size_t num_entries_per_row, const size_t alignment = 32)
+{
+  typedef typename Matrix2::index_type IndexType;
+  typedef typename Matrix2::value_type ValueType;
+
+  // expand row offsets into row indices
+  cusp::array1d<IndexType, cusp::device_memory> row_indices(src.num_entries);
+  cusp::detail::offsets_to_indices(src.row_offsets, row_indices);
+
+  cusp::array1d<IndexType, cusp::device_memory> indices(src.num_entries);
+  thrust::exclusive_scan_by_key(row_indices.begin(), row_indices.end(),
+                                thrust::constant_iterator<IndexType>(1),
+                                indices.begin(),
+                                IndexType(0));
+
+  size_t num_coo_entries = thrust::count_if(indices.begin(), indices.end(), greater_than_or_equal_to<size_t>(num_entries_per_row));
+  size_t num_ell_entries = src.num_entries - num_coo_entries;
+
+  // allocate output storage
+  dst.resize(src.num_rows, src.num_cols, num_ell_entries, num_coo_entries, num_entries_per_row, alignment);
+
+  // fill output with padding
+  thrust::fill(dst.ell.column_indices.values.begin(), dst.ell.column_indices.values.end(), IndexType(-1));
+  thrust::fill(dst.ell.values.values.begin(),         dst.ell.values.values.end(),         ValueType(0));
+
+  thrust::copy_if(thrust::make_zip_iterator( thrust::make_tuple( row_indices.begin(), src.column_indices.begin(), src.values.begin() ) ),
+  		  thrust::make_zip_iterator( thrust::make_tuple( row_indices.end()  , src.column_indices.end()  , src.values.end()   ) ),
+                  indices.begin(),
+  		  thrust::make_zip_iterator( thrust::make_tuple( dst.coo.row_indices.begin(), dst.coo.column_indices.begin(), dst.coo.values.begin() ) ),
+		  greater_than_or_equal_to<size_t>(num_entries_per_row) );
+
+  // next, scale by pitch and add row index
+  cusp::blas::axpby(indices, row_indices,
+                    indices,
+                    IndexType(dst.ell.column_indices.pitch),
+                    IndexType(1));
+
+  // scatter CSR entries to ELL
+  thrust::scatter_if(src.column_indices.begin(), src.column_indices.end(),
+                     indices.begin(),
+                     indices.begin(),
+                     dst.ell.column_indices.values.begin(),
+		     less_than<size_t>(dst.ell.column_indices.values.size()));
+  thrust::scatter_if(src.values.begin(), src.values.end(),
+                     indices.begin(),
+                     indices.begin(),
+                     dst.ell.values.values.begin(),
+		     less_than<size_t>(dst.ell.values.values.size()));
+}
 
 ///////////
 // Array //
