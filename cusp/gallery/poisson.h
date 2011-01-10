@@ -92,13 +92,13 @@ void poisson9pt(      MatrixType& matrix, size_t m, size_t n)
 
     cusp::array1d<StencilPoint, cusp::host_memory> stencil;
     stencil.push_back(StencilPoint(StencilIndex( -1, -1), -1));
-    stencil.push_back(StencilPoint(StencilIndex(  1, -1), -1));
     stencil.push_back(StencilPoint(StencilIndex(  0, -1), -1));
+    stencil.push_back(StencilPoint(StencilIndex(  1, -1), -1));
     stencil.push_back(StencilPoint(StencilIndex( -1,  0), -1));
     stencil.push_back(StencilPoint(StencilIndex(  0,  0),  8));
     stencil.push_back(StencilPoint(StencilIndex(  1,  0), -1));
-    stencil.push_back(StencilPoint(StencilIndex(  0,  1), -1));
     stencil.push_back(StencilPoint(StencilIndex( -1,  1), -1));
+    stencil.push_back(StencilPoint(StencilIndex(  0,  1), -1));
     stencil.push_back(StencilPoint(StencilIndex(  1,  1), -1));
 
     cusp::gallery::generate_matrix_from_stencil(matrix, stencil, StencilIndex(m,n));
@@ -127,7 +127,7 @@ void poisson7pt(      MatrixType& matrix, size_t m, size_t n, size_t k)
 }
 
 template <typename MatrixType>
-void poisson27pt(      MatrixType& matrix, size_t m, size_t n, size_t k)
+void poisson27pt(      MatrixType& matrix, size_t m, size_t n, size_t l)
 {
     CUSP_PROFILE_SCOPED();
 
@@ -137,12 +137,12 @@ void poisson27pt(      MatrixType& matrix, size_t m, size_t n, size_t k)
     typedef thrust::tuple<StencilIndex,ValueType> 	    StencilPoint;
 
     cusp::array1d<StencilPoint, cusp::host_memory> stencil;
-    for( IndexType i = -1; i <= 1; i++ )
+    for( IndexType k = -1; k <= 1; k++ )
     	for( IndexType j = -1; j <= 1; j++ )
-    	   for( IndexType k = -1; k <= 1; k++ )
+    	   for( IndexType i = -1; i <= 1; i++ )
     		stencil.push_back(StencilPoint(StencilIndex( i, j, k), (i==0 && j==0 && k==0) ? 26 : -1));
 
-    cusp::gallery::generate_matrix_from_stencil(matrix, stencil, StencilIndex(m,n,k));
+    cusp::gallery::generate_matrix_from_stencil(matrix, stencil, StencilIndex(m,n,l));
 }
 /*! \}
  */
