@@ -180,6 +180,20 @@ void fit_candidates(const Array1& aggregates,
                     thrust::divides<ValueType>());
 }
 
+template <typename Matrix>
+void setup_level_matrix(Matrix& dst,
+                 	Matrix& src)
+{	dst.swap(src);	}
+
+template <typename Matrix1, typename Matrix2>
+void setup_level_matrix(Matrix1& dst,
+                 	Matrix2& src)
+{	
+	dst = src;
+	// same space by resizing src to nothing
+        src.resize(0,0,0);
+}
+
 } // end namespace detail
 
 
@@ -192,15 +206,19 @@ smoothed_aggregation<IndexType,ValueType,MemorySpace>::smoothed_aggregation(cons
   levels.reserve(20); // avoid reallocations which force matrix copies
 
   levels.push_back(typename smoothed_aggregation<IndexType,ValueType,MemorySpace>::level());
-  levels.back().A = A; // copy
+  levels.back().A_ = A; // copy
   levels.back().B.resize(A.num_rows, ValueType(1.0));
 
-  while (levels.back().A.num_rows > 100)
+  while (levels.back().A_.num_rows > 100)
     extend_hierarchy();
 
   // TODO make lu_solver accept sparse input
-  cusp::array2d<ValueType,cusp::host_memory> coarse_dense(levels.back().A);
+  cusp::array2d<ValueType,cusp::host_memory> coarse_dense(levels.back().A_);
   LU = cusp::detail::lu_solver<ValueType, cusp::host_memory>(coarse_dense);
+
+  // Setup solve matrix for each level
+  for( size_t lvl = 0; lvl < levels.size(); lvl++ )
+    detail::setup_level_matrix( levels[lvl].A, levels[lvl].A_ );
 }
 
 template <typename IndexType, typename ValueType, typename MemorySpace>
@@ -208,11 +226,11 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace>::extend_hierarchy(voi
 {
   CUSP_PROFILE_SCOPED();
 
-  const AMGMatrix& A = levels.back().A;
+  const SetupMatrixType& A = levels.back().A_;
   const cusp::array1d<ValueType,MemorySpace>&              B = levels.back().B;
 
   // compute stength of connection matrix
-  AMGMatrix C;
+  SetupMatrixType C;
   detail::symmetric_strength_of_connection(A, C, theta);
 
   // compute spectral radius of diag(C)^-1 * C
@@ -223,23 +241,23 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace>::extend_hierarchy(voi
   detail::standard_aggregation(C, aggregates);
 
   // compute tenative prolongator and coarse nullspace vector
-  AMGMatrix 				T;
+  SetupMatrixType 				T;
   cusp::array1d<ValueType,MemorySpace>  B_coarse;
   detail::fit_candidates(aggregates, B, T, B_coarse);
   
   // compute prolongation operator
-  AMGMatrix P;
+  SetupMatrixType P;
   detail::smooth_prolongator(A, T, P, ValueType(4.0/3.0), rho_DinvA);  // TODO if C != A then compute rho_Dinv_C
 
   // compute restriction operator (transpose of prolongator)
-  AMGMatrix R;
+  SetupMatrixType R;
   cusp::transpose(P,R);
 
   // construct Galerkin product R*A*P
-  AMGMatrix RAP;
+  SetupMatrixType RAP;
   {
     // TODO test speed of R * (A * P) vs. (R * A) * P
-    AMGMatrix AP;
+    SetupMatrixType AP;
     cusp::multiply(A, P, AP);
     cusp::multiply(R, AP, RAP);
   }
@@ -256,17 +274,17 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace>::extend_hierarchy(voi
   #endif
 
   levels.back().aggregates.swap(aggregates);
-  levels.back().R.swap(R);
-  levels.back().P.swap(P);
-  levels.back().residual.resize(levels.back().A.num_rows);
+  detail::setup_level_matrix( levels.back().R, R );
+  detail::setup_level_matrix( levels.back().P, P );
+  levels.back().residual.resize(levels.back().A_.num_rows);
 
   //std::cout << "omega " << omega << std::endl;
 
   levels.push_back(level());
-  levels.back().A.swap(RAP);
+  levels.back().A_.swap(RAP);
   levels.back().B.swap(B_coarse);
-  levels.back().x.resize(levels.back().A.num_rows);
-  levels.back().b.resize(levels.back().A.num_rows);
+  levels.back().x.resize(levels.back().A_.num_rows);
+  levels.back().b.resize(levels.back().A_.num_rows);
 
 }
 
@@ -301,7 +319,7 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace>::solve(const cusp::ar
   CUSP_PROFILE_SCOPED();
 
   // TODO check sizes
-  const AMGMatrix & A = levels[0].A;
+  const SolveMatrixType & A = levels[0].A;
  
   // use simple iteration
   cusp::array1d<ValueType,MemorySpace> update(A.num_rows);
@@ -344,9 +362,9 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace>
   }
   else
   {
-    const AMGMatrix & R = levels[i].R;
-    const AMGMatrix & A = levels[i].A;
-    const AMGMatrix & P = levels[i].P;
+    const SolveMatrixType & R = levels[i].R;
+    const SolveMatrixType & A = levels[i].A;
+    const SolveMatrixType & P = levels[i].P;
 
     cusp::array1d<ValueType,MemorySpace>& residual = levels[i].residual;
     cusp::array1d<ValueType,MemorySpace>& coarse_b = levels[i + 1].b;

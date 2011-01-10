@@ -28,6 +28,7 @@
 
 #include <cusp/coo_matrix.h>
 #include <cusp/csr_matrix.h>
+#include <cusp/hyb_matrix.h>
 #include <cusp/relaxation/jacobi.h>
 #include <cusp/relaxation/polynomial.h>
 
@@ -52,14 +53,16 @@ template <typename IndexType, typename ValueType>
 struct amg_container<IndexType,ValueType,cusp::host_memory>
 {
     // use CSR on host
-    typedef typename cusp::csr_matrix<IndexType,ValueType,cusp::host_memory> type;
+    typedef typename cusp::csr_matrix<IndexType,ValueType,cusp::host_memory> setup_type;
+    typedef typename cusp::csr_matrix<IndexType,ValueType,cusp::host_memory> solve_type;
 };
 
 template <typename IndexType, typename ValueType>
 struct amg_container<IndexType,ValueType,cusp::device_memory>
 {
     // use COO on device
-    typedef typename cusp::coo_matrix<IndexType,ValueType,cusp::device_memory> type;
+    typedef typename cusp::coo_matrix<IndexType,ValueType,cusp::device_memory> setup_type;
+    typedef typename cusp::hyb_matrix<IndexType,ValueType,cusp::device_memory> solve_type;
 };
 
 /*! \p smoothed_aggregation : algebraic multigrid preconditoner based on
@@ -71,23 +74,21 @@ template <typename IndexType, typename ValueType, typename MemorySpace>
 class smoothed_aggregation : public cusp::linear_operator<ValueType, MemorySpace, IndexType>
 {
 
-    typedef typename amg_container<IndexType,ValueType,MemorySpace>::type AMGMatrix;
+    typedef typename amg_container<IndexType,ValueType,MemorySpace>::setup_type SetupMatrixType;
+    typedef typename amg_container<IndexType,ValueType,MemorySpace>::solve_type SolveMatrixType;
 
     struct level
     {
-        AMGMatrix R;  // restriction operator
-        AMGMatrix A;  // matrix
-        AMGMatrix P;  // prolongation operator
+        SetupMatrixType A_; // matrix
+        SolveMatrixType R;  // restriction operator
+        SolveMatrixType A;  // matrix
+        SolveMatrixType P;  // prolongation operator
         cusp::array1d<IndexType,MemorySpace> aggregates;      // aggregates
         cusp::array1d<ValueType,MemorySpace> B;               // near-nullspace candidates
         cusp::array1d<ValueType,MemorySpace> x;               // per-level solution
         cusp::array1d<ValueType,MemorySpace> b;               // per-level rhs
         cusp::array1d<ValueType,MemorySpace> residual;        // per-level residual
         
-        cusp::array1d<IndexType,MemorySpace> R_row_offsets;   // R row offsets
-        cusp::array1d<IndexType,MemorySpace> A_row_offsets;   // A row offsets
-        cusp::array1d<IndexType,MemorySpace> P_row_offsets;   // P row offsets
-
 	#ifndef USE_POLY_SMOOTHER
         cusp::relaxation::jacobi<ValueType,MemorySpace> smoother;
 	#else
