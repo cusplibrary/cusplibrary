@@ -33,8 +33,11 @@
 #include <thrust/scan.h>
 #include <thrust/scatter.h>
 #include <thrust/sequence.h>
+#include <thrust/tuple.h>
+
 #include <thrust/iterator/constant_iterator.h>
 #include <thrust/iterator/counting_iterator.h>
+#include <thrust/iterator/zip_iterator.h>
 
 namespace cusp
 {
@@ -154,6 +157,20 @@ struct diagonal_index_functor : public thrust::unary_function<IndexType,IndexTyp
     const IndexType diag = thrust::get<1>(t);
 
     return (diag * pitch) + row;
+  }
+};
+
+template <typename T>
+struct sum_tuple_functor : public thrust::unary_function<T,T>
+{
+  template <typename Tuple>
+    __host__ __device__
+  T operator()(const Tuple& t) const
+  {
+    const T offset  = thrust::get<0>(t);
+    const T modulus = thrust::get<1>(t);
+
+    return offset + modulus;
   }
 };
 
@@ -301,25 +318,23 @@ void dia_to_coo(const Matrix1& src, Matrix2& dst)
 
    RowIndexIterator row_indices_begin(IndexIterator(0), modulus_value<IndexType>(pitch));
 
-   cusp::array1d<IndexType, cusp::device_memory> column_indices(num_entries, IndexType(1));
-   thrust::scatter(src.diagonal_offsets.begin(),
-		   src.diagonal_offsets.end(),
-		   thrust::make_transform_iterator( 
-			thrust::counting_iterator<IndexType>(0), multiply_value<IndexType>(src.values.num_rows) ),
-                   column_indices.begin());
+   // define types used to programatically generate column_indices
+   typedef typename thrust::device_vector<IndexType>::const_iterator ConstElementIterator;
+   typedef typename thrust::transform_iterator<divide_value<IndexType>, IndexIterator> DivideIterator;
+   typedef typename thrust::permutation_iterator<ConstElementIterator,DivideIterator> OffsetsPermIterator;
+   typedef typename thrust::tuple<OffsetsPermIterator, RowIndexIterator> IteratorTuple;
+   typedef typename thrust::zip_iterator<IteratorTuple> ZipIterator;
+   typedef typename thrust::transform_iterator<sum_tuple_functor<IndexType>, ZipIterator> ColumnIndexIterator;
 
-   // enumerate the column entries, e.g. [-3, -2, -1, 0, -1, 0, 1, ...]
-   thrust::inclusive_scan_by_key(thrust::make_transform_iterator( thrust::counting_iterator<IndexType>(0), 
-								  divide_value<IndexType>(pitch) ), 
-   				 thrust::make_transform_iterator( thrust::counting_iterator<IndexType>(0), 
-								  divide_value<IndexType>(pitch) ) + num_entries, 
-			  	 column_indices.begin(), 
-			  	 column_indices.begin());
+   DivideIterator gather_indices_begin(IndexIterator(0), divide_value<IndexType>(pitch));
+   OffsetsPermIterator offsets_begin(src.diagonal_offsets.begin(), gather_indices_begin);
+   ZipIterator offset_modulus_tuple(thrust::make_tuple(offsets_begin, row_indices_begin));
+   ColumnIndexIterator column_indices_begin(offset_modulus_tuple, sum_tuple_functor<IndexType>());
 
    // copy valid entries to COO format
    thrust::copy_if
-     (thrust::make_permutation_iterator(thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, column_indices.begin(), src.values.values.begin())), thrust::make_transform_iterator(thrust::counting_iterator<IndexType>(0), transpose_index_functor<IndexType>(pitch, num_diagonals))),
-      thrust::make_permutation_iterator(thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, column_indices.begin(), src.values.values.begin())), thrust::make_transform_iterator(thrust::counting_iterator<IndexType>(0), transpose_index_functor<IndexType>(pitch, num_diagonals))) + num_entries,
+     (thrust::make_permutation_iterator(thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, column_indices_begin, src.values.values.begin())), thrust::make_transform_iterator(thrust::counting_iterator<IndexType>(0), transpose_index_functor<IndexType>(pitch, num_diagonals))),
+      thrust::make_permutation_iterator(thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, column_indices_begin, src.values.values.begin())), thrust::make_transform_iterator(thrust::counting_iterator<IndexType>(0), transpose_index_functor<IndexType>(pitch, num_diagonals))) + num_entries,
       thrust::make_zip_iterator(thrust::make_tuple(dst.row_indices.begin(), dst.column_indices.begin(), dst.values.begin())),
       is_valid_coo_index<IndexType,ValueType>(src.num_rows,src.num_cols));
 }
@@ -397,31 +412,28 @@ void dia_to_csr(const Matrix1& src, Matrix2& dst)
 
    RowIndexIterator row_indices_begin(IndexIterator(0), modulus_value<IndexType>(pitch));
 
-   cusp::array1d<IndexType, cusp::device_memory> row_indices(num_entries);
-   cusp::array1d<IndexType, cusp::device_memory> column_indices(num_entries, IndexType(1));
+   // define types used to programatically generate column_indices
+   typedef typename thrust::device_vector<IndexType>::const_iterator ConstElementIterator;
+   typedef typename thrust::transform_iterator<divide_value<IndexType>, IndexIterator> DivideIterator;
+   typedef typename thrust::permutation_iterator<ConstElementIterator,DivideIterator> OffsetsPermIterator;
+   typedef typename thrust::tuple<OffsetsPermIterator, RowIndexIterator> IteratorTuple;
+   typedef typename thrust::zip_iterator<IteratorTuple> ZipIterator;
+   typedef typename thrust::transform_iterator<sum_tuple_functor<IndexType>, ZipIterator> ColumnIndexIterator;
 
-   thrust::scatter(src.diagonal_offsets.begin(),
-		   src.diagonal_offsets.end(),
-		   thrust::make_transform_iterator( 
-			thrust::counting_iterator<IndexType>(0), multiply_value<IndexType>(src.values.num_rows) ),
-                   column_indices.begin());
+   DivideIterator gather_indices_begin(IndexIterator(0), divide_value<IndexType>(pitch));
+   OffsetsPermIterator offsets_begin(src.diagonal_offsets.begin(), gather_indices_begin);
+   ZipIterator offset_modulus_tuple(thrust::make_tuple(offsets_begin, row_indices_begin));
+   ColumnIndexIterator column_indices_begin(offset_modulus_tuple, sum_tuple_functor<IndexType>());
 
-   // enumerate the column entries, e.g. [-3, -2, -1, 0, -1, 0, 1, ...]
-   thrust::inclusive_scan_by_key(thrust::make_transform_iterator( thrust::counting_iterator<IndexType>(0), 
-								  divide_value<IndexType>(pitch) ), 
-   				 thrust::make_transform_iterator( thrust::counting_iterator<IndexType>(0), 
-								  divide_value<IndexType>(pitch) ) + num_entries, 
-			  	 column_indices.begin(), 
-			  	 column_indices.begin());
+   cusp::array1d<IndexType, cusp::device_memory> row_indices(src.num_entries);
 
    // copy valid entries to COO format
    thrust::copy_if
-     (thrust::make_permutation_iterator(thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, column_indices.begin(), src.values.values.begin())), thrust::make_transform_iterator(thrust::counting_iterator<IndexType>(0), transpose_index_functor<IndexType>(pitch, num_diagonals))),
-      thrust::make_permutation_iterator(thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, column_indices.begin(), src.values.values.begin())), thrust::make_transform_iterator(thrust::counting_iterator<IndexType>(0), transpose_index_functor<IndexType>(pitch, num_diagonals))) + num_entries,
+     (thrust::make_permutation_iterator(thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, column_indices_begin, src.values.values.begin())), thrust::make_transform_iterator(thrust::counting_iterator<IndexType>(0), transpose_index_functor<IndexType>(pitch, num_diagonals))),
+      thrust::make_permutation_iterator(thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, column_indices_begin, src.values.values.begin())), thrust::make_transform_iterator(thrust::counting_iterator<IndexType>(0), transpose_index_functor<IndexType>(pitch, num_diagonals))) + num_entries,
       thrust::make_zip_iterator(thrust::make_tuple(row_indices.begin(), dst.column_indices.begin(), dst.values.begin())),
       is_valid_coo_index<IndexType,ValueType>(src.num_rows,src.num_cols));
 
-    row_indices.resize( src.num_entries );
     cusp::detail::indices_to_offsets( row_indices, dst.row_offsets );
 }
 
