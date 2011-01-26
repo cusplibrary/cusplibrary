@@ -342,7 +342,9 @@ struct complex <float> : public cuFloatComplex
 public:
   typedef float value_type;
   __host__ __device__ 
-    inline  complex<float>(const float & re = float(), const float& im = float())
+    inline  complex<float>(){};
+  __host__ __device__ 
+    inline  complex<float>(const float & re, const float& im = float())
     {
       real(re);
       imag(im);
@@ -440,9 +442,10 @@ struct complex <double> : public cuDoubleComplex
 {
 public:
   typedef double value_type;
-
   __host__ __device__
-    inline complex<double>(const double & re = double(), const double& im = double())
+    inline  complex<double>(){};
+  __host__ __device__
+    inline complex<double>(const double & re, const double& im = double())
     {
       real(re);
       imag(im);
