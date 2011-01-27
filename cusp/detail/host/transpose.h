@@ -48,7 +48,7 @@ void transpose(const MatrixType1& A, MatrixType2& At,
 
     typedef typename MatrixType2::index_type   IndexType;
     
-    cusp::array1d<IndexType,cusp::host_memory> starting_pos(A.num_cols, 0);
+    cusp::array1d<IndexType,cusp::host_memory> starting_pos(A.num_cols+1, 0);
 
     if( A.num_entries > 0 )
     {
@@ -58,7 +58,7 @@ void transpose(const MatrixType1& A, MatrixType2& At,
 	   starting_pos[col+1]++;
         }
 
-	for( size_t i = 1; i < A.num_cols; i++ )
+	for( size_t i = 1; i < A.num_cols+1; i++ )
 	   starting_pos[i] += starting_pos[i-1];
 
 	for( size_t i = 0; i < A.num_entries; i++ )
