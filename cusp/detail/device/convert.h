@@ -18,8 +18,7 @@
 #pragma once
 
 #include <cusp/format.h>
-
-#include <cusp/detail/host/convert.h>
+#include <cusp/coo_matrix.h>
 
 #include <cusp/detail/device/conversion.h>
 #include <cusp/detail/device/conversion_utils.h>
@@ -51,6 +50,12 @@ void convert(const Matrix1& src, Matrix2& dst,
              cusp::dia_format,
              cusp::coo_format)
 {    cusp::detail::device::dia_to_coo(src, dst);    }
+
+template <typename Matrix1, typename Matrix2>
+void convert(const Matrix1& src, Matrix2& dst,
+             cusp::hyb_format,
+             cusp::coo_format)
+{    cusp::detail::device::hyb_to_coo(src, dst);    }
 
 /////////
 // CSR //
@@ -183,17 +188,41 @@ void convert(const Matrix1& src, Matrix2& dst,
     cusp::detail::device::csr_to_hyb(src, dst, num_entries_per_row);
 }
 
+template <typename Matrix1, typename Matrix2>
+void convert(const Matrix1& src, Matrix2& dst,
+             cusp::ell_format,
+             cusp::hyb_format)
+{
+    cusp::detail::device::ell_to_hyb(src, dst);
+}
 
 ///////////
 // Array //
 ///////////
 
-///////////////////
-// Host Fallback //
-///////////////////
-template <typename Matrix1, typename Matrix2, typename MatrixFormat1, typename MatrixFormat2>
+template <typename Matrix1, typename Matrix2, typename MatrixFormat1>
 void convert(const Matrix1& src, Matrix2& dst,
              MatrixFormat1,
+             cusp::array2d_format)
+{
+    // transfer to host, convert on host, and transfer back to device
+    typedef typename Matrix1::container SourceContainerType;
+    typedef typename Matrix2::container DestinationContainerType;
+    typedef typename DestinationContainerType::template rebind<cusp::host_memory>::type HostDestinationContainerType;
+    typedef typename SourceContainerType::template      rebind<cusp::host_memory>::type HostSourceContainerType;
+
+    HostSourceContainerType tmp1(src);
+
+    HostDestinationContainerType tmp2;
+
+    cusp::detail::host::convert(tmp1, tmp2);
+
+    cusp::copy(tmp2, dst);
+}
+
+template <typename Matrix1, typename Matrix2, typename MatrixFormat2>
+void convert(const Matrix1& src, Matrix2& dst,
+             cusp::array2d_format,
              MatrixFormat2)
 {
     // transfer to host, convert on host, and transfer back to device
@@ -209,6 +238,23 @@ void convert(const Matrix1& src, Matrix2& dst,
     cusp::detail::host::convert(tmp1, tmp2);
 
     cusp::copy(tmp2, dst);
+}
+
+/////////////////////////////
+// Sparse->Sparse Fallback //
+/////////////////////////////
+template <typename Matrix1, typename Matrix2>
+void convert(const Matrix1& src, Matrix2& dst,
+             cusp::sparse_format,
+             cusp::sparse_format)
+{
+   typedef typename Matrix1::index_type IndexType;
+   typedef typename Matrix1::value_type ValueType;
+
+   // convert src -> coo_matrix -> dst
+   cusp::coo_matrix<IndexType, ValueType, cusp::device_memory> tmp;
+   cusp::convert(src, tmp);
+   cusp::convert(tmp, dst);
 }
 
 /////////////////

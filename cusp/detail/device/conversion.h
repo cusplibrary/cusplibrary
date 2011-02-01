@@ -18,9 +18,10 @@
 #pragma once
 
 #include <cusp/blas.h>
+#include <cusp/copy.h>
+#include <cusp/format.h>
 #include <cusp/coo_matrix.h>
 #include <cusp/csr_matrix.h>
-#include <cusp/format.h>
 
 #include <cusp/detail/format_utils.h>
 #include <cusp/detail/device/conversion_utils.h>
@@ -46,10 +47,11 @@ namespace detail
 namespace device
 {
 
-// Device Conversion Functions
+// Native Device Conversion Functions
 // COO <- CSR
 //     <- ELL
 //     <- DIA
+//     <- HYB
 // CSR <- COO
 //     <- ELL
 //     <- DIA
@@ -59,8 +61,7 @@ namespace device
 //     <- COO
 // HYB <- CSR
 //     <- COO
-// 
-// All other conversions happen on the host
+//     <- ELL
 
 template <typename IndexType>
 struct is_valid_ell_index
@@ -338,6 +339,32 @@ void dia_to_coo(const Matrix1& src, Matrix2& dst)
       thrust::make_zip_iterator(thrust::make_tuple(dst.row_indices.begin(), dst.column_indices.begin(), dst.values.begin())),
       is_valid_coo_index<IndexType,ValueType>(src.num_rows,src.num_cols));
 }
+
+template <typename Matrix1, typename Matrix2>
+void hyb_to_coo(const Matrix1& src, Matrix2& dst)
+{
+   typedef typename Matrix1::coo_matrix_type  CooMatrixType;
+   typedef typename CooMatrixType::container  CooMatrix;
+
+   // convert ell portion to coo
+   CooMatrix temp;
+   ell_to_coo(src.ell, temp);
+   
+   // resize output
+   dst.resize(src.num_rows, src.num_cols, temp.num_entries + src.coo.num_entries);
+
+   // merge coo matrices together
+   thrust::copy(temp.row_indices.begin(),    temp.row_indices.end(),    dst.row_indices.begin());
+   thrust::copy(temp.column_indices.begin(), temp.column_indices.end(), dst.column_indices.begin());
+   thrust::copy(temp.values.begin(),         temp.values.end(),         dst.values.begin());
+   thrust::copy(src.coo.row_indices.begin(),    src.coo.row_indices.end(),    dst.row_indices.begin()    + temp.num_entries);
+   thrust::copy(src.coo.column_indices.begin(), src.coo.column_indices.end(), dst.column_indices.begin() + temp.num_entries);
+   thrust::copy(src.coo.values.begin(),         src.coo.values.end(),         dst.values.begin()         + temp.num_entries);
+
+   if (temp.num_entries > 0 && src.coo.num_entries > 0)
+     cusp::detail::sort_by_row_and_column(dst.row_indices, dst.column_indices, dst.values); 
+}
+   
 
 
 /////////
@@ -745,6 +772,17 @@ void csr_to_hyb(const Matrix1& src, Matrix2& dst,
                      indices.begin(),
                      dst.ell.values.values.begin(),
 		     less_than<size_t>(dst.ell.values.values.size()));
+}
+
+template <typename Matrix1, typename Matrix2>
+void ell_to_hyb(const Matrix1& src, Matrix2& dst)
+{
+  // just copy into ell part of destination
+  dst.resize(src.num_rows, src.num_cols,
+             src.num_entries, 0,
+             src.column_indices.num_cols);
+
+  cusp::copy(src, dst.ell);
 }
 
 ///////////

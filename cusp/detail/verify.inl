@@ -56,11 +56,11 @@ template <typename IndexType>
 struct is_ell_entry
 {
     IndexType num_rows;
-    IndexType stride;
+    IndexType pitch;
     IndexType invalid_index;
 
-    is_ell_entry(IndexType num_rows, IndexType stride, IndexType invalid_index)
-        : num_rows(num_rows), stride(stride), invalid_index(invalid_index) {}
+    is_ell_entry(IndexType num_rows, IndexType pitch, IndexType invalid_index)
+        : num_rows(num_rows), pitch(pitch), invalid_index(invalid_index) {}
 
     template <typename Tuple>
     __host__ __device__
@@ -68,7 +68,7 @@ struct is_ell_entry
     {
         IndexType n = thrust::get<0>(t);
         IndexType j = thrust::get<1>(t);
-        return (n % stride < num_rows) && (j != invalid_index);
+        return (n % pitch < num_rows) && (j != invalid_index);
     }
 };
 
@@ -77,11 +77,11 @@ struct is_ell_entry_in_bounds
 {
     IndexType num_rows;
     IndexType num_cols;
-    IndexType stride;
+    IndexType pitch;
     IndexType invalid_index;
 
-    is_ell_entry_in_bounds(IndexType num_rows, IndexType num_cols, IndexType stride, IndexType invalid_index)
-        : num_rows(num_rows), num_cols(num_cols), stride(stride), invalid_index(invalid_index) {}
+    is_ell_entry_in_bounds(IndexType num_rows, IndexType num_cols, IndexType pitch, IndexType invalid_index)
+        : num_rows(num_rows), num_cols(num_cols), pitch(pitch), invalid_index(invalid_index) {}
 
     template <typename Tuple>
     __host__ __device__
@@ -89,7 +89,7 @@ struct is_ell_entry_in_bounds
     {
         IndexType n = thrust::get<0>(t);
         IndexType j = thrust::get<1>(t);
-        return (n % stride < num_rows) && (j != invalid_index) && (j >= 0) && (j < num_cols);
+        return (n % pitch < num_rows) && (j != invalid_index) && (j >= 0) && (j < num_cols);
     }
 };
 
@@ -298,7 +298,7 @@ bool is_valid_matrix(const MatrixType& A,
                            thrust::make_tuple(thrust::counting_iterator<IndexType>(0), 
                                               A.column_indices.values.begin())
                        ) + A.column_indices.values.size(),
-                       is_ell_entry<IndexType>(A.num_rows, A.column_indices.num_rows, invalid_index));
+                       is_ell_entry<IndexType>(A.num_rows, A.column_indices.pitch, invalid_index));
 
     if (A.num_entries != true_num_entries)
     {
@@ -321,7 +321,7 @@ bool is_valid_matrix(const MatrixType& A,
                                thrust::make_tuple(thrust::counting_iterator<IndexType>(0), 
                                                   A.column_indices.values.begin())
                            ) + A.column_indices.values.size(),
-                           is_ell_entry_in_bounds<IndexType>(A.num_rows, A.num_cols, A.column_indices.num_rows, invalid_index));
+                           is_ell_entry_in_bounds<IndexType>(A.num_rows, A.num_cols, A.column_indices.pitch, invalid_index));
         if (num_entries_in_bounds != true_num_entries)
         {
             ostream << "matrix contains (" << (true_num_entries - num_entries_in_bounds) << ") out-of-bounds column indices";

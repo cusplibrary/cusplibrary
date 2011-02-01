@@ -204,7 +204,8 @@ void TestSmoothProlongator(void)
 
         cusp::precond::detail::smooth_prolongator(S, T, _P, 4.0f/3.0f, 1.8090169943749472f); 
 
-	cusp::coo_matrix<int,float,MemorySpace> P(_P);
+    	cusp::coo_matrix<int,float,MemorySpace> P(_P);
+        P.sort_by_row_and_column();
 
         ASSERT_EQUAL(P.num_rows,    4);
         ASSERT_EQUAL(P.num_cols,    2);

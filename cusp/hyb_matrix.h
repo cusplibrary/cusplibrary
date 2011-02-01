@@ -139,14 +139,17 @@ namespace cusp
         typedef typename cusp::hyb_matrix_view<typename cusp::ell_matrix<IndexType,ValueType,MemorySpace>::const_view,
                                                typename cusp::coo_matrix<IndexType,ValueType,MemorySpace>::const_view,
                                                IndexType, ValueType, MemorySpace> const_view;
-
+        
+        typedef cusp::ell_matrix<IndexType,ValueType,MemorySpace> ell_matrix_type;
+        typedef cusp::coo_matrix<IndexType,ValueType,MemorySpace> coo_matrix_type;
+        
         /*! Storage for the \p ell_matrix portion.
          */
-        cusp::ell_matrix<IndexType,ValueType,MemorySpace> ell;
+        ell_matrix_type ell;
         
         /*! Storage for the \p coo_matrix portion.
          */
-        cusp::coo_matrix<IndexType,ValueType,MemorySpace> coo;
+        coo_matrix_type coo;
 
         /*! Construct an empty \p hyb_matrix.
          */
