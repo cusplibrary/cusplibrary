@@ -198,6 +198,7 @@ void extract_diagonal(const Matrix& A, Array& output, cusp::ell_format)
     cusp::array1d<IndexType,MemorySpace> row_indices(A.column_indices.values.size());
     thrust::transform(thrust::counting_iterator<int>(0), thrust::counting_iterator<int>(A.column_indices.values.size()),
             row_indices.begin(), row_operator<int,IndexType>(A.column_indices.pitch));
+    // TODO ignore padded values in column_indices
 
     // determine which matrix entries correspond to the matrix diagonal
     cusp::array1d<unsigned int,MemorySpace> is_diagonal(A.column_indices.values.size());
@@ -242,11 +243,12 @@ void extract_diagonal(const Matrix& A, Array& output, cusp::hyb_format)
     {
         // TODO fuse into single operation
 
+
         // compute ELL row indices
         cusp::array1d<IndexType,MemorySpace> row_indices(A.ell.column_indices.values.size());
         thrust::transform(thrust::counting_iterator<int>(0), thrust::counting_iterator<int>(A.ell.column_indices.values.size()),
                           row_indices.begin(),
-                          row_operator<int,IndexType>(A.ell.column_indices.num_rows));
+                          row_operator<int,IndexType>(A.ell.column_indices.pitch));
 
         // determine which matrix entries correspond to the matrix diagonal
         cusp::array1d<unsigned int,MemorySpace> is_diagonal(A.ell.column_indices.values.size());
@@ -254,7 +256,8 @@ void extract_diagonal(const Matrix& A, Array& output, cusp::hyb_format)
                           A.ell.column_indices.values.begin(),
                           is_diagonal.begin(),
                           thrust::equal_to<IndexType>());
-
+        // TODO ignore padded values in column_indices
+        
         // scatter the diagonal values to output
         thrust::scatter_if(A.ell.values.values.begin(), A.ell.values.values.end(),
                            row_indices.begin(),
