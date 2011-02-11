@@ -65,24 +65,24 @@ void reduce_by_key(InputIterator1 keys_first,
                    BinaryPredicate binary_pred,
                    BinaryFunction binary_op)
 {
-        typedef unsigned int IndexType;
-    	typedef typename thrust::iterator_traits<InputIterator1>::value_type  KeyType;
-    	typedef typename thrust::iterator_traits<OutputIterator2>::value_type ValueType;
+    typedef unsigned int IndexType;
+    typedef typename thrust::iterator_traits<InputIterator1>::value_type  KeyType;
+    typedef typename thrust::iterator_traits<OutputIterator2>::value_type ValueType;
 
-	// input size
-    	IndexType n = keys_last - keys_first;
+    // input size
+    IndexType n = keys_last - keys_first;
 
-        cusp::array1d<IndexType,cusp::device_memory> row_indices(n);
-	row_indices[0] = 0;
+    cusp::array1d<IndexType,cusp::device_memory> row_indices(n);
+    row_indices[0] = 0;
 
-    	// mark first element in each group
-	thrust::binary_negate<BinaryPredicate> not_binary_pred(binary_pred);
+    // mark first element in each group
+    thrust::binary_negate<BinaryPredicate> not_binary_pred(binary_pred);
 
 	// TODO : is_first_functor should use take the not_binary_pred predicate as an argument
 	// scan the predicates
 	thrust::inclusive_scan(thrust::make_transform_iterator( thrust::make_zip_iterator(thrust::make_tuple(keys_first, keys_first+1)), is_first_functor<KeyType>() ),
-			       thrust::make_transform_iterator( thrust::make_zip_iterator(thrust::make_tuple(keys_last-1, keys_last))  , is_first_functor<KeyType>() ),
-								row_indices.begin()+1);
+                           thrust::make_transform_iterator( thrust::make_zip_iterator(thrust::make_tuple(keys_last-1, keys_last))  , is_first_functor<KeyType>() ),
+                           row_indices.begin()+1);
 
 	size_t num_rows = row_indices.back() + 1;
 
@@ -97,14 +97,15 @@ void reduce_by_key(InputIterator1 keys_first,
 					     thrust::multiplies<ValueType>(),
 					     binary_op);
 
-    	// copy the first element before scatter
-    	keys_output[0] = keys_first[0];
+    // copy the first element before scatter
+    keys_output[0] = keys_first[0];
 
-    	// scatter first elements
-    	thrust::scatter_if(keys_first+1, keys_last, row_indices.begin()+1,
-			   thrust::make_transform_iterator( thrust::make_zip_iterator(thrust::make_tuple(keys_first, keys_first+1))  , 
-							    is_first_functor<KeyType>() ),
-			   keys_output);
+    // scatter first elements
+    thrust::scatter_if
+        (keys_first + 1, keys_last, row_indices.begin() + 1,
+         thrust::make_transform_iterator( thrust::make_zip_iterator(thrust::make_tuple(keys_first, keys_first+1))  , 
+                                          is_first_functor<KeyType>() ),
+         keys_output);
 }
 
 } // end namespace device

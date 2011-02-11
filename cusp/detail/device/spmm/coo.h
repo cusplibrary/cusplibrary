@@ -17,6 +17,7 @@
 #include <cusp/array1d.h>
 
 #include <cusp/detail/format_utils.h>
+#include <cusp/detail/device/reduce_by_key.h>
 
 #include <thrust/gather.h>
 #include <thrust/scan.h>
@@ -147,13 +148,15 @@ void coo_spmm_helper(size_t workspace_size,
     C.resize(A.num_rows, B.num_cols, NNZ);
 
     // sum values with the same (i,j)
-    thrust::reduce_by_key(thrust::make_zip_iterator(thrust::make_tuple(I.begin(), J.begin())),
-                          thrust::make_zip_iterator(thrust::make_tuple(I.end(),   J.end())),
-                          V.begin(),
-                          thrust::make_zip_iterator(thrust::make_tuple(C.row_indices.begin(), C.column_indices.begin())),
-                          C.values.begin(),
-                          thrust::equal_to< thrust::tuple<IndexType,IndexType> >(),
-                          thrust::plus<ValueType>());
+    // thrust::reduce_by_key
+    cusp::detail::device::reduce_by_key
+        (thrust::make_zip_iterator(thrust::make_tuple(I.begin(), J.begin())),
+         thrust::make_zip_iterator(thrust::make_tuple(I.end(),   J.end())),
+         V.begin(),
+         thrust::make_zip_iterator(thrust::make_tuple(C.row_indices.begin(), C.column_indices.begin())),
+         C.values.begin(),
+         thrust::equal_to< thrust::tuple<IndexType,IndexType> >(),
+         thrust::plus<ValueType>());
 }
 
 
