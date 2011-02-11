@@ -72,7 +72,7 @@ void bicgstab(LinearOperator& A,
  *  \code
  *  #include <cusp/csr_matrix.h>
  *  #include <cusp/monitor.h>
- *  #include <cusp/krylov/cg.h>
+ *  #include <cusp/krylov/bicgstab.h>
  *  #include <cusp/gallery/poisson.h>
  *  
  *  int main(void)
