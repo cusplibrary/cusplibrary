@@ -31,8 +31,8 @@ namespace detail
 {
 
 // Integer hash functions
-template <typename T>
-struct random_integer_functor : public thrust::unary_function<T,T>
+template <typename IndexType, typename T>
+struct random_integer_functor : public thrust::unary_function<IndexType,T>
 {
     size_t seed;
 
@@ -40,7 +40,6 @@ struct random_integer_functor : public thrust::unary_function<T,T>
         : seed(seed) {}
 
     // source: http://www.concentric.net/~ttwang/tech/inthash.htm
-    template <typename IndexType>
     __host__ __device__
     T hash(const IndexType i, thrust::detail::false_type) const
     {
@@ -54,7 +53,6 @@ struct random_integer_functor : public thrust::unary_function<T,T>
         return T(h);
     }
 
-    template <typename IndexType>
     __host__ __device__
     T hash(const IndexType i, thrust::detail::true_type) const
     {
@@ -69,7 +67,6 @@ struct random_integer_functor : public thrust::unary_function<T,T>
         return T(h);
     }
 
-    template <typename IndexType>
     __host__ __device__
     T operator()(const IndexType i) const
     {
@@ -77,6 +74,16 @@ struct random_integer_functor : public thrust::unary_function<T,T>
     }
 };
 
+template <typename UnsignedInteger, typename Real>
+struct integer_to_real : public thrust::unary_function<UnsignedInteger,Real>
+{
+    __host__ __device__
+    Real operator()(const UnsignedInteger i) const
+    {
+        const Real integer_bound = Real(UnsignedInteger(1) << (4 * sizeof(UnsignedInteger))) * Real(UnsignedInteger(1) << (4 * sizeof(UnsignedInteger)));
+        return Real(i) / integer_bound;
+    }
+};
 
 template <typename T>
 class random_integer_iterator
@@ -84,7 +91,7 @@ class random_integer_iterator
     public:
     typedef           ptrdiff_t                                            IndexType;
     typedef typename thrust::counting_iterator<IndexType>                  CountingIterator;
-    typedef          random_integer_functor<T>                             Functor;
+    typedef          random_integer_functor<IndexType,T>                   Functor;
     typedef typename thrust::transform_iterator<Functor, CountingIterator> TransformIterator;
 
     typedef TransformIterator type;
@@ -92,6 +99,41 @@ class random_integer_iterator
     static type make(const size_t seed)
     {
         return type(CountingIterator(0), Functor(seed));
+    }
+};
+
+template <typename T>
+struct random_real_iterator
+{};
+
+template <>
+struct random_real_iterator<float>
+{
+    typedef typename random_integer_iterator<unsigned int>::type        RandomIterator;
+    typedef          integer_to_real<unsigned int, float>               Functor;
+    typedef typename thrust::transform_iterator<Functor,RandomIterator> TransformIterator;
+    
+    typedef TransformIterator type;
+
+    static type make(const size_t seed)
+    {
+        return type(random_integer_iterator<unsigned int>::make(seed), Functor());
+    }
+};
+
+template <>
+struct random_real_iterator<double>
+{
+    public:
+    typedef typename random_integer_iterator<unsigned long long>::type  RandomIterator;
+    typedef          integer_to_real<unsigned long long, double>        Functor;
+    typedef typename thrust::transform_iterator<Functor,RandomIterator> TransformIterator;
+
+    typedef TransformIterator type;
+
+    static type make(const size_t seed)
+    {
+        return type(random_integer_iterator<unsigned long long>::make(seed), Functor());
     }
 };
 
@@ -114,8 +156,17 @@ class random_integers : public cusp::array1d_view<typename detail::random_intege
 
 // array view containing random real numbers in [0,1)
 template <typename T>
-class random_reals
+class random_reals : public cusp::array1d_view<typename detail::random_real_iterator<T>::type>
 {
+    protected:
+    typedef typename detail::random_real_iterator<T>::type Iterator;
+    typedef typename cusp::array1d_view<Iterator>          Parent;
+
+    public:
+    random_reals(const size_t n, const size_t seed = 0)
+        : Parent(detail::random_real_iterator<T>::make(seed), 
+                 detail::random_real_iterator<T>::make(seed) + n)
+    {}
 };
 
 } // end namespace detail

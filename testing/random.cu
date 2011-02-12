@@ -10,8 +10,10 @@
 
 #include <limits>
 
+#include <cusp/print.h>
+
 template <typename T>
-struct TestRandomIntegersProbability
+struct TestRandomIntegersDistribution
 {
     void operator()(void)
     {
@@ -41,7 +43,41 @@ struct TestRandomIntegersProbability
         ASSERT_LEQUAL(max_bin, (size_t) (1.05 * expected));
     }
 };
-SimpleUnitTest<TestRandomIntegersProbability, IntegralTypes> TestRandomIntegersProbabilityInstance;
+SimpleUnitTest<TestRandomIntegersDistribution, IntegralTypes> TestRandomIntegersDistributionInstance;
+
+
+template <typename T>
+struct TestRandomRealsDistribution
+{
+    void operator()(void)
+    {
+        size_t n = 123456;
+        cusp::detail::random_reals<T> random(n);
+
+        cusp::array1d<size_t, cusp::host_memory> buckets(32, 0);
+
+        for (size_t i = 0; i < n; i++)
+        {
+            const T val = random[i];
+            ASSERT_EQUAL(T(0) <= val, true);
+            ASSERT_EQUAL(val < T(1), true);
+
+            buckets[ size_t(val * T(buckets.size())) ]++;
+        }
+        
+//        std::cout << "min " << *thrust::min_element(buckets.begin(), buckets.end()) << std::endl;
+//        std::cout << "max " << *thrust::max_element(buckets.begin(), buckets.end()) << std::endl;
+//        cusp::print_matrix(buckets);
+
+        size_t expected = n / buckets.size();
+        size_t min_bin = *thrust::min_element(buckets.begin(), buckets.end());
+        size_t max_bin = *thrust::max_element(buckets.begin(), buckets.end());
+        
+        ASSERT_GEQUAL(min_bin, (size_t) (0.95 * expected));
+        ASSERT_LEQUAL(max_bin, (size_t) (1.05 * expected));
+    }
+};
+SimpleUnitTest<TestRandomRealsDistribution, FloatingPointTypes> TestRandomRealsDistributionInstance;
 
 
 template <typename T>
@@ -49,7 +85,7 @@ struct TestRandomIntegers
 {
     void operator()(void)
     {
-        size_t n = 12345;
+        size_t n = 123456;
         cusp::detail::random_integers<T> random(n);
 
         cusp::array1d<T, cusp::host_memory>   h(random);
@@ -59,4 +95,22 @@ struct TestRandomIntegers
     }
 };
 SimpleUnitTest<TestRandomIntegers, IntegralTypes> TestRandomIntegersInstance;
+
+
+// TODO test double on supported devices
+template <typename T>
+struct TestRandomReals
+{
+    void operator()(void)
+    {
+        size_t n = 123456;
+        cusp::detail::random_reals<T> random(n);
+
+        cusp::array1d<T, cusp::host_memory>   h(random);
+        cusp::array1d<T, cusp::device_memory> d(random);
+
+        ASSERT_ALMOST_EQUAL(h, d);
+    }
+};
+SimpleUnitTest<TestRandomReals, unittest::type_list<float> > TestRandomRealsInstance;
 
