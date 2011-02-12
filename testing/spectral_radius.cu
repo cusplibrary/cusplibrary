@@ -23,6 +23,7 @@ void TestEstimateSpectralRadius(void)
         float rho = 5.0;
         ASSERT_EQUAL((std::abs(cusp::detail::estimate_spectral_radius(A) - rho) / rho) < 0.1f, true);
         ASSERT_EQUAL((std::abs(cusp::detail::ritz_spectral_radius(A) - rho) / rho) < 0.1f, true);
+        ASSERT_EQUAL((std::abs(cusp::detail::ritz_spectral_radius_symmetric(A) - rho) / rho) < 0.1f, true);
         ASSERT_EQUAL((std::abs(cusp::detail::disks_spectral_radius(A) - rho) / rho) < 0.1f, true);
     }
 
@@ -32,6 +33,7 @@ void TestEstimateSpectralRadius(void)
         float rho = 6.0;
         ASSERT_EQUAL((std::abs(cusp::detail::estimate_spectral_radius(A) - rho) / rho) < 0.1f, true);
         ASSERT_EQUAL((std::abs(cusp::detail::ritz_spectral_radius(A) - rho) / rho) < 0.1f, true);
+        ASSERT_EQUAL((std::abs(cusp::detail::ritz_spectral_radius_symmetric(A) - rho) / rho) < 0.1f, true);
         ASSERT_EQUAL((std::abs(cusp::detail::disks_spectral_radius(A) - rho) / rho) < 0.1f, true);
     }
 
@@ -41,8 +43,11 @@ void TestEstimateSpectralRadius(void)
         float rho = 7.2360679774997871;
         ASSERT_EQUAL((std::abs(cusp::detail::estimate_spectral_radius(A) - rho) / rho) < 0.1f, true);
         ASSERT_EQUAL((std::abs(cusp::detail::ritz_spectral_radius(A) - rho) / rho) < 0.1f, true);
+        ASSERT_EQUAL((std::abs(cusp::detail::ritz_spectral_radius_symmetric(A) - rho) / rho) < 0.1f, true);
         ASSERT_EQUAL((std::abs(cusp::detail::disks_spectral_radius(A) - rho) / rho) < 0.11f, true);
     }
+
+    // TODO test larger sizes and non-symmetric matrices
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestEstimateSpectralRadius);
 

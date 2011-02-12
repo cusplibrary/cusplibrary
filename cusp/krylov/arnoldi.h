@@ -20,7 +20,10 @@
 #include <cusp/multiply.h>
 #include <cusp/array1d.h>
 
-#define DEFAULT_SEED 0
+// TODO remove when CUDA 3.2 is unsupported
+#if defined(__CUDACC__) && CUDA_VERSION >= 4000
+#include <cusp/detail/random.h>
+#endif
 
 namespace cusp
 {
@@ -29,6 +32,7 @@ namespace krylov
 namespace detail
 {
 
+// TODO remove this when CUDA 3.2 is unsupported
 template<typename ValueType>
   struct random_sample
 {
@@ -42,7 +46,7 @@ template<typename ValueType>
 template<typename T>
 thrust::host_vector<T> random_samples(const size_t N)
 {
-    srand(DEFAULT_SEED);
+    srand(0);
 
     thrust::host_vector<T> vec(N);
     random_sample<T> rnd;
@@ -58,57 +62,62 @@ thrust::host_vector<T> random_samples(const size_t N)
 template <typename Matrix, typename Array2d>
 void lanczos( const Matrix& A, Array2d& H, size_t k = 10 ){
 
-	typedef typename Matrix::index_type   IndexType;
 	typedef typename Matrix::value_type   ValueType;
 	typedef typename Matrix::memory_space MemorySpace;
 
 	size_t N = A.num_cols;
-	IndexType maxiter = std::min( N, k );
-	cusp::array1d<ValueType,MemorySpace> v0 = detail::random_samples<ValueType>(N);
+	size_t maxiter = std::min(N, k);
 
-	ValueType norm_v0 = cusp::blas::nrm2(v0);
-	cusp::blas::scal( v0, ValueType(1.0)/norm_v0 );	
-
-	Array2d H_(maxiter+1,maxiter,0);
-	std::vector< cusp::array1d<ValueType,MemorySpace> > V;
-	V.push_back(v0);
-
+    // initialize x to random values in [0,1)
+#if defined(__CUDACC__) && CUDA_VERSION >= 4000
+    cusp::detail::random_reals<ValueType> random(N);
+    cusp::array1d<ValueType,MemorySpace> v1(random);
+#else
+    // TODO remove when CUDA 3.2 is unsupported
+	cusp::array1d<ValueType,MemorySpace> v1 = detail::random_samples<ValueType>(N);
+#endif
+	cusp::array1d<ValueType,MemorySpace> v0(N);
 	cusp::array1d<ValueType,MemorySpace> w(N,0);
+
+	cusp::blas::scal(v1, ValueType(1) / cusp::blas::nrm2(v1));
+
+	Array2d H_(maxiter + 1, maxiter, 0);
+
 	ValueType alpha = 0.0, beta = 0.0;
 
-	IndexType j;
-	for( j = 0; j < maxiter; j++ )
+	size_t j;
+
+	for(j = 0; j < maxiter; j++)
 	{
-		cusp::multiply(A,V.back(),w);
+		cusp::multiply(A, v1, w);
 
 		// TODO only enter if statement when A is symmetric. Need to test for symmetry.
-		if( j >= 1 )
+		if(j >= 1)
 		{
-			H_(j-1,j) = beta;
-			cusp::blas::axpy(V.front(),w,-beta);
+			H_(j - 1, j) = beta;
+			cusp::blas::axpy(v0, w, -beta);
 		}
 
-		alpha = cusp::blas::dot(w,V.back());
-		H_(j,j) = alpha;	
-		
-		cusp::blas::axpy(V.back(),w,-alpha);
+		alpha = cusp::blas::dot(w, v1);
+		H_(j,j) = alpha;
+
+		cusp::blas::axpy(v1, w, -alpha);
 
 		beta = cusp::blas::nrm2(w);
-		H_(j+1,j) = beta;
+		H_(j + 1, j) = beta;
 
-		if( H_(j+1,j) < 1e-10 ) break;
+		if(beta < 1e-10) break;
 
-		cusp::blas::scal( w, ValueType(1.0)/beta );				
+		cusp::blas::scal(w, ValueType(1) / beta);				
 
-		// swap the front and back vectors
-		// then swap in the new vector while avoiding explicit copying
-		V.front().swap(V.back());
-		V.back().swap(w);
+        // [v0 v1  w] - > [v1  w v0]
+        v0.swap(v1);
+        v1.swap(w);
 	}
 
 	H.resize(j,j);
-	for( IndexType row = 0; row < j; row++ )
-		for( IndexType col = 0; col < j; col++ )
+	for(size_t row = 0; row < j; row++)
+		for(size_t col = 0; col < j; col++)
 			H(row,col) = H_(row,col);
 }
 
@@ -122,7 +131,13 @@ void arnoldi( const Matrix& A, Array2d& H, size_t k = 10 )
 	size_t N = A.num_rows;
 
 	size_t maxiter = std::min( N, k );
+#if defined(__CUDACC__) && CUDA_VERSION >= 4000
+    cusp::detail::random_reals<ValueType> random(N);
+    cusp::array1d<ValueType,MemorySpace> v0(random);
+#else
+    // TODO remove when CUDA 3.2 is unsupported
 	cusp::array1d<ValueType,MemorySpace> v0 = detail::random_samples<ValueType>(N);
+#endif
 
 	ValueType norm_v0 = cusp::blas::nrm2(v0);
 	cusp::blas::scal( v0, ValueType(1.0)/norm_v0 );	

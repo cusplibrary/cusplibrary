@@ -91,6 +91,11 @@ double estimate_spectral_radius(const Matrix& A, size_t k = 20)
                       thrust::counting_iterator<IndexType>(N),
                       x.begin(),
                       hash_01<IndexType,ValueType>());
+    
+    //// initialize x to random values in [0,1)
+    //cusp::detail::random_reals<ValueType> random(N);
+    //cusp::copy(random, x);
+
 
     for(size_t i = 0; i < k; i++)
     {
@@ -110,12 +115,23 @@ double ritz_spectral_radius(const Matrix& A, size_t k = 20, size_t m = 10)
 {
     CUSP_PROFILE_SCOPED();
 
-    typedef typename Matrix::index_type   IndexType;
     typedef typename Matrix::value_type   ValueType;
-    typedef typename Matrix::memory_space MemorySpace;
 
     cusp::array2d<ValueType,cusp::host_memory> H;
     cusp::krylov::arnoldi(A,H,m);
+
+    return estimate_spectral_radius(H,k);
+}
+
+template <typename Matrix>    
+double ritz_spectral_radius_symmetric(const Matrix& A, size_t k = 20, size_t m = 10)
+{
+    CUSP_PROFILE_SCOPED();
+
+    typedef typename Matrix::value_type   ValueType;
+
+    cusp::array2d<ValueType,cusp::host_memory> H;
+    cusp::krylov::lanczos(A,H,m);
 
     return estimate_spectral_radius(H,k);
 }

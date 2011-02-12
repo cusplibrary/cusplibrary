@@ -124,7 +124,6 @@ struct random_real_iterator<float>
 template <>
 struct random_real_iterator<double>
 {
-    public:
     typedef typename random_integer_iterator<unsigned long long>::type  RandomIterator;
     typedef          integer_to_real<unsigned long long, double>        Functor;
     typedef typename thrust::transform_iterator<Functor,RandomIterator> TransformIterator;
@@ -139,7 +138,11 @@ struct random_real_iterator<double>
 
 } // end namespace detail
 
-// array view containing random integers
+
+/////////////////////
+// Implicit Ranges //
+/////////////////////
+
 template <typename T>
 class random_integers : public cusp::array1d_view<typename detail::random_integer_iterator<T>::type>
 {
@@ -154,7 +157,6 @@ class random_integers : public cusp::array1d_view<typename detail::random_intege
     {}
 };
 
-// array view containing random real numbers in [0,1)
 template <typename T>
 class random_reals : public cusp::array1d_view<typename detail::random_real_iterator<T>::type>
 {

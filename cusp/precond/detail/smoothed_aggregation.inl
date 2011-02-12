@@ -268,7 +268,7 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace>::extend_hierarchy(voi
   levels.back().smoother = cusp::relaxation::jacobi<ValueType, MemorySpace>(A, omega);
   #else
   cusp::array1d<ValueType,cusp::host_memory> coeff;
-  ValueType rho = cusp::detail::ritz_spectral_radius(A);
+  ValueType rho = cusp::detail::ritz_spectral_radius_symmetric(A);
   cusp::relaxation::detail::chebyshev_polynomial_coefficients(rho,coeff);
   levels.back().smoother = cusp::relaxation::polynomial<ValueType, MemorySpace>(A, coeff);
   #endif
@@ -285,7 +285,6 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace>::extend_hierarchy(voi
   levels.back().B.swap(B_coarse);
   levels.back().x.resize(levels.back().A_.num_rows);
   levels.back().b.resize(levels.back().A_.num_rows);
-
 }
 
     
