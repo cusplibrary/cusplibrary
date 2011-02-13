@@ -17,15 +17,10 @@
 #include <cusp/format.h>
 #include <cusp/exception.h>
 
+#include <thrust/sort.h>
 #include <thrust/count.h>
 #include <thrust/extrema.h>
 #include <thrust/functional.h>
-
-#if THRUST_VERSION < 100300
-#include <thrust/is_sorted.h>
-#else
-#include <thrust/sort.h>
-#endif
 
 #include <sstream>
 

@@ -24,8 +24,8 @@
 #include <thrust/version.h>
 
 // Cusp supports Thrust v1.3 and above
-#if THRUST_VERSION < 100200
-#error "Thrust v1.2.0 or newer is required"
+#if THRUST_VERSION < 100300
+#error "Thrust v1.3.0 or newer is required"
 #endif 
 
 // hooks for profiling

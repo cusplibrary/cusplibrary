@@ -30,13 +30,6 @@
 
 #include <list>
 
-#include <cusp/print.h> // TODO remove
-
-#if (THRUST_VERSION < 100300)
-// TODO remove this when Thrust v1.2.x is unsupported
-#include <thrust/segmented_scan.h>
-#endif
-
 namespace cusp
 {
 namespace detail
@@ -98,34 +91,17 @@ void coo_spmm_helper(size_t workspace_size,
 //                       thrust::make_transform_iterator(output_ptr.begin(), subtract_constant<IndexType>(begin + begin_segment,
                        segment_lengths.begin() + begin_segment,
                        B_gather_locations.begin() - output_ptr[begin_segment]);
-#if THRUST_VERSION >= 100300
     thrust::inclusive_scan_by_key(A_gather_locations.begin(), A_gather_locations.end(),
                                   B_gather_locations.begin(),
                                   B_gather_locations.begin());
 
-#else
-    // TODO remove this when Thrust v1.2.x is unsupported
-    thrust::experimental::inclusive_segmented_scan(B_gather_locations.begin(), B_gather_locations.end(),
-                                                   A_gather_locations.begin(),
-                                                   B_gather_locations.begin());
-#endif
     
-#if THRUST_VERSION >= 100300
     thrust::gather(A_gather_locations.begin(), A_gather_locations.end(),
                    A.row_indices.begin(),
                    I.begin());
     thrust::gather(B_gather_locations.begin(), B_gather_locations.end(),
                    B.column_indices.begin(),
                    J.begin());
-#else
-    // TODO remove this when Thrust v1.2.x is unsupported
-    thrust::next::gather(A_gather_locations.begin(), A_gather_locations.end(),
-                         A.row_indices.begin(),
-                         I.begin());
-    thrust::next::gather(B_gather_locations.begin(), B_gather_locations.end(),
-                         B.column_indices.begin(),
-                         J.begin());
-#endif    
 
     thrust::transform(thrust::make_permutation_iterator(A.values.begin(), A_gather_locations.begin()),
                       thrust::make_permutation_iterator(A.values.begin(), A_gather_locations.end()),
@@ -188,16 +164,9 @@ void spmm_coo(const Matrix1& A,
 
     // for each element A(i,j) compute the number of nonzero elements in B(j,:)
     cusp::array1d<IndexType,MemorySpace> segment_lengths(A.num_entries);
-#if (THRUST_VERSION >= 100300)
     thrust::gather(A.column_indices.begin(), A.column_indices.end(),
                    B_row_lengths.begin(),
                    segment_lengths.begin());
-#else
-    // TODO remove this when Thrust v1.2.x is unsupported
-    thrust::next::gather(A.column_indices.begin(), A.column_indices.end(),
-                         B_row_lengths.begin(),
-                         segment_lengths.begin());
-#endif
     
     // output pointer
     cusp::array1d<IndexType,MemorySpace> output_ptr(A.num_entries + 1);

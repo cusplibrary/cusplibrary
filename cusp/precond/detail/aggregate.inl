@@ -78,16 +78,9 @@ void mis_to_aggregates(const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& 
   cusp::array1d<IndexType,MemorySpace> mis_enum(N);
   thrust::exclusive_scan(mis.begin(), mis.end(), mis_enum.begin());
 
-#if THRUST_VERSION >= 100300
   thrust::gather(idx2.begin(), idx2.end(),
                  mis_enum.begin(),
                  aggregates.begin());
-#else
-  // TODO remove this when Thrust v1.2.x is unsupported
-  thrust::next::gather(idx2.begin(), idx2.end(),
-                       mis_enum.begin(),
-                       aggregates.begin());
-#endif    
 } // mis_to_aggregates()
 
 

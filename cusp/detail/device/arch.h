@@ -18,11 +18,7 @@
 
 #include <thrust/version.h>
 
-#if (THRUST_VERSION < 100300)
-#include <thrust/experimental/arch.h>
-#else
 #include <thrust/detail/device/cuda/arch.h>
-#endif
 
 namespace cusp
 {
@@ -36,11 +32,7 @@ namespace arch
 template <typename KernelFunction>
 size_t max_active_blocks(KernelFunction kernel, const size_t CTA_SIZE, const size_t dynamic_smem_bytes)
 {
-#if (THRUST_VERSION < 100300)
-    return thrust::experimental::arch::max_active_blocks(kernel, CTA_SIZE, dynamic_smem_bytes);
-#else
     return thrust::detail::device::cuda::arch::max_active_blocks(kernel, CTA_SIZE, dynamic_smem_bytes);
-#endif
 }
 
 } // end namespace arch
