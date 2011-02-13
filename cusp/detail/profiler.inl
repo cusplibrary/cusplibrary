@@ -441,7 +441,7 @@ namespace profiler
                         void operator()( Caller *item, bool islast ) const 
 			{
                                 double ms = item->mTimer.milliseconds;
-				char * hyphen = strrchr(item->mName,'(');
+				const char * hyphen = strrchr(item->mName,'(');
 				int size = hyphen-item->mName;
 				
                                 printf( "%s %.2f ms, %lu calls: %.*s\n",

@@ -60,15 +60,15 @@ thrust::host_vector<T> random_samples(const size_t N)
 } // end namespace detail
 
 template <typename Matrix, typename Array2d>
-void lanczos( const Matrix& A, Array2d& H, size_t k = 10 ){
-
+void lanczos(const Matrix& A, Array2d& H, size_t k = 10)
+{
 	typedef typename Matrix::value_type   ValueType;
 	typedef typename Matrix::memory_space MemorySpace;
 
 	size_t N = A.num_cols;
 	size_t maxiter = std::min(N, k);
 
-    // initialize x to random values in [0,1)
+    // initialize starting vector to random values in [0,1)
 #if defined(__CUDACC__) && CUDA_VERSION >= 4000
     cusp::detail::random_reals<ValueType> random(N);
     cusp::array1d<ValueType,MemorySpace> v1(random);
@@ -77,7 +77,7 @@ void lanczos( const Matrix& A, Array2d& H, size_t k = 10 ){
 	cusp::array1d<ValueType,MemorySpace> v1 = detail::random_samples<ValueType>(N);
 #endif
 	cusp::array1d<ValueType,MemorySpace> v0(N);
-	cusp::array1d<ValueType,MemorySpace> w(N,0);
+	cusp::array1d<ValueType,MemorySpace> w(N,0); //TODO remove initialization
 
 	cusp::blas::scal(v1, ValueType(1) / cusp::blas::nrm2(v1));
 
@@ -122,49 +122,49 @@ void lanczos( const Matrix& A, Array2d& H, size_t k = 10 ){
 }
 
 template <typename Matrix, typename Array2d>
-void arnoldi( const Matrix& A, Array2d& H, size_t k = 10 )
+void arnoldi(const Matrix& A, Array2d& H, size_t k = 10)
 {
-	typedef typename Matrix::index_type   IndexType;
 	typedef typename Matrix::value_type   ValueType;
 	typedef typename Matrix::memory_space MemorySpace;
 
 	size_t N = A.num_rows;
 
-	size_t maxiter = std::min( N, k );
+	size_t maxiter = std::min(N, k);
+
+	Array2d H_(maxiter + 1, maxiter, 0);
+
+	std::vector< cusp::array1d<ValueType,MemorySpace> > V(maxiter + 1);
+    for (size_t i = 0; i < maxiter + 1; i++)
+        V[i].resize(N);
+	
+    // initialize starting vector to random values in [0,1)
 #if defined(__CUDACC__) && CUDA_VERSION >= 4000
-    cusp::detail::random_reals<ValueType> random(N);
-    cusp::array1d<ValueType,MemorySpace> v0(random);
+    cusp::copy(cusp::detail::random_reals<ValueType>(N), V[0]);
 #else
     // TODO remove when CUDA 3.2 is unsupported
-	cusp::array1d<ValueType,MemorySpace> v0 = detail::random_samples<ValueType>(N);
+    V[0] = detail::random_samples<ValueType>(N);
 #endif
 
-	ValueType norm_v0 = cusp::blas::nrm2(v0);
-	cusp::blas::scal( v0, ValueType(1.0)/norm_v0 );	
-
-	Array2d H_(maxiter+1,maxiter,0);
-	std::vector< cusp::array1d<ValueType,MemorySpace> > V;
-	V.push_back(v0);
-
-	cusp::array1d<ValueType,MemorySpace> w(N,0);
+    // normalize v0
+	cusp::blas::scal(V[0], ValueType(1) / cusp::blas::nrm2(V[0]));	
 
 	size_t j;
 
-	for( j = 0; j < maxiter; j++ )
+	for(j = 0; j < maxiter; j++)
 	{
-		cusp::multiply(A,V.back(),w);
+		cusp::multiply(A, V[j], V[j + 1]);
 
-		for(size_t i = 0; i < V.size(); i++ )
+		for(size_t i = 0; i <= j; i++)
 		{
-			H_(i,j) =  cusp::blas::dot( V.at(i), w );
-			cusp::blas::axpy(V.at(i),w,-H_(i,j));
+			H_(i,j) = cusp::blas::dot(V[i], V[j + 1]);
+
+			cusp::blas::axpy(V[i], V[j + 1], -H_(i,j));
 		}
 
-		H_(j+1,j) = cusp::blas::nrm2(w);
-		if( H_(j+1,j) < 1e-10 ) break;
+		H_(j+1,j) = cusp::blas::nrm2(V[j + 1]);
+		if(H_(j+1,j) < 1e-10) break;
 
-		cusp::blas::scal( w, ValueType(1.0)/H_(j+1,j) );
-		V.push_back(w);
+		cusp::blas::scal(V[j + 1], ValueType(1) / H_(j+1,j));
 	}
 
 	H.resize(j,j);
