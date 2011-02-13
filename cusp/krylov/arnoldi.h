@@ -29,6 +29,7 @@ namespace cusp
 {
 namespace krylov
 {
+// TODO remove this when CUDA 3.2 is unsupported
 namespace detail
 {
 
@@ -43,6 +44,7 @@ template<typename ValueType>
 };
 
 
+// TODO remove this when CUDA 3.2 is unsupported
 template<typename T>
 thrust::host_vector<T> random_samples(const size_t N)
 {
@@ -68,16 +70,16 @@ void lanczos(const Matrix& A, Array2d& H, size_t k = 10)
 	size_t N = A.num_cols;
 	size_t maxiter = std::min(N, k);
 
-    // initialize starting vector to random values in [0,1)
+  // initialize starting vector to random values in [0,1)
 #if defined(__CUDACC__) && CUDA_VERSION >= 4000
-    cusp::detail::random_reals<ValueType> random(N);
-    cusp::array1d<ValueType,MemorySpace> v1(random);
+  cusp::detail::random_reals<ValueType> random(N);
+  cusp::array1d<ValueType,MemorySpace> v1(random);
 #else
-    // TODO remove when CUDA 3.2 is unsupported
+  // TODO remove when CUDA 3.2 is unsupported
 	cusp::array1d<ValueType,MemorySpace> v1 = detail::random_samples<ValueType>(N);
 #endif
 	cusp::array1d<ValueType,MemorySpace> v0(N);
-	cusp::array1d<ValueType,MemorySpace> w(N,0); //TODO remove initialization
+	cusp::array1d<ValueType,MemorySpace> w(N);
 
 	cusp::blas::scal(v1, ValueType(1) / cusp::blas::nrm2(v1));
 
@@ -133,19 +135,20 @@ void arnoldi(const Matrix& A, Array2d& H, size_t k = 10)
 
 	Array2d H_(maxiter + 1, maxiter, 0);
 
+  // allocate workspace of k + 1 vectors
 	std::vector< cusp::array1d<ValueType,MemorySpace> > V(maxiter + 1);
-    for (size_t i = 0; i < maxiter + 1; i++)
-        V[i].resize(N);
+  for (size_t i = 0; i < maxiter + 1; i++)
+      V[i].resize(N);
 	
-    // initialize starting vector to random values in [0,1)
+  // initialize starting vector to random values in [0,1)
 #if defined(__CUDACC__) && CUDA_VERSION >= 4000
-    cusp::copy(cusp::detail::random_reals<ValueType>(N), V[0]);
+  cusp::copy(cusp::detail::random_reals<ValueType>(N), V[0]);
 #else
-    // TODO remove when CUDA 3.2 is unsupported
-    V[0] = detail::random_samples<ValueType>(N);
+  // TODO remove when CUDA 3.2 is unsupported
+  V[0] = detail::random_samples<ValueType>(N);
 #endif
 
-    // normalize v0
+  // normalize v0
 	cusp::blas::scal(V[0], ValueType(1) / cusp::blas::nrm2(V[0]));	
 
 	size_t j;

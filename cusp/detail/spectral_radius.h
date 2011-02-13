@@ -24,6 +24,11 @@
 #include <cusp/array2d.h>
 #include <cusp/detail/format_utils.h>
 
+// TODO remove when CUDA 3.2 is unsupported
+#if defined(__CUDACC__) && CUDA_VERSION >= 4000
+#include <cusp/detail/random.h>
+#endif
+
 #include <thrust/extrema.h>
 #include <thrust/transform.h>
 #include <thrust/iterator/counting_iterator.h>
@@ -36,6 +41,7 @@ namespace cusp
 namespace detail
 {
 
+// TODO move this to a shared header
 // absolute<T> computes the absolute value of a number f(x) -> |x|
 template <typename T>
 struct absolute : public thrust::unary_function<T,T>
@@ -47,6 +53,7 @@ struct absolute : public thrust::unary_function<T,T>
 	}
 };
 
+// TODO remove when CUDA 3.2 is unsupported
 // http://burtleburtle.net/bob/hash/integer.html
 inline
 __host__ __device__
@@ -61,6 +68,7 @@ unsigned int hash32(unsigned int a)
     return a;
 }
 
+// TODO remove when CUDA 3.2 is unsupported
 template <typename I, typename T>
 struct hash_01
 {
@@ -87,15 +95,15 @@ double estimate_spectral_radius(const Matrix& A, size_t k = 20)
     cusp::array1d<ValueType, MemorySpace> y(N);
 
     // initialize x to random values in [0,1)
+#if defined(__CUDACC__) && CUDA_VERSION >= 4000
+    cusp::copy(cusp::detail::random_reals<ValueType>(N), x);
+#else
+    // TODO remove when CUDA 3.2 is unsupported
     thrust::transform(thrust::counting_iterator<IndexType>(0),
                       thrust::counting_iterator<IndexType>(N),
                       x.begin(),
                       hash_01<IndexType,ValueType>());
-    
-    //// initialize x to random values in [0,1)
-    //cusp::detail::random_reals<ValueType> random(N);
-    //cusp::copy(random, x);
-
+#endif
 
     for(size_t i = 0; i < k; i++)
     {
@@ -147,11 +155,12 @@ double disks_spectral_radius(const cusp::coo_matrix<IndexType,ValueType,MemorySp
     cusp::array1d<IndexType, MemorySpace> row_sums(N);
 
     {
-	cusp::array1d<IndexType, MemorySpace> temp(N);
-	thrust::reduce_by_key(  A.row_indices.begin(), A.row_indices.end(),
-				thrust::make_transform_iterator(A.values.begin(), absolute<ValueType>()),
-				temp.begin(),
-				row_sums.begin());
+      cusp::array1d<IndexType, MemorySpace> temp(N);
+      thrust::reduce_by_key
+        (A.row_indices.begin(), A.row_indices.end(),
+         thrust::make_transform_iterator(A.values.begin(), absolute<ValueType>()),
+         temp.begin(),
+         row_sums.begin());
     }
 
     return *thrust::max_element(row_sums.begin(), row_sums.end());
