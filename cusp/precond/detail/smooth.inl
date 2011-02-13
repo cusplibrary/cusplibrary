@@ -34,6 +34,20 @@ namespace precond
 namespace detail
 {
 
+template <typename T>
+struct scaled_multiply
+{
+    const T lambda;
+
+    scaled_multiply(const T lambda) : lambda(lambda) {}
+
+    __host__ __device__
+    T operator()(const T& x, const T& y) const
+    {
+        return lambda * x * y;
+    }
+};
+
 template <typename IndexType, typename ValueType>
 void smooth_prolongator(const cusp::coo_matrix<IndexType,ValueType,cusp::device_memory>& S,
                         const cusp::coo_matrix<IndexType,ValueType,cusp::device_memory>& T,
@@ -48,20 +62,15 @@ void smooth_prolongator(const cusp::coo_matrix<IndexType,ValueType,cusp::device_
 
   const ValueType lambda = omega / (rho_Dinv_S == 0.0 ? estimate_rho_Dinv_A(S) : rho_Dinv_S);
 
-  // temp <- lambda * S(i,j) * T(j,k)
+  // temp <- -lambda * S(i,j) * T(j,k)
   cusp::coo_matrix<IndexType,ValueType,cusp::device_memory> temp(S.num_rows, T.num_cols, S.num_entries + T.num_entries);
   thrust::copy(S.row_indices.begin(), S.row_indices.end(), temp.row_indices.begin());
   thrust::gather(S.column_indices.begin(), S.column_indices.end(), T.column_indices.begin(), temp.column_indices.begin());
-
-  // TODO fuse multiplies together
   thrust::transform(S.values.begin(), S.values.end(),
                     thrust::make_permutation_iterator(T.values.begin(), S.column_indices.begin()),
                     temp.values.begin(),
-                    thrust::multiplies<ValueType>());
-  thrust::transform(temp.values.begin(), temp.values.begin() + S.num_entries,
-                    thrust::constant_iterator<ValueType>(-lambda),
-                    temp.values.begin(),
-                    thrust::multiplies<ValueType>());
+                    scaled_multiply<ValueType>(-lambda));
+
   // temp <- D^-1
   {
     cusp::array1d<ValueType, cusp::device_memory> D(S.num_rows);
