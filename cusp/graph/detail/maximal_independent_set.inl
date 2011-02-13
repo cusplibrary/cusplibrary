@@ -16,10 +16,12 @@
 
 #include <cusp/detail/device/generalized_spmv/coo_flat.h>
 
+#include <cusp/copy.h>
 #include <cusp/array1d.h>
 #include <cusp/exception.h>
 #include <cusp/coo_matrix.h>
 #include <cusp/csr_matrix.h>
+#include <cusp/detail/random.h>
 
 #include <cusp/print.h>
 
@@ -36,23 +38,6 @@ namespace graph
 {
 namespace detail
 {
-
-// http://burtleburtle.net/bob/hash/integer.html
-struct simple_hash
-{
-    __host__ __device__
-    unsigned int operator()(unsigned int a)
-    {
-        a = (a + 0x7ed55d16) + (a << 12);
-        a = (a ^ 0xc761c23c) ^ (a >> 19);
-        a = (a + 0x165667b1) + (a <<  5);
-        a = (a + 0xd3a2646c) ^ (a <<  9);
-        a = (a + 0xfd7046c5) + (a <<  3);
-        a = (a ^ 0xb55a4f09) ^ (a >> 16);
-        return a;
-    }
-};
-
 
 struct process_mis_nodes
 {
@@ -348,10 +333,7 @@ size_t maximal_independent_set(const Matrix& A, Array& stencil, size_t k,
     const IndexType N = A.num_rows;
     
     cusp::array1d<RandomType,MemorySpace> random_values(N);
-    thrust::transform(thrust::counting_iterator<IndexType>(0), 
-                      thrust::counting_iterator<IndexType>(N), 
-                      random_values.begin(),
-                      simple_hash());
+    cusp::copy(cusp::detail::random_integers<RandomType>(N), random_values);
 
     cusp::array1d<NodeStateType,MemorySpace> states(N, 1);
 

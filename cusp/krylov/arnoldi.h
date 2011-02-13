@@ -19,47 +19,12 @@
 
 #include <cusp/multiply.h>
 #include <cusp/array1d.h>
-
-// TODO remove when CUDA 3.2 is unsupported
-#if defined(__CUDACC__) && CUDA_VERSION >= 4000
 #include <cusp/detail/random.h>
-#endif
 
 namespace cusp
 {
 namespace krylov
 {
-// TODO remove this when CUDA 3.2 is unsupported
-namespace detail
-{
-
-// TODO remove this when CUDA 3.2 is unsupported
-template<typename ValueType>
-  struct random_sample
-{
-  double operator()(void) const
-  {
-    return ValueType(20.0) * (rand() / (ValueType(RAND_MAX) + ValueType(1.0))) - ValueType(10.0);
-  }
-};
-
-
-// TODO remove this when CUDA 3.2 is unsupported
-template<typename T>
-thrust::host_vector<T> random_samples(const size_t N)
-{
-    srand(0);
-
-    thrust::host_vector<T> vec(N);
-    random_sample<T> rnd;
-
-    for(size_t i = 0; i < N; i++)
-        vec[i] = rnd();
-
-    return vec;
-}
-
-} // end namespace detail
 
 template <typename Matrix, typename Array2d>
 void lanczos(const Matrix& A, Array2d& H, size_t k = 10)
@@ -70,16 +35,13 @@ void lanczos(const Matrix& A, Array2d& H, size_t k = 10)
 	size_t N = A.num_cols;
 	size_t maxiter = std::min(N, k);
 
-  // initialize starting vector to random values in [0,1)
-#if defined(__CUDACC__) && CUDA_VERSION >= 4000
-  cusp::detail::random_reals<ValueType> random(N);
-  cusp::array1d<ValueType,MemorySpace> v1(random);
-#else
-  // TODO remove when CUDA 3.2 is unsupported
-	cusp::array1d<ValueType,MemorySpace> v1 = detail::random_samples<ValueType>(N);
-#endif
+    // allocate workspace
 	cusp::array1d<ValueType,MemorySpace> v0(N);
+    cusp::array1d<ValueType,MemorySpace> v1(N);
 	cusp::array1d<ValueType,MemorySpace> w(N);
+    
+    // initialize starting vector to random values in [0,1)
+    cusp::copy(cusp::detail::random_reals<ValueType>(N), v1);
 
 	cusp::blas::scal(v1, ValueType(1) / cusp::blas::nrm2(v1));
 
@@ -93,7 +55,6 @@ void lanczos(const Matrix& A, Array2d& H, size_t k = 10)
 	{
 		cusp::multiply(A, v1, w);
 
-		// TODO only enter if statement when A is symmetric. Need to test for symmetry.
 		if(j >= 1)
 		{
 			H_(j - 1, j) = beta;
@@ -135,20 +96,15 @@ void arnoldi(const Matrix& A, Array2d& H, size_t k = 10)
 
 	Array2d H_(maxiter + 1, maxiter, 0);
 
-  // allocate workspace of k + 1 vectors
-	std::vector< cusp::array1d<ValueType,MemorySpace> > V(maxiter + 1);
-  for (size_t i = 0; i < maxiter + 1; i++)
-      V[i].resize(N);
+    // allocate workspace of k + 1 vectors
+    std::vector< cusp::array1d<ValueType,MemorySpace> > V(maxiter + 1);
+    for (size_t i = 0; i < maxiter + 1; i++)
+        V[i].resize(N);
 	
-  // initialize starting vector to random values in [0,1)
-#if defined(__CUDACC__) && CUDA_VERSION >= 4000
-  cusp::copy(cusp::detail::random_reals<ValueType>(N), V[0]);
-#else
-  // TODO remove when CUDA 3.2 is unsupported
-  V[0] = detail::random_samples<ValueType>(N);
-#endif
+    // initialize starting vector to random values in [0,1)
+    cusp::copy(cusp::detail::random_reals<ValueType>(N), V[0]);
 
-  // normalize v0
+    // normalize v0
 	cusp::blas::scal(V[0], ValueType(1) / cusp::blas::nrm2(V[0]));	
 
 	size_t j;
@@ -165,6 +121,7 @@ void arnoldi(const Matrix& A, Array2d& H, size_t k = 10)
 		}
 
 		H_(j+1,j) = cusp::blas::nrm2(V[j + 1]);
+
 		if(H_(j+1,j) < 1e-10) break;
 
 		cusp::blas::scal(V[j + 1], ValueType(1) / H_(j+1,j));

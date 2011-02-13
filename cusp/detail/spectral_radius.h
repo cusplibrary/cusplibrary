@@ -22,12 +22,8 @@
 #include <cusp/krylov/arnoldi.h>
 #include <cusp/array1d.h>
 #include <cusp/array2d.h>
-#include <cusp/detail/format_utils.h>
-
-// TODO remove when CUDA 3.2 is unsupported
-#if defined(__CUDACC__) && CUDA_VERSION >= 4000
 #include <cusp/detail/random.h>
-#endif
+#include <cusp/detail/format_utils.h>
 
 #include <thrust/extrema.h>
 #include <thrust/transform.h>
@@ -53,32 +49,6 @@ struct absolute : public thrust::unary_function<T,T>
 	}
 };
 
-// TODO remove when CUDA 3.2 is unsupported
-// http://burtleburtle.net/bob/hash/integer.html
-inline
-__host__ __device__
-unsigned int hash32(unsigned int a)
-{
-    a = (a + 0x7ed55d16) + (a << 12);
-    a = (a ^ 0xc761c23c) ^ (a >> 19);
-    a = (a + 0x165667b1) + (a <<  5);
-    a = (a + 0xd3a2646c) ^ (a <<  9);
-    a = (a + 0xfd7046c5) + (a <<  3);
-    a = (a ^ 0xb55a4f09) ^ (a >> 16);
-    return a;
-}
-
-// TODO remove when CUDA 3.2 is unsupported
-template <typename I, typename T>
-struct hash_01
-{
-    __host__ __device__
-    T operator()(const I& index) const
-    {
-        return T(hash32(index)) / T(thrust::detail::integer_traits<unsigned int>::const_max);
-    }
-};
-
 
 template <typename Matrix>    
 double estimate_spectral_radius(const Matrix& A, size_t k = 20)
@@ -95,15 +65,7 @@ double estimate_spectral_radius(const Matrix& A, size_t k = 20)
     cusp::array1d<ValueType, MemorySpace> y(N);
 
     // initialize x to random values in [0,1)
-#if defined(__CUDACC__) && CUDA_VERSION >= 4000
     cusp::copy(cusp::detail::random_reals<ValueType>(N), x);
-#else
-    // TODO remove when CUDA 3.2 is unsupported
-    thrust::transform(thrust::counting_iterator<IndexType>(0),
-                      thrust::counting_iterator<IndexType>(N),
-                      x.begin(),
-                      hash_01<IndexType,ValueType>());
-#endif
 
     for(size_t i = 0; i < k; i++)
     {
