@@ -40,6 +40,8 @@
 #include <thrust/iterator/counting_iterator.h>
 #include <thrust/iterator/zip_iterator.h>
 
+#include <cassert>
+
 namespace cusp
 {
 namespace detail
@@ -697,29 +699,42 @@ void coo_to_hyb(const Matrix1& src, Matrix2& dst,
   thrust::fill(dst.ell.column_indices.values.begin(), dst.ell.column_indices.values.end(), IndexType(-1));
   thrust::fill(dst.ell.values.values.begin(),         dst.ell.values.values.end(),         ValueType(0));
 
-  thrust::copy_if(thrust::make_zip_iterator( thrust::make_tuple( src.row_indices.begin(), src.column_indices.begin(), src.values.begin() ) ),
-  		  thrust::make_zip_iterator( thrust::make_tuple( src.row_indices.end()  , src.column_indices.end()  , src.values.end()   ) ),
-                  indices.begin(),
-  		  thrust::make_zip_iterator( thrust::make_tuple( dst.coo.row_indices.begin(), dst.coo.column_indices.begin(), dst.coo.values.begin() ) ),
-		  greater_than_or_equal_to<size_t>(num_entries_per_row) );
+  // write tail of each row to COO portion
+  thrust::copy_if
+      (thrust::make_zip_iterator( thrust::make_tuple( src.row_indices.begin(), src.column_indices.begin(), src.values.begin() ) ),
+       thrust::make_zip_iterator( thrust::make_tuple( src.row_indices.end()  , src.column_indices.end()  , src.values.end()   ) ),
+       indices.begin(),
+       thrust::make_zip_iterator( thrust::make_tuple( dst.coo.row_indices.begin(), dst.coo.column_indices.begin(), dst.coo.values.begin() ) ),
+       greater_than_or_equal_to<size_t>(num_entries_per_row) );
+
+  assert(dst.ell.column_indices.pitch == dst.ell.values.pitch);
+
+  size_t pitch = dst.ell.column_indices.pitch;
 
   // next, scale by pitch and add row index
   cusp::blas::axpby(indices, src.row_indices,
                     indices,
-                    IndexType(dst.ell.column_indices.pitch),
+                    IndexType(pitch),
                     IndexType(1));
 
-  // scatter CSR entries to ELL
+  // scatter COO entries to ELL
   thrust::scatter_if(src.column_indices.begin(), src.column_indices.end(),
                      indices.begin(),
                      indices.begin(),
                      dst.ell.column_indices.values.begin(),
-		     less_than<size_t>(dst.ell.column_indices.values.size()));
+                     less_than<size_t>(dst.ell.column_indices.values.size()));
   thrust::scatter_if(src.values.begin(), src.values.end(),
                      indices.begin(),
                      indices.begin(),
                      dst.ell.values.values.begin(),
-		     less_than<size_t>(dst.ell.values.values.size()));
+                     less_than<size_t>(dst.ell.values.values.size()));
+//// fused version appears to be slightly slower                     
+//  thrust::scatter_if(thrust::make_zip_iterator(thrust::make_tuple(src.column_indices.begin(), src.values.begin())),
+//                     thrust::make_zip_iterator(thrust::make_tuple(src.column_indices.end(),   src.values.end())),
+//                     indices.begin(),
+//                     indices.begin(),
+//                     thrust::make_zip_iterator(thrust::make_tuple(dst.ell.column_indices.values.begin(), dst.ell.values.values.begin())),
+//                     less_than<size_t>(dst.ell.column_indices.values.size()));
 }
 
 template <typename Matrix1, typename Matrix2>
@@ -732,6 +747,8 @@ void csr_to_hyb(const Matrix1& src, Matrix2& dst,
   // expand row offsets into row indices
   cusp::array1d<IndexType, cusp::device_memory> row_indices(src.num_entries);
   cusp::detail::offsets_to_indices(src.row_offsets, row_indices);
+
+  // TODO call coo_to_hyb with a coo_matrix_view
 
   cusp::array1d<IndexType, cusp::device_memory> indices(src.num_entries);
   thrust::exclusive_scan_by_key(row_indices.begin(), row_indices.end(),

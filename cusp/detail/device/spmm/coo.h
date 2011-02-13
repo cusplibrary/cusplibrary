@@ -143,6 +143,8 @@ void spmm_coo(const Matrix1& A,
               const Matrix2& B,
                     Matrix3& C)
 {
+    CUSP_PROFILE_SCOPED();
+
     typedef typename Matrix3::index_type   IndexType;
     typedef typename Matrix3::value_type   ValueType;
     typedef typename Matrix3::memory_space MemorySpace;

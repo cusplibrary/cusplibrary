@@ -65,6 +65,8 @@ void reduce_by_key(InputIterator1 keys_first,
                    BinaryPredicate binary_pred,
                    BinaryFunction binary_op)
 {
+    CUSP_PROFILE_SCOPED();
+
     typedef unsigned int IndexType;
     typedef typename thrust::iterator_traits<InputIterator1>::value_type  KeyType;
     typedef typename thrust::iterator_traits<OutputIterator2>::value_type ValueType;
