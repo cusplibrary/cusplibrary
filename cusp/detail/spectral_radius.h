@@ -81,29 +81,29 @@ double estimate_spectral_radius(const Matrix& A, size_t k = 20)
 }
 
 template <typename Matrix>    
-double ritz_spectral_radius(const Matrix& A, size_t k = 20, size_t m = 10)
+double ritz_spectral_radius(const Matrix& A, size_t k = 10)
 {
     CUSP_PROFILE_SCOPED();
 
-    typedef typename Matrix::value_type   ValueType;
+    typedef typename Matrix::value_type ValueType;
 
     cusp::array2d<ValueType,cusp::host_memory> H;
-    cusp::krylov::arnoldi(A,H,m);
+    cusp::krylov::arnoldi(A, H, k);
 
-    return estimate_spectral_radius(H,k);
+    return estimate_spectral_radius(H);
 }
 
 template <typename Matrix>    
-double ritz_spectral_radius_symmetric(const Matrix& A, size_t k = 20, size_t m = 10)
+double ritz_spectral_radius_symmetric(const Matrix& A, size_t k = 10)
 {
     CUSP_PROFILE_SCOPED();
 
-    typedef typename Matrix::value_type   ValueType;
+    typedef typename Matrix::value_type ValueType;
 
     cusp::array2d<ValueType,cusp::host_memory> H;
-    cusp::krylov::lanczos(A,H,m);
+    cusp::krylov::lanczos(A, H, k);
 
-    return estimate_spectral_radius(H,k);
+    return estimate_spectral_radius(H);
 }
 
 template <typename IndexType, typename ValueType, typename MemorySpace>    

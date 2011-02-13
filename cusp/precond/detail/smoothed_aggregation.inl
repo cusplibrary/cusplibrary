@@ -69,7 +69,7 @@ double estimate_rho_Dinv_A(const MatrixType& A)
 
     Dinv_A<MatrixType> Dinv_A(A);
 
-    return cusp::detail::ritz_spectral_radius(Dinv_A);
+    return cusp::detail::ritz_spectral_radius(Dinv_A, 8);
 }
 
 
@@ -268,7 +268,7 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace>::extend_hierarchy(voi
   levels.back().smoother = cusp::relaxation::jacobi<ValueType, MemorySpace>(A, omega);
   #else
   cusp::array1d<ValueType,cusp::host_memory> coeff;
-  ValueType rho = cusp::detail::ritz_spectral_radius_symmetric(A);
+  ValueType rho = cusp::detail::ritz_spectral_radius_symmetric(A, 8);
   cusp::relaxation::detail::chebyshev_polynomial_coefficients(rho,coeff);
   levels.back().smoother = cusp::relaxation::polynomial<ValueType, MemorySpace>(A, coeff);
   #endif
