@@ -179,8 +179,19 @@ void spmm_coo(const Matrix1& A,
 
     size_t coo_num_nonzeros = output_ptr[A.num_entries];
 
-    // TODO choose this based on device memory capacity
     size_t workspace_capacity = thrust::min<size_t>(coo_num_nonzeros, 16 << 20);
+    
+    {
+      // TODO abstract this
+      size_t free, total;
+      cudaMemGetInfo(&free, &total);
+
+      // divide free bytes by the size of each workspace unit
+      size_t max_workspace_capacity = free / (4 * sizeof(IndexType) + sizeof(ValueType));
+
+      // use at most one third of the remaining capacity
+      workspace_capacity = thrust::min<size_t>(max_workspace_capacity / 3, workspace_capacity);
+    }
 
     // workspace arrays
     cusp::array1d<IndexType,MemorySpace> A_gather_locations;
@@ -189,8 +200,6 @@ void spmm_coo(const Matrix1& A,
     cusp::array1d<IndexType,MemorySpace> J;
     cusp::array1d<ValueType,MemorySpace> V;
 
-    // TODO catch bad_alloc and fallback to host
-   
     if (coo_num_nonzeros <= workspace_capacity)
     {
         // compute C = A * B in one step
@@ -242,15 +251,15 @@ void spmm_coo(const Matrix1& A,
             size_t begin_segment = A_row_offsets[begin_row];
             size_t end_segment   = A_row_offsets[end_row];
         
-            // TODO
+            // TODO throw exception signaling that there is insufficient memory (not necessarily bad_alloc)
             //if (begin_row == end_row)
             //    // workspace wasn't large enough, throw cusp::memory_allocation_failure?
 
             size_t workspace_size = output_ptr[end_segment] - output_ptr[begin_segment];
-            total_work += workspace_size;
             
-            //std::cout << "begin_row " << begin_row << " end_row " << end_row << " workspace_size " << workspace_size << std::endl;
+            total_work += workspace_size;
 
+            // TODO remove these when an exception is in place
             assert(end_row > begin_row);
             assert(workspace_size <= workspace_capacity);
 
