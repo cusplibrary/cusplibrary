@@ -191,7 +191,7 @@ void compute_mis_states(const size_t k,
 //        std::cout << "(iter " <<  num_iters << "," << (double(active_nodes) / double(N)) << ")" << std::endl;
 //        std::cout << "N= " << N << " iteration=" << num_iters << " active_nodes=" << active_nodes << " compaction_threshold=" << compaction_threshold << "\n";
 //        std::cout << "states\n";
-//        cusp::print_matrix(states);
+//        cusp::print(states);
 //
 //        if (active_nodes < compaction_threshold)
 //        {
@@ -216,7 +216,7 @@ void compute_mis_states(const size_t k,
 //            }
 //        
 //            std::cout << "retained nodes\n";
-//            cusp::print_matrix(retained_nodes);
+//            cusp::print(retained_nodes);
 //
 //            size_t num_subgraph_nodes = thrust::count(retained_nodes.begin(), retained_nodes.end(), true);
 //            size_t num_subgraph_edges = thrust::count
@@ -234,7 +234,7 @@ void compute_mis_states(const size_t k,
 //            thrust::transform_exclusive_scan(retained_nodes.begin(), retained_nodes.end(), index_map.begin(), thrust::identity<IndexType>(), IndexType(0), thrust::plus<IndexType>());
 //            
 //            std::cout << "index map\n";
-//            cusp::print_matrix(index_map);
+//            cusp::print(index_map);
 //    
 //            // storage for subgraph
 //            cusp::array1d<IndexType,     MemorySpace> subgraph_row_indices(num_subgraph_edges);

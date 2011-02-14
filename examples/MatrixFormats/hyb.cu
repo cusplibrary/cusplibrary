@@ -45,7 +45,7 @@ int main(void)
 
 
     // print matrix entries
-    cusp::print_matrix(A);
+    cusp::print(A);
 
     return 0;
 }

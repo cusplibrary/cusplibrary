@@ -50,14 +50,14 @@ namespace cusp
  *      A(1,0) = 40;  A(1,1) = 50;  A(1,2) = 60;
  *  
  *      // print A
- *      cusp::print_matrix(A);
+ *      cusp::print(A);
  *  
  *      // compute the transpose
  *      cusp::array2d<float, cusp::host_memory> At;
  *      cusp::transpose(A, At);
  *  
  *      // print A^T
- *      cusp::print_matrix(At);
+ *      cusp::print(At);
  *  
  *      return 0;
  *  }

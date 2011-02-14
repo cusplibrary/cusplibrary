@@ -40,8 +40,8 @@ int main(void)
   DeviceArray2dView A(2, 3, 4, linear_array);
 
   // print the wrapped arrays
-  cusp::print_matrix(linear_array);
-  cusp::print_matrix(A);
+  cusp::print(linear_array);
+  cusp::print(A);
     
   // free device arrays
   cudaFree(device_A);

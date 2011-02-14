@@ -18,14 +18,14 @@ int main(void)
     // compute y = alpha * x + y
     cusp::blas::axpy(x,y,2);
     // print y
-    cusp::print_matrix(y);
+    cusp::print(y);
 
     // allocate output vector
     cusp::array1d<float, cusp::host_memory> z(2);    
     // compute z = x .* y (element-wise multiplication)
     cusp::blas::xmy(x,y,z);
     // print z
-    cusp::print_matrix(z);
+    cusp::print(z);
 
     // compute the l_2 norm of z in 2 different ways
     std::cout << "|z| = " << cusp::blas::nrm2(z) << std::endl;

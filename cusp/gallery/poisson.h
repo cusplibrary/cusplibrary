@@ -53,7 +53,7 @@ namespace gallery
  *     cusp::gallery::poisson5pt(A, 4, 4);
  * 
  *     // print matrix
- *     cusp::print_matrix(A);
+ *     cusp::print(A);
  * 
  *     return 0;
  * }

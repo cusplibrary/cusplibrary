@@ -27,50 +27,50 @@ namespace cusp
 namespace detail
 {
 
-template <typename Matrix>
-void print_matrix(const Matrix& A, cusp::coo_format)
+template <typename Printable, typename Stream>
+void print(const Printable& p, Stream& s, cusp::coo_format)
 {
-  std::cout << "sparse matrix <" << A.num_rows << ", " << A.num_cols << "> with " << A.num_entries << " entries\n";
+  s << "sparse matrix <" << p.num_rows << ", " << p.num_cols << "> with " << p.num_entries << " entries\n";
 
-  for(size_t n = 0; n < A.num_entries; n++)
+  for(size_t n = 0; n < p.num_entries; n++)
   {
-    std::cout << " " << std::setw(14) << A.row_indices[n];
-    std::cout << " " << std::setw(14) << A.column_indices[n];
-    std::cout << " " << std::setw(14) << A.values[n] << "\n";
+    s << " " << std::setw(14) << p.row_indices[n];
+    s << " " << std::setw(14) << p.column_indices[n];
+    s << " " << std::setw(14) << p.values[n] << "\n";
   }
 }
 
-template <typename Matrix>
-void print_matrix(const Matrix& A, cusp::sparse_format)
+template <typename Printable, typename Stream>
+void print(const Printable& p, Stream& s, cusp::sparse_format)
 {
   // general sparse fallback
-  cusp::coo_matrix<typename Matrix::index_type, typename Matrix::value_type, cusp::host_memory> coo(A);
-  cusp::print_matrix(coo);
+  cusp::coo_matrix<typename Printable::index_type, typename Printable::value_type, cusp::host_memory> coo(p);
+  cusp::print(coo, s);
 }
 
-template <typename Matrix>
-void print_matrix(const Matrix& A, cusp::array2d_format)
+template <typename Printable, typename Stream>
+void print(const Printable& p, Stream& s, cusp::array2d_format)
 {
-  std::cout << "array2d <" << A.num_rows << ", " << A.num_cols << ">\n";
+  s << "array2d <" << p.num_rows << ", " << p.num_cols << ">\n";
 
-  for(size_t i = 0; i < A.num_rows; i++)
+  for(size_t i = 0; i < p.num_rows; i++)
   {
-    for(size_t j = 0; j < A.num_cols; j++)
+    for(size_t j = 0; j < p.num_cols; j++)
     {
-      std::cout << std::setw(14) << A(i,j);
+      s << std::setw(14) << p(i,j);
     }
 
-    std::cout << "\n";
+    s << "\n";
   }
 }
 
-template <typename Matrix>
-void print_matrix(const Matrix& A, cusp::array1d_format)
+template <typename Printable, typename Stream>
+void print(const Printable& p, Stream& s, cusp::array1d_format)
 {
-  std::cout << "array1d <" << A.size() << ">\n";
+  s << "array1d <" << p.size() << ">\n";
 
-  for(size_t i = 0; i < A.size(); i++)
-    std::cout << std::setw(14) << A[i] << "\n";
+  for(size_t i = 0; i < p.size(); i++)
+    s << std::setw(14) << p[i] << "\n";
 }
 
 } // end namespace detail
@@ -80,10 +80,22 @@ void print_matrix(const Matrix& A, cusp::array1d_format)
 // Entry Point //
 /////////////////
 
+template <typename Printable>
+void print(const Printable& p)
+{
+  cusp::print(p, std::cout);
+}
+
+template <typename Printable, typename Stream>
+void print(const Printable& p, Stream& s)
+{
+  cusp::detail::print(p, s, typename Printable::format());
+}
+
 template <typename Matrix>
 void print_matrix(const Matrix& A)
 {
-  cusp::detail::print_matrix(A, typename Matrix::format());
+  cusp::print(A);
 }
 
 } // end namespace cusp

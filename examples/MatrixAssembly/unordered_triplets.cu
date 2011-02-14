@@ -60,7 +60,7 @@ int main(void)
                           thrust::plus<float>());
     
     // print matrix
-    cusp::print_matrix(A);
+    cusp::print(A);
 
     return 0;
 }

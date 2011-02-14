@@ -64,18 +64,18 @@ int main(void)
 
     // print view
     std::cout << "\nhost csr_matrix_view" << std::endl;
-    cusp::print_matrix(A);
+    cusp::print(A);
 
     // compute y = A* x 
     cusp::multiply(A, x, y);
     
     // print x
     std::cout << "\nx array" << std::endl;
-    cusp::print_matrix(x);
+    cusp::print(x);
 
     // print y
     std::cout << "\n y array, y = A * x" << std::endl;
-    cusp::print_matrix(y);
+    cusp::print(y);
   }
 
   // wrap the device memory with a csr_matrix_view
@@ -106,18 +106,18 @@ int main(void)
 
     // print view
     std::cout << "\ndevice csr_matrix_view" << std::endl;
-    cusp::print_matrix(A);
+    cusp::print(A);
 
     // compute y = A* x 
     cusp::multiply(A, x, y);
     
     // print x
     std::cout << "\nx array" << std::endl;
-    cusp::print_matrix(x);
+    cusp::print(x);
 
     // print y
     std::cout << "\n y array, y = A * x" << std::endl;
-    cusp::print_matrix(y);
+    cusp::print(y);
   }
   
   // free device arrays

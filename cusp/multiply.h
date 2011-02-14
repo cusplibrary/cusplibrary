@@ -67,7 +67,7 @@ namespace cusp
  *      cusp::multiply(A, x, y);
  *  
  *      // print y
- *      cusp::print_matrix(y);
+ *      cusp::print(y);
  *  
  *      return 0;
  *  }

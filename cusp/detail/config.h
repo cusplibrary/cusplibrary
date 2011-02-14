@@ -28,6 +28,9 @@
 #error "Thrust v1.3.0 or newer is required"
 #endif 
 
+// decorator for deprecated features
+#define CUSP_DEPRECATED THRUST_DEPRECATED
+
 // hooks for profiling
 #if defined(CUSP_PROFILE_ENABLED)
 // profiling enabled

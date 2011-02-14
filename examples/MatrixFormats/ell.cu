@@ -36,7 +36,7 @@ int main(void)
     A.column_indices(3,2) = 2; A.values(3,2) = 60;
     
     // print matrix entries
-    cusp::print_matrix(A);
+    cusp::print(A);
 
     return 0;
 }

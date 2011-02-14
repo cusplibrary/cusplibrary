@@ -31,13 +31,13 @@ int main(void)
   cusp::blas::fill(last_half,  2);
 
   // print the array
-  cusp::print_matrix(array);
+  cusp::print(array);
 
   // copy the first half to the last half
   cusp::copy(first_half, last_half);
   
   // print the array
-  cusp::print_matrix(array);
+  cusp::print(array);
 
   return 0;
 }

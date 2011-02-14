@@ -38,7 +38,7 @@ int main(void)
     //    [ 0 60  0]
 
     // print matrix entries
-    cusp::print_matrix(A);
+    cusp::print(A);
 
     return 0;
 }

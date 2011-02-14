@@ -19,7 +19,7 @@ int main(void)
     cusp::io::read_matrix_market_file(B, "A.mtx");
 
     // print B
-    cusp::print_matrix(B);
+    cusp::print(B);
 
     return 0;
 }
