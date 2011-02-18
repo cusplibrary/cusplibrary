@@ -140,7 +140,32 @@ namespace detail
       return logical_to_other_physical(i, num_rows, num_cols, pitch, Orientation1(), Orientation2());
     }
   };
+  
+  template <typename Iterator, class Orientation>
+  struct row_view {};
 
+  template <typename Iterator>
+  struct row_view<Iterator,cusp::row_major> : public cusp::array1d_view<Iterator>
+  {
+    template <typename Array>
+    row_view(Array& A, size_t n)
+      : cusp::array1d_view<Iterator>(A.values.begin() + A.pitch * n,
+                                     A.values.begin() + A.pitch * n + A.num_cols)
+    {}
+  };
+  
+  template <typename Iterator, class Orientation>
+  struct column_view {};
+
+  template <typename Iterator>
+  struct column_view<Iterator,cusp::column_major> : public cusp::array1d_view<Iterator>
+  {
+    template <typename Array>
+    column_view(Array& A, size_t n)
+      : cusp::array1d_view<Iterator>(A.values.begin() + A.pitch * n,
+                                     A.values.begin() + A.pitch * n + A.num_rows)
+    {}
+  };
 } // end namespace detail
 
 // TODO document mapping of (i,j) onto values[pitch * i + j] or values[pitch * j + i]
@@ -170,6 +195,14 @@ class array2d : public cusp::detail::matrix_base<int,ValueType,MemorySpace,cusp:
   /*! equivalent const_view type
    */
   typedef typename cusp::array2d_view<typename values_array_type::const_view, Orientation> const_view;
+
+  /*! array1d_view of a single row
+   */
+  typedef typename cusp::detail::row_view<typename values_array_type::iterator,Orientation> row_view;
+  
+  /*! array1d_view of a single column
+   */
+  typedef typename cusp::detail::column_view<typename values_array_type::iterator,Orientation> column_view;
 
   values_array_type values;
 
@@ -234,6 +267,16 @@ class array2d : public cusp::detail::matrix_base<int,ValueType,MemorySpace,cusp:
     thrust::swap(this->pitch, matrix.pitch);
     values.swap(matrix.values);
   }
+
+  row_view row(size_t i)
+  {
+    return row_view(*this, i);
+  }
+  
+  column_view column(size_t i)
+  {
+    return column_view(*this, i);
+  }
   
   array2d& operator=(const array2d& matrix);
 
@@ -260,6 +303,14 @@ class array2d_view : public cusp::detail::matrix_base<int, typename Array::value
   /*! equivalent view type
    */
   typedef typename cusp::array2d_view<Array, Orientation> view;
+
+  /*! array1d_view of a single row
+   */
+  typedef typename cusp::detail::row_view<typename values_array_type::iterator,Orientation> row_view;
+  
+  /*! array1d_view of a single column
+   */
+  typedef typename cusp::detail::column_view<typename values_array_type::iterator,Orientation> column_view;
   
   // minor_dimension + padding
   size_t pitch;
@@ -318,7 +369,16 @@ class array2d_view : public cusp::detail::matrix_base<int, typename Array::value
 
     resize(num_rows, num_cols, cusp::detail::minor_dimension(num_rows, num_cols, orientation()));
   }
-
+  
+  row_view row(size_t i) const
+  {
+    return row_view(*this, i);
+  }
+  
+  column_view column(size_t i) const
+  {
+    return column_view(*this, i);
+  }
 }; // class array2d_view
 
 

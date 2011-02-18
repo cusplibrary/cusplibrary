@@ -159,6 +159,11 @@ void fill(ForwardIterator first,
 
 template <typename Array,
           typename ScalarType>
+void fill(const Array& array,
+          ScalarType alpha);
+
+template <typename Array,
+          typename ScalarType>
 void fill(Array& array,
           ScalarType alpha);
 

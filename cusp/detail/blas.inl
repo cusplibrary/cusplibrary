@@ -397,6 +397,15 @@ void fill(ForwardIterator first,
 
 template <typename Array,
           typename ScalarType>
+void fill(const Array& x,
+          ScalarType alpha)
+{
+    CUSP_PROFILE_SCOPED();
+    cusp::blas::fill(x.begin(), x.end(), alpha);
+}
+
+template <typename Array,
+          typename ScalarType>
 void fill(Array& x,
           ScalarType alpha)
 {
