@@ -43,6 +43,13 @@ void axpy(const Array1& x,
                 Array2& y,
           ScalarType alpha);
 
+template <typename Array1,
+          typename Array2,
+          typename ScalarType>
+void axpy(const Array1& x,
+          const Array2& y,
+          ScalarType alpha);
+
 
 template <typename InputIterator1,
           typename InputIterator2,
@@ -62,8 +69,18 @@ template <typename Array1,
 void axpby(const Array1& x,
            const Array2& y,
                  Array3& output,
-          ScalarType alpha,
-          ScalarType beta);
+           ScalarType alpha,
+           ScalarType beta);
+
+template <typename Array1,
+          typename Array2,
+          typename Array3,
+          typename ScalarType>
+void axpby(const Array1& x,
+           const Array2& y,
+           const Array3& output,
+           ScalarType alpha,
+           ScalarType beta);
 
 
 template <typename InputIterator1,
@@ -93,6 +110,19 @@ void axpbypcz(const Array1& x,
               ScalarType beta,
               ScalarType gamma);
 
+template <typename Array1,
+          typename Array2,
+          typename Array3,
+          typename Array4,
+          typename ScalarType>
+void axpbypcz(const Array1& x,
+              const Array2& y,
+              const Array3& z,
+              const Array4& output,
+              ScalarType alpha,
+              ScalarType beta,
+              ScalarType gamma);
+
 
 template <typename InputIterator1,
           typename InputIterator2,
@@ -110,6 +140,13 @@ void xmy(const Array1& x,
          const Array2& y,
                Array3& output);
 
+template <typename Array1,
+          typename Array2,
+          typename Array3>
+void xmy(const Array1& x,
+         const Array2& y,
+         const Array3& output);
+
 
 template <typename InputIterator,
           typename ForwardIterator>
@@ -121,6 +158,11 @@ template <typename Array1,
           typename Array2>
 void copy(const Array1& array1,
                 Array2& array2);
+
+template <typename Array1,
+          typename Array2>
+void copy(const Array1& array1,
+          const Array2& array2);
 
 
 template <typename InputIterator1,
@@ -159,12 +201,12 @@ void fill(ForwardIterator first,
 
 template <typename Array,
           typename ScalarType>
-void fill(const Array& array,
+void fill(Array& array,
           ScalarType alpha);
 
 template <typename Array,
           typename ScalarType>
-void fill(Array& array,
+void fill(const Array& array,
           ScalarType alpha);
 
 
@@ -209,6 +251,10 @@ template <typename Array,
 void scal(Array& array,
           ScalarType alpha);
 
+template <typename Array,
+          typename ScalarType>
+void scal(const Array& array,
+          ScalarType alpha);
 
 } // end namespace blas
 } // end namespace cusp
