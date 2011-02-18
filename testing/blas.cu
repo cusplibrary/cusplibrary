@@ -11,8 +11,6 @@ void TestAxpy(void)
     
     Array x(4);
     Array y(4);
-    View view_x(x);
-    View view_y(y);
 
     x[0] =  7.0f;   y[0] =  0.0f; 
     x[1] =  5.0f;   y[1] = -2.0f;
@@ -38,7 +36,7 @@ void TestAxpy(void)
     ASSERT_EQUAL(y[2],   8.0);
     ASSERT_EQUAL(y[3],  -1.0);
    
-    cusp::blas::axpy(view_x, view_y, 2.0f);
+    cusp::blas::axpy(View(x), View(y), 2.0f);
     
     ASSERT_EQUAL(y[0],  28.0);
     ASSERT_EQUAL(y[1],  18.0);
@@ -61,9 +59,6 @@ void TestAxpby(void)
     Array x(4);
     Array y(4);
     Array z(4,0);
-    View view_x(x);
-    View view_y(y);
-    View view_z(z);
 
     x[0] =  7.0f;   y[0] =  0.0f; 
     x[1] =  5.0f;   y[1] = -2.0f;
@@ -94,7 +89,7 @@ void TestAxpby(void)
     z[2] = 0.0f;
     z[3] = 0.0f;
 
-    cusp::blas::axpby(view_x, view_y, view_z, 2.0f, 1.0f);
+    cusp::blas::axpby(View(x), View(y), View(z), 2.0f, 1.0f);
     
     ASSERT_EQUAL(z[0],  14.0);
     ASSERT_EQUAL(z[1],   8.0);
@@ -118,10 +113,6 @@ void TestAxpbypcz(void)
     Array y(4);
     Array z(4);
     Array w(4,0);
-    View view_x(x);
-    View view_y(y);
-    View view_z(z);
-    View view_w(w);
 
     x[0] =  7.0f;   y[0] =  0.0f;   z[0] =  1.0f;  
     x[1] =  5.0f;   y[1] = -2.0f;   z[1] =  0.0f;
@@ -152,7 +143,7 @@ void TestAxpbypcz(void)
     w[2] = 0.0f;
     w[3] = 0.0f;
 
-    cusp::blas::axpbypcz(view_x, view_y, view_z, view_w, 2.0f, 1.0f, 3.0f);
+    cusp::blas::axpbypcz(View(x), View(y), View(z), View(w), 2.0f, 1.0f, 3.0f);
     
     ASSERT_EQUAL(w[0],  17.0);
     ASSERT_EQUAL(w[1],   8.0);
@@ -175,9 +166,6 @@ void TestXmy(void)
     Array x(4);
     Array y(4);
     Array z(4,0);
-    View view_x(x);
-    View view_y(y);
-    View view_z(z);
 
     x[0] =  7.0f;   y[0] =  0.0f;
     x[1] =  5.0f;   y[1] = -2.0f;
@@ -208,7 +196,7 @@ void TestXmy(void)
     z[2] = 0.0f;
     z[3] = 0.0f;
 
-    cusp::blas::xmy(view_x, view_y, view_z);
+    cusp::blas::xmy(View(x), View(y), View(z));
     
     ASSERT_EQUAL(z[0],   0.0f);
     ASSERT_EQUAL(z[1], -10.0f);
@@ -225,26 +213,33 @@ DECLARE_HOST_DEVICE_UNITTEST(TestXmy);
 template <class MemorySpace>
 void TestCopy(void)
 {
-    cusp::array1d<float, MemorySpace> x(4);
-    cusp::array1d<float, MemorySpace> y(4);
+    typedef typename cusp::array1d<float, MemorySpace>       Array;
+    typedef typename cusp::array1d<float, MemorySpace>::view View;
 
-    x[0] =  7.0f;   y[0] =  0.0f; 
-    x[1] =  5.0f;   y[1] = -2.0f;
-    x[2] =  4.0f;   y[2] =  0.0f;
-    x[3] = -3.0f;   y[3] =  5.0f;
+    Array x(4);
 
-    cusp::blas::copy(x.begin(), x.end(), y.begin());
+    x[0] =  7.0f; 
+    x[1] =  5.0f;
+    x[2] =  4.0f;
+    x[3] = -3.0f;
+   
+    {
+      Array y(4, -1);
+      cusp::blas::copy(x.begin(), x.end(), y.begin());
+      ASSERT_EQUAL(x, y);
+    }
+    
+    {
+      Array y(4, -1);
+      cusp::blas::copy(x, y);
+      ASSERT_EQUAL(x, y);
+    }
 
-    ASSERT_EQUAL(x, y);
-
-    x[0] =  7.0f;   y[0] =  0.0f; 
-    x[1] =  5.0f;   y[1] = -2.0f;
-    x[2] =  4.0f;   y[2] =  0.0f;
-    x[3] = -3.0f;   y[3] =  5.0f;
-
-    cusp::blas::copy(x, y);
-
-    ASSERT_EQUAL(x, y);
+    {
+      Array y(4, -1);
+      cusp::blas::copy(View(x), View(y));
+      ASSERT_EQUAL(x, y);
+    }
     
     // test size checking
     cusp::array1d<float, MemorySpace> w(3);
@@ -261,8 +256,6 @@ void TestDot(void)
 
     Array x(6);
     Array y(6);
-    View view_x(x);
-    View view_y(y);
 
     x[0] =  7.0f;   y[0] =  0.0f; 
     x[1] =  5.0f;   y[1] = -2.0f;
@@ -275,7 +268,7 @@ void TestDot(void)
     
     ASSERT_EQUAL(cusp::blas::dot(x, y), -21.0f);
     
-    ASSERT_EQUAL(cusp::blas::dot(view_x, view_y), -21.0f);
+    ASSERT_EQUAL(cusp::blas::dot(View(x), View(y)), -21.0f);
     
     // test size checking
     cusp::array1d<float, MemorySpace> w(3);
@@ -293,8 +286,6 @@ void TestDotc(void)
     // TODO test complex types
     Array x(6);
     Array y(6);
-    View view_x(x);
-    View view_y(y);
 
     x[0] =  7.0f;   y[0] =  0.0f; 
     x[1] =  5.0f;   y[1] = -2.0f;
@@ -307,7 +298,7 @@ void TestDotc(void)
     
     ASSERT_EQUAL(cusp::blas::dotc(x, y), -21.0f);
     
-    ASSERT_EQUAL(cusp::blas::dotc(view_x, view_y), -21.0f);
+    ASSERT_EQUAL(cusp::blas::dotc(View(x), View(y)), -21.0f);
     
     // test size checking
     Array w(3);
@@ -323,7 +314,6 @@ void TestFill(void)
     typedef typename cusp::array1d<float, MemorySpace>::view View;
 
     Array x(4);
-    View view_x(x);
 
     x[0] =  7.0f;
     x[1] =  5.0f;
@@ -344,7 +334,7 @@ void TestFill(void)
     ASSERT_EQUAL(x[2], 2.0);
     ASSERT_EQUAL(x[3], 2.0);
 
-    cusp::blas::fill(view_x, 1.0f);
+    cusp::blas::fill(View(x), 1.0f);
 
     ASSERT_EQUAL(x[0], 1.0);
     ASSERT_EQUAL(x[1], 1.0);
@@ -361,7 +351,6 @@ void TestNrm1(void)
     typedef typename cusp::array1d<float, MemorySpace>::view View;
 
     Array x(6);
-    View view_x(x);
 
     x[0] =  7.0f;
     x[1] =  5.0f;
@@ -374,7 +363,7 @@ void TestNrm1(void)
 
     ASSERT_EQUAL(cusp::blas::nrm1(x), 20.0f);
     
-    ASSERT_EQUAL(cusp::blas::nrm1(view_x), 20.0f);
+    ASSERT_EQUAL(cusp::blas::nrm1(View(x)), 20.0f);
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestNrm1);
 
@@ -386,7 +375,6 @@ void TestNrm2(void)
     typedef typename cusp::array1d<float, MemorySpace>::view View;
 
     Array x(6);
-    View view_x(x);
 
     x[0] =  7.0f;
     x[1] =  5.0f;
@@ -399,7 +387,7 @@ void TestNrm2(void)
 
     ASSERT_EQUAL(cusp::blas::nrm2(x), 10.0f);
     
-    ASSERT_EQUAL(cusp::blas::nrm2(view_x), 10.0f);
+    ASSERT_EQUAL(cusp::blas::nrm2(View(x)), 10.0f);
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestNrm2);
 
@@ -424,7 +412,7 @@ void TestNrmmax(void)
 
     ASSERT_EQUAL(cusp::blas::nrmmax(x), 7.0f);
     
-    ASSERT_EQUAL(cusp::blas::nrmmax(view_x), 7.0f);
+    ASSERT_EQUAL(cusp::blas::nrmmax(View(x)), 7.0f);
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestNrmmax);
 
@@ -436,7 +424,6 @@ void TestScal(void)
     typedef typename cusp::array1d<float, MemorySpace>::view View;
 
     Array x(6);
-    View view_x(x);
 
     x[0] =  7.0f;
     x[1] =  5.0f;
@@ -463,7 +450,7 @@ void TestScal(void)
     ASSERT_EQUAL(x[4],   0.0);
     ASSERT_EQUAL(x[5],  16.0);
     
-    cusp::blas::scal(view_x, 2.0f);
+    cusp::blas::scal(View(x), 2.0f);
 
     ASSERT_EQUAL(x[0],  56.0);
     ASSERT_EQUAL(x[1],  40.0);
