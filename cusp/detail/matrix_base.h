@@ -46,13 +46,13 @@ namespace detail
             matrix_base(const Matrix& m)
                 : num_rows(m.num_rows), num_cols(m.num_cols), num_entries(m.num_entries) {}
 
-            matrix_base(IndexType rows, IndexType cols)
+            matrix_base(size_t rows, size_t cols)
                 : num_rows(rows), num_cols(cols), num_entries(0) {}
 
-            matrix_base(IndexType rows, IndexType cols, IndexType entries)
+            matrix_base(size_t rows, size_t cols, size_t entries)
                 : num_rows(rows), num_cols(cols), num_entries(entries) {}
 
-            void resize(IndexType rows, IndexType cols, IndexType entries)
+            void resize(size_t rows, size_t cols, size_t entries)
             {
                 num_rows = rows;
                 num_cols = cols;
