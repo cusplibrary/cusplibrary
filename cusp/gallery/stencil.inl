@@ -14,15 +14,14 @@
  *  limitations under the License.
  */
 
+#include <cusp/copy.h>
 #include <cusp/dia_matrix.h>
 
-#include <thrust/tuple.h> // TODO add cusp::tuple?
-
+#include <thrust/tuple.h>
 #include <thrust/reduce.h>
 #include <thrust/scan.h>
 #include <thrust/count.h>
 #include <thrust/functional.h>
-
 
 namespace cusp
 {
@@ -157,10 +156,6 @@ void generate_matrix_from_stencil(      cusp::dia_matrix<IndexType,ValueType,Mem
     cusp::array1d<IndexType,cusp::host_memory> strides(grid_indices.size());
     thrust::exclusive_scan(grid_indices.begin(), grid_indices.end(), strides.begin(), IndexType(1), thrust::multiplies<IndexType>());
 
-    //std::cout << "strides ";
-    //thrust::copy(strides.begin(), strides.end(), std::ostream_iterator<IndexType>(std::cout, " "));
-    //std::cout << std::endl;
-    
     cusp::array1d<IndexType,cusp::host_memory> offsets(stencil.size(), 0);
     for(size_t i = 0; i < offsets.size(); i++)
     {
@@ -172,13 +167,11 @@ void generate_matrix_from_stencil(      cusp::dia_matrix<IndexType,ValueType,Mem
             offsets[i] += strides[j] * stencil_indices[j];
         }
     }
-    //std::cout << "offsets ";
-    //thrust::copy(offsets.begin(), offsets.end(), std::ostream_iterator<IndexType>(std::cout, " "));
-    //std::cout << std::endl;
 
+    // TODO compute num_entries directly from stencil
     matrix.resize(num_rows, num_rows, 0, num_diagonals); // XXX we set NNZ to zero for now
 
-    matrix.diagonal_offsets = offsets;
+    cusp::copy(offsets, matrix.diagonal_offsets);
 
     // ideally we'd have row views and column views here
     for(IndexType i = 0; i < num_diagonals; i++)

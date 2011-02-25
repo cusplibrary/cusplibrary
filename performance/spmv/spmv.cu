@@ -85,7 +85,7 @@ void test_all_formats(std::string& filename)
               << host_matrix.num_entries << " entries" << "\n\n";
     
     FILE * fid = fopen(BENCHMARK_OUTPUT_FILE_NAME, "a");
-    fprintf(fid, "file=%s rows=%d cols=%d nonzeros=%d\n", filename.c_str(), host_matrix.num_rows, host_matrix.num_cols, host_matrix.num_entries);
+    fprintf(fid, "file=%s rows=%d cols=%d nonzeros=%d\n", filename.c_str(), (int) host_matrix.num_rows, (int) host_matrix.num_cols, (int) host_matrix.num_entries);
     fclose(fid);
     
     test_coo(host_matrix);
