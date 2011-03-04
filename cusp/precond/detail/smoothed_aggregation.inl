@@ -190,7 +190,7 @@ void setup_level_matrix(Matrix1& dst,
                  	Matrix2& src)
 {	
 	dst = src;
-	// same space by resizing src to nothing
+	// save space by resizing src to nothing
         src.resize(0,0,0);
 }
 
@@ -267,10 +267,10 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace>::extend_hierarchy(voi
   ValueType omega = ValueType(4.0/3.0) / rho_DinvA;
   levels.back().smoother = cusp::relaxation::jacobi<ValueType, MemorySpace>(A, omega);
   #else
-  cusp::array1d<ValueType,cusp::host_memory> coeff;
+  cusp::array1d<ValueType,cusp::host_memory> coef;
   ValueType rho = cusp::detail::ritz_spectral_radius_symmetric(A, 8);
-  cusp::relaxation::detail::chebyshev_polynomial_coefficients(rho,coeff);
-  levels.back().smoother = cusp::relaxation::polynomial<ValueType, MemorySpace>(A, coeff);
+  cusp::relaxation::detail::chebyshev_polynomial_coefficients(rho,coef);
+  levels.back().smoother = cusp::relaxation::polynomial<ValueType, MemorySpace>(A, coef);
   #endif
 
   levels.back().aggregates.swap(aggregates);

@@ -33,9 +33,10 @@ namespace detail
 	void chebyshev_polynomial_coefficients( const ValueType rho, 
 						cusp::array1d<ValueType,cusp::host_memory>& coefficients,
 						const ValueType lower_bound = 1.0/30.0, 
-						const ValueType upper_bound = 1.1, 
-						const size_t degree = 3)
+						const ValueType upper_bound = 1.1) 
 	{
+		const size_t degree = 3;
+
 		ValueType x0 = lower_bound * rho;
 		ValueType x1 = upper_bound * rho;
 		
@@ -90,6 +91,28 @@ template<typename MatrixType, typename VectorType1, typename VectorType2>
     void polynomial<ValueType,MemorySpace>
     ::operator()(const MatrixType& A, const VectorType1& b, VectorType2& x) const
     {
+        CUSP_PROFILE_SCOPED();
+
+        polynomial<ValueType,MemorySpace>::operator()(A,b,x,default_coefficients);
+    }
+
+template <typename ValueType, typename MemorySpace>
+template<typename MatrixType, typename VectorType1, typename VectorType2>
+    void polynomial<ValueType,MemorySpace>
+    ::presmooth(const MatrixType& A, const VectorType1& b, VectorType2& x)
+    {
+        CUSP_PROFILE_SCOPED();
+        
+        polynomial<ValueType,MemorySpace>::operator()(A,b,x,default_coefficients);
+    }
+
+template <typename ValueType, typename MemorySpace>
+template<typename MatrixType, typename VectorType1, typename VectorType2>
+    void polynomial<ValueType,MemorySpace>
+    ::postsmooth(const MatrixType& A, const VectorType1& b, VectorType2& x)
+    {
+        CUSP_PROFILE_SCOPED();
+
         polynomial<ValueType,MemorySpace>::operator()(A,b,x,default_coefficients);
     }
 
@@ -100,9 +123,13 @@ template<typename MatrixType, typename VectorType1, typename VectorType2, typena
     ::operator()(const MatrixType& A, const VectorType1& b, VectorType2& x, VectorType3& coefficients) const
     {
 	cusp::array1d<ValueType,MemorySpace> residual(A.num_rows);
+
 	if( cusp::blas::nrm2(x) == 0.0 )
+	{
 		residual = b;
-	else{
+	}
+	else
+	{
             	// compute residual <- b - A*x
             	cusp::multiply(A, x, residual);
             	cusp::blas::axpby(b, residual, residual, ValueType(1), ValueType(-1));
@@ -112,8 +139,10 @@ template<typename MatrixType, typename VectorType1, typename VectorType2, typena
 	cusp::array1d<ValueType,MemorySpace> h(residual);
 	cusp::blas::scal(h, scale_factor);
 
-	cusp::array1d<ValueType,MemorySpace> mult(A.num_rows,0);
-	for( size_t i=1; i<coefficients.size(); i++ ){
+	cusp::array1d<ValueType,MemorySpace> mult(A.num_rows);
+
+	for( size_t i=1; i<coefficients.size(); i++ )
+	{
             	cusp::multiply(A, h, mult);
 		scale_factor = coefficients[i];
             	cusp::blas::axpby(mult, residual, h, ValueType(1), scale_factor);

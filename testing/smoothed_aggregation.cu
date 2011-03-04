@@ -42,8 +42,8 @@ void TestEstimateRhoDinvA(void)
         A.column_indices[1] = 1;
         A.values[0] = -5;
         A.values[1] =  2;
-        //float rho = 1.0;
-        //ASSERT_EQUAL((std::abs(cusp::precond::detail::estimate_rho_Dinv_A(A) - rho) / rho) < 0.1f, true);
+        float rho = 1.0;
+        ASSERT_EQUAL((std::abs(cusp::precond::detail::estimate_rho_Dinv_A(A) - rho) / rho) < 0.1f, true);
     }
 
     // 2x2 Poisson problem
