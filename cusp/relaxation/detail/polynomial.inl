@@ -103,7 +103,21 @@ template<typename MatrixType, typename VectorType1, typename VectorType2>
     {
         CUSP_PROFILE_SCOPED();
         
-        polynomial<ValueType,MemorySpace>::operator()(A,b,x,default_coefficients);
+	cusp::array1d<ValueType,MemorySpace> residual(b);
+
+        x = residual;
+	ValueType scale_factor = default_coefficients[0];
+	cusp::blas::scal(x, scale_factor);
+
+	cusp::array1d<ValueType,MemorySpace> mult(A.num_rows);
+
+	for( size_t i=1; i<default_coefficients.size(); i++ )
+	{
+		scale_factor = default_coefficients[i];
+
+            	cusp::multiply(A, x, mult);
+            	cusp::blas::axpby(mult, residual, x, ValueType(1), scale_factor);
+	}
     }
 
 template <typename ValueType, typename MemorySpace>
@@ -143,8 +157,9 @@ template<typename MatrixType, typename VectorType1, typename VectorType2, typena
 
 	for( size_t i=1; i<coefficients.size(); i++ )
 	{
-            	cusp::multiply(A, h, mult);
 		scale_factor = coefficients[i];
+
+            	cusp::multiply(A, h, mult);
             	cusp::blas::axpby(mult, residual, h, ValueType(1), scale_factor);
 	}
 

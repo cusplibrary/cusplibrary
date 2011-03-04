@@ -73,3 +73,18 @@ void TestPolynomialRelaxation(void)
 }
 DECLARE_SPARSE_MATRIX_UNITTEST(TestPolynomialRelaxation);
 
+
+void TestChebyshevCoefficients(void)
+{
+    cusp::array1d<double,cusp::host_memory> coef;
+    cusp::relaxation::detail::chebyshev_polynomial_coefficients(1.0,coef,1.0,2.0);
+
+    cusp::array1d<double,cusp::host_memory> expected(4);
+    expected[0] = -0.32323232;
+    expected[1] = 1.45454545;
+    expected[2] = -2.12121212;
+    expected[3] = 1.0;
+
+    ASSERT_ALMOST_EQUAL(coef, expected);
+}
+DECLARE_UNITTEST(TestChebyshevCoefficients);
