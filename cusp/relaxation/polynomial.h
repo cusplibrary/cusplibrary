@@ -37,8 +37,8 @@ class polynomial
 public:
     polynomial();
 
-    template <typename MatrixType, typename VectorType>
-    polynomial(const MatrixType& A, const VectorType& coefficients);
+    template <typename VectorType>
+    polynomial(const VectorType& coefficients);
 
     // ignores initial x
     template<typename MatrixType, typename VectorType1, typename VectorType2>

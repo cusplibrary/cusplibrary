@@ -44,7 +44,7 @@ namespace detail
 		cusp::array1d<ValueType,cusp::host_memory> std_roots(degree);
 
 		for( size_t i=0; i<degree; i++ )
-			std_roots[i] = std::cos( M_PI * (((ValueType)i) + 0.5)/ degree );
+			std_roots[i] = std::cos( M_PI * (ValueType(i) + 0.5)/ degree );
 
 		// Chebyshev roots for the interval [x0,x1]
 		for( size_t i=0; i<degree; i++ )
@@ -75,9 +75,9 @@ template <typename ValueType, typename MemorySpace>
     }
 
 template <typename ValueType, typename MemorySpace>
-template<typename MatrixType, typename VectorType>
+template<typename VectorType>
     polynomial<ValueType,MemorySpace>
-    ::polynomial(const MatrixType& A, const VectorType& coefficients)
+    ::polynomial(const VectorType& coefficients)
     {
 	size_t default_size = coefficients.size()-1;
 	default_coefficients.resize( default_size );
@@ -103,7 +103,7 @@ template<typename MatrixType, typename VectorType1, typename VectorType2>
     {
         CUSP_PROFILE_SCOPED();
         
-	cusp::array1d<ValueType,MemorySpace> residual(b);
+	VectorType1& residual = b;
 
         x = residual;
 	ValueType scale_factor = default_coefficients[0];

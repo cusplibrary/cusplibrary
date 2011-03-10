@@ -198,7 +198,8 @@ void setup_level_matrix(Matrix1& dst,
 
 
 template <typename IndexType, typename ValueType, typename MemorySpace>
-smoothed_aggregation<IndexType,ValueType,MemorySpace>::smoothed_aggregation(const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& A, const ValueType theta)
+template <typename MatrixType>
+smoothed_aggregation<IndexType,ValueType,MemorySpace>::smoothed_aggregation(const MatrixType& A, const ValueType theta)
     : theta(theta)
 {
   CUSP_PROFILE_SCOPED();
@@ -217,7 +218,8 @@ smoothed_aggregation<IndexType,ValueType,MemorySpace>::smoothed_aggregation(cons
   LU = cusp::detail::lu_solver<ValueType, cusp::host_memory>(coarse_dense);
 
   // Setup solve matrix for each level
-  for( size_t lvl = 0; lvl < levels.size(); lvl++ )
+  levels[0].A = A;
+  for( size_t lvl = 1; lvl < levels.size(); lvl++ )
     detail::setup_level_matrix( levels[lvl].A, levels[lvl].A_ );
 }
 
@@ -262,7 +264,7 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace>::extend_hierarchy(voi
     cusp::multiply(R, AP, RAP);
   }
 
-  #ifndef USE_POLY_SMOOTHER
+    #ifndef USE_POLY_SMOOTHER
   //  4/3 * 1/rho is a good default, where rho is the spectral radius of D^-1(A)
   ValueType omega = ValueType(4.0/3.0) / rho_DinvA;
   levels.back().smoother = cusp::relaxation::jacobi<ValueType, MemorySpace>(A, omega);
@@ -270,13 +272,17 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace>::extend_hierarchy(voi
   cusp::array1d<ValueType,cusp::host_memory> coef;
   ValueType rho = cusp::detail::ritz_spectral_radius_symmetric(A, 8);
   cusp::relaxation::detail::chebyshev_polynomial_coefficients(rho,coef);
-  levels.back().smoother = cusp::relaxation::polynomial<ValueType, MemorySpace>(A, coef);
+  levels.back().smoother = cusp::relaxation::polynomial<ValueType, MemorySpace>(coef);
   #endif
 
   levels.back().aggregates.swap(aggregates);
   detail::setup_level_matrix( levels.back().R, R );
   detail::setup_level_matrix( levels.back().P, P );
   levels.back().residual.resize(levels.back().A_.num_rows);
+
+  // Resize A_ on the finest level to save space
+  if( levels.size() == 1 )
+	levels.back().A_.resize(0,0,0);
 
   //std::cout << "omega " << omega << std::endl;
 
@@ -285,6 +291,7 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace>::extend_hierarchy(voi
   levels.back().B.swap(B_coarse);
   levels.back().x.resize(levels.back().A_.num_rows);
   levels.back().b.resize(levels.back().A_.num_rows);
+
 }
 
     
