@@ -39,7 +39,7 @@ void TestPolynomialRelaxation(void)
     {
       cusp::array1d<ValueType, Space> x(x0);
       cusp::array1d<ValueType, Space> coef(1,-1.0/3.0);
-      cusp::relaxation::polynomial<ValueType, Space> relax(A, coef);
+      cusp::relaxation::polynomial<ValueType, Space> relax(coef);
       cusp::array1d<ValueType, Space> expected(5);
       cusp::blas::axpby(x0, residual, expected, ValueType(1), ValueType(-1.0/3.0));
 
@@ -51,7 +51,7 @@ void TestPolynomialRelaxation(void)
     {
       cusp::array1d<ValueType, Space> coef(3);
       coef[0] = -0.14285714; coef[1] = 1.0; coef[2] = -2.0;
-      cusp::relaxation::polynomial<ValueType, Space> relax(A, coef);
+      cusp::relaxation::polynomial<ValueType, Space> relax(coef);
 
       cusp::array1d<ValueType, Space> Ar(5);
       cusp::multiply(A, residual, Ar);
