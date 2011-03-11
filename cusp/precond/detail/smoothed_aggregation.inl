@@ -226,15 +226,12 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace>::extend_hierarchy(voi
 {
   CUSP_PROFILE_SCOPED();
 
-  const SetupMatrixType& A = levels.back().A_;
-  const cusp::array1d<ValueType,MemorySpace>&              B = levels.back().B;
-
   // compute stength of connection matrix
   SetupMatrixType C;
-  detail::symmetric_strength_of_connection(A, C, theta);
+  detail::symmetric_strength_of_connection(levels.back().A_, C, theta);
 
   // compute spectral radius of diag(C)^-1 * C
-  ValueType rho_DinvA = detail::estimate_rho_Dinv_A(A);
+  ValueType rho_DinvA = detail::estimate_rho_Dinv_A(levels.back().A_);
 
   // compute aggregates
   cusp::array1d<IndexType,MemorySpace> aggregates(C.num_rows,0);
@@ -243,11 +240,11 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace>::extend_hierarchy(voi
   // compute tenative prolongator and coarse nullspace vector
   SetupMatrixType 				T;
   cusp::array1d<ValueType,MemorySpace>  B_coarse;
-  detail::fit_candidates(aggregates, B, T, B_coarse);
+  detail::fit_candidates(aggregates, levels.back().B, T, B_coarse);
   
   // compute prolongation operator
   SetupMatrixType P;
-  detail::smooth_prolongator(A, T, P, ValueType(4.0/3.0), rho_DinvA);  // TODO if C != A then compute rho_Dinv_C
+  detail::smooth_prolongator(levels.back().A_, T, P, ValueType(4.0/3.0), rho_DinvA);  // TODO if C != A then compute rho_Dinv_C
 
   // compute restriction operator (transpose of prolongator)
   SetupMatrixType R;
@@ -258,19 +255,19 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace>::extend_hierarchy(voi
   {
     // TODO test speed of R * (A * P) vs. (R * A) * P
     SetupMatrixType AP;
-    cusp::multiply(A, P, AP);
+    cusp::multiply(levels.back().A_, P, AP);
     cusp::multiply(R, AP, RAP);
   }
 
   #ifndef USE_POLY_SMOOTHER
   //  4/3 * 1/rho is a good default, where rho is the spectral radius of D^-1(A)
   ValueType omega = ValueType(4.0/3.0) / rho_DinvA;
-  levels.back().smoother = cusp::relaxation::jacobi<ValueType, MemorySpace>(A, omega);
+  levels.back().smoother = cusp::relaxation::jacobi<ValueType, MemorySpace>(levels.back().A_, omega);
   #else
   cusp::array1d<ValueType,cusp::host_memory> coeff;
   ValueType rho = cusp::detail::ritz_spectral_radius_symmetric(A, 8);
   cusp::relaxation::detail::chebyshev_polynomial_coefficients(rho,coeff);
-  levels.back().smoother = cusp::relaxation::polynomial<ValueType, MemorySpace>(A, coeff);
+  levels.back().smoother = cusp::relaxation::polynomial<ValueType, MemorySpace>(levels.back().A_, coeff);
   #endif
 
   levels.back().aggregates.swap(aggregates);
@@ -299,8 +296,8 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace>::operator()(const Arr
 }
 
 template <typename IndexType, typename ValueType, typename MemorySpace>
-void smoothed_aggregation<IndexType,ValueType,MemorySpace>::solve(const cusp::array1d<ValueType,MemorySpace>& b,
-                                                                        cusp::array1d<ValueType,MemorySpace>& x)
+template <typename Array1, typename Array2>
+void smoothed_aggregation<IndexType,ValueType,MemorySpace>::solve(const Array1& b, Array2& x)
 {
   CUSP_PROFILE_SCOPED();
 
@@ -310,22 +307,21 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace>::solve(const cusp::ar
 }
 
 template <typename IndexType, typename ValueType, typename MemorySpace>
-template <typename Monitor>
-void smoothed_aggregation<IndexType,ValueType,MemorySpace>::solve(const cusp::array1d<ValueType,MemorySpace>& b,
-                                                                        cusp::array1d<ValueType,MemorySpace>& x,
+template <typename Array1, typename Array2, typename Monitor>
+void smoothed_aggregation<IndexType,ValueType,MemorySpace>::solve(const Array1& b,
+                                                                        Array2& x,
                                                                         Monitor& monitor )
 {
   CUSP_PROFILE_SCOPED();
 
-  // TODO check sizes
-  const SolveMatrixType & A = levels[0].A;
- 
+  const size_t n = levels[0].A.num_rows;
+
   // use simple iteration
-  cusp::array1d<ValueType,MemorySpace> update(A.num_rows);
-  cusp::array1d<ValueType,MemorySpace> residual(A.num_rows);
+  cusp::array1d<ValueType,MemorySpace> update(n);
+  cusp::array1d<ValueType,MemorySpace> residual(n);
 
   // compute initial residual
-  cusp::multiply(A,x,residual);
+  cusp::multiply(levels[0].A, x, residual);
   cusp::blas::axpby(b, residual, residual, ValueType(1.0), ValueType(-1.0));
 
   while(!monitor.finished(residual))
@@ -336,17 +332,16 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace>::solve(const cusp::ar
       cusp::blas::axpy(update, x, ValueType(1.0));
 
       // update residual
-      cusp::multiply(A,x,residual);
+      cusp::multiply(levels[0].A, x, residual);
       cusp::blas::axpby(b, residual, residual, ValueType(1.0), ValueType(-1.0));
       ++monitor;
   }   
 }
 
 template <typename IndexType, typename ValueType, typename MemorySpace>
+template <typename Array1, typename Array2>
 void smoothed_aggregation<IndexType,ValueType,MemorySpace>
-::_solve(const cusp::array1d<ValueType,MemorySpace>& b,
-               cusp::array1d<ValueType,MemorySpace>& x,
-         const size_t i)
+::_solve(const Array1& b, Array2& x, const size_t i)
 {
   CUSP_PROFILE_SCOPED();
 
@@ -361,33 +356,25 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace>
   }
   else
   {
-    const SolveMatrixType & R = levels[i].R;
-    const SolveMatrixType & A = levels[i].A;
-    const SolveMatrixType & P = levels[i].P;
-
-    cusp::array1d<ValueType,MemorySpace>& residual = levels[i].residual;
-    cusp::array1d<ValueType,MemorySpace>& coarse_b = levels[i + 1].b;
-    cusp::array1d<ValueType,MemorySpace>& coarse_x = levels[i + 1].x;
-
     // presmooth
-    levels[i].smoother.presmooth(A,b,x);
+    levels[i].smoother.presmooth(levels[i].A, b, x);
 
     // compute residual <- b - A*x
-    cusp::multiply(A, x, residual);
-    cusp::blas::axpby(b, residual, residual, ValueType(1.0), ValueType(-1.0));
+    cusp::multiply(levels[i].A, x, levels[i].residual);
+    cusp::blas::axpby(b, levels[i].residual, levels[i].residual, ValueType(1.0), ValueType(-1.0));
 
     // restrict to coarse grid
-    cusp::multiply(R, residual, coarse_b);
+    cusp::multiply(levels[i].R, levels[i].residual, levels[i + 1].b);
 
     // compute coarse grid solution
-    _solve(coarse_b, coarse_x, i + 1);
+    _solve(levels[i + 1].b, levels[i + 1].x, i + 1);
 
     // apply coarse grid correction 
-    cusp::multiply(P, coarse_x, residual);
-    cusp::blas::axpy(residual, x, ValueType(1.0));
+    cusp::multiply(levels[i].P, levels[i + 1].x, levels[i].residual);
+    cusp::blas::axpy(levels[i].residual, x, ValueType(1.0));
 
     // postsmooth
-    levels[i].smoother.postsmooth(A,b,x);
+    levels[i].smoother.postsmooth(levels[i].A, b, x);
   }
 }
 

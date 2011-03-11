@@ -110,13 +110,11 @@ class smoothed_aggregation : public cusp::linear_operator<ValueType, MemorySpace
     template <typename Array1, typename Array2>
     void operator()(const Array1& x, Array2& y);
 
-    void solve(const cusp::array1d<ValueType,MemorySpace>& b,
-                     cusp::array1d<ValueType,MemorySpace>& x);
+    template <typename Array1, typename Array2>
+    void solve(const Array1& b, Array2& x);
 
-    template<typename Monitor>
-    void solve(const cusp::array1d<ValueType,MemorySpace>& b,
-                     cusp::array1d<ValueType,MemorySpace>& x,
-                     Monitor& monitor );
+    template <typename Array1, typename Array2, typename Monitor>
+    void solve(const Array1& b, Array2& x, Monitor& monitor);
 
     void print( void );
 
@@ -128,9 +126,8 @@ class smoothed_aggregation : public cusp::linear_operator<ValueType, MemorySpace
 
     void extend_hierarchy(void);
 
-    void _solve(const cusp::array1d<ValueType,MemorySpace>& b,
-                      cusp::array1d<ValueType,MemorySpace>& x,
-                const size_t i);
+    template <typename Array1, typename Array2>
+    void _solve(const Array1& b, Array2& x, const size_t i);
 };
 /*! \}
  */
