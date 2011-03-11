@@ -80,14 +80,14 @@ void __spmv_csr_scalar(const Matrix&    A,
 {
     typedef typename Matrix::index_type IndexType;
 
-    const unsigned int BLOCK_SIZE = 256;
-    const unsigned int MAX_BLOCKS = cusp::detail::device::arch::max_active_blocks(spmv_csr_scalar_kernel<UseCache, IndexType, ValueType>, BLOCK_SIZE, (size_t) 0);
-    const unsigned int NUM_BLOCKS = std::min(MAX_BLOCKS, DIVIDE_INTO(A.num_rows, BLOCK_SIZE));
+    const size_t BLOCK_SIZE = 256;
+    const size_t MAX_BLOCKS = cusp::detail::device::arch::max_active_blocks(spmv_csr_scalar_kernel<UseCache, IndexType, ValueType>, BLOCK_SIZE, (size_t) 0);
+    const size_t NUM_BLOCKS = std::min(MAX_BLOCKS, DIVIDE_INTO(A.num_rows, BLOCK_SIZE));
     
     if (UseCache)
         bind_x(x);
 
-    spmv_csr_scalar_kernel<UseCache> <<<NUM_BLOCKS, BLOCK_SIZE>>> 
+    spmv_csr_scalar_kernel<UseCache,IndexType,ValueType> <<<NUM_BLOCKS, BLOCK_SIZE>>> 
         (A.num_rows,
          thrust::raw_pointer_cast(&A.row_offsets[0]),
          thrust::raw_pointer_cast(&A.column_indices[0]),

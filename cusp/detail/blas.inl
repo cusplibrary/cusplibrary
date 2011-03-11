@@ -559,7 +559,8 @@ void scal(ForwardIterator first,
           ForwardIterator last,
           ScalarType alpha)
 {
-    thrust::transform(first, last, first, detail::SCAL<ScalarType>(alpha));
+    typedef typename thrust::iterator_value<ForwardIterator>::type ValueType;
+    thrust::transform(first, last, first, detail::SCAL<ValueType>(alpha));
 }
 
 template <typename Array,

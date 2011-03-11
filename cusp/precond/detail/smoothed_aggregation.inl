@@ -198,7 +198,8 @@ void setup_level_matrix(Matrix1& dst,
 
 
 template <typename IndexType, typename ValueType, typename MemorySpace>
-smoothed_aggregation<IndexType,ValueType,MemorySpace>::smoothed_aggregation(const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& A, const ValueType theta)
+template <typename MatrixType>
+smoothed_aggregation<IndexType,ValueType,MemorySpace>::smoothed_aggregation(const MatrixType& A, const ValueType theta)
     : theta(theta)
 {
   CUSP_PROFILE_SCOPED();
@@ -308,9 +309,7 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace>::solve(const Array1& 
 
 template <typename IndexType, typename ValueType, typename MemorySpace>
 template <typename Array1, typename Array2, typename Monitor>
-void smoothed_aggregation<IndexType,ValueType,MemorySpace>::solve(const Array1& b,
-                                                                        Array2& x,
-                                                                        Monitor& monitor )
+void smoothed_aggregation<IndexType,ValueType,MemorySpace>::solve(const Array1& b, Array2& x, Monitor& monitor )
 {
   CUSP_PROFILE_SCOPED();
 

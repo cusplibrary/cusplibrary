@@ -10,37 +10,81 @@
 #include <cusp/ell_matrix.h>
 #include <cusp/hyb_matrix.h>
 
+#include <thrust/sequence.h>
+
 template <typename Matrix>
 void TestPolynomialRelaxation(void)
 {
+    typedef typename Matrix::value_type   ValueType;
     typedef typename Matrix::memory_space Space;
 
-    cusp::array2d<float, Space> M(5,5);
-    M(0,0) = 1.0;  M(0,1) = 1.0;  M(0,2) = 2.0;  M(0,3) = 0.0;  M(0,4) = 0.0; 
-    M(1,0) = 3.0;  M(1,1) = 2.0;  M(1,2) = 0.0;  M(1,3) = 0.0;  M(1,4) = 5.0;
-    M(2,0) = 0.0;  M(2,1) = 0.0;  M(2,2) = 0.5;  M(2,3) = 0.0;  M(2,4) = 0.0;
-    M(3,0) = 0.0;  M(3,1) = 6.0;  M(3,2) = 7.0;  M(3,3) = 4.0;  M(3,4) = 0.0;
-    M(4,0) = 0.0;  M(4,1) = 8.0;  M(4,2) = 0.0;  M(4,3) = 0.0;  M(4,4) = 8.0;
+    cusp::array2d<ValueType, Space> M(5,5);
+    M(0,0) =  2.0;  M(0,1) = -1.0;  M(0,2) =  0.0;  M(0,3) =  0.0;  M(0,4) =  0.0; 
+    M(1,0) = -1.0;  M(1,1) =  2.0;  M(1,2) = -1.0;  M(1,3) =  0.0;  M(1,4) =  0.0;
+    M(2,0) =  0.0;  M(2,1) = -1.0;  M(2,2) =  2.0;  M(2,3) = -1.0;  M(2,4) =  0.0;
+    M(3,0) =  0.0;  M(3,1) =  0.0;  M(3,2) = -1.0;  M(3,3) =  2.0;  M(3,4) = -1.0;
+    M(4,0) =  0.0;  M(4,1) =  0.0;  M(4,2) =  0.0;  M(4,3) = -1.0;  M(4,4) =  2.0;
 
-    cusp::array1d<float, Space> b(5,  5.0);
-    cusp::array1d<float, Space> x(5, -1.0);
-    cusp::array1d<float, Space> expected(5);
-    expected[0] =  3.35407;  
-    expected[1] =  0.70829;  
-    expected[2] =  4.07994;  
-    expected[3] = -2.68237;  
-    expected[4] = -1.14735;  
-
+    cusp::array1d<ValueType, Space> b(5,  0.0);
+    cusp::array1d<ValueType, Space> x0(5);
+    thrust::sequence(x0.begin(), x0.end());
 
     Matrix A(M);
-    cusp::array1d<float,cusp::host_memory> coeff;
-    float rho = cusp::detail::estimate_spectral_radius(A);
-    cusp::relaxation::detail::chebyshev_polynomial_coefficients(rho,coeff);
-    cusp::relaxation::polynomial<float, Space> relax(A, coeff);
+    cusp::array1d<ValueType, Space> residual(A.num_rows);
 
-    relax(A, b, x);
+    // compute residual <- b - A*x
+    cusp::multiply(A, x0, residual);
+    cusp::blas::axpby(b, residual, residual, ValueType(1), ValueType(-1));
 
-    ASSERT_ALMOST_EQUAL(x, expected);
+    {
+      cusp::array1d<ValueType, Space> x(x0);
+      cusp::array1d<ValueType, Space> coef(1,-1.0/3.0);
+      cusp::relaxation::polynomial<ValueType, Space> relax(coef);
+      cusp::array1d<ValueType, Space> expected(5);
+      cusp::blas::axpby(x0, residual, expected, ValueType(1), ValueType(-1.0/3.0));
+
+      relax(A, b, x, coef);
+
+      ASSERT_ALMOST_EQUAL(x, expected);
+    }
+
+    {
+      cusp::array1d<ValueType, Space> coef(3);
+      coef[0] = -0.14285714; coef[1] = 1.0; coef[2] = -2.0;
+      cusp::relaxation::polynomial<ValueType, Space> relax(coef);
+
+      cusp::array1d<ValueType, Space> Ar(5);
+      cusp::multiply(A, residual, Ar);
+
+      cusp::array1d<ValueType, Space> A2r(5);
+      cusp::multiply(A, Ar, A2r);
+
+      cusp::array1d<ValueType, Space> expected(5);
+      cusp::blas::axpby(x0, A2r, expected, ValueType(1), ValueType(-0.14285714));
+      cusp::blas::axpby(expected, Ar, expected, ValueType(1), ValueType(1));
+      cusp::blas::axpby(expected, residual, expected, ValueType(1), ValueType(-2));
+
+      cusp::array1d<ValueType, Space> x(x0);
+      relax(A, b, x, coef);
+
+      ASSERT_ALMOST_EQUAL(x, expected);
+    }
+
 }
 DECLARE_SPARSE_MATRIX_UNITTEST(TestPolynomialRelaxation);
 
+
+void TestChebyshevCoefficients(void)
+{
+    cusp::array1d<double,cusp::host_memory> coef;
+    cusp::relaxation::detail::chebyshev_polynomial_coefficients(1.0,coef,1.0,2.0);
+
+    cusp::array1d<double,cusp::host_memory> expected(4);
+    expected[0] = -0.32323232;
+    expected[1] = 1.45454545;
+    expected[2] = -2.12121212;
+    expected[3] = 1.0;
+
+    ASSERT_ALMOST_EQUAL(coef, expected);
+}
+DECLARE_UNITTEST(TestChebyshevCoefficients);

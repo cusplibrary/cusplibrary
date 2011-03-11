@@ -37,8 +37,16 @@ class polynomial
 public:
     polynomial();
 
-    template <typename MatrixType, typename VectorType>
-    polynomial(const MatrixType& A, const VectorType& coefficients);
+    template <typename VectorType>
+    polynomial(const VectorType& coefficients);
+
+    // ignores initial x
+    template<typename MatrixType, typename VectorType1, typename VectorType2>
+    void presmooth(const MatrixType& A, const VectorType1& b, VectorType2& x);
+   
+    // smooths initial x
+    template<typename MatrixType, typename VectorType1, typename VectorType2>
+    void postsmooth(const MatrixType& A, const VectorType1& b, VectorType2& x);
 
     template <typename MatrixType, typename VectorType1, typename VectorType2>
     void operator()(const MatrixType& A, const VectorType1& b, VectorType2& x) const;
