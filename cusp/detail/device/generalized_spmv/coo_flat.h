@@ -23,8 +23,18 @@
 #include <thrust/copy.h>
 
 #include <thrust/iterator/iterator_traits.h>
+#if THRUST_VERSION >= 100500
+#include <thrust/detail/backend/dereference.h>
+#include <thrust/detail/backend/cuda/partition.h>
+#else
 #include <thrust/detail/device/dereference.h>
 #include <thrust/detail/device/cuda/partition.h>
+namespace thrust{
+  namespace detail{
+    namespace backend = device;
+  }
+}
+#endif
 
 namespace cusp
 {
@@ -115,8 +125,8 @@ void spmv_coo_kernel_postprocess(SizeType        num_outputs,
 
   while(base + BLOCK_SIZE <= num_outputs)
   {
-    rows[threadIdx.x] = thrust::detail::device::dereference(row_carries);
-    vals[threadIdx.x] = thrust::detail::device::dereference(val_carries);
+    rows[threadIdx.x] = thrust::detail::backend::dereference(row_carries);
+    vals[threadIdx.x] = thrust::detail::backend::dereference(val_carries);
 
     // carry in
     if(threadIdx.x == 0 && base != 0)
@@ -129,7 +139,7 @@ void spmv_coo_kernel_postprocess(SizeType        num_outputs,
       {
         // row terminates in previous unit
         ValueIterator4 zj = z + row_carry;
-        thrust::detail::device::dereference(zj) = reduce(thrust::detail::device::dereference(zj), val_carry);
+        thrust::detail::backend::dereference(zj) = reduce(thrust::detail::backend::dereference(zj), val_carry);
       }
     }
 
@@ -148,7 +158,7 @@ void spmv_coo_kernel_postprocess(SizeType        num_outputs,
       {
         // row terminates in current unit
         ValueIterator4 zj = z + rows[threadIdx.x];
-        thrust::detail::device::dereference(zj) = reduce(thrust::detail::device::dereference(zj), vals[threadIdx.x]);
+        thrust::detail::backend::dereference(zj) = reduce(thrust::detail::backend::dereference(zj), vals[threadIdx.x]);
       }
     }
 
@@ -165,8 +175,8 @@ void spmv_coo_kernel_postprocess(SizeType        num_outputs,
 
     if (threadIdx.x < offset_end)
     {
-      rows[threadIdx.x] = thrust::detail::device::dereference(row_carries);
-      vals[threadIdx.x] = thrust::detail::device::dereference(val_carries);
+      rows[threadIdx.x] = thrust::detail::backend::dereference(row_carries);
+      vals[threadIdx.x] = thrust::detail::backend::dereference(val_carries);
     }
 
     // carry in
@@ -180,7 +190,7 @@ void spmv_coo_kernel_postprocess(SizeType        num_outputs,
       {
         // row terminates in previous unit
         ValueIterator4 zj = z + row_carry;
-        thrust::detail::device::dereference(zj) = reduce(thrust::detail::device::dereference(zj), val_carry);
+        thrust::detail::backend::dereference(zj) = reduce(thrust::detail::backend::dereference(zj), val_carry);
       }
     }
 
@@ -194,7 +204,7 @@ void spmv_coo_kernel_postprocess(SizeType        num_outputs,
       {
         // row terminates in current unit or we're at the end of input
         ValueIterator4 zj = z + rows[threadIdx.x];
-        thrust::detail::device::dereference(zj) = reduce(thrust::detail::device::dereference(zj), vals[threadIdx.x]);
+        thrust::detail::backend::dereference(zj) = reduce(thrust::detail::backend::dereference(zj), vals[threadIdx.x]);
       }
     }
   }
@@ -263,10 +273,10 @@ void spmv_coo_kernel(SizeType        num_entries,
       IndexIterator2 _j   = column_indices + offset;
       ValueIterator1 _Aij = values         + offset;
 
-      ValueIterator2 _xj = x + thrust::detail::device::dereference(_j);
+      ValueIterator2 _xj = x + thrust::detail::backend::dereference(_j);
 
-      rows[offset % K][offset / K] = thrust::detail::device::dereference(_i);
-      vals[offset % K][offset / K] = combine(thrust::detail::device::dereference(_Aij), thrust::detail::device::dereference(_xj));
+      rows[offset % K][offset / K] = thrust::detail::backend::dereference(_i);
+      vals[offset % K][offset / K] = combine(thrust::detail::backend::dereference(_Aij), thrust::detail::backend::dereference(_xj));
     }
 
     // carry in
@@ -281,7 +291,7 @@ void spmv_coo_kernel(SizeType        num_entries,
       {
         // row terminates in previous unit
         ValueIterator4 _zj = z + row_carry;
-        thrust::detail::device::dereference(_zj) = reduce(thrust::detail::device::dereference(_zj), val_carry);
+        thrust::detail::backend::dereference(_zj) = reduce(thrust::detail::backend::dereference(_zj), val_carry);
       }
     }
       
@@ -331,7 +341,7 @@ void spmv_coo_kernel(SizeType        num_entries,
       {
         // row terminates
         ValueIterator4 _zj = z + rows[offset % K][offset / K];
-        thrust::detail::device::dereference(_zj) = reduce(thrust::detail::device::dereference(_zj), vals[offset % K][offset / K]);
+        thrust::detail::backend::dereference(_zj) = reduce(thrust::detail::backend::dereference(_zj), vals[offset % K][offset / K]);
       }
     }
 
@@ -360,10 +370,10 @@ void spmv_coo_kernel(SizeType        num_entries,
         IndexIterator2 _j   = column_indices + offset;
         ValueIterator1 _Aij = values         + offset;
 
-        ValueIterator2 _xj = x + thrust::detail::device::dereference(_j);
+        ValueIterator2 _xj = x + thrust::detail::backend::dereference(_j);
 
-        rows[offset % K][offset / K] = thrust::detail::device::dereference(_i);
-        vals[offset % K][offset / K] = combine(thrust::detail::device::dereference(_Aij), thrust::detail::device::dereference(_xj));
+        rows[offset % K][offset / K] = thrust::detail::backend::dereference(_i);
+        vals[offset % K][offset / K] = combine(thrust::detail::backend::dereference(_Aij), thrust::detail::backend::dereference(_xj));
       }
     }
     
@@ -379,7 +389,7 @@ void spmv_coo_kernel(SizeType        num_entries,
       {
         // row terminates in previous unit
         ValueIterator4 _zj = z + row_carry;
-        thrust::detail::device::dereference(_zj) = reduce(thrust::detail::device::dereference(_zj), val_carry);
+        thrust::detail::backend::dereference(_zj) = reduce(thrust::detail::backend::dereference(_zj), val_carry);
       }
     }
       
@@ -441,7 +451,7 @@ void spmv_coo_kernel(SizeType        num_entries,
         {
           // row terminates
           ValueIterator4 _zj = z + rows[offset % K][offset / K];
-          thrust::detail::device::dereference(_zj) = reduce(thrust::detail::device::dereference(_zj), vals[offset % K][offset / K]);
+          thrust::detail::backend::dereference(_zj) = reduce(thrust::detail::backend::dereference(_zj), vals[offset % K][offset / K]);
         }
       }
     }
@@ -455,8 +465,8 @@ void spmv_coo_kernel(SizeType        num_entries,
     row_carries += blockIdx.x;
     val_carries += blockIdx.x;
 
-    thrust::detail::device::dereference(row_carries) = row_carry;
-    thrust::detail::device::dereference(val_carries) = val_carry;
+    thrust::detail::backend::dereference(row_carries) = row_carry;
+    thrust::detail::backend::dereference(val_carries) = val_carry;
   }
 
 }
@@ -495,8 +505,8 @@ void spmv_coo(SizeType        num_rows,
   const SizeType block_size = 128;
   const SizeType unit_size  = K * block_size;
   const SizeType max_blocks = cusp::detail::device::arch::max_active_blocks(spmv_coo_kernel<block_size, K, SizeType, IndexIterator1, IndexIterator2, ValueIterator1, ValueIterator2, ValueIterator4, BinaryFunction1, BinaryFunction2, OutputIterator1, OutputIterator2>, block_size, (size_t) 0);
-    
-  thrust::pair<SizeType, SizeType> splitting = thrust::detail::device::cuda::uniform_interval_splitting<SizeType>(num_entries, unit_size, max_blocks);
+
+  thrust::pair<SizeType, SizeType> splitting = thrust::detail::backend::cuda::uniform_interval_splitting<SizeType>(num_entries, unit_size, max_blocks);
   const SizeType interval_size = splitting.first;
   const SizeType num_blocks    = splitting.second;
 
