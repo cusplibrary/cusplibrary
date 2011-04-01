@@ -181,17 +181,16 @@ void fit_candidates(const Array1& aggregates,
 }
 
 template <typename Matrix>
-void setup_level_matrix(Matrix& dst,
-                 	Matrix& src)
+void setup_level_matrix(Matrix& dst, Matrix& src)
 {	dst.swap(src);	}
 
 template <typename Matrix1, typename Matrix2>
-void setup_level_matrix(Matrix1& dst,
-                 	Matrix2& src)
+void setup_level_matrix(Matrix1& dst, Matrix2& src)
 {	
-	dst = src;
-	// same space by resizing src to nothing
-        src.resize(0,0,0);
+    dst = src;
+
+    // save space by resizing src to nothing
+    src.resize(0,0,0);
 }
 
 } // end namespace detail
@@ -218,7 +217,8 @@ smoothed_aggregation<IndexType,ValueType,MemorySpace>::smoothed_aggregation(cons
   LU = cusp::detail::lu_solver<ValueType, cusp::host_memory>(coarse_dense);
 
   // Setup solve matrix for each level
-  for( size_t lvl = 0; lvl < levels.size(); lvl++ )
+  levels[0].A = A;
+  for( size_t lvl = 1; lvl < levels.size(); lvl++ )
     detail::setup_level_matrix( levels[lvl].A, levels[lvl].A_ );
 }
 
@@ -227,25 +227,31 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace>::extend_hierarchy(voi
 {
   CUSP_PROFILE_SCOPED();
 
-  // compute stength of connection matrix
-  SetupMatrixType C;
-  detail::symmetric_strength_of_connection(levels.back().A_, C, theta);
+  cusp::array1d<IndexType,MemorySpace> aggregates;
+  {
+    // compute stength of connection matrix
+    SetupMatrixType C;
+    detail::symmetric_strength_of_connection(levels.back().A_, C, theta);
+
+    // compute aggregates
+    aggregates.resize(C.num_rows);
+    cusp::blas::fill(aggregates,IndexType(0));
+    detail::standard_aggregation(C, aggregates);
+  }
 
   // compute spectral radius of diag(C)^-1 * C
   ValueType rho_DinvA = detail::estimate_rho_Dinv_A(levels.back().A_);
 
-  // compute aggregates
-  cusp::array1d<IndexType,MemorySpace> aggregates(C.num_rows,0);
-  detail::standard_aggregation(C, aggregates);
-
-  // compute tenative prolongator and coarse nullspace vector
-  SetupMatrixType 				T;
-  cusp::array1d<ValueType,MemorySpace>  B_coarse;
-  detail::fit_candidates(aggregates, levels.back().B, T, B_coarse);
-  
-  // compute prolongation operator
   SetupMatrixType P;
-  detail::smooth_prolongator(levels.back().A_, T, P, ValueType(4.0/3.0), rho_DinvA);  // TODO if C != A then compute rho_Dinv_C
+  cusp::array1d<ValueType,MemorySpace>  B_coarse;
+  {
+    // compute tenative prolongator and coarse nullspace vector
+    SetupMatrixType 				T;
+    detail::fit_candidates(aggregates, levels.back().B, T, B_coarse);
+  
+    // compute prolongation operator
+    detail::smooth_prolongator(levels.back().A_, T, P, ValueType(4.0/3.0), rho_DinvA);  // TODO if C != A then compute rho_Dinv_C
+  }
 
   // compute restriction operator (transpose of prolongator)
   SetupMatrixType R;
@@ -265,16 +271,20 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace>::extend_hierarchy(voi
   ValueType omega = ValueType(4.0/3.0) / rho_DinvA;
   levels.back().smoother = cusp::relaxation::jacobi<ValueType, MemorySpace>(levels.back().A_, omega);
   #else
-  cusp::array1d<ValueType,cusp::host_memory> coeff;
-  ValueType rho = cusp::detail::ritz_spectral_radius_symmetric(A, 8);
-  cusp::relaxation::detail::chebyshev_polynomial_coefficients(rho,coeff);
-  levels.back().smoother = cusp::relaxation::polynomial<ValueType, MemorySpace>(levels.back().A_, coeff);
+  cusp::array1d<ValueType,cusp::host_memory> coef;
+  ValueType rho = cusp::detail::ritz_spectral_radius_symmetric(levels.back().A_, 8);
+  cusp::relaxation::detail::chebyshev_polynomial_coefficients(rho,coef);
+  levels.back().smoother = cusp::relaxation::polynomial<ValueType, MemorySpace>(coef);
   #endif
 
   levels.back().aggregates.swap(aggregates);
   detail::setup_level_matrix( levels.back().R, R );
   detail::setup_level_matrix( levels.back().P, P );
   levels.back().residual.resize(levels.back().A_.num_rows);
+
+  //resize A_ on the finest level to save space
+  if( levels.size() == 1 )
+    levels[0].A_.resize(0,0,0);
 
   //std::cout << "omega " << omega << std::endl;
 
@@ -394,7 +404,7 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace>
 		nnz += levels[index].A.num_entries;
 
 	for(size_t index = 0; index < levels.size(); index++)
-  {
+  	{
 		double percent = (double)levels[index].A.num_entries / nnz;
 		std::cout << "\t" << index << "\t" << levels[index].A.num_cols << "\t\t" \
               << levels[index].A.num_entries << " \t[" << 100*percent << "%]" \
