@@ -103,11 +103,10 @@ template<typename MatrixType, typename VectorType1, typename VectorType2>
     {
         CUSP_PROFILE_SCOPED();
         
-	VectorType1& residual = b;
+	const VectorType1& residual = b;
 
-        x = residual;
 	ValueType scale_factor = default_coefficients[0];
-	cusp::blas::scal(x, scale_factor);
+        cusp::blas::axpby(residual, x, x, scale_factor, ValueType(0.0));
 
 	cusp::array1d<ValueType,MemorySpace> mult(A.num_rows);
 
@@ -116,7 +115,7 @@ template<typename MatrixType, typename VectorType1, typename VectorType2>
 		scale_factor = default_coefficients[i];
 
             	cusp::multiply(A, x, mult);
-            	cusp::blas::axpby(mult, residual, x, ValueType(1), scale_factor);
+            	cusp::blas::axpby(mult, residual, x, ValueType(1.0), scale_factor);
 	}
     }
 
@@ -127,7 +126,27 @@ template<typename MatrixType, typename VectorType1, typename VectorType2>
     {
         CUSP_PROFILE_SCOPED();
 
-        polynomial<ValueType,MemorySpace>::operator()(A,b,x,default_coefficients);
+	cusp::array1d<ValueType,MemorySpace> residual(A.num_rows);
+
+        // compute residual <- b - A*x
+        cusp::multiply(A, x, residual);
+        cusp::blas::axpby(b, residual, residual, ValueType(1), ValueType(-1));
+
+	ValueType scale_factor = default_coefficients[0];
+	cusp::array1d<ValueType,MemorySpace> h(A.num_rows);
+        cusp::blas::axpby(residual, h, h, scale_factor, ValueType(0.0));
+
+	cusp::array1d<ValueType,MemorySpace> mult(A.num_rows);
+
+	for( size_t i=1; i<default_coefficients.size(); i++ )
+	{
+		scale_factor = default_coefficients[i];
+
+            	cusp::multiply(A, h, mult);
+            	cusp::blas::axpby(mult, residual, h, ValueType(1.0), scale_factor);
+	}
+
+        cusp::blas::axpy(h, x, ValueType(1.0));
     }
 
 // override default coefficients
@@ -150,8 +169,8 @@ template<typename MatrixType, typename VectorType1, typename VectorType2, typena
 	}
 
 	ValueType scale_factor = coefficients[0];
-	cusp::array1d<ValueType,MemorySpace> h(residual);
-	cusp::blas::scal(h, scale_factor);
+	cusp::array1d<ValueType,MemorySpace> h(A.num_rows);
+        cusp::blas::axpby(residual, h, h, scale_factor, ValueType(0.0));
 
 	cusp::array1d<ValueType,MemorySpace> mult(A.num_rows);
 
@@ -160,10 +179,10 @@ template<typename MatrixType, typename VectorType1, typename VectorType2, typena
 		scale_factor = coefficients[i];
 
             	cusp::multiply(A, h, mult);
-            	cusp::blas::axpby(mult, residual, h, ValueType(1), scale_factor);
+            	cusp::blas::axpby(mult, residual, h, ValueType(1.0), scale_factor);
 	}
 
-        cusp::blas::axpby(x, h, x, ValueType(1), ValueType(1));
+        cusp::blas::axpy(h, x, ValueType(1.0));
     }
 
 } // end namespace relaxation
