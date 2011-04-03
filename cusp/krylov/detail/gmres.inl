@@ -112,16 +112,14 @@ namespace cusp
       typedef typename LinearOperator::memory_space MemorySpace;
       assert(A.num_rows == A.num_cols);        // sanity check
       const size_t N = A.num_rows;
-      const size_t R = restart;
+      const int R = restart;
       int i, j, k;
       ValueType beta, resid0;
       cusp::array1d<ValueType,cusp::host_memory> rel_resid(1);
       //allocate workspace
       cusp::array1d<ValueType,MemorySpace> w(N);
       cusp::array1d<ValueType,MemorySpace> V0(N); //Arnoldi matrix pos 0
-      cusp::array2d<ValueType,MemorySpace,cusp::column_major> V(N,R+1); //Arnoldi matrix
-      //initialize V
-      blas::fill(V.values.begin(), V.values.end(), float(0.0));
+      cusp::array2d<ValueType,MemorySpace,cusp::column_major> V(N,R+1,ValueType(0.0)); //Arnoldi matrix
       //duplicate copy of s on GPU
       cusp::array1d<ValueType,MemorySpace> sDev(R+1);
       //HOST WORKSPACE
@@ -188,7 +186,8 @@ namespace cusp
 	for (j = i; j >= 0; j--){
 	  s[j] /= H(j,j);
 	  //S(0:j) = s(0:j) - s[j] H(0:j,j)
-	  blas::axpy(H.values.begin()+H.pitch*j,H.values.begin()+H.pitch*j+j,s.begin(),-s[j]);
+	  typename cusp::array2d< ValueType, cusp::host_memory, cusp::column_major >::column_view H_j = H.column(j);
+	  blas::axpy(H_j,s,-s[j]);
 	  /*
 	    for (k = j-1; k >= 0; k--)
 	    s[k] -= H(k,j) * s[j];

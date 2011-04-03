@@ -457,7 +457,8 @@ void cg_m(LinearOperator& A,
   rsq_1=cusp::blas::dotc(r_0,r_0);
 
   // set up the intitial guess
-  cusp::blas::fill(x.begin(),x.end(),ValueType(0));
+  //  cusp::blas::fill(x.begin(),x.end(),ValueType(0));
+  cusp::blas::fill(x,ValueType(0));
 
   // set up initial value of p_0 and p_0^\sigma
   cusp::krylov::trans_m::vectorize_copy(b,p_0_s);
