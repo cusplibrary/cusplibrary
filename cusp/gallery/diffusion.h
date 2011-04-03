@@ -26,16 +26,19 @@
 
 namespace cusp
 {
-enum DISC_METHOD {FE,FD};
 
 namespace gallery
 {
 
-template <typename MatrixType>
+struct disc_type {};
+
+struct FD : public disc_type {};
+struct FE : public disc_type {};
+
+template <typename Method, typename MatrixType>
 void diffusion(	MatrixType& matrix, size_t m, size_t n, 
-		const DISC_METHOD method = cusp::FE,
 		const double eps = 1e-5, 
-		const double theta = M_PI/4.0 )
+		const double theta = M_PI/4.0)
 {
 	typedef typename MatrixType::index_type IndexType;
 	typedef typename MatrixType::value_type ValueType;
@@ -48,19 +51,19 @@ void diffusion(	MatrixType& matrix, size_t m, size_t n,
 	ValueType SS = S*S;
 	ValueType CS = C*S;
 
-	ValueType a = 0;
-	ValueType b = 0;
-	ValueType c = 0;
-	ValueType d = 0;
-	ValueType e = 0;
+	ValueType a;
+	ValueType b;
+	ValueType c;
+	ValueType d;
+	ValueType e;
 
-	if( method == cusp::FE )
+	if( thrust::detail::is_same<Method, FE>::value )
 	{
-		a =  (-1.0*eps - 1.0)*CC + (-1.0*eps - 1.0)*SS + ( 3.0*eps - 3.0)*CS;
-        	b =  ( 2.0*eps - 4.0)*CC + (-4.0*eps + 2.0)*SS;
-        	c =  (-1.0*eps - 1.0)*CC + (-1.0*eps - 1.0)*SS + (-3.0*eps + 3.0)*CS;
-        	d =  (-4.0*eps + 2.0)*CC + ( 2.0*eps - 4.0)*SS;
-        	e =  ( 8.0*eps + 8.0)*CC + ( 8.0*eps + 8.0)*SS;
+		a = (-1.0*eps - 1.0)*CC + (-1.0*eps - 1.0)*SS + ( 3.0*eps - 3.0)*CS;
+        	b = ( 2.0*eps - 4.0)*CC + (-4.0*eps + 2.0)*SS;
+        	c = (-1.0*eps - 1.0)*CC + (-1.0*eps - 1.0)*SS + (-3.0*eps + 3.0)*CS;
+        	d = (-4.0*eps + 2.0)*CC + ( 2.0*eps - 4.0)*SS;
+        	e = ( 8.0*eps + 8.0)*CC + ( 8.0*eps + 8.0)*SS;
 
 		a /= 6.0;
 		b /= 6.0;
@@ -68,7 +71,7 @@ void diffusion(	MatrixType& matrix, size_t m, size_t n,
 		d /= 6.0;
 		e /= 6.0;
 	}
-	else if( method == cusp::FD )
+	else if( thrust::detail::is_same<Method, FD>::value )
 	{
 		a = 0.5 * (eps-1.0) * CS;
 		b = -(eps*SS + CC); 
@@ -76,10 +79,10 @@ void diffusion(	MatrixType& matrix, size_t m, size_t n,
 		d = -(eps*CC + SS);
 		e = 2.0 * (eps+1.0);
 	}
-  else
-  {
-    throw cusp::invalid_input_exception("unrecognized discretization method");
-  }
+  	else
+  	{
+   		throw cusp::invalid_input_exception("unrecognized discretization method");
+  	}
 
 	cusp::array1d<StencilPoint, cusp::host_memory> stencil;
 

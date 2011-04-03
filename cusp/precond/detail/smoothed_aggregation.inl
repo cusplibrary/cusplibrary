@@ -274,7 +274,7 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace>::extend_hierarchy(voi
   cusp::array1d<ValueType,cusp::host_memory> coef;
   ValueType rho = cusp::detail::ritz_spectral_radius_symmetric(levels.back().A_, 8);
   cusp::relaxation::detail::chebyshev_polynomial_coefficients(rho,coef);
-  levels.back().smoother = cusp::relaxation::polynomial<ValueType, MemorySpace>(coef);
+  levels.back().smoother = cusp::relaxation::polynomial<ValueType, MemorySpace>(levels.back().A_,coef);
   #endif
 
   levels.back().aggregates.swap(aggregates);

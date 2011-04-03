@@ -6,7 +6,7 @@
 void TestDiffusionFE(void)
 {
     cusp::dia_matrix<int, double, cusp::host_memory> matrix;
-    cusp::gallery::diffusion(matrix, 2, 2, cusp::FE, 0.0001, M_PI/6.0);
+    cusp::gallery::diffusion<cusp::gallery::FE>(matrix, 2, 2, 0.0001, M_PI/6.0);
 
     // convert result to array2d
     cusp::array2d<double, cusp::host_memory> R(matrix);
@@ -19,14 +19,14 @@ void TestDiffusionFE(void)
 
     // TODO Replace with a matrix norm
     cusp::blas::axpy(R.values,E.values,-1.0);
-    ASSERT_EQUAL(cusp::blas::nrm2(E.values) < 1e-5, true);
+    ASSERT_EQUAL(cusp::blas::nrmmax(E.values) < 1e-5, true);
 }
 DECLARE_UNITTEST(TestDiffusionFE);
 
 void TestDiffusionFD(void)
 {
     cusp::dia_matrix<int, double, cusp::host_memory> matrix;
-    cusp::gallery::diffusion(matrix, 2, 2, cusp::FD, 0.0001, M_PI/6.0);
+    cusp::gallery::diffusion<cusp::gallery::FD>(matrix, 2, 2, 0.0001, M_PI/6.0);
 
     // convert result to array2d
     cusp::array2d<double, cusp::host_memory> R(matrix);
@@ -39,6 +39,6 @@ void TestDiffusionFD(void)
 
     // TODO Replace with a matrix norm
     cusp::blas::axpy(R.values,E.values,-1.0);
-    ASSERT_EQUAL(cusp::blas::nrm2(E.values) < 1e-5, true);
+    ASSERT_EQUAL(cusp::blas::nrmmax(E.values) < 1e-5, true);
 }
 DECLARE_UNITTEST(TestDiffusionFD);

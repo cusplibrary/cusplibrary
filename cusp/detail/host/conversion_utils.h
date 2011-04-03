@@ -42,7 +42,6 @@ size_t count_diagonals(const Matrix& csr, cusp::csr_format)
 {
     typedef typename Matrix::index_type IndexType;
 
-    //std::vector<bool> occupied_diagonals(csr.num_rows + csr.num_cols, false);
     cusp::array1d<bool,cusp::host_memory> occupied_diagonals(csr.num_rows + csr.num_cols, false);
 
     for(size_t i = 0; i < csr.num_rows; i++)

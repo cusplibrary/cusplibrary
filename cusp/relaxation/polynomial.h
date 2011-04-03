@@ -33,12 +33,15 @@ template <typename ValueType, typename MemorySpace>
 class polynomial
 {
     cusp::array1d<ValueType, MemorySpace> default_coefficients;
+    cusp::array1d<ValueType, MemorySpace> residual;
+    cusp::array1d<ValueType, MemorySpace> h;
+    cusp::array1d<ValueType, MemorySpace> y;
 
 public:
     polynomial();
 
-    template <typename VectorType>
-    polynomial(const VectorType& coefficients);
+    template <typename MatrixType, typename VectorType>
+    polynomial(const MatrixType& A, const VectorType& coefficients);
 
     // ignores initial x
     template<typename MatrixType, typename VectorType1, typename VectorType2>
@@ -52,7 +55,7 @@ public:
     void operator()(const MatrixType& A, const VectorType1& b, VectorType2& x) const;
 
     template <typename MatrixType, typename VectorType1, typename VectorType2, typename VectorType3>
-    void operator()(const MatrixType& A, const VectorType1& b, VectorType2& x, VectorType3& coeffients) const;
+    void operator()(const MatrixType& A, const VectorType1& b, VectorType2& x, VectorType3& coeffients);
 };
 
 } // end namespace relaxation
