@@ -518,10 +518,12 @@ void coo_to_dia(const Matrix1& src, Matrix2& dst,
 				diagonal_index_functor<IndexType>(dst.values.pitch)), 
                     dst.values.values.begin());
 
-    // shift diagonal_offsets by num_rows 
-    cusp::blas::axpy(thrust::constant_iterator<IndexType>(dst.num_rows),
-		     thrust::constant_iterator<IndexType>(dst.num_rows)+num_diagonals,
-		     dst.diagonal_offsets.begin(),
+
+    typedef typename cusp::array1d_view< thrust::constant_iterator<IndexType> > ConstantView;
+    ConstantView constant_view(thrust::constant_iterator<IndexType>(dst.num_rows),
+			       thrust::constant_iterator<IndexType>(dst.num_rows)+num_diagonals);
+    cusp::blas::axpy(constant_view,
+		     dst.diagonal_offsets,
 		     IndexType(-1));
 }
 
@@ -577,10 +579,14 @@ void csr_to_dia(const Matrix1& src, Matrix2& dst,
                     dst.values.values.begin());
 
     // shift diagonal_offsets by num_rows 
-    cusp::blas::axpy(thrust::constant_iterator<IndexType>(dst.num_rows),
-		     thrust::constant_iterator<IndexType>(dst.num_rows)+num_diagonals,
-		     dst.diagonal_offsets.begin(),
+
+    typedef typename cusp::array1d_view< thrust::constant_iterator<IndexType> > ConstantView;
+    ConstantView constant_view(thrust::constant_iterator<IndexType>(dst.num_rows),
+			       thrust::constant_iterator<IndexType>(dst.num_rows)+num_diagonals);
+    cusp::blas::axpy(constant_view,
+		     dst.diagonal_offsets,
 		     IndexType(-1));
+
 }
 
 /////////

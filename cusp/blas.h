@@ -31,6 +31,7 @@ namespace blas
 template <typename ForwardIterator1,
           typename ForwardIterator2,
           typename ScalarType>
+CUSP_DEPRECATED
 void axpy(ForwardIterator1 first1,
           ForwardIterator1 last1,
           ForwardIterator2 first2,
@@ -55,6 +56,7 @@ template <typename InputIterator1,
           typename InputIterator2,
           typename OutputIterator,
           typename ScalarType>
+CUSP_DEPRECATED
 void axpby(InputIterator1 first1,
            InputIterator1 last1,
            InputIterator2 first2,
@@ -88,6 +90,7 @@ template <typename InputIterator1,
           typename InputIterator3,
           typename OutputIterator,
           typename ScalarType>
+CUSP_DEPRECATED
 void axpbypcz(InputIterator1 first1,
               InputIterator1 last1,
               InputIterator2 first2,
@@ -128,6 +131,7 @@ template <typename InputIterator1,
           typename InputIterator2,
           typename OutputIterator,
           typename ScalarType>
+CUSP_DEPRECATED
 void xmy(InputIterator1 first1,
          InputIterator1 last1,
          InputIterator2 first2,
@@ -150,6 +154,7 @@ void xmy(const Array1& x,
 
 template <typename InputIterator,
           typename ForwardIterator>
+CUSP_DEPRECATED
 void copy(InputIterator   first1,
           InputIterator   last1,
           ForwardIterator first2);
@@ -167,6 +172,7 @@ void copy(const Array1& array1,
 
 template <typename InputIterator1,
           typename InputIterator2>
+CUSP_DEPRECATED
 typename thrust::iterator_value<InputIterator1>::type
     dot(InputIterator1 first1,
         InputIterator1 last1,
@@ -181,6 +187,7 @@ typename Array1::value_type
 
 template <typename InputIterator1,
           typename InputIterator2>
+CUSP_DEPRECATED
 typename thrust::iterator_value<InputIterator1>::type
     dotc(InputIterator1 first1,
          InputIterator1 last1,
@@ -195,6 +202,7 @@ typename Array1::value_type
 
 template <typename ForwardIterator,
           typename ScalarType>
+CUSP_DEPRECATED
 void fill(ForwardIterator first,
           ForwardIterator last,
           ScalarType alpha);
@@ -211,6 +219,7 @@ void fill(const Array& array,
 
 
 template <typename InputIterator>
+CUSP_DEPRECATED
 typename norm_type<typename thrust::iterator_value<InputIterator>::type>::type
     nrm1(InputIterator first,
          InputIterator last);
@@ -221,6 +230,7 @@ typename norm_type<typename Array::value_type>::type
 
 
 template <typename InputIterator>
+CUSP_DEPRECATED
 typename norm_type<typename thrust::iterator_value<InputIterator>::type>::type
     nrm2(InputIterator first,
          InputIterator last);
@@ -231,6 +241,7 @@ typename norm_type<typename Array::value_type>::type
 
 
 template <typename InputIterator>
+CUSP_DEPRECATED
 typename thrust::iterator_value<InputIterator>::type
     nrmmax(InputIterator first,
            InputIterator last);
@@ -242,6 +253,7 @@ typename Array::value_type
 
 template <typename ForwardIterator,
           typename ScalarType>
+CUSP_DEPRECATED
 void scal(ForwardIterator first,
           ForwardIterator last,
           ScalarType alpha);
