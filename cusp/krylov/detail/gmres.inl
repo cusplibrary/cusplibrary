@@ -186,12 +186,9 @@ namespace cusp
 	for (j = i; j >= 0; j--){
 	  s[j] /= H(j,j);
 	  //S(0:j) = s(0:j) - s[j] H(0:j,j)
-	  typename cusp::array2d< ValueType, cusp::host_memory, cusp::column_major >::column_view H_j = H.column(j);
-	  blas::axpy(H_j,s,-s[j]);
-	  /*
-	    for (k = j-1; k >= 0; k--)
+	  for (k = j-1; k >= 0; k--){
 	    s[k] -= H(k,j) * s[j];
-	  */
+	  }
 	}
 	
 	// update the solution //
