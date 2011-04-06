@@ -80,6 +80,8 @@ namespace detail_m
       z1 = z0*zm1*beta_m1/(beta_0*alpha_0*(zm1-z0)
                          +beta_m1*zm1*(ScalarType(1)-beta_0*sigma));
       b0 = beta_0*z1/z0;
+      if ( abs(z1) < ScalarType(1e-30) )
+        z1 = ScalarType(1e-18);
       thrust::get<0>(t) = z1;
       thrust::get<1>(t) = b0;
     }

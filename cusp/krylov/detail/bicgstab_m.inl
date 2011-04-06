@@ -79,6 +79,8 @@ namespace detail_m
       z1 = z0*zm1*beta_m1/(beta_0*alpha_0*(zm1-z0)
                          +beta_m1*zm1*(ScalarType(1)-beta_0*sigma));
       b0 = beta_0*z1/z0;
+      if ( abs(z1) < ScalarType(1e-30) )
+        z1 = ScalarType(1e-18);
       thrust::get<0>(t) = z1;
       thrust::get<1>(t) = b0;
     }
@@ -659,7 +661,7 @@ void bicgstab_m(LinearOperator& A,
   cusp::blas::copy(w_1,w_0);
 
   // set up the intitial guess
-  cusp::blas::fill(x.begin(),x.end(),ValueType(0));
+  cusp::blas::fill(x,ValueType(0));
 
   // set up initial value of p_0 and p_0^\sigma
   cusp::krylov::trans_m::vectorize_copy(b,s_0_s);
