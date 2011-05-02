@@ -82,12 +82,21 @@ class coo_matrix : public detail::matrix_base<IndexType,ValueType,MemorySpace,cu
 {
   typedef cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::coo_format> Parent;
   public:
+    /*! rebind matrix to a different MemorySpace
+     */
     template<typename MemorySpace2>
     struct rebind { typedef cusp::coo_matrix<IndexType, ValueType, MemorySpace2> type; };
         
-    // array typedefs
+    /*! type of row indices array
+     */
     typedef typename cusp::array1d<IndexType, MemorySpace> row_indices_array_type;
+    
+    /*! type of column indices array
+     */
     typedef typename cusp::array1d<IndexType, MemorySpace> column_indices_array_type;
+    
+    /*! type of values array
+     */
     typedef typename cusp::array1d<ValueType, MemorySpace> values_array_type;
     
     /*! equivalent container type

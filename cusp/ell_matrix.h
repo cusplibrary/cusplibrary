@@ -93,183 +93,190 @@ namespace cusp
  *  \endcode
  *
  */
-    template <typename IndexType, typename ValueType, class MemorySpace>
-    class ell_matrix : public detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::ell_format>
+template <typename IndexType, typename ValueType, class MemorySpace>
+class ell_matrix : public detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::ell_format>
+{
+  typedef cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::ell_format> Parent;
+  public:
+    /*! rebind matrix to a different MemorySpace
+     */
+    template<typename MemorySpace2>
+    struct rebind { typedef cusp::ell_matrix<IndexType, ValueType, MemorySpace2> type; };
+    
+    /*! type of column indices array
+     */
+    typedef typename cusp::array2d<IndexType, MemorySpace, cusp::column_major> column_indices_array_type;
+    
+    /*! type of values array
+     */
+    typedef typename cusp::array2d<ValueType, MemorySpace, cusp::column_major> values_array_type;
+    
+    /*! equivalent container type
+     */
+    typedef typename cusp::ell_matrix<IndexType, ValueType, MemorySpace> container;
+
+    /*! equivalent view type
+     */
+    typedef typename cusp::ell_matrix_view<typename column_indices_array_type::view,
+                                           typename values_array_type::view,
+                                           IndexType, ValueType, MemorySpace> view;
+    
+    /*! equivalent const_view type
+     */
+    typedef typename cusp::ell_matrix_view<typename column_indices_array_type::const_view,
+                                           typename values_array_type::const_view,
+                                           IndexType, ValueType, MemorySpace> const_view;
+
+
+    /*! Value used to pad the rows of the column_indices array.
+     */
+    const static IndexType invalid_index = static_cast<IndexType>(-1);
+    
+    /*! Storage for the column indices of the ELL data structure.
+     */
+    column_indices_array_type column_indices;
+
+    /*! Storage for the nonzero entries of the ELL data structure.
+     */
+    values_array_type values;
+
+    /*! Construct an empty \p ell_matrix.
+     */
+    ell_matrix() {}
+
+    /*! Construct an \p ell_matrix with a specific shape, number of nonzero entries,
+     *  and maximum number of nonzero entries per row.
+     *
+     *  \param num_rows Number of rows.
+     *  \param num_cols Number of columns.
+     *  \param num_entries Number of nonzero matrix entries.
+     *  \param num_entries_per_row Maximum number of nonzeros per row.
+     *  \param alignment Amount of padding used to align the data structure (default 32).
+     */
+    ell_matrix(size_t num_rows, size_t num_cols, size_t num_entries,
+               size_t num_entries_per_row, size_t alignment = 32)
+      : Parent(num_rows, num_cols, num_entries)
     {
-      typedef cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::ell_format> Parent;
-      public:
-        template<typename MemorySpace2>
-        struct rebind { typedef cusp::ell_matrix<IndexType, ValueType, MemorySpace2> type; };
-        
-        typedef typename cusp::array2d<IndexType, MemorySpace, cusp::column_major> column_indices_array_type;
-        typedef typename cusp::array2d<ValueType, MemorySpace, cusp::column_major> values_array_type;
-        
-        /*! equivalent container type
-         */
-        typedef typename cusp::ell_matrix<IndexType, ValueType, MemorySpace> container;
-    
-        /*! equivalent view type
-         */
-        typedef typename cusp::ell_matrix_view<typename column_indices_array_type::view,
-                                               typename values_array_type::view,
-                                               IndexType, ValueType, MemorySpace> view;
-        
-        /*! equivalent const_view type
-         */
-        typedef typename cusp::ell_matrix_view<typename column_indices_array_type::const_view,
-                                               typename values_array_type::const_view,
-                                               IndexType, ValueType, MemorySpace> const_view;
+      // TODO use array2d constructor when it can accept pitch
+      column_indices.resize(num_rows, num_entries_per_row, detail::round_up(num_rows, alignment));
+      values.resize        (num_rows, num_entries_per_row, detail::round_up(num_rows, alignment));
+    }
 
-
-        /*! Value used to pad the rows of the column_indices array.
-         */
-        const static IndexType invalid_index = static_cast<IndexType>(-1);
-        
-        /*! Storage for the column indices of the ELL data structure.
-         */
-        column_indices_array_type column_indices;
-
-        /*! Storage for the nonzero entries of the ELL data structure.
-         */
-        values_array_type values;
+    /*! Construct an \p ell_matrix from another matrix.
+     *
+     *  \param matrix Another sparse or dense matrix.
+     */
+    template <typename MatrixType>
+    ell_matrix(const MatrixType& matrix);
     
-        /*! Construct an empty \p ell_matrix.
-         */
-        ell_matrix() {}
+    void resize(size_t num_rows, size_t num_cols, size_t num_entries,
+                size_t num_entries_per_row)
+    {
+      Parent::resize(num_rows, num_cols, num_entries);
+      column_indices.resize(num_rows, num_entries_per_row);
+      values.resize(num_rows, num_entries_per_row);
+    }
+               
+    void resize(size_t num_rows, size_t num_cols, size_t num_entries,
+                size_t num_entries_per_row, size_t alignment)
+    {
+      Parent::resize(num_rows, num_cols, num_entries);
+      column_indices.resize(num_rows, num_entries_per_row, detail::round_up(num_rows, alignment));
+      values.resize        (num_rows, num_entries_per_row, detail::round_up(num_rows, alignment));
+    }
     
-        /*! Construct an \p ell_matrix with a specific shape, number of nonzero entries,
-         *  and maximum number of nonzero entries per row.
-         *
-         *  \param num_rows Number of rows.
-         *  \param num_cols Number of columns.
-         *  \param num_entries Number of nonzero matrix entries.
-         *  \param num_entries_per_row Maximum number of nonzeros per row.
-         *  \param alignment Amount of padding used to align the data structure (default 32).
-         */
-        ell_matrix(size_t num_rows, size_t num_cols, size_t num_entries,
-                   size_t num_entries_per_row, size_t alignment = 32)
-          : Parent(num_rows, num_cols, num_entries)
-        {
-          // TODO use array2d constructor when it can accept pitch
-          column_indices.resize(num_rows, num_entries_per_row, detail::round_up(num_rows, alignment));
-          values.resize        (num_rows, num_entries_per_row, detail::round_up(num_rows, alignment));
-        }
+    /*! Swap the contents of two \p ell_matrix objects.
+     *
+     *  \param matrix Another \p ell_matrix with the same IndexType and ValueType.
+     */
+    void swap(ell_matrix& matrix)
+    {
+      Parent::swap(matrix);
+      column_indices.swap(matrix.column_indices);
+      values.swap(matrix.values);
+    }
     
-        /*! Construct an \p ell_matrix from another matrix.
-         *
-         *  \param matrix Another sparse or dense matrix.
-         */
-        template <typename MatrixType>
-        ell_matrix(const MatrixType& matrix);
-        
-        void resize(size_t num_rows, size_t num_cols, size_t num_entries,
-                    size_t num_entries_per_row)
-        {
-          Parent::resize(num_rows, num_cols, num_entries);
-          column_indices.resize(num_rows, num_entries_per_row);
-          values.resize(num_rows, num_entries_per_row);
-        }
-                   
-        void resize(size_t num_rows, size_t num_cols, size_t num_entries,
-                    size_t num_entries_per_row, size_t alignment)
-        {
-          Parent::resize(num_rows, num_cols, num_entries);
-          column_indices.resize(num_rows, num_entries_per_row, detail::round_up(num_rows, alignment));
-          values.resize        (num_rows, num_entries_per_row, detail::round_up(num_rows, alignment));
-        }
-        
-        /*! Swap the contents of two \p ell_matrix objects.
-         *
-         *  \param matrix Another \p ell_matrix with the same IndexType and ValueType.
-         */
-        void swap(ell_matrix& matrix)
-        {
-          Parent::swap(matrix);
-          column_indices.swap(matrix.column_indices);
-          values.swap(matrix.values);
-        }
-        
-        /*! Assignment from another matrix.
-         *
-         *  \param matrix Another sparse or dense matrix.
-         */
-        template <typename MatrixType>
-        ell_matrix& operator=(const MatrixType& matrix);
-    }; // class ell_matrix
+    /*! Assignment from another matrix.
+     *
+     *  \param matrix Another sparse or dense matrix.
+     */
+    template <typename MatrixType>
+    ell_matrix& operator=(const MatrixType& matrix);
+}; // class ell_matrix
 /*! \}
  */
     
     
-  template <typename Array1,
-            typename Array2,
-            typename IndexType   = typename Array1::value_type,
-            typename ValueType   = typename Array2::value_type,
-            typename MemorySpace = typename cusp::minimum_space<typename Array1::memory_space, typename Array2::memory_space>::type >
-    class ell_matrix_view : public detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::ell_format>
+template <typename Array1,
+          typename Array2,
+          typename IndexType   = typename Array1::value_type,
+          typename ValueType   = typename Array2::value_type,
+          typename MemorySpace = typename cusp::minimum_space<typename Array1::memory_space, typename Array2::memory_space>::type >
+class ell_matrix_view : public detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::ell_format>
+{
+  typedef cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::ell_format> Parent;
+  public:
+    typedef Array1 column_indices_array_type;
+    typedef Array2 values_array_type;
+    
+    /*! equivalent container type
+     */
+    typedef typename cusp::ell_matrix<IndexType, ValueType, MemorySpace> container;
+
+    /*! equivalent view type
+     */
+    typedef typename cusp::ell_matrix_view<Array1, Array2, IndexType, ValueType, MemorySpace> view;
+
+    /*! Value used to pad the rows of the column_indices array.
+     */
+    const static IndexType invalid_index = static_cast<IndexType>(-1);
+    
+    /*! View to column indices of the ELL data structure.
+     */
+    column_indices_array_type column_indices;
+
+    /*! View to nonzero entries of the ELL data structure.
+     */
+    values_array_type values;
+
+    /*! Construct an empty \p ell_matrix_view.
+     */
+    ell_matrix_view() {}
+
+    template <typename OtherArray1, typename OtherArray2>
+    ell_matrix_view(size_t num_rows, size_t num_cols, size_t num_entries,
+                    OtherArray1& column_indices, OtherArray2& values)
+    : Parent(num_rows, num_cols, num_entries), column_indices(column_indices), values(values) {}
+
+    template <typename OtherArray1, typename OtherArray2>
+    ell_matrix_view(size_t num_rows, size_t num_cols, size_t num_entries,
+                    const OtherArray1& column_indices, const OtherArray2& values)
+    : Parent(num_rows, num_cols, num_entries), column_indices(column_indices), values(values) {}
+    
+    template <typename Matrix>
+    ell_matrix_view(Matrix& A)
+    : Parent(A), column_indices(A.column_indices), values(A.values) {}
+    
+    template <typename Matrix>
+    ell_matrix_view(const Matrix& A)
+    : Parent(A), column_indices(A.column_indices), values(A.values) {}
+    
+    void resize(size_t num_rows, size_t num_cols, size_t num_entries,
+                size_t num_entries_per_row)
     {
-      typedef cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::ell_format> Parent;
-      public:
-        typedef Array1 column_indices_array_type;
-        typedef Array2 values_array_type;
-        
-        /*! equivalent container type
-         */
-        typedef typename cusp::ell_matrix<IndexType, ValueType, MemorySpace> container;
-    
-        /*! equivalent view type
-         */
-        typedef typename cusp::ell_matrix_view<Array1, Array2, IndexType, ValueType, MemorySpace> view;
-
-        /*! Value used to pad the rows of the column_indices array.
-         */
-        const static IndexType invalid_index = static_cast<IndexType>(-1);
-        
-        /*! View to column indices of the ELL data structure.
-         */
-        column_indices_array_type column_indices;
-
-        /*! View to nonzero entries of the ELL data structure.
-         */
-        values_array_type values;
-    
-        /*! Construct an empty \p ell_matrix_view.
-         */
-        ell_matrix_view() {}
-    
-        template <typename OtherArray1, typename OtherArray2>
-        ell_matrix_view(size_t num_rows, size_t num_cols, size_t num_entries,
-                        OtherArray1& column_indices, OtherArray2& values)
-        : Parent(num_rows, num_cols, num_entries), column_indices(column_indices), values(values) {}
-
-        template <typename OtherArray1, typename OtherArray2>
-        ell_matrix_view(size_t num_rows, size_t num_cols, size_t num_entries,
-                        const OtherArray1& column_indices, const OtherArray2& values)
-        : Parent(num_rows, num_cols, num_entries), column_indices(column_indices), values(values) {}
-        
-        template <typename Matrix>
-        ell_matrix_view(Matrix& A)
-        : Parent(A), column_indices(A.column_indices), values(A.values) {}
-        
-        template <typename Matrix>
-        ell_matrix_view(const Matrix& A)
-        : Parent(A), column_indices(A.column_indices), values(A.values) {}
-        
-        void resize(size_t num_rows, size_t num_cols, size_t num_entries,
-                    size_t num_entries_per_row)
-        {
-          Parent::resize(num_rows, num_cols, num_entries);
-          column_indices.resize(num_rows, num_entries_per_row);
-          values.resize(num_rows, num_entries_per_row);
-        }
-                   
-        void resize(size_t num_rows, size_t num_cols, size_t num_entries,
-                    size_t num_entries_per_row, size_t alignment)
-        {
-          Parent::resize(num_rows, num_cols, num_entries);
-          column_indices.resize(num_rows, num_entries_per_row, detail::round_up(num_rows, alignment));
-          values.resize        (num_rows, num_entries_per_row, detail::round_up(num_rows, alignment));
-        }
-    }; // class ell_matrix_view
+      Parent::resize(num_rows, num_cols, num_entries);
+      column_indices.resize(num_rows, num_entries_per_row);
+      values.resize(num_rows, num_entries_per_row);
+    }
+               
+    void resize(size_t num_rows, size_t num_cols, size_t num_entries,
+                size_t num_entries_per_row, size_t alignment)
+    {
+      Parent::resize(num_rows, num_cols, num_entries);
+      column_indices.resize(num_rows, num_entries_per_row, detail::round_up(num_rows, alignment));
+      values.resize        (num_rows, num_entries_per_row, detail::round_up(num_rows, alignment));
+    }
+}; // class ell_matrix_view
 /*! \}
  */
 
