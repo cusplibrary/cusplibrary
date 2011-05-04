@@ -32,9 +32,11 @@ namespace cusp
 // forward definition
 template <typename Array1, typename Array2, typename Array3, typename IndexType, typename ValueType, typename MemorySpace> class coo_matrix_view;
 
-/*! \addtogroup containers Containers 
- *  \addtogroup sparse_matrix_formats Sparse Matrices
- *  \ingroup containers
+/*! \addtogroup sparse_matrices Sparse Matrices
+ */
+
+/*! \addtogroup containers Containers
+ *  \ingroup sparse_matrices
  *  \{
  */
 
@@ -200,10 +202,19 @@ class coo_matrix : public detail::matrix_base<IndexType,ValueType,MemorySpace,cu
 /*! \}
  */
 
+/*! \addtogroup views Views
+ *  \ingroup sparse_matrices
+ *  \{
+ */
 
 /*! \p coo_matrix_view : Coordinate matrix view
  *
- * TODO document
+ * \tparam Array1 Type of \c row_indices array view
+ * \tparam Array2 Type of \c column_indices array view
+ * \tparam Array3 Type of \c values array view
+ * \tparam IndexType Type used for matrix indices (e.g. \c int).
+ * \tparam ValueType Type used for matrix values (e.g. \c float).
+ * \tparam MemorySpace A memory space (e.g. \c cusp::host_memory or cusp::device_memory)
  *
  */
 template <typename Array1,

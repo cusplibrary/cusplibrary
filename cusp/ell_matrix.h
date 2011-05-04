@@ -29,11 +29,6 @@
 
 namespace cusp
 {
-/*! \addtogroup containers Containers 
- *  \addtogroup sparse_matrix_formats Sparse Matrices
- *  \ingroup containers
- *  \{
- */
 
     // Forward definitions
     struct column_major;
@@ -41,7 +36,15 @@ namespace cusp
     template<typename Array, class Orientation>                        class array2d_view;
     template <typename Array1, typename Array2, typename IndexType, typename ValueType, typename MemorySpace> class ell_matrix_view;
 
-/*! \p ell_matrix : ELLPACK/ITPACK matrix format
+/*! \addtogroup sparse_matrices Sparse Matrices
+ */
+
+/*! \addtogroup containers Containers
+ *  \ingroup sparse_matrices
+ *  \{
+ */
+
+/*! \p ell_matrix : ELLPACK/ITPACK matrix container
  *
  * \tparam IndexType Type used for matrix indices (e.g. \c int).
  * \tparam ValueType Type used for matrix values (e.g. \c float).
@@ -207,6 +210,20 @@ class ell_matrix : public detail::matrix_base<IndexType,ValueType,MemorySpace,cu
  */
     
     
+/*! \addtogroup views Views
+ *  \ingroup sparse_matrices
+ *  \{
+ */
+
+/*! \p ell_matrix_view : ELLPACK/ITPACK matrix view
+ *
+ * \tparam Array1 Type of \c column_indices array view
+ * \tparam Array2 Type of \c values array view
+ * \tparam IndexType Type used for matrix indices (e.g. \c int).
+ * \tparam ValueType Type used for matrix values (e.g. \c float).
+ * \tparam MemorySpace A memory space (e.g. \c cusp::host_memory or cusp::device_memory)
+ *
+ */
 template <typename Array1,
           typename Array2,
           typename IndexType   = typename Array1::value_type,
@@ -277,8 +294,6 @@ class ell_matrix_view : public detail::matrix_base<IndexType,ValueType,MemorySpa
       values.resize        (num_rows, num_entries_per_row, detail::round_up(num_rows, alignment));
     }
 }; // class ell_matrix_view
-/*! \}
- */
 
   
 template <typename Array1,
@@ -305,6 +320,8 @@ make_ell_matrix_view(ell_matrix<IndexType,ValueType,MemorySpace>& m);
 template <typename IndexType, typename ValueType, class MemorySpace>
 typename ell_matrix<IndexType,ValueType,MemorySpace>::const_view
 make_ell_matrix_view(const ell_matrix<IndexType,ValueType,MemorySpace>& m);
+/*! \}
+ */
 
 } // end namespace cusp
 

@@ -30,9 +30,11 @@
 namespace cusp
 {
 
-/*! \addtogroup containers Containers 
- *  \addtogroup sparse_matrix_formats Sparse Matrices
- *  \ingroup containers
+/*! \addtogroup sparse_matrices Sparse Matrices
+ */
+
+/*! \addtogroup containers Containers
+ *  \ingroup sparse_matrices
  *  \{
  */
 
@@ -42,7 +44,7 @@ namespace cusp
     template<typename Array, class Orientation>                        class array2d_view;
     template <typename Array1, typename Array2, typename IndexType, typename ValueType, typename MemorySpace> class dia_matrix_view;
 
-/*! \p dia_matrix : Diagonal matrix format
+/*! \p dia_matrix : Diagonal matrix container
  *
  * \tparam IndexType Type used for matrix indices (e.g. \c int).
  * \tparam ValueType Type used for matrix values (e.g. \c float).
@@ -207,6 +209,20 @@ class dia_matrix : public detail::matrix_base<IndexType,ValueType,MemorySpace,cu
 /*! \}
  */
     
+/*! \addtogroup views Views
+ *  \ingroup sparse_matrices
+ *  \{
+ */
+
+/*! \p dia_matrix_view : Diagonal matrix view
+ *
+ * \tparam Array1 Type of \c diagonal_offsets
+ * \tparam Array2 Type of \c values array view
+ * \tparam IndexType Type used for matrix indices (e.g. \c int).
+ * \tparam ValueType Type used for matrix values (e.g. \c float).
+ * \tparam MemorySpace A memory space (e.g. \c cusp::host_memory or cusp::device_memory)
+ *
+ */
 template <typename Array1,
           typename Array2,
           typename IndexType   = typename Array1::value_type,
@@ -299,6 +315,8 @@ make_dia_matrix_view(dia_matrix<IndexType,ValueType,MemorySpace>& m);
 template <typename IndexType, typename ValueType, class MemorySpace>
 typename dia_matrix<IndexType,ValueType,MemorySpace>::const_view
 make_dia_matrix_view(const dia_matrix<IndexType,ValueType,MemorySpace>& m);
+/*! \} // end Views
+ */
     
 } // end namespace cusp
 

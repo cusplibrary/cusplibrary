@@ -25,17 +25,20 @@
 
 namespace cusp
 {
-/*! \addtogroup containers Containers 
- *  \addtogroup sparse_matrix_formats Sparse Matrices
- *  \ingroup containers
- *  \{
- */
     // Forward definitions
     template <typename IndexType, typename ValueType, class MemorySpace> class ell_matrix;
     template <typename IndexType, typename ValueType, class MemorySpace> class coo_matrix;
     template <typename Matrix1, typename Matrix2, typename IndexType, typename ValueType, class MemorySpace> class hyb_matrix_view;
 
-/*! \p hyb_matrix : Hybrid ELL/COO matrix format
+/*! \addtogroup sparse_matrices Sparse Matrices
+ */
+
+/*! \addtogroup containers Containers
+ *  \ingroup sparse_matrices
+ *  \{
+ */
+
+/*! \p hyb_matrix : Hybrid ELL/COO matrix container
  *
  * The \p hyb_matrix is a combination of the \p ell_matrix and
  * \p coo_matrix formats.  Specifically, the \p hyb_matrix format
@@ -142,14 +145,19 @@ class hyb_matrix : public detail::matrix_base<IndexType,ValueType,MemorySpace,cu
                                            typename cusp::coo_matrix<IndexType,ValueType,MemorySpace>::const_view,
                                            IndexType, ValueType, MemorySpace> const_view;
     
+    /*! Storage for the \p ell_matrix portion.
+     */
     typedef cusp::ell_matrix<IndexType,ValueType,MemorySpace> ell_matrix_type;
-    typedef cusp::coo_matrix<IndexType,ValueType,MemorySpace> coo_matrix_type;
     
     /*! Storage for the \p ell_matrix portion.
      */
+    typedef cusp::coo_matrix<IndexType,ValueType,MemorySpace> coo_matrix_type;
+    
+    /*! type of ell_matrix component
+     */
     ell_matrix_type ell;
     
-    /*! Storage for the \p coo_matrix portion.
+    /*! type of coo_matrix component
      */
     coo_matrix_type coo;
 
@@ -211,6 +219,21 @@ class hyb_matrix : public detail::matrix_base<IndexType,ValueType,MemorySpace,cu
 /*! \}
  */
 
+
+/*! \addtogroup views Views
+ *  \ingroup sparse_matrices
+ *  \{
+ */
+
+/*! \p hyb_matrix_view : Hybrid ELL/COO matrix view
+ *
+ * \tparam Matrix1 Type of \c ell
+ * \tparam Matrix2 Type of \c coo
+ * \tparam IndexType Type used for matrix indices (e.g. \c int).
+ * \tparam ValueType Type used for matrix values (e.g. \c float).
+ * \tparam MemorySpace A memory space (e.g. \c cusp::host_memory or cusp::device_memory)
+ *
+ */
 template <typename Matrix1,
           typename Matrix2,
           typename IndexType   = typename Matrix1::index_type,
@@ -268,7 +291,8 @@ class hyb_matrix_view : public detail::matrix_base<IndexType,ValueType,MemorySpa
       coo.resize(num_rows, num_cols, num_coo_entries);
     }
 };
-        
+/*! \} // end Views
+ */
 
 } // end namespace cusp
 
