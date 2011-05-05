@@ -89,15 +89,15 @@ class coo_matrix : public detail::matrix_base<IndexType,ValueType,MemorySpace,cu
     template<typename MemorySpace2>
     struct rebind { typedef cusp::coo_matrix<IndexType, ValueType, MemorySpace2> type; };
         
-    /*! type of row indices array
+    /*! type of \c row_indices array
      */
     typedef typename cusp::array1d<IndexType, MemorySpace> row_indices_array_type;
     
-    /*! type of column indices array
+    /*! type of \c column_indices array
      */
     typedef typename cusp::array1d<IndexType, MemorySpace> column_indices_array_type;
     
-    /*! type of values array
+    /*! type of \c values array
      */
     typedef typename cusp::array1d<ValueType, MemorySpace> values_array_type;
     
@@ -152,6 +152,8 @@ class coo_matrix : public detail::matrix_base<IndexType,ValueType,MemorySpace,cu
     template <typename MatrixType>
     coo_matrix(const MatrixType& matrix);
 
+    /*! Resize matrix dimensions and underlying storage
+     */
     void resize(size_t num_rows, size_t num_cols, size_t num_entries)
     {
       Parent::resize(num_rows, num_cols, num_entries);
@@ -275,6 +277,8 @@ template <typename Array1,
         column_indices(column_indices),
         values(values) {}
 
+    /*! Resize matrix dimensions and underlying storage
+     */
     void resize(size_t num_rows, size_t num_cols, size_t num_entries)
     {
       Parent::resize(num_rows, num_cols, num_entries);

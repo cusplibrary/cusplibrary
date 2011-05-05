@@ -33,12 +33,13 @@ namespace krylov
 /*! \p cg_m : Multi-mass Conjugate Gradient method
  * 
  * Solves the symmetric, positive-definited linear system (A+\sigma) x = b
- * for some set of constant shifts \sigma for the price of the smallest shift
+ * for some set of constant shifts \p sigma for the price of the smallest shift
  * using the default monitor
  *
  * \param A matrix of the linear system
  * \param x solutions of the system
  * \param b right-hand side of the linear system
+ * \param sigma array of shifts
  *
  */
 template <class LinearOperator,
@@ -53,11 +54,12 @@ void cg_m(LinearOperator& A,
 /*! \p cg_m : Multi-mass Conjugate Gradient method
  * 
  * Solves the symmetric, positive-definited linear system (A+\sigma) x = b
- * for some set of constant shifts \sigma for the price of the smallest shift
+ * for some set of constant shifts \p sigma for the price of the smallest shift
  *
  * \param A matrix of the linear system
  * \param x solutions of the system
  * \param b right-hand side of the linear system
+ * \param sigma array of shifts
  * \param monitor monitors interation and determines stoppoing conditions
  *
  */
@@ -67,8 +69,10 @@ template <class LinearOperator,
           class VectorType3,
           class Monitor>
 void cg_m(LinearOperator& A,
-        VectorType1& x, VectorType2& b, VectorType3& sigma,
-        Monitor& monitor);
+          VectorType1& x,
+          VectorType2& b,
+          VectorType3& sigma,
+          Monitor& monitor);
 /*! \}
  */
 

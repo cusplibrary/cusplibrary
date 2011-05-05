@@ -172,6 +172,8 @@ class ell_matrix : public detail::matrix_base<IndexType,ValueType,MemorySpace,cu
     template <typename MatrixType>
     ell_matrix(const MatrixType& matrix);
     
+    /*! Resize matrix dimensions and underlying storage
+     */
     void resize(size_t num_rows, size_t num_cols, size_t num_entries,
                 size_t num_entries_per_row)
     {
@@ -180,6 +182,8 @@ class ell_matrix : public detail::matrix_base<IndexType,ValueType,MemorySpace,cu
       values.resize(num_rows, num_entries_per_row);
     }
                
+    /*! Resize matrix dimensions and underlying storage
+     */
     void resize(size_t num_rows, size_t num_cols, size_t num_entries,
                 size_t num_entries_per_row, size_t alignment)
     {
@@ -233,7 +237,12 @@ class ell_matrix_view : public detail::matrix_base<IndexType,ValueType,MemorySpa
 {
   typedef cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::ell_format> Parent;
   public:
+    /*! type of \c column_indices array
+     */
     typedef Array1 column_indices_array_type;
+    
+    /*! type of \c values array
+     */
     typedef Array2 values_array_type;
     
     /*! equivalent container type
@@ -278,6 +287,8 @@ class ell_matrix_view : public detail::matrix_base<IndexType,ValueType,MemorySpa
     ell_matrix_view(const Matrix& A)
     : Parent(A), column_indices(A.column_indices), values(A.values) {}
     
+    /*! Resize matrix dimensions and underlying storage
+     */
     void resize(size_t num_rows, size_t num_cols, size_t num_entries,
                 size_t num_entries_per_row)
     {
@@ -286,6 +297,8 @@ class ell_matrix_view : public detail::matrix_base<IndexType,ValueType,MemorySpa
       values.resize(num_rows, num_entries_per_row);
     }
                
+    /*! Resize matrix dimensions and underlying storage
+     */
     void resize(size_t num_rows, size_t num_cols, size_t num_entries,
                 size_t num_entries_per_row, size_t alignment)
     {

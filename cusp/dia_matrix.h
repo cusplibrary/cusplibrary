@@ -172,6 +172,8 @@ class dia_matrix : public detail::matrix_base<IndexType,ValueType,MemorySpace,cu
     template <typename MatrixType>
     dia_matrix(const MatrixType& matrix);
     
+    /*! Resize matrix dimensions and underlying storage
+     */
     void resize(size_t num_rows, size_t num_cols, size_t num_entries,
                 size_t num_diagonals)
     {
@@ -180,6 +182,8 @@ class dia_matrix : public detail::matrix_base<IndexType,ValueType,MemorySpace,cu
       values.resize(num_rows, num_diagonals);
     }
                
+    /*! Resize matrix dimensions and underlying storage
+     */
     void resize(size_t num_rows, size_t num_cols, size_t num_entries,
                 size_t num_diagonals, size_t alignment)
     {
@@ -232,7 +236,12 @@ class dia_matrix_view : public detail::matrix_base<IndexType,ValueType,MemorySpa
 {
   typedef cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::dia_format> Parent;
   public:
+    /*! type of \c diagonal_offsets array
+     */
     typedef Array1 diagonal_offsets_array_type;
+    
+    /*! type of \c column_indices array
+     */
     typedef Array2 values_array_type;
 
     /*! equivalent container type
@@ -273,6 +282,8 @@ class dia_matrix_view : public detail::matrix_base<IndexType,ValueType,MemorySpa
     dia_matrix_view(const Matrix& A)
     : Parent(A), diagonal_offsets(A.diagonal_offsets), values(A.values) {}
     
+    /*! Resize matrix dimensions and underlying storage
+     */
     void resize(size_t num_rows, size_t num_cols, size_t num_entries,
                 size_t num_diagonals)
     {
@@ -281,6 +292,8 @@ class dia_matrix_view : public detail::matrix_base<IndexType,ValueType,MemorySpa
       values.resize(num_rows, num_diagonals);
     }
                
+    /*! Resize matrix dimensions and underlying storage
+     */
     void resize(size_t num_rows, size_t num_cols, size_t num_entries,
                 size_t num_diagonals, size_t alignment)
     {

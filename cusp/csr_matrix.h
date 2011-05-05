@@ -159,6 +159,8 @@ class csr_matrix : public detail::matrix_base<IndexType,ValueType,MemorySpace,cu
     template <typename MatrixType>
     csr_matrix(const MatrixType& matrix);
     
+    /*! Resize matrix dimensions and underlying storage
+     */
     void resize(size_t num_rows, size_t num_cols, size_t num_entries)
     {
       Parent::resize(num_rows, num_cols, num_entries);
@@ -262,6 +264,8 @@ class csr_matrix_view : public cusp::detail::matrix_base<IndexType,ValueType,Mem
         column_indices(column_indices),
         values(values) {}
 
+    /*! Resize matrix dimensions and underlying storage
+     */
     void resize(size_t num_rows, size_t num_cols, size_t num_entries)
     {
       Parent::resize(num_rows, num_cols, num_entries);

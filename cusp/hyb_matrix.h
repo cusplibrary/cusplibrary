@@ -145,19 +145,19 @@ class hyb_matrix : public detail::matrix_base<IndexType,ValueType,MemorySpace,cu
                                            typename cusp::coo_matrix<IndexType,ValueType,MemorySpace>::const_view,
                                            IndexType, ValueType, MemorySpace> const_view;
     
-    /*! Storage for the \p ell_matrix portion.
+    /*! type of \p ELL portion of the HYB structure 
      */
     typedef cusp::ell_matrix<IndexType,ValueType,MemorySpace> ell_matrix_type;
     
-    /*! Storage for the \p ell_matrix portion.
+    /*! type of \p COO portion of the HYB structure 
      */
     typedef cusp::coo_matrix<IndexType,ValueType,MemorySpace> coo_matrix_type;
     
-    /*! type of ell_matrix component
+    /*! Storage for the \p ell_matrix portion.
      */
     ell_matrix_type ell;
     
-    /*! type of coo_matrix component
+    /*! Storage for the \p ell_matrix portion.
      */
     coo_matrix_type coo;
 
@@ -181,6 +181,7 @@ class hyb_matrix : public detail::matrix_base<IndexType,ValueType,MemorySpace,cu
       ell(num_rows, num_cols, num_ell_entries, num_entries_per_row, alignment),
       coo(num_rows, num_cols, num_coo_entries) {}
 
+    // TODO remove default alignment of 32
 
     /*! Construct a \p hyb_matrix from another matrix.
      *
@@ -189,6 +190,8 @@ class hyb_matrix : public detail::matrix_base<IndexType,ValueType,MemorySpace,cu
     template <typename MatrixType>
     hyb_matrix(const MatrixType& matrix);
     
+    /*! Resize matrix dimensions and underlying storage
+     */
     void resize(IndexType num_rows, IndexType num_cols,
                 IndexType num_ell_entries, IndexType num_coo_entries,
                 IndexType num_entries_per_row, IndexType alignment = 32)
@@ -243,7 +246,12 @@ class hyb_matrix_view : public detail::matrix_base<IndexType,ValueType,MemorySpa
 {
   typedef cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::hyb_format> Parent;
   public:
+    /*! type of \p ELL portion of the HYB structure
+     */
     typedef Matrix1 ell_matrix_type;
+    
+    /*! type of \p COO portion of the HYB structure 
+     */
     typedef Matrix2 coo_matrix_type;
 
     /*! equivalent container type
@@ -282,6 +290,8 @@ class hyb_matrix_view : public detail::matrix_base<IndexType,ValueType,MemorySpa
     hyb_matrix_view(const Matrix& A)
     : Parent(A), ell(A.ell), coo(A.coo) {}
 
+    /*! Resize matrix dimensions and underlying storage
+     */
     void resize(size_t num_rows, size_t num_cols,
                 size_t num_ell_entries, size_t num_coo_entries,
                 size_t num_entries_per_row, size_t alignment = 32)
