@@ -500,6 +500,21 @@ void read_matrix_market_file(MatrixType& mtx, const std::string& filename)
     mtx = coo;
 }
 
+template <typename ValueType, typename MemorySpace>
+void read_matrix_market_file(cusp::array1d<ValueType,MemorySpace> & vector, const std::string& filename)
+{
+    cusp::coo_matrix<int,ValueType,cusp::host_memory> coo;
+    cusp::io::read_matrix_market_file(coo, filename);
+    if(coo.num_cols != 1){
+      throw cusp::io_exception(std::string("cannot read matrix with more than 1 column into an array1d while reading: [") + filename);
+    }
+    cusp::array1d<ValueType,cusp::host_memory> h_vector(coo.num_rows,0);
+    for(size_t i = 0;i<coo.num_entries;i++){
+      h_vector[coo.row_indices[i]] = coo.values[i];
+    }
+    vector = h_vector;
+}
+
 template <typename MatrixType>
 void read_matrix_market_stream(MatrixType& mtx, std::istream& in)
 {
@@ -509,6 +524,21 @@ void read_matrix_market_stream(MatrixType& mtx, std::istream& in)
     cusp::coo_matrix<IndexType,ValueType,cusp::host_memory> coo;
     cusp::io::read_matrix_market_stream(coo, in);
     mtx = coo;
+}
+
+template <typename ValueType, typename MemorySpace>
+void read_matrix_market_stream(cusp::array1d<ValueType,MemorySpace> & vector, std::istream& in)
+{
+    cusp::coo_matrix<int,ValueType,cusp::host_memory> coo;
+    cusp::io::read_matrix_market_stream(coo, in);
+    if(coo.num_cols != 1){
+      throw cusp::io_exception(std::string("cannot read matrix with more than 1 column into an array1d while reading stream"));
+    }
+    cusp::array1d<ValueType,cusp::host_memory> h_vector(coo.num_rows,0);
+    for(size_t i = 0;i<coo.num_entries;i++){
+      h_vector[coo.row_indices[i]] = coo.values[i];
+    }
+    vector = h_vector;
 }
 
 template <typename MatrixType>
@@ -522,6 +552,19 @@ void write_matrix_market_file(const MatrixType& mtx, const std::string& filename
     cusp::io::write_matrix_market_file(coo, filename);
 }
 
+template <typename ValueType, typename MemorySpace>
+void write_matrix_market_file(const cusp::array1d<ValueType,MemorySpace>& vector, const std::string& filename)
+{
+  cusp::array1d<ValueType,cusp::host_memory> h_vector(vector);
+  cusp::coo_matrix<int,ValueType,cusp::host_memory> coo(vector.size(),1,vector.size());
+  for(size_t i = 0;i<coo.num_entries;i++){
+    coo.row_indices[i] = i;
+    coo.column_indices[i] = 0;
+    coo.values[i] = h_vector[i];
+  }
+  cusp::io::write_matrix_market_file(coo, filename);
+}
+
 template <typename MatrixType>
 void write_matrix_market_stream(const MatrixType& mtx, OUT_FILE_TYPE out)
 {
@@ -531,6 +574,19 @@ void write_matrix_market_stream(const MatrixType& mtx, OUT_FILE_TYPE out)
     cusp::coo_matrix<IndexType,ValueType,cusp::host_memory> coo;
     coo = mtx;
     cusp::io::write_matrix_market_stream(coo, out);
+}
+
+template <typename ValueType, typename MemorySpace>
+void write_matrix_market_stream(const cusp::array1d<ValueType,MemorySpace>& vector, OUT_FILE_TYPE out)
+{
+  cusp::array1d<ValueType,cusp::host_memory> h_vector(vector);
+  cusp::coo_matrix<int,ValueType,cusp::host_memory> coo(vector.size(),1,vector.size());
+  for(size_t i = 0;i<coo.num_entries;i++){
+    coo.row_indices[i] = i;
+    coo.column_indices[i] = 0;
+    coo.values[i] = h_vector[i];
+  }
+  cusp::io::write_matrix_market_stream(coo, out);
 }
 
 } //end namespace io
