@@ -545,6 +545,7 @@ public:
   // corresponding cuComplex calls are commented.
 
   template<typename ValueType>
+    __host__ __device__ 
     inline complex<ValueType> operator+(const complex<ValueType>& lhs,
 					    const complex<ValueType>& rhs){
     return complex<ValueType>(lhs.real()+rhs.real(),lhs.imag()+rhs.imag());
@@ -552,6 +553,7 @@ public:
   }
 
   template<typename ValueType>
+    __host__ __device__ 
     inline complex<ValueType> operator+(const volatile complex<ValueType>& lhs,
 					    const volatile complex<ValueType>& rhs){
     return complex<ValueType>(lhs.real()+rhs.real(),lhs.imag()+rhs.imag());
@@ -559,17 +561,20 @@ public:
   }
 
   template <typename ValueType> 
+    __host__ __device__ 
     inline complex<ValueType> operator+(const complex<ValueType>& lhs, const ValueType & rhs){
     return complex<ValueType>(lhs.real()+rhs,lhs.imag());
     //  return cuCaddf(lhs,complex<ValueType>(rhs));
   }
   template <typename ValueType> 
+    __host__ __device__ 
     inline complex<ValueType> operator+(const ValueType& lhs, const complex<ValueType>& rhs){
     return complex<ValueType>(rhs.real()+lhs,rhs.imag());
     //  return cuCaddf(complex<float>(lhs),rhs);
   }
 
   template <typename ValueType> 
+    __host__ __device__ 
     inline complex<ValueType> operator-(const complex<ValueType>& lhs, const complex<ValueType>& rhs){
     return complex<ValueType>(lhs.real()-rhs.real(),lhs.imag()-rhs.imag());
     //  return cuCsubf(lhs,rhs);
