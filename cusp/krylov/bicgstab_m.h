@@ -14,14 +14,20 @@
  *  limitations under the License.
  */
 
+/*! \file bicgstab_m.h
+ *  \brief Multi-mass Biconjugate Gradient stabilized (BiCGstab-M) method
+ */
+
+#pragma once
+
 #include <cusp/detail/config.h>
 
 namespace cusp
 {
-
 namespace krylov
 {
 
+// TODO move to bicgstab_m.inl
 namespace trans_m
 {
   template <typename InputIterator1, typename InputIterator2,
@@ -138,21 +144,32 @@ namespace trans_m
 
 } // end namespace trans_m
 
-// BiCGStab-M routine that uses the default monitor to determine completion
+/*! \addtogroup iterative_solvers Iterative Solvers
+ *  \addtogroup krylov_methods Krylov Methods
+ *  \ingroup iterative_solvers
+ *  \{
+ */
+
+/*! \p bicgstab_m : Multi-mass Biconjugate Gradient stabilized method
+ */
 template <class LinearOperator,
           class VectorType1, class VectorType2, class VectorType3>
 void bicgstab_m(LinearOperator& A,
         VectorType1& x, VectorType2& b, VectorType3& sigma);
 
-// BiCGStab-M routine that takes a user specified monitor
+/*! \p bicgstab_m : Multi-mass Biconjugate Gradient stabilized method
+ */
 template <class LinearOperator,
           class VectorType1, class VectorType2, class VectorType3,
           class Monitor>
 void bicgstab_m(LinearOperator& A,
         VectorType1& x, VectorType2& b, VectorType3& sigma,
         Monitor& monitor);
+/*! \}
+ */
 
 } // end namespace krylov
 } // end namespace cusp
 
 #include<cusp/krylov/detail/bicgstab_m.inl>
+

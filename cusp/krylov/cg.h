@@ -14,6 +14,9 @@
  *  limitations under the License.
  */
 
+/*! \file cg.h
+ *  \brief Conjugate Gradient (CG) method
+ */
 
 #pragma once
 

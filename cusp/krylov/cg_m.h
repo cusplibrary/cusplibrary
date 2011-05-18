@@ -15,6 +15,10 @@
  */
 
 
+/*! \file cg_m.h
+ *  \brief Multi-mass Conjugate Gradient (CG-M) method
+ */
+
 #pragma once
 
 #include <cusp/detail/config.h>
@@ -40,7 +44,7 @@ namespace krylov
  * \param x solutions of the system
  * \param b right-hand side of the linear system
  * \param sigma array of shifts
- *
+ * 
  */
 template <class LinearOperator,
           class VectorType1,

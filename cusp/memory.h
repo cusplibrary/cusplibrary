@@ -14,6 +14,9 @@
  *  limitations under the License.
  */
 
+/*! \file memory.h
+ *  \brief Memory spaces and allocators
+ */
 
 #pragma once
 

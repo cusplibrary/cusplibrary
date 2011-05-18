@@ -54,6 +54,10 @@
  * 
 */
 
+/*! \file complex.h
+ *  \brief Complex numbers
+ */
+
 #pragma once
 
 #include <cusp/detail/config.h>

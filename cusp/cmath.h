@@ -14,6 +14,10 @@
  *  limitations under the License.
  */
 
+/*! \file cmath.h
+ *  \brief Complex math functions
+ */
+
 #pragma once
 
 #include <cusp/detail/config.h>

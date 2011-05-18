@@ -14,6 +14,9 @@
  *  limitations under the License.
  */
 
+/*! \file matrix_market.h
+ *  \brief MatrixMarket file I/O
+ */
 
 #pragma once
 
@@ -151,8 +154,7 @@ void write_matrix_market_file(const MatrixType& mtx, const std::string& filename
  * \see \p read_matrix_market_stream
  */
 template <typename MatrixType>
-void write_matrix_market_file(const MatrixType& mtx, const std::string& filename);
-
+void write_matrix_market_stream(const MatrixType& mtx, const std::string& filename);
 
 
 /*! \}

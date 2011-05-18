@@ -14,6 +14,9 @@
  *  limitations under the License.
  */
 
+/*! \file poisson.h
+ *  \brief Poisson matrix generators
+ */
 
 #pragma once
 

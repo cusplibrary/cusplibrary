@@ -14,6 +14,10 @@
  *  limitations under the License.
  */
 
+/*! \file monitor.h
+ *  \brief Monitor iterative solver convergence
+ */
+
 #pragma once
 
 #include <cusp/detail/config.h>

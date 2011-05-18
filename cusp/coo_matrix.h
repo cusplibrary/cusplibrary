@@ -15,7 +15,7 @@
  */
 
 /*! \file coo_matrix.h
- *  \brief Coordinate matrix format.
+ *  \brief Coordinate matrix format
  */
 
 #pragma once
@@ -35,7 +35,7 @@ template <typename Array1, typename Array2, typename Array3, typename IndexType,
 /*! \addtogroup sparse_matrices Sparse Matrices
  */
 
-/*! \addtogroup containers Containers
+/*! \addtogroup sparse_matrix_containers Sparse Matrix Containers
  *  \ingroup sparse_matrices
  *  \{
  */
@@ -204,7 +204,7 @@ class coo_matrix : public detail::matrix_base<IndexType,ValueType,MemorySpace,cu
 /*! \}
  */
 
-/*! \addtogroup views Views
+/*! \addtogroup sparse_matrix_views Sparse Matrix Views
  *  \ingroup sparse_matrices
  *  \{
  */

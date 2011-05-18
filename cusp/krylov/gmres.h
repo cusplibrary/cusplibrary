@@ -14,6 +14,10 @@
  *  limitations under the License.
  */
 
+/*! \file gmres.h
+ *  \brief Generalized Minimum Residual (GMRES) method
+ */
+
 #pragma once
 
 #include <cusp/detail/config.h>

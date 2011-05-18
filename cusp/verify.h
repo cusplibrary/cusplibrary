@@ -14,6 +14,9 @@
  *  limitations under the License.
  */
 
+/*! \file verify.h
+ *  \brief Validate matrix format
+ */
 
 #pragma once
 

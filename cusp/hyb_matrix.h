@@ -14,6 +14,9 @@
  *  limitations under the License.
  */
 
+/*! \file hyb_matrix.h
+ *  \brief Hybrid ELL/COO matrix format
+ */
 
 #pragma once
 
@@ -33,7 +36,7 @@ namespace cusp
 /*! \addtogroup sparse_matrices Sparse Matrices
  */
 
-/*! \addtogroup containers Containers
+/*! \addtogroup sparse_matrix_containers Sparse Matrix Containers
  *  \ingroup sparse_matrices
  *  \{
  */
@@ -223,7 +226,7 @@ class hyb_matrix : public detail::matrix_base<IndexType,ValueType,MemorySpace,cu
  */
 
 
-/*! \addtogroup views Views
+/*! \addtogroup sparse_matrix_views Sparse Matrix Views
  *  \ingroup sparse_matrices
  *  \{
  */

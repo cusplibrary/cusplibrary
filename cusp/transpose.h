@@ -14,6 +14,9 @@
  *  limitations under the License.
  */
 
+/*! \file transpose.h
+ *  \brief Matrix transpose
+ */
 
 #pragma once
 

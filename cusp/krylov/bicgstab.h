@@ -14,6 +14,9 @@
  *  limitations under the License.
  */
 
+/*! \file bicgstab.h
+ *  \brief Biconjugate Gradient Stabilized (BiCGstab) method
+ */
 
 #pragma once
 
@@ -29,7 +32,7 @@ namespace krylov
  *  \{
  */
 
-/*! \p bicgstab : BiConjugate Gradient Stabilized method
+/*! \p bicgstab : Biconjugate Gradient Stabilized method
  *
  * Solves the linear system A x = b using the default convergence criteria.
  */
@@ -39,7 +42,7 @@ void bicgstab(LinearOperator& A,
               Vector& x,
               Vector& b);
 
-/*! \p bicgstab : BiConjugate Gradient Stabilized method
+/*! \p bicgstab : Biconjugate Gradient Stabilized method
  *
  * Solves the linear system A x = b without preconditioning.
  */
@@ -51,7 +54,7 @@ void bicgstab(LinearOperator& A,
               Vector& b,
               Monitor& monitor);
 
-/*! \p bicgstab : BiConjugate Gradient Stabilized method
+/*! \p bicgstab : Biconjugate Gradient Stabilized method
  *
  * Solves the linear system A x = b with preconditioner \p M.
  *

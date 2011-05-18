@@ -14,6 +14,9 @@
  *  limitations under the License.
  */
 
+/*! \file array2d.h
+ *  \brief Two-dimensional array
+ */
 
 #pragma once
 
@@ -171,6 +174,22 @@ namespace detail
 // TODO document mapping of (i,j) onto values[pitch * i + j] or values[pitch * j + i]
 // TODO document that array2d operations will try to respect .pitch of destination argument
 
+/*! \addtogroup arrays Arrays
+ */
+
+/*! \addtogroup array_containers Array Containers
+ *  \ingroup arrays
+ *  \{
+ */
+
+/*! \p array2d : One-dimensional array container
+ * 
+ * \tparam T value_type of the array
+ * \tparam MemorySpace memory space of the array (cusp::host_memory or cusp::device_memory)
+ * \tparam Orientation orientation of the array (cusp::row_major or cusp::column_major)
+ *
+ * \TODO example
+ */
 template<typename ValueType, class MemorySpace, class Orientation = cusp::row_major>
 class array2d : public cusp::detail::matrix_base<int,ValueType,MemorySpace,cusp::array2d_format>
 {
@@ -284,7 +303,21 @@ class array2d : public cusp::detail::matrix_base<int,ValueType,MemorySpace,cusp:
   array2d& operator=(const MatrixType& matrix);
 
 }; // class array2d
-    
+/*! \}
+ */
+  
+/*! \addtogroup array_views Array Views
+ *  \ingroup arrays
+ *  \{
+ */
+
+/*! \p array2d_view : One-dimensional array view
+ *
+ * \tparam Array Underlying one-dimensional array view
+ * \tparam Orientation orientation of the array (cusp::row_major or cusp::column_major)
+ *
+ * \TODO example
+ */
 template<typename Array, class Orientation = cusp::row_major>
 class array2d_view : public cusp::detail::matrix_base<int, typename Array::value_type,typename Array::memory_space, cusp::array2d_format>
 {
@@ -410,6 +443,8 @@ make_array2d_view(const cusp::array2d<ValueType,MemorySpace,Orientation>& a)
 {
   return cusp::make_array2d_view(a.num_rows, a.num_cols, a.pitch, cusp::make_array1d_view(a.values), Orientation());
 }
+/*! \}
+ */
 
 } // end namespace cusp
 

@@ -14,6 +14,9 @@
  *  limitations under the License.
  */
 
+/*! \file multiply.h
+ *  \brief Matrix multiplication 
+ */
 
 #pragma once
 

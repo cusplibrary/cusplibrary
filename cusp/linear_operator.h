@@ -14,6 +14,9 @@
  *  limitations under the License.
  */
 
+/*! \file linear_operator.h
+ *  \brief Abstract interface for iterative solvers
+ */
 
 #pragma once
 

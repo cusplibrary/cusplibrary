@@ -14,6 +14,10 @@
  *  limitations under the License.
  */
 
+/*! \file print.h
+ *  \brief Print textual representation of an object
+ */
+
 #pragma once
 
 #include <cusp/detail/config.h>

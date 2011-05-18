@@ -1,8 +1,84 @@
 #######################################
+#            Cusp v0.2.0              #
+#######################################
+
+Summary
+  Support for complex numbers
+  Fast conversions between all pairs of formats
+  Support for array and matrix views
+  New preconditioners
+
+New Features
+  Complex numbers
+    cusp::complex 
+    cusp/cmath.h
+    cusp/complex.h
+
+  Sparse Matrices
+    cusp::coo_matrix_view
+    cusp::csr_matrix_view
+    cusp::dia_matrix_view
+    cusp::ell_matrix_view
+    cusp::hyb_matrix_view
+  
+  Krylov methods
+    cusp::krylov::bicg
+    cusp::krylov::gmres
+    cusp::krylov::cg_m
+    cusp::krylov::bicgstab_m
+
+  Input/Output
+    cusp::io::read_matrix_market_stream
+
+  Algorithms
+    cusp::add
+    cusp::subtract
+    cusp::graph::maximal_independent_set
+    cusp::copy
+    cusp::convert
+    cusp::blas::nrm1
+    cusp::blas::nrmmax
+    cusp::relaxation::polynomial
+
+  Matrix Gallery
+    cusp::gallery::diffusion
+
+  Preconditioners
+    cusp::precond::scaled_bridson_ainv
+    cusp::precond::bridson_ainv
+    cusp::precond::nonsym_bridson_ainv
+    cusp::precond::smoothed_aggregation
+
+Bug Fixes
+  #12 MatrixMarket file reader fails on OSX	 
+  #18 ensure that IndexType=long is supported	 
+  #27 bicgstab can't solve Ix = b	 
+  #31 device::spmm_coo requires huge anount of memory	 
+  #37 cusp::graph::maximal_independent_set should return the size of the MIS	 
+  #45 silence compiler warnings	 
+  #66 thrust hg version no longer compatible with hg version of cusp	 
+
+Deprecations
+  cusp::print_matrix has been replaced by cusp::print
+  cusp::blas functions only accept arrays and array views
+
+Known Issues
+  Cusp is known to cause the nvcc compiler to issue warnings of the form:
+    warning: calling a host function ... from a __device__/__global__ function ... is not allowed
+
+Acknowledgements
+  Filipe Maia for general maintenance and implemenations of cusp::complex and BiCG
+  Greg van Anders for CG-M and BiCGstab-M implementations
+  Joe Gordon for GMRES implementation
+  Jonathan Cohen for AINV preconditioners
+  Steven Dalton for improvements to conversion routines and smoothed aggregation solver
+
+#######################################
 #            Cusp v0.1.1              #
 #######################################
 
-Small fixes for compatibility with CUDA 3.1
+Summary
+  Small fixes for compatibility with CUDA 3.1
 
 #######################################
 #            Cusp v0.1.0              #
@@ -12,41 +88,41 @@ Summary
   Initial release
 
 Features
-    Sparse Matrix Support
-        cusp::coo_matrix
-        cusp::csr_matrix
-        cusp::dia_matrix
-        cusp::ell_matrix
-        cusp::hyb_matrix
-        conversion between all formats
-        host<->device transfers
-    Dense Matrix Support
-        cusp::array1d
-        cusp::array2d
-    Algorithms
-        cusp::multiply(A,x,y) : y = A*x
-        cusp::transpose(A,At) : A^T
-    Gallery
-        cusp::gallery::stencil
-        cusp::gallery::poisson5pt
-    Solvers
-        cusp::krylov::cg
-        cusp::krylov::bicgstab
-    Monitors
-        cusp::default_monitor
-        cusp::verbose_monitor
-    Preconditioners
-        cusp::precond::diagonal
-    User-Defined Linear Operators
-        cusp::linear_operator
-    File I/O
-        cusp::io::read_matrix_market_file
-        cusp::io::write_matrix_market_file
-    Utilities
-        cusp::blas::*
-        cusp::print_matrix
-        cusp::is_valid_matrix etc.
+  Sparse Matrix Support
+    cusp::coo_matrix
+    cusp::csr_matrix
+    cusp::dia_matrix
+    cusp::ell_matrix
+    cusp::hyb_matrix
+    conversion between all formats
+    host<->device transfers
+  Dense Matrix Support
+    cusp::array1d
+    cusp::array2d
+  Algorithms
+    cusp::multiply(A,x,y) : y = A*x
+    cusp::transpose(A,At) : A^T
+    cusp::blas::*
+  Gallery
+    cusp::gallery::stencil
+    cusp::gallery::poisson5pt
+  Solvers
+    cusp::krylov::cg
+    cusp::krylov::bicgstab
+  Monitors
+    cusp::default_monitor
+    cusp::verbose_monitor
+  Preconditioners
+    cusp::precond::diagonal
+  User-Defined Linear Operators
+    cusp::linear_operator
+  File I/O
+    cusp::io::read_matrix_market_file
+    cusp::io::write_matrix_market_file
+  Utilities
+    cusp::print_matrix
+    cusp::is_valid_matrix etc.
 
-Known Limitations
-    - Many routines assume that several arguments have the exact same type
+Known Issues
+  Many routines assume that several arguments have the exact same type
 

@@ -30,7 +30,6 @@ namespace cusp
  *  \{
  */
 
-
 //// Uses Matrix1::value_type(0) and Matrix2::value_type(0) for values not present
 //template <typename Matrix1,
 //          typename Matrix2,
@@ -41,6 +40,8 @@ namespace cusp
 //                                 Matrix3& C,
 //                                 BinaryFunction op);
 
+/*! \p add : Compute the sum of two matrices
+ */
 template <typename Matrix1,
           typename Matrix2,
           typename Matrix3>
@@ -48,12 +49,16 @@ void add(const Matrix1& A,
          const Matrix2& B,
                Matrix3& C);
 
+/*! \p add : Compute the difference of two matrices
+ */
 template <typename Matrix1,
           typename Matrix2,
           typename Matrix3>
 void subtract(const Matrix1& A,
               const Matrix2& B,
                     Matrix3& C);
+/*! \}
+ */
 
 } // end namespace cusp
 

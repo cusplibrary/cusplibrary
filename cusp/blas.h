@@ -14,6 +14,10 @@
  *  limitations under the License.
  */
 
+/*! \file blas.h
+ *  \brief BLAS-like functions
+ */
+
 
 #pragma once
 
@@ -28,6 +32,14 @@ namespace cusp
 namespace blas
 {
 
+/*! \addtogroup algorithms Algorithms
+ */
+
+/*! \addtogroup blas BLAS
+ *  \ingroup algorithms
+ *  \{
+ */
+
 template <typename ForwardIterator1,
           typename ForwardIterator2,
           typename ScalarType>
@@ -37,6 +49,8 @@ void axpy(ForwardIterator1 first1,
           ForwardIterator2 first2,
           ScalarType alpha);
 
+/*! \p axpy : scaled vector addition (y = alpha * x + y)
+ */
 template <typename Array1,
           typename Array2,
           typename ScalarType>
@@ -44,6 +58,8 @@ void axpy(const Array1& x,
                 Array2& y,
           ScalarType alpha);
 
+/*! \p axpy : scaled vector addition (y = alpha * x + y)
+ */
 template <typename Array1,
           typename Array2,
           typename ScalarType>
@@ -64,6 +80,8 @@ void axpby(InputIterator1 first1,
            ScalarType alpha,
            ScalarType beta);
 
+/*! \p axpby : linear combination of two vectors (output = alpha * x + beta * y)
+ */
 template <typename Array1,
           typename Array2,
           typename Array3,
@@ -74,6 +92,8 @@ void axpby(const Array1& x,
            ScalarType alpha,
            ScalarType beta);
 
+/*! \p axpby : linear combination of two vectors (output = alpha * x + beta * y)
+ */
 template <typename Array1,
           typename Array2,
           typename Array3,
@@ -100,6 +120,8 @@ void axpbypcz(InputIterator1 first1,
               ScalarType beta,
               ScalarType gamma);
 
+/*! \p axpbycz : linear combination of three vectors (output = alpha * x + beta * y + gamma * z)
+ */
 template <typename Array1,
           typename Array2,
           typename Array3,
@@ -113,6 +135,8 @@ void axpbypcz(const Array1& x,
               ScalarType beta,
               ScalarType gamma);
 
+/*! \p axpbycz : linear combination of three vectors (output = alpha * x + beta * y + gamma * z)
+ */
 template <typename Array1,
           typename Array2,
           typename Array3,
@@ -137,6 +161,8 @@ void xmy(InputIterator1 first1,
          InputIterator2 first2,
          OutputIterator output);
 
+/*! \p xmy : elementwise multiplication of two vectors (output[i] = x[i] * y[i])
+ */
 template <typename Array1,
           typename Array2,
           typename Array3>
@@ -144,6 +170,8 @@ void xmy(const Array1& x,
          const Array2& y,
                Array3& output);
 
+/*! \p xmy : elementwise multiplication of two vectors (output[i] = x[i] * y[i])
+ */
 template <typename Array1,
           typename Array2,
           typename Array3>
@@ -159,11 +187,15 @@ void copy(InputIterator   first1,
           InputIterator   last1,
           ForwardIterator first2);
 
+/*! \p copy : vector copy (y = x)
+ */
 template <typename Array1,
           typename Array2>
 void copy(const Array1& array1,
                 Array2& array2);
 
+/*! \p copy : vector copy (y = x)
+ */
 template <typename Array1,
           typename Array2>
 void copy(const Array1& array1,
@@ -178,6 +210,8 @@ typename thrust::iterator_value<InputIterator1>::type
         InputIterator1 last1,
         InputIterator2 first2);
 
+/*! \p dot : dot product (x^T * y)
+ */
 template <typename Array1,
           typename Array2>
 typename Array1::value_type
@@ -193,6 +227,8 @@ typename thrust::iterator_value<InputIterator1>::type
          InputIterator1 last1,
          InputIterator2 first2);
 
+/*! \p dotc : conjugate dot product (conjugate(x)^T * y)
+ */
 template <typename Array1,
           typename Array2>
 typename Array1::value_type
@@ -207,11 +243,15 @@ void fill(ForwardIterator first,
           ForwardIterator last,
           ScalarType alpha);
 
+/*! \p fill : vector fill (x[i] = alpha)
+ */
 template <typename Array,
           typename ScalarType>
 void fill(Array& array,
           ScalarType alpha);
 
+/*! \p fill : vector fill (x[i] = alpha)
+ */
 template <typename Array,
           typename ScalarType>
 void fill(const Array& array,
@@ -224,6 +264,8 @@ typename norm_type<typename thrust::iterator_value<InputIterator>::type>::type
     nrm1(InputIterator first,
          InputIterator last);
 
+/*! \p nrm1 : vector 1-norm (sum abs(x[i]))
+ */
 template <typename Array>
 typename norm_type<typename Array::value_type>::type
     nrm1(const Array& array);
@@ -235,6 +277,8 @@ typename norm_type<typename thrust::iterator_value<InputIterator>::type>::type
     nrm2(InputIterator first,
          InputIterator last);
 
+/*! \p nrm2 : vector 2-norm (sqrt(sum x[i] * x[i] )
+ */
 template <typename Array>
 typename norm_type<typename Array::value_type>::type
     nrm2(const Array& array);
@@ -246,6 +290,8 @@ typename thrust::iterator_value<InputIterator>::type
     nrmmax(InputIterator first,
            InputIterator last);
 
+/*! \p nrmmax : vector infinity norm
+ */
 template <typename Array>
 typename Array::value_type
     nrmmax(const Array& array);
@@ -258,15 +304,22 @@ void scal(ForwardIterator first,
           ForwardIterator last,
           ScalarType alpha);
 
+/*! \p nrmmax : scale vector (x[i] = alpha * x[i])
+ */
 template <typename Array,
           typename ScalarType>
-void scal(Array& array,
+void scal(Array& x,
           ScalarType alpha);
 
+/*! \p nrmmax : scale vector (x[i] = alpha * x[i])
+ */
 template <typename Array,
           typename ScalarType>
-void scal(const Array& array,
+void scal(const Array& x,
           ScalarType alpha);
+
+/*! \}
+ */
 
 } // end namespace blas
 } // end namespace cusp

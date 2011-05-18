@@ -14,6 +14,10 @@
  *  limitations under the License.
  */
 
+/*! \file version.h
+ *  \brief Cusp version
+ */
+
 #pragma once
 
 #include <cusp/detail/config.h>

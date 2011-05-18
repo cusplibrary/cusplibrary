@@ -14,6 +14,9 @@
  *  limitations under the License.
  */
 
+/*! \file maximal_independent_set.h
+ *  \brief Maximal independent set of a graph
+ */
 
 #pragma once
 

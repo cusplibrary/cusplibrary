@@ -14,6 +14,10 @@
  *  limitations under the License.
  */
 
+/*! \file diffusion.h
+ *  \brief Anisotropic diffusion matrix generators
+ */
+
 #pragma once
 
 #include <cusp/detail/config.h>
@@ -30,11 +34,29 @@ namespace cusp
 namespace gallery
 {
 
+/*! \addtogroup gallery Matrix Gallery
+ *  \ingroup gallery
+ *  \{
+ */
+
 struct disc_type {};
 
 struct FD : public disc_type {};
 struct FE : public disc_type {};
 
+/*! \p diffusion: Create a matrix representing an anisotropic
+ * Poisson problem discretized on an \p m by \p n grid with
+ * the a given direction.
+ *
+ * \param matrix output
+ * \param m number of grid rows
+ * \param n number of grid columns 
+ * \param eps magnitude of anisotropy 
+ * \param theta angle of anisotropy in radians
+ *
+ * \tparam MatrixType matrix container
+ *
+ */
 template <typename Method, typename MatrixType>
 void diffusion(	MatrixType& matrix, size_t m, size_t n, 
 		const double eps = 1e-5, 
@@ -98,6 +120,9 @@ void diffusion(	MatrixType& matrix, size_t m, size_t n,
 
 	cusp::gallery::generate_matrix_from_stencil(matrix, stencil, StencilIndex(m,n));
 }
+/*! \}
+ */
 
 } // end namespace gallery
 } // end namespace cusp
+

@@ -39,7 +39,7 @@ namespace cusp
 /*! \addtogroup sparse_matrices Sparse Matrices
  */
 
-/*! \addtogroup containers Containers
+/*! \addtogroup sparse_matrix_containers Sparse Matrix Containers
  *  \ingroup sparse_matrices
  *  \{
  */
@@ -214,7 +214,7 @@ class ell_matrix : public detail::matrix_base<IndexType,ValueType,MemorySpace,cu
  */
     
     
-/*! \addtogroup views Views
+/*! \addtogroup sparse_matrix_views Sparse Matrix Views
  *  \ingroup sparse_matrices
  *  \{
  */

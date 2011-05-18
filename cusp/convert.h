@@ -14,6 +14,9 @@
  *  limitations under the License.
  */
 
+/*! \file convert.h
+ *  \brief Matrix format conversion
+ */
 
 #pragma once
 
@@ -22,8 +25,22 @@
 namespace cusp
 {
 
+/*! \addtogroup algorithms Algorithms
+ *  \ingroup algorithms
+ *  \{
+ */
+
+/*! \p copy : Convert between matrix formats
+ *
+ * \note DestinationType will be resized as necessary
+ *
+ * \see \p cusp::copy
+ */
 template <typename SourceType, typename DestinationType>
 void convert(const SourceType& src, DestinationType& dst);
+
+/*! \}
+ */
 
 } // end namespace cusp
 

@@ -14,6 +14,9 @@
  *  limitations under the License.
  */
 
+/*! \file stencil.h
+ *  \brief Generate sparse matrix from grid stencil
+ */
 
 #pragma once
 

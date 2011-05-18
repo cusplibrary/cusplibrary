@@ -14,6 +14,10 @@
  *  limitations under the License.
  */
 
+/*! \file random.h
+ *  \brief Random matrix generators
+ */
+
 #pragma once
 
 #include <cusp/detail/config.h>
@@ -28,8 +32,13 @@ namespace cusp
 {
 namespace gallery
 {
+/*! \addtogroup gallery Matrix Gallery
+ *  \ingroup gallery
+ *  \{
+ */
 
 // TODO use thrust RNGs, add seed parameter defaulting to num_rows ^ num_cols ^ num_samples
+// TODO document
 template <class MatrixType>
 void random(size_t num_rows, size_t num_cols, size_t num_samples, MatrixType& output)
 {
@@ -58,6 +67,8 @@ void random(size_t num_rows, size_t num_cols, size_t num_samples, MatrixType& ou
     
     output = coo;
 }
+/*! \}
+ */
 
 } // end namespace gallery
 } // end namespace cusp

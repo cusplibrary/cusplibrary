@@ -14,6 +14,9 @@
  *  limitations under the License.
  */
 
+/*! \file bicg.h
+ *  \brief Biconjugate Gradient (BiCG) method
+ */
 
 #pragma once
 
@@ -29,7 +32,7 @@ namespace krylov
  *  \{
  */
 
-/*! \p bicg : BiConjugate Gradient method
+/*! \p bicg : Biconjugate Gradient method
  *
  * Solves the linear system A x = b using the default convergence criteria.
  */
@@ -40,7 +43,7 @@ void bicg(LinearOperator& A,
 	  Vector& x,
 	  Vector& b);
 
-/*! \p bicgstab : BiConjugate Gradient method
+/*! \p bicgstab : Biconjugate Gradient method
  *
  * Solves the linear system A x = b without preconditioning.
  */
@@ -53,7 +56,7 @@ void bicg(LinearOperator& A,
 	  Vector& b,
 	  Monitor& monitor);
 
-/*! \p bicg : BiConjugate Gradient method
+/*! \p bicg : Biconjugate Gradient method
  *
  * Solves the linear system A x = b with preconditioner \p M.
  *
