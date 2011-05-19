@@ -120,57 +120,65 @@ namespace detail
                 }
         };    
     template <typename T>
-        struct SCAL : public thrust::unary_function<T,T>
+        struct SCAL
         {
             T alpha;
 
-            SCAL(T _alpha) : alpha(_alpha) {}
+            SCAL(T _alpha)
+                : alpha(_alpha) {}
 
+            template <typename T2>
             __host__ __device__
-                T operator()(T x)
+                void operator()(T2 & x)
                 { 
-                    return alpha * x;
+		  x = alpha * x;
                 }
-        };
+        };    
     
 
     template <typename T>
-        struct AXPY : public thrust::binary_function<T,T,T>
+        struct AXPY
         {
             T alpha;
 
-            AXPY(T _alpha) : alpha(_alpha) {}
+            AXPY(T _alpha)
+                : alpha(_alpha) {}
 
+            template <typename Tuple>
             __host__ __device__
-                T operator()(T x, T y)
-                {
-                    return alpha * x + y;
-                }
-        };
-    
-    template <typename T>
-        struct AXPBY : public thrust::binary_function<T,T,T>
-        {
-            T alpha;
-            T beta;
-
-            AXPBY(T _alpha, T _beta) : alpha(_alpha), beta(_beta) {}
-
-            __host__ __device__
-                T operator()(T x, T y)
+                void operator()(Tuple t)
                 { 
-                    return alpha * x + beta * y;
+                    thrust::get<1>(t) = alpha * thrust::get<0>(t) +
+		                        thrust::get<1>(t);
+                }
+        };    
+
+  template <typename T1, typename T2>
+        struct AXPBY
+        {
+            T1 alpha;
+            T2 beta;
+
+            AXPBY(T1 _alpha, T2 _beta)
+                : alpha(_alpha), beta(_beta) {}
+
+            template <typename Tuple>
+            __host__ __device__
+                void operator()(Tuple t)
+                { 
+                    thrust::get<2>(t) = alpha * thrust::get<0>(t) +
+		                        beta  * thrust::get<1>(t);
                 }
         };
-    
-    template <typename T>
+
+  template <typename T1,typename T2,typename T3>
         struct AXPBYPCZ
         {
-            T alpha;
-            T beta;
-            T gamma;
+            T1 alpha;
+            T2 beta;
+            T3 gamma;
 
-            AXPBYPCZ(T _alpha, T _beta, T _gamma)
+            AXPBYPCZ(T1 _alpha, T2 _beta, T3 _gamma)
                 : alpha(_alpha), beta(_beta), gamma(_gamma) {}
 
             template <typename Tuple>
@@ -201,42 +209,51 @@ namespace detail
 	    ForwardIterator2 first2,
 	    ScalarType alpha)
   {
-    thrust::transform(first1, last1, first2, first2, detail::AXPY<ScalarType>(alpha));
+    size_t N = last1 - first1;
+    thrust::for_each(thrust::make_zip_iterator(thrust::make_tuple(first1, first2)),
+                     thrust::make_zip_iterator(thrust::make_tuple(first1, first2)) + N,
+                     detail::AXPY<ScalarType>(alpha));
   }
 
   template <typename InputIterator1,
 	    typename InputIterator2,
 	    typename OutputIterator,
-	    typename ScalarType>
+	    typename ScalarType1,
+	    typename ScalarType2>
   void axpby(InputIterator1 first1,
 	     InputIterator1 last1,
 	     InputIterator2 first2,
 	     OutputIterator output,
-	     ScalarType alpha,
-	     ScalarType beta)
+	     ScalarType1 alpha,
+	     ScalarType2 beta)
   {
-    thrust::transform(first1, last1, first2, output, detail::AXPBY<ScalarType>(alpha, beta));
+    size_t N = last1 - first1;
+    thrust::for_each(thrust::make_zip_iterator(thrust::make_tuple(first1, first2, output)),
+                     thrust::make_zip_iterator(thrust::make_tuple(first1, first2, output)) + N,
+                     detail::AXPBY<ScalarType1,ScalarType2>(alpha, beta));
   }
 
   template <typename InputIterator1,
 	    typename InputIterator2,
 	    typename InputIterator3,
 	    typename OutputIterator,
-	    typename ScalarType>
+	    typename ScalarType1,
+	    typename ScalarType2,
+	    typename ScalarType3>
   void axpbypcz(InputIterator1 first1,
 		InputIterator1 last1,
 		InputIterator2 first2,
 		InputIterator3 first3,
 		OutputIterator output,
-		ScalarType alpha,
-		ScalarType beta,
-		ScalarType gamma)
+		ScalarType1 alpha,
+		ScalarType2 beta,
+		ScalarType3 gamma)
   {
     CUSP_PROFILE_SCOPED();
     size_t N = last1 - first1;
     thrust::for_each(thrust::make_zip_iterator(thrust::make_tuple(first1, first2, first3, output)),
                      thrust::make_zip_iterator(thrust::make_tuple(first1, first2, first3, output)) + N,
-                     detail::AXPBYPCZ<ScalarType>(alpha, beta, gamma));
+                     detail::AXPBYPCZ<ScalarType1,ScalarType2,ScalarType3>(alpha, beta, gamma));
   }
   
   template <typename InputIterator1,
@@ -345,8 +362,9 @@ namespace detail
 	    ForwardIterator last,
 	    ScalarType alpha)
   {
-    typedef typename thrust::iterator_value<ForwardIterator>::type ValueType;
-    thrust::transform(first, last, first, detail::SCAL<ValueType>(alpha));
+    thrust::for_each(first,
+                     last,
+                     detail::SCAL<ScalarType>(alpha));
   }
 } // end namespace detail
 
@@ -363,8 +381,8 @@ void axpy(ForwardIterator1 first1,
 }
 
 template <typename Array1,
-          typename Array2,
-          typename ScalarType>
+          typename Array2, 
+	  typename ScalarType>
 void axpy(const Array1& x,
                 Array2& y,
           ScalarType alpha)
@@ -375,8 +393,8 @@ void axpy(const Array1& x,
 }
 
 template <typename Array1,
-          typename Array2,
-          typename ScalarType>
+          typename Array2, 
+	  typename ScalarType>
 void axpy(const Array1& x,
           const Array2& y,
           ScalarType alpha)
@@ -404,12 +422,13 @@ void axpby(InputIterator1 first1,
 template <typename Array1,
           typename Array2,
           typename Array3,
-          typename ScalarType>
+	  typename ScalarType1,
+	  typename ScalarType2>
 void axpby(const Array1& x,
            const Array2& y,
                  Array3& z,
-           ScalarType alpha,
-           ScalarType beta)
+           ScalarType1 alpha,
+           ScalarType2 beta)
 {
     CUSP_PROFILE_SCOPED();
     detail::assert_same_dimensions(x, y, z);
@@ -419,12 +438,13 @@ void axpby(const Array1& x,
 template <typename Array1,
           typename Array2,
           typename Array3,
-          typename ScalarType>
+	  typename ScalarType1,
+	  typename ScalarType2>
 void axpby(const Array1& x,
            const Array2& y,
            const Array3& z,
-           ScalarType alpha,
-           ScalarType beta)
+           ScalarType1 alpha,
+           ScalarType2 beta)
 {
     CUSP_PROFILE_SCOPED();
     detail::assert_same_dimensions(x, y, z);
@@ -452,15 +472,17 @@ void axpbypcz(InputIterator1 first1,
 template <typename Array1,
           typename Array2,
           typename Array3,
-          typename Array4,
-          typename ScalarType>
+          typename Array4, 
+	  typename ScalarType1,
+	  typename ScalarType2,
+	  typename ScalarType3>
 void axpbypcz(const Array1& x,
               const Array2& y,
               const Array3& z,
-                    Array4& output,
-              ScalarType alpha,
-              ScalarType beta,
-              ScalarType gamma)
+	            Array4& output,
+	      ScalarType1 alpha,
+	      ScalarType2 beta,
+	      ScalarType3 gamma)
 {
     CUSP_PROFILE_SCOPED();
     detail::assert_same_dimensions(x, y, z, output);
@@ -470,15 +492,17 @@ void axpbypcz(const Array1& x,
 template <typename Array1,
           typename Array2,
           typename Array3,
-          typename Array4,
-          typename ScalarType>
+          typename Array4, 
+	  typename ScalarType1,
+	  typename ScalarType2,
+	  typename ScalarType3>
 void axpbypcz(const Array1& x,
               const Array2& y,
               const Array3& z,
               const Array4& output,
-              ScalarType alpha,
-              ScalarType beta,
-              ScalarType gamma)
+	      ScalarType1 alpha,
+	      ScalarType2 beta,
+	      ScalarType3 gamma)
 {
     CUSP_PROFILE_SCOPED();
     detail::assert_same_dimensions(x, y, z, output);
@@ -617,7 +641,7 @@ void fill(ForwardIterator first,
 template <typename Array,
           typename ScalarType>
 void fill(Array& x,
-          ScalarType alpha)
+	  ScalarType alpha)
 {
     CUSP_PROFILE_SCOPED();
     cusp::blas::detail::fill(x.begin(), x.end(), alpha);

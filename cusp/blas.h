@@ -85,24 +85,26 @@ void axpby(InputIterator1 first1,
 template <typename Array1,
           typename Array2,
           typename Array3,
-          typename ScalarType>
+          typename ScalarType1,
+          typename ScalarType2>
 void axpby(const Array1& x,
            const Array2& y,
                  Array3& output,
-           ScalarType alpha,
-           ScalarType beta);
+           ScalarType1 alpha,
+           ScalarType2 beta);
 
 /*! \p axpby : linear combination of two vectors (output = alpha * x + beta * y)
  */
 template <typename Array1,
           typename Array2,
           typename Array3,
-          typename ScalarType>
+          typename ScalarType1,
+          typename ScalarType2>
 void axpby(const Array1& x,
            const Array2& y,
            const Array3& output,
-           ScalarType alpha,
-           ScalarType beta);
+           ScalarType1 alpha,
+           ScalarType2 beta);
 
 
 template <typename InputIterator1,
@@ -126,14 +128,16 @@ template <typename Array1,
           typename Array2,
           typename Array3,
           typename Array4,
-          typename ScalarType>
+          typename ScalarType1,
+          typename ScalarType2,
+          typename ScalarType3>
 void axpbypcz(const Array1& x,
               const Array2& y,
               const Array3& z,
                     Array4& output,
-              ScalarType alpha,
-              ScalarType beta,
-              ScalarType gamma);
+              ScalarType1 alpha,
+              ScalarType2 beta,
+              ScalarType3 gamma);
 
 /*! \p axpbycz : linear combination of three vectors (output = alpha * x + beta * y + gamma * z)
  */
@@ -141,14 +145,16 @@ template <typename Array1,
           typename Array2,
           typename Array3,
           typename Array4,
-          typename ScalarType>
+          typename ScalarType1,
+          typename ScalarType2,
+          typename ScalarType3>
 void axpbypcz(const Array1& x,
               const Array2& y,
               const Array3& z,
               const Array4& output,
-              ScalarType alpha,
-              ScalarType beta,
-              ScalarType gamma);
+              ScalarType1 alpha,
+              ScalarType2 beta,
+              ScalarType3 gamma);
 
 
 template <typename InputIterator1,
