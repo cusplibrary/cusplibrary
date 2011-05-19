@@ -57,6 +57,7 @@ Bug Fixes
   #37 cusp::graph::maximal_independent_set should return the size of the MIS	 
   #45 silence compiler warnings	 
   #66 thrust hg version no longer compatible with hg version of cusp	 
+  #71 Several cusp::blas calls cause unexpected results by converting the output to ScalarType
 
 Deprecations
   cusp::print_matrix has been replaced by cusp::print
@@ -71,7 +72,7 @@ Acknowledgements
   Greg van Anders for CG-M and BiCGstab-M implementations
   Joe Gordon for GMRES implementation
   Jonathan Cohen for AINV preconditioners
-  Steven Dalton for improvements to conversion routines and smoothed aggregation solver
+  Steven Dalton for improvements to conversion routines and smoothed aggregation preconditioner
 
 #######################################
 #            Cusp v0.1.1              #
