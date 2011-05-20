@@ -116,6 +116,9 @@ def getCFLAGS(mode, backend, warn, warnings_as_errors, hostspblas, CC):
   # force 32b code on darwin
   if platform.platform()[:6] == 'Darwin':
     result.append('-m32')
+  
+  if CC == 'cl':
+    result.append('/bigobj')
 
   # generate omp code
   if backend == 'omp':
