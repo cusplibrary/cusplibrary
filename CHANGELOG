@@ -68,7 +68,7 @@ Known Issues
     warning: calling a host function ... from a __device__/__global__ function ... is not allowed
 
 Acknowledgements
-  Filipe Maia for general maintenance and implemenations of cusp::complex and BiCG
+  Filipe Maia for general maintenance, testing, and implemenations of cusp::complex and BiCG
   Greg van Anders for CG-M and BiCGstab-M implementations
   Joe Gordon for GMRES implementation
   Jonathan Cohen for AINV preconditioners
