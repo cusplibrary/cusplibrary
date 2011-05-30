@@ -3,14 +3,14 @@
 #######################################
 
 Summary
-  Cusp v0.2.0 provides support for CUDA 4.0 in addition to many feature
-  and performance implemenations.   The cusp::complex class provides
-  complex numbers support. Lightweight views to dense arrays and sparse
-  matrix formats are now available, allowing user-allocated data to be
-  interfaced efficiently with Cusp algorithms.  The performance of sparse
-  matrix format conversions has been improved dramatically on the device.
-  Preconditioners based on algebraic multigrid (AMG) and approximate
-  inverse (AINV) methods have been added to the library.
+  Cusp v0.2.0 provides support for CUDA 4.0 in addition to many new
+  features and performance enhancements.  Support for complex numbers
+  is now available through the cusp::complex class. Lightweight views
+  to dense arrays and sparse matrix formats are now provided, allowing
+  user-allocated data to be interfaced efficiently with Cusp algorithms.
+  The performance of sparse matrix format conversions has been improved
+  dramatically on the device. Preconditioners based on algebraic multigrid
+  (AMG) and approximate inverse (AINV) methods have been added to the library.
 
 New Features
   Complex numbers
