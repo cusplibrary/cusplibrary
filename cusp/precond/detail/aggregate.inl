@@ -106,7 +106,7 @@ void standard_aggregation(const cusp::coo_matrix<IndexType,ValueType,cusp::devic
 template <typename IndexType, typename ValueType,
 	  typename ArrayType>
 void standard_aggregation(const cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& C,
-              				    ArrayType& aggregates)
+              		  ArrayType& aggregates)
 {
   CUSP_PROFILE_SCOPED();
 
@@ -210,16 +210,23 @@ void standard_aggregation(const cusp::csr_matrix<IndexType,ValueType,cusp::host_
 
   if( next_aggregate == 0 )
   {
-    cusp::array1d<ValueType,cusp::host_memory> values( n_row, 0 );
-    aggregates = values;
+    thrust::fill( aggregates.begin(), aggregates.end(), 0 );
   }
   else
   {
     // TODO Handle unaggregated nodes
-    ValueType agg_min = *std::min_element(aggregates.begin(), aggregates.end());
-    if( agg_min == -1 ){
-      IndexType num_aggs = aggregates.size() - thrust::count(aggregates.begin(), aggregates.end(), -1.0);
-      printf("number aggregated : %d\n",num_aggs);
+    ValueType agg_min = *thrust::min_element(aggregates.begin(), aggregates.end());
+    if( agg_min == -1 )
+    {
+      IndexType num_unaggregated = thrust::count(aggregates.begin(), aggregates.end(), -1.0);
+      printf("number unaggregated nodes: %d\n",num_unaggregated);
+      for( size_t i = 0; i < aggregates.size(); i++ )
+      {
+	if( aggregates[i] == -1 ) 
+	{
+	  aggregates[i] = next_aggregate++;
+	}
+      }
     }
   }
 }
