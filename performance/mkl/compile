@@ -2,8 +2,8 @@
 
 #source /opt/mkl/10.2.3.029/tools/environment/mklvarsem64t.sh
 
-export MKLROOT="/opt/mkl/10.2.3.029"
-export MKLPATH="${MKLROOT}/lib/em64t"
+export MKLROOT="/opt/intel/mkl"
+export MKLPATH="${MKLROOT}/lib/intel64/"
 
 nvcc -O3 -arch=sm_13 -c main.cu -I../../ -I $THRUST_PATH -I $MKLROOT/include
 g++ -O3 mkl.c main.o -o bench -I $MKLROOT/include \
