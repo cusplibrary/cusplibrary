@@ -7,7 +7,7 @@ int main(void)
     cusp::coo_matrix<int, float, cusp::device_memory> A;
     
     // create a matrix for a diffusion problem on a 4x4 grid
-    cusp::gallery::diffusion(A, 4, 4);
+    cusp::gallery::diffusion<cusp::gallery::FD>(A, 4, 4);
 
     // print matrix
     cusp::print(A);
