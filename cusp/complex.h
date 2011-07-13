@@ -437,7 +437,6 @@ public:
   __host__ __device__ inline void imag(float im){ y = im; }
 
   // cast operators
-  __host__ __device__ inline operator float() const { return real(); }
   inline operator std::complex<float>() const { return std::complex<float>(real(),imag()); }
 };
 
@@ -538,7 +537,6 @@ public:
   __host__ __device__ inline void imag(double im){ y = im; }
 
   // cast operators
-  __host__ __device__ inline operator double() const { return real(); }
   inline operator std::complex<double>() const { return std::complex<double>(real(),imag()); }
 };
 

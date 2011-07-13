@@ -397,19 +397,6 @@ void TestComplexRealConversion()
   ASSERT_EQUAL((Complex) complex_values[1], Complex(1,0));
   ASSERT_EQUAL((Complex) complex_values[2], Complex(2,0));
   ASSERT_EQUAL((Complex) complex_values[3], Complex(3,0));
-
-  // test complex->real conversion
-  complex_values[0] = Complex(10,50);
-  complex_values[1] = Complex(20,60);
-  complex_values[2] = Complex(30,70);
-  complex_values[3] = Complex(40,80);
-
-  real_values = complex_values;
-
-  ASSERT_EQUAL(real_values[0], (Real) 10);
-  ASSERT_EQUAL(real_values[1], (Real) 20);
-  ASSERT_EQUAL(real_values[2], (Real) 30);
-  ASSERT_EQUAL(real_values[3], (Real) 40);
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestComplexRealConversion);
 
