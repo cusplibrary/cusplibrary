@@ -86,6 +86,28 @@ namespace detail
 		    return abs(x);
                 }
         };
+
+    // maximum<T> returns the largest of two numbers
+    template <typename T>
+        struct maximum : public thrust::binary_function<T,T,T>
+        {
+            __host__ __device__
+  	        T operator()(T x, T y)
+                { 
+		  return thrust::maximum<T>()(x,y);
+                }
+        };
+
+    // maximum<T> returns the number with the largest real part
+    template <typename T>
+        struct maximum<cusp::complex<T> > : public thrust::binary_function<cusp::complex<T>,cusp::complex<T>,cusp::complex<T> >
+        {
+            __host__ __device__
+	    cusp::complex<T> operator()(cusp::complex<T> x, cusp::complex<T> y)
+                { 
+		  return thrust::maximum<T>()(x.real(),y.real());
+                }
+        };
     
     // conjugate<T> computes the complex conjugate of a number f(a + b * i) -> a - b * i
     template <typename T>
@@ -323,7 +345,7 @@ namespace detail
     
     ValueType init = 0;
     
-    return thrust::transform_reduce(first, last, unary_op, init, binary_op);
+    return abs(thrust::transform_reduce(first, last, unary_op, init, binary_op));
   }
 
   template <typename InputIterator>
@@ -338,7 +360,7 @@ namespace detail
 
     ValueType init = 0;
 
-    return std::sqrt( thrust::transform_reduce(first, last, unary_op, init, binary_op) );
+    return std::sqrt( abs(thrust::transform_reduce(first, last, unary_op, init, binary_op)) );
   }
 
   template <typename InputIterator>
@@ -349,7 +371,7 @@ namespace detail
     typedef typename thrust::iterator_value<InputIterator>::type ValueType;
 
     detail::absolute<ValueType>  unary_op;
-    thrust::maximum<ValueType>   binary_op;
+    detail::maximum<ValueType>   binary_op;
 
     ValueType init = 0;
 

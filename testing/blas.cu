@@ -304,6 +304,27 @@ void TestNrm1(void)
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestNrm1);
 
+template <class MemorySpace>
+void TestComplexNrm1(void)
+{
+    typedef typename cusp::array1d<cusp::complex<float>, MemorySpace>       Array;
+    typedef typename cusp::array1d<cusp::complex<float>, MemorySpace>::view View;
+
+    Array x(6);
+
+    x[0] =  7.0f;
+    x[1] =  5.0f;
+    x[2] =  4.0f;
+    x[3] = -3.0f;
+    x[4] =  0.0f;
+    x[5] =  1.0f;
+
+    ASSERT_EQUAL(cusp::blas::nrm1(x), 20.0f);
+    
+    ASSERT_EQUAL(cusp::blas::nrm1(View(x)), 20.0f);
+}
+DECLARE_HOST_DEVICE_UNITTEST(TestComplexNrm1);
+
 
 template <class MemorySpace>
 void TestNrm2(void)
@@ -325,6 +346,27 @@ void TestNrm2(void)
     ASSERT_EQUAL(cusp::blas::nrm2(View(x)), 10.0f);
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestNrm2);
+
+template <class MemorySpace>
+void TestComplexNrm2(void)
+{
+  typedef typename cusp::array1d<cusp::complex<float>, MemorySpace>       Array;
+  typedef typename cusp::array1d<cusp::complex<float>, MemorySpace>::view View;
+
+    Array x(6);
+
+    x[0] =  7.0f;
+    x[1] =  5.0f;
+    x[2] =  4.0f;
+    x[3] = -3.0f;
+    x[4] =  0.0f;
+    x[5] =  1.0f;
+
+    ASSERT_EQUAL(cusp::blas::nrm2(x), 10.0f);
+    
+    ASSERT_EQUAL(cusp::blas::nrm2(View(x)), 10.0f);
+}
+DECLARE_HOST_DEVICE_UNITTEST(TestComplexNrm2);
 
 
 template <class MemorySpace>
@@ -348,6 +390,28 @@ void TestNrmmax(void)
     ASSERT_EQUAL(cusp::blas::nrmmax(View(x)), 7.0f);
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestNrmmax);
+
+template <class MemorySpace>
+void TestComplexNrmmax(void)
+{
+    typedef typename cusp::array1d<cusp::complex<float>, MemorySpace>       Array;
+    typedef typename cusp::array1d<cusp::complex<float>, MemorySpace>::view View;
+
+    Array x(6);
+    View view_x(x);
+
+    x[0] =  7.0f;
+    x[1] = -5.0f;
+    x[2] =  4.0f;
+    x[3] = -3.0f;
+    x[4] =  0.0f;
+    x[5] =  1.0f;
+
+    ASSERT_EQUAL(cusp::blas::nrmmax(x), 7.0f);
+    
+    ASSERT_EQUAL(cusp::blas::nrmmax(View(x)), 7.0f);
+}
+DECLARE_HOST_DEVICE_UNITTEST(TestComplexNrmmax);
 
 
 template <class MemorySpace>

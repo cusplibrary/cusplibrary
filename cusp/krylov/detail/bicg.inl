@@ -149,7 +149,7 @@ void bicg(LinearOperator& A,
       ValueType prev_rho = rho;
       // rho = (z,r_star)
       rho = blas::dotc(z, r_star);
-      if(rho == 0){
+      if(rho == ValueType(0)){
 	// Failure!
 	// TODO: Make the failure more apparent to the user
 	break;

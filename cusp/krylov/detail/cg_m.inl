@@ -74,13 +74,14 @@ namespace detail_m
     __host__ __device__
       void operator()(Tuple t)
     {
+      typedef typename norm_type<ScalarType>::type NormType;
       // compute \zeta_1^\sigma
       ScalarType z1, b0, z0=thrust::get<2>(t), zm1 = thrust::get<3>(t),
 		 sigma = thrust::get<4>(t);
       z1 = z0*zm1*beta_m1/(beta_0*alpha_0*(zm1-z0)
                          +beta_m1*zm1*(ScalarType(1)-beta_0*sigma));
       b0 = beta_0*z1/z0;
-      if ( abs(z1) < ScalarType(1e-30) )
+      if ( abs(z1) < NormType(1e-30) )
         z1 = ScalarType(1e-18);
       thrust::get<0>(t) = z1;
       thrust::get<1>(t) = b0;

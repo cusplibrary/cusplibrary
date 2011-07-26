@@ -41,16 +41,16 @@ namespace cusp
 			       ValueType& cs,
 			       ValueType& sn)
     {
-      if(dy == 0.0){
+      if(dy == ValueType(0.0)){
 	cs = 1.0;
 	sn = 0.0;
-      }else if (std::abs(dy) > std::abs (dx)) {
+      }else if (abs(dy) > abs(dx)) {
 	ValueType tmp = dx / dy;
-	sn = 1.0 / sqrt(ValueType(1.0) + tmp*tmp);
+	sn = ValueType(1.0) / sqrt(ValueType(1.0) + tmp*tmp);
 	cs = tmp*sn;            
       }else {
 	ValueType tmp = dy / dx;
-	cs = 1.0 / sqrt(ValueType(1.0) + tmp*tmp);
+	cs = ValueType(1.0) / sqrt(ValueType(1.0) + tmp*tmp);
 	sn = tmp*cs;
       }
     }
@@ -110,12 +110,13 @@ namespace cusp
     {
       typedef typename LinearOperator::value_type   ValueType;
       typedef typename LinearOperator::memory_space MemorySpace;
+      typedef typename norm_type<ValueType>::type NormType;
       assert(A.num_rows == A.num_cols);        // sanity check
       const size_t N = A.num_rows;
       const int R = restart;
       int i, j, k;
-      ValueType beta, resid0;
-      cusp::array1d<ValueType,cusp::host_memory> rel_resid(1);
+      NormType beta, resid0;
+      cusp::array1d<NormType,cusp::host_memory> rel_resid(1);
       //allocate workspace
       cusp::array1d<ValueType,MemorySpace> w(N);
       cusp::array1d<ValueType,MemorySpace> V0(N); //Arnoldi matrix pos 0
@@ -127,7 +128,7 @@ namespace cusp
       cusp::array1d<ValueType,cusp::host_memory> s(R+1);
       cusp::array1d<ValueType,cusp::host_memory> cs(R);
       cusp::array1d<ValueType,cusp::host_memory> sn(R);
-      ValueType b_norm = blas::nrm2(b);
+      NormType b_norm = blas::nrm2(b);
       
       do{
 	// compute initial residual and its norm //
@@ -167,12 +168,12 @@ namespace cusp
 	  
 	  H(i+1,i) = blas::nrm2(w);   
 	  // V(i+1) = V(i+1) / H(i+1, i) //
-	  blas::scal(w,ValueType(1.0/H(i+1,i)));
+	  blas::scal(w,ValueType(1.0)/H(i+1,i));
 	  blas::copy(w,V.column(i+1));
 	  
 	  PlaneRotation(H,cs,sn,s,i);
 	  
-	  rel_resid[0] = std::abs(s[i+1]) / resid0 + monitor.absolute_tolerance();
+	  rel_resid[0] = abs(s[i+1]) / resid0 + monitor.absolute_tolerance();
 	  
 	  //check convergence condition
 	  //if (rel_resid < monitor.relative_tolerance())

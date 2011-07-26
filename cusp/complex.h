@@ -438,7 +438,7 @@ public:
 
   // cast operators
   inline operator std::complex<float>() const { return std::complex<float>(real(),imag()); }
-  inline operator float() const { return real(); }
+  //  inline operator float() const { return real(); }
 };
 
 template<>
@@ -539,7 +539,7 @@ public:
 
   // cast operators
   inline operator std::complex<double>() const { return std::complex<double>(real(),imag()); }
-  inline operator double() { return real(); }
+  //  inline operator double() { return real(); }
 };
 
 
