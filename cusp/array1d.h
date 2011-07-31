@@ -130,6 +130,7 @@ class array1d_view
     typedef typename thrust::iterator_difference<RandomAccessIterator>::type difference_type;
     typedef typename thrust::iterator_value<RandomAccessIterator>::type      value_type;
     typedef typename thrust::iterator_space<RandomAccessIterator>::type      memory_space;
+    typedef typename thrust::iterator_pointer<RandomAccessIterator>::type    pointer;
         
     /*! equivalent container type
      */
@@ -209,6 +210,11 @@ class array1d_view
       return m_capacity;
     }
 
+    
+    pointer data(void)
+    {
+      return &front();
+    }
     // TODO is there any value in supporting the two-argument form?
     //      i.e.  void resize(size_type new_size, value_type x = value_type())
     void resize(size_type new_size)
