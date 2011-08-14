@@ -42,7 +42,7 @@ void convert(const SourceType& src, DestinationType& dst, cusp::host_memory, cus
 template <typename SourceType, typename DestinationType>
 void convert(const SourceType& src, DestinationType& dst, cusp::host_memory, cusp::device_memory)
 {
-    // convert on host and transfer to device
+    // first convert on host, then transfer to device
     typedef typename DestinationType::container DestinationContainerType;
     typedef typename DestinationContainerType::template rebind<cusp::host_memory>::type HostDestinationContainerType;
     
@@ -59,7 +59,7 @@ void convert(const SourceType& src, DestinationType& dst, cusp::host_memory, cus
 template <typename SourceType, typename DestinationType>
 void convert(const SourceType& src, DestinationType& dst, cusp::device_memory, cusp::host_memory)
 {
-    // transfer to host and transfer to device
+    // first transfer to host, then convert on host
     typedef typename SourceType::container SourceContainerType;
     typedef typename SourceContainerType::template rebind<cusp::host_memory>::type HostSourceContainerType;
     
