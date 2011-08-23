@@ -1,6 +1,5 @@
 import os
 import inspect
-import glob
 
 # try to import an environment first
 try:
@@ -13,29 +12,46 @@ except:
 if env['PLATFORM'] == "darwin":
   env.Append(LINKFLAGS = "-lstdc++")
 
-# find all .cus & .cpps in the current directory
+# on windows we have to do /bigobj
+if env['PLATFORM'] == "win32" or env['PLATFORM'] == "win64":
+  env.Append(CPPFLAGS = "/bigobj")
+
+# find all .cus & .cpps in the current and backend/ directories
 sources = []
-directories = ['.', 'cuda']
+directories = ['.', 'backend']
 extensions = ['*.cu', '*.cpp']
+
+# finall all backend-specific files
+if env['backend'] == 'cuda' or env['backend'] == 'ocelot':
+  directories.append(os.path.join('backend','cuda'))
+elif env['backend'] == 'omp':
+  directories.append(os.path.join('backend','omp'))
+
 for dir in directories:
   for ext in extensions:
     regexp = os.path.join(dir, ext)
-    #sources.extend(env.Glob(regexp, strings = True))
-    sources.extend(glob.glob(regexp))
+    sources.extend(env.Glob(regexp))
+
+# filter test files using a regular expression
+if 'tests' in env:
+  import re
+
+  pattern = re.compile(env['tests'])
+
+  necessary_sources = set(['testframework.cu'])
+  filtered_sources  = []
+
+  for f in sources:
+    if str(f) in necessary_sources or pattern.search(f.get_contents()):
+      filtered_sources.append(f)
+
+  sources = filtered_sources
 
 # add the directory containing this file to the include path
 this_file = inspect.currentframe().f_code.co_filename
 this_dir = os.path.dirname(this_file)
 env.Append(CPPPATH = [this_dir])
 
-# by default, we want to build the full unit test suite
 tester = env.Program('tester', sources)
-Default(tester)
 
-# add targets to build individual tests
-core_sources = ['testframework.cu', 'unittest_tester.cu']
 
-for test in glob.glob('*.cu'):
-    if test not in core_sources:
-        name, ext = os.path.splitext(test)
-        env.Program('test_'+name, core_sources+[test])

@@ -113,6 +113,7 @@ def getCFLAGS(mode, backend, warn, warnings_as_errors, hostspblas, CC):
   elif mode == 'debug':
     # turn on debug mode
     result.append(gCompilerOptions[CC]['debug'])
+    result.append('-DTHRUST_DEBUG')
   # force 32b code on darwin
   if platform.platform()[:6] == 'Darwin':
     result.append('-m32')
@@ -229,6 +230,9 @@ def Environment():
   # add a variable to treat warnings as errors
   vars.Add(BoolVariable('Werror', 'Treat warnings as errors', 0))
 
+  # add a variable to filter source files by a regex
+  vars.Add('tests', help='Filter test files using a regex')
+
   # add a variable to handle the device backend
   hostspblas_variable = EnumVariable('hostspblas', 'Host sparse math library', 'cusp',
                                   allowed_values = ('cusp', 'mkl'))
@@ -297,10 +301,13 @@ def Environment():
     env.Append(LIBS = ['mkl_core', 'mkl_gnu_thread', intel_lib])
 
   # set thrust include path
-  env.Append(CPPPATH = os.path.dirname(thisDir))
+  # this needs to come before the CUDA include path appended above,
+  # which may include a different version of thrust
+  env.Prepend(CPPPATH = os.path.dirname(thisDir))
+
 
   if 'THRUST_PATH' in os.environ:
-      env.Append(CPPPATH = [os.path.abspath(os.environ['THRUST_PATH'])])
+      env.Prepend(CPPPATH = [os.path.abspath(os.environ['THRUST_PATH'])])
 
   # import the LD_LIBRARY_PATH so we can run commands which depend
   # on shared libraries
