@@ -241,10 +241,14 @@ void spmm_csr(const Matrix1& A,
     // Resize output
     C.resize(A.num_rows, B.num_cols, num_nonzeros);
     
-    spmm_csr_pass2(A.num_rows, B.num_cols,
-                   A.row_offsets, A.column_indices, A.values,
-                   B.row_offsets, B.column_indices, B.values,
-                   C.row_offsets, C.column_indices, C.values);
+    num_nonzeros =
+      spmm_csr_pass2(A.num_rows, B.num_cols,
+                     A.row_offsets, A.column_indices, A.values,
+                     B.row_offsets, B.column_indices, B.values,
+                     C.row_offsets, C.column_indices, C.values);
+
+    // Resize output again since pass2 omits explict zeros
+    C.resize(A.num_rows, B.num_cols, num_nonzeros);
 }
 
 } // end namespace detail
