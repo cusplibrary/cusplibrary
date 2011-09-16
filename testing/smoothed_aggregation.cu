@@ -246,12 +246,12 @@ void TestSmoothedAggregation(void)
         cusp::array1d<ValueType,MemorySpace> b = unittest::random_samples<ValueType>(A.num_rows);
         cusp::array1d<ValueType,MemorySpace> x = unittest::random_samples<ValueType>(A.num_rows);
     
-        // set stopping criteria (iteration_limit = 40, relative_tolerance = 1e-5)
-        cusp::convergence_monitor<ValueType> monitor(b, 40, 1e-5);
+        // set stopping criteria (iteration_limit = 40, relative_tolerance = 1e-4)
+        cusp::convergence_monitor<ValueType> monitor(b, 40, 1e-4);
         M.solve(b,x,monitor);
 
         ASSERT_EQUAL(monitor.converged(), true);
-        ASSERT_EQUAL(monitor.geometric_rate() < 0.9, true);
+        ASSERT_EQUAL(monitor.geometric_rate() < 0.8, true);
     }
 
     // test as preconditioner
@@ -259,11 +259,12 @@ void TestSmoothedAggregation(void)
         cusp::array1d<ValueType,MemorySpace> b = unittest::random_samples<ValueType>(A.num_rows);
         cusp::array1d<ValueType,MemorySpace> x = unittest::random_samples<ValueType>(A.num_rows);
 
-        // set stopping criteria (iteration_limit = 20, relative_tolerance = 1e-5)
-        cusp::default_monitor<ValueType> monitor(b, 20, 1e-5);
+        // set stopping criteria (iteration_limit = 20, relative_tolerance = 1e-4)
+        cusp::convergence_monitor<ValueType> monitor(b, 20, 1e-4);
         cusp::krylov::cg(A, x, b, monitor, M);
 
         ASSERT_EQUAL(monitor.converged(), true);
+        ASSERT_EQUAL(monitor.geometric_rate() < 0.5, true);
     }
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestSmoothedAggregation);

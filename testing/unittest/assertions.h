@@ -1,6 +1,8 @@
 #pragma once
 
 #include <cusp/array1d.h>
+#include <thrust/host_vector.h>
+#include <thrust/device_vector.h>
 #include <thrust/iterator/iterator_traits.h>
 #include <thrust/detail/type_traits.h>
 
@@ -95,7 +97,7 @@ template <typename T1, typename T2>
 void assert_gequal(const T1& a, const T2& b, 
                    const std::string& filename = "unknown", int lineno = -1)
 {
-    if(!(a >= b)){
+    if(!(a >= T1(b))){
         unittest::UnitTestFailure f;
         f << "[" << filename << ":" << lineno << "] ";
         f << a << " is less than " << b;
@@ -143,99 +145,188 @@ class almost_equal_to
         double a_tol, r_tol;
         almost_equal_to(double _a_tol = DEFAULT_ABSOLUTE_TOL, double _r_tol = DEFAULT_RELATIVE_TOL) : a_tol(_a_tol), r_tol(_r_tol) {}
         bool operator()(const T& a, const T& b) const {
-            return almost_equal(a, b, a_tol, r_tol);
+            return almost_equal((double) a, (double) b, a_tol, r_tol);
         }
 };
 
 ////
 // check sequences
 
-template <typename ForwardIterator, typename BinaryPredicate>
-void assert_equal(ForwardIterator first1, ForwardIterator last1, ForwardIterator first2, const BinaryPredicate& op,
+template <typename ForwardIterator1, typename ForwardIterator2, typename BinaryPredicate>
+void assert_equal(ForwardIterator1 first1, ForwardIterator1 last1, ForwardIterator2 first2, ForwardIterator2 last2, BinaryPredicate op,
                   const std::string& filename = "unknown", int lineno = -1)
 {
-    size_t i = 0;
-    size_t mismatches = 0;
+    typedef typename thrust::iterator_difference<ForwardIterator1>::type difference_type;
+    typedef typename thrust::iterator_value<ForwardIterator1>::type InputType;
     
-    typedef typename thrust::iterator_traits<ForwardIterator>::value_type InputType;
+    bool failure = false;
+
+    difference_type length1 = thrust::distance(first1, last1);
+    difference_type length2 = thrust::distance(first2, last2);
+    
+    difference_type min_length = thrust::min(length1, length2);
 
     unittest::UnitTestFailure f;
     f << "[" << filename << ":" << lineno << "] ";
-    f << "Sequences are not equal [type='" << type_name<InputType>() << "']\n";
-    f << "--------------------------------\n";
 
-    while(first1 != last1){
-        if(!op(*first1, *first2)){
-            mismatches++;
-            if(mismatches <= MAX_OUTPUT_LINES)
-                f << "  [" << i << "] " << *first1 << "  " << *first2 << "\n";
+    // check lengths
+    if (length1 != length2)
+    {
+      failure = true;
+      f << "Sequences have different sizes (" << length1 << " != " << length2 << ")\n";
+    }
+
+    // check values
+    
+    size_t mismatches = 0;
+
+    for (difference_type i = 0; i < min_length; i++)
+    {
+      if(!op(*first1, *first2))
+      {
+        if (mismatches == 0)
+        {
+          failure = true;
+          f << "Sequences are not equal [type='" << type_name<InputType>() << "']\n";
+          f << "--------------------------------\n";
         }
 
-        first1++;
-        first2++;
-        i++;
+        mismatches++;
+
+        if(mismatches <= MAX_OUTPUT_LINES)
+        {
+          if (sizeof(InputType) == 1)
+            f << "  [" << i << "] " << (int) *first1 << "  " << (int) *first2 << "\n"; // unprintable chars are a problem
+          else
+            f << "  [" << i << "] " << *first1 << "  " << *first2 << "\n";
+        }
+      }
+
+      first1++;
+      first2++;
     }
 
-
-    if (mismatches > 0){
-        if(mismatches > MAX_OUTPUT_LINES)
-            f << "  (output limit reached)\n";
-        f << "--------------------------------\n";
-        f << "Sequences differ at " << mismatches << " of " << i << " positions" << "\n";
-        throw f;
+    if (mismatches > 0)
+    {
+      if(mismatches > MAX_OUTPUT_LINES)
+          f << "  (output limit reached)\n";
+      f << "--------------------------------\n";
+      f << "Sequences differ at " << mismatches << " of " << min_length << " positions" << "\n";
+    }
+    else if (length1 != length2)
+    {
+      f << "Sequences agree through " << min_length << " positions [type='" << type_name<InputType>() << "']\n";
     }
 
+    if (failure)
+      throw f;
 }
 
-template <typename ForwardIterator>
-void assert_equal(ForwardIterator first1, ForwardIterator last1, ForwardIterator first2,
+template <typename ForwardIterator1, typename ForwardIterator2>
+void assert_equal(ForwardIterator1 first1, ForwardIterator1 last1, ForwardIterator2 first2, ForwardIterator2 last2,
                   const std::string& filename = "unknown", int lineno = -1)
 {
-    typedef typename thrust::iterator_traits<ForwardIterator>::value_type InputType;
-    assert_equal(first1, last1, first2, thrust::equal_to<InputType>(), filename, lineno);
+    typedef typename thrust::iterator_traits<ForwardIterator1>::value_type InputType;
+    assert_equal(first1, last1, first2, last2, thrust::equal_to<InputType>(), filename, lineno);
 }
 
 
-template <typename ForwardIterator>
-void assert_almost_equal(ForwardIterator first1, ForwardIterator last1, ForwardIterator first2, 
+template <typename ForwardIterator1, typename ForwardIterator2>
+void assert_almost_equal(ForwardIterator1 first1, ForwardIterator1 last1, ForwardIterator2 first2, ForwardIterator2 last2,
                          const std::string& filename = "unknown", int lineno = -1,
                          const double a_tol = DEFAULT_ABSOLUTE_TOL, const double r_tol = DEFAULT_RELATIVE_TOL)
 {
-    typedef typename thrust::iterator_traits<ForwardIterator>::value_type InputType;
-    assert_equal(first1, last1, first2, almost_equal_to<InputType>(a_tol, r_tol), filename, lineno);
+    typedef typename thrust::iterator_traits<ForwardIterator1>::value_type InputType;
+    assert_equal(first1, last1, first2, last2, almost_equal_to<InputType>(a_tol, r_tol), filename, lineno);
 }
 
 
-template <typename T1, typename Alloc1,
-          typename T2, typename Alloc2>
-void assert_equal(const cusp::array1d<T1,Alloc1>& A,
-                  const cusp::array1d<T2,Alloc2>& B,
+template <typename T, typename Alloc>
+void assert_equal(const thrust::host_vector<T,Alloc>& A, const thrust::host_vector<T,Alloc>& B,
                   const std::string& filename = "unknown", int lineno = -1)
 {
-    if(A.size() != B.size())
-        throw unittest::UnitTestError("Sequences have different sizes");
-
-    thrust::host_vector<T1> h_A(A.begin(), A.end());
-    thrust::host_vector<T2> h_B(B.begin(), B.end());
-    
-    assert_equal(h_A.begin(), h_A.end(), h_B.begin(), filename, lineno);
+    assert_equal(A.begin(), A.end(), B.begin(), B.end(), filename, lineno);
 }
 
-template <typename T1, typename Alloc1,
-          typename T2, typename Alloc2>
-void assert_almost_equal(const cusp::array1d<T1,Alloc1>& A,
-                         const cusp::array1d<T2,Alloc2>& B,
+template <typename T, typename Alloc>
+void assert_almost_equal(const thrust::host_vector<T,Alloc>& A, const thrust::host_vector<T,Alloc>& B, 
                          const std::string& filename = "unknown", int lineno = -1,
                          const double a_tol = DEFAULT_ABSOLUTE_TOL, const double r_tol = DEFAULT_RELATIVE_TOL)
 {
-    if(A.size() != B.size())
-        throw unittest::UnitTestError("Sequences have different sizes");
-    
-    thrust::host_vector<T1> h_A(A.begin(), A.end());
-    thrust::host_vector<T2> h_B(B.begin(), B.end());
-    
-    assert_almost_equal(h_A.begin(), h_A.end(), h_B.begin(), filename, lineno, a_tol, r_tol);
+    assert_almost_equal(A.begin(), A.end(), B.begin(), B.end(), filename, lineno, a_tol, r_tol);
 }
 
+template <typename T, typename Alloc1, typename Alloc2>
+void assert_equal(const thrust::host_vector<T,Alloc1>& A, const thrust::device_vector<T,Alloc2>& B,
+                  const std::string& filename = "unknown", int lineno = -1)
+{
+    thrust::host_vector<T,Alloc1> B_host = B;
+    assert_equal(A, B_host, filename, lineno);
+}
+
+template <typename T, typename Alloc1, typename Alloc2>
+void assert_equal(const thrust::device_vector<T,Alloc1>& A, const thrust::host_vector<T,Alloc2>& B,
+                  const std::string& filename = "unknown", int lineno = -1)
+{
+    thrust::host_vector<T,Alloc2> A_host = A;
+    assert_equal(A_host, B, filename, lineno);
+}
+
+template <typename T, typename Alloc>
+void assert_equal(const thrust::device_vector<T,Alloc>& A, const thrust::device_vector<T,Alloc>& B,
+                  const std::string& filename = "unknown", int lineno = -1)
+{
+    thrust::host_vector<T> A_host = A;
+    thrust::host_vector<T> B_host = B;
+    assert_equal(A_host, B_host, filename, lineno);
+}
+
+template <typename T, typename Alloc1, typename Alloc2>
+void assert_almost_equal(const thrust::host_vector<T,Alloc1>& A, const thrust::device_vector<T,Alloc2>& B,
+                         const std::string& filename = "unknown", int lineno = -1,
+                         const double a_tol = DEFAULT_ABSOLUTE_TOL, const double r_tol = DEFAULT_RELATIVE_TOL)
+{
+    thrust::host_vector<T,Alloc1> B_host = B;
+    assert_almost_equal(A, B_host, filename, lineno, a_tol, r_tol);
+}
+
+template <typename T, typename Alloc1, typename Alloc2>
+void assert_almost_equal(const thrust::device_vector<T,Alloc1>& A, const thrust::host_vector<T,Alloc2>& B,
+                         const std::string& filename = "unknown", int lineno = -1,
+                         const double a_tol = DEFAULT_ABSOLUTE_TOL, const double r_tol = DEFAULT_RELATIVE_TOL)
+{
+    thrust::host_vector<T,Alloc2> A_host = A;
+    assert_almost_equal(A_host, B, filename, lineno, a_tol, r_tol);
+}
+
+template <typename T, typename Alloc>
+void assert_almost_equal(const thrust::device_vector<T,Alloc>& A, const thrust::device_vector<T,Alloc>& B,
+                         const std::string& filename = "unknown", int lineno = -1,
+                         const double a_tol = DEFAULT_ABSOLUTE_TOL, const double r_tol = DEFAULT_RELATIVE_TOL)
+{
+    thrust::host_vector<T> A_host = A;
+    thrust::host_vector<T> B_host = B;
+    assert_almost_equal(A_host, B_host, filename, lineno, a_tol, r_tol);
+}
+
+template <typename T1, typename Alloc1,
+          typename T2, typename Alloc2>
+void assert_equal(const cusp::array1d<T1,Alloc1>& A, const cusp::array1d<T2,Alloc2>& B,
+                  const std::string& filename = "unknown", int lineno = -1)
+{
+    thrust::host_vector<T1> A_host(A.begin(), A.end());
+    thrust::host_vector<T2> B_host(B.begin(), B.end());
+    assert_equal(A_host.begin(), A_host.end(), B_host.begin(), B_host.end(), filename, lineno);
+}
+template <typename T1, typename Alloc1,
+          typename T2, typename Alloc2>
+void assert_almost_equal(const cusp::array1d<T1,Alloc1>& A, const cusp::array1d<T2,Alloc2>& B,
+                         const std::string& filename = "unknown", int lineno = -1,
+                         const double a_tol = DEFAULT_ABSOLUTE_TOL, const double r_tol = DEFAULT_RELATIVE_TOL)
+{
+    thrust::host_vector<T1> A_host(A.begin(), A.end());
+    thrust::host_vector<T2> B_host(B.begin(), B.end());
+    assert_almost_equal(A_host.begin(), A_host.end(), B_host.begin(), B_host.end(), filename, lineno, a_tol, r_tol);
+}
 
 }; //end namespace unittest

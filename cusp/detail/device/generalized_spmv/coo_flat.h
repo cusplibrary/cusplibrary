@@ -21,20 +21,18 @@
 #include <cusp/detail/device/utils.h>
 
 #include <thrust/copy.h>
-
 #include <thrust/iterator/iterator_traits.h>
+
 #if THRUST_VERSION >= 100500
+
 #include <thrust/detail/backend/dereference.h>
-#include <thrust/detail/backend/cuda/partition.h>
+using thrust::detail::backend::dereference;
 #else
+
 #include <thrust/detail/device/dereference.h>
-#include <thrust/detail/device/cuda/partition.h>
-namespace thrust{
-  namespace detail{
-    namespace backend = device;
-  }
-}
-#endif
+using thrust::detail::device::dereference;
+
+#endif // THRUST_VERSION
 
 namespace cusp
 {
@@ -125,8 +123,8 @@ void spmv_coo_kernel_postprocess(SizeType        num_outputs,
 
   while(base + BLOCK_SIZE <= num_outputs)
   {
-    rows[threadIdx.x] = thrust::detail::backend::dereference(row_carries);
-    vals[threadIdx.x] = thrust::detail::backend::dereference(val_carries);
+    rows[threadIdx.x] = dereference(row_carries);
+    vals[threadIdx.x] = dereference(val_carries);
 
     // carry in
     if(threadIdx.x == 0 && base != 0)
@@ -139,7 +137,7 @@ void spmv_coo_kernel_postprocess(SizeType        num_outputs,
       {
         // row terminates in previous unit
         ValueIterator4 zj = z + row_carry;
-        thrust::detail::backend::dereference(zj) = reduce(thrust::detail::backend::dereference(zj), val_carry);
+        dereference(zj) = reduce(dereference(zj), val_carry);
       }
     }
 
@@ -158,7 +156,7 @@ void spmv_coo_kernel_postprocess(SizeType        num_outputs,
       {
         // row terminates in current unit
         ValueIterator4 zj = z + rows[threadIdx.x];
-        thrust::detail::backend::dereference(zj) = reduce(thrust::detail::backend::dereference(zj), vals[threadIdx.x]);
+        dereference(zj) = reduce(dereference(zj), vals[threadIdx.x]);
       }
     }
 
@@ -175,8 +173,8 @@ void spmv_coo_kernel_postprocess(SizeType        num_outputs,
 
     if (threadIdx.x < offset_end)
     {
-      rows[threadIdx.x] = thrust::detail::backend::dereference(row_carries);
-      vals[threadIdx.x] = thrust::detail::backend::dereference(val_carries);
+      rows[threadIdx.x] = dereference(row_carries);
+      vals[threadIdx.x] = dereference(val_carries);
     }
 
     // carry in
@@ -190,7 +188,7 @@ void spmv_coo_kernel_postprocess(SizeType        num_outputs,
       {
         // row terminates in previous unit
         ValueIterator4 zj = z + row_carry;
-        thrust::detail::backend::dereference(zj) = reduce(thrust::detail::backend::dereference(zj), val_carry);
+        dereference(zj) = reduce(dereference(zj), val_carry);
       }
     }
 
@@ -204,7 +202,7 @@ void spmv_coo_kernel_postprocess(SizeType        num_outputs,
       {
         // row terminates in current unit or we're at the end of input
         ValueIterator4 zj = z + rows[threadIdx.x];
-        thrust::detail::backend::dereference(zj) = reduce(thrust::detail::backend::dereference(zj), vals[threadIdx.x]);
+        dereference(zj) = reduce(thrust::detail::backend::dereference(zj), vals[threadIdx.x]);
       }
     }
   }
@@ -471,6 +469,9 @@ void spmv_coo_kernel(SizeType        num_entries,
 
 }
 
+
+
+
 template <typename SizeType,
           typename IndexIterator1,
           typename IndexIterator2,
@@ -506,7 +507,7 @@ void spmv_coo(SizeType        num_rows,
   const SizeType unit_size  = K * block_size;
   const SizeType max_blocks = cusp::detail::device::arch::max_active_blocks(spmv_coo_kernel<block_size, K, SizeType, IndexIterator1, IndexIterator2, ValueIterator1, ValueIterator2, ValueIterator4, BinaryFunction1, BinaryFunction2, OutputIterator1, OutputIterator2>, block_size, (size_t) 0);
 
-  thrust::pair<SizeType, SizeType> splitting = thrust::detail::backend::cuda::uniform_interval_splitting<SizeType>(num_entries, unit_size, max_blocks);
+  thrust::pair<SizeType, SizeType> splitting = cusp::detail::device::uniform_splitting<SizeType>(num_entries, unit_size, max_blocks);
   const SizeType interval_size = splitting.first;
   const SizeType num_blocks    = splitting.second;
 

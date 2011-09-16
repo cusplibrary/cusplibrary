@@ -1,4 +1,5 @@
 #include <unittest/unittest.h>
+#include <cusp/array1d.h>
 #include <cusp/complex.h>
 #include <complex>
 

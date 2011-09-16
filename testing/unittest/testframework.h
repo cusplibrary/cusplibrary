@@ -13,49 +13,49 @@
 
 // define some common lists of types
 typedef unittest::type_list<int,
-                               unsigned int,
-                               float> ThirtyTwoBitTypes;
+                            unsigned int,
+                            float> ThirtyTwoBitTypes;
 
 typedef unittest::type_list<long long,
-                               unsigned long long,
-                               double> SixtyFourBitTypes;
+                            unsigned long long,
+                            double> SixtyFourBitTypes;
 
 typedef unittest::type_list<char,
-                               signed char,
-                               unsigned char,
-                               short,
-                               unsigned short,
-                               int,
-                               unsigned int,
-                               long,
-                               unsigned long,
-                               long long,
-                               unsigned long long> IntegralTypes;
+                            signed char,
+                            unsigned char,
+                            short,
+                            unsigned short,
+                            int,
+                            unsigned int,
+                            long,
+                            unsigned long,
+                            long long,
+                            unsigned long long> IntegralTypes;
 
 typedef unittest::type_list<signed char,
-                               signed short,
-                               signed int,
-                               signed long,
-                               signed long long> SignedIntegralTypes;
+                            signed short,
+                            signed int,
+                            signed long,
+                            signed long long> SignedIntegralTypes;
 
 typedef unittest::type_list<unsigned char,
-                               unsigned short,
-                               unsigned int,
-                               unsigned long,
-                               unsigned long long> UnsignedIntegralTypes;
+                            unsigned short,
+                            unsigned int,
+                            unsigned long,
+                            unsigned long long> UnsignedIntegralTypes;
 
 typedef unittest::type_list<char,
-                               signed char,
-                               unsigned char> ByteTypes;
+                            signed char,
+                            unsigned char> ByteTypes;
 
 typedef unittest::type_list<char,
-                               signed char,
-                               unsigned char,
-                               short,
-                               unsigned short> SmallIntegralTypes;
+                            signed char,
+                            unsigned char,
+                            short,
+                            unsigned short> SmallIntegralTypes;
 
 typedef unittest::type_list<long long,
-                              unsigned long long> LargeIntegralTypes;
+                            unsigned long long> LargeIntegralTypes;
 
 typedef unittest::type_list<float,
                             double> FloatingPointTypes;
@@ -74,14 +74,21 @@ typedef unittest::type_list<char,
                             float> NumericTypes;
 // exclude double from NumericTypes
 
-inline std::string base_class_name(const char *name)
+
+inline void chop_prefix(std::string& str, const std::string& prefix)
+{
+    str.replace(str.find(prefix) == 0 ? 0 : str.size(), prefix.size(), "");
+}
+
+inline std::string base_class_name(const std::string& name)
 {
   std::string result = name;
   
   // if the name begins with "struct ", chop it off
-  result.replace(result.find("struct ") == 0 ? 0 : result.size(),
-                 7,
-                 "");
+  chop_prefix(result, "struct ");
+  
+  // if the name begins with "class ", chop it off
+  chop_prefix(result, "class ");
 
   // chop everything including and after first "<"
   return result.replace(result.find_first_of("<"),
@@ -94,6 +101,8 @@ enum TestStatus { Pass = 0, Failure = 1, KnownFailure = 2, Error = 3, UnknownExc
 typedef std::set<std::string>              ArgumentSet;
 typedef std::map<std::string, std::string> ArgumentMap;
 
+std::vector<size_t> get_test_sizes(void);
+void                set_test_sizes(const std::string&);
 
 class UnitTest {
     public:
@@ -110,7 +119,8 @@ class UnitTest {
 };
 
 
-class UnitTestDriver {
+class UnitTestDriver
+{
   typedef std::map<std::string, UnitTest*> TestMap;
 
   TestMap test_map;
@@ -152,13 +162,10 @@ DECLARE_UNITTEST(VTEST##Device);
 class TEST##UnitTest : public UnitTest {                         \
     public:                                                      \
     TEST##UnitTest() : UnitTest(#TEST) {}                        \
-    void run(){                                                  \
-        size_t sizes[] =   {0, 1, 2, 5, 13, 127,                 \
-            251, 256, 259, 1023,                                 \
-            1024, 1025, 10000, 12345,                            \
-            (1<<16) - 3, 1<<16, (1<<16) + 3};                    \
-        size_t num_sizes = sizeof(sizes) / sizeof(size_t);       \
-        for(size_t i = 0; i != num_sizes; ++i)                      \
+    void run()                                                   \
+    {                                                            \
+        std::vector<size_t> sizes = get_test_sizes();            \
+        for(size_t i = 0; i != sizes.size(); ++i)                \
         {                                                        \
             TEST<char>(sizes[i]);                                \
             TEST<unsigned char>(sizes[i]);                       \
@@ -201,13 +208,8 @@ template<template <typename> class TestName, typename TypeList>
 
     void run()
     {
-        size_t sizes[] =
-           {0, 1, 2, 5, 13, 127,          
-            251, 256, 259, 1023,                          
-            1024, 1025, 10000, 12345,                     
-            (1<<16) - 3, 1<<16, (1<<16) + 3};             
-        size_t num_sizes = sizeof(sizes) / sizeof(size_t);
-        for(size_t i = 0; i != num_sizes; ++i)               
+        std::vector<size_t> sizes = get_test_sizes();
+        for(size_t i = 0; i != sizes.size(); ++i)
         {                                                 
             // get the first type in the list
             typedef typename unittest::get_type<TypeList,0>::type first_type;

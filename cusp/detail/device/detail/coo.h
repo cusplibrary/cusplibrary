@@ -51,6 +51,12 @@ void coo_elementwise_transform_simple(const Matrix1& A,
     IndexType A_nnz = A.num_entries;
     IndexType B_nnz = B.num_entries;
 
+    if (A_nnz == 0 && B_nnz == 0)
+    {
+      C.resize(A.num_rows, A.num_cols, 0);
+      return;
+    }
+
     cusp::array1d<IndexType,MemorySpace> rows(A_nnz + B_nnz);
     cusp::array1d<IndexType,MemorySpace> cols(A_nnz + B_nnz);
     cusp::array1d<ValueType,MemorySpace> vals(A_nnz + B_nnz);
@@ -66,14 +72,14 @@ void coo_elementwise_transform_simple(const Matrix1& A,
 
     // sort by (I,J)
     cusp::detail::sort_by_row_and_column(rows, cols, vals);
-    
+
     // compute unique number of nonzeros in the output
     IndexType C_nnz = thrust::inner_product(thrust::make_zip_iterator(thrust::make_tuple(rows.begin(), cols.begin())),
                                             thrust::make_zip_iterator(thrust::make_tuple(rows.end (),  cols.end()))   - 1,
                                             thrust::make_zip_iterator(thrust::make_tuple(rows.begin(), cols.begin())) + 1,
-                                            IndexType(0),
+                                            IndexType(1),
                                             thrust::plus<IndexType>(),
-                                            thrust::not_equal_to< thrust::tuple<IndexType,IndexType> >()) + 1;
+                                            thrust::not_equal_to< thrust::tuple<IndexType,IndexType> >());
 
     // allocate space for output
     C.resize(A.num_rows, A.num_cols, C_nnz);

@@ -6,7 +6,65 @@
 #include <cstdlib>
 #include <algorithm>
 #include <string>
+#include <limits>
 
+const size_t standard_test_sizes[] = 
+        {0, 1, 2, 3, 4, 5, 8, 10, 13, 16, 17, 19, 27, 30, 31, 32,
+         33, 35, 42, 53, 58, 63, 64, 65, 72, 97, 100, 127, 128, 129, 142, 183, 192, 201, 240, 255, 256,
+         257, 302, 511, 512, 513, 687, 900, 1023, 1024, 1025, 1565, 1786, 1973, 2047, 2048, 2049, 3050, 4095, 4096,
+         4097, 5030, 7791, 10000, 10027, 12345, 16384, 17354, 26255, 32768, 43718, 65533, 65536,
+         65539, 123456, 131072, 731588, 1048575, 1048576,
+         3398570, 9760840, (1 << 24) - 1, (1 << 24),
+         (1 << 24) + 1, (1 << 25) - 1, (1 << 25), (1 << 25) + 1, (1 << 26) - 1, 1 << 26,
+         (1 << 26) + 1, (1 << 27) - 1, (1 << 27)};
+        
+const size_t tiny_threshold    = 1 <<  5;  //   32
+const size_t small_threshold   = 1 <<  8;  //  256
+const size_t medium_threshold  = 1 << 12;  //   4K
+const size_t default_threshold = 1 << 16;  //  64K
+const size_t large_threshold   = 1 << 20;  //   1M
+const size_t huge_threshold    = 1 << 24;  //  16M
+const size_t epic_threshold    = 1 << 26;  //  64M
+const size_t max_threshold     = std::numeric_limits<size_t>::max();
+
+std::vector<size_t> test_sizes;
+std::vector<size_t> get_test_sizes(void)
+{
+    return test_sizes;
+}
+
+void set_test_sizes(const std::string& val)
+{
+    size_t threshold = 0;
+
+    if (val == "tiny")
+        threshold = tiny_threshold;
+    else if (val == "small")
+        threshold = small_threshold;
+    else if (val == "medium")
+        threshold = medium_threshold;
+    else if (val == "default")
+        threshold = default_threshold;
+    else if (val == "large")
+        threshold = large_threshold;
+    else if (val == "huge")
+        threshold = huge_threshold;
+    else if (val == "epic")
+        threshold = epic_threshold;
+    else if (val == "max")
+        threshold = max_threshold;
+    else
+    {
+        std::cerr << "invalid test size \"" << val << "\"" << std::endl;
+        exit(1);
+    }
+
+    for (size_t i = 0; i < sizeof(standard_test_sizes) / sizeof(*standard_test_sizes); i++)
+    {
+        if (standard_test_sizes[i] <= threshold)
+            test_sizes.push_back(standard_test_sizes[i]);
+    }
+}
 
 void UnitTestDriver::register_test(UnitTest * test)
 {
@@ -49,14 +107,28 @@ void process_args(int argc, char ** argv,
 
 void usage(int argc, char** argv)
 {
-    std::cout << "Usage:\n";
-    std::cout << "\t" << argv[0] << "\n";
-    std::cout << "\t" << argv[0] << " TestName1 [TestName2 ...] \n";
-    std::cout << "\t" << argv[0] << " PartialTestName1* [PartialTestName2* ...] \n";
-    std::cout << "\t" << argv[0] << " --device=1\n";
-    std::cout << "\t" << argv[0] << " --verbose or --concise\n";
-    std::cout << "\t" << argv[0] << " --list\n";
-    std::cout << "\t" << argv[0] << " --help\n";
+    std::string indent = "  ";
+
+    std::cout << "Example Usage:\n";
+    std::cout << indent << argv[0] << "\n";
+    std::cout << indent << argv[0] << " TestName1 [TestName2 ...] \n";
+    std::cout << indent << argv[0] << " PartialTestName1* [PartialTestName2* ...] \n";
+    std::cout << indent << argv[0] << " --device=1\n";
+    std::cout << indent << argv[0] << " --sizes={tiny,small,medium,default,large,huge,epic,max}\n";
+    std::cout << indent << argv[0] << " --verbose or --concise\n";
+    std::cout << indent << argv[0] << " --list\n";
+    std::cout << indent << argv[0] << " --help\n";
+    std::cout << "\n";
+    std::cout << "Options:\n";
+    std::cout << indent << "The sizes option determines which input sizes are tested.\n";
+    std::cout << indent << indent << "--sizes=tiny    tests sizes up to " << tiny_threshold    << "\n";
+    std::cout << indent << indent << "--sizes=small   tests sizes up to " << small_threshold   << "\n";
+    std::cout << indent << indent << "--sizes=medium  tests sizes up to " << medium_threshold  << "\n";
+    std::cout << indent << indent << "--sizes=default tests sizes up to " << default_threshold << "\n";
+    std::cout << indent << indent << "--sizes=large   tests sizes up to " << large_threshold   << " (0.25 GB memory)\n";
+    std::cout << indent << indent << "--sizes=huge    tests sizes up to " << huge_threshold    << " (1.50 GB memory)\n";
+    std::cout << indent << indent << "--sizes=epic    tests sizes up to " << epic_threshold    << " (3.00 GB memory)\n";
+    std::cout << indent << indent << "--sizes=max     tests all available sizes\n";
 }
 
 void list_devices(void)
@@ -106,8 +178,8 @@ struct TestResult
         : status(status), name(u.name)
     { }
 
-    TestResult(const TestStatus status, const UnitTest& u, const unittest::UnitTestException& e)
-        : status(status), name(u.name), message(e.message)
+    TestResult(const TestStatus status, const UnitTest& u, const std::string& message)
+        : status(status), name(u.name), message(message)
     { }
 
     bool operator<(const TestResult& tr) const
@@ -225,17 +297,20 @@ bool UnitTestDriver::run_tests(std::vector<UnitTest *>& tests_to_run, const Argu
         } 
         catch (unittest::UnitTestFailure& f)
         {
-            record_result(TestResult(Failure, test, f), test_results);
+            record_result(TestResult(Failure, test, f.message), test_results);
         }
         catch (unittest::UnitTestKnownFailure& f)
         {
-            record_result(TestResult(KnownFailure, test, f), test_results);
+            record_result(TestResult(KnownFailure, test, f.message), test_results);
+        }
+        catch (std::bad_alloc& e)
+        {
+            record_result(TestResult(Error, test, e.what()), test_results);
         }
         catch (unittest::UnitTestError& e)
         {
-            record_result(TestResult(Error, test, e), test_results);
+            record_result(TestResult(Error, test, e.message), test_results);
         }
-
 
         // immediate report
         if (!concise)
@@ -278,7 +353,7 @@ bool UnitTestDriver::run_tests(std::vector<UnitTest *>& tests_to_run, const Argu
 
         
         error = cudaGetLastError();
-        if(error)
+        if(error && error != cudaErrorMemoryAllocation)
         {
             if (!concise)
             {
@@ -396,6 +471,15 @@ int main(int argc, char **argv)
     {
         UnitTestDriver::s_driver().list_tests();
         return 0;
+    }
+    
+    if(kwargs.count("sizes"))
+    {
+        set_test_sizes(kwargs["sizes"]);
+    }
+    else
+    {
+        set_test_sizes("default");
     }
 
     if(kwargs.count("device"))

@@ -335,11 +335,25 @@ void dia_to_coo(const Matrix1& src, Matrix2& dst)
    ColumnIndexIterator column_indices_begin(offset_modulus_tuple, sum_tuple_functor<IndexType>());
 
    // copy valid entries to COO format
-   thrust::copy_if
-     (thrust::make_permutation_iterator(thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, column_indices_begin, src.values.values.begin())), thrust::make_transform_iterator(thrust::counting_iterator<IndexType>(0), transpose_index_functor<IndexType>(pitch, num_diagonals))),
-      thrust::make_permutation_iterator(thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, column_indices_begin, src.values.values.begin())), thrust::make_transform_iterator(thrust::counting_iterator<IndexType>(0), transpose_index_functor<IndexType>(pitch, num_diagonals))) + num_entries,
-      thrust::make_zip_iterator(thrust::make_tuple(dst.row_indices.begin(), dst.column_indices.begin(), dst.values.begin())),
-      is_valid_coo_index<IndexType,ValueType>(src.num_rows,src.num_cols));
+   //thrust::copy_if
+   //  (thrust::make_permutation_iterator(thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, column_indices_begin, src.values.values.begin())), thrust::make_transform_iterator(thrust::counting_iterator<IndexType>(0), transpose_index_functor<IndexType>(pitch, num_diagonals))),
+   //   thrust::make_permutation_iterator(thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, column_indices_begin, src.values.values.begin())), thrust::make_transform_iterator(thrust::counting_iterator<IndexType>(0), transpose_index_functor<IndexType>(pitch, num_diagonals))) + num_entries,
+   //   thrust::make_zip_iterator(thrust::make_tuple(dst.row_indices.begin(), dst.column_indices.begin(), dst.values.begin())),
+   //   is_valid_coo_index<IndexType,ValueType>(src.num_rows,src.num_cols));
+   {
+     // TODO remove this when copy_if can accept more parameters
+     cusp::array1d<IndexType, cusp::device_memory> temp0(num_entries);
+     cusp::array1d<IndexType, cusp::device_memory> temp1(num_entries);
+     cusp::array1d<ValueType, cusp::device_memory> temp2(num_entries);
+     thrust::copy(thrust::make_permutation_iterator(thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, column_indices_begin, src.values.values.begin())), thrust::make_transform_iterator(thrust::counting_iterator<IndexType>(0), transpose_index_functor<IndexType>(pitch, num_diagonals))),
+                  thrust::make_permutation_iterator(thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, column_indices_begin, src.values.values.begin())), thrust::make_transform_iterator(thrust::counting_iterator<IndexType>(0), transpose_index_functor<IndexType>(pitch, num_diagonals))) + num_entries,
+                  thrust::make_zip_iterator(thrust::make_tuple(temp0.begin(), temp1.begin(), temp2.begin())));
+     thrust::copy_if
+       (thrust::make_zip_iterator(thrust::make_tuple(temp0.begin(), temp1.begin(), temp2.begin())),
+        thrust::make_zip_iterator(thrust::make_tuple(temp0.begin(), temp1.begin(), temp2.begin())) + num_entries,
+        thrust::make_zip_iterator(thrust::make_tuple(dst.row_indices.begin(), dst.column_indices.begin(), dst.values.begin())),
+        is_valid_coo_index<IndexType,ValueType>(src.num_rows,src.num_cols));
+   }
 }
 
 template <typename Matrix1, typename Matrix2>
@@ -457,11 +471,25 @@ void dia_to_csr(const Matrix1& src, Matrix2& dst)
    cusp::array1d<IndexType, cusp::device_memory> row_indices(src.num_entries);
 
    // copy valid entries to COO format
-   thrust::copy_if
-     (thrust::make_permutation_iterator(thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, column_indices_begin, src.values.values.begin())), thrust::make_transform_iterator(thrust::counting_iterator<IndexType>(0), transpose_index_functor<IndexType>(pitch, num_diagonals))),
-      thrust::make_permutation_iterator(thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, column_indices_begin, src.values.values.begin())), thrust::make_transform_iterator(thrust::counting_iterator<IndexType>(0), transpose_index_functor<IndexType>(pitch, num_diagonals))) + num_entries,
-      thrust::make_zip_iterator(thrust::make_tuple(row_indices.begin(), dst.column_indices.begin(), dst.values.begin())),
-      is_valid_coo_index<IndexType,ValueType>(src.num_rows,src.num_cols));
+   {
+     // TODO remove this when copy_if can accept more parameters
+     cusp::array1d<IndexType, cusp::device_memory> temp0(num_entries);
+     cusp::array1d<IndexType, cusp::device_memory> temp1(num_entries);
+     cusp::array1d<ValueType, cusp::device_memory> temp2(num_entries);
+     thrust::copy(thrust::make_permutation_iterator(thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, column_indices_begin, src.values.values.begin())), thrust::make_transform_iterator(thrust::counting_iterator<IndexType>(0), transpose_index_functor<IndexType>(pitch, num_diagonals))),
+                  thrust::make_permutation_iterator(thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, column_indices_begin, src.values.values.begin())), thrust::make_transform_iterator(thrust::counting_iterator<IndexType>(0), transpose_index_functor<IndexType>(pitch, num_diagonals))) + num_entries,
+                  thrust::make_zip_iterator(thrust::make_tuple(temp0.begin(), temp1.begin(), temp2.begin())));
+     thrust::copy_if
+       (thrust::make_zip_iterator(thrust::make_tuple(temp0.begin(), temp1.begin(), temp2.begin())),
+        thrust::make_zip_iterator(thrust::make_tuple(temp0.begin(), temp1.begin(), temp2.begin())) + num_entries,
+        thrust::make_zip_iterator(thrust::make_tuple(row_indices.begin(), dst.column_indices.begin(), dst.values.begin())),
+        is_valid_coo_index<IndexType,ValueType>(src.num_rows,src.num_cols));
+   }
+   //thrust::copy_if
+   //  (thrust::make_permutation_iterator(thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, column_indices_begin, src.values.values.begin())), thrust::make_transform_iterator(thrust::counting_iterator<IndexType>(0), transpose_index_functor<IndexType>(pitch, num_diagonals))),
+   //   thrust::make_permutation_iterator(thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, column_indices_begin, src.values.values.begin())), thrust::make_transform_iterator(thrust::counting_iterator<IndexType>(0), transpose_index_functor<IndexType>(pitch, num_diagonals))) + num_entries,
+   //   thrust::make_zip_iterator(thrust::make_tuple(row_indices.begin(), dst.column_indices.begin(), dst.values.begin())),
+   //   is_valid_coo_index<IndexType,ValueType>(src.num_rows,src.num_cols));
 
     cusp::detail::indices_to_offsets( row_indices, dst.row_offsets );
 }

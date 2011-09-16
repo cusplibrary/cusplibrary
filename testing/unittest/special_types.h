@@ -1,12 +1,18 @@
 #pragma once
 
+#include <iostream>
+
 template <typename T, unsigned int N>
 struct FixedVector
 {
     T data[N];
     
     __host__ __device__
-    FixedVector() { }
+    FixedVector()
+    {
+        for(unsigned int i = 0; i < N; i++)
+            data[i] = T();
+    }
 
     __host__ __device__
     FixedVector(T init)
@@ -47,6 +53,55 @@ struct FixedVector
         }
         return true;                
     }
+};
+
+template<typename Key, typename Value>
+  struct key_value
+{
+  typedef Key   key_type;
+  typedef Value value_type;
+
+  __host__ __device__
+  key_value(void)
+    : key(), value()
+  {}
+
+  __host__ __device__
+  key_value(key_type k, value_type v)
+    : key(k), value(v)
+  {}
+
+  __host__ __device__
+  bool operator<(const key_value &rhs) const
+  {
+    return key < rhs.key;
+  }
+
+  __host__ __device__
+  bool operator>(const key_value &rhs) const
+  {
+    return key > rhs.key;
+  }
+
+  __host__ __device__
+  bool operator==(const key_value &rhs) const
+  {
+    return key == rhs.key && value == rhs.value;
+  }
+
+  __host__ __device__
+  bool operator!=(const key_value &rhs) const
+  {
+    return !operator==(rhs);
+  }
+
+  friend std::ostream &operator<<(std::ostream &os, const key_value &kv)
+  {
+    return os << "(" << kv.key << ", " << kv.value << ")";
+  }
+
+  key_type key;
+  value_type value;
 };
 
 
