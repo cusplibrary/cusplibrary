@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-#include <cusp/detail/device/generalized_spmv/coo_flat.h>
+#include <cusp/detail/device/generalized_spmv/csr_scalar.h>
 
 #include <cusp/copy.h>
 #include <cusp/array1d.h>
@@ -22,8 +22,9 @@
 #include <cusp/coo_matrix.h>
 #include <cusp/csr_matrix.h>
 #include <cusp/detail/random.h>
+#include <cusp/detail/format_utils.h>
 
-#include <cusp/print.h>
+//#include <cusp/print.h>
 
 #include <thrust/count.h>
 #include <thrust/transform.h>
@@ -131,7 +132,11 @@ void compute_mis_states(const size_t k,
     const size_t N = states.size();
 
     const IndexType num_rows    = states.size();
-    const IndexType num_entries = row_indices.size();
+    //const IndexType num_entries = row_indices.size();
+
+    // TODO remove this WAR when generalize COO SpMV problem is resolved
+    cusp::array1d<IndexType,MemorySpace> row_offsets(num_rows + 1);
+    cusp::detail::indices_to_offsets(row_indices, row_offsets);
     
     cusp::array1d<NodeStateType,MemorySpace> maximal_states(N);
     cusp::array1d<RandomType,MemorySpace>    maximal_values(N);
@@ -150,13 +155,20 @@ void compute_mis_states(const size_t k,
     do
     {
         // find the largest (state,value,index) 1-ring neighbor for each node
-        cusp::detail::device::cuda::spmv_coo
-            (num_rows, num_entries,
-             row_indices.begin(), column_indices.begin(), thrust::constant_iterator<Tuple>(Tuple(0,0)),  // XXX should we mask explicit zeros? (e.g. DIA, array2d)
+        cusp::detail::device::cuda::spmv_csr_scalar
+            (num_rows,
+             row_offsets.begin(), column_indices.begin(), thrust::constant_iterator<Tuple>(Tuple(0,0)),  // XXX should we mask explicit zeros? (e.g. DIA, array2d)
              thrust::make_zip_iterator(thrust::make_tuple(states.begin(), random_values.begin(), thrust::counting_iterator<IndexType>(0))),
              thrust::make_zip_iterator(thrust::make_tuple(states.begin(), random_values.begin(), thrust::counting_iterator<IndexType>(0))),
              thrust::make_zip_iterator(thrust::make_tuple(maximal_states.begin(), maximal_values.begin(), maximal_indices.begin())),
              thrust::project2nd<Tuple,Tuple>(), thrust::maximum<Tuple>());
+        //cusp::detail::device::cuda::spmv_coo
+        //    (num_rows, num_entries,
+        //     row_indices.begin(), column_indices.begin(), thrust::constant_iterator<Tuple>(Tuple(0,0)),  // XXX should we mask explicit zeros? (e.g. DIA, array2d)
+        //     thrust::make_zip_iterator(thrust::make_tuple(states.begin(), random_values.begin(), thrust::counting_iterator<IndexType>(0))),
+        //     thrust::make_zip_iterator(thrust::make_tuple(states.begin(), random_values.begin(), thrust::counting_iterator<IndexType>(0))),
+        //     thrust::make_zip_iterator(thrust::make_tuple(maximal_states.begin(), maximal_values.begin(), maximal_indices.begin())),
+        //     thrust::project2nd<Tuple,Tuple>(), thrust::maximum<Tuple>());
 
         // find the largest (state,value,index) k-ring neighbor for each node (if k > 1)
         for(size_t ring = 1; ring < k; ring++)
@@ -166,9 +178,9 @@ void compute_mis_states(const size_t k,
             last_indices.resize(N); last_indices.swap(maximal_indices);
 
             // TODO replace with call to generalized method
-            cusp::detail::device::cuda::spmv_coo
-                (num_rows, num_entries,
-                 row_indices.begin(), column_indices.begin(), thrust::constant_iterator<Tuple>(Tuple(0,0)),  // XXX should we mask explicit zeros? (e.g. DIA, array2d)
+            cusp::detail::device::cuda::spmv_csr_scalar
+                (num_rows,
+                 row_offsets.begin(), column_indices.begin(), thrust::constant_iterator<Tuple>(Tuple(0,0)),  // XXX should we mask explicit zeros? (e.g. DIA, array2d)
                  thrust::make_zip_iterator(thrust::make_tuple(last_states.begin(), last_values.begin(), last_indices.begin())),
                  thrust::make_zip_iterator(thrust::make_tuple(last_states.begin(), last_values.begin(), last_indices.begin())),
                  thrust::make_zip_iterator(thrust::make_tuple(maximal_states.begin(), maximal_values.begin(), maximal_indices.begin())),

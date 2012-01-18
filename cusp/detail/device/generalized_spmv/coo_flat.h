@@ -16,6 +16,8 @@
 
 #pragma once
 
+// XXX this code fails on CUDA r4.1 for an unknown reason
+
 #include <cusp/array1d.h>
 #include <cusp/detail/device/arch.h>
 #include <cusp/detail/device/utils.h>
