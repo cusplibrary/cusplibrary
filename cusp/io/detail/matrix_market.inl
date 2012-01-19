@@ -22,61 +22,17 @@
 #include <cusp/exception.h>
 
 #include <thrust/sort.h>
-#include <thrust/iterator/zip_iterator.h>
 
 #include <vector>
 #include <string>
+#include <fstream>
 #include <sstream>
 #include <iostream>
-
-#ifdef __APPLE__
-
-#include <stdio.h>
-
-#define OUT_FILE_TYPE FILE *
-
-#define CREATE_OUT_FILE(file,filename) FILE* file = fopen(filename, "w+");
-
-#define WRITE_OUT_FILE(file,data) do{ \
-    					fprintf(file, "%s", data); \
-    					fclose(outfile); \
-		  		  }while(0);
-
-#define READ_FILE(stream,filename) do{ \
-					FILE * infile = fopen(filename,"r"); \
-					fseek(infile,0,SEEK_END); \
-					size_t file_size = ftell(infile); \
-					fseek(infile,0,SEEK_SET); \
-					char * buffer = new char [file_size]; \
-					fread(buffer, file_size, sizeof(char), infile); \
-					fclose(infile); \
-					stream.write(buffer, file_size); \
-					delete[] buffer; \
-		  		  }while(0);
-
-#else
-
-#include <fstream>
-
-#define OUT_FILE_TYPE std::ostream&
-
-#define CREATE_OUT_FILE(file,filename) std::ofstream file(filename);
-
-#define WRITE_OUT_FILE(file,data) file << data;
-
-#define READ_FILE(stream,filename) do{ \
-					std::ifstream infile(filename); \
-					stream << infile.rdbuf(); \
-					infile.close(); \
-		  		}while(0);
-
-#endif
 
 namespace cusp
 {
 namespace io
 {
-
 namespace detail
 {
 
@@ -85,63 +41,21 @@ void tokenize(std::vector<std::string>& tokens,
               const std::string& str,
               const std::string& delimiters = "\n\r\t ")
 {
-    // Skip delimiters at beginning.
-    std::string::size_type lastPos = str.find_first_not_of(delimiters, 0);
-    // Find first "non-delimiter".
-    std::string::size_type pos     = str.find_first_of(delimiters, lastPos);
+  // Skip delimiters at beginning.
+  std::string::size_type lastPos = str.find_first_not_of(delimiters, 0);
+  // Find first "non-delimiter".
+  std::string::size_type pos     = str.find_first_of(delimiters, lastPos);
 
-    while (std::string::npos != pos || std::string::npos != lastPos)
-    {
-        // Found a token, add it to the vector.
-        tokens.push_back(str.substr(lastPos, pos - lastPos));
-        // Skip delimiters.  Note the "not_of"
-        lastPos = str.find_first_not_of(delimiters, pos);
-        // Find next "non-delimiter"
-        pos = str.find_first_of(delimiters, lastPos);
-    }
+  while (std::string::npos != pos || std::string::npos != lastPos)
+  {
+    // Found a token, add it to the vector.
+    tokens.push_back(str.substr(lastPos, pos - lastPos));
+    // Skip delimiters.  Note the "not_of"
+    lastPos = str.find_first_not_of(delimiters, pos);
+    // Find next "non-delimiter"
+    pos = str.find_first_of(delimiters, lastPos);
+  }
 }
-
-template<typename I, typename M>
-void check_matrix_market_type(const cusp::coo_matrix<I,float,M>& coo, const std::string& type)
-{
-    if( type=="complex" )
-        throw cusp::io_exception("complex-valued matrices incompatible with 'float' containers");
-    // else: integer, real, and pattern are all allowed
-}
-
-template<typename I, typename M>
-void check_matrix_market_type(const cusp::coo_matrix<I,double,M>& coo, const std::string& type)
-{
-    if( type=="complex" )
-        throw cusp::io_exception("complex-valued matrices incompatible with 'double' containers");
-    // else: integer, real, and pattern are all allowed
-}
-
-template<typename I, typename M>
-void check_matrix_market_type(const cusp::coo_matrix<I,cusp::complex<float>,M>& coo, const std::string& type)
-{
-    // complex containers can hold for real and complex matrices
-}
-
-template<typename I, typename M>
-void check_matrix_market_type(const cusp::coo_matrix<I,cusp::complex<double>,M>& coo, const std::string& type)
-{
-    // complex containers can hold for real and complex matrices
-}
-
-// TODO: Add ValueType=complex case here when complex data is supported
-
-template<typename I, typename V, typename M>
-void check_matrix_market_type(const cusp::coo_matrix<I,V,M>& coo, const std::string& type)
-{
-    if( type=="real" )
-        throw cusp::io_exception("real-valued matrices require a container with 'float' or 'double' values");
-}
-
-} // end namespace detail
-
-
-
 
 struct matrix_market_banner
 {
@@ -150,443 +64,451 @@ struct matrix_market_banner
     std::string type;       // "complex", "real", "integer", or "pattern"
 };
 
-inline void read_matrix_market_banner(matrix_market_banner& banner, std::istream& file)
+template <typename Stream>
+void read_matrix_market_banner(matrix_market_banner& banner, Stream& input)
 {
-    std::string line;
-    std::vector<std::string> tokens;
+  std::string line;
+  std::vector<std::string> tokens;
 
-    // read first line
-    std::getline(file, line);
-    detail::tokenize(tokens, line); 
+  // read first line
+  std::getline(input, line);
+  detail::tokenize(tokens, line); 
 
-    if (tokens.size() != 5 || tokens[0] != "%%MatrixMarket" || tokens[1] != "matrix")
-        throw cusp::io_exception("invalid MatrixMarket banner");
+  if (tokens.size() != 5 || tokens[0] != "%%MatrixMarket" || tokens[1] != "matrix")
+    throw cusp::io_exception("invalid MatrixMarket banner");
 
-    banner.storage  = tokens[2];
-    banner.type     = tokens[3];
-    banner.symmetry = tokens[4];
+  banner.storage  = tokens[2];
+  banner.type     = tokens[3];
+  banner.symmetry = tokens[4];
 
-    if (banner.storage != "array" && banner.storage != "coordinate")
-        throw cusp::io_exception("invalid MatrixMarket storage format [" + banner.storage + "]");
+  if (banner.storage != "array" && banner.storage != "coordinate")
+    throw cusp::io_exception("invalid MatrixMarket storage format [" + banner.storage + "]");
+
+  if (banner.type != "complex" && banner.type != "real" 
+      && banner.type != "integer" && banner.type != "pattern")
+    throw cusp::io_exception("invalid MatrixMarket data type [" + banner.type + "]");
+
+  if (banner.symmetry != "general" && banner.symmetry != "symmetric" 
+      && banner.symmetry != "hermitian" && banner.symmetry != "skew-symmetric")
+    throw cusp::io_exception("invalid MatrixMarket symmetry [" + banner.symmetry + "]");
+}
+
+
+
+template <typename ScalarType>
+void assign_complex(ScalarType& value, double real, double imag)
+{
+  value = real;
+}
+
+template <typename ScalarType>
+void assign_complex(cusp::complex<ScalarType>& value, double real, double imag)
+{
+  value.real(real);
+  value.imag(imag);
+}
+
+template <typename Stream, typename ScalarType>
+void write_value(Stream& output, const ScalarType& value)
+{
+  output << value;
+}
+
+template <typename Stream, typename ScalarType>
+void write_value(Stream& output, const cusp::complex<ScalarType>& value)
+{
+  output << value.real() << " " << value.imag();
+}
+
+
+template <typename IndexType, typename ValueType, typename Stream>
+void read_coordinate_stream(cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& coo, Stream& input, const matrix_market_banner& banner)
+{
+  // read file contents line by line
+  std::string line;
     
-    if (banner.type != "complex" && banner.type != "real" 
-            && banner.type != "integer" && banner.type != "pattern")
-        throw cusp::io_exception("invalid MatrixMarket data type [" + banner.type + "]");
+  // skip over banner and comments
+  do
+  {
+    std::getline(input, line);
+  } while (line[0] == '%');
 
-    if (banner.symmetry != "general" && banner.symmetry != "symmetric" 
-            && banner.symmetry != "hermitian" && banner.symmetry != "skew-symmetric")
-        throw cusp::io_exception("invalid MatrixMarket symmetry [" + banner.symmetry + "]");
-}
+  // line contains [num_rows num_columns num_entries]
+  std::vector<std::string> tokens;
+  detail::tokenize(tokens, line); 
 
-inline void read_matrix_market_banner(matrix_market_banner& banner, const std::string& filename)
-{
-    std::stringstream file (std::stringstream::in | std::stringstream::out);
+  if (tokens.size() != 3)
+    throw cusp::io_exception("invalid MatrixMarket coordinate format");
 
-    READ_FILE(file,filename.c_str())
+  size_t num_rows, num_cols, num_entries;
 
-    if (!file.good())
-        throw cusp::io_exception(std::string("invalid file: [") + filename + std::string("]"));
-
-    read_matrix_market_banner(banner, file);
-}
-
-template <typename IndexType, typename ValueType>
-void read_matrix_market_file(cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& coo, const std::string& filename)
-{
-    std::stringstream file (std::stringstream::in | std::stringstream::out);
-
-    READ_FILE(file,filename.c_str())
-
-    if (!file.good())
-        throw cusp::io_exception(std::string("invalid file name: [") + filename + std::string("]"));
-
-    read_matrix_market_stream(coo, file);
-}
-
-
-
-template <typename IndexType, typename ValueType>
-struct if_type_is_complex{
-  static void read_array(size_t & num_entries_read, const size_t num_entries, std::istream & file, 
-			 cusp::array2d<ValueType,cusp::host_memory,cusp::column_major> & dense){
-    throw cusp::not_implemented_exception("Cannot read complex MatrixMarket data type"
-					  " without using a complex container");
-  }
-  static void read_coordinate(size_t & num_entries_read, const int num_entries, std::istream & file, 
-			      cusp::coo_matrix<IndexType,ValueType,cusp::host_memory> & coo){
-    throw cusp::not_implemented_exception("Cannot read complex MatrixMarket data type"
-					  " without using a complex container");
-  }
-};
-
-template <typename IndexType, typename ValueType>
-struct if_type_is_complex<IndexType,cusp::complex<ValueType> >{
-  static void read_array(size_t & num_entries_read, const size_t num_entries, std::istream & file, 
-			 cusp::array2d<cusp::complex<ValueType>,cusp::host_memory,cusp::column_major> & dense){
-    while(num_entries_read < num_entries && !file.eof())
-      {
-	ValueType v;
-	file >> v;
-	dense.values[num_entries_read].real(v);
-	file >> v;
-	dense.values[num_entries_read].imag(v);
-	num_entries_read++;
-      }
-  }
-  static void read_coordinate(size_t & num_entries_read, const size_t num_entries, std::istream & file, 
-			      cusp::coo_matrix<IndexType,cusp::complex<ValueType>,cusp::host_memory> & coo){
-    while(num_entries_read < coo.num_entries && !file.eof())
-      {
-	file >> coo.row_indices[num_entries_read];
-	file >> coo.column_indices[num_entries_read];
-	ValueType v;
-	file >> v;
-	coo.values[num_entries_read].real(v);
-	file >> v;
-	coo.values[num_entries_read].imag(v);
-	num_entries_read++;
-      }
-  }
-};
-
-template <typename IndexType, typename ValueType>
-void read_matrix_market_stream(cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& coo, std::istream& file)
-{
-    // read banner
-    matrix_market_banner banner;
-    read_matrix_market_banner(banner, file);
-
-    // check for type mismatch with container
-    detail::check_matrix_market_type(coo, banner.type);
-   
-    // read file contents line by line
-    std::string line;
-    
-    // skip over banner and comments
-    do
-    {
-        std::getline(file, line);
-    } while (line[0] == '%');
-
-    if (banner.storage == "array")
-    {
-        // dense format
-        std::vector<std::string> tokens;
-        detail::tokenize(tokens, line); 
-
-        if (tokens.size() != 2)
-            throw cusp::io_exception("invalid MatrixMarket array format");
-
-        size_t num_rows, num_cols;
-
-        std::istringstream(tokens[0]) >> num_rows;
-        std::istringstream(tokens[1]) >> num_cols;
+  std::istringstream(tokens[0]) >> num_rows;
+  std::istringstream(tokens[1]) >> num_cols;
+  std::istringstream(tokens[2]) >> num_entries;
   
-        cusp::array2d<ValueType,cusp::host_memory,cusp::column_major> dense(num_rows, num_cols);
+  coo.resize(num_rows, num_cols, num_entries);
 
-        size_t num_entries = num_rows * num_cols;
+  size_t num_entries_read = 0;
 
-        size_t num_entries_read = 0;
-            
-        // read file contents
-        if (banner.type == "pattern")
-        {
-            throw cusp::not_implemented_exception("pattern array MatrixMarket format is not supported");
-        } 
-        else if (banner.type == "real" || banner.type == "integer")
-        {
-            while(num_entries_read < num_entries && !file.eof())
-            {
-                file >> dense.values[num_entries_read];
-                num_entries_read++;
-            }
-        } 
-        else if (banner.type == "complex")
-        {
-          if_type_is_complex<IndexType,ValueType>::read_array(num_entries_read,num_entries,file,dense); 
-        }
-        else
-        {
-            throw cusp::io_exception("invalid MatrixMarket data type");
-        }
-
-        if(num_entries_read != num_entries)
-            throw cusp::io_exception("unexpected EOF while reading MatrixMarket entries");
-     
-        if (banner.symmetry != "general")
-            throw cusp::not_implemented_exception("only general array symmetric MatrixMarket format is supported");
-
-        // convert to coo
-        coo = dense;
+  // read file contents
+  if (banner.type == "pattern")
+  {
+    while(num_entries_read < coo.num_entries && !input.eof())
+    {
+      input >> coo.row_indices[num_entries_read];
+      input >> coo.column_indices[num_entries_read];
+      num_entries_read++;
     }
-    else if (banner.storage == "coordinate")
+
+    std::fill(coo.values.begin(), coo.values.end(), ValueType(1));
+  } 
+  else if (banner.type == "real" || banner.type == "integer")
+  {
+    while(num_entries_read < coo.num_entries && !input.eof())
     {
-        // line contains [num_rows num_columns num_entries]
-        std::vector<std::string> tokens;
-        detail::tokenize(tokens, line); 
+      double real;
 
-        if (tokens.size() != 3)
-            throw cusp::io_exception("invalid MatrixMarket coordinate format");
+      input >> coo.row_indices[num_entries_read];
+      input >> coo.column_indices[num_entries_read];
+      input >> real;
 
-        size_t num_rows, num_cols, num_entries;
+      coo.values[num_entries_read] = real;
+      num_entries_read++;
+    }
+  } 
+  else if (banner.type == "complex")
+  {
+    while(num_entries_read < coo.num_entries && !input.eof())
+    {
+      double real, imag;
 
-        std::istringstream(tokens[0]) >> num_rows;
-        std::istringstream(tokens[1]) >> num_cols;
-        std::istringstream(tokens[2]) >> num_entries;
-  
-        coo.resize(num_rows, num_cols, num_entries);
+      input >> coo.row_indices[num_entries_read];
+      input >> coo.column_indices[num_entries_read];
+      input >> real;
+      input >> imag;
 
-        size_t num_entries_read = 0;
+      assign_complex(coo.values[num_entries_read], real, imag);
 
-        // read file contents
-        if (banner.type == "pattern")
+      num_entries_read++;
+    }
+  }
+  else
+  {
+    throw cusp::io_exception("invalid MatrixMarket data type");
+  }
+
+  if(num_entries_read != coo.num_entries)
+    throw cusp::io_exception("unexpected EOF while reading MatrixMarket entries");
+
+  // check validity of row and column index data
+  if (coo.num_entries > 0)
+  {
+    size_t min_row_index = *std::min_element(coo.row_indices.begin(), coo.row_indices.end());
+    size_t max_row_index = *std::max_element(coo.row_indices.begin(), coo.row_indices.end());
+    size_t min_col_index = *std::min_element(coo.column_indices.begin(), coo.column_indices.end());
+    size_t max_col_index = *std::max_element(coo.column_indices.begin(), coo.column_indices.end());
+
+    if (min_row_index < 1)            throw cusp::io_exception("found invalid row index (index < 1)");
+    if (min_col_index < 1)            throw cusp::io_exception("found invalid column index (index < 1)");
+    if (max_row_index > coo.num_rows) throw cusp::io_exception("found invalid row index (index > num_rows)");
+    if (max_col_index > coo.num_cols) throw cusp::io_exception("found invalid column index (index > num_columns)");
+  }
+
+  // convert base-1 indices to base-0
+  for(size_t n = 0; n < coo.num_entries; n++)
+  {
+    coo.row_indices[n]    -= 1;
+    coo.column_indices[n] -= 1;
+  }
+
+  // expand symmetric formats to "general" format
+  if (banner.symmetry != "general")
+  {
+    size_t off_diagonals = 0;
+
+    for (size_t n = 0; n < coo.num_entries; n++)
+      if(coo.row_indices[n] != coo.column_indices[n])
+        off_diagonals++;
+
+    size_t general_num_entries = coo.num_entries + off_diagonals;
+
+    cusp::coo_matrix<IndexType,ValueType,cusp::host_memory> general(num_rows, num_cols, general_num_entries);
+
+    if (banner.symmetry == "symmetric")
+    {
+      size_t nnz = 0;
+
+      for (size_t n = 0; n < coo.num_entries; n++)
+      {
+        // copy entry over
+        general.row_indices[nnz]    = coo.row_indices[n];
+        general.column_indices[nnz] = coo.column_indices[n];
+        general.values[nnz]         = coo.values[n];
+        nnz++;
+
+        // duplicate off-diagonals
+        if (coo.row_indices[n] != coo.column_indices[n])
         {
-            while(num_entries_read < coo.num_entries && !file.eof())
-            {
-                file >> coo.row_indices[num_entries_read];
-                file >> coo.column_indices[num_entries_read];
-                num_entries_read++;
-            }
-
-            std::fill(coo.values.begin(), coo.values.end(), ValueType(1));
+          general.row_indices[nnz]    = coo.column_indices[n];
+          general.column_indices[nnz] = coo.row_indices[n];
+          general.values[nnz]         = coo.values[n];
+          nnz++;
         } 
-        else if (banner.type == "real" || banner.type == "integer")
-        {
-            while(num_entries_read < coo.num_entries && !file.eof())
-            {
-                file >> coo.row_indices[num_entries_read];
-                file >> coo.column_indices[num_entries_read];
-                file >> coo.values[num_entries_read];
-                num_entries_read++;
-            }
-        } 
-        else if (banner.type == "complex")
-        {
-          if_type_is_complex<IndexType,ValueType>::read_coordinate(num_entries_read,num_entries,file,coo); 
-        }
-        else
-        {
-            throw cusp::io_exception("invalid MatrixMarket data type");
-        }
-
-        if(num_entries_read != coo.num_entries)
-            throw cusp::io_exception("unexpected EOF while reading MatrixMarket entries");
-
-
-        // check validity of row and column index data
-        size_t min_row_index = *std::min_element(coo.row_indices.begin(), coo.row_indices.end());
-        size_t max_row_index = *std::max_element(coo.row_indices.begin(), coo.row_indices.end());
-        size_t min_col_index = *std::min_element(coo.column_indices.begin(), coo.column_indices.end());
-        size_t max_col_index = *std::max_element(coo.column_indices.begin(), coo.column_indices.end());
-
-        if (min_row_index < 1)            throw cusp::io_exception("found invalid row index (index < 1)");
-        if (min_col_index < 1)            throw cusp::io_exception("found invalid column index (index < 1)");
-        if (max_row_index > coo.num_rows) throw cusp::io_exception("found invalid row index (index > num_rows)");
-        if (max_col_index > coo.num_cols) throw cusp::io_exception("found invalid column index (index > num_columns)");
-
-
-        // convert base-1 indices to base-0
-        for(size_t n = 0; n < coo.num_entries; n++)
-        {
-            coo.row_indices[n]    -= 1;
-            coo.column_indices[n] -= 1;
-        }
-        
-
-        // expand symmetric formats to "general" format
-        if (banner.symmetry != "general")
-        {
-            size_t off_diagonals = 0;
-
-            for (size_t n = 0; n < coo.num_entries; n++)
-                if(coo.row_indices[n] != coo.column_indices[n])
-                    off_diagonals++;
-
-            size_t general_num_entries = coo.num_entries + off_diagonals;
-            
-            cusp::coo_matrix<IndexType,ValueType,cusp::host_memory> general(num_rows, num_cols, general_num_entries);
-           
-            if (banner.symmetry == "symmetric")
-            {
-                size_t nnz = 0;
-
-                for (size_t n = 0; n < coo.num_entries; n++)
-                {
-                    // copy entry over
-                    general.row_indices[nnz]    = coo.row_indices[n];
-                    general.column_indices[nnz] = coo.column_indices[n];
-                    general.values[nnz]         = coo.values[n];
-                    nnz++;
-
-                    // duplicate off-diagonals
-                    if (coo.row_indices[n] != coo.column_indices[n])
-                    {
-                        general.row_indices[nnz]    = coo.column_indices[n];
-                        general.column_indices[nnz] = coo.row_indices[n];
-                        general.values[nnz]         = coo.values[n];
-                        nnz++;
-                    } 
-                }       
-            } 
-            else if (banner.symmetry == "hermitian")
-            {
-                throw cusp::not_implemented_exception("MatrixMarket I/O does not currently support hermitian matrices");
-                //TODO
-            } 
-            else if (banner.symmetry == "skew-symmetric")
-            {
-                //TODO
-                throw cusp::not_implemented_exception("MatrixMarket I/O does not currently support skew-symmetric matrices");
-            }
-
-            // store full matrix in coo
-            coo.swap(general);
-        } // if (banner.symmetry != "general")
-    
-        // sort indices by (row,column)
-        coo.sort_by_row_and_column();
+      }       
     } 
-    else 
+    else if (banner.symmetry == "hermitian")
     {
-        // should never happen
-        throw cusp::io_exception("invalid MatrixMarket storage format [" + banner.storage + "]");
-    }
-}
-
-template <typename IndexType, typename ValueType>
-void write_matrix_market_stream(const cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& coo, OUT_FILE_TYPE outfile)
-{
-    std::stringstream file (std::stringstream::in | std::stringstream::out);
-    if(thrust::detail::is_same<ValueType,
-			       cusp::complex<typename norm_type<ValueType>::type> 
-			       >::value){
-      file << "%%MatrixMarket matrix coordinate complex general\n";
-    }else{
-      file << "%%MatrixMarket matrix coordinate real general\n";
-    }
-    file << "\t" << coo.num_rows << "\t" << coo.num_cols << "\t" << coo.num_entries << "\n";
-
-    for(size_t i = 0; i < coo.num_entries; i++)
+      throw cusp::not_implemented_exception("MatrixMarket I/O does not currently support hermitian matrices");
+      //TODO
+    } 
+    else if (banner.symmetry == "skew-symmetric")
     {
-        file << (coo.row_indices[i]    + 1) << " ";
-        file << (coo.column_indices[i] + 1) << " ";
-        file <<  coo.values[i]              << "\n";
+      //TODO
+      throw cusp::not_implemented_exception("MatrixMarket I/O does not currently support skew-symmetric matrices");
     }
 
-    std::string file_data(file.str());
-    WRITE_OUT_FILE(outfile, file_data.c_str())
-}
+    // store full matrix in coo
+    coo.swap(general);
+  } // if (banner.symmetry != "general")
 
-template <typename IndexType, typename ValueType>
-void write_matrix_market_file(const cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& coo, const std::string& filename)
+  // sort indices by (row,column)
+  coo.sort_by_row_and_column();
+} 
+
+template <typename ValueType, typename Stream>
+void read_array_stream(cusp::array2d<ValueType,cusp::host_memory>& mtx, Stream& input, const matrix_market_banner& banner)
 {
-    // read file contents line by line
-    CREATE_OUT_FILE(file,filename.c_str())
-
-    if (!file)
-        throw cusp::io_exception(std::string("unable to open file name: [") + filename + std::string("] for writing"));
-
-    write_matrix_market_stream(coo, file);
-}
+  // read file contents line by line
+  std::string line;
     
-template <typename MatrixType>
-void read_matrix_market_file(MatrixType& mtx, const std::string& filename)
-{
-    typedef typename MatrixType::index_type IndexType;
-    typedef typename MatrixType::value_type ValueType;
+  // skip over banner and comments
+  do
+  {
+    std::getline(input, line);
+  } while (line[0] == '%');
 
-    cusp::coo_matrix<IndexType,ValueType,cusp::host_memory> coo;
-    cusp::io::read_matrix_market_file(coo, filename);
-    mtx = coo;
-}
+  std::vector<std::string> tokens;
+  detail::tokenize(tokens, line); 
 
-template <typename ValueType, typename MemorySpace>
-void read_matrix_market_file(cusp::array1d<ValueType,MemorySpace> & vector, const std::string& filename)
-{
-    cusp::coo_matrix<int,ValueType,cusp::host_memory> coo;
-    cusp::io::read_matrix_market_file(coo, filename);
-    if(coo.num_cols != 1){
-      throw cusp::io_exception(std::string("cannot read matrix with more than 1 column into an array1d while reading: [") + filename);
+  if (tokens.size() != 2)
+    throw cusp::io_exception("invalid MatrixMarket array format");
+
+  size_t num_rows, num_cols;
+
+  std::istringstream(tokens[0]) >> num_rows;
+  std::istringstream(tokens[1]) >> num_cols;
+
+  cusp::array2d<ValueType,cusp::host_memory,cusp::column_major> dense(num_rows, num_cols);
+
+  size_t num_entries = num_rows * num_cols;
+
+  size_t num_entries_read = 0;
+
+  // read file contents
+  if (banner.type == "pattern")
+  {
+    throw cusp::not_implemented_exception("pattern array MatrixMarket format is not supported");
+  } 
+  else if (banner.type == "real" || banner.type == "integer")
+  {
+    while(num_entries_read < num_entries && !input.eof())
+    {
+      double real;
+
+      input >> real;
+
+      dense.values[num_entries_read] = real;
+
+      num_entries_read++;
     }
-    cusp::array1d<ValueType,cusp::host_memory> h_vector(coo.num_rows,0);
-    for(size_t i = 0;i<coo.num_entries;i++){
-      h_vector[coo.row_indices[i]] = coo.values[i];
+  } 
+  else if (banner.type == "complex")
+  {
+    while(num_entries_read < num_entries && !input.eof())
+    {
+      double real, imag;
+        
+      input >> real;
+      input >> imag;
+
+      assign_complex(dense.values[num_entries_read], real, imag);
+
+      num_entries_read++;
     }
-    vector = h_vector;
-}
-
-template <typename MatrixType>
-void read_matrix_market_stream(MatrixType& mtx, std::istream& in)
-{
-    typedef typename MatrixType::index_type IndexType;
-    typedef typename MatrixType::value_type ValueType;
-
-    cusp::coo_matrix<IndexType,ValueType,cusp::host_memory> coo;
-    cusp::io::read_matrix_market_stream(coo, in);
-    mtx = coo;
-}
-
-template <typename ValueType, typename MemorySpace>
-void read_matrix_market_stream(cusp::array1d<ValueType,MemorySpace> & vector, std::istream& in)
-{
-    cusp::coo_matrix<int,ValueType,cusp::host_memory> coo;
-    cusp::io::read_matrix_market_stream(coo, in);
-    if(coo.num_cols != 1){
-      throw cusp::io_exception(std::string("cannot read matrix with more than 1 column into an array1d while reading stream"));
-    }
-    cusp::array1d<ValueType,cusp::host_memory> h_vector(coo.num_rows,0);
-    for(size_t i = 0;i<coo.num_entries;i++){
-      h_vector[coo.row_indices[i]] = coo.values[i];
-    }
-    vector = h_vector;
-}
-
-template <typename MatrixType>
-void write_matrix_market_file(const MatrixType& mtx, const std::string& filename)
-{
-    typedef typename MatrixType::index_type IndexType;
-    typedef typename MatrixType::value_type ValueType;
-
-    cusp::coo_matrix<IndexType,ValueType,cusp::host_memory> coo;
-    coo = mtx;
-    cusp::io::write_matrix_market_file(coo, filename);
-}
-
-template <typename ValueType, typename MemorySpace>
-void write_matrix_market_file(const cusp::array1d<ValueType,MemorySpace>& vector, const std::string& filename)
-{
-  cusp::array1d<ValueType,cusp::host_memory> h_vector(vector);
-  cusp::coo_matrix<int,ValueType,cusp::host_memory> coo(vector.size(),1,vector.size());
-  for(size_t i = 0;i<coo.num_entries;i++){
-    coo.row_indices[i] = i;
-    coo.column_indices[i] = 0;
-    coo.values[i] = h_vector[i];
   }
-  cusp::io::write_matrix_market_file(coo, filename);
-}
-
-template <typename MatrixType>
-void write_matrix_market_stream(const MatrixType& mtx, OUT_FILE_TYPE out)
-{
-    typedef typename MatrixType::index_type IndexType;
-    typedef typename MatrixType::value_type ValueType;
-
-    cusp::coo_matrix<IndexType,ValueType,cusp::host_memory> coo;
-    coo = mtx;
-    cusp::io::write_matrix_market_stream(coo, out);
-}
-
-template <typename ValueType, typename MemorySpace>
-void write_matrix_market_stream(const cusp::array1d<ValueType,MemorySpace>& vector, OUT_FILE_TYPE out)
-{
-  cusp::array1d<ValueType,cusp::host_memory> h_vector(vector);
-  cusp::coo_matrix<int,ValueType,cusp::host_memory> coo(vector.size(),1,vector.size());
-  for(size_t i = 0;i<coo.num_entries;i++){
-    coo.row_indices[i] = i;
-    coo.column_indices[i] = 0;
-    coo.values[i] = h_vector[i];
+  else
+  {
+    throw cusp::io_exception("invalid MatrixMarket data type");
   }
-  cusp::io::write_matrix_market_stream(coo, out);
+
+  if(num_entries_read != num_entries)
+    throw cusp::io_exception("unexpected EOF while reading MatrixMarket entries");
+
+  if (banner.symmetry != "general")
+    throw cusp::not_implemented_exception("only general array symmetric MatrixMarket format is supported");
+
+  cusp::copy(dense, mtx);
+}
+
+
+
+template <typename IndexType, typename ValueType, typename Stream>
+void write_coordinate_stream(const cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& coo, Stream& output)
+{
+  bool is_complex = thrust::detail::is_same<ValueType, cusp::complex<typename norm_type<ValueType>::type> >::value;
+
+  if (is_complex)
+    output << "%%MatrixMarket matrix coordinate complex general\n";
+  else
+    output << "%%MatrixMarket matrix coordinate real general\n";
+
+  output << "\t" << coo.num_rows << "\t" << coo.num_cols << "\t" << coo.num_entries << "\n";
+
+  for(size_t i = 0; i < coo.num_entries; i++)
+  {
+    output << (coo.row_indices[i]    + 1) << " ";
+    output << (coo.column_indices[i] + 1) << " ";
+    cusp::io::detail::write_value(output, coo.values[i]);
+    output << "\n";
+  }
+}
+
+
+template <typename Matrix, typename Stream, typename Format>
+void read_matrix_market_stream(Matrix& mtx, Stream& input, Format)
+{
+  // general case
+  typedef typename Matrix::index_type IndexType;
+  typedef typename Matrix::value_type ValueType;
+
+  // read banner 
+  matrix_market_banner banner;
+  read_matrix_market_banner(banner, input);
+
+  if (banner.storage == "coordinate")
+  {
+    cusp::coo_matrix<IndexType,ValueType,cusp::host_memory> temp;
+
+    read_coordinate_stream(temp, input, banner);
+
+    cusp::convert(temp, mtx);
+  }
+  else // banner.storage == "array"
+  {
+    cusp::array2d<ValueType,cusp::host_memory> temp;
+
+    read_array_stream(temp, input, banner);
+
+    cusp::convert(temp, mtx);
+  }
+}
+
+template <typename Matrix, typename Stream>
+void read_matrix_market_stream(Matrix& mtx, Stream& input, cusp::array1d_format)
+{
+  // array1d case
+  typedef typename Matrix::value_type ValueType;
+
+  cusp::array2d<ValueType,cusp::host_memory> temp;
+
+  cusp::io::read_matrix_market_stream(temp, input);
+
+  // TODO support cusp::convert(array2d,array1d);
+  cusp::copy(temp.values, mtx);
+}
+
+template <typename Matrix, typename Stream>
+void write_matrix_market_stream(const Matrix& mtx, Stream& output, cusp::sparse_format)
+{
+  // general sparse case
+  typedef typename Matrix::index_type IndexType;
+  typedef typename Matrix::value_type ValueType;
+
+  cusp::coo_matrix<IndexType,ValueType,cusp::host_memory> coo(mtx);
+
+  cusp::io::detail::write_coordinate_stream(coo, output);
+}
+
+template <typename Matrix, typename Stream>
+void write_matrix_market_stream(const Matrix& mtx, Stream& output, cusp::array1d_format)
+{
+  typedef typename Matrix::value_type ValueType;
+
+  bool is_complex = thrust::detail::is_same<ValueType, cusp::complex<typename norm_type<ValueType>::type> >::value;
+
+  if (is_complex)
+    output << "%%MatrixMarket matrix array complex general\n";
+  else
+    output << "%%MatrixMarket matrix array real general\n";
+
+  output << "\t" << mtx.size() << "\t1\n";
+
+  for(size_t i = 0; i < mtx.size(); i++)
+  {
+    write_value(output, mtx[i]);
+    output << "\n";
+  }
+}
+
+template <typename Matrix, typename Stream>
+void write_matrix_market_stream(const Matrix& mtx, Stream& output, cusp::array2d_format)
+{
+  typedef typename Matrix::value_type ValueType;
+
+  bool is_complex = thrust::detail::is_same<ValueType, cusp::complex<typename norm_type<ValueType>::type> >::value;
+
+  if (is_complex)
+    output << "%%MatrixMarket matrix array complex general\n";
+  else
+    output << "%%MatrixMarket matrix array real general\n";
+
+  output << "\t" << mtx.num_rows << "\t" << mtx.num_cols << "\n";
+
+  for(size_t j = 0; j < mtx.num_cols; j++)
+  {
+    for(size_t i = 0; i < mtx.num_cols; i++)
+    {
+      write_value(output, mtx(i,j));
+      output << "\n";
+    }
+  }
+}
+
+} // end namespace detail
+
+
+template <typename Matrix>
+void read_matrix_market_file(Matrix& mtx, const std::string& filename)
+{
+  std::ifstream file(filename.c_str());
+
+  if (!file)
+    throw cusp::io_exception(std::string("unable to open file \"") + filename + std::string("\" for reading"));
+
+  cusp::io::read_matrix_market_stream(mtx, file);
+}
+
+template <typename Matrix, typename Stream>
+void read_matrix_market_stream(Matrix& mtx, Stream& input)
+{
+  cusp::io::detail::read_matrix_market_stream(mtx, input, typename Matrix::format());
+}
+
+template <typename Matrix>
+void write_matrix_market_file(const Matrix& mtx, const std::string& filename)
+{
+  std::ofstream file(filename.c_str());
+
+  if (!file)
+    throw cusp::io_exception(std::string("unable to open file \"") + filename + std::string("\" for writing"));
+
+  cusp::io::write_matrix_market_stream(mtx, file);
+}
+
+template <typename Matrix, typename Stream>
+void write_matrix_market_stream(const Matrix& mtx, Stream& output)
+{
+  cusp::io::detail::write_matrix_market_stream(mtx, output, typename Matrix::format());
 }
 
 } //end namespace io

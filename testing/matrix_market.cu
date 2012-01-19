@@ -16,7 +16,7 @@ void TestReadWriteMarketFileColumnVector(void)
     a[1] =  0;
     a[2] = 20;
     a[3] =  0;
-    a[4] =  30;
+    a[4] = 30;
     
     // save a to disk in MatrixMarket format
     cusp::io::write_matrix_market_file(a, "temp_92038423749284.mtx");
@@ -25,7 +25,7 @@ void TestReadWriteMarketFileColumnVector(void)
     cusp::array1d<float, cusp::device_memory> b;
     cusp::io::read_matrix_market_file(b, "temp_92038423749284.mtx");
     remove("temp_92038423749284.mtx");
-
+    
     ASSERT_EQUAL(a == b, true);
 }
 DECLARE_UNITTEST(TestReadWriteMarketFileColumnVector);
