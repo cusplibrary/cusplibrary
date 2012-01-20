@@ -7,8 +7,6 @@
 #include <thrust/host_vector.h>
 #include <thrust/device_vector.h>
 
-#include <cusp/print.h> // TODO delete
-
 template <typename MemorySpace>
 void TestArray2dView(void)
 {

@@ -463,3 +463,82 @@ void TestConversionToArray1dFrom(void)
 }
 DECLARE_MATRIX_UNITTEST(TestConversionToArray1dFrom);
 
+template <typename MemorySpace>
+void TestConversionFromArray1dToPitchedArray2d(void)
+{
+  cusp::array1d<int, MemorySpace> A(3);
+  A[0] = 1;
+  A[1] = 2;
+  A[2] = 3;
+
+  // row-major
+  {
+    cusp::array2d<int, MemorySpace, cusp::row_major> B;
+    B.resize(3,1,2);
+
+    cusp::convert(A, B);
+
+    ASSERT_EQUAL(B.values.size(), 6);
+    ASSERT_EQUAL(B.pitch, 2);
+
+    ASSERT_EQUAL(B(0,0), 1);
+    ASSERT_EQUAL(B(1,0), 2);
+    ASSERT_EQUAL(B(2,0), 3);
+  }
+
+  // column-major
+  {
+    cusp::array2d<int, MemorySpace, cusp::column_major> B;
+    B.resize(3,1,4);
+
+    cusp::convert(A, B);
+
+    ASSERT_EQUAL(B.values.size(), 4);
+    ASSERT_EQUAL(B.pitch, 4);
+
+    ASSERT_EQUAL(B(0,0), 1);
+    ASSERT_EQUAL(B(1,0), 2);
+    ASSERT_EQUAL(B(2,0), 3);
+  }
+}
+DECLARE_HOST_DEVICE_UNITTEST(TestConversionFromArray1dToPitchedArray2d);
+
+template <typename MemorySpace>
+void TestConversionFromPitchedArray2dToArray1d(void)
+{
+  // row-major
+  {
+    cusp::array2d<int, MemorySpace, cusp::row_major> A;
+    A.resize(3,1,2);
+    A(0,0) = 1;
+    A(1,0) = 2;
+    A(2,0) = 3;
+
+    cusp::array1d<int, MemorySpace> B(3);
+    cusp::convert(A, B);
+
+    ASSERT_EQUAL(B.size(), 3);
+    ASSERT_EQUAL(B[0], 1);
+    ASSERT_EQUAL(B[1], 2);
+    ASSERT_EQUAL(B[2], 3);
+  }
+
+  // column-major
+  {
+    cusp::array2d<int, MemorySpace, cusp::column_major> A;
+    A.resize(3,1,4);
+    A(0,0) = 1;
+    A(1,0) = 2;
+    A(2,0) = 3;
+
+    cusp::array1d<int, MemorySpace> B(3);
+    cusp::convert(A, B);
+
+    ASSERT_EQUAL(B.size(), 3);
+    ASSERT_EQUAL(B[0], 1);
+    ASSERT_EQUAL(B[1], 2);
+    ASSERT_EQUAL(B[2], 3);
+  }
+}
+DECLARE_HOST_DEVICE_UNITTEST(TestConversionFromPitchedArray2dToArray1d);
+
