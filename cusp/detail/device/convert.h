@@ -196,13 +196,58 @@ void convert(const Matrix1& src, Matrix2& dst,
     cusp::detail::device::ell_to_hyb(src, dst);
 }
 
-///////////
-// Array //
-///////////
+/////////////
+// Array1d //
+/////////////
 
-template <typename Matrix1, typename Matrix2, typename MatrixFormat1>
+template <typename Matrix1, typename Matrix2>
 void convert(const Matrix1& src, Matrix2& dst,
-             MatrixFormat1,
+             cusp::array2d_format,
+             cusp::array1d_format)
+{
+  // TODO handle non-unit pitch
+
+  if (src.num_rows == 0 && src.num_cols == 0)
+  {
+    dst.resize(0);
+  }
+  else if (src.num_cols == 1)
+  {
+    dst.resize(src.num_rows);
+    cusp::copy(src.values, dst);  
+  }
+  else if (src.num_rows == 1)
+  {
+    dst.resize(src.num_cols);
+    cusp::copy(src.values, dst);  
+  }
+  else
+  {
+    throw cusp::format_conversion_exception("array2d to array1d conversion is only defined for row or column vectors");
+  }
+}
+
+/////////////
+// Array2d //
+/////////////
+template <typename Matrix1, typename Matrix2>
+void convert(const Matrix1& src, Matrix2& dst,
+             cusp::array1d_format,
+             cusp::array2d_format)
+{
+  dst.resize(src.size(), 1);
+
+  // TODO handle non-unit stride
+
+  cusp::copy(src, dst.values);
+}
+
+////////////////////
+// Dense<->Sparse //
+////////////////////
+template <typename Matrix1, typename Matrix2>
+void convert(const Matrix1& src, Matrix2& dst,
+             cusp::sparse_format,
              cusp::array2d_format)
 {
     // transfer to host, convert on host, and transfer back to device
@@ -220,10 +265,10 @@ void convert(const Matrix1& src, Matrix2& dst,
     cusp::copy(tmp2, dst);
 }
 
-template <typename Matrix1, typename Matrix2, typename MatrixFormat2>
+template <typename Matrix1, typename Matrix2>
 void convert(const Matrix1& src, Matrix2& dst,
              cusp::array2d_format,
-             MatrixFormat2)
+             cusp::sparse_format)
 {
     // transfer to host, convert on host, and transfer back to device
     typedef typename Matrix1::container SourceContainerType;
@@ -238,6 +283,28 @@ void convert(const Matrix1& src, Matrix2& dst,
     cusp::detail::host::convert(tmp1, tmp2);
 
     cusp::copy(tmp2, dst);
+}
+
+template <typename Matrix1, typename Matrix2>
+void convert(const Matrix1& src, Matrix2& dst,
+             cusp::sparse_format,
+             cusp::dense_format)
+{
+    typedef typename Matrix1::value_type ValueType;
+    cusp::array2d<ValueType,cusp::device_memory> tmp;
+    cusp::convert(src, tmp);
+    cusp::convert(tmp, dst);
+}
+
+template <typename Matrix1, typename Matrix2>
+void convert(const Matrix1& src, Matrix2& dst,
+             cusp::dense_format,
+             cusp::sparse_format)
+{
+    typedef typename Matrix1::value_type ValueType;
+    cusp::array2d<ValueType,cusp::device_memory> tmp;
+    cusp::convert(src, tmp);
+    cusp::convert(tmp, dst);
 }
 
 /////////////////////////////

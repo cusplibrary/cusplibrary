@@ -17,8 +17,10 @@
 
 #pragma once
 
+#include <cusp/array2d.h>
 #include <cusp/coo_matrix.h>
 #include <cusp/complex.h>
+#include <cusp/convert.h>
 #include <cusp/exception.h>
 
 #include <thrust/sort.h>
@@ -413,8 +415,7 @@ void read_matrix_market_stream(Matrix& mtx, Stream& input, cusp::array1d_format)
 
   cusp::io::read_matrix_market_stream(temp, input);
 
-  // TODO support cusp::convert(array2d,array1d);
-  cusp::copy(temp.values, mtx);
+  cusp::convert(temp, mtx);
 }
 
 template <typename Matrix, typename Stream>

@@ -86,7 +86,7 @@ void coo_to_csr(const Matrix1& src, Matrix2& dst)
 }
 
 template <typename Matrix1, typename Matrix2>
-void coo_to_array(const Matrix1& src, Matrix2& dst)
+void coo_to_array2d(const Matrix1& src, Matrix2& dst)
 {
     typedef typename Matrix2::index_type IndexType;
     typedef typename Matrix2::value_type ValueType;
@@ -271,7 +271,7 @@ void csr_to_ell(const Matrix1& src, Matrix2& dst,
 
     
 template <typename Matrix1, typename Matrix2>
-void csr_to_array(const Matrix1& src, Matrix2& dst)
+void csr_to_array2d(const Matrix1& src, Matrix2& dst)
 {
     typedef typename Matrix2::index_type IndexType;
     typedef typename Matrix2::value_type ValueType;
@@ -507,11 +507,50 @@ void hyb_to_csr(const Matrix1& src, Matrix2& dst)
 }
 
 
-///////////////////////
-// Dense Conversions //
-///////////////////////
+/////////////////////////
+// Array1d Conversions //
+/////////////////////////
 template <typename Matrix1, typename Matrix2>
-void array_to_coo(const Matrix1& src, Matrix2& dst)
+void array2d_to_array1d(const Matrix1& src, Matrix2& dst)
+{
+  if (src.num_rows == 0 && src.num_cols == 0)
+  {
+    dst.resize(0);
+  }
+  else if (src.num_cols == 1)
+  {
+    dst.resize(src.num_rows);
+
+    for (size_t i = 0; i < src.num_rows; i++)
+      dst[i] = src(i,0);
+  }
+  else if (src.num_rows == 1)
+  {
+    dst.resize(src.num_cols);
+
+    for (size_t j = 0; j < src.num_cols; j++)
+      dst[j] = src(0,j);
+  }
+  else
+  {
+    throw cusp::format_conversion_exception("array2d to array1d conversion is only defined for row or column vectors");
+  }
+}
+
+/////////////////////////
+// Array2d Conversions //
+/////////////////////////
+template <typename Matrix1, typename Matrix2>
+void array1d_to_array2d(const Matrix1& src, Matrix2& dst)
+{
+  dst.resize(src.size(),1);
+
+  for (size_t i = 0; i < src.size(); i++)
+    dst(i,0) = src[i];
+}
+
+template <typename Matrix1, typename Matrix2>
+void array2d_to_coo(const Matrix1& src, Matrix2& dst)
 {
   typedef typename Matrix2::index_type IndexType;
   typedef typename Matrix2::value_type ValueType;
@@ -548,7 +587,7 @@ void array_to_coo(const Matrix1& src, Matrix2& dst)
 }
 
 template <typename Matrix1, typename Matrix2>
-void array_to_csr(const Matrix1& src, Matrix2& dst)
+void array2d_to_csr(const Matrix1& src, Matrix2& dst)
 {
   typedef typename Matrix2::index_type IndexType;
   typedef typename Matrix2::value_type ValueType;

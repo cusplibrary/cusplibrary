@@ -19,6 +19,7 @@
 
 #include <cusp/format.h>
 #include <cusp/csr_matrix.h>
+#include <cusp/exception.h>
 
 #include <cusp/detail/host/conversion.h>
 #include <cusp/detail/host/conversion_utils.h>
@@ -38,7 +39,7 @@ namespace host
 // COO <- CSR
 //     <- ELL
 //     <- HYB
-//     <- Array
+//     <- Array2d
 // CSR <- COO
 //     <- DIA
 //     <- ELL
@@ -47,9 +48,11 @@ namespace host
 // DIA <- CSR
 // ELL <- CSR
 // HYB <- CSR
-// Array <- COO
-//       <- CSR
-//       <- Array (different Orientation)
+// Array1d <- Array2d (under restrictions)
+// Array2d <- COO
+//         <- CSR
+//         <- Array1d
+//         <- Array2d (different Orientation)
 
 /////////
 // COO //
@@ -74,13 +77,7 @@ void convert(const Matrix1& src, Matrix2& dst,
 
 template <typename Matrix1, typename Matrix2>
 void convert(const Matrix1& src, Matrix2& dst,
-             cusp::array2d_format,
-             cusp::coo_format)
-{    cusp::detail::host::array_to_coo(src, dst);    }
-
-template <typename Matrix1, typename Matrix2, typename MatrixFormat1>
-void convert(const Matrix1& src, Matrix2& dst,
-             MatrixFormat1,
+             cusp::sparse_format,
              cusp::coo_format)
 {
     typedef typename Matrix1::index_type IndexType;
@@ -117,12 +114,6 @@ void convert(const Matrix1& src, Matrix2& dst,
              cusp::csr_format)
 {    cusp::detail::host::hyb_to_csr(src, dst);    }
 
-template <typename Matrix1, typename Matrix2>
-void convert(const Matrix1& src, Matrix2& dst,
-             cusp::array2d_format,
-             cusp::csr_format)
-{    cusp::detail::host::array_to_csr(src, dst);    }
-
 /////////
 // DIA //
 /////////
@@ -145,9 +136,9 @@ void convert(const Matrix1& src, Matrix2& dst,
     cusp::detail::host::csr_to_dia(src, dst, alignment);
 }
 
-template <typename Matrix1, typename Matrix2, typename MatrixFormat1>
+template <typename Matrix1, typename Matrix2>
 void convert(const Matrix1& src, Matrix2& dst,
-             MatrixFormat1,
+             cusp::sparse_format,
              cusp::dia_format)
 {
     typedef typename Matrix1::index_type IndexType;
@@ -179,9 +170,9 @@ void convert(const Matrix1& src, Matrix2& dst,
     cusp::detail::host::csr_to_ell(src, dst, max_entries_per_row, alignment);
 }
 
-template <typename Matrix1, typename Matrix2, typename MatrixFormat1>
+template <typename Matrix1, typename Matrix2>
 void convert(const Matrix1& src, Matrix2& dst,
-             MatrixFormat1,
+             cusp::sparse_format,
              cusp::ell_format)
 {
     typedef typename Matrix1::index_type IndexType;
@@ -205,9 +196,9 @@ void convert(const Matrix1& src, Matrix2& dst,
     cusp::detail::host::csr_to_hyb(src, dst, num_entries_per_row);
 }
 
-template <typename Matrix1, typename Matrix2, typename MatrixFormat1>
+template <typename Matrix1, typename Matrix2>
 void convert(const Matrix1& src, Matrix2& dst,
-             MatrixFormat1,
+             cusp::sparse_format,
              cusp::hyb_format)
 {
     typedef typename Matrix1::index_type IndexType;
@@ -217,24 +208,56 @@ void convert(const Matrix1& src, Matrix2& dst,
     cusp::convert(csr, dst);
 }
 
-///////////
-// Array //
-///////////
+/////////////
+// Array1d //
+/////////////
+template <typename Matrix1, typename Matrix2>
+void convert(const Matrix1& src, Matrix2& dst,
+             cusp::array2d_format,
+             cusp::array1d_format)
+{    cusp::detail::host::array2d_to_array1d(src, dst);    }
+
+
+/////////////
+// Array2d //
+/////////////
+template <typename Matrix1, typename Matrix2>
+void convert(const Matrix1& src, Matrix2& dst,
+             cusp::array1d_format,
+             cusp::array2d_format)
+{    cusp::detail::host::array1d_to_array2d(src, dst);    }
+
+//////////////////////
+// Dense <-> Sparse //  
+//////////////////////
+
+template <typename Matrix1, typename Matrix2>
+void convert(const Matrix1& src, Matrix2& dst,
+             cusp::array2d_format,
+             cusp::csr_format)
+{    cusp::detail::host::array2d_to_csr(src, dst); }
+
 template <typename Matrix1, typename Matrix2>
 void convert(const Matrix1& src, Matrix2& dst,
              cusp::csr_format,
              cusp::array2d_format)
-{    cusp::detail::host::csr_to_array(src, dst);    }
+{    cusp::detail::host::csr_to_array2d(src, dst);    }
 
 template <typename Matrix1, typename Matrix2>
 void convert(const Matrix1& src, Matrix2& dst,
              cusp::coo_format,
              cusp::array2d_format)
-{    cusp::detail::host::coo_to_array(src, dst);    }
+{    cusp::detail::host::coo_to_array2d(src, dst);    }
 
-template <typename Matrix1, typename Matrix2, typename MatrixFormat1>
+template <typename Matrix1, typename Matrix2>
 void convert(const Matrix1& src, Matrix2& dst,
-             MatrixFormat1,
+             cusp::array2d_format,
+             cusp::coo_format)
+{    cusp::detail::host::array2d_to_coo(src, dst); }
+
+template <typename Matrix1, typename Matrix2>
+void convert(const Matrix1& src, Matrix2& dst,
+             cusp::sparse_format,
              cusp::array2d_format)
 {
     typedef typename Matrix1::index_type IndexType;
@@ -242,6 +265,40 @@ void convert(const Matrix1& src, Matrix2& dst,
     cusp::csr_matrix<IndexType,ValueType,cusp::host_memory> csr;
     cusp::convert(src, csr);
     cusp::convert(csr, dst);
+}
+
+template <typename Matrix1, typename Matrix2>
+void convert(const Matrix1& src, Matrix2& dst,
+             cusp::array2d_format,
+             cusp::sparse_format)
+{
+    typedef typename Matrix1::index_type IndexType;
+    typedef typename Matrix1::value_type ValueType;
+    cusp::csr_matrix<IndexType,ValueType,cusp::host_memory> csr;
+    cusp::convert(src, csr);
+    cusp::convert(csr, dst);
+}
+
+template <typename Matrix1, typename Matrix2>
+void convert(const Matrix1& src, Matrix2& dst,
+             cusp::sparse_format,
+             cusp::dense_format)
+{
+    typedef typename Matrix1::value_type ValueType;
+    cusp::array2d<ValueType,cusp::host_memory> tmp;
+    cusp::convert(src, tmp);
+    cusp::convert(tmp, dst);
+}
+
+template <typename Matrix1, typename Matrix2>
+void convert(const Matrix1& src, Matrix2& dst,
+             cusp::dense_format,
+             cusp::sparse_format)
+{
+    typedef typename Matrix1::value_type ValueType;
+    cusp::array2d<ValueType,cusp::host_memory> tmp;
+    cusp::convert(src, tmp);
+    cusp::convert(tmp, dst);
 }
 
 

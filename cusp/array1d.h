@@ -61,6 +61,9 @@ class array1d : public thrust::detail::vector_base<T, typename cusp::default_mem
         typedef MemorySpace memory_space;
         typedef cusp::array1d_format format;
 
+        template<typename MemorySpace2>
+          struct rebind { typedef cusp::array1d<T, MemorySpace2> type; };
+
         /*! equivalent container type
          */
         typedef typename cusp::array1d<T,MemorySpace> container;

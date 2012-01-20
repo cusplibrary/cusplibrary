@@ -370,3 +370,96 @@ void TestConvertCsrToEllMatrixHost(void)
 }
 DECLARE_UNITTEST(TestConvertCsrToEllMatrixHost);
 
+template <class Matrix>
+void TestConversionFromArray1dTo(void)
+{
+  typedef typename Matrix::value_type   ValueType;
+  typedef typename Matrix::memory_space MemorySpace;
+  typedef cusp::array1d<ValueType, MemorySpace> Array1d;
+  typedef cusp::array2d<ValueType, MemorySpace> Array2d;
+
+  Array1d a(4);
+  a[0] = 1;
+  a[1] = 2;
+  a[2] = 3;
+  a[3] = 4;
+
+  Matrix m;
+  cusp::convert(a, m);
+
+  Array2d b;
+  cusp::convert(m, b);
+
+  ASSERT_EQUAL(b.num_rows, 4);
+  ASSERT_EQUAL(b.num_cols, 1);
+  ASSERT_EQUAL(b(0,0), 1);
+  ASSERT_EQUAL(b(1,0), 2);
+  ASSERT_EQUAL(b(2,0), 3);
+  ASSERT_EQUAL(b(3,0), 4);
+}
+DECLARE_MATRIX_UNITTEST(TestConversionFromArray1dTo);
+
+template <class Matrix>
+void TestConversionToArray1dFrom(void)
+{
+  typedef typename Matrix::value_type   ValueType;
+  typedef typename Matrix::memory_space MemorySpace;
+  typedef cusp::array1d<ValueType, MemorySpace> Array1d;
+  typedef cusp::array2d<ValueType, MemorySpace> Array2d;
+
+  // column vector
+  {
+    Array2d a(4,1);
+    a(0,0) = 1;
+    a(1,0) = 2;
+    a(2,0) = 3;
+    a(3,0) = 4;
+
+    Matrix m(a);
+
+    Array1d b;
+    cusp::convert(m, b);
+
+    ASSERT_EQUAL(b.size(), 4);
+    ASSERT_EQUAL(b[0], 1);
+    ASSERT_EQUAL(b[1], 2);
+    ASSERT_EQUAL(b[2], 3);
+    ASSERT_EQUAL(b[3], 4);
+  }
+
+  // row vector
+  {
+    Array2d a(1,4);
+    a(0,0) = 1;
+    a(0,1) = 2;
+    a(0,2) = 3;
+    a(0,3) = 4;
+
+    Matrix m(a);
+
+    Array1d b;
+    cusp::convert(m, b);
+
+    ASSERT_EQUAL(b.size(), 4);
+    ASSERT_EQUAL(b[0], 1);
+    ASSERT_EQUAL(b[1], 2);
+    ASSERT_EQUAL(b[2], 3);
+    ASSERT_EQUAL(b[3], 4);
+  }
+  
+  // invalid case
+  {
+    Array2d a(2,2);
+    a(0,0) = 1;
+    a(0,1) = 2;
+    a(1,0) = 3;
+    a(1,1) = 4;
+
+    Matrix m(a);
+
+    Array1d b;
+    ASSERT_THROWS(cusp::convert(m, b), cusp::format_conversion_exception);
+  }
+}
+DECLARE_MATRIX_UNITTEST(TestConversionToArray1dFrom);
+
