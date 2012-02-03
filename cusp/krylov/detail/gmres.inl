@@ -115,7 +115,8 @@ namespace cusp
       const size_t N = A.num_rows;
       const int R = restart;
       int i, j, k;
-      NormType beta, resid0;
+      NormType beta = 0;
+      NormType resid0 = 0;
       cusp::array1d<NormType,cusp::host_memory> rel_resid(1);
       //allocate workspace
       cusp::array1d<ValueType,MemorySpace> w(N);
