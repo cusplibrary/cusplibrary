@@ -486,7 +486,18 @@ void read_matrix_market_file(Matrix& mtx, const std::string& filename)
   if (!file)
     throw cusp::io_exception(std::string("unable to open file \"") + filename + std::string("\" for reading"));
 
+#ifdef __APPLE__
+  // WAR OSX-specific issue using rdbuf
+  std::stringstream file_string (std::stringstream::in | std::stringstream::out);
+  std::vector<char> buffer(file.rdbuf()->pubseekoff(0, std::ios::end,std::ios::in));
+  file.rdbuf()->pubseekpos(0, std::ios::in);
+  file.rdbuf()->sgetn(&buffer[0], buffer.size());
+  file_string.write(&buffer[0], buffer.size());
+
+  cusp::io::read_matrix_market_stream(mtx, file_string);
+#else
   cusp::io::read_matrix_market_stream(mtx, file);
+#endif
 }
 
 template <typename Matrix, typename Stream>
@@ -503,7 +514,16 @@ void write_matrix_market_file(const Matrix& mtx, const std::string& filename)
   if (!file)
     throw cusp::io_exception(std::string("unable to open file \"") + filename + std::string("\" for writing"));
 
+#ifdef __APPLE__
+  // WAR OSX-specific issue using rdbuf
+  std::stringstream file_string (std::stringstream::in | std::stringstream::out);
+
+  cusp::io::write_matrix_market_stream(mtx, file_string);
+
+  file.rdbuf()->sputn(file_string.str().c_str(), file_string.str().size());
+#else  
   cusp::io::write_matrix_market_stream(mtx, file);
+#endif
 }
 
 template <typename Matrix, typename Stream>
