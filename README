@@ -12,9 +12,8 @@ Instructions for the Impatient
         Built on Fri_Jan_13_01:52:47_PST_2012
         Cuda compilation tools, release 4.1, V0.2.1221
 
-    1) Download Cusp v0.2.x and Thrust v1.5.x
-        http://cusp-library.googlecode.com/files/cusp-v0.2.0.zip
-        http://thrust.googlecode.com/files/thrust-1.5.1.zip
+    1) Download Cusp v0.3.x
+        http://cusp-library.googlecode.com/files/cusp-v0.3.0.zip
     
     2) Extract contents of ZIP files to the CUDA include directory:
         /usr/local/cuda/include/ on a Linux and Mac OSX
@@ -49,7 +48,6 @@ Instructions for the Impatient
         $ ./version
         The following libraries were found:
             CUDA   v4.1
-            Thrust v1.6.0
-            Cusp   v0.2.0
-
+            Thrust v1.5.1
+            Cusp   v0.3.0
 
