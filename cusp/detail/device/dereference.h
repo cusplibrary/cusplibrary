@@ -14,35 +14,16 @@
  *  limitations under the License.
  */
 
-/*! \file memory.h
- *  \brief Memory spaces and allocators
- */
-
 #pragma once
 
 #include <cusp/detail/config.h>
 
-#include <thrust/iterator/iterator_traits.h>
-
-namespace cusp
-{
-
-  typedef thrust::host_space_tag                   host_memory;
 #if THRUST_VERSION >= 100600
-  typedef thrust::device_space_tag                 device_memory;
+#include <thrust/detail/raw_reference_cast.h>
+#define CUSP_DEREFERENCE(x)  thrust::raw_reference_cast(*x)
 #else
-  typedef thrust::detail::default_device_space_tag device_memory;
+#include <thrust/detail/backend/dereference.h>
+#define CUSP_DEREFERENCE(x)  thrust::detail::backend::dereference(x)
 #endif
-  typedef thrust::any_space_tag                    any_memory;
-   
-  template<typename T, typename MemorySpace>
-  struct default_memory_allocator;
-  
-  template <typename MemorySpace1, typename MemorySpace2=any_memory, typename MemorySpace3=any_memory>
-  struct minimum_space;
 
-
-} // end namespace cusp
-
-#include <cusp/detail/memory.inl>
 

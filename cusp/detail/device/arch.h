@@ -16,17 +16,12 @@
 
 #pragma once
 
-#include <thrust/version.h>
+#include <cusp/detail/config.h>
 
-#if THRUST_VERSION >= 100500
-#include <thrust/detail/backend/cuda/arch.h>
+#if THRUST_VERSION >= 100600
+#include <thrust/system/cuda/detail/arch.h>
 #else
-#include <thrust/detail/device/cuda/arch.h>
-namespace thrust{
-  namespace detail{
-    namespace backend = device;
-  }
-}
+#include <thrust/detail/backend/cuda/arch.h>
 #endif
 
 namespace cusp
@@ -41,7 +36,11 @@ namespace arch
 template <typename KernelFunction>
 size_t max_active_blocks(KernelFunction kernel, const size_t CTA_SIZE, const size_t dynamic_smem_bytes)
 {
-    return thrust::detail::backend::cuda::arch::max_active_blocks(kernel, CTA_SIZE, dynamic_smem_bytes);
+#if THRUST_VERSION >= 100600
+  return thrust::system::cuda::detail::arch::max_active_blocks(kernel, CTA_SIZE, dynamic_smem_bytes);
+#else
+  return thrust::detail::backend::cuda::arch::max_active_blocks(kernel, CTA_SIZE, dynamic_smem_bytes);
+#endif
 }
 
 } // end namespace arch

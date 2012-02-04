@@ -16,25 +16,15 @@
 
 #pragma once
 
-// XXX this code fails on CUDA r4.1 for an unknown reason
+// XXX this code sometimes fails on CUDA r4.1 for an unknown reason
 
 #include <cusp/array1d.h>
 #include <cusp/detail/device/arch.h>
 #include <cusp/detail/device/utils.h>
+#include <cusp/detail/device/dereference.h>
 
 #include <thrust/copy.h>
 #include <thrust/iterator/iterator_traits.h>
-
-#if THRUST_VERSION >= 100500
-
-#include <thrust/detail/backend/dereference.h>
-using thrust::detail::backend::dereference;
-#else
-
-#include <thrust/detail/device/dereference.h>
-using thrust::detail::device::dereference;
-
-#endif // THRUST_VERSION
 
 namespace cusp
 {
@@ -125,8 +115,8 @@ void spmv_coo_kernel_postprocess(SizeType        num_outputs,
 
   while(base + BLOCK_SIZE <= num_outputs)
   {
-    rows[threadIdx.x] = dereference(row_carries);
-    vals[threadIdx.x] = dereference(val_carries);
+    rows[threadIdx.x] = CUSP_DEREFERENCE(row_carries);
+    vals[threadIdx.x] = CUSP_DEREFERENCE(val_carries);
 
     // carry in
     if(threadIdx.x == 0 && base != 0)
@@ -139,7 +129,7 @@ void spmv_coo_kernel_postprocess(SizeType        num_outputs,
       {
         // row terminates in previous unit
         ValueIterator4 zj = z + row_carry;
-        dereference(zj) = reduce(dereference(zj), val_carry);
+        CUSP_DEREFERENCE(zj) = reduce(CUSP_DEREFERENCE(zj), val_carry);
       }
     }
 
@@ -158,7 +148,7 @@ void spmv_coo_kernel_postprocess(SizeType        num_outputs,
       {
         // row terminates in current unit
         ValueIterator4 zj = z + rows[threadIdx.x];
-        dereference(zj) = reduce(dereference(zj), vals[threadIdx.x]);
+        CUSP_DEREFERENCE(zj) = reduce(CUSP_DEREFERENCE(zj), vals[threadIdx.x]);
       }
     }
 
@@ -175,8 +165,8 @@ void spmv_coo_kernel_postprocess(SizeType        num_outputs,
 
     if (threadIdx.x < offset_end)
     {
-      rows[threadIdx.x] = dereference(row_carries);
-      vals[threadIdx.x] = dereference(val_carries);
+      rows[threadIdx.x] = CUSP_DEREFERENCE(row_carries);
+      vals[threadIdx.x] = CUSP_DEREFERENCE(val_carries);
     }
 
     // carry in
@@ -190,7 +180,7 @@ void spmv_coo_kernel_postprocess(SizeType        num_outputs,
       {
         // row terminates in previous unit
         ValueIterator4 zj = z + row_carry;
-        dereference(zj) = reduce(dereference(zj), val_carry);
+        CUSP_DEREFERENCE(zj) = reduce(CUSP_DEREFERENCE(zj), val_carry);
       }
     }
 
@@ -204,7 +194,7 @@ void spmv_coo_kernel_postprocess(SizeType        num_outputs,
       {
         // row terminates in current unit or we're at the end of input
         ValueIterator4 zj = z + rows[threadIdx.x];
-        dereference(zj) = reduce(thrust::detail::backend::dereference(zj), vals[threadIdx.x]);
+        CUSP_DEREFERENCE(zj) = reduce(CUSP_DEREFERENCE(zj), vals[threadIdx.x]);
       }
     }
   }
@@ -273,10 +263,10 @@ void spmv_coo_kernel(SizeType        num_entries,
       IndexIterator2 _j   = column_indices + offset;
       ValueIterator1 _Aij = values         + offset;
 
-      ValueIterator2 _xj = x + thrust::detail::backend::dereference(_j);
+      ValueIterator2 _xj = x + CUSP_DEREFERENCE(_j);
 
-      rows[offset % K][offset / K] = thrust::detail::backend::dereference(_i);
-      vals[offset % K][offset / K] = combine(thrust::detail::backend::dereference(_Aij), thrust::detail::backend::dereference(_xj));
+      rows[offset % K][offset / K] = CUSP_DEREFERENCE(_i);
+      vals[offset % K][offset / K] = combine(CUSP_DEREFERENCE(_Aij), CUSP_DEREFERENCE(_xj));
     }
 
     // carry in
@@ -291,7 +281,7 @@ void spmv_coo_kernel(SizeType        num_entries,
       {
         // row terminates in previous unit
         ValueIterator4 _zj = z + row_carry;
-        thrust::detail::backend::dereference(_zj) = reduce(thrust::detail::backend::dereference(_zj), val_carry);
+        CUSP_DEREFERENCE(_zj) = reduce(CUSP_DEREFERENCE(_zj), val_carry);
       }
     }
       
@@ -341,7 +331,7 @@ void spmv_coo_kernel(SizeType        num_entries,
       {
         // row terminates
         ValueIterator4 _zj = z + rows[offset % K][offset / K];
-        thrust::detail::backend::dereference(_zj) = reduce(thrust::detail::backend::dereference(_zj), vals[offset % K][offset / K]);
+        CUSP_DEREFERENCE(_zj) = reduce(CUSP_DEREFERENCE(_zj), vals[offset % K][offset / K]);
       }
     }
 
@@ -370,10 +360,10 @@ void spmv_coo_kernel(SizeType        num_entries,
         IndexIterator2 _j   = column_indices + offset;
         ValueIterator1 _Aij = values         + offset;
 
-        ValueIterator2 _xj = x + thrust::detail::backend::dereference(_j);
+        ValueIterator2 _xj = x + CUSP_DEREFERENCE(_j);
 
-        rows[offset % K][offset / K] = thrust::detail::backend::dereference(_i);
-        vals[offset % K][offset / K] = combine(thrust::detail::backend::dereference(_Aij), thrust::detail::backend::dereference(_xj));
+        rows[offset % K][offset / K] = CUSP_DEREFERENCE(_i);
+        vals[offset % K][offset / K] = combine(CUSP_DEREFERENCE(_Aij), CUSP_DEREFERENCE(_xj));
       }
     }
     
@@ -389,7 +379,7 @@ void spmv_coo_kernel(SizeType        num_entries,
       {
         // row terminates in previous unit
         ValueIterator4 _zj = z + row_carry;
-        thrust::detail::backend::dereference(_zj) = reduce(thrust::detail::backend::dereference(_zj), val_carry);
+        CUSP_DEREFERENCE(_zj) = reduce(CUSP_DEREFERENCE(_zj), val_carry);
       }
     }
       
@@ -451,7 +441,7 @@ void spmv_coo_kernel(SizeType        num_entries,
         {
           // row terminates
           ValueIterator4 _zj = z + rows[offset % K][offset / K];
-          thrust::detail::backend::dereference(_zj) = reduce(thrust::detail::backend::dereference(_zj), vals[offset % K][offset / K]);
+          CUSP_DEREFERENCE(_zj) = reduce(CUSP_DEREFERENCE(_zj), vals[offset % K][offset / K]);
         }
       }
     }
@@ -465,8 +455,8 @@ void spmv_coo_kernel(SizeType        num_entries,
     row_carries += blockIdx.x;
     val_carries += blockIdx.x;
 
-    thrust::detail::backend::dereference(row_carries) = row_carry;
-    thrust::detail::backend::dereference(val_carries) = val_carry;
+    CUSP_DEREFERENCE(row_carries) = row_carry;
+    CUSP_DEREFERENCE(val_carries) = val_carry;
   }
 
 }

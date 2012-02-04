@@ -18,18 +18,9 @@
 
 #include <cusp/detail/device/arch.h>
 #include <cusp/detail/device/utils.h>
+#include <cusp/detail/device/dereference.h>
 
 #include <thrust/iterator/iterator_traits.h>
-#if THRUST_VERSION >= 100500
-#include <thrust/detail/backend/dereference.h>
-#else
-#include <thrust/detail/device/dereference.h>
-namespace thrust{
-  namespace detail{
-    namespace backend = device;
-  }
-}
-#endif
 
 namespace cusp
 {
@@ -40,7 +31,6 @@ namespace device
 namespace cuda
 {
 
-    
 template <int BLOCK_SIZE,
           typename SizeType,
           typename IndexIterator1,
@@ -75,20 +65,20 @@ void spmv_csr_scalar_kernel(SizeType        num_rows,
 
   for(SizeType i = thread_id; i < num_rows; i += grid_size)
   {
-    IndexIterator1 r0 = row_offsets; r0 += i;      IndexType1 row_start = thrust::detail::backend::dereference(r0); // row_offsets[i]
-    IndexIterator1 r1 = row_offsets; r1 += i + 1;  IndexType1 row_end   = thrust::detail::backend::dereference(r1); // row_offsets[i + 1]
-    ValueIterator3 y0 = y;           y0 += i;      ValueType4 sum       = thrust::detail::backend::dereference(y0); // sum = y[i]
+    IndexIterator1 r0 = row_offsets; r0 += i;      IndexType1 row_start = CUSP_DEREFERENCE(r0); // row_offsets[i]
+    IndexIterator1 r1 = row_offsets; r1 += i + 1;  IndexType1 row_end   = CUSP_DEREFERENCE(r1); // row_offsets[i + 1]
+    ValueIterator3 y0 = y;           y0 += i;      ValueType4 sum       = CUSP_DEREFERENCE(y0); // sum = y[i]
 
     for (IndexType2 jj = row_start; jj < row_end; jj++)
     {
-      IndexIterator2 c0 = column_indices; c0 += jj;  IndexType2 j    = thrust::detail::backend::dereference(c0);  // j    = column_indices[jj]
-      ValueIterator1 v0 = values;         v0 += jj;  ValueType1 A_ij = thrust::detail::backend::dereference(v0);  // A_ij = values[jj]
-      ValueIterator2 x0 = x;              x0 += j;   ValueType2 x_j  = thrust::detail::backend::dereference(x0);  // x_j  = x[j]
+      IndexIterator2 c0 = column_indices; c0 += jj;  IndexType2 j    = CUSP_DEREFERENCE(c0);  // j    = column_indices[jj]
+      ValueIterator1 v0 = values;         v0 += jj;  ValueType1 A_ij = CUSP_DEREFERENCE(v0);  // A_ij = values[jj]
+      ValueIterator2 x0 = x;              x0 += j;   ValueType2 x_j  = CUSP_DEREFERENCE(x0);  // x_j  = x[j]
 
       sum = reduce(sum, combine(A_ij, x_j));                                                                     // sum += A_ij * x_j
     }
 
-    ValueIterator4 z0 = z; z0 += i;  thrust::detail::backend::dereference(z0) = sum;                                // z[i] = sum
+    ValueIterator4 z0 = z; z0 += i;  CUSP_DEREFERENCE(z0) = sum;                                // z[i] = sum
   }
 }
 
