@@ -1,4 +1,25 @@
 #######################################
+#            Cusp v0.3.0              #
+#######################################
+
+Summary
+  Cusp v0.3.0 provides support for CUDA 4.1 and Thrust v1.5.  Version
+  0.3.0 includes incremental improvements to MatrixMarket I/O support
+  and array format conversions.
+
+New Features
+  MatrixMarket I/O routines support complex matrices
+  array1d is convertible to and from all other formats (e.g. array1d<->array2d)
+
+Bug Fixes
+  Resize final output of CSR * CSR to account for excluded zeros
+
+Acknowledgements
+  Justin Luitjens and Simon Layton for diagnosing CSR SpMM bug
+  Kashif Rasul for Thrust v1.6 support patch
+  Filipe Maia and Steven Dalton for general support and maintenance
+
+#######################################
 #            Cusp v0.2.0              #
 #######################################
 
