@@ -87,111 +87,76 @@ struct sqrt_functor : thrust::unary_function<T,T>
     T operator()(const T& x) { return sqrt(x); }
 };
 
-template <typename Array1,
-          typename Array2,
-          typename IndexType, typename ValueType,
-          typename Array3>
-void fit_candidates(const Array1& aggregates,
-                    const Array2& B,
-                          cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& Q_,
-                          Array3& R)
+template <typename IndexType>
+struct not_negative_one
 {
-  CUSP_PROFILE_SCOPED();
-  // TODO handle case w/ unaggregated nodes (marked w/ -1)
-  IndexType num_aggregates = *thrust::max_element(aggregates.begin(), aggregates.end()) + 1;
-
-  cusp::coo_matrix<IndexType,ValueType,cusp::host_memory> Q;
-  Q.resize(aggregates.size(), num_aggregates, aggregates.size());
-  R.resize(num_aggregates);
-
-  // gather values into Q
-  thrust::sequence(Q.row_indices.begin(), Q.row_indices.end());
-  thrust::copy(aggregates.begin(), aggregates.end(), Q.column_indices.begin());
-  thrust::copy(B.begin(), B.end(), Q.values.begin());
-                        
-  // compute norm over each aggregate
+  __host__ __device__
+  bool operator()(const IndexType x)
   {
-    // compute Qt
-    cusp::coo_matrix<IndexType,ValueType,cusp::host_memory> Qt;  cusp::transpose(Q, Qt);
-
-    // compute sum of squares for each column of Q (rows of Qt)
-    cusp::array1d<IndexType, cusp::host_memory> temp(num_aggregates);
-    thrust::reduce_by_key(Qt.row_indices.begin(), Qt.row_indices.end(),
-                          thrust::make_transform_iterator(Qt.values.begin(), square<ValueType>()),
-                          temp.begin(),
-                          R.begin());
-
-    // compute square root of each column sum
-    thrust::transform(R.begin(), R.end(), R.begin(), sqrt_functor<ValueType>());
+    return x != -1;
   }
-
-  Q_.resize(Q.num_rows, Q.num_cols, Q.num_entries);
-  thrust::copy(Q.column_indices.begin(), Q.column_indices.end(), Q_.column_indices.begin());
-  cusp::detail::indices_to_offsets(Q.row_indices, Q_.row_offsets);
-
-  // rescale columns of Q
-  thrust::transform(Q.values.begin(), Q.values.end(),
-                    thrust::make_permutation_iterator(R.begin(), Q.column_indices.begin()),
-                    Q_.values.begin(),
-                    thrust::divides<ValueType>());
-}
+};
 
 template <typename Array1,
-          typename Array2,
-          typename IndexType, typename ValueType,
-          typename Array3>
+typename Array2,
+typename MatrixType,
+typename Array3>
 void fit_candidates(const Array1& aggregates,
                     const Array2& B,
-                          cusp::coo_matrix<IndexType,ValueType,cusp::device_memory>& Q,
-                          Array3& R)
+                    MatrixType& Q_,
+                    Array3& R)
 {
-  CUSP_PROFILE_SCOPED();
-  // TODO handle case w/ unaggregated nodes (marked w/ -1)
-  IndexType num_aggregates = *thrust::max_element(aggregates.begin(), aggregates.end()) + 1;
+    typedef typename MatrixType::index_type IndexType;
+    typedef typename MatrixType::value_type ValueType;
+    typedef typename MatrixType::memory_space MemorySpace;
 
-  Q.resize(aggregates.size(), num_aggregates, aggregates.size());
-  R.resize(num_aggregates);
+    CUSP_PROFILE_SCOPED();
+    IndexType num_unaggregated = thrust::count(aggregates.begin(), aggregates.end(), -1.0);
+    IndexType num_aggregates = *thrust::max_element(aggregates.begin(), aggregates.end()) + 1;
 
-  // gather values into Q
-  thrust::sequence(Q.row_indices.begin(), Q.row_indices.end());
-  thrust::copy(aggregates.begin(), aggregates.end(), Q.column_indices.begin());
-  thrust::copy(B.begin(), B.end(), Q.values.begin());
-                        
-  // compute norm over each aggregate
-  {
-    // compute Qt
-    cusp::coo_matrix<IndexType,ValueType,cusp::device_memory> Qt;  cusp::transpose(Q, Qt);
+    cusp::coo_matrix<IndexType,ValueType,MemorySpace> Q;
+    Q.resize(aggregates.size(), num_aggregates, aggregates.size()-num_unaggregated);
+    R.resize(num_aggregates);
 
-    // compute sum of squares for each column of Q (rows of Qt)
-    cusp::array1d<IndexType, cusp::device_memory> temp(num_aggregates);
-    thrust::reduce_by_key(Qt.row_indices.begin(), Qt.row_indices.end(),
-                          thrust::make_transform_iterator(Qt.values.begin(), square<ValueType>()),
-                          temp.begin(),
-                          R.begin());
+    // gather values into Q
+    thrust::copy_if(thrust::make_zip_iterator(thrust::make_tuple(thrust::counting_iterator<IndexType>(0), aggregates.begin(), B.begin())),
+                    thrust::make_zip_iterator(thrust::make_tuple(thrust::counting_iterator<IndexType>(aggregates.size()), aggregates.end(), B.end())),
+                    aggregates.begin(),
+                    thrust::make_zip_iterator(thrust::make_tuple(Q.row_indices.begin(), Q.column_indices.begin(), Q.values.begin())),
+                    not_negative_one<IndexType>());
 
-    // compute square root of each column sum
-    thrust::transform(R.begin(), R.end(), R.begin(), sqrt_functor<ValueType>());
-  }
+    // compute norm over each aggregate
+    {
+        // compute Qt
+        cusp::coo_matrix<IndexType,ValueType,MemorySpace> Qt;
+        cusp::transpose(Q, Qt);
 
-  // rescale columns of Q
-  thrust::transform(Q.values.begin(), Q.values.end(),
-                    thrust::make_permutation_iterator(R.begin(), Q.column_indices.begin()),
-                    Q.values.begin(),
-                    thrust::divides<ValueType>());
+        // compute sum of squares for each column of Q (rows of Qt)
+        cusp::array1d<IndexType, MemorySpace> temp(num_aggregates);
+        thrust::reduce_by_key(Qt.row_indices.begin(), Qt.row_indices.end(),
+                              thrust::make_transform_iterator(Qt.values.begin(), square<ValueType>()),
+                              temp.begin(),
+                              R.begin());
+
+        // compute square root of each column sum
+        thrust::transform(R.begin(), R.end(), R.begin(), sqrt_functor<ValueType>());
+    }
+
+    // rescale columns of Q
+    thrust::transform(Q.values.begin(), Q.values.end(),
+                      thrust::make_permutation_iterator(R.begin(), Q.column_indices.begin()),
+                      Q.values.begin(),
+                      thrust::divides<ValueType>());
+
+    // copy/convert Q to output matrix Q_
+    Q_ = Q;
 }
 
 template <typename Matrix>
-void setup_level_matrix(Matrix& dst, Matrix& src)
-{	dst.swap(src);	}
+void setup_level_matrix(Matrix& dst, Matrix& src){dst.swap(src);}
 
 template <typename Matrix1, typename Matrix2>
-void setup_level_matrix(Matrix1& dst, Matrix2& src)
-{	
-    dst = src;
-
-    // save space by resizing src to nothing
-    src.resize(0,0,0);
-}
+void setup_level_matrix(Matrix1& dst, Matrix2& src){dst = src;}
 
 } // end namespace detail
 
@@ -281,10 +246,6 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace>::extend_hierarchy(voi
   detail::setup_level_matrix( levels.back().R, R );
   detail::setup_level_matrix( levels.back().P, P );
   levels.back().residual.resize(levels.back().A_.num_rows);
-
-  //resize A_ on the finest level to save space
-  if( levels.size() == 1 )
-    levels[0].A_.resize(0,0,0);
 
   //std::cout << "omega " << omega << std::endl;
 
