@@ -27,13 +27,15 @@
 namespace cusp
 {
 
-  typedef thrust::host_space_tag                   host_memory;
 #if THRUST_VERSION >= 100600
-  typedef thrust::device_space_tag                 device_memory;
+  typedef thrust::host_system_tag                  host_memory;
+  typedef thrust::device_system_tag                device_memory;
+  typedef thrust::any_system_tag                   any_memory;
 #else
+  typedef thrust::host_space_tag                   host_memory;
   typedef thrust::detail::default_device_space_tag device_memory;
-#endif
   typedef thrust::any_space_tag                    any_memory;
+#endif
    
   template<typename T, typename MemorySpace>
   struct default_memory_allocator;
