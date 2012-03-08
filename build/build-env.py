@@ -250,9 +250,9 @@ def Environment():
   env.Tool('nvcc', toolpath = [os.path.join(thisDir)])
 
   # get the preprocessor define to use for the backend
-  backend_define = { 'cuda' : 'THRUST_DEVICE_BACKEND_CUDA', 'omp' : 'THRUST_DEVICE_BACKEND_OMP', 'ocelot' : 'THRUST_DEVICE_BACKEND_CUDA' }[env['backend']] 
-  env.Append(CFLAGS = ['-DTHRUST_DEVICE_BACKEND=%s' % backend_define])
-  env.Append(CXXFLAGS = ['-DTHRUST_DEVICE_BACKEND=%s' % backend_define])
+  backend_define = { 'cuda' : 'THRUST_DEVICE_SYSTEM_CUDA', 'omp' : 'THRUST_DEVICE_SYSTEM_OMP', 'ocelot' : 'THRUST_DEVICE_SYSTEM_CUDA' }[env['backend']] 
+  env.Append(CFLAGS = ['-DTHRUST_DEVICE_SYSTEM=%s' % backend_define])
+  env.Append(CXXFLAGS = ['-DTHRUST_DEVICE_SYSTEM=%s' % backend_define])
 
   # get C compiler switches
   env.Append(CFLAGS = getCFLAGS(env['mode'], env['backend'], env['Wall'], env['Werror'], env['hostspblas'], env.subst('$CC')))
