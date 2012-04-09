@@ -32,7 +32,8 @@ namespace relaxation
 template <typename ValueType, typename MemorySpace>
 class polynomial
 {
-    cusp::array1d<ValueType, MemorySpace> default_coefficients;
+    // note: default_coefficients lives on the host
+    cusp::array1d<ValueType, cusp::host_memory> default_coefficients;
     cusp::array1d<ValueType, MemorySpace> residual;
     cusp::array1d<ValueType, MemorySpace> h;
     cusp::array1d<ValueType, MemorySpace> y;
