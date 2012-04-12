@@ -17,6 +17,8 @@
 
 #pragma once
 
+#include <cusp/detail/config.h>
+
 #include <cusp/multiply.h>
 #include <cusp/array1d.h>
 #include <cusp/detail/random.h>
