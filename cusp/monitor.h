@@ -43,7 +43,7 @@ namespace cusp
 /*! \p default_monitor : Implements standard convergence criteria
  * and reporting for iterative solvers.
  *
- * \tparam Real real-valued type (e.g. \c float or \c double).
+ * \tparam ValueType scalar type used in the solver (e.g. \c float or \c cusp::complex<double>).
  *
  *  The following code snippet demonstrates how to configure
  *  the \p default_monitor and use it with an iterative solver.
@@ -93,10 +93,12 @@ namespace cusp
  *  \see \p verbose_monitor
  *
  */
-template <typename Real>
+template <typename ValueType>
 class default_monitor
 {
     public:
+    typedef typename norm_type<ValueType>::type Real;
+  
     /*! Construct a \p default_monitor for a given right-hand-side \p b
      *
      *  The \p default_monitor terminates iteration when the residual norm
@@ -187,14 +189,15 @@ class default_monitor
  * it displays the solver status during iteration and reports a 
  * summary after iteration has stopped.
  *
- * \tparam Real real-valued type (e.g. \c float or \c double).
+ * \tparam ValueType scalar type used in the solver (e.g. \c float or \c cusp::complex<double>).
  *
  * \see \p default_monitor
  */
-template <typename Real>
-class verbose_monitor : public default_monitor<Real>
+template <typename ValueType>
+class verbose_monitor : public default_monitor<ValueType>
 {
-    typedef cusp::default_monitor<Real> super;
+    typedef typename norm_type<ValueType>::type Real;
+    typedef cusp::default_monitor<ValueType> super;
 
     public:
     /*! Construct a \p verbose_monitor for a given right-hand-side \p b
@@ -253,14 +256,15 @@ class verbose_monitor : public default_monitor<Real>
  * it displays the solver status during iteration and reports a 
  * summary after iteration has stopped.
  *
- * \tparam Real real-valued type (e.g. \c float or \c double).
+ * \tparam ValueType scalar type used in the solver (e.g. \c float or \c cusp::complex<double>).
  *
  * \see \p default_monitor
  */
-template <typename Real>
-class convergence_monitor : public default_monitor<Real>
+template <typename ValueType>
+class convergence_monitor : public default_monitor<ValueType>
 {
-    typedef cusp::default_monitor<Real> super;
+    typedef typename norm_type<ValueType>::type Real;
+    typedef cusp::default_monitor<ValueType> super;
 
     public:
     /*! Construct a \p convergence_monitor for a given right-hand-side \p b
