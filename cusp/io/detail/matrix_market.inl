@@ -467,7 +467,7 @@ void write_matrix_market_stream(const Matrix& mtx, Stream& output, cusp::array2d
 
   for(size_t j = 0; j < mtx.num_cols; j++)
   {
-    for(size_t i = 0; i < mtx.num_cols; i++)
+    for(size_t i = 0; i < mtx.num_rows; i++)
     {
       write_value(output, mtx(i,j));
       output << "\n";
