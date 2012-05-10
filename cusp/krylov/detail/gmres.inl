@@ -116,8 +116,7 @@ namespace cusp
       const int R = restart;
       int i, j, k;
       NormType beta = 0;
-      NormType resid0 = 0;
-      cusp::array1d<NormType,cusp::host_memory> rel_resid(1);
+      cusp::array1d<NormType,cusp::host_memory> resid(1);
       //allocate workspace
       cusp::array1d<ValueType,MemorySpace> w(N);
       cusp::array1d<ValueType,MemorySpace> V0(N); //Arnoldi matrix pos 0
@@ -129,8 +128,6 @@ namespace cusp
       cusp::array1d<ValueType,cusp::host_memory> s(R+1);
       cusp::array1d<ValueType,cusp::host_memory> cs(R);
       cusp::array1d<ValueType,cusp::host_memory> sn(R);
-      NormType b_norm = blas::nrm2(b);
-      
       do{
 	// compute initial residual and its norm //
 	cusp::multiply(A, x, w);                     // V(0) = A*x        //
@@ -139,17 +136,15 @@ namespace cusp
 	beta = blas::nrm2(w);                        // beta = norm(V(0)) //
 	blas::scal(w, ValueType(-1.0/beta));         // V(0) = -V(0)/beta //
 	blas::copy(w,V.column(0));
-	// save very first residual norm //
-	if (monitor.iteration_count()== 0){
-	  //resid0 = beta;
-	  cusp::multiply(M,b,V0);
-	  resid0 = blas::nrm2(V0)/b_norm;
-	}
 	//s = 0 //
 	blas::fill(s,ValueType(0.0));
 	s[0] = beta;
 	i = -1;
-	
+	resid[0] = s[0];
+	if (monitor.finished(resid)){
+	  break;
+	}
+
 	do{
 	  ++i;
 	  ++monitor;
@@ -174,11 +169,10 @@ namespace cusp
 	  
 	  PlaneRotation(H,cs,sn,s,i);
 	  
-	  rel_resid[0] = abs(s[i+1]) / resid0 + monitor.absolute_tolerance();
+	  resid[0] = s[i+1];
 	  
 	  //check convergence condition
-	  //if (rel_resid < monitor.relative_tolerance())
-	  if (monitor.finished(rel_resid)){
+	  if (monitor.finished(resid)){
 	    break;
 	  }
 	}while (i+1 < R && monitor.iteration_count()+1 <= monitor.iteration_limit());
@@ -202,8 +196,7 @@ namespace cusp
 	  // x = x + s[j] * V(j) //
 	  blas::axpy(V.column(j),x,s[j]);
 	}
-      } while (rel_resid[0] >= monitor.tolerance() && 
-	       monitor.iteration_count()+1 <= monitor.iteration_limit());
+      } while (!monitor.finished(resid));
     }
   } // end namespace krylov
 } // end namespace cusp
