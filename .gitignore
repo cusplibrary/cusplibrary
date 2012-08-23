@@ -1,0 +1,60 @@
+syntax: glob
+
+# Ignore files left by editors
+*~
+*.bak
+*.swp
+
+# Ignore compiled files
+*.o
+*.obj
+*.exe
+*.dll
+*.pyc
+*.so
+*.pdb
+
+# Ignore CUDA auxiliary files
+*.linkinfo
+*.cubin
+
+# Other things to ignore
+*.vtu
+*.dblite
+nvcc_options_file.txt
+print_sm_version
+tester
+
+# Ignore build files
+#<AutoIgnore>
+examples/Solvers/gmres
+examples/Solvers/bicgstab
+examples/Solvers/cg_m
+examples/Solvers/cg
+examples/InputOutput/matrix_market
+examples/MatrixFormats/csr
+examples/MatrixFormats/ell
+examples/MatrixFormats/hyb
+examples/MatrixFormats/dia
+examples/MatrixFormats/coo
+examples/MatrixAssembly/unordered_triplets
+examples/Gallery/diffusion
+examples/Gallery/poisson
+examples/Monitors/convergence_monitor
+examples/Monitors/verbose_monitor
+examples/Monitors/default_monitor
+examples/Preconditioners/ainv
+examples/Preconditioners/smoothed_aggregation
+examples/Preconditioners/diagonal
+examples/Views/csr
+examples/Views/cg_raw
+examples/Views/array1d
+examples/Views/csr_raw
+examples/Views/array2d_raw
+examples/Algorithms/maximal_independent_set
+examples/Algorithms/transpose
+examples/Algorithms/multiply
+examples/Algorithms/blas
+examples/LinearOperator/stencil
+examples/Version/version
+#<AutoIgnore/>
