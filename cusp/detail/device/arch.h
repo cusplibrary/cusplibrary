@@ -18,7 +18,9 @@
 
 #include <cusp/detail/config.h>
 
-#if THRUST_VERSION >= 100600
+#if THRUST_VERSION >= 100700
+#include <thrust/system/cuda/detail/detail/launch_calculator.h>
+#elif THRUST_VERSION >= 100600
 #include <thrust/system/cuda/detail/arch.h>
 #else
 #include <thrust/detail/backend/cuda/arch.h>
@@ -36,7 +38,12 @@ namespace arch
 template <typename KernelFunction>
 size_t max_active_blocks(KernelFunction kernel, const size_t CTA_SIZE, const size_t dynamic_smem_bytes)
 {
-#if THRUST_VERSION >= 100600
+#if THRUST_VERSION >= 100700
+  using namespace thrust::system::cuda::detail;
+  function_attributes_t attributes = function_attributes(kernel);
+  device_properties_t properties = device_properties();
+  return properties.multiProcessorCount * cuda_launch_config_detail::max_active_blocks_per_multiprocessor(properties, attributes, CTA_SIZE, dynamic_smem_bytes);
+#elif THRUST_VERSION >= 100600
   return thrust::system::cuda::detail::arch::max_active_blocks(kernel, CTA_SIZE, dynamic_smem_bytes);
 #else
   return thrust::detail::backend::cuda::arch::max_active_blocks(kernel, CTA_SIZE, dynamic_smem_bytes);
