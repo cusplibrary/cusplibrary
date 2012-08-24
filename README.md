@@ -31,7 +31,7 @@ int main(void)
 }
 ```
   
-Refer to the [Quick Start Guide](http://github.com/cusp-library/wiki/QuickStartGuide) page for further information and examples.
+Refer to the [Quick Start Guide](https://github.com/cusplibrary/cusplibrary/wiki/Quick-Start-Guide) page for further information and examples.
 
 Contributors
 ------------
