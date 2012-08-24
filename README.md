@@ -36,4 +36,4 @@ Refer to the [Quick Start Guide](http://github.com/cusp-library/wiki/QuickStartG
 Contributors
 ------------
 
-The primary developers of Thrust are [Steven Dalton](http://github.com/sdalton1) and [Nathan Bell](http://research.nvidia.com/users/nathan-bell).
+The primary developers of Cusp are [Steven Dalton](http://github.com/sdalton1) and [Nathan Bell](http://research.nvidia.com/users/nathan-bell).
