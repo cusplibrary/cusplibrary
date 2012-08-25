@@ -32,22 +32,12 @@ namespace cusp
 {
 namespace precond
 {
+namespace aggregation
+{
 namespace detail
 {
 
-template <typename T>
-struct scaled_multiply
-{
-    const T lambda;
-
-    scaled_multiply(const T lambda) : lambda(lambda) {}
-
-    __host__ __device__
-    T operator()(const T& x, const T& y) const
-    {
-        return lambda * x * y;
-    }
-};
+using namespace thrust::placeholders;
 
 template <typename MatrixType, typename ValueType>
 void smooth_prolongator(const MatrixType& S,
@@ -55,6 +45,7 @@ void smooth_prolongator(const MatrixType& S,
                         MatrixType& P,
                         const ValueType omega,
                         const ValueType rho_Dinv_S,
+                        cusp::coo_format,
                         cusp::device_memory)
 {
     CUSP_PROFILE_SCOPED();
@@ -73,7 +64,7 @@ void smooth_prolongator(const MatrixType& S,
         thrust::transform(S.values.begin(), S.values.end(),
                           thrust::make_permutation_iterator(T.values.begin(), S.column_indices.begin()),
                           temp.values.begin(),
-                          scaled_multiply<ValueType>(-lambda));
+                          -lambda * _1 * _2);
 
         // temp <- D^-1
         {
@@ -143,6 +134,7 @@ void smooth_prolongator(const MatrixType& S,
                         MatrixType& P,
                         const ValueType omega,
                         const ValueType rho_Dinv_S,
+                        cusp::csr_format,
                         cusp::host_memory)
 {
     CUSP_PROFILE_SCOPED();
@@ -173,17 +165,19 @@ void smooth_prolongator(const MatrixType& S,
     cusp::subtract( T, temp, P );
 }
 
+} // end namespace detail
+
 template <typename MatrixType, typename ValueType>
 void smooth_prolongator(const MatrixType& S,
                         const MatrixType& T,
                         MatrixType& P,
-                        const ValueType omega = 4.0/3.0,
-                        const ValueType rho_Dinv_S = 0.0)
+                        const ValueType omega,
+                        const ValueType rho_Dinv_S)
 {
-    smooth_prolongator(S, T, P, omega, rho_Dinv_S, typename MatrixType::memory_space());
+    detail::smooth_prolongator(S, T, P, omega, rho_Dinv_S, typename MatrixType::format(), typename MatrixType::memory_space());
 }
 
-} // end namespace detail
+} // end namespace aggregation
 } // end namespace precond
 } // end namespace cusp
 

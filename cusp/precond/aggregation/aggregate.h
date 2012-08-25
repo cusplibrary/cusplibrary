@@ -18,28 +18,23 @@
 
 #include <cusp/detail/config.h>
 
+#include <cusp/csr_matrix.h>
+#include <cusp/coo_matrix.h>
+
+#include <thrust/count.h>
+
 namespace cusp
 {
 namespace precond
 {
-namespace detail
+namespace aggregation
 {
 
-/*  Compute a strength of connection matrix using the standard symmetric measure.
- *  An off-diagonal connection A[i,j] is strong iff::
- *
- *     abs(A[i,j]) >= theta * sqrt( abs(A[i,i]) * abs(A[j,j]) )
- *
- *  With the default threshold (theta = 0.0) all connections are strong.
- *
- *  Note: explicit diagonal entries are always considered strong.
- */
-template <typename Matrix1, typename Matrix2>
-void symmetric_strength_of_connection(const Matrix1& A, Matrix2& S, const double theta = 0.0);
+template <typename Matrix, typename Array>
+void standard_aggregation(const Matrix& C, Array& aggregates);
 
-} // end namepace detail
+} // end namespace aggregation
 } // end namespace precond
 } // end namespace cusp
 
-#include <cusp/precond/detail/strength.inl>
-
+#include <cusp/precond/aggregation/detail/aggregate.inl>

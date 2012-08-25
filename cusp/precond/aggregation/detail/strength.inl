@@ -30,6 +30,8 @@ namespace cusp
 {
 namespace precond
 {
+namespace aggregation
+{
 namespace detail
 {
 
@@ -198,10 +200,12 @@ void symmetric_strength_of_connection(const Matrix1& A, Matrix2& S, const double
   cusp::csr_matrix<IndexType1,ValueType1,cusp::host_memory> A_csr(A);
   cusp::csr_matrix<IndexType2,ValueType2,cusp::host_memory> S_csr;
 
-  symmetric_strength_of_connection(A_csr, S_csr, theta);
+  cusp::precond::aggregation::symmetric_strength_of_connection(A_csr, S_csr, theta);
 
   cusp::convert(S_csr, S);
 }
+
+} // end namepace detail
 
 /////////////////
 // Entry Point //
@@ -220,14 +224,14 @@ void symmetric_strength_of_connection(const Matrix1& A, Matrix2& S, const double
   else
   {
     // dispatch based on format and memory_space
-    symmetric_strength_of_connection
+    detail::symmetric_strength_of_connection
       (A, S, theta,
        typename Matrix1::format(), typename Matrix1::memory_space(), 
        typename Matrix2::format(), typename Matrix2::memory_space());
   }
 }
 
-} // end namepace detail
+} // end namespace aggregation
 } // end namespace precond
 } // end namespace cusp
 

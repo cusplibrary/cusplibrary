@@ -21,29 +21,25 @@
 #include <cusp/csr_matrix.h>
 #include <cusp/coo_matrix.h>
 
-#include <thrust/count.h>
-
 namespace cusp
 {
 namespace precond
 {
-	template <typename IndexType, typename ValueType, typename MemorySpace,
-		  typename ArrayType>
-	void mis_to_aggregates(const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& C,
-			       const ArrayType& mis,
-				     ArrayType& aggregates);
+namespace aggregation
+{
 
-	template <typename IndexType, typename ValueType,
-		  typename ArrayType>
-	void standard_aggregation(const cusp::coo_matrix<IndexType,ValueType,cusp::device_memory>& C,
-					ArrayType& aggregates);
+//   Smoothed (final) prolongator defined by P = (I - omega/rho(K) K) * T
+//   where K = diag(S)^-1 * S and rho(K) is an approximation to the
+//   spectral radius of K.
+template <typename MatrixType, typename ValueType>
+void smooth_prolongator(const MatrixType& S,
+                        const MatrixType& T,
+                        MatrixType& P,
+                        const ValueType omega = 4.0/3.0,
+                        const ValueType rho_Dinv_S = 0.0);
 
-	template <typename IndexType, typename ValueType,
-		  typename ArrayType>
-	void standard_aggregation(const cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& C,
-					ArrayType& aggregates);
-
+} // end namespace aggregation
 } // end namespace precond
 } // end namespace cusp
 
-#include <cusp/precond/detail/aggregate.inl>
+#include <cusp/precond/aggregation/detail/smooth.inl>
