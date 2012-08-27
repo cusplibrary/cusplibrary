@@ -1,6 +1,6 @@
 #include <unittest/unittest.h>
 
-#include <cusp/precond/smoothed_aggregation.h>
+#include <cusp/precond/aggregation/smoothed_aggregation.h>
 
 #include <cusp/array2d.h>
 #include <cusp/coo_matrix.h>
@@ -18,13 +18,13 @@ void TestStandardAggregation(void)
 {
     // TODO make this test something, possibly disjoint things that must aggregate
 
-    typedef typename cusp::precond::amg_container<int,float,MemorySpace>::setup_type SetupMatrixType;
+    typedef typename cusp::precond::aggregation::amg_container<int,float,MemorySpace>::setup_type SetupMatrixType;
 
     SetupMatrixType A;
     cusp::gallery::poisson5pt(A, 10, 10);
 
     cusp::array1d<int,MemorySpace> aggregates(A.num_rows);
-    cusp::precond::detail::standard_aggregation(A, aggregates);
+    cusp::precond::aggregation::standard_aggregation(A, aggregates);
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestStandardAggregation);
 
@@ -43,21 +43,21 @@ void TestEstimateRhoDinvA(void)
         A.values[0] = -5;
         A.values[1] =  2;
         float rho = 1.0;
-        ASSERT_EQUAL((std::abs(cusp::precond::detail::estimate_rho_Dinv_A(A) - rho) / rho) < 0.1f, true);
+        ASSERT_EQUAL((std::abs(cusp::precond::aggregation::detail::estimate_rho_Dinv_A(A) - rho) / rho) < 0.1f, true);
     }
 
     // 2x2 Poisson problem
     {
         cusp::csr_matrix<int, float, MemorySpace> A; cusp::gallery::poisson5pt(A, 2, 2); 
         float rho = 1.5;
-        ASSERT_EQUAL((std::abs(cusp::precond::detail::estimate_rho_Dinv_A(A) - rho) / rho) < 0.1f, true);
+        ASSERT_EQUAL((std::abs(cusp::precond::aggregation::detail::estimate_rho_Dinv_A(A) - rho) / rho) < 0.1f, true);
     }
 
     // 4x4 Poisson problem
     {
         cusp::csr_matrix<int, float, MemorySpace> A; cusp::gallery::poisson5pt(A, 4, 4); 
         float rho = 1.8090169943749468;
-        ASSERT_EQUAL((std::abs(cusp::precond::detail::estimate_rho_Dinv_A(A) - rho) / rho) < 0.1f, true);
+        ASSERT_EQUAL((std::abs(cusp::precond::aggregation::detail::estimate_rho_Dinv_A(A) - rho) / rho) < 0.1f, true);
     }
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestEstimateRhoDinvA);
@@ -66,7 +66,7 @@ DECLARE_HOST_DEVICE_UNITTEST(TestEstimateRhoDinvA);
 template <typename MemorySpace>
 void TestFitCandidates(void)
 {
-    typedef typename cusp::precond::amg_container<int,float,MemorySpace>::setup_type SetupMatrixType;
+    typedef typename cusp::precond::aggregation::amg_container<int,float,MemorySpace>::setup_type SetupMatrixType;
 
     // 2 aggregates with 2 nodes each
     {
@@ -84,7 +84,7 @@ void TestFitCandidates(void)
         SetupMatrixType Q;
         cusp::array1d<float,MemorySpace> R(2);
 
-        cusp::precond::detail::fit_candidates(aggregates, B, Q, R);
+        cusp::precond::aggregation::detail::fit_candidates(aggregates, B, Q, R);
 
         ASSERT_EQUAL(R[0], 1.0f);
         ASSERT_EQUAL(R[1], 5.0f);
@@ -112,7 +112,7 @@ void TestFitCandidates(void)
         SetupMatrixType Q;
         cusp::array1d<float,MemorySpace> R(4);
    
-        cusp::precond::detail::fit_candidates(aggregates, B, Q, R);
+        cusp::precond::aggregation::detail::fit_candidates(aggregates, B, Q, R);
 
         ASSERT_ALMOST_EQUAL(R[0], 1.41421f);
         ASSERT_ALMOST_EQUAL(R[1], 2.00000f);
@@ -139,7 +139,7 @@ DECLARE_HOST_DEVICE_UNITTEST(TestFitCandidates);
 template <class MemorySpace>
 void TestSmoothProlongator(void)
 {
-    typedef typename cusp::precond::amg_container<int,float,MemorySpace>::setup_type SetupMatrixType;
+    typedef typename cusp::precond::aggregation::amg_container<int,float,MemorySpace>::setup_type SetupMatrixType;
 
     // simple example with diagonal S
     {
@@ -159,7 +159,7 @@ void TestSmoothProlongator(void)
 
         SetupMatrixType _P;
 
-        cusp::precond::detail::smooth_prolongator(S, T, _P, 4.0f, 2.0f); 
+        cusp::precond::aggregation::smooth_prolongator(S, T, _P, 4.0f, 2.0f); 
 
 	cusp::coo_matrix<int,float,MemorySpace> P(_P);
 
@@ -202,7 +202,7 @@ void TestSmoothProlongator(void)
 
         SetupMatrixType _P;
 
-        cusp::precond::detail::smooth_prolongator(S, T, _P, 4.0f/3.0f, 1.8090169943749472f); 
+        cusp::precond::aggregation::smooth_prolongator(S, T, _P, 4.0f/3.0f, 1.8090169943749472f); 
 
     	cusp::coo_matrix<int,float,MemorySpace> P(_P);
         P.sort_by_row_and_column();
@@ -239,7 +239,7 @@ void TestSmoothedAggregation(void)
     cusp::gallery::poisson5pt(A, 100, 100);
     
     // create smoothed aggregation solver
-    cusp::precond::smoothed_aggregation<IndexType,ValueType,MemorySpace> M(A);
+    cusp::precond::aggregation::smoothed_aggregation<IndexType,ValueType,MemorySpace> M(A);
 
     // test as standalone solver
     {
@@ -285,7 +285,7 @@ void TestSymmetricStrengthOfConnection(void)
   // default: all connections are strong
   {
     SparseMatrix A = M; SparseMatrix S;
-    cusp::precond::detail::symmetric_strength_of_connection(A, S);
+    cusp::precond::aggregation::symmetric_strength_of_connection(A, S);
     Matrix result = S;
     ASSERT_EQUAL(result == M, true);
   }
@@ -293,7 +293,7 @@ void TestSymmetricStrengthOfConnection(void)
   // theta = 0.0: all connections are strong
   {
     SparseMatrix A = M; SparseMatrix S;
-    cusp::precond::detail::symmetric_strength_of_connection(A, S, 0.0);
+    cusp::precond::aggregation::symmetric_strength_of_connection(A, S, 0.0);
     Matrix result = S;
     ASSERT_EQUAL(result == M, true);
   }
@@ -301,7 +301,7 @@ void TestSymmetricStrengthOfConnection(void)
   // theta = 0.5
   {
     SparseMatrix A = M; SparseMatrix S;
-    cusp::precond::detail::symmetric_strength_of_connection(A, S, 0.5);
+    cusp::precond::aggregation::symmetric_strength_of_connection(A, S, 0.5);
     Matrix result = S;
  
     // expected output
@@ -316,7 +316,7 @@ void TestSymmetricStrengthOfConnection(void)
   // theta = 0.75
   {
     SparseMatrix A = M; SparseMatrix S;
-    cusp::precond::detail::symmetric_strength_of_connection(A, S, 0.75);
+    cusp::precond::aggregation::symmetric_strength_of_connection(A, S, 0.75);
     Matrix result = S;
   
     // expected output
@@ -331,7 +331,7 @@ void TestSymmetricStrengthOfConnection(void)
   // theta = 0.9
   {
     SparseMatrix A = M; SparseMatrix S;
-    cusp::precond::detail::symmetric_strength_of_connection(A, S, 0.9);
+    cusp::precond::aggregation::symmetric_strength_of_connection(A, S, 0.9);
     Matrix result = S;
   
     // expected output
