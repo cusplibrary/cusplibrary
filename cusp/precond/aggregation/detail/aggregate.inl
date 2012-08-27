@@ -15,6 +15,8 @@
  */
 
 #include <cusp/coo_matrix.h>
+#include <cusp/csr_matrix.h>
+
 #include <cusp/graph/maximal_independent_set.h>
 #include <cusp/detail/device/generalized_spmv/coo_flat.h>
 
@@ -30,6 +32,8 @@
 namespace cusp
 {
 namespace precond
+{
+namespace aggregation
 {
 namespace detail
 {
@@ -259,14 +263,16 @@ void standard_aggregation(const Matrix& C,
     }
 }
 
+} // end namespace detail
+
 template <typename Matrix, typename Array>
 void standard_aggregation(const Matrix& C,
                           Array& aggregates)
 {
-    standard_aggregation(C, aggregates, typename Matrix::format(), typename Matrix::memory_space());
+    detail::standard_aggregation(C, aggregates, typename Matrix::format(), typename Matrix::memory_space());
 }
 
-} // end namespace detail
+} // end namespace aggregation
 } // end namespace precond
 } // end namespace cusp
 

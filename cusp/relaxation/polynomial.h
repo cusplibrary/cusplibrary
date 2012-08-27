@@ -30,7 +30,7 @@ namespace relaxation
 {
 
 template <typename ValueType, typename MemorySpace>
-class polynomial
+class polynomial : public cusp::linear_operator<ValueType, MemorySpace, int>
 {
     // note: default_coefficients lives on the host
     cusp::array1d<ValueType, cusp::host_memory> default_coefficients;

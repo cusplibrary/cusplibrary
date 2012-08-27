@@ -29,14 +29,18 @@
 #include <cusp/coo_matrix.h>
 #include <cusp/csr_matrix.h>
 #include <cusp/hyb_matrix.h>
+
 #include <cusp/relaxation/jacobi.h>
 #include <cusp/relaxation/polynomial.h>
 
 #include <cusp/detail/lu.h>
+#include <cusp/detail/spectral_radius.h>
 
 namespace cusp
 {
 namespace precond
+{
+namespace aggregation
 {
 
 /*! \addtogroup preconditioners Preconditioners
@@ -45,9 +49,7 @@ namespace precond
  */
 
 template <typename IndexType, typename ValueType, typename MemorySpace>
-struct amg_container
-{
-};
+struct amg_container{};
 
 template <typename IndexType, typename ValueType>
 struct amg_container<IndexType,ValueType,cusp::host_memory>
@@ -65,12 +67,45 @@ struct amg_container<IndexType,ValueType,cusp::device_memory>
     typedef typename cusp::hyb_matrix<IndexType,ValueType,cusp::device_memory> solve_type;
 };
 
+template <typename SmootherType>
+struct SmootherInitializer {};
+
+template <typename ValueType, typename MemorySpace>
+struct SmootherInitializer< cusp::relaxation::jacobi<ValueType,MemorySpace> >
+{
+    typedef cusp::relaxation::jacobi<ValueType,MemorySpace> Smoother;
+
+    template <typename MatrixType>
+    Smoother operator()(const MatrixType& A, const ValueType rho_DinvA)
+    {
+        //  4/3 * 1/rho is a good default, where rho is the spectral radius of D^-1(A)
+    	ValueType omega = ValueType(4.0/3.0) / rho_DinvA;
+        return Smoother(A, omega);
+    }
+};
+
+template <typename ValueType, typename MemorySpace>
+struct SmootherInitializer< cusp::relaxation::polynomial<ValueType,MemorySpace> >
+{
+    typedef cusp::relaxation::polynomial<ValueType,MemorySpace> Smoother;
+
+    template <typename MatrixType>
+    Smoother operator()(const MatrixType& A, const ValueType rho_DinvA)
+    {
+        cusp::array1d<ValueType,cusp::host_memory> coef;
+        ValueType rho = cusp::detail::ritz_spectral_radius_symmetric(A, 8);
+        cusp::relaxation::detail::chebyshev_polynomial_coefficients(rho, coef);
+        return Smoother(A, coef);
+    }
+};
+
+
 /*! \p smoothed_aggregation : algebraic multigrid preconditoner based on
  *  smoothed aggregation
  *
  *  TODO
  */
-template <typename IndexType, typename ValueType, typename MemorySpace>
+template <typename IndexType, typename ValueType, typename MemorySpace, typename SmootherType = cusp::relaxation::jacobi<ValueType,MemorySpace> >
 class smoothed_aggregation : public cusp::linear_operator<ValueType, MemorySpace, IndexType>
 {
 
@@ -89,24 +124,24 @@ class smoothed_aggregation : public cusp::linear_operator<ValueType, MemorySpace
         cusp::array1d<ValueType,MemorySpace> b;               // per-level rhs
         cusp::array1d<ValueType,MemorySpace> residual;        // per-level residual
         
-	#ifndef USE_POLY_SMOOTHER
-        cusp::relaxation::jacobi<ValueType,MemorySpace> smoother;
-	#else
-        cusp::relaxation::polynomial<ValueType,MemorySpace> smoother;
-	#endif
+        SmootherType smoother;
     };
 
-    std::vector<level> levels;
-        
+    SmootherInitializer<SmootherType> smoother_initializer;
+
     cusp::detail::lu_solver<ValueType, cusp::host_memory> LU;
 
     ValueType theta;
 
     public:
 
+    std::vector<level> levels;        
+
     template <typename MatrixType>
     smoothed_aggregation(const MatrixType& A, const ValueType theta=0);
 
+    template <typename MatrixType, typename ArrayType>
+    smoothed_aggregation(const MatrixType& A, const ArrayType& B, const ValueType theta=0);
     
     template <typename Array1, typename Array2>
     void operator()(const Array1& x, Array2& y);
@@ -125,6 +160,9 @@ class smoothed_aggregation : public cusp::linear_operator<ValueType, MemorySpace
 
     protected:
 
+    template <typename MatrixType, typename ArrayType>
+    void init(const MatrixType& A, const ArrayType& B);
+
     void extend_hierarchy(void);
 
     template <typename Array1, typename Array2>
@@ -133,8 +171,9 @@ class smoothed_aggregation : public cusp::linear_operator<ValueType, MemorySpace
 /*! \}
  */
 
+} // end namespace aggregation
 } // end namespace precond
 } // end namespace cusp
 
-#include <cusp/precond/detail/smoothed_aggregation.inl>
+#include <cusp/precond/aggregation/detail/smoothed_aggregation.inl>
 

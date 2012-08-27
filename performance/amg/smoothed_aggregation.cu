@@ -1,4 +1,4 @@
-#include <cusp/precond/smoothed_aggregation.h>
+#include <cusp/precond/aggregation/smoothed_aggregation.h>
 #include <cusp/krylov/cg.h>
 #include <cusp/gallery/poisson.h>
 #include <cusp/csr_matrix.h>
@@ -60,7 +60,7 @@ int main(int argc, char ** argv)
 
     // solve with smoothed aggregation algebraic multigrid preconditioner
     {
-        std::cout << "\nSolving with smoothed aggregation preconditioner" << std::endl;
+        std::cout << "\nSolving with smoothed aggregation preconditioner and jacobi smoother" << std::endl;
         
         // allocate storage for solution (x) and right hand side (b)
         cusp::array1d<ValueType, MemorySpace> x(A.num_rows, 0);
@@ -71,7 +71,33 @@ int main(int argc, char ** argv)
 
         // setup preconditioner
         timer t0;
-        cusp::precond::smoothed_aggregation<IndexType, ValueType, MemorySpace> M(A);
+        cusp::precond::aggregation::smoothed_aggregation<IndexType, ValueType, MemorySpace> M(A);
+        std::cout << "constructed hierarchy in " << t0.milliseconds_elapsed() << " ms " << std::endl;
+
+        // solve
+        timer t1;
+        cusp::krylov::cg(A, x, b, monitor, M);
+        std::cout << "solved system  in " << t1.milliseconds_elapsed() << " ms " << std::endl;
+        
+        // report status
+        report_status(monitor);
+    }
+
+    // solve with smoothed aggregation algebraic multigrid preconditioner and polynomial smoother
+    {
+        std::cout << "\nSolving with smoothed aggregation preconditioner and polynomial smoother" << std::endl;
+	typedef cusp::relaxation::polynomial<ValueType,MemorySpace> Smoother;
+        
+        // allocate storage for solution (x) and right hand side (b)
+        cusp::array1d<ValueType, MemorySpace> x(A.num_rows, 0);
+        cusp::array1d<ValueType, MemorySpace> b(A.num_rows, 1);
+
+        // set stopping criteria (iteration_limit = 1000, relative_tolerance = 1e-10)
+        cusp::default_monitor<ValueType> monitor(b, 1000, 1e-10);
+
+        // setup preconditioner
+        timer t0;
+        cusp::precond::aggregation::smoothed_aggregation<IndexType, ValueType, MemorySpace, Smoother> M(A);
         std::cout << "constructed hierarchy in " << t0.milliseconds_elapsed() << " ms " << std::endl;
 
         // solve
