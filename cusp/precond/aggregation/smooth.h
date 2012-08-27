@@ -18,9 +18,6 @@
 
 #include <cusp/detail/config.h>
 
-#include <cusp/csr_matrix.h>
-#include <cusp/coo_matrix.h>
-
 namespace cusp
 {
 namespace precond

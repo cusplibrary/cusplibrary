@@ -1,4 +1,4 @@
-#include <cusp/precond/smoothed_aggregation.h>
+#include <cusp/precond/aggregation/smoothed_aggregation.h>
 #include <cusp/krylov/cg.h>
 #include <cusp/gallery/poisson.h>
 #include <cusp/csr_matrix.h>
@@ -64,7 +64,7 @@ int main(void)
         cusp::default_monitor<ValueType> monitor(b, 1000, 1e-6);
 
         // setup preconditioner
-        cusp::precond::smoothed_aggregation<IndexType, ValueType, MemorySpace> M(A);
+        cusp::precond::aggregation::smoothed_aggregation<IndexType, ValueType, MemorySpace> M(A);
         
         // solve
         cusp::krylov::cg(A, x, b, monitor, M);

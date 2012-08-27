@@ -15,6 +15,8 @@
  */
 
 #include <cusp/coo_matrix.h>
+#include <cusp/csr_matrix.h>
+
 #include <cusp/graph/maximal_independent_set.h>
 #include <cusp/detail/device/generalized_spmv/coo_flat.h>
 
