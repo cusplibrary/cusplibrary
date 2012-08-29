@@ -30,7 +30,7 @@ namespace relaxation
 {
 
 template <typename ValueType, typename MemorySpace>
-class jacobi : public cusp::linear_operator<ValueType, MemorySpace, int>
+class jacobi : public cusp::linear_operator<ValueType, MemorySpace>
 {
     ValueType default_omega;
     cusp::array1d<ValueType,MemorySpace> diagonal;
