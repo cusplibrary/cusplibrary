@@ -165,54 +165,32 @@ struct logical_to_other_physical_functor : public thrust::unary_function<IndexTy
     }
 };
 
-template <typename Iterator, class Orientation>
-struct row_view {};
+template <typename Iterator, bool same_orientation>
+struct row_or_column_view {};
 
 template <typename Iterator>
-struct row_view<Iterator,cusp::row_major> : public cusp::array1d_view<Iterator>
+struct row_or_column_view<Iterator,true>
 {
-    template <typename Array>
-    row_view(Array& A, size_t n)
-        : cusp::array1d_view<Iterator>(A.values.begin() + A.pitch * n,
-                                       A.values.begin() + A.pitch * n + A.num_cols)
-    {}
+    typedef cusp::array1d_view<Iterator> ArrayType;
+
+    template< typename Array >
+    static ArrayType get_array(Array& A, size_t i ) {
+        return ArrayType(A.values.begin() + A.pitch * i,
+                         A.values.begin() + A.pitch * i + cusp::detail::minor_dimension(A.num_rows, A.num_cols, typename Array::orientation()));
+    }
 };
 
 template <typename Iterator>
-struct row_view<Iterator,cusp::column_major> : public cusp::array1d_view<typename cusp::detail::strided_range<Iterator>::iterator>
+struct row_or_column_view<Iterator,false>
 {
-    typedef typename cusp::detail::strided_range<Iterator>::iterator ColumnIterator;
-    typedef cusp::array1d_view<ColumnIterator> Parent;
+    typedef typename cusp::detail::strided_range<Iterator> StrideType;
+    typedef cusp::array1d_view<typename StrideType::iterator> ArrayType;
 
-    template <typename StrideType>
-    row_view(StrideType& strided_range)
-        : Parent(strided_range.begin(), strided_range.end())
-    {}
-};
-
-template <typename Iterator, class Orientation>
-struct column_view {};
-
-template <typename Iterator>
-struct column_view<Iterator,cusp::column_major> : public cusp::array1d_view<Iterator>
-{
-    template <typename Array>
-    column_view(Array& A, size_t n)
-        : cusp::array1d_view<Iterator>(A.values.begin() + A.pitch * n,
-                                       A.values.begin() + A.pitch * n + A.num_rows)
-    {}
-};
-
-template <typename Iterator>
-struct column_view<Iterator,cusp::row_major> : public cusp::array1d_view<typename cusp::detail::strided_range<Iterator>::iterator>
-{
-    typedef typename cusp::detail::strided_range<Iterator>::iterator RowIterator;
-    typedef cusp::array1d_view<RowIterator> Parent;
-
-    template <typename StrideType>
-    column_view(StrideType& strided_range)
-        : Parent(strided_range.begin(), strided_range.end())
-    {}
+    template< typename Array >
+    static ArrayType get_array(Array& A, size_t i ) {
+        cusp::detail::strided_range<Iterator> strided_range(A.values.begin() + i, A.values.end(), A.pitch);
+        return ArrayType(strided_range.begin(), strided_range.end());
+    }
 };
 
 } // end namespace detail
@@ -265,11 +243,13 @@ public:
 
     /*! array1d_view of a single row
      */
-    typedef typename cusp::detail::row_view<typename values_array_type::iterator,Orientation> row_view;
+    typedef cusp::detail::row_or_column_view<typename values_array_type::iterator,thrust::detail::is_same<Orientation,cusp::row_major>::value> row_view_type;
+    typedef typename row_view_type::ArrayType row_view;
 
     /*! array1d_view of a single column
      */
-    typedef typename cusp::detail::column_view<typename values_array_type::iterator,Orientation> column_view;
+    typedef cusp::detail::row_or_column_view<typename values_array_type::iterator,thrust::detail::is_same<Orientation,cusp::column_major>::value> column_view_type;
+    typedef typename column_view_type::ArrayType column_view;
 
     values_array_type values;
 
@@ -335,36 +315,14 @@ public:
         values.swap(matrix.values);
     }
 
-    row_view row(size_t i, cusp::row_major)
-    {
-        return row_view(*this, i);
-    }
-
-    row_view row(size_t i, cusp::column_major)
-    {
-    	   cusp::detail::strided_range<typename values_array_type::iterator> strided_range(values.begin() + i, values.end(), pitch);
-	   return row_view(strided_range);
-    }
-
     row_view row(size_t i)
     {
-	return row(i, Orientation());
-    }
-
-    column_view column(size_t i, cusp::column_major)
-    {
-	   return column_view(*this, i);
-    }
-
-    column_view column(size_t i, cusp::row_major)
-    {
-    	   cusp::detail::strided_range<typename values_array_type::iterator> strided_range(values.begin() + i, values.end(), pitch);
-	   return column_view(strided_range);
+        return row_view_type::get_array(*this, i);
     }
 
     column_view column(size_t i)
     {
-	return column(i, Orientation());
+        return column_view_type::get_array(*this, i);
     }
 
     array2d& operator=(const array2d& matrix);
@@ -409,11 +367,13 @@ public:
 
     /*! array1d_view of a single row
      */
-    typedef typename cusp::detail::row_view<typename values_array_type::iterator,Orientation> row_view;
+    typedef cusp::detail::row_or_column_view<typename values_array_type::iterator,thrust::detail::is_same<Orientation,cusp::row_major>::value> row_view_type;
+    typedef typename row_view_type::ArrayType row_view;
 
     /*! array1d_view of a single column
      */
-    typedef typename cusp::detail::column_view<typename values_array_type::iterator,Orientation> column_view;
+    typedef cusp::detail::row_or_column_view<typename values_array_type::iterator,thrust::detail::is_same<Orientation,cusp::column_major>::value> column_view_type;
+    typedef typename column_view_type::ArrayType column_view;
 
     // minor_dimension + padding
     size_t pitch;
@@ -473,36 +433,14 @@ public:
         resize(num_rows, num_cols, cusp::detail::minor_dimension(num_rows, num_cols, orientation()));
     }
 
-    row_view row(size_t i, cusp::row_major) const
+    row_view row(size_t i)
     {
-        return row_view(*this, i);
+        return row_view_type::get_array(*this, i);
     }
 
-    row_view row(size_t i, cusp::column_major) const
+    column_view column(size_t i)
     {
-    	   cusp::detail::strided_range<typename values_array_type::iterator> strided_range(values.begin() + i, values.end(), pitch);
-	   return row_view(strided_range);
-    }
-
-    row_view row(size_t i) const
-    {
-	return row(i, Orientation());
-    }
-
-    column_view column(size_t i, cusp::column_major) const
-    {
-	   return column_view(*this, i);
-    }
-
-    column_view column(size_t i, cusp::row_major) const
-    {
-    	   cusp::detail::strided_range<typename values_array_type::iterator> strided_range(values.begin() + i, values.end(), pitch);
-	   return column_view(strided_range);
-    }
-
-    column_view column(size_t i) const
-    {
-	return column(i, Orientation());
+        return column_view_type::get_array(*this, i);
     }
 }; // class array2d_view
 
