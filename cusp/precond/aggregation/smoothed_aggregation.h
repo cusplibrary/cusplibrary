@@ -29,11 +29,11 @@
 #include <cusp/coo_matrix.h>
 #include <cusp/csr_matrix.h>
 #include <cusp/hyb_matrix.h>
+#include <cusp/multilevel.h>
 
 #include <cusp/relaxation/jacobi.h>
 #include <cusp/relaxation/polynomial.h>
 
-#include <cusp/detail/lu.h>
 #include <cusp/detail/spectral_radius.h>
 
 namespace cusp
@@ -106,57 +106,33 @@ struct SmootherInitializer< cusp::relaxation::polynomial<ValueType,MemorySpace> 
  *  TODO
  */
 template <typename IndexType, typename ValueType, typename MemorySpace, typename SmootherType = cusp::relaxation::jacobi<ValueType,MemorySpace> >
-class smoothed_aggregation : public cusp::linear_operator<ValueType, MemorySpace, IndexType>
+class smoothed_aggregation : public cusp::multilevel< typename amg_container<IndexType,ValueType,MemorySpace>::solve_type, SmootherType>
 {
 
     typedef typename amg_container<IndexType,ValueType,MemorySpace>::setup_type SetupMatrixType;
     typedef typename amg_container<IndexType,ValueType,MemorySpace>::solve_type SolveMatrixType;
+    typedef typename cusp::multilevel<SolveMatrixType,SmootherType> Parent;
 
-    struct level
+    struct sa_level
     {
-        SetupMatrixType A_; // matrix
-        SolveMatrixType R;  // restriction operator
-        SolveMatrixType A;  // matrix
-        SolveMatrixType P;  // prolongation operator
+    	SetupMatrixType A_; 				      // matrix
         cusp::array1d<IndexType,MemorySpace> aggregates;      // aggregates
         cusp::array1d<ValueType,MemorySpace> B;               // near-nullspace candidates
-        cusp::array1d<ValueType,MemorySpace> x;               // per-level solution
-        cusp::array1d<ValueType,MemorySpace> b;               // per-level rhs
-        cusp::array1d<ValueType,MemorySpace> residual;        // per-level residual
-        
-        SmootherType smoother;
     };
 
     SmootherInitializer<SmootherType> smoother_initializer;
-
-    cusp::detail::lu_solver<ValueType, cusp::host_memory> LU;
 
     ValueType theta;
 
     public:
 
-    std::vector<level> levels;        
+    std::vector<sa_level> sa_levels;        
 
     template <typename MatrixType>
     smoothed_aggregation(const MatrixType& A, const ValueType theta=0);
 
     template <typename MatrixType, typename ArrayType>
     smoothed_aggregation(const MatrixType& A, const ArrayType& B, const ValueType theta=0);
-    
-    template <typename Array1, typename Array2>
-    void operator()(const Array1& x, Array2& y);
-
-    template <typename Array1, typename Array2>
-    void solve(const Array1& b, Array2& x);
-
-    template <typename Array1, typename Array2, typename Monitor>
-    void solve(const Array1& b, Array2& x, Monitor& monitor);
-
-    void print( void );
-
-    double operator_complexity( void );
-
-    double grid_complexity( void );
 
     protected:
 
@@ -164,9 +140,6 @@ class smoothed_aggregation : public cusp::linear_operator<ValueType, MemorySpace
     void init(const MatrixType& A, const ArrayType& B);
 
     void extend_hierarchy(void);
-
-    template <typename Array1, typename Array2>
-    void _solve(const Array1& b, Array2& x, const size_t i);
 };
 /*! \}
  */

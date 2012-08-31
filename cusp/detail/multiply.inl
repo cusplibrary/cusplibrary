@@ -71,5 +71,23 @@ void multiply(LinearOperator&  A,
                          typename LinearOperator::format());
 }
 
+template <typename LinearOperator,
+          typename MatrixOrVector1,
+          typename MatrixOrVector2>
+void multiply(const LinearOperator&  A,
+              const MatrixOrVector1& B,
+              const MatrixOrVector2& C)
+{
+  CUSP_PROFILE_SCOPED();
+
+  // TODO check that dimensions are compatible
+
+  typedef typename LinearOperator::value_type   ValueType;
+  typedef typename LinearOperator::memory_space MemorySpace;
+
+  cusp::detail::multiply(A, B, C,
+                         typename LinearOperator::format());
+}
+
 } // end namespace cusp
 
