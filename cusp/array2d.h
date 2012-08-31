@@ -251,6 +251,16 @@ public:
     typedef cusp::detail::row_or_column_view<typename values_array_type::iterator,thrust::detail::is_same<Orientation,cusp::column_major>::value> column_view_type;
     typedef typename column_view_type::ArrayType column_view;
 
+    /*! const array1d_view of a single row
+     */
+    typedef cusp::detail::row_or_column_view<typename values_array_type::const_iterator,thrust::detail::is_same<Orientation,cusp::row_major>::value> const_row_view_type;
+    typedef typename const_row_view_type::ArrayType const_row_view;
+
+    /*! const array1d_view of a single column
+     */
+    typedef cusp::detail::row_or_column_view<typename values_array_type::const_iterator,thrust::detail::is_same<Orientation,cusp::column_major>::value> const_column_view_type;
+    typedef typename const_column_view_type::ArrayType const_column_view;
+
     values_array_type values;
 
     // minor_dimension + padding
@@ -266,11 +276,21 @@ public:
           pitch(cusp::detail::minor_dimension(num_rows, num_cols, orientation())),
           values(num_rows * num_cols) {}
 
-    // construct matrix with given shape and number of entries and fill with a given value
+    // construct matrix with given shape, number of entries and fill with a given value
     array2d(size_t num_rows, size_t num_cols, const ValueType& value)
         : Parent(num_rows, num_cols, num_rows * num_cols),
           pitch(cusp::detail::minor_dimension(num_rows, num_cols, orientation())),
           values(num_rows * num_cols, value) {}
+
+    // construct matrix with given shape, number of entries, pitch and fill with a given value
+    array2d(size_t num_rows, size_t num_cols, const ValueType& value, size_t pitch)
+        : Parent(num_rows, num_cols, num_rows * num_cols),
+          pitch(pitch),
+          values(pitch * cusp::detail::major_dimension(num_rows, num_cols, orientation()), value) 
+    {
+        if (pitch < cusp::detail::minor_dimension(num_rows, num_cols, orientation()))
+            throw cusp::invalid_input_exception("pitch cannot be less than minor dimension");
+    }
 
     // construct from another matrix
     template <typename MatrixType>
@@ -323,6 +343,16 @@ public:
     column_view column(size_t i)
     {
         return column_view_type::get_array(*this, i);
+    }
+
+    const_row_view row(size_t i) const
+    {
+        return const_row_view_type::get_array(*this, i);
+    }
+
+    const_column_view column(size_t i) const
+    {
+        return const_column_view_type::get_array(*this, i);
     }
 
     array2d& operator=(const array2d& matrix);
@@ -439,6 +469,16 @@ public:
     }
 
     column_view column(size_t i)
+    {
+        return column_view_type::get_array(*this, i);
+    }
+
+    row_view row(size_t i) const
+    {
+        return row_view_type::get_array(*this, i);
+    }
+
+    column_view column(size_t i) const
     {
         return column_view_type::get_array(*this, i);
     }

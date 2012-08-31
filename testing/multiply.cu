@@ -30,12 +30,12 @@ void CompareSparseMatrixMatrixMultiply(DenseMatrixType A, DenseMatrixType B)
 
     SparseMatrixType _A(A), _B(B), _C;
     cusp::multiply(_A, _B, _C);
-    
+
     ASSERT_EQUAL(C == DenseMatrixType(_C), true);
-    
+
     typename SparseMatrixType::view _Aview(_A), _Bview(_B), _Cview(_C);
     cusp::multiply(_Aview, _Bview, _Cview);
-    
+
     ASSERT_EQUAL(C == DenseMatrixType(_Cview), true);
 }
 
@@ -43,30 +43,47 @@ template <typename TestMatrix>
 void TestSparseMatrixMatrixMultiply(void)
 {
     cusp::array2d<float,cusp::host_memory> A(3,2);
-    A(0,0) = 1.0; A(0,1) = 2.0;
-    A(1,0) = 3.0; A(1,1) = 0.0;
-    A(2,0) = 5.0; A(2,1) = 6.0;
-    
+    A(0,0) = 1.0;
+    A(0,1) = 2.0;
+    A(1,0) = 3.0;
+    A(1,1) = 0.0;
+    A(2,0) = 5.0;
+    A(2,1) = 6.0;
+
     cusp::array2d<float,cusp::host_memory> B(2,4);
-    B(0,0) = 0.0; B(0,1) = 2.0; B(0,2) = 3.0; B(0,3) = 4.0;
-    B(1,0) = 5.0; B(1,1) = 0.0; B(1,2) = 0.0; B(1,3) = 8.0;
+    B(0,0) = 0.0;
+    B(0,1) = 2.0;
+    B(0,2) = 3.0;
+    B(0,3) = 4.0;
+    B(1,0) = 5.0;
+    B(1,1) = 0.0;
+    B(1,2) = 0.0;
+    B(1,3) = 8.0;
 
     cusp::array2d<float,cusp::host_memory> C(2,2);
-    C(0,0) = 0.0; C(0,1) = 0.0;
-    C(1,0) = 3.0; C(1,1) = 5.0;
-    
+    C(0,0) = 0.0;
+    C(0,1) = 0.0;
+    C(1,0) = 3.0;
+    C(1,1) = 5.0;
+
     cusp::array2d<float,cusp::host_memory> D(2,1);
     D(0,0) = 2.0;
     D(1,0) = 3.0;
-    
+
     cusp::array2d<float,cusp::host_memory> E(2,2);
-    E(0,0) = 0.0; E(0,1) = 0.0;
-    E(1,0) = 0.0; E(1,1) = 0.0;
-    
+    E(0,0) = 0.0;
+    E(0,1) = 0.0;
+    E(1,0) = 0.0;
+    E(1,1) = 0.0;
+
     cusp::array2d<float,cusp::host_memory> F(2,3);
-    F(0,0) = 0.0; F(0,1) = 1.5; F(0,2) = 3.0;
-    F(1,0) = 0.5; F(1,1) = 0.0; F(1,2) = 0.0;
-    
+    F(0,0) = 0.0;
+    F(0,1) = 1.5;
+    F(0,2) = 3.0;
+    F(1,0) = 0.5;
+    F(1,1) = 0.0;
+    F(1,2) = 0.0;
+
     cusp::array2d<float,cusp::host_memory> G;
     cusp::gallery::poisson5pt(G, 4, 6);
 
@@ -75,13 +92,13 @@ void TestSparseMatrixMatrixMultiply(void)
 
     cusp::array2d<float,cusp::host_memory> I;
     cusp::gallery::random(24, 24, 150, I);
-    
+
     cusp::array2d<float,cusp::host_memory> J;
     cusp::gallery::random(24, 24, 50, J);
 
     cusp::array2d<float,cusp::host_memory> K;
     cusp::gallery::random(24, 12, 20, K);
- 
+
     thrust::host_vector< cusp::array2d<float,cusp::host_memory> > matrices;
     matrices.push_back(A);
     matrices.push_back(B);
@@ -111,6 +128,138 @@ void TestSparseMatrixMatrixMultiply(void)
 }
 DECLARE_SPARSE_MATRIX_UNITTEST(TestSparseMatrixMatrixMultiply);
 
+///////////////////////////////////////////////
+// Sparse Matrix-Dense Matrix Multiplication //
+///////////////////////////////////////////////
+
+template <typename SparseMatrixType, typename DenseMatrixType>
+void CompareSparseMatrixDenseMatrixMultiply(DenseMatrixType A, DenseMatrixType B)
+{
+    typedef typename SparseMatrixType::value_type ValueType;
+    typedef typename SparseMatrixType::memory_space MemorySpace;
+    typedef cusp::array2d<ValueType,MemorySpace,cusp::column_major> DenseSpaceMatrixType;
+
+    DenseMatrixType C(A.num_rows, B.num_cols);
+    cusp::multiply(A, B, C);
+
+    SparseMatrixType _A(A);
+
+    // Copy B into the memory space
+    DenseSpaceMatrixType B_space(B);
+    // Allocate _B and ensure each column is properly aligned
+    DenseSpaceMatrixType _B(B.num_rows, B.num_cols, ValueType(0), cusp::detail::round_up(B.num_rows, size_t(128)));
+    // Copy columns of B into _B
+    for(size_t i = 0; i < B.num_cols; i++ )
+	cusp::blas::copy(B_space.column(i), _B.column(i));
+
+    // test container
+    {
+        DenseSpaceMatrixType _C(C.num_rows, C.num_cols);
+        cusp::multiply(_A, _B, _C);
+
+        ASSERT_EQUAL(C == DenseMatrixType(_C), true);
+    }
+
+    {
+        // test view
+        DenseSpaceMatrixType _C(C.num_rows, C.num_cols);
+        typename SparseMatrixType::view _Aview(_A);
+        typename DenseSpaceMatrixType::view _Bview(_B), _Cview(_C);
+        cusp::multiply(_Aview, _Bview, _Cview);
+
+        ASSERT_EQUAL(C == DenseMatrixType(_C), true);
+    }
+}
+
+template <typename TestMatrix>
+void TestSparseMatrixDenseMatrixMultiply(void)
+{
+    cusp::array2d<float,cusp::host_memory> A(3,2);
+    A(0,0) = 1.0;
+    A(0,1) = 2.0;
+    A(1,0) = 3.0;
+    A(1,1) = 0.0;
+    A(2,0) = 5.0;
+    A(2,1) = 6.0;
+
+    cusp::array2d<float,cusp::host_memory> B(2,4);
+    B(0,0) = 0.0;
+    B(0,1) = 2.0;
+    B(0,2) = 3.0;
+    B(0,3) = 4.0;
+    B(1,0) = 5.0;
+    B(1,1) = 0.0;
+    B(1,2) = 0.0;
+    B(1,3) = 8.0;
+
+    cusp::array2d<float,cusp::host_memory> C(2,2);
+    C(0,0) = 0.0;
+    C(0,1) = 0.0;
+    C(1,0) = 3.0;
+    C(1,1) = 5.0;
+
+    cusp::array2d<float,cusp::host_memory> D(2,1);
+    D(0,0) = 2.0;
+    D(1,0) = 3.0;
+
+    cusp::array2d<float,cusp::host_memory> E(2,2);
+    E(0,0) = 0.0;
+    E(0,1) = 0.0;
+    E(1,0) = 0.0;
+    E(1,1) = 0.0;
+
+    cusp::array2d<float,cusp::host_memory> F(2,3);
+    F(0,0) = 0.0;
+    F(0,1) = 1.5;
+    F(0,2) = 3.0;
+    F(1,0) = 0.5;
+    F(1,1) = 0.0;
+    F(1,2) = 0.0;
+
+    cusp::array2d<float,cusp::host_memory> G;
+    cusp::gallery::poisson5pt(G, 4, 6);
+
+    cusp::array2d<float,cusp::host_memory> H;
+    cusp::gallery::poisson5pt(H, 8, 3);
+
+    cusp::array2d<float,cusp::host_memory> I;
+    cusp::gallery::random(24, 24, 150, I);
+
+    cusp::array2d<float,cusp::host_memory> J;
+    cusp::gallery::random(24, 24, 50, J);
+
+    cusp::array2d<float,cusp::host_memory> K;
+    cusp::gallery::random(24, 12, 20, K);
+
+    thrust::host_vector< cusp::array2d<float,cusp::host_memory,cusp::column_major> > matrices;
+    matrices.push_back(A);
+    matrices.push_back(B);
+    matrices.push_back(C);
+    matrices.push_back(D);
+    matrices.push_back(E);
+    matrices.push_back(F);
+    matrices.push_back(G);
+    matrices.push_back(H);
+    matrices.push_back(I);
+    matrices.push_back(J);
+    matrices.push_back(K);
+
+    // test matrix multiply for every pair of compatible matrices
+    for(size_t i = 0; i < matrices.size(); i++)
+    {
+        const cusp::array2d<float,cusp::host_memory,cusp::column_major>& left = matrices[i];
+        for(size_t j = 0; j < matrices.size(); j++)
+        {
+            const cusp::array2d<float,cusp::host_memory,cusp::column_major>& right = matrices[j];
+
+            if (left.num_cols == right.num_rows)
+                CompareSparseMatrixDenseMatrixMultiply<TestMatrix>(left, right);
+        }
+    }
+
+}
+DECLARE_SPARSE_MATRIX_UNITTEST(TestSparseMatrixDenseMatrixMultiply);
+
 
 /////////////////////////////////////////
 // Sparse Matrix-Vector Multiplication //
@@ -129,40 +278,40 @@ void CompareSparseMatrixVectorMultiply(DenseMatrixType A)
 
     // compute reference output
     cusp::multiply(A, x, y);
-  
+
     // test container
     {
-      SparseMatrixType _A(A);
-      cusp::array1d<float, MemorySpace> _x(x);
-      cusp::array1d<float, MemorySpace> _y(A.num_rows, 10);
+        SparseMatrixType _A(A);
+        cusp::array1d<float, MemorySpace> _x(x);
+        cusp::array1d<float, MemorySpace> _y(A.num_rows, 10);
 
-      cusp::multiply(_A, _x, _y);
-      
-      ASSERT_EQUAL(_y, y);
+        cusp::multiply(_A, _x, _y);
+
+        ASSERT_EQUAL(_y, y);
     }
 
     // test matrix view
     {
-      SparseMatrixType _A(A);
-      cusp::array1d<float, MemorySpace> _x(x);
-      cusp::array1d<float, MemorySpace> _y(A.num_rows, 10);
+        SparseMatrixType _A(A);
+        cusp::array1d<float, MemorySpace> _x(x);
+        cusp::array1d<float, MemorySpace> _y(A.num_rows, 10);
 
-      typename SparseMatrixType::view _V(_A);
-      cusp::multiply(_V, _x, _y);
-      
-      ASSERT_EQUAL(_y, y);
+        typename SparseMatrixType::view _V(_A);
+        cusp::multiply(_V, _x, _y);
+
+        ASSERT_EQUAL(_y, y);
     }
-    
+
     // test array view
     {
-      SparseMatrixType _A(A);
-      cusp::array1d<float, MemorySpace> _x(x);
-      cusp::array1d<float, MemorySpace> _y(A.num_rows, 10);
+        SparseMatrixType _A(A);
+        cusp::array1d<float, MemorySpace> _x(x);
+        cusp::array1d<float, MemorySpace> _y(A.num_rows, 10);
 
-      typename cusp::array1d<float, MemorySpace> _Vx(_x), _Vy(_y);
-      cusp::multiply(_A, _Vx, _Vy);
-      
-      ASSERT_EQUAL(_Vy, y);
+        typename cusp::array1d<float, MemorySpace> _Vx(_x), _Vy(_y);
+        cusp::multiply(_A, _Vx, _Vy);
+
+        ASSERT_EQUAL(_Vy, y);
     }
 }
 
@@ -174,32 +323,61 @@ void TestSparseMatrixVectorMultiply()
     typedef typename TestMatrix::memory_space MemorySpace;
 
     cusp::array2d<float, cusp::host_memory> A(5,4);
-    A(0,0) = 13; A(0,1) = 80; A(0,2) =  0; A(0,3) =  0; 
-    A(1,0) =  0; A(1,1) = 27; A(1,2) =  0; A(1,3) =  0;
-    A(2,0) = 55; A(2,1) =  0; A(2,2) = 24; A(2,3) = 42;
-    A(3,0) =  0; A(3,1) = 69; A(3,2) =  0; A(3,3) = 83;
-    A(4,0) =  0; A(4,1) =  0; A(4,2) = 27; A(4,3) =  0;
-    
+    A(0,0) = 13;
+    A(0,1) = 80;
+    A(0,2) =  0;
+    A(0,3) =  0;
+    A(1,0) =  0;
+    A(1,1) = 27;
+    A(1,2) =  0;
+    A(1,3) =  0;
+    A(2,0) = 55;
+    A(2,1) =  0;
+    A(2,2) = 24;
+    A(2,3) = 42;
+    A(3,0) =  0;
+    A(3,1) = 69;
+    A(3,2) =  0;
+    A(3,3) = 83;
+    A(4,0) =  0;
+    A(4,1) =  0;
+    A(4,2) = 27;
+    A(4,3) =  0;
+
     cusp::array2d<float,cusp::host_memory> B(2,4);
-    B(0,0) = 0.0; B(0,1) = 2.0; B(0,2) = 3.0; B(0,3) = 4.0;
-    B(1,0) = 5.0; B(1,1) = 0.0; B(1,2) = 0.0; B(1,3) = 8.0;
+    B(0,0) = 0.0;
+    B(0,1) = 2.0;
+    B(0,2) = 3.0;
+    B(0,3) = 4.0;
+    B(1,0) = 5.0;
+    B(1,1) = 0.0;
+    B(1,2) = 0.0;
+    B(1,3) = 8.0;
 
     cusp::array2d<float,cusp::host_memory> C(2,2);
-    C(0,0) = 0.0; C(0,1) = 0.0;
-    C(1,0) = 3.0; C(1,1) = 5.0;
-    
+    C(0,0) = 0.0;
+    C(0,1) = 0.0;
+    C(1,0) = 3.0;
+    C(1,1) = 5.0;
+
     cusp::array2d<float,cusp::host_memory> D(2,1);
     D(0,0) = 2.0;
     D(1,0) = 3.0;
-    
+
     cusp::array2d<float,cusp::host_memory> E(2,2);
-    E(0,0) = 0.0; E(0,1) = 0.0;
-    E(1,0) = 0.0; E(1,1) = 0.0;
-    
+    E(0,0) = 0.0;
+    E(0,1) = 0.0;
+    E(1,0) = 0.0;
+    E(1,1) = 0.0;
+
     cusp::array2d<float,cusp::host_memory> F(2,3);
-    F(0,0) = 0.0; F(0,1) = 1.5; F(0,2) = 3.0;
-    F(1,0) = 0.5; F(1,1) = 0.0; F(1,2) = 0.0;
-    
+    F(0,0) = 0.0;
+    F(0,1) = 1.5;
+    F(0,2) = 3.0;
+    F(1,0) = 0.5;
+    F(1,1) = 0.0;
+    F(1,2) = 0.0;
+
     cusp::array2d<float,cusp::host_memory> G;
     cusp::gallery::poisson5pt(G, 4, 6);
 
@@ -228,13 +406,17 @@ void TestMultiplyIdentityOperator(void)
     cusp::array1d<float, MemorySpace> x(4);
     cusp::array1d<float, MemorySpace> y(4);
 
-    x[0] =  7.0f;   y[0] =  0.0f; 
-    x[1] =  5.0f;   y[1] = -2.0f;
-    x[2] =  4.0f;   y[2] =  0.0f;
-    x[3] = -3.0f;   y[3] =  5.0f;
+    x[0] =  7.0f;
+    y[0] =  0.0f;
+    x[1] =  5.0f;
+    y[1] = -2.0f;
+    x[2] =  4.0f;
+    y[2] =  0.0f;
+    x[3] = -3.0f;
+    y[3] =  5.0f;
 
     cusp::identity_operator<float, MemorySpace> A(4,4);
-    
+
     cusp::multiply(A, x, y);
 
     ASSERT_EQUAL(y[0],  7.0f);
