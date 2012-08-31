@@ -41,11 +41,11 @@ namespace host
 // Dense Matrix-Vector Multiply //
 //////////////////////////////////
 template <typename Matrix,
-          typename Vector1,
-          typename Vector2>
+         typename Vector1,
+         typename Vector2>
 void multiply(const Matrix&  A,
               const Vector1& B,
-                    Vector2& C,
+              Vector2& C,
               cusp::array2d_format,
               cusp::array1d_format,
               cusp::array1d_format)
@@ -67,11 +67,11 @@ void multiply(const Matrix&  A,
 // Sparse Matrix-Vector Multiply //
 ///////////////////////////////////
 template <typename Matrix,
-          typename Vector1,
-          typename Vector2>
+         typename Vector1,
+         typename Vector2>
 void multiply(const Matrix&  A,
               const Vector1& B,
-                    Vector2& C,
+              Vector2& C,
               cusp::coo_format,
               cusp::array1d_format,
               cusp::array1d_format)
@@ -80,11 +80,11 @@ void multiply(const Matrix&  A,
 }
 
 template <typename Matrix,
-          typename Vector1,
-          typename Vector2>
+         typename Vector1,
+         typename Vector2>
 void multiply(const Matrix&  A,
               const Vector1& B,
-                    Vector2& C,
+              Vector2& C,
               cusp::csr_format,
               cusp::array1d_format,
               cusp::array1d_format)
@@ -93,11 +93,11 @@ void multiply(const Matrix&  A,
 }
 
 template <typename Matrix,
-          typename Vector1,
-          typename Vector2>
+         typename Vector1,
+         typename Vector2>
 void multiply(const Matrix&  A,
               const Vector1& B,
-                    Vector2& C,
+              Vector2& C,
               cusp::dia_format,
               cusp::array1d_format,
               cusp::array1d_format)
@@ -106,11 +106,11 @@ void multiply(const Matrix&  A,
 }
 
 template <typename Matrix,
-          typename Vector1,
-          typename Vector2>
+         typename Vector1,
+         typename Vector2>
 void multiply(const Matrix&  A,
               const Vector1& B,
-                    Vector2& C,
+              Vector2& C,
               cusp::ell_format,
               cusp::array1d_format,
               cusp::array1d_format)
@@ -119,11 +119,11 @@ void multiply(const Matrix&  A,
 }
 
 template <typename Matrix,
-          typename Vector1,
-          typename Vector2>
+         typename Vector1,
+         typename Vector2>
 void multiply(const Matrix&  A,
               const Vector1& B,
-                    Vector2& C,
+              Vector2& C,
               cusp::hyb_format,
               cusp::array1d_format,
               cusp::array1d_format)
@@ -137,28 +137,30 @@ void multiply(const Matrix&  A,
 ////////////////////////////////////////
 // Sparse Matrix-BlockVector Multiply //
 ////////////////////////////////////////
-//// TODO implement this w/ repeated SpMVs and then specialize
-//template <typename Matrix,
-//          typename Vector1,
-//          typename Vector2>
-//void multiply(const Matrix&  A,
-//              const Vector1& B,
-//                    Vector2& C,
-//              cusp::detail::sparse_format,
-//              cusp::detail::array2d_format,
-//              cusp::detail::array2d_format)
-//{
-//}
+//// TODO specialize
+template <typename Matrix,
+         typename Vector1,
+         typename Vector2>
+void multiply(const Matrix&  A,
+              const Vector1& B,
+              Vector2& C,
+              cusp::sparse_format,
+              cusp::array2d_format,
+              cusp::array2d_format)
+{
+    for( size_t j = 0; j < B.num_cols; j++ )
+        cusp::multiply(A, B.column(j), C.column(j));
+}
 
 ////////////////////////////////////////
 // Dense Matrix-Matrix Multiplication //
 ////////////////////////////////////////
 template <typename Matrix1,
-          typename Matrix2,
-          typename Matrix3>
+         typename Matrix2,
+         typename Matrix3>
 void multiply(const Matrix1&  A,
               const Matrix2& B,
-                    Matrix3& C,
+              Matrix3& C,
               cusp::array2d_format,
               cusp::array2d_format,
               cusp::array2d_format)
@@ -175,7 +177,7 @@ void multiply(const Matrix1&  A,
 
             for(size_t k = 0; k < A.num_cols; k++)
                 v += A(i,k) * B(k,j);
-            
+
             C(i,j) = v;
         }
     }
@@ -185,11 +187,11 @@ void multiply(const Matrix1&  A,
 // Sparse Matrix-Matrix Multiplication //
 /////////////////////////////////////////
 template <typename Matrix1,
-          typename Matrix2,
-          typename Matrix3>
+         typename Matrix2,
+         typename Matrix3>
 void multiply(const Matrix1& A,
               const Matrix2& B,
-                    Matrix3& C,
+              Matrix3& C,
               cusp::coo_format,
               cusp::coo_format,
               cusp::coo_format)
@@ -198,11 +200,11 @@ void multiply(const Matrix1& A,
 }
 
 template <typename Matrix1,
-          typename Matrix2,
-          typename Matrix3>
+         typename Matrix2,
+         typename Matrix3>
 void multiply(const Matrix1& A,
               const Matrix2& B,
-                    Matrix3& C,
+              Matrix3& C,
               cusp::csr_format,
               cusp::csr_format,
               cusp::csr_format)
@@ -211,11 +213,11 @@ void multiply(const Matrix1& A,
 }
 
 template <typename Matrix1,
-          typename Matrix2,
-          typename Matrix3>
+         typename Matrix2,
+         typename Matrix3>
 void multiply(const Matrix1& A,
               const Matrix2& B,
-                    Matrix3& C,
+              Matrix3& C,
               cusp::sparse_format,
               cusp::sparse_format,
               cusp::sparse_format)
@@ -229,21 +231,21 @@ void multiply(const Matrix1& A,
 
     cusp::convert(C_, C);
 }
-  
+
 /////////////////
 // Entry Point //
 /////////////////
 template <typename Matrix,
-          typename MatrixOrVector1,
-          typename MatrixOrVector2>
+         typename MatrixOrVector1,
+         typename MatrixOrVector2>
 void multiply(const Matrix&  A,
               const MatrixOrVector1& B,
-                    MatrixOrVector2& C)
+              MatrixOrVector2& C)
 {
-  cusp::detail::host::multiply(A, B, C,
-                               typename Matrix::format(),
-                               typename MatrixOrVector1::format(),
-                               typename MatrixOrVector2::format());
+    cusp::detail::host::multiply(A, B, C,
+                                 typename Matrix::format(),
+                                 typename MatrixOrVector1::format(),
+                                 typename MatrixOrVector2::format());
 }
 
 } // end namespace host

@@ -21,9 +21,12 @@
 
 #include <cusp/detail/spectral_radius.h>
 
+#include <thrust/extrema.h>
 #include <thrust/fill.h>
 #include <thrust/gather.h>
 #include <thrust/transform.h>
+#include <thrust/reduce.h>
+
 #include <thrust/iterator/zip_iterator.h>
 #include <thrust/iterator/constant_iterator.h>
 #include <thrust/iterator/counting_iterator.h>

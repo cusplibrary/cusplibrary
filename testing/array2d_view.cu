@@ -281,24 +281,23 @@ void TestArray2dViewRowView(void)
     ASSERT_EQUAL(A(2,1), 2);
   }
 
-  KNOWN_FAILURE;
-//  // row view of column major matrix
-//  {
-//    cusp::array2d<float, Space, cusp::column_major> C(3, 2, -1);
-//    typename cusp::array2d<float, Space, cusp::column_major>::view A(C);
-//
-//    ASSERT_EQUAL(A.row(i).size(), 2);
-//
-//    for (size_t i = 0; i < A.num_rows; i++)
-//      cusp::blas::fill(A.row(i), i);
-//
-//    ASSERT_EQUAL(A(0,0), 0);
-//    ASSERT_EQUAL(A(0,1), 0);
-//    ASSERT_EQUAL(A(1,0), 1);
-//    ASSERT_EQUAL(A(1,1), 1);
-//    ASSERT_EQUAL(A(2,0), 2);
-//    ASSERT_EQUAL(A(2,1), 2);
-//  }
+  // row view of column major matrix
+  {
+    cusp::array2d<float, Space, cusp::column_major> C(3, 2, -1);
+    typename cusp::array2d<float, Space, cusp::column_major>::view A(C);
+
+    ASSERT_EQUAL(A.row(0).size(), 2);
+
+    for (size_t i = 0; i < A.num_rows; i++)
+      cusp::blas::fill(A.row(i), i);
+
+    ASSERT_EQUAL(A(0,0), 0);
+    ASSERT_EQUAL(A(0,1), 0);
+    ASSERT_EQUAL(A(1,0), 1);
+    ASSERT_EQUAL(A(1,1), 1);
+    ASSERT_EQUAL(A(2,0), 2);
+    ASSERT_EQUAL(A(2,1), 2);
+  }
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestArray2dViewRowView);
 
@@ -324,24 +323,23 @@ void TestArray2dViewColumnView(void)
     ASSERT_EQUAL(A(2,1), 1);
   }
 
-  KNOWN_FAILURE;
-//  // column view of row major matrix
-//  {
-//    cusp::array2d<float, Space, cusp::row_major> A(3, 2, -1);
-//    typename cusp::array2d<float, Space, cusp::row_major>::view V(A);
-//
-//    ASSERT_EQUAL(A.column(i).size(), 3);
-//
-//    for (size_t i = 0; i < A.num_cols; i++)
-//      cusp::blas::fill(A.column(i), i);
-//
-//    ASSERT_EQUAL(A(0,0), 0);
-//    ASSERT_EQUAL(A(1,0), 1);
-//    ASSERT_EQUAL(A(2,0), 0);
-//    ASSERT_EQUAL(A(0,1), 1);
-//    ASSERT_EQUAL(A(1,1), 0);
-//    ASSERT_EQUAL(A(2,1), 1);
-//  }
+  // column view of row major matrix
+  {
+    cusp::array2d<float, Space, cusp::row_major> A(3, 2, -1);
+    typename cusp::array2d<float, Space, cusp::row_major>::view V(A);
+
+    ASSERT_EQUAL(A.column(0).size(), 3);
+
+    for (size_t i = 0; i < A.num_cols; i++)
+      cusp::blas::fill(A.column(i), i);
+
+    ASSERT_EQUAL(A(0,0), 0);
+    ASSERT_EQUAL(A(1,0), 0);
+    ASSERT_EQUAL(A(2,0), 0);
+    ASSERT_EQUAL(A(0,1), 1);
+    ASSERT_EQUAL(A(1,1), 1);
+    ASSERT_EQUAL(A(2,1), 1);
+  }
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestArray2dViewColumnView);
 
