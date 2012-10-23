@@ -83,16 +83,26 @@ namespace cusp
 
 
   ///  Returns the magnitude of z.
-  template<typename ValueType> ValueType abs(const complex<ValueType>& z);
+  template<typename ValueType>
+  __host__ __device__
+  ValueType abs(const complex<ValueType>& z);
   ///  Returns the phase angle of z.
-  template<typename ValueType> ValueType arg(const complex<ValueType>& z);
+  template<typename ValueType>
+  __host__ __device__
+  ValueType arg(const complex<ValueType>& z);
   ///  Returns the magnitude of z squared.
-  template<typename ValueType> ValueType norm(const complex<ValueType>& z);
+  template<typename ValueType>
+  __host__ __device__
+  ValueType norm(const complex<ValueType>& z);
 
   ///  Returns the complex conjugate of z.
-  template<typename ValueType> complex<ValueType> conj(const complex<ValueType>& z);
+  template<typename ValueType>
+  __host__ __device__
+  complex<ValueType> conj(const complex<ValueType>& z);
   ///  Returns the complex with magnitude m and angle theta in radians.
-  template<typename ValueType> complex<ValueType> polar(const ValueType& m, const ValueType& theta = 0);
+  template<typename ValueType>
+  __host__ __device__
+  complex<ValueType> polar(const ValueType& m, const ValueType& theta = 0);
 
   // Arithmetic operators:
   // Multiplication
@@ -147,49 +157,89 @@ namespace cusp
 
   // Transcendentals:
   // Returns the complex cosine of z.
-  template<typename ValueType> complex<ValueType> cos(const complex<ValueType>& z);
+  template <typename ValueType>
+    __host__ __device__
+  complex<ValueType> cos(const complex<ValueType>& z);
   // Returns the complex hyperbolic cosine of z.
-  template<typename ValueType> complex<ValueType> cosh(const complex<ValueType>& z);
+  template <typename ValueType>
+    __host__ __device__
+  complex<ValueType> cosh(const complex<ValueType>& z);
   // Returns the complex base e exponential of z.
-  template<typename ValueType> complex<ValueType> exp(const complex<ValueType>& z);
+  template <typename ValueType>
+    __host__ __device__
+  complex<ValueType> exp(const complex<ValueType>& z);
   // Returns the complex natural logarithm of z.
-  template<typename ValueType> complex<ValueType> log(const complex<ValueType>& z);
+  template <typename ValueType>
+    __host__ __device__
+  complex<ValueType> log(const complex<ValueType>& z);
   // Returns the complex base 10 logarithm of z.
-  template<typename ValueType> complex<ValueType> log10(const complex<ValueType>& z);
+  template <typename ValueType>
+    __host__ __device__
+  complex<ValueType> log10(const complex<ValueType>& z);
   // Returns z to the n'th power.
-  template<typename ValueType> complex<ValueType> pow(const complex<ValueType>& z, const int& n);
+  template <typename ValueType>
+    __host__ __device__
+  complex<ValueType> pow(const complex<ValueType>& z, const int& n);
   // Returns z to the x'th power.
-  template<typename ValueType> complex<ValueType> pow(const complex<ValueType>&z, const ValueType&x);
+  template <typename ValueType>
+    __host__ __device__
+  complex<ValueType> pow(const complex<ValueType>&z, const ValueType&x);
   // Returns z to the z2'th power.
-  template<typename ValueType> complex<ValueType> pow(const complex<ValueType>&z, 
+  template <typename ValueType>
+    __host__ __device__
+  complex<ValueType> pow(const complex<ValueType>&z, 
 							  const complex<ValueType>&z2);
   // Returns x to the z'th power.
-  template<typename ValueType> complex<ValueType> pow(const ValueType& x, const complex<ValueType>& z);
+  template <typename ValueType>
+    __host__ __device__
+  complex<ValueType> pow(const ValueType& x, const complex<ValueType>& z);
   // Returns the complex sine of z.
-  template<typename ValueType> complex<ValueType> sin(const complex<ValueType>&z);
+  template <typename ValueType>
+    __host__ __device__
+  complex<ValueType> sin(const complex<ValueType>&z);
   // Returns the complex hyperbolic sine of z.
-  template<typename ValueType> complex<ValueType> sinh(const complex<ValueType>&z);
+  template <typename ValueType>
+    __host__ __device__
+  complex<ValueType> sinh(const complex<ValueType>&z);
   // Returns the complex square root of z.
-  template<typename ValueType> complex<ValueType> sqrt(const complex<ValueType>&z);
+  template <typename ValueType>
+    __host__ __device__
+  complex<ValueType> sqrt(const complex<ValueType>&z);
   // Returns the complex tangent of z.
-  template<typename ValueType> complex<ValueType> tan(const complex<ValueType>&z);
+  template <typename ValueType>
+    __host__ __device__
+  complex<ValueType> tan(const complex<ValueType>&z);
   // Returns the complex hyperbolic tangent of z.
-  template<typename ValueType> complex<ValueType> tanh(const complex<ValueType>&z);
+  template <typename ValueType>
+    __host__ __device__
+  complex<ValueType> tanh(const complex<ValueType>&z);
 
 
   // Inverse Trigonometric:
   // Returns the complex arc cosine of z.
-  template<typename ValueType> complex<ValueType> acos(const complex<ValueType>& z);
+  template <typename ValueType>
+    __host__ __device__
+  complex<ValueType> acos(const complex<ValueType>& z);
   // Returns the complex arc sine of z.
-  template<typename ValueType> complex<ValueType> asin(const complex<ValueType>& z);
+  template <typename ValueType>
+    __host__ __device__
+  complex<ValueType> asin(const complex<ValueType>& z);
   // Returns the complex arc tangent of z.
-  template<typename ValueType> complex<ValueType> atan(const complex<ValueType>& z);
+  template <typename ValueType>
+    __host__ __device__
+  complex<ValueType> atan(const complex<ValueType>& z);
   // Returns the complex hyperbolic arc cosine of z.
-  template<typename ValueType> complex<ValueType> acosh(const complex<ValueType>& z);
+  template <typename ValueType>
+    __host__ __device__
+  complex<ValueType> acosh(const complex<ValueType>& z);
   // Returns the complex hyperbolic arc sine of z.
-  template<typename ValueType> complex<ValueType> asinh(const complex<ValueType>& z);
+  template <typename ValueType>
+    __host__ __device__
+  complex<ValueType> asinh(const complex<ValueType>& z);
   // Returns the complex hyperbolic arc tangent of z.
-  template<typename ValueType> complex<ValueType> atanh(const complex<ValueType>& z);
+  template <typename ValueType>
+    __host__ __device__
+  complex<ValueType> atanh(const complex<ValueType>& z);
 
 
 
