@@ -18,6 +18,8 @@
 
 #include <cusp/detail/config.h>
 
+#include <thrust/extrema.h>
+
 #if THRUST_VERSION >= 100700
 #include <thrust/system/cuda/detail/detail/launch_calculator.h>
 #elif THRUST_VERSION >= 100600
