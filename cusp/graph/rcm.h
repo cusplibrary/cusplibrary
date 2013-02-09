@@ -14,8 +14,8 @@
  *  limitations under the License.
  */
 
-/*! \file bfs.h
- *  \brief Breadth-first traversal of a graph
+/*! \file rcm.h
+ *  \brief Reverse Cuthill-Mckee of a sparse matrix
  */
 
 #pragma once
@@ -31,20 +31,18 @@ namespace graph
  *  \{
  */
 
-/*! \p bfs : Performs a Breadth-first traversal of a graph 
- * starting from a given source vertex.
+/*! \p rcm : Performs a reordering on a graph represented by a symmetric sparse
+ * adjacency matrix in order to decrease the bandwidth. The reordering is computed
+ * using the Cuthill-McKee algorithm and reversing the resulting index numbers.
  *
  * \param A symmetric matrix that represents a graph
- * \param source vertex to begin traversal
- * \param labels of vertices from source in BFS order
  *
  * \tparam Matrix matrix
- * \tparam Array array
  *
- *  \see http://en.wikipedia.org/wiki/Breadth-first_search
+ *  \see http://en.wikipedia.org/wiki/Cuthill-McKee_algorithm
  */
-template<bool MARK_PREDECESSORS, typename MatrixType, typename ArrayType>
-void bfs(const MatrixType& G, const typename MatrixType::index_type src, ArrayType& labels);
+template<typename MatrixType>
+void rcm(MatrixType& G);
 
 /*! \}
  */
@@ -53,5 +51,5 @@ void bfs(const MatrixType& G, const typename MatrixType::index_type src, ArrayTy
 } // end namespace graph
 } // end namespace cusp
 
-#include <cusp/graph/detail/bfs.inl>
+#include <cusp/graph/detail/rcm.inl>
 

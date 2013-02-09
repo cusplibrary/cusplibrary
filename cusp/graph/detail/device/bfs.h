@@ -31,6 +31,10 @@
 #undef WarpVoteAll
 #undef FastMul
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
 #include <cusp/exception.h>
 
 namespace cusp

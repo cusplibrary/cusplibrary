@@ -28,7 +28,7 @@ int main(int argc, char*argv[])
 
     typedef int   IndexType;
     typedef float ValueType;
-    typedef cusp::device_memory MemorySpace;
+    typedef cusp::host_memory MemorySpace;
 
     cusp::csr_matrix<IndexType, ValueType, MemorySpace> A;
     size_t size = 1024;

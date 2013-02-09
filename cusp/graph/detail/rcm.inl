@@ -41,18 +41,29 @@ void rcm(MatrixType& G)
     typedef typename MatrixType::value_type ValueType;
     typedef typename MatrixType::memory_space MemorySpace;
 
+    // copy input matrix in COO format for processing
     cusp::coo_matrix<IndexType,ValueType,MemorySpace> G_coo(G);
 
+    // initialize variables
     cusp::array1d<IndexType,MemorySpace> levels(G.num_rows);
-    cusp::graph::detail::pseudo_peripheral_vertex(G, levels);
-
     cusp::array1d<IndexType,MemorySpace> perm(G.num_rows);
     thrust::sequence(perm.begin(), perm.end());
+
+    // find peripheral vertex and return BFS levels from vertex
+    cusp::graph::detail::pseudo_peripheral_vertex(G, levels);
+
+    // sort vertices by level in BFS traversal
     thrust::sort_by_key(levels.begin(), levels.end(), perm.begin()); 
- 
-    thrust::gather(G_coo.row_indices.begin(), G_coo.row_indices.end(), perm.begin(), G_coo.row_indices.begin());
-    thrust::gather(G_coo.column_indices.begin(), G_coo.column_indices.end(), perm.begin(), G_coo.column_indices.begin());
+    // transpose to form RCM permutation matrix
+    thrust::scatter(thrust::counting_iterator<IndexType>(0), thrust::counting_iterator<IndexType>(G.num_rows), perm.begin(), levels.begin());
+
+    // reorder rows and column according to permutation
+    thrust::gather(G_coo.row_indices.begin(), G_coo.row_indices.end(), levels.begin(), G_coo.row_indices.begin());
+    thrust::gather(G_coo.column_indices.begin(), G_coo.column_indices.end(), levels.begin(), G_coo.column_indices.begin());
+
+    // order COO matrix
     G_coo.sort_by_row_and_column();
+    // convert and copy to output matrix
     G = G_coo;
 }
 

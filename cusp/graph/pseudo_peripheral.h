@@ -14,8 +14,8 @@
  *  limitations under the License.
  */
 
-/*! \file maximal_independent_set.h
- *  \brief Maximal independent set of a graph
+/*! \file pseudo_peripheral.h
+ *  \brief Pseduo peripheral vertex of a graph
  */
 
 #pragma once
@@ -31,25 +31,17 @@ namespace graph
  *  \{
  */
 
-/*! \p maximal_independent_set : computes a maximal independent set (MIS)
- * a graph.  The MIS is a set of vertices such that (1) no two vertices
- * are adjacent and (2) it is not possible to add another vertex to thes
- * set without violating the first property.  The MIS(k) is a generalization
- * of the MIS with the property that no two vertices in the set are joined
- * by a path of \p k edges or less.  The standard MIS is therefore a MIS(1).
- *
- * The MIS(k) is represented by an array of {0,1} values.  Specifically,  
- * <tt>stencil[i]</tt> is 1 if vertex \p i is a member of the MIS(k) and
- * 0 otherwise.
+/*! \p pseudo_peripheral_vertex : finds a pseduo-peripheral vertex
+ * a graph. The pseduo-peripheral vertex is the vertex which achieves
+ * the diameter of the graph, i.e. achieves the maximum separation distance.
  *
  * \param A symmetric matrix that represents a graph
- * \param stencil array to hold the MIS(k)
- * \param k radius of independence
+ * \param BFS level set of vertices starting from pseudo-peripheral vertex
  *
  * \tparam Matrix matrix
  * \tparam Array array
  *
- *  \see http://en.wikipedia.org/wiki/Maximal_independent_set
+ *  \see http://en.wikipedia.org/wiki/Distance_(graph_theory)
  */
 template<typename MatrixType>
 typename MatrixType::index_type pseudo_peripheral_vertex(const MatrixType& G);
