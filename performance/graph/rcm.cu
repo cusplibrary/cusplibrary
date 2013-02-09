@@ -63,7 +63,7 @@ int main(int argc, char*argv[])
     typedef cusp::device_memory MemorySpace;
 
     cusp::coo_matrix<IndexType, ValueType, MemorySpace> A;
-    size_t size = 4;
+    size_t size = 1024;
 
     if (argc == 1)
     {

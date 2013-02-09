@@ -14,6 +14,7 @@
  *  limitations under the License.
  */
 
+#ifdef __CUSP_USE_B40C__
 #undef B40C_LOG_MEM_BANKS
 #undef B40C_LOG_WARP_THREADS
 #undef B40C_WARP_THREADS
@@ -30,10 +31,7 @@
 #undef TallyWarpVote
 #undef WarpVoteAll
 #undef FastMul
-
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
+#endif
 
 #include <cusp/exception.h>
 
@@ -53,6 +51,7 @@ void bfs(const MatrixType& G, const typename MatrixType::index_type src,
     typedef typename MatrixType::index_type VertexId;
     typedef typename MatrixType::index_type SizeT;
 
+    #ifdef __CUSP_USE_B40C__
     typedef b40c::graph::bfs::CsrProblem<VertexId, SizeT, MARK_PREDECESSORS> CsrProblem;
     typedef typename CsrProblem::GraphSlice  GraphSlice;
 
@@ -123,13 +122,6 @@ void bfs(const MatrixType& G, const typename MatrixType::index_type src,
 
     hybrid.EnactSearch(csr_problem, src, max_grid_size);
 
-    // Set device
-    /*if (b40c::util::B40CPerror(cudaSetDevice(csr_problem.graph_slices[0]->gpu),
-                               "CsrProblem cudaSetDevice failed", __FILE__, __LINE__))
-    {
-        throw cusp::runtime_exception("B40C results extraction failed.");
-    }*/
-
     VertexId* labels_ptr = thrust::raw_pointer_cast(&labels[0]);
 
     // Special case for only one GPU, which may be set as with
@@ -143,6 +135,9 @@ void bfs(const MatrixType& G, const typename MatrixType::index_type src,
     {
         throw cusp::runtime_exception("B40C results extraction failed.");
     }
+    #else
+    throw cusp::not_implemented_exception("Device BFS implementation depends on B40C support.");
+    #endif
 }
 
 } // end namespace device
