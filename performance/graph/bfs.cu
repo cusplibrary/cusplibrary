@@ -19,7 +19,7 @@ void BFS(const MatrixType& G)
     
     timer t;
     cusp::graph::bfs<false>(G_bfs, source, labels);
-    std::cout << " BFS time : " << t.milliseconds_elapsed() << " (ms)." << std::endl;
+    std::cout << "BFS time : " << t.milliseconds_elapsed() << " (ms)." << std::endl;
 }
 
 int main(int argc, char*argv[])

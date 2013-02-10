@@ -22,6 +22,10 @@
 #undef WarpVoteAll
 #undef FastMul
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
 #include <b40c/graph/bfs/csr_problem.cuh>
 #include <b40c/graph/bfs/enactor_hybrid.cuh>
 
@@ -52,6 +56,12 @@ void bfs(const MatrixType& G, const typename MatrixType::index_type src,
     typedef typename MatrixType::index_type SizeT;
 
     #ifdef __CUSP_USE_B40C__
+    // Temporarily close stdout while B40C code executes
+    // to avoid printing debug information to console
+    fflush(stdout);
+    int STDOUT_COPY = dup(STDOUT_FILENO);
+    close(STDOUT_FILENO);
+
     typedef b40c::graph::bfs::CsrProblem<VertexId, SizeT, MARK_PREDECESSORS> CsrProblem;
     typedef typename CsrProblem::GraphSlice  GraphSlice;
 
@@ -135,6 +145,9 @@ void bfs(const MatrixType& G, const typename MatrixType::index_type src,
     {
         throw cusp::runtime_exception("B40C results extraction failed.");
     }
+
+    dup2(STDOUT_COPY, STDOUT_FILENO);
+    close(STDOUT_COPY);
     #else
     throw cusp::not_implemented_exception("Device BFS implementation depends on B40C support.");
     #endif

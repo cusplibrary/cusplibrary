@@ -51,7 +51,7 @@ void RCM(const MatrixType& G)
     timer t;
     cusp::graph::rcm(G_bfs);
     std::cout << " RCM time : " << t.milliseconds_elapsed() << " (ms)." << std::endl;
-    std::cout << "Bandwidth after RCM : " << bandwidth(G_bfs) << std::endl;
+    std::cout << " Bandwidth after RCM : " << bandwidth(G_bfs) << std::endl;
 }
 
 int main(int argc, char*argv[])
@@ -88,8 +88,6 @@ int main(int argc, char*argv[])
 
     std::cout << " Host ";
     RCM<cusp::host_memory>(A);
-
-    std::cout << std::endl;
 
     return EXIT_SUCCESS;
 }
