@@ -14,42 +14,22 @@
  *  limitations under the License.
  */
 
-/*! \file rcm.h
- *  \brief Reverse Cuthill-Mckee of a sparse matrix
- */
-
-#pragma once
-
-#include <cusp/detail/config.h>
+#include <cusp/graph/detail/dispatch/hilbert_curve.h>
 
 namespace cusp
 {
 namespace graph
 {
-/*! \addtogroup algorithms Algorithms
- *  \ingroup algorithms
- *  \{
- */
 
-/*! \p rcm : Performs a reordering on a graph represented by a symmetric sparse
- * adjacency matrix in order to decrease the bandwidth. The reordering is computed
- * using the Cuthill-McKee algorithm and reversing the resulting index numbers.
- *
- * \param A symmetric matrix that represents a graph
- *
- * \tparam Matrix matrix
- *
- *  \see http://en.wikipedia.org/wiki/Cuthill-McKee_algorithm
- */
-template<typename MatrixType>
-void rcm(MatrixType& G);
+template <class Array2d, class Array1d>
+void hilbert_curve(const Array2d& coord, const size_t num_parts, Array1d& parts)
+{
+    CUSP_PROFILE_SCOPED();
 
-/*! \}
- */
-
+    return cusp::graph::detail::dispatch::hilbert_curve(coord, num_parts, parts,
+					 typename Array2d::memory_space());
+}
 
 } // end namespace graph
 } // end namespace cusp
-
-#include <cusp/graph/detail/rcm.inl>
 

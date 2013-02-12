@@ -35,7 +35,7 @@ namespace graph
 {
 
 template<typename MatrixType>
-void rcm(MatrixType& G)
+void symmetric_rcm(MatrixType& G)
 {
     typedef typename MatrixType::index_type IndexType;
     typedef typename MatrixType::value_type ValueType;

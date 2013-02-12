@@ -23,7 +23,7 @@
 #include <cusp/detail/config.h>
 
 #include <cusp/array1d.h>
-#include <cusp/graph/bfs.h>
+#include <cusp/graph/breadth_first_search.h>
 
 #include <thrust/copy.h>
 #include <thrust/gather.h>
@@ -52,7 +52,7 @@ typename MatrixType::index_type pseudo_peripheral_vertex(const MatrixType& G, Ar
     thrust::transform(G.row_offsets.begin() + 1, G.row_offsets.end(), G.row_offsets.begin(), row_lengths.begin(), thrust::minus<IndexType>());
 
     while(1) {
-        cusp::graph::bfs<false>(G, x, levels);
+        cusp::graph::breadth_first_search<false>(G, x, levels);
 
         typename ArrayType::iterator max_level_iter = thrust::max_element(levels.begin(), levels.end());
         int max_level = *max_level_iter;

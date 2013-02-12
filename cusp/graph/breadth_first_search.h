@@ -13,41 +13,45 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-    
-#include <cusp/graph/detail/host/bfs.h>
-#include <cusp/graph/detail/device/bfs.h>
+
+/*! \file breadth_first_search.h
+ *  \brief Breadth-first traversal of a graph
+ */
+
+#pragma once
+
+#include <cusp/detail/config.h>
 
 namespace cusp
 {
 namespace graph
 {
-namespace detail
-{
-namespace dispatch
-{
+/*! \addtogroup algorithms Algorithms
+ *  \ingroup algorithms
+ *  \{
+ */
 
-////////////////
-// Host Paths //
-////////////////
+/*! \p breadth_first_search : Performs a Breadth-first traversal of a graph 
+ * starting from a given source vertex.
+ *
+ * \param A symmetric matrix that represents a graph
+ * \param source vertex to begin traversal
+ * \param labels of vertices from source in BFS order
+ *
+ * \tparam Matrix matrix
+ * \tparam Array array
+ *
+ *  \see http://en.wikipedia.org/wiki/Breadth-first_search
+ */
 template<bool MARK_PREDECESSORS, typename MatrixType, typename ArrayType>
-void bfs(const MatrixType& G, const typename MatrixType::index_type src,
-         ArrayType& labels, cusp::host_memory)
-{
-    return cusp::graph::detail::host::bfs<MARK_PREDECESSORS>(G, src, labels);
-}
+void breadth_first_search(const MatrixType& G, const typename MatrixType::index_type src, ArrayType& labels);
 
-//////////////////
-// Device Paths //
-//////////////////
-template<bool MARK_PREDECESSORS, typename MatrixType, typename ArrayType>
-void bfs(const MatrixType& G, const typename MatrixType::index_type src,
-         ArrayType& labels, cusp::device_memory)
-{
-    return cusp::graph::detail::device::bfs<MARK_PREDECESSORS>(G, src, labels);
-}
+/*! \}
+ */
 
-} // end namespace dispatch
-} // end namespace detail
+
 } // end namespace graph
 } // end namespace cusp
+
+#include <cusp/graph/detail/breadth_first_search.inl>
 

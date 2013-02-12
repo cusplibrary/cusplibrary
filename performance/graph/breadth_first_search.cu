@@ -2,7 +2,7 @@
 #include <cusp/print.h>
 
 #include <cusp/gallery/poisson.h>
-#include <cusp/graph/bfs.h>
+#include <cusp/graph/breadth_first_search.h>
 #include <cusp/io/matrix_market.h>
 
 #include "../timer.h"
@@ -18,8 +18,8 @@ void BFS(const MatrixType& G)
     cusp::array1d<IndexType,MemorySpace> labels(G.num_rows);
     
     timer t;
-    cusp::graph::bfs<false>(G_bfs, source, labels);
-    std::cout << " BFS time : " << t.milliseconds_elapsed() << " (ms)." << std::endl;
+    cusp::graph::breadth_first_search<false>(G_bfs, source, labels);
+    std::cout << "BFS time : " << t.milliseconds_elapsed() << " (ms)." << std::endl;
 }
 
 int main(int argc, char*argv[])
