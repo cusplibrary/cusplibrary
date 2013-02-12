@@ -27,7 +27,7 @@ namespace host
 {
 
 template<bool MARK_PREDECESSORS, typename MatrixType, typename ArrayType>
-void bfs(const MatrixType& G, const typename MatrixType::index_type src, ArrayType& labels)
+void breadth_first_search(const MatrixType& G, const typename MatrixType::index_type src, ArrayType& labels)
 {
     typedef typename MatrixType::index_type VertexId;
 

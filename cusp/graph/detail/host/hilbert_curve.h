@@ -198,7 +198,7 @@ struct hilbert_transform_3d : public thrust::unary_function<double,double>
 };
 
 template <class Array2d, class Array1d>
-void hsfc(const Array2d& coord,
+void hilbert_curve(const Array2d& coord,
             size_t num_parts,
             Array1d& parts)
 {

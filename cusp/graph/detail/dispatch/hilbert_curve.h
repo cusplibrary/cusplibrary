@@ -13,47 +13,41 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-
-/*! \file hsfc.h
- *  \brief Cluster points using a Hilbert space filling curve
- */
-
-#pragma once
-
-#include <cusp/detail/config.h>
+    
+#include <cusp/graph/detail/host/hilbert_curve.h>
+#include <cusp/graph/detail/device/hilbert_curve.h>
 
 namespace cusp
 {
 namespace graph
 {
-/*! \addtogroup algorithms Algorithms
- *  \ingroup algorithms
- *  \{
- */
+namespace detail
+{
+namespace dispatch
+{
 
-/*! \p hsfc : Uses a Hilbert space filling curve to partition
- * a set of points in 2 or 3 dimensional space.
- *
- *
- * \param Set of points in 2 or 3-D space
- * \param number of partitions to construct
- * \param partition assigned to each point
- *
- * \tparam Array coord
- * \tparam size_t num_parts
- * \tparam Array parts
- *
- *  \see http://en.wikipedia.org/wiki/Hilbert_curve
- */
+////////////////
+// Host Paths //
+////////////////
 template <class Array2d, class Array1d>
-void hsfc(const Array2d& coord, const size_t num_parts, Array1d& parts);
+void hilbert_curve(const Array2d& coord, const size_t num_parts, Array1d& parts,
+	    cusp::host_memory)
+{
+    return cusp::graph::detail::host::hilbert_curve(coord, num_parts, parts);
+}
 
-/*! \}
- */
+//////////////////
+// Device Paths //
+//////////////////
+template <class Array2d, class Array1d>
+void hilbert_curve(const Array2d& coord, const size_t num_parts, Array1d& parts,
+	    cusp::device_memory)
+{
+    return cusp::graph::detail::device::hilbert_curve(coord, num_parts, parts);
+}
 
-
+} // end namespace dispatch
+} // end namespace detail
 } // end namespace graph
 } // end namespace cusp
-
-#include <cusp/graph/detail/hsfc.inl>
 

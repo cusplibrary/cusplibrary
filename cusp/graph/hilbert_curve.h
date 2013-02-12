@@ -14,22 +14,46 @@
  *  limitations under the License.
  */
 
-#include <cusp/graph/detail/dispatch/hsfc.h>
+/*! \file hilbert_curve.h
+ *  \brief Cluster points using a Hilbert space filling curve
+ */
+
+#pragma once
+
+#include <cusp/detail/config.h>
 
 namespace cusp
 {
 namespace graph
 {
+/*! \addtogroup algorithms Algorithms
+ *  \ingroup algorithms
+ *  \{
+ */
 
+/*! \p hilbert_curve : Uses a Hilbert space filling curve to partition
+ * a set of points in 2 or 3 dimensional space.
+ *
+ *
+ * \param Set of points in 2 or 3-D space
+ * \param number of partitions to construct
+ * \param partition assigned to each point
+ *
+ * \tparam Array coord
+ * \tparam size_t num_parts
+ * \tparam Array parts
+ *
+ *  \see http://en.wikipedia.org/wiki/Hilbert_curve
+ */
 template <class Array2d, class Array1d>
-void hsfc(const Array2d& coord, const size_t num_parts, Array1d& parts)
-{
-    CUSP_PROFILE_SCOPED();
+void hilbert_curve(const Array2d& coord, const size_t num_parts, Array1d& parts);
 
-    return cusp::graph::detail::dispatch::hsfc(coord, num_parts, parts,
-					 typename Array2d::memory_space());
-}
+/*! \}
+ */
+
 
 } // end namespace graph
 } // end namespace cusp
+
+#include <cusp/graph/detail/hilbert_curve.inl>
 

@@ -2,7 +2,7 @@
 #include <cusp/print.h>
 
 #include <cusp/gallery/poisson.h>
-#include <cusp/graph/detail/rcm.inl>
+#include <cusp/graph/symmetric_rcm.h>
 #include <cusp/io/matrix_market.h>
 
 #include <thrust/functional.h>
@@ -47,11 +47,11 @@ void RCM(const MatrixType& G)
     typedef cusp::csr_matrix<IndexType,IndexType,MemorySpace> GraphType;
     typedef cusp::array1d<IndexType,MemorySpace> Array;
 
-    GraphType G_bfs(G);
+    GraphType G_rcm(G);
     timer t;
-    cusp::graph::rcm(G_bfs);
+    cusp::graph::symmetric_rcm(G_rcm);
     std::cout << " RCM time : " << t.milliseconds_elapsed() << " (ms)." << std::endl;
-    std::cout << " Bandwidth after RCM : " << bandwidth(G_bfs) << std::endl;
+    std::cout << " Bandwidth after RCM : " << bandwidth(G_rcm) << std::endl;
 }
 
 int main(int argc, char*argv[])

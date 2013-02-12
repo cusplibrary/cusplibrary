@@ -13,41 +13,23 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-    
-#include <cusp/graph/detail/host/hsfc.h>
-#include <cusp/graph/detail/device/hsfc.h>
+
+#include <cusp/graph/detail/dispatch/breadth_first_search.h>
 
 namespace cusp
 {
 namespace graph
 {
-namespace detail
-{
-namespace dispatch
-{
 
-////////////////
-// Host Paths //
-////////////////
-template <class Array2d, class Array1d>
-void hsfc(const Array2d& coord, const size_t num_parts, Array1d& parts,
-	    cusp::host_memory)
+template<bool MARK_PREDECESSORS, typename MatrixType, typename ArrayType>
+void breadth_first_search(const MatrixType& G, const typename MatrixType::index_type src, ArrayType& labels)
 {
-    return cusp::graph::detail::host::hsfc(coord, num_parts, parts);
+    CUSP_PROFILE_SCOPED();
+
+    return cusp::graph::detail::dispatch::breadth_first_search<MARK_PREDECESSORS>(G, src, labels,
+					 	typename MatrixType::memory_space());
 }
 
-//////////////////
-// Device Paths //
-//////////////////
-template <class Array2d, class Array1d>
-void hsfc(const Array2d& coord, const size_t num_parts, Array1d& parts,
-	    cusp::device_memory)
-{
-    return cusp::graph::detail::device::hsfc(coord, num_parts, parts);
-}
-
-} // end namespace dispatch
-} // end namespace detail
 } // end namespace graph
 } // end namespace cusp
 

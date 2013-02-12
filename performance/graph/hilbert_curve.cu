@@ -1,6 +1,6 @@
 #include <cusp/detail/random.h>
 #include <cusp/gallery/poisson.h>
-#include <cusp/graph/hsfc.h>
+#include <cusp/graph/hilbert_curve.h>
 
 #include <thrust/functional.h>
 
@@ -24,7 +24,7 @@ int main(int argc, char*argv[])
 
             cusp::array1d<IndexType,MemorySpace> parts(num_points);
             timer t;
-            cusp::graph::hsfc(coords, i, parts);
+            cusp::graph::hilbert_curve(coords, i, parts);
     	    std::cout << "Number of points : " << num_points << std::endl;
             std::cout << " hsfc(" << i << "D) : " << t.milliseconds_elapsed() << " (ms)\n" << std::endl;
         }
