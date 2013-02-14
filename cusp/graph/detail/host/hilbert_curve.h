@@ -202,6 +202,7 @@ void hilbert_curve(const Array2d& coord,
             size_t num_parts,
             Array1d& parts)
 {
+    typedef typename Array1d::value_type PartType;
     typedef typename Array2d::const_column_view::iterator Iterator;
     typedef typename Array2d::value_type ValueType;
     typedef typename Array2d::memory_space MemorySpace;
@@ -242,13 +243,13 @@ void hilbert_curve(const Array2d& coord,
                           hilbert_keys.begin(), hilbert_transform_3d());
     }
 
-    cusp::array1d<int, MemorySpace> perm(num_points);
+    cusp::array1d<PartType, MemorySpace> perm(num_points);
     thrust::sequence(perm.begin(), perm.end());
     thrust::sort_by_key(hilbert_keys.begin(), hilbert_keys.end(), perm.begin());
 
-    cusp::array1d<int, MemorySpace> uniform_parts(num_points);
-    thrust::transform(thrust::counting_iterator<int>(0), thrust::counting_iterator<int>(num_points),
-                      thrust::constant_iterator<int>(num_points/num_parts), uniform_parts.begin(), thrust::divides<int>());
+    cusp::array1d<PartType, MemorySpace> uniform_parts(num_points);
+    thrust::transform(thrust::counting_iterator<PartType>(0), thrust::counting_iterator<PartType>(num_points),
+                      thrust::constant_iterator<PartType>(num_points/num_parts), uniform_parts.begin(), thrust::divides<PartType>());
     thrust::gather(perm.begin(), perm.end(), uniform_parts.begin(), parts.begin());
 }
 
