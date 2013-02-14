@@ -13,16 +13,10 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-
-/*! \file maximal_independent_set.h
- *  \brief Maximal independent set of a graph
- */
-
-#pragma once
-
 #include <cusp/detail/config.h>
 
 #include <cusp/array1d.h>
+#include <cusp/exception.h>
 #include <cusp/graph/breadth_first_search.h>
 
 #include <thrust/copy.h>
@@ -37,7 +31,7 @@ namespace detail
 {
 
 template<typename MatrixType, typename ArrayType>
-typename MatrixType::index_type pseudo_peripheral_vertex(const MatrixType& G, ArrayType& levels)
+typename MatrixType::index_type pseudo_peripheral_vertex(const MatrixType& G, ArrayType& levels, cusp::csr_format)
 {
     using namespace thrust::placeholders;
 
@@ -90,15 +84,49 @@ typename MatrixType::index_type pseudo_peripheral_vertex(const MatrixType& G, Ar
     return y;
 }
 
+//////////////////
+// General Path //
+//////////////////
+
+template<typename MatrixType, typename ArrayType, typename Format>
+typename MatrixType::index_type pseudo_peripheral_vertex(const MatrixType& G, ArrayType& levels, Format)
+{
+    typedef typename MatrixType::index_type   IndexType;
+    typedef typename MatrixType::value_type   ValueType;
+    typedef typename MatrixType::memory_space MemorySpace;
+
+    // convert matrix to CSR format and compute on the host
+    cusp::csr_matrix<IndexType,ValueType,MemorySpace> G_csr(G);
+
+    return cusp::graph::pseudo_peripheral_vertex(G_csr, levels);
+}
+
 } // end namespace detail
+
+/////////////////
+// Entry Point //
+/////////////////
+
+template<typename MatrixType, typename ArrayType>
+typename MatrixType::index_type pseudo_peripheral_vertex(const MatrixType& G, ArrayType& levels)
+{
+    CUSP_PROFILE_SCOPED();
+
+    if(G.num_rows != G.num_cols)
+        throw cusp::invalid_input_exception("matrix must be square");
+
+    return cusp::graph::detail::pseudo_peripheral_vertex(G, levels, typename MatrixType::format());
+}
 
 template<typename MatrixType>
 typename MatrixType::index_type pseudo_peripheral_vertex(const MatrixType& G)
 {
-    typedef typename MatrixType::index_type IndexType;
+    typedef typename MatrixType::index_type   IndexType;
     typedef typename MatrixType::memory_space MemorySpace;
+
     cusp::array1d<IndexType,MemorySpace> levels(G.num_rows);
-    return detail::pseudo_peripheral_vertex(G, levels);
+
+    return cusp::graph::pseudo_peripheral_vertex(G, levels);
 }
 
 } // end namespace graph

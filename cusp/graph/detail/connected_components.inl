@@ -14,20 +14,58 @@
  *  limitations under the License.
  */
 
+#include <cusp/exception.h>
+#include <cusp/csr_matrix.h>
+
 #include <cusp/graph/detail/dispatch/connected_components.h>
 
 namespace cusp
 {
 namespace graph
 {
+namespace detail
+{
+
+template<typename MatrixType, typename ArrayType, typename Format>
+void connected_components(const MatrixType& G, ArrayType& components, cusp::csr_format)
+{
+    return cusp::graph::detail::dispatch::connected_components(G, components,
+            typename MatrixType::memory_space());
+}
+
+//////////////////
+// General Path //
+//////////////////
+
+template<typename MatrixType, typename ArrayType, typename Format>
+size_t connected_components(const MatrixType& G, ArrayType& components, Format)
+{
+  typedef typename MatrixType::index_type   IndexType;
+  typedef typename MatrixType::value_type   ValueType;
+  typedef typename MatrixType::memory_space MemorySpace;
+
+  // convert matrix to CSR format and compute on the host
+  cusp::csr_matrix<IndexType,ValueType,MemorySpace> G_csr(G);
+
+  return cusp::graph::connected_components(G_csr, components);
+}
+
+} // end namespace detail
+
+/////////////////
+// Entry Point //
+/////////////////
 
 template<typename MatrixType, typename ArrayType>
 size_t connected_components(const MatrixType& G, ArrayType& components)
 {
     CUSP_PROFILE_SCOPED();
 
-    return cusp::graph::detail::dispatch::connected_components(G, components,
-					 	typename MatrixType::memory_space());
+    if(G.num_rows != G.num_cols)
+        throw cusp::invalid_input_exception("matrix must be square");
+
+    return cusp::graph::detail::connected_components(G, components,
+					 	typename MatrixType::format());
 }
 
 } // end namespace graph

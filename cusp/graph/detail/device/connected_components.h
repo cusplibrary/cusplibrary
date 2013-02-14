@@ -40,12 +40,13 @@ size_t connected_components(const MatrixType& G, ArrayType& components)
 
     const VertexId UNSET = -1;
     size_t num_components = 0;
+    VertexId num_rows = G.num_rows;
 
     thrust::fill(components.begin(), components.end(), UNSET);
     ArrayType levels(G.num_rows, UNSET);
     VertexId src = rand() % G.num_rows;
 
-    while(src < G.num_rows) {
+    while(src < num_rows) {
         cusp::graph::breadth_first_search<false>(G, src, levels);
         thrust::transform_if( thrust::constant_iterator<VertexId>(num_components),
                               thrust::constant_iterator<VertexId>(num_components) + G.num_rows,
