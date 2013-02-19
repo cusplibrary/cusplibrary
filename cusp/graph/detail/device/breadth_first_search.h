@@ -26,6 +26,39 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
+#ifdef _WIN32
+#include <Windows.h>
+#include <io.h>
+
+HANDLE hStdOut;
+int STDOUT_COPY;
+int STDOUT_FILENO;
+
+#define CUSP_CLOSE_STDOUT do{\
+	hStdOut = GetStdHandle(STD_OUTPUT_HANDLE); \
+	STDOUT_FILENO = _open_osfhandle((HFILE)hStdOut, O_WRONLY|O_TEXT); \
+	STDOUT_COPY = _dup(STDOUT_FILENO); \
+	_close(STDOUT_FILENO); \
+	}while(0);
+#define CUSP_REOPEN_STDOUT do{\
+	_dup2(STDOUT_COPY, STDOUT_FILENO); \
+	_close(STDOUT_COPY); \
+	SetStdHandle(STD_OUTPUT_HANDLE, hStdOut); \
+	}while(0);
+#else
+int STDOUT_COPY;
+
+#define CUSP_CLOSE_STDOUT do{\
+	fflush(stdout); \
+	STDOUT_COPY = dup(STDOUT_FILENO); \
+    close(STDOUT_FILENO); \
+	}while(0);
+#define CUSP_REOPEN_STDOUT do{\
+	dup2(STDOUT_COPY, STDOUT_FILENO); \
+	close(STDOUT_COPY); \
+	}while(0);
+#endif // end ifdef _WIN32
+
 #include <b40c/graph/bfs/csr_problem.cuh>
 #include <b40c/graph/bfs/enactor_hybrid.cuh>
 
@@ -35,7 +68,7 @@
 #undef TallyWarpVote
 #undef WarpVoteAll
 #undef FastMul
-#endif
+#endif // end ifdef __CUSP_USE_B40C__
 
 #include <cusp/exception.h>
 
@@ -56,11 +89,7 @@ void breadth_first_search(const MatrixType& G, const typename MatrixType::index_
     typedef typename MatrixType::index_type SizeT;
 
     #ifdef __CUSP_USE_B40C__
-    // Temporarily close stdout while B40C code executes
-    // to avoid printing debug information to console
-    fflush(stdout);
-    int STDOUT_COPY = dup(STDOUT_FILENO);
-    close(STDOUT_FILENO);
+	CUSP_CLOSE_STDOUT;
 
     typedef b40c::graph::bfs::CsrProblem<VertexId, SizeT, MARK_PREDECESSORS> CsrProblem;
     typedef typename CsrProblem::GraphSlice  GraphSlice;
@@ -146,8 +175,7 @@ void breadth_first_search(const MatrixType& G, const typename MatrixType::index_
         throw cusp::runtime_exception("B40C results extraction failed.");
     }
 
-    dup2(STDOUT_COPY, STDOUT_FILENO);
-    close(STDOUT_COPY);
+	CUSP_REOPEN_STDOUT;
     #else
     throw cusp::not_implemented_exception("Device BFS implementation depends on B40C support.");
     #endif
