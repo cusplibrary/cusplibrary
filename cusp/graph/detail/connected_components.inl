@@ -26,8 +26,8 @@ namespace graph
 namespace detail
 {
 
-template<typename MatrixType, typename ArrayType, typename Format>
-void connected_components(const MatrixType& G, ArrayType& components, cusp::csr_format)
+template<typename MatrixType, typename ArrayType>
+size_t connected_components(const MatrixType& G, ArrayType& components, cusp::csr_format)
 {
     return cusp::graph::detail::dispatch::connected_components(G, components,
             typename MatrixType::memory_space());
