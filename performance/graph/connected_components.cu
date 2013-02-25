@@ -8,17 +8,17 @@
 #include "../timer.h"
 
 template<typename MemorySpace, typename MatrixType>
-void SCC(const MatrixType& G)
+void CC(const MatrixType& G)
 {
     typedef typename MatrixType::index_type IndexType;
     typedef cusp::csr_matrix<IndexType,IndexType,MemorySpace> GraphType;
 
-    GraphType G_scc(G);
+    GraphType G_cc(G);
     cusp::array1d<IndexType,MemorySpace> components(G.num_rows);
     
     timer t;
-    size_t num_components = cusp::graph::connected_components(G_scc, components);
-    std::cout << "SCC time : " << t.milliseconds_elapsed() << " (ms)." << std::endl;
+    size_t num_components = cusp::graph::connected_components(G_cc, components);
+    std::cout << "CC time : " << t.milliseconds_elapsed() << " (ms)." << std::endl;
     std::cout << "Number of components : " << num_components << std::endl;
 }
 
@@ -31,7 +31,7 @@ int main(int argc, char*argv[])
     typedef cusp::host_memory MemorySpace;
 
     cusp::csr_matrix<IndexType, ValueType, MemorySpace> A;
-    size_t size = 1024;
+    size_t size = 512;
 
     if (argc == 1)
     {
@@ -50,10 +50,10 @@ int main(int argc, char*argv[])
               << A.num_entries << " entries" << "\n\n";
 
     std::cout << " Device ";
-    SCC<cusp::device_memory>(A);
+    CC<cusp::device_memory>(A);
 
     std::cout << " Host ";
-    SCC<cusp::host_memory>(A);
+    CC<cusp::host_memory>(A);
 
     return EXIT_SUCCESS;
 }
