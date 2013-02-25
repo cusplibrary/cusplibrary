@@ -83,13 +83,13 @@ namespace device
 
 template<bool MARK_PREDECESSORS, typename MatrixType, typename ArrayType>
 void breadth_first_search(const MatrixType& G, const typename MatrixType::index_type src,
-         ArrayType& labels)
+                          ArrayType& labels)
 {
     typedef typename MatrixType::index_type VertexId;
     typedef typename MatrixType::index_type SizeT;
 
-    #ifdef __CUSP_USE_B40C__
-	CUSP_CLOSE_STDOUT;
+#ifdef __CUSP_USE_B40C__
+    CUSP_CLOSE_STDOUT;
 
     typedef b40c::graph::bfs::CsrProblem<VertexId, SizeT, MARK_PREDECESSORS> CsrProblem;
     typedef typename CsrProblem::GraphSlice  GraphSlice;
@@ -175,10 +175,10 @@ void breadth_first_search(const MatrixType& G, const typename MatrixType::index_
         throw cusp::runtime_exception("B40C results extraction failed.");
     }
 
-	CUSP_REOPEN_STDOUT;
-    #else
+    CUSP_REOPEN_STDOUT;
+#else
     throw cusp::not_implemented_exception("Device BFS implementation depends on B40C support.");
-    #endif
+#endif
 }
 
 } // end namespace device
