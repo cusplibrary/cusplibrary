@@ -26,11 +26,11 @@ namespace graph
 namespace detail
 {
 
-template<typename MatrixType, typename IndexType>
+template<typename MatrixType, typename ArrayType, typename IndexType>
 typename MatrixType::value_type 
-maximum_flow(const MatrixType& G, const IndexType src, const IndexType sink, cusp::csr_format)
+maximum_flow(const MatrixType& G, ArrayType& flow, const IndexType src, const IndexType sink, cusp::csr_format)
 {
-    return cusp::graph::detail::dispatch::maximum_flow(G, src, sink,
+    return cusp::graph::detail::dispatch::maximum_flow(G, flow, src, sink,
             typename MatrixType::memory_space());
 }
 
@@ -38,9 +38,9 @@ maximum_flow(const MatrixType& G, const IndexType src, const IndexType sink, cus
 // General Path //
 //////////////////
 
-template<typename MatrixType, typename IndexType, typename Format>
+template<typename MatrixType, typename ArrayType, typename IndexType, typename Format>
 typename MatrixType::value_type 
-maximum_flow(const MatrixType& G, const IndexType src, const IndexType sink, Format)
+maximum_flow(const MatrixType& G, ArrayType& flow, const IndexType src, const IndexType sink, Format)
 {
   typedef typename MatrixType::value_type   ValueType;
   typedef typename MatrixType::memory_space MemorySpace;
@@ -48,7 +48,7 @@ maximum_flow(const MatrixType& G, const IndexType src, const IndexType sink, For
   // convert matrix to CSR format and compute on the host
   cusp::csr_matrix<IndexType,ValueType,MemorySpace> G_csr(G);
 
-  return cusp::graph::maximum_flow(G_csr, src, sink);
+  return cusp::graph::maximum_flow(G_csr, flow, src, sink);
 }
 
 } // end namespace detail
@@ -57,16 +57,30 @@ maximum_flow(const MatrixType& G, const IndexType src, const IndexType sink, For
 // Entry Point //
 /////////////////
 
-template<typename MatrixType, typename IndexType>
+template<typename MatrixType, typename ArrayType, typename IndexType>
 typename MatrixType::value_type
-maximum_flow(const MatrixType& G, const IndexType src, const IndexType sink)
+maximum_flow(const MatrixType& G, ArrayType& flow, const IndexType src, const IndexType sink)
 {
     CUSP_PROFILE_SCOPED();
 
     if(G.num_rows != G.num_cols)
         throw cusp::invalid_input_exception("matrix must be square");
 
-    return cusp::graph::detail::maximum_flow(G, src, sink,
+    return cusp::graph::detail::maximum_flow(G, flow, src, sink,
+            typename MatrixType::format());
+}
+
+
+template<typename MatrixType, typename IndexType>
+typename MatrixType::value_type
+maximum_flow(const MatrixType& G, const IndexType src, const IndexType sink)
+{
+    typedef typename MatrixType::value_type ValueType;
+    typedef typename MatrixType::memory_space MemorySpace;
+
+    cusp::array1d<ValueType,MemorySpace> flow(G.num_entries);
+
+    return cusp::graph::detail::maximum_flow(G, flow, src, sink,
             typename MatrixType::format());
 }
 

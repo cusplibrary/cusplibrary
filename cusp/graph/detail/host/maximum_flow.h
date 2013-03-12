@@ -19,6 +19,9 @@
 #include <iostream>
 #include <queue>
 
+#include <thrust/fill.h>
+#include <thrust/replace.h>
+
 #include <cusp/exception.h>
 
 namespace cusp
@@ -30,14 +33,17 @@ namespace detail
 namespace host
 {
 
+using namespace thrust::placeholders;
+
 template<typename VertexId, typename Value>
 class PushRelabel {
 
     int N;
     
     const cusp::csr_matrix<VertexId,Value,cusp::host_memory>& G;
+    cusp::array1d<Value,cusp::host_memory>& flow;
 
-    cusp::array1d<Value, cusp::host_memory> flow, excess;
+    cusp::array1d<Value, cusp::host_memory> excess;
     cusp::array1d<int, cusp::host_memory> dist, active, count;
     std::queue<int> Q;
 
@@ -96,8 +102,12 @@ class PushRelabel {
 
 public:
 
-    template<typename MatrixType>
-    PushRelabel(const MatrixType& graph) : N(graph.num_rows), G(graph), flow(graph.num_entries, Value(0)), excess(N,Value(0)), dist(N,0), active(N,0), count(2*N,0){}
+    template<typename MatrixType, typename ArrayType>
+    PushRelabel(const MatrixType& graph, ArrayType& flow) : N(graph.num_rows), G(graph), flow(flow), excess(N,Value(0)), dist(N,0), active(N,0), count(2*N,0)
+    {
+	// initialize flow
+	thrust::fill(flow.begin(), flow.end(), Value(0));
+    }
 
     Value GetMaxFlow(VertexId s, VertexId t) {
         count[0] = N-1;
@@ -124,15 +134,19 @@ public:
 };
 
 
-template<typename MatrixType, typename IndexType>
+template<typename MatrixType, typename ArrayType, typename IndexType>
 typename MatrixType::value_type
-maximum_flow(const MatrixType& G, const IndexType src, const IndexType sink)
+maximum_flow(const MatrixType& G, ArrayType& flow, const IndexType src, const IndexType sink)
 {
     typedef typename MatrixType::value_type ValueType;
     typedef typename MatrixType::memory_space MemorySpace;
 
-    PushRelabel<IndexType,ValueType> flow_solver(G);
-    return flow_solver.GetMaxFlow(src, sink);
+    PushRelabel<IndexType,ValueType> flow_solver(G, flow);
+    ValueType max_flow = flow_solver.GetMaxFlow(src, sink);
+
+    thrust::replace_if(flow.begin(), flow.end(), _1 < ValueType(0), ValueType(0));
+
+    return max_flow;
 }
 
 } // end namespace host
