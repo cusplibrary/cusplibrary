@@ -30,26 +30,16 @@ namespace detail
 namespace host
 {
 
-typedef long long LL;
-
-struct Edge {
-    int from, to, cap, flow, index;
-    Edge(int from, int to, int cap, int flow, int index) :
-        from(from), to(to), cap(cap), flow(flow), index(index) {}
-};
-
+template<typename VertexId, typename Value>
 class PushRelabel {
-    int N;
-    std::vector<std::vector<Edge> > G;
-    std::vector<LL> excess;
-    std::vector<int> dist, active, count;
-    std::queue<int> Q;
 
-    void AddEdge(int from, int to, int cap) {
-        G[from].push_back(Edge(from, to, cap, 0, G[to].size()));
-        if (from == to) G[from].back().index++;
-        G[to].push_back(Edge(to, from, 0, 0, G[from].size() - 1));
-    }
+    int N;
+    
+    const cusp::csr_matrix<VertexId,Value,cusp::host_memory>& G;
+
+    cusp::array1d<Value, cusp::host_memory> flow, excess;
+    cusp::array1d<int, cusp::host_memory> dist, active, count;
+    std::queue<int> Q;
 
     void Enqueue(int v) {
         if (!active[v] && excess[v] > 0) {
@@ -58,14 +48,20 @@ class PushRelabel {
         }
     }
 
-    void Push(Edge &e) {
-        int amt = int(min(excess[e.from], LL(e.cap - e.flow)));
-        if (dist[e.from] <= dist[e.to] || amt == 0) return;
-        e.flow += amt;
-        G[e.to][e.index].flow -= amt;
-        excess[e.to] += amt;
-        excess[e.from] -= amt;
-        Enqueue(e.to);
+    void Push(int e) { // e is the edge offset
+	// TODO : This impacts performance significantly, one binary search per Push operation
+	VertexId from = thrust::upper_bound(G.row_offsets.begin(), G.row_offsets.end(), e) - G.row_offsets.begin() - 1;
+	VertexId to   = G.column_indices[e];
+
+        int amt = int(min(excess[from], Value(G.values[e] - flow[e])));
+        if (dist[from] <= dist[to] || amt == 0) return;
+        flow[e] += amt;
+	// TODO : Need to map edges to their symmetric partner, iterating is constant overhead
+	for(int i = G.row_offsets[to]; i < G.row_offsets[to + 1]; i++)
+		if( G.column_indices[i] == from ){ flow[i] -= amt; break; }
+        excess[to] += amt;
+        excess[from] -= amt;
+        Enqueue(to);
     }
 
     void Gap(int k) {
@@ -81,15 +77,15 @@ class PushRelabel {
     void Relabel(int v) {
         count[dist[v]]--;
         dist[v] = 2*N;
-        for (int i = 0; i < G[v].size(); i++)
-            if (G[v][i].cap - G[v][i].flow > 0)
-                dist[v] = std::min(dist[v], dist[G[v][i].to] + 1);
+        for (int i = G.row_offsets[v]; i < G.row_offsets[v + 1]; i++)
+            if ((G.values[i] - flow[i]) > 0)
+                dist[v] = std::min(dist[v], dist[G.column_indices[i]] + 1);
         count[dist[v]]++;
         Enqueue(v);
     }
 
     void Discharge(int v) {
-        for (int i = 0; excess[v] > 0 && i < G[v].size(); i++) Push(G[v][i]);
+        for (int i = G.row_offsets[v]; excess[v] > 0 && i < G.row_offsets[v + 1]; i++) Push(i);
         if (excess[v] > 0) {
             if (count[dist[v]] == 1)
                 Gap(dist[v]);
@@ -99,22 +95,18 @@ class PushRelabel {
     }
 
 public:
-    template<typename MatrixType>
-    PushRelabel(const MatrixType& graph) : N(graph.num_rows), G(N), excess(N), dist(N), active(N), count(2*N)
-    {
-        for( int row = 0; row < N; row++ )
-            for( int offset = graph.row_offsets[row]; offset < graph.row_offsets[row + 1]; offset++ )
-                AddEdge(row, graph.column_indices[offset], graph.values[offset]);
-    }
 
-    LL GetMaxFlow(int s, int t) {
+    template<typename MatrixType>
+    PushRelabel(const MatrixType& graph) : N(graph.num_rows), G(graph), flow(graph.num_entries, Value(0)), excess(N,Value(0)), dist(N,0), active(N,0), count(2*N,0){}
+
+    Value GetMaxFlow(VertexId s, VertexId t) {
         count[0] = N-1;
         count[N] = 1;
         dist[s] = N;
         active[s] = active[t] = true;
-        for (int i = 0; i < G[s].size(); i++) {
-            excess[s] += G[s][i].cap;
-            Push(G[s][i]);
+        for (int i = G.row_offsets[s]; i < G.row_offsets[s + 1]; i++) {
+            excess[s] += G.values[i]; // capacity
+            Push(i); // Push to location of the edge in reference
         }
 
         while (!Q.empty()) {
@@ -124,8 +116,8 @@ public:
             Discharge(v);
         }
 
-        LL totflow = 0;
-        for (int i = 0; i < G[s].size(); i++) totflow += G[s][i].flow;
+        Value totflow = 0;
+        for (int i = G.row_offsets[s]; i < G.row_offsets[s + 1]; i++) totflow += flow[i];
         return totflow;
     }
 
@@ -139,31 +131,8 @@ maximum_flow(const MatrixType& G, const IndexType src, const IndexType sink)
     typedef typename MatrixType::value_type ValueType;
     typedef typename MatrixType::memory_space MemorySpace;
 
-    size_t N = G.num_rows;
-    cusp::array1d<LL,cusp::host_memory> excess(N);
-    cusp::array1d<int,cusp::host_memory> dist(N), active(N), count(2*N);
-    cusp::array1d<ValueType,cusp::host_memory> flow(G.num_entries, 0);
-    std::queue<int> Q;
-
-    count[0] = N-1;
-    count[N] = 1;
-    dist[src] = N;
-    active[src] = active[sink] = true;
-    for (int i = G.row_offsets[src]; i < G.row_offsets[src + 1]; i++) {
-        excess[src] += G.values[i];
-        //Push(G.column_indices[i]);
-    }
-
-    while (!Q.empty()) {
-        int v = Q.front();
-        Q.pop();
-        active[v] = false;
-        //Discharge(v);
-    }
-
-    LL totflow = 0;
-    for (int i = G.row_offsets[src]; i < G.row_offsets[src + 1]; i++) totflow += flow[i];
-    return totflow;
+    PushRelabel<IndexType,ValueType> flow_solver(G);
+    return flow_solver.GetMaxFlow(src, sink);
 }
 
 } // end namespace host

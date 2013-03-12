@@ -15,7 +15,7 @@ int main(int argc, char*argv[])
     typedef int ValueType;
     typedef cusp::device_memory MemorySpace;
 
-    size_t size = 1024;
+    size_t size = 128;
 
     /*cusp::array2d<ValueType,cusp::host_memory> dense(6,6,ValueType(0));
     dense(0,1) = 16; dense(0,2) = 13;
@@ -59,9 +59,9 @@ int main(int argc, char*argv[])
     std::cout << "Device Max-flow : " << cusp::graph::maximum_flow(A, src, sink) << std::endl;;
     printf("Device Max-flow time : %4.2f (ms)\n", flow_time.milliseconds_elapsed());
 
-    cusp::graph::detail::host::PushRelabel host_push_relabel(A_h);
+    //cusp::graph::detail::host::PushRelabel host_push_relabel(A_h);
     timer host_flow_time;
-    std::cout << "Host Max-flow : " << host_push_relabel.GetMaxFlow(src, sink) << std::endl;;
+    std::cout << "Host Max-flow : " << /*host_push_relabel.GetMaxFlow*/cusp::graph::maximum_flow(A_h, src, sink) << std::endl;;
     printf("Host Max-flow time : %4.2f (ms)\n", host_flow_time.milliseconds_elapsed());
 
     return EXIT_SUCCESS;
