@@ -211,9 +211,9 @@ maximum_flow(const MatrixType& G, ArrayType& flow, IndexType src, IndexType sink
             // track edges with zero capacity for filtering
             if( capacities[positions_h[curr_node]] == 0 )
             {
-                int pos = positions[curr_node];
                 update_positions[zero_capacity_edges++] = positions_h[curr_node];
             }
+
             curr_node = bfs_tree_h[curr_node];
         }
 
