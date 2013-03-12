@@ -30,8 +30,12 @@ template<bool MARK_PREDECESSORS, typename MatrixType, typename ArrayType>
 void breadth_first_search(const MatrixType& G, const typename MatrixType::index_type src, ArrayType& labels)
 {
     typedef typename MatrixType::index_type VertexId;
+    ArrayType predecessors;
 
-    // (Re)initialize distances
+    // initialize predecessor array
+    if(MARK_PREDECESSORS) predecessors.resize(G.num_rows);
+
+    // initialize distances
     for (size_t i = 0; i < G.num_rows; i++) {
         labels[i] = -1;
     }
@@ -60,16 +64,21 @@ void breadth_first_search(const MatrixType& G, const typename MatrixType::index_
 
             // Lookup neighbor and enqueue if undiscovered
             VertexId neighbor = G.column_indices[edge];
+	    if (neighbor == -1) continue;
             if (labels[neighbor] == -1) {
                 labels[neighbor] = neighbor_dist;
                 if (search_depth < neighbor_dist) {
                     search_depth = neighbor_dist;
                 }
+		if(MARK_PREDECESSORS) predecessors[neighbor] = dequeued_node;
                 frontier.push_back(neighbor);
             }
         }
     }
     search_depth++;
+
+    // if predecessors are needed then copy into outgoing array
+    if(MARK_PREDECESSORS) labels = predecessors;
 }
 
 } // end namespace host
