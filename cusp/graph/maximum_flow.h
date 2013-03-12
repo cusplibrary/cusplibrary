@@ -46,6 +46,13 @@ template<typename MatrixType, typename IndexType>
 typename MatrixType::value_type
 maximum_flow(const MatrixType& G, const IndexType src, const IndexType sink);
 
+template<typename MatrixType, typename ArrayType, typename IndexType>
+typename MatrixType::value_type
+maximum_flow(const MatrixType& G, ArrayType& flow, const IndexType src, const IndexType sink);
+
+template<typename MatrixType, typename ArrayType1, typename ArrayType2, typename IndexType>
+size_t max_flow_to_min_cut(const MatrixType& G, const ArrayType1& flow, const IndexType src, ArrayType2& min_cut_edges);
+
 /*! \}
  */
 
