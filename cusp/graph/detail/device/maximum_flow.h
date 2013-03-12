@@ -135,9 +135,9 @@ void bfs_edge_index_locator(const Matrix&    A,
 }
 } // end namespace detail
 
-template<typename MatrixType, typename IndexType>
+template<typename MatrixType, typename ArrayType, typename IndexType>
 typename MatrixType::value_type
-maximum_flow(const MatrixType& G, IndexType src, IndexType sink)
+maximum_flow(const MatrixType& G, ArrayType& flow, IndexType src, IndexType sink)
 {
     typedef typename MatrixType::value_type ValueType;
     typedef typename MatrixType::memory_space MemorySpace;
@@ -162,6 +162,8 @@ maximum_flow(const MatrixType& G, IndexType src, IndexType sink)
     cusp::array1d<IndexType,cusp::host_memory> bfs_tree_h(N);
     cusp::array1d<IndexType,cusp::host_memory> positions_h(N);
     cusp::array1d<IndexType,cusp::host_memory> update_positions(N);
+
+    // copy of capacities to host
     cusp::array1d<ValueType,cusp::host_memory> capacities(G.values);
 
     ValueType max_flow = 0;
@@ -205,6 +207,7 @@ maximum_flow(const MatrixType& G, IndexType src, IndexType sink)
         {
             // update the capacities using the minimum capacity
             capacities[positions_h[curr_node]] -= min_capacity;
+
             // track edges with zero capacity for filtering
             if( capacities[positions_h[curr_node]] == 0 )
             {
@@ -221,6 +224,11 @@ maximum_flow(const MatrixType& G, IndexType src, IndexType sink)
                         positions.begin(),
                         G_view.column_indices.begin());
     }
+
+    // copy updated capacities back to device
+    flow = capacities;
+    // flow is equal to the difference in the capacities
+    cusp::blas::axpby(G.values, flow, flow, 1, -1);
 
     return max_flow;
 }
