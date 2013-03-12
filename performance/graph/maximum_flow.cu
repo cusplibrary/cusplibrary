@@ -2,35 +2,42 @@
 #include <cusp/print.h>
 
 #include <cusp/gallery/grid.h>
+#include <cusp/graph/maximum_flow.h>
 #include <cusp/io/matrix_market.h>
 
 #include "../timer.h"
-#include <cusp/graph/maximum_flow.h>
+
+template<typename MemorySpace, typename MatrixType>
+void MaxFlow(const MatrixType& G)
+{
+    typedef typename MatrixType::index_type IndexType;
+    typedef typename MatrixType::value_type ValueType;
+    typedef cusp::csr_matrix<IndexType,ValueType,MemorySpace> GraphType;
+
+    GraphType G_flow(G);
+    IndexType source = 0;
+    IndexType sink = G.num_rows - 1;
+    
+    timer t;
+    ValueType capacity = cusp::graph::maximum_flow(G_flow, source, sink);
+    std::cout << "Max-Flow time : " << t.milliseconds_elapsed() << " (ms), with capacity : " << capacity << std::endl;
+}
 
 int main(int argc, char*argv[])
 {
     srand(time(NULL));
 
-    typedef int   IndexType;
+    typedef int IndexType;
     typedef int ValueType;
-    typedef cusp::device_memory MemorySpace;
+    typedef cusp::host_memory MemorySpace;
 
-    size_t size = 128;
-
-    /*cusp::array2d<ValueType,cusp::host_memory> dense(6,6,ValueType(0));
-    dense(0,1) = 16; dense(0,2) = 13;
-    dense(1,2) = 10; dense(1,3) = 12;
-    dense(2,1) = 4;  dense(2,4) = 14;
-    dense(3,2) = 9;  dense(3,5) = 20;
-    dense(4,3) = 7;  dense(4,5) = 4;
-
-    cusp::csr_matrix<IndexType, ValueType, MemorySpace> A(dense);*/
     cusp::csr_matrix<IndexType, ValueType, MemorySpace> A;
+    size_t size = 128;
 
     if (argc == 1)
     {
         // no input file was specified, generate an example
-        std::cout << "Generated matrix (grid2d) ";
+        std::cout << "Generated matrix (2D Grid) ";
         cusp::gallery::grid2d(A, size, size);
     }
     else if (argc == 2)
@@ -43,26 +50,17 @@ int main(int argc, char*argv[])
     std::cout << "with shape ("  << A.num_rows << "," << A.num_cols << ") and "
               << A.num_entries << " entries" << "\n\n";
 
-
-    srand (time(NULL));
-    cusp::array1d<ValueType,cusp::host_memory> values(A.num_entries);
+    // Generate random capacities in range [4,100)
     for( int index = 0; index < A.num_entries; index++ )
-        values[index] = (rand() % 100) + 4;
-    A.values = values;
+        A.values[index] = (rand() % 100) + 4;
 
-    cusp::csr_matrix<IndexType, ValueType, cusp::host_memory> A_h(A);
+    std::cout << " Device ";
+    MaxFlow<cusp::device_memory>(A);
 
-    IndexType src = 0;
-    IndexType sink = A.num_rows - 1;
+    std::cout << " Host ";
+    MaxFlow<cusp::host_memory>(A);
 
-    timer flow_time;
-    std::cout << "Device Max-flow : " << cusp::graph::maximum_flow(A, src, sink) << std::endl;;
-    printf("Device Max-flow time : %4.2f (ms)\n", flow_time.milliseconds_elapsed());
-
-    //cusp::graph::detail::host::PushRelabel host_push_relabel(A_h);
-    timer host_flow_time;
-    std::cout << "Host Max-flow : " << /*host_push_relabel.GetMaxFlow*/cusp::graph::maximum_flow(A_h, src, sink) << std::endl;;
-    printf("Host Max-flow time : %4.2f (ms)\n", host_flow_time.milliseconds_elapsed());
+    std::cout << std::endl;
 
     return EXIT_SUCCESS;
 }

@@ -73,26 +73,11 @@ bfs_edge_index_locator_kernel(const IndexType num_rows,
         const IndexType row_start = ptrs[vector_lane][0];                   //same as: row_start = Ap[row];
         const IndexType row_end   = ptrs[vector_lane][1];                   //same as: row_end   = Ap[row+1];
 
-        if (THREADS_PER_VECTOR == 32 && row_end - row_start > 32)
-        {
-            // ensure aligned memory access to Aj and Ax
-
-            IndexType jj = row_start - (row_start & (THREADS_PER_VECTOR - 1)) + thread_lane;
-
-            // accumulate local sums
-            if(jj >= row_start && jj < row_end)
-                if(Aj[jj] == row) {
-                    positions[row] = jj;
-                }
-        }
-        else
-        {
-            // accumulate local sums
-            for(IndexType jj = row_start + thread_lane; jj < row_end; jj += THREADS_PER_VECTOR)
-                if(Aj[jj] == row) {
-                    positions[row] = jj;
-                }
-        }
+        // check current row neighbors
+        for(IndexType jj = row_start + thread_lane; jj < row_end; jj += THREADS_PER_VECTOR)
+            if(Aj[jj] == row) {
+                positions[row] = jj;
+            }
     }
 }
 
@@ -157,7 +142,7 @@ maximum_flow(const MatrixType& G, IndexType src, IndexType sink)
     typedef typename MatrixType::value_type ValueType;
     typedef typename MatrixType::memory_space MemorySpace;
     typedef cusp::csr_matrix_view<
-             typename MatrixType::row_offsets_array_type,
+    typename MatrixType::row_offsets_array_type,
              typename MatrixType::column_indices_array_type,
              typename MatrixType::values_array_type> MatrixType_view;
 
@@ -184,27 +169,32 @@ maximum_flow(const MatrixType& G, IndexType src, IndexType sink)
     // Edmonds-Karp algorithm
     while(1)
     {
-	// Construct BFS tree starting from the source
+        // Construct BFS tree starting from the source
         cusp::graph::breadth_first_search<true>(G_view, src, bfs_tree);
         bfs_tree_h = bfs_tree;
-	// Break when the sink is not reachable from the source
+        // Break when the sink is not reachable from the source
         if( bfs_tree_h[sink] < 0 ) break;
 
-	// BFS implementation returns the parents but we need to update the actual edges
-	// Use a custom spmv-like kernel to find positions of BFS tree entries
+        // BFS implementation returns the parents but we need to update the actual edges
+        // Use a custom spmv-like kernel to find positions of BFS tree entries
         detail::bfs_edge_index_locator(G_view, bfs_tree, positions);
         positions_h = positions;
 
         int path_length = 0;
         IndexType curr_node = sink;
         ValueType min_capacity = std::numeric_limits<ValueType>::max();
-	// Traverse BFS tree starting from sink and ending at source
+        // Traverse BFS tree starting from sink and ending at source
         while(curr_node != src)
         {
-	    // track the minimum capacity
+            // track the minimum capacity
             min_capacity = std::min(capacities[positions_h[curr_node]], min_capacity);
             curr_node = bfs_tree_h[curr_node];
             path_length++;
+        }
+
+        if( min_capacity == 0 )
+        {
+            throw cusp::runtime_exception("Max-flow path from source to sink has zero capacity.");
         }
 
         max_flow += min_capacity;
@@ -213,18 +203,21 @@ maximum_flow(const MatrixType& G, IndexType src, IndexType sink)
         curr_node = sink;
         while(curr_node != src)
         {
-	    // update the capacities using the minimum capacity
+            // update the capacities using the minimum capacity
             capacities[positions_h[curr_node]] -= min_capacity;
-	    // track edges with zero capacity for filtering
+            // track edges with zero capacity for filtering
             if( capacities[positions_h[curr_node]] == 0 )
+            {
+                int pos = positions[curr_node];
                 update_positions[zero_capacity_edges++] = positions_h[curr_node];
+            }
             curr_node = bfs_tree_h[curr_node];
         }
 
         thrust::copy(update_positions.begin(), update_positions.begin() + zero_capacity_edges, positions.begin());
-	// edges with zero capacity are redirected back to source vertex
-        thrust::scatter(thrust::constant_iterator<IndexType>(src),
-                        thrust::constant_iterator<IndexType>(src) + zero_capacity_edges,
+        // edges with zero capacity are set to invalid vertex id
+        thrust::scatter(thrust::constant_iterator<IndexType>(-1),
+                        thrust::constant_iterator<IndexType>(-1) + zero_capacity_edges,
                         positions.begin(),
                         G_view.column_indices.begin());
     }
