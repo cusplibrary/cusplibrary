@@ -29,21 +29,21 @@ namespace dispatch
 ////////////////
 // Host Paths //
 ////////////////
-template<typename MatrixType, typename IndexType>
+template<typename MatrixType, typename ArrayType, typename IndexType>
 typename MatrixType::value_type 
-maximum_flow(const MatrixType& G, const IndexType src, const IndexType sink, cusp::host_memory)
+maximum_flow(const MatrixType& G, ArrayType& flow, const IndexType src, const IndexType sink, cusp::host_memory)
 {
-    return cusp::graph::detail::host::maximum_flow(G, src, sink);
+    return cusp::graph::detail::host::maximum_flow(G, flow, src, sink);
 }
 
 //////////////////
 // Device Paths //
 //////////////////
-template<typename MatrixType, typename IndexType>
+template<typename MatrixType, typename ArrayType, typename IndexType>
 typename MatrixType::value_type 
-maximum_flow(const MatrixType& G, const IndexType src, const IndexType sink, cusp::device_memory)
+maximum_flow(const MatrixType& G, ArrayType& flow, const IndexType src, const IndexType sink, cusp::device_memory)
 {
-    return cusp::graph::detail::device::maximum_flow(G, src, sink);
+    return cusp::graph::detail::device::maximum_flow(G, flow, src, sink);
 }
 
 } // end namespace dispatch

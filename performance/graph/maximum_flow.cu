@@ -15,12 +15,15 @@ void MaxFlow(const MatrixType& G)
     typedef cusp::csr_matrix<IndexType,ValueType,MemorySpace> GraphType;
 
     GraphType G_flow(G);
+    cusp::array1d<ValueType,MemorySpace> flow(G.num_entries);
     IndexType source = 0;
     IndexType sink = G.num_rows - 1;
     
     timer t;
-    ValueType capacity = cusp::graph::maximum_flow(G_flow, source, sink);
+    ValueType capacity = cusp::graph::maximum_flow(G_flow, flow, source, sink);
     std::cout << "Max-Flow time : " << t.milliseconds_elapsed() << " (ms), with capacity : " << capacity << std::endl;
+
+    cusp::print(flow);
 }
 
 int main(int argc, char*argv[])
@@ -32,7 +35,7 @@ int main(int argc, char*argv[])
     typedef cusp::host_memory MemorySpace;
 
     cusp::csr_matrix<IndexType, ValueType, MemorySpace> A;
-    size_t size = 128;
+    size_t size = 8;
 
     if (argc == 1)
     {
