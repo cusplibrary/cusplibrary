@@ -44,10 +44,10 @@ template <typename MatrixType, typename SmootherType>
 class multilevel : public cusp::linear_operator<typename MatrixType::value_type,
     						typename MatrixType::memory_space>
 {
+public:
+
     typedef typename MatrixType::value_type ValueType;
     typedef typename MatrixType::memory_space MemorySpace;
-
-public:
 
     struct level
     {
