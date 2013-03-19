@@ -32,17 +32,21 @@ namespace relaxation
 template <typename ValueType, typename MemorySpace>
 class polynomial : public cusp::linear_operator<ValueType, MemorySpace>
 {
+public:
+
     // note: default_coefficients lives on the host
     cusp::array1d<ValueType, cusp::host_memory> default_coefficients;
     cusp::array1d<ValueType, MemorySpace> residual;
     cusp::array1d<ValueType, MemorySpace> h;
     cusp::array1d<ValueType, MemorySpace> y;
 
-public:
     polynomial();
 
     template <typename MatrixType, typename VectorType>
     polynomial(const MatrixType& A, const VectorType& coefficients);
+
+    template <typename MemorySpace2>
+    polynomial(const polynomial<ValueType,MemorySpace2>& A);
 
     // ignores initial x
     template<typename MatrixType, typename VectorType1, typename VectorType2>

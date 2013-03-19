@@ -91,6 +91,13 @@ template<typename MatrixType, typename VectorType>
 	h.resize(N);
     }
 
+template <typename ValueType, typename MemorySpace>
+template<typename MemorySpace2>
+    polynomial<ValueType,MemorySpace>
+    ::polynomial(const polynomial<ValueType,MemorySpace2>& A) : default_coefficients(A.default_coefficients), residual(A.residual), h(A.h), y(A.y) 
+    {
+    }
+
 // linear_operator
 template <typename ValueType, typename MemorySpace>
 template<typename MatrixType, typename VectorType1, typename VectorType2>
