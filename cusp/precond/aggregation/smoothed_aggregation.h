@@ -118,13 +118,18 @@ class smoothed_aggregation : public cusp::multilevel< typename amg_container<Ind
     	SetupMatrixType A_; 				      // matrix
         cusp::array1d<IndexType,MemorySpace> aggregates;      // aggregates
         cusp::array1d<ValueType,MemorySpace> B;               // near-nullspace candidates
+
+	sa_level(){}
+
+	template<typename SA_Level_Type>
+	sa_level(const SA_Level_Type& sa_level) : A_(sa_level.A_), aggregates(sa_level.aggregates), B(sa_level.B){}
     };
 
     SmootherInitializer<SmootherType> smoother_initializer;
 
-    ValueType theta;
-
     public:
+
+    ValueType theta;
 
     std::vector<sa_level> sa_levels;        
 
@@ -133,6 +138,9 @@ class smoothed_aggregation : public cusp::multilevel< typename amg_container<Ind
 
     template <typename MatrixType, typename ArrayType>
     smoothed_aggregation(const MatrixType& A, const ArrayType& B, const ValueType theta=0);
+
+    template <typename MemorySpace2>
+    smoothed_aggregation(const smoothed_aggregation<IndexType,ValueType,MemorySpace2,SmootherType>& M);
 
     protected:
 

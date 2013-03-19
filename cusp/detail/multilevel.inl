@@ -22,6 +22,15 @@ namespace cusp
 {
 
 template <typename MatrixType, typename SmootherType>
+template <typename MatrixType2, typename SmootherType2>
+multilevel<MatrixType,SmootherType>
+::multilevel(const multilevel<MatrixType2,SmootherType2>& M)
+{
+   for( size_t lvl = 0; lvl < M.levels.size(); lvl++ )
+      levels.push_back(M.levels[lvl]);
+}
+
+template <typename MatrixType, typename SmootherType>
 template <typename Array1, typename Array2>
 void multilevel<MatrixType,SmootherType>
 ::operator()(const Array1& b, Array2& x)
