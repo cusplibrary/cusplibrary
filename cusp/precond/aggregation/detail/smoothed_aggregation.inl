@@ -105,9 +105,9 @@ smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType>
 }
 
 template <typename IndexType, typename ValueType, typename MemorySpace, typename SmootherType>
-template <typename MemorySpace2>
+template <typename MemorySpace2, typename SmootherType2>
 smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType>
-::smoothed_aggregation(const smoothed_aggregation<IndexType,ValueType,MemorySpace2,SmootherType>& M)
+::smoothed_aggregation(const smoothed_aggregation<IndexType,ValueType,MemorySpace2,SmootherType2>& M)
     : theta(M.theta), Parent(M)
 {
    for( size_t lvl = 0; lvl < M.sa_levels.size(); lvl++ )

@@ -139,8 +139,8 @@ class smoothed_aggregation : public cusp::multilevel< typename amg_container<Ind
     template <typename MatrixType, typename ArrayType>
     smoothed_aggregation(const MatrixType& A, const ArrayType& B, const ValueType theta=0);
 
-    template <typename MemorySpace2>
-    smoothed_aggregation(const smoothed_aggregation<IndexType,ValueType,MemorySpace2,SmootherType>& M);
+    template <typename MemorySpace2,typename SmootherType2>
+    smoothed_aggregation(const smoothed_aggregation<IndexType,ValueType,MemorySpace2,SmootherType2>& M);
 
     protected:
 

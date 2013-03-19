@@ -77,6 +77,17 @@ template <typename ValueType, typename MemorySpace>
     }
 
 template <typename ValueType, typename MemorySpace>
+template<typename MemorySpace2>
+    jacobi<ValueType,MemorySpace>
+    ::jacobi(const jacobi<ValueType,MemorySpace2>& A)
+        : default_omega(A.default_omega), temp(A.temp)
+    {
+        CUSP_PROFILE_SCOPED();
+
+	diagonal = A.diagonal;
+    }
+
+template <typename ValueType, typename MemorySpace>
 template<typename MatrixType>
     jacobi<ValueType,MemorySpace>
     ::jacobi(const MatrixType& A, ValueType omega)
