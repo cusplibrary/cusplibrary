@@ -124,8 +124,8 @@ class lu_solver : public cusp::linear_operator<ValueType,MemorySpace>
         : linear_operator<ValueType,MemorySpace>()
     { }
 
-    template <typename Orientation>
-    lu_solver(const cusp::array2d<ValueType,MemorySpace,Orientation>& A) 
+    template <typename MatrixType>
+    lu_solver(const MatrixType& A) 
         : linear_operator<ValueType,MemorySpace>(A.num_rows, A.num_cols, A.num_entries)
     {
         CUSP_PROFILE_SCOPED();
@@ -135,7 +135,7 @@ class lu_solver : public cusp::linear_operator<ValueType,MemorySpace>
         pivot.resize(A.num_rows);
         lu_factor(lu,pivot);
     }
-   
+
     // TODO handle host and device
     template <typename VectorType1, typename VectorType2>
     void operator()(const VectorType1& x, VectorType2& y) const
