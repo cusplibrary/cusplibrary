@@ -1,3 +1,5 @@
+#include <cusp/relaxation/jacobi.h>
+#include <cusp/relaxation/polynomial.h>
 #include <cusp/precond/aggregation/smoothed_aggregation.h>
 #include <cusp/krylov/cg.h>
 #include <cusp/gallery/poisson.h>
@@ -31,7 +33,7 @@ int main(int argc, char ** argv)
     typedef cusp::device_memory MemorySpace;
 
     // create an empty sparse matrix structure
-    cusp::coo_matrix<IndexType, ValueType, MemorySpace> A;
+    cusp::hyb_matrix<IndexType, ValueType, MemorySpace> A;
 
     IndexType N = 1024;
 

@@ -21,18 +21,18 @@
 namespace cusp
 {
 
-template <typename MatrixType, typename SmootherType>
-template <typename MatrixType2, typename SmootherType2>
-multilevel<MatrixType,SmootherType>
-::multilevel(const multilevel<MatrixType2,SmootherType2>& M)
+template <typename MatrixType, typename SmootherType, typename SolverType>
+template <typename MatrixType2, typename SmootherType2, typename SolverType2>
+multilevel<MatrixType,SmootherType,SolverType>
+::multilevel(const multilevel<MatrixType2,SmootherType2,SolverType2>& M)
 {
    for( size_t lvl = 0; lvl < M.levels.size(); lvl++ )
       levels.push_back(M.levels[lvl]);
 }
 
-template <typename MatrixType, typename SmootherType>
+template <typename MatrixType, typename SmootherType, typename SolverType>
 template <typename Array1, typename Array2>
-void multilevel<MatrixType,SmootherType>
+void multilevel<MatrixType,SmootherType,SolverType>
 ::operator()(const Array1& b, Array2& x)
 {
     CUSP_PROFILE_SCOPED();
@@ -41,9 +41,9 @@ void multilevel<MatrixType,SmootherType>
     _solve(b, x, 0);
 }
 
-template <typename MatrixType, typename SmootherType>
+template <typename MatrixType, typename SmootherType, typename SolverType>
 template <typename Array1, typename Array2>
-void multilevel<MatrixType,SmootherType>
+void multilevel<MatrixType,SmootherType,SolverType>
 ::solve(const Array1& b, Array2& x)
 {
     CUSP_PROFILE_SCOPED();
@@ -53,21 +53,22 @@ void multilevel<MatrixType,SmootherType>
     solve(b, x, monitor);
 }
 
-template <typename MatrixType, typename SmootherType>
+template <typename MatrixType, typename SmootherType, typename SolverType>
 template <typename Array1, typename Array2, typename Monitor>
-void multilevel<MatrixType,SmootherType>
-::solve(const Array1& b, Array2& x, Monitor& monitor )
+void multilevel<MatrixType,SmootherType,SolverType>
+::solve(const Array1& b, Array2& x, Monitor& monitor)
 {
     CUSP_PROFILE_SCOPED();
 
-    const size_t n = levels[0].A.num_rows;
+    const MatrixType& A = levels[0].A;
+    const size_t n = A.num_rows;
 
     // use simple iteration
     cusp::array1d<ValueType,MemorySpace> update(n);
     cusp::array1d<ValueType,MemorySpace> residual(n);
 
     // compute initial residual
-    cusp::multiply(levels[0].A, x, residual);
+    cusp::multiply(A, x, residual);
     cusp::blas::axpby(b, residual, residual, ValueType(1.0), ValueType(-1.0));
 
     while(!monitor.finished(residual))
@@ -78,15 +79,15 @@ void multilevel<MatrixType,SmootherType>
         cusp::blas::axpy(update, x, ValueType(1.0));
 
         // update residual
-        cusp::multiply(levels[0].A, x, residual);
+        cusp::multiply(A, x, residual);
         cusp::blas::axpby(b, residual, residual, ValueType(1.0), ValueType(-1.0));
         ++monitor;
     }
 }
 
-template <typename MatrixType, typename SmootherType>
+template <typename MatrixType, typename SmootherType, typename SolverType>
 template <typename Array1, typename Array2>
-void multilevel<MatrixType,SmootherType>
+void multilevel<MatrixType,SmootherType,SolverType>
 ::_solve(const Array1& b, Array2& x, const size_t i)
 {
     CUSP_PROFILE_SCOPED();
@@ -97,16 +98,18 @@ void multilevel<MatrixType,SmootherType>
         // TODO streamline
         cusp::array1d<ValueType,cusp::host_memory> temp_b(b);
         cusp::array1d<ValueType,cusp::host_memory> temp_x(x.size());
-        LU(temp_b, temp_x);
+        solver(temp_b, temp_x);
         x = temp_x;
     }
     else
     {
+    	const MatrixType& A = levels[i].A;
+
         // presmooth
-        levels[i].smoother.presmooth(levels[i].A, b, x);
+        levels[i].smoother.presmooth(A, b, x);
 
         // compute residual <- b - A*x
-        cusp::multiply(levels[i].A, x, levels[i].residual);
+        cusp::multiply(A, x, levels[i].residual);
         cusp::blas::axpby(b, levels[i].residual, levels[i].residual, ValueType(1.0), ValueType(-1.0));
 
         // restrict to coarse grid
@@ -120,12 +123,12 @@ void multilevel<MatrixType,SmootherType>
         cusp::blas::axpy(levels[i].residual, x, ValueType(1.0));
 
         // postsmooth
-        levels[i].smoother.postsmooth(levels[i].A, b, x);
+        levels[i].smoother.postsmooth(A, b, x);
     }
 }
 
-template <typename MatrixType, typename SmootherType>
-void multilevel<MatrixType,SmootherType>
+template <typename MatrixType, typename SmootherType, typename SolverType>
+void multilevel<MatrixType,SmootherType,SolverType>
 ::print( void )
 {
     size_t num_levels = levels.size();
@@ -149,8 +152,8 @@ void multilevel<MatrixType,SmootherType>
     }
 }
 
-template <typename MatrixType, typename SmootherType>
-double multilevel<MatrixType,SmootherType>
+template <typename MatrixType, typename SmootherType, typename SolverType>
+double multilevel<MatrixType,SmootherType,SolverType>
 ::operator_complexity( void )
 {
     size_t nnz = 0;
@@ -161,8 +164,8 @@ double multilevel<MatrixType,SmootherType>
     return (double) nnz / (double) levels[0].A.num_entries;
 }
 
-template <typename MatrixType, typename SmootherType>
-double multilevel<MatrixType,SmootherType>
+template <typename MatrixType, typename SmootherType, typename SolverType>
+double multilevel<MatrixType,SmootherType,SolverType>
 ::grid_complexity( void )
 {
     size_t unknowns = 0;

@@ -19,7 +19,9 @@
  */
 
 #include <cusp/multiply.h>
+
 #include <cusp/detail/format_utils.h>
+#include <cusp/detail/spectral_radius.h>
 
 #include <math.h>
 
@@ -29,161 +31,182 @@ namespace relaxation
 {
 namespace detail
 {
-	template <typename ValueType>
-	void chebyshev_polynomial_coefficients( const ValueType rho, 
-						cusp::array1d<ValueType,cusp::host_memory>& coefficients,
-						const ValueType lower_bound = 1.0/30.0, 
-						const ValueType upper_bound = 1.1) 
-	{
-		const size_t degree = 3;
+template <typename ValueType>
+void chebyshev_polynomial_coefficients( const ValueType rho,
+                                        cusp::array1d<ValueType,cusp::host_memory>& coefficients,
+                                        const ValueType lower_bound = 1.0/30.0,
+                                        const ValueType upper_bound = 1.1)
+{
+    const size_t degree = 3;
 
-		ValueType x0 = lower_bound * rho;
-		ValueType x1 = upper_bound * rho;
-		
-		// Chebyshev roots for the interval [-1,1]
-		cusp::array1d<ValueType,cusp::host_memory> std_roots(degree);
+    ValueType x0 = lower_bound * rho;
+    ValueType x1 = upper_bound * rho;
 
-		for( size_t i=0; i<degree; i++ )
-			std_roots[i] = std::cos( M_PI * (ValueType(i) + 0.5)/ degree );
+    // Chebyshev roots for the interval [-1,1]
+    cusp::array1d<ValueType,cusp::host_memory> std_roots(degree);
 
-		// Chebyshev roots for the interval [x0,x1]
-		for( size_t i=0; i<degree; i++ )
-			std_roots[i] = 0.5 * (x1-x0) * (1 + std_roots[i]) + x0;
+    for( size_t i=0; i<degree; i++ )
+        std_roots[i] = std::cos( M_PI * (ValueType(i) + 0.5)/ degree );
 
-		// Compute monic polynomial coefficients of polynomial with scaled roots
-		// TODO: Implement convolution method for polynomial multiplication
-		coefficients.resize(degree+1);
-		ValueType a = std_roots[0];
-		ValueType b = std_roots[1];
-		ValueType c = std_roots[2];
-		coefficients[0] = 1.0;
-		coefficients[1] = -(a+b+c);
-		coefficients[2] = (a*b) + (b*c) + (c*a);
-		coefficients[3] = -(a*b*c);
+    // Chebyshev roots for the interval [x0,x1]
+    for( size_t i=0; i<degree; i++ )
+        std_roots[i] = 0.5 * (x1-x0) * (1 + std_roots[i]) + x0;
 
-		// Scale coefficients to enforce C(0) = 1.0
-		ValueType scale_factor = 1.0/coefficients.back();
-		cusp::blas::scal(coefficients, scale_factor);
-	}
+    // Compute monic polynomial coefficients of polynomial with scaled roots
+    // TODO: Implement convolution method for polynomial multiplication
+    coefficients.resize(degree+1);
+    ValueType a = std_roots[0];
+    ValueType b = std_roots[1];
+    ValueType c = std_roots[2];
+    coefficients[0] = 1.0;
+    coefficients[1] = -(a+b+c);
+    coefficients[2] = (a*b) + (b*c) + (c*a);
+    coefficients[3] = -(a*b*c);
+
+    // Scale coefficients to enforce C(0) = 1.0
+    ValueType scale_factor = 1.0/coefficients.back();
+    cusp::blas::scal(coefficients, scale_factor);
+}
 }
 
 // constructor
 template <typename ValueType, typename MemorySpace>
-    polynomial<ValueType,MemorySpace>
-    ::polynomial()
-    {
-    }
+polynomial<ValueType,MemorySpace>
+::polynomial()
+{
+}
 
 template <typename ValueType, typename MemorySpace>
 template<typename MatrixType, typename VectorType>
-    polynomial<ValueType,MemorySpace>
-    ::polynomial(const MatrixType& A, const VectorType& coefficients)
-    {
-	size_t default_size = coefficients.size()-1;
-	default_coefficients.resize( default_size );
-	for( size_t index = 0; index < default_size; index++ )
-		default_coefficients[index] = -coefficients[index];
+polynomial<ValueType,MemorySpace>
+::polynomial(const MatrixType& A, const VectorType& coefficients)
+{
+    size_t default_size = coefficients.size()-1;
+    default_coefficients.resize( default_size );
+    for( size_t index = 0; index < default_size; index++ )
+        default_coefficients[index] = -coefficients[index];
 
-	size_t N = A.num_rows;
+    size_t N = A.num_rows;
 
-	residual.resize(N);
-	y.resize(N);
-	h.resize(N);
-    }
+    residual.resize(N);
+    y.resize(N);
+    h.resize(N);
+}
 
 template <typename ValueType, typename MemorySpace>
 template<typename MemorySpace2>
-    polynomial<ValueType,MemorySpace>
-    ::polynomial(const polynomial<ValueType,MemorySpace2>& A) : default_coefficients(A.default_coefficients), residual(A.residual), h(A.h), y(A.y) 
-    {
-    }
+polynomial<ValueType,MemorySpace>
+::polynomial(const polynomial<ValueType,MemorySpace2>& A) : default_coefficients(A.default_coefficients), residual(A.residual), h(A.h), y(A.y)
+{
+}
+
+template <typename ValueType, typename MemorySpace>
+template<typename MatrixType>
+polynomial<ValueType,MemorySpace>
+::polynomial(const cusp::precond::aggregation::sa_level<MatrixType>& sa_level)
+{
+    CUSP_PROFILE_SCOPED();
+
+    size_t N = sa_level.A_.num_rows;
+
+    ValueType rho = cusp::detail::ritz_spectral_radius_symmetric(sa_level.A_, 8);
+    detail::chebyshev_polynomial_coefficients(rho, default_coefficients);
+    default_coefficients.resize( default_coefficients.size() - 1 );
+
+    for( size_t index = 0; index < default_coefficients.size(); index++ )
+        default_coefficients[index] *= -1;
+
+    residual.resize(N);
+    y.resize(N);
+    h.resize(N);
+}
 
 // linear_operator
 template <typename ValueType, typename MemorySpace>
 template<typename MatrixType, typename VectorType1, typename VectorType2>
-    void polynomial<ValueType,MemorySpace>
-    ::operator()(const MatrixType& A, const VectorType1& b, VectorType2& x) const
-    {
-        CUSP_PROFILE_SCOPED();
+void polynomial<ValueType,MemorySpace>
+::operator()(const MatrixType& A, const VectorType1& b, VectorType2& x) const
+{
+    CUSP_PROFILE_SCOPED();
 
-        polynomial<ValueType,MemorySpace>::operator()(A,b,x,default_coefficients);
-    }
-
-template <typename ValueType, typename MemorySpace>
-template<typename MatrixType, typename VectorType1, typename VectorType2>
-    void polynomial<ValueType,MemorySpace>
-    ::presmooth(const MatrixType& A, const VectorType1& b, VectorType2& x)
-    {
-        CUSP_PROFILE_SCOPED();
-        
-	// Ignore the initial x and use b as the residual
-	ValueType scale_factor = default_coefficients[0];
-        cusp::blas::axpby(b, x, x, scale_factor, ValueType(0));
-
-	for( size_t i = 1; i<default_coefficients.size(); i++ )
-	{
-		scale_factor = default_coefficients[i];
-
-            	cusp::multiply(A, x, y);
-            	cusp::blas::axpby(y, b, x, ValueType(1.0), scale_factor);
-	}
-    }
+    polynomial<ValueType,MemorySpace>::operator()(A,b,x,default_coefficients);
+}
 
 template <typename ValueType, typename MemorySpace>
 template<typename MatrixType, typename VectorType1, typename VectorType2>
-    void polynomial<ValueType,MemorySpace>
-    ::postsmooth(const MatrixType& A, const VectorType1& b, VectorType2& x)
+void polynomial<ValueType,MemorySpace>
+::presmooth(const MatrixType& A, const VectorType1& b, VectorType2& x)
+{
+    CUSP_PROFILE_SCOPED();
+
+    // Ignore the initial x and use b as the residual
+    ValueType scale_factor = default_coefficients[0];
+    cusp::blas::axpby(b, x, x, scale_factor, ValueType(0));
+
+    for( size_t i = 1; i<default_coefficients.size(); i++ )
     {
-        CUSP_PROFILE_SCOPED();
+        scale_factor = default_coefficients[i];
 
-        // compute residual <- b - A*x
-        cusp::multiply(A, x, residual);
-        cusp::blas::axpby(b, residual, residual, ValueType(1), ValueType(-1));
-
-	ValueType scale_factor = default_coefficients[0];
-        cusp::blas::axpby(residual, h, h, scale_factor, ValueType(0));
-
-	for( size_t i = 1; i<default_coefficients.size(); i++ )
-	{
-		scale_factor = default_coefficients[i];
-
-            	cusp::multiply(A, h, y);
-            	cusp::blas::axpby(y, residual, h, ValueType(1.0), scale_factor);
-	}
-
-        cusp::blas::axpy(h, x, ValueType(1.0));
+        cusp::multiply(A, x, y);
+        cusp::blas::axpby(y, b, x, ValueType(1.0), scale_factor);
     }
+}
+
+template <typename ValueType, typename MemorySpace>
+template<typename MatrixType, typename VectorType1, typename VectorType2>
+void polynomial<ValueType,MemorySpace>
+::postsmooth(const MatrixType& A, const VectorType1& b, VectorType2& x)
+{
+    CUSP_PROFILE_SCOPED();
+
+    // compute residual <- b - A*x
+    cusp::multiply(A, x, residual);
+    cusp::blas::axpby(b, residual, residual, ValueType(1), ValueType(-1));
+
+    ValueType scale_factor = default_coefficients[0];
+    cusp::blas::axpby(residual, h, h, scale_factor, ValueType(0));
+
+    for( size_t i = 1; i<default_coefficients.size(); i++ )
+    {
+        scale_factor = default_coefficients[i];
+
+        cusp::multiply(A, h, y);
+        cusp::blas::axpby(y, residual, h, ValueType(1.0), scale_factor);
+    }
+
+    cusp::blas::axpy(h, x, ValueType(1.0));
+}
 
 // override default coefficients
 template <typename ValueType, typename MemorySpace>
 template<typename MatrixType, typename VectorType1, typename VectorType2, typename VectorType3>
-    void polynomial<ValueType,MemorySpace>
-    ::operator()(const MatrixType& A, const VectorType1& b, VectorType2& x, VectorType3& coefficients) 
+void polynomial<ValueType,MemorySpace>
+::operator()(const MatrixType& A, const VectorType1& b, VectorType2& x, VectorType3& coefficients)
+{
+    if( cusp::blas::nrm2(x) == 0.0 )
     {
-	if( cusp::blas::nrm2(x) == 0.0 )
-	{
-		residual = b;
-	}
-	else
-	{
-            	// compute residual <- b - A*x
-            	cusp::multiply(A, x, residual);
-            	cusp::blas::axpby(b, residual, residual, ValueType(1), ValueType(-1));
-	}
-
-	ValueType scale_factor = coefficients[0];
-        cusp::blas::axpby(residual, h, h, scale_factor, ValueType(0));
-
-	for( size_t i = 1; i<coefficients.size(); i++ )
-	{
-		scale_factor = coefficients[i];
-
-            	cusp::multiply(A, h, y);
-            	cusp::blas::axpby(y, residual, h, ValueType(1.0), scale_factor);
-	}
-
-        cusp::blas::axpy(h, x, ValueType(1.0));
+        residual = b;
     }
+    else
+    {
+        // compute residual <- b - A*x
+        cusp::multiply(A, x, residual);
+        cusp::blas::axpby(b, residual, residual, ValueType(1), ValueType(-1));
+    }
+
+    ValueType scale_factor = coefficients[0];
+    cusp::blas::axpby(residual, h, h, scale_factor, ValueType(0));
+
+    for( size_t i = 1; i<coefficients.size(); i++ )
+    {
+        scale_factor = coefficients[i];
+
+        cusp::multiply(A, h, y);
+        cusp::blas::axpby(y, residual, h, ValueType(1.0), scale_factor);
+    }
+
+    cusp::blas::axpy(h, x, ValueType(1.0));
+}
 
 } // end namespace relaxation
 } // end namespace cusp
