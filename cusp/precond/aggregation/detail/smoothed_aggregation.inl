@@ -99,7 +99,7 @@ template <typename IndexType, typename ValueType, typename MemorySpace, typename
 template <typename MatrixType, typename ArrayType>
 smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverType>
 ::smoothed_aggregation(const MatrixType& A, const ArrayType& B, const ValueType theta)
-    : theta(theta), Parent(A)
+    : theta(theta)
 {
     init(A, B);
 }
