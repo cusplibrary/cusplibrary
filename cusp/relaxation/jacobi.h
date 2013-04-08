@@ -21,11 +21,19 @@
 #pragma once
 
 #include <cusp/detail/config.h>
-
 #include <cusp/linear_operator.h>
 
 namespace cusp
 {
+namespace precond
+{
+namespace aggregation
+{
+// forward definitions
+template<typename MatrixType> struct sa_level;
+} // end namespace aggregation
+} // end namespace precond
+
 namespace relaxation
 {
 
@@ -44,6 +52,9 @@ public:
 
     template <typename MemorySpace2>
     jacobi(const jacobi<ValueType,MemorySpace2>& A);
+
+    template <typename MatrixType>
+    jacobi(const cusp::precond::aggregation::sa_level<MatrixType>& sa_level, ValueType weight=4.0/3.0);
     
     // ignores initial x
     template<typename MatrixType, typename VectorType1, typename VectorType2>
