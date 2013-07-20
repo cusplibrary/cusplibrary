@@ -77,6 +77,14 @@ template <typename ValueType, typename MemorySpace>
     }
 
 template <typename ValueType, typename MemorySpace>
+template<typename MemorySpace2>
+    jacobi<ValueType,MemorySpace>
+    ::jacobi(const jacobi<ValueType,MemorySpace2>& A)
+        : default_omega(A.default_omega), temp(A.temp), diagonal(A.diagonal)
+    {
+    }
+
+template <typename ValueType, typename MemorySpace>
 template<typename MatrixType>
     jacobi<ValueType,MemorySpace>
     ::jacobi(const MatrixType& A, ValueType omega)
@@ -86,6 +94,18 @@ template<typename MatrixType>
 
         // extract the main diagonal
         cusp::detail::extract_diagonal(A, diagonal);
+    }
+
+template <typename ValueType, typename MemorySpace>
+template<typename MatrixType>
+    jacobi<ValueType,MemorySpace>
+    ::jacobi(const cusp::precond::aggregation::sa_level<MatrixType>& sa_level, ValueType weight)
+        : default_omega(weight/sa_level.rho_DinvA), temp(sa_level.A_.num_rows)
+    {
+        CUSP_PROFILE_SCOPED();
+
+        // extract the main diagonal
+        cusp::detail::extract_diagonal(sa_level.A_, diagonal);
     }
 
 // linear_operator

@@ -26,23 +26,39 @@
 
 namespace cusp
 {
+namespace precond
+{
+namespace aggregation
+{
+// forward definitions
+template<typename MatrixType> struct sa_level;
+} // end namespace aggregation
+} // end namespace precond
+
 namespace relaxation
 {
 
 template <typename ValueType, typename MemorySpace>
 class polynomial : public cusp::linear_operator<ValueType, MemorySpace>
 {
+public:
+
     // note: default_coefficients lives on the host
     cusp::array1d<ValueType, cusp::host_memory> default_coefficients;
     cusp::array1d<ValueType, MemorySpace> residual;
     cusp::array1d<ValueType, MemorySpace> h;
     cusp::array1d<ValueType, MemorySpace> y;
 
-public:
     polynomial();
 
     template <typename MatrixType, typename VectorType>
     polynomial(const MatrixType& A, const VectorType& coefficients);
+
+    template <typename MemorySpace2>
+    polynomial(const polynomial<ValueType,MemorySpace2>& A);
+
+    template <typename MatrixType>
+    polynomial(const cusp::precond::aggregation::sa_level<MatrixType>& sa_level);
 
     // ignores initial x
     template<typename MatrixType, typename VectorType1, typename VectorType2>

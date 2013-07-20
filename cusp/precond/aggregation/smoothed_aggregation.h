@@ -16,7 +16,7 @@
 
 /*! \file smoothed_aggregation.h
  *  \brief Algebraic multigrid preconditoner based on smoothed aggregation.
- *  
+ *
  */
 
 #pragma once
@@ -32,7 +32,6 @@
 #include <cusp/multilevel.h>
 
 #include <cusp/relaxation/jacobi.h>
-#include <cusp/relaxation/polynomial.h>
 
 #include <cusp/detail/spectral_radius.h>
 
@@ -49,7 +48,7 @@ namespace aggregation
  */
 
 template <typename IndexType, typename ValueType, typename MemorySpace>
-struct amg_container{};
+struct amg_container {};
 
 template <typename IndexType, typename ValueType>
 struct amg_container<IndexType,ValueType,cusp::host_memory>
@@ -67,66 +66,45 @@ struct amg_container<IndexType,ValueType,cusp::device_memory>
     typedef typename cusp::hyb_matrix<IndexType,ValueType,cusp::device_memory> solve_type;
 };
 
-template <typename SmootherType>
-struct SmootherInitializer {};
-
-template <typename ValueType, typename MemorySpace>
-struct SmootherInitializer< cusp::relaxation::jacobi<ValueType,MemorySpace> >
+template<typename MatrixType>
+struct sa_level
 {
-    typedef cusp::relaxation::jacobi<ValueType,MemorySpace> Smoother;
+    typedef typename MatrixType::index_type IndexType;
+    typedef typename MatrixType::value_type ValueType;
+    typedef typename MatrixType::memory_space MemorySpace;
 
-    template <typename MatrixType>
-    Smoother operator()(const MatrixType& A, const ValueType rho_DinvA)
-    {
-        //  4/3 * 1/rho is a good default, where rho is the spectral radius of D^-1(A)
-    	ValueType omega = ValueType(4.0/3.0) / rho_DinvA;
-        return Smoother(A, omega);
-    }
-};
+    MatrixType A_; 					  // matrix
+    cusp::array1d<IndexType,MemorySpace> aggregates;      // aggregates
+    cusp::array1d<ValueType,MemorySpace> B;               // near-nullspace candidates
 
-template <typename ValueType, typename MemorySpace>
-struct SmootherInitializer< cusp::relaxation::polynomial<ValueType,MemorySpace> >
-{
-    typedef cusp::relaxation::polynomial<ValueType,MemorySpace> Smoother;
+    ValueType rho_DinvA;
 
-    template <typename MatrixType>
-    Smoother operator()(const MatrixType& A, const ValueType rho_DinvA)
-    {
-        cusp::array1d<ValueType,cusp::host_memory> coef;
-        ValueType rho = cusp::detail::ritz_spectral_radius_symmetric(A, 8);
-        cusp::relaxation::detail::chebyshev_polynomial_coefficients(rho, coef);
-        return Smoother(A, coef);
-    }
+    sa_level() {}
+
+    template<typename SA_Level_Type>
+    sa_level(const SA_Level_Type& sa_level) : A_(sa_level.A_), aggregates(sa_level.aggregates), B(sa_level.B), rho_DinvA(sa_level.rho_DinvA) {}
 };
 
 
 /*! \p smoothed_aggregation : algebraic multigrid preconditoner based on
  *  smoothed aggregation
  *
- *  TODO
  */
-template <typename IndexType, typename ValueType, typename MemorySpace, typename SmootherType = cusp::relaxation::jacobi<ValueType,MemorySpace> >
-class smoothed_aggregation : public cusp::multilevel< typename amg_container<IndexType,ValueType,MemorySpace>::solve_type, SmootherType>
+template <typename IndexType, typename ValueType, typename MemorySpace, 
+	  typename SmootherType = cusp::relaxation::jacobi<ValueType,MemorySpace>,
+	  typename SolverType = cusp::detail::lu_solver<ValueType,cusp::host_memory> >
+class smoothed_aggregation : public cusp::multilevel< typename amg_container<IndexType,ValueType,MemorySpace>::solve_type, SmootherType, SolverType>
 {
 
     typedef typename amg_container<IndexType,ValueType,MemorySpace>::setup_type SetupMatrixType;
     typedef typename amg_container<IndexType,ValueType,MemorySpace>::solve_type SolveMatrixType;
-    typedef typename cusp::multilevel<SolveMatrixType,SmootherType> Parent;
+    typedef typename cusp::multilevel<SolveMatrixType,SmootherType,SolverType> Parent;
 
-    struct sa_level
-    {
-    	SetupMatrixType A_; 				      // matrix
-        cusp::array1d<IndexType,MemorySpace> aggregates;      // aggregates
-        cusp::array1d<ValueType,MemorySpace> B;               // near-nullspace candidates
-    };
-
-    SmootherInitializer<SmootherType> smoother_initializer;
+public:
 
     ValueType theta;
 
-    public:
-
-    std::vector<sa_level> sa_levels;        
+    std::vector< sa_level<SetupMatrixType> > sa_levels;
 
     template <typename MatrixType>
     smoothed_aggregation(const MatrixType& A, const ValueType theta=0);
@@ -134,7 +112,10 @@ class smoothed_aggregation : public cusp::multilevel< typename amg_container<Ind
     template <typename MatrixType, typename ArrayType>
     smoothed_aggregation(const MatrixType& A, const ArrayType& B, const ValueType theta=0);
 
-    protected:
+    template <typename MemorySpace2,typename SmootherType2,typename SolverType2>
+    smoothed_aggregation(const smoothed_aggregation<IndexType,ValueType,MemorySpace2,SmootherType2,SolverType2>& M);
+
+protected:
 
     template <typename MatrixType, typename ArrayType>
     void init(const MatrixType& A, const ArrayType& B);

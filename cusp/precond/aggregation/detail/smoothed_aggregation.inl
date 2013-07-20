@@ -82,11 +82,11 @@ void setup_level_matrix(Matrix1& dst, Matrix2& src) {
 
 } // end namespace detail
 
-template <typename IndexType, typename ValueType, typename MemorySpace, typename SmootherType>
+template <typename IndexType, typename ValueType, typename MemorySpace, typename SmootherType, typename SolverType>
 template <typename MatrixType>
-smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType>
+smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverType>
 ::smoothed_aggregation(const MatrixType& A, const ValueType theta)
-    : theta(theta), Parent()
+    : theta(theta)
 {
     typedef typename cusp::array1d_view< thrust::constant_iterator<ValueType> > ConstantView;
 
@@ -95,26 +95,37 @@ smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType>
     init(A, B);
 }
 
-template <typename IndexType, typename ValueType, typename MemorySpace, typename SmootherType>
+template <typename IndexType, typename ValueType, typename MemorySpace, typename SmootherType, typename SolverType>
 template <typename MatrixType, typename ArrayType>
-smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType>
+smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverType>
 ::smoothed_aggregation(const MatrixType& A, const ArrayType& B, const ValueType theta)
-    : theta(theta), Parent()
+    : theta(theta)
 {
     init(A, B);
 }
 
-template <typename IndexType, typename ValueType, typename MemorySpace, typename SmootherType>
+template <typename IndexType, typename ValueType, typename MemorySpace, typename SmootherType, typename SolverType>
+template <typename MemorySpace2, typename SmootherType2, typename SolverType2>
+smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverType>
+::smoothed_aggregation(const smoothed_aggregation<IndexType,ValueType,MemorySpace2,SmootherType2,SolverType2>& M)
+    : theta(M.theta), Parent(M)
+{
+   for( size_t lvl = 0; lvl < M.sa_levels.size(); lvl++ )
+      sa_levels.push_back(M.sa_levels[lvl]);
+}
+
+template <typename IndexType, typename ValueType, typename MemorySpace, typename SmootherType, typename SolverType>
 template <typename MatrixType, typename ArrayType>
-void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType>
+void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverType>
 ::init(const MatrixType& A, const ArrayType& B)
 {
     CUSP_PROFILE_SCOPED();
 
-    Parent::levels.reserve(20); // avoid reallocations which force matrix copies
+    Parent* ML = this;
+    ML->levels.reserve(20); // avoid reallocations which force matrix copies
 
-    sa_levels.push_back(sa_level());
-    Parent::levels.push_back(typename Parent::level());
+    sa_levels.push_back(sa_level<SetupMatrixType>());
+    ML->levels.push_back(typename Parent::level());
 
     sa_levels.back().B = B;
     sa_levels.back().A_ = A; // copy
@@ -122,27 +133,27 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType>
     while (sa_levels.back().A_.num_rows > 100)
         extend_hierarchy();
 
-    // TODO make lu_solver accept sparse input
-    cusp::array2d<ValueType,cusp::host_memory> coarse_dense(sa_levels.back().A_);
-    Parent::LU = cusp::detail::lu_solver<ValueType, cusp::host_memory>(coarse_dense);
+    ML->solver = SolverType(sa_levels.back().A_);
 
     // Setup solve matrix for each level
-    Parent::levels[0].A = A;
-    for( size_t lvl = 1; lvl < sa_levels.size(); lvl++ )
-        detail::setup_level_matrix( Parent::levels[lvl].A, sa_levels[lvl].A_ );
+    for( size_t lvl = 0; lvl < sa_levels.size(); lvl++ )
+        detail::setup_level_matrix( ML->levels[lvl].A, sa_levels[lvl].A_ );
 }
 
-template <typename IndexType, typename ValueType, typename MemorySpace, typename SmootherType>
-void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType>
+template <typename IndexType, typename ValueType, typename MemorySpace, typename SmootherType, typename SolverType>
+void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverType>
 ::extend_hierarchy(void)
 {
     CUSP_PROFILE_SCOPED();
+
+    const SetupMatrixType& A = sa_levels.back().A_;
+    Parent* ML = this;
 
     cusp::array1d<IndexType,MemorySpace> aggregates;
     {
         // compute stength of connection matrix
         SetupMatrixType C;
-        symmetric_strength_of_connection(sa_levels.back().A_, C, theta);
+        symmetric_strength_of_connection(A, C, theta);
 
         // compute aggregates
         aggregates.resize(C.num_rows);
@@ -151,7 +162,7 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType>
     }
 
     // compute spectral radius of diag(C)^-1 * C
-    ValueType rho_DinvA = detail::estimate_rho_Dinv_A(sa_levels.back().A_);
+    sa_levels.back().rho_DinvA = detail::estimate_rho_Dinv_A(A);
 
     SetupMatrixType P;
     cusp::array1d<ValueType,MemorySpace>  B_coarse;
@@ -161,7 +172,7 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType>
         fit_candidates(aggregates, sa_levels.back().B, T, B_coarse);
 
         // compute prolongation operator
-        smooth_prolongator(sa_levels.back().A_, T, P, ValueType(4.0/3.0), rho_DinvA);  // TODO if C != A then compute rho_Dinv_C
+        smooth_prolongator(A, T, P, ValueType(4.0/3.0), sa_levels.back().rho_DinvA);  // TODO if C != A then compute rho_Dinv_C
     }
 
     // compute restriction operator (transpose of prolongator)
@@ -173,24 +184,24 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType>
     {
         // TODO test speed of R * (A * P) vs. (R * A) * P
         SetupMatrixType AP;
-        cusp::multiply(sa_levels.back().A_, P, AP);
+        cusp::multiply(A, P, AP);
         cusp::multiply(R, AP, RAP);
     }
 
-    Parent::levels.back().smoother = smoother_initializer(sa_levels.back().A_, rho_DinvA);
+    ML->levels.back().smoother = SmootherType(sa_levels.back());
 
     sa_levels.back().aggregates.swap(aggregates);
-    detail::setup_level_matrix( Parent::levels.back().R, R );
-    detail::setup_level_matrix( Parent::levels.back().P, P );
-    Parent::levels.back().residual.resize(sa_levels.back().A_.num_rows);
+    detail::setup_level_matrix( ML->levels.back().R, R );
+    detail::setup_level_matrix( ML->levels.back().P, P );
+    ML->levels.back().residual.resize(sa_levels.back().A_.num_rows);
 
-    Parent::levels.push_back(typename Parent::level());
-    sa_levels.push_back(sa_level());
+    ML->levels.push_back(typename Parent::level());
+    sa_levels.push_back(sa_level<SetupMatrixType>());
 
     sa_levels.back().A_.swap(RAP);
     sa_levels.back().B.swap(B_coarse);
-    Parent::levels.back().x.resize(sa_levels.back().A_.num_rows);
-    Parent::levels.back().b.resize(sa_levels.back().A_.num_rows);
+    ML->levels.back().x.resize(sa_levels.back().A_.num_rows);
+    ML->levels.back().b.resize(sa_levels.back().A_.num_rows);
 }
 
 } // end namespace aggregation
