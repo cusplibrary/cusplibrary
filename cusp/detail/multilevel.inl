@@ -60,15 +60,17 @@ void multilevel<MatrixType,SmootherType,SolverType>
 {
     CUSP_PROFILE_SCOPED();
 
-    const MatrixType& A = levels[0].A;
-    const size_t n = A.num_rows;
+    /* const MatrixType& A = levels[0].A; */
+    /* const size_t n = A.num_rows; */
+    const size_t n = levels[0].A.num_rows;
 
     // use simple iteration
     cusp::array1d<ValueType,MemorySpace> update(n);
     cusp::array1d<ValueType,MemorySpace> residual(n);
 
     // compute initial residual
-    cusp::multiply(A, x, residual);
+    /* cusp::multiply(A, x, residual); */
+    cusp::multiply(levels[0].A, x, residual);
     cusp::blas::axpby(b, residual, residual, ValueType(1.0), ValueType(-1.0));
 
     while(!monitor.finished(residual))
@@ -79,7 +81,8 @@ void multilevel<MatrixType,SmootherType,SolverType>
         cusp::blas::axpy(update, x, ValueType(1.0));
 
         // update residual
-        cusp::multiply(A, x, residual);
+        /* cusp::multiply(A, x, residual); */
+        cusp::multiply(levels[0].A, x, residual);
         cusp::blas::axpby(b, residual, residual, ValueType(1.0), ValueType(-1.0));
         ++monitor;
     }
@@ -103,13 +106,15 @@ void multilevel<MatrixType,SmootherType,SolverType>
     }
     else
     {
-    	const MatrixType& A = levels[i].A;
+    	/* const MatrixType& A = levels[i].A; */
 
         // presmooth
-        levels[i].smoother.presmooth(A, b, x);
+        /* levels[i].smoother.presmooth(A, b, x); */
+        levels[i].smoother.presmooth(levels[i].A, b, x);
 
         // compute residual <- b - A*x
-        cusp::multiply(A, x, levels[i].residual);
+        /* cusp::multiply(A, x, levels[i].residual); */
+        cusp::multiply(levels[i].A, x, levels[i].residual);
         cusp::blas::axpby(b, levels[i].residual, levels[i].residual, ValueType(1.0), ValueType(-1.0));
 
         // restrict to coarse grid
@@ -123,7 +128,8 @@ void multilevel<MatrixType,SmootherType,SolverType>
         cusp::blas::axpy(levels[i].residual, x, ValueType(1.0));
 
         // postsmooth
-        levels[i].smoother.postsmooth(A, b, x);
+        /* levels[i].smoother.postsmooth(A, b, x); */
+        levels[i].smoother.postsmooth(levels[i].A, b, x);
     }
 }
 

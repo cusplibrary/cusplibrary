@@ -146,14 +146,13 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverTyp
 {
     CUSP_PROFILE_SCOPED();
 
-    const SetupMatrixType& A = sa_levels.back().A_;
     Parent* ML = this;
 
     cusp::array1d<IndexType,MemorySpace> aggregates;
     {
         // compute stength of connection matrix
         SetupMatrixType C;
-        symmetric_strength_of_connection(A, C, theta);
+        symmetric_strength_of_connection(sa_levels.back().A_, C, theta);
 
         // compute aggregates
         aggregates.resize(C.num_rows);
@@ -162,7 +161,7 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverTyp
     }
 
     // compute spectral radius of diag(C)^-1 * C
-    sa_levels.back().rho_DinvA = detail::estimate_rho_Dinv_A(A);
+    sa_levels.back().rho_DinvA = detail::estimate_rho_Dinv_A(sa_levels.back().A_);
 
     SetupMatrixType P;
     cusp::array1d<ValueType,MemorySpace>  B_coarse;
@@ -172,7 +171,7 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverTyp
         fit_candidates(aggregates, sa_levels.back().B, T, B_coarse);
 
         // compute prolongation operator
-        smooth_prolongator(A, T, P, ValueType(4.0/3.0), sa_levels.back().rho_DinvA);  // TODO if C != A then compute rho_Dinv_C
+        smooth_prolongator(sa_levels.back().A_, T, P, ValueType(4.0/3.0), sa_levels.back().rho_DinvA);  // TODO if C != A then compute rho_Dinv_C
     }
 
     // compute restriction operator (transpose of prolongator)
@@ -184,7 +183,7 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverTyp
     {
         // TODO test speed of R * (A * P) vs. (R * A) * P
         SetupMatrixType AP;
-        cusp::multiply(A, P, AP);
+        cusp::multiply(sa_levels.back().A_, P, AP);
         cusp::multiply(R, AP, RAP);
     }
 
