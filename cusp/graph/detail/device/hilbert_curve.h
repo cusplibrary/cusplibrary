@@ -30,6 +30,7 @@ namespace detail
 namespace device
 {
 
+#if __CUDA_ARCH__ >= 200
 // Tables and Hilbert transform codes adapted from HSFC implementation in Zoltan v3.601
 static unsigned const int IMAX = ~(0U);
 static const int MAXLEVEL_2d = 28; // 56 bits of significance, 28 per dimension
@@ -250,6 +251,13 @@ void hilbert_curve(const Array2d& coord, const size_t num_parts, Array1d& parts)
                       thrust::constant_iterator<PartType>(num_points/num_parts), uniform_parts.begin(), thrust::divides<PartType>());
     thrust::gather(perm.begin(), perm.end(), uniform_parts.begin(), parts.begin());
 }
+#else
+template <class Array2d, class Array1d>
+void hilbert_curve(const Array2d& coord, const size_t num_parts, Array1d& parts)
+{
+  throw cusp::runtime_exception("Hilbert curve requires higher architecture support (sm_20 and above)");
+}
+#endif
 
 } // end namespace device
 } // end namespace detail
