@@ -73,7 +73,8 @@ void TestAdd(void)
 {
     typedef cusp::array2d<float,cusp::host_memory> DenseMatrix;
 
-    thrust::host_vector< DenseMatrix > matrices;
+    //thrust::host_vector< DenseMatrix > matrices;
+    std::vector< DenseMatrix > matrices;
 
     example_matrices(matrices);
     
@@ -127,7 +128,8 @@ void TestSubtract(void)
 {
     typedef cusp::array2d<float,cusp::host_memory> DenseMatrix;
 
-    thrust::host_vector< DenseMatrix > matrices;
+    //thrust::host_vector< DenseMatrix > matrices;
+    std::vector< DenseMatrix > matrices;
 
     example_matrices(matrices);
     
