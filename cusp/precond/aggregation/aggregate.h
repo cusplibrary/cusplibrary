@@ -28,6 +28,9 @@ namespace aggregation
 template <typename Matrix, typename Array>
 void standard_aggregation(const Matrix& C, Array& aggregates);
 
+template <typename Matrix, typename Array>
+void standard_aggregation(const Matrix& C, Array& aggregates, Array& roots);
+
 } // end namespace aggregation
 } // end namespace precond
 } // end namespace cusp

@@ -91,6 +91,7 @@ void mis_to_aggregates(const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& 
 template <typename Matrix, typename Array>
 void standard_aggregation(const Matrix& C,
                           Array& aggregates,
+                          Array& mis,
                           cusp::coo_format,
                           cusp::device_memory)
 {
@@ -101,7 +102,6 @@ void standard_aggregation(const Matrix& C,
     const size_t N = C.num_rows;
 
     // compute MIS(2)
-    Array mis(N);
     cusp::graph::maximal_independent_set(C, mis, 2);
 
     // compute aggregates from MIS(2)
@@ -148,6 +148,7 @@ void standard_aggregation(const Matrix& C,
 template <typename Matrix, typename Array>
 void standard_aggregation(const Matrix& C,
                           Array& aggregates,
+                          Array& roots,
                           cusp::csr_format,
                           cusp::host_memory)
 {
@@ -200,6 +201,7 @@ void standard_aggregation(const Matrix& C,
         {
             //Make an aggregate out of this node and its neighbors
             aggregates[i] = next_aggregate;
+            roots[next_aggregate-1] = i;
             for (IndexType jj = row_start; jj < row_end; jj++) {
                 aggregates[C.column_indices[jj]] = next_aggregate;
             }
@@ -247,6 +249,7 @@ void standard_aggregation(const Matrix& C,
         const IndexType row_end   = C.row_offsets[i+1];
 
         aggregates[i] = next_aggregate;
+        roots[next_aggregate] = i;
 
         for (IndexType jj = row_start; jj < row_end; jj++) {
             const IndexType j = C.column_indices[jj];
@@ -269,8 +272,18 @@ template <typename Matrix, typename Array>
 void standard_aggregation(const Matrix& C,
                           Array& aggregates)
 {
-    detail::standard_aggregation(C, aggregates, typename Matrix::format(), typename Matrix::memory_space());
+    Array roots(C.num_rows);
+    detail::standard_aggregation(C, aggregates, roots, typename Matrix::format(), typename Matrix::memory_space());
 }
+
+template <typename Matrix, typename Array>
+void standard_aggregation(const Matrix& C,
+                          Array& aggregates,
+                          Array& roots)
+{
+    detail::standard_aggregation(C, aggregates, roots, typename Matrix::format(), typename Matrix::memory_space());
+}
+
 
 } // end namespace aggregation
 } // end namespace precond
