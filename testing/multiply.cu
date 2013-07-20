@@ -99,7 +99,8 @@ void TestSparseMatrixMatrixMultiply(void)
     cusp::array2d<float,cusp::host_memory> K;
     cusp::gallery::random(24, 12, 20, K);
 
-    thrust::host_vector< cusp::array2d<float,cusp::host_memory> > matrices;
+    //thrust::host_vector< cusp::array2d<float,cusp::host_memory> > matrices;
+    std::vector< cusp::array2d<float,cusp::host_memory> > matrices;
     matrices.push_back(A);
     matrices.push_back(B);
     matrices.push_back(C);
@@ -231,7 +232,8 @@ void TestSparseMatrixDenseMatrixMultiply(void)
     cusp::array2d<float,cusp::host_memory> K;
     cusp::gallery::random(24, 12, 20, K);
 
-    thrust::host_vector< cusp::array2d<float,cusp::host_memory,cusp::column_major> > matrices;
+    //thrust::host_vector< cusp::array2d<float,cusp::host_memory,cusp::column_major> > matrices;
+    std::vector< cusp::array2d<float,cusp::host_memory,cusp::column_major> > matrices;
     matrices.push_back(A);
     matrices.push_back(B);
     matrices.push_back(C);

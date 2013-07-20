@@ -109,7 +109,8 @@ void _TestGeneralizedSpMV(void)
   }
  
   typedef typename cusp::coo_matrix<IndexType,ValueType,cusp::host_memory> HostMatrix;
-  cusp::array1d<HostMatrix, cusp::host_memory> matrices;
+  //cusp::array1d<HostMatrix, cusp::host_memory> matrices;
+  std::vector<HostMatrix> matrices;
 
   { HostMatrix M; cusp::gallery::poisson5pt(M,   5,   5);   matrices.push_back(M); }
   { HostMatrix M; cusp::gallery::poisson5pt(M,  10,  10);   matrices.push_back(M); } 
@@ -152,8 +153,8 @@ DECLARE_UNITTEST(TestCsrGeneralizedSpMV);
 void TestCooGeneralizedSpMV(void)
 {
   KNOWN_FAILURE;
-//  typedef cusp::coo_matrix<int,float,cusp::device_memory> TestMatrix;
-//  _TestGeneralizedSpMV<TestMatrix>();
+  //typedef cusp::coo_matrix<int,float,cusp::device_memory> TestMatrix;
+  //_TestGeneralizedSpMV<TestMatrix>();
 }
 DECLARE_UNITTEST(TestCooGeneralizedSpMV);
 
