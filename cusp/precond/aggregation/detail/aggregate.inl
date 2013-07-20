@@ -99,8 +99,6 @@ void standard_aggregation(const Matrix& C,
 
     typedef typename Matrix::index_type IndexType;
 
-    const size_t N = C.num_rows;
-
     // compute MIS(2)
     cusp::graph::maximal_independent_set(C, mis, 2);
 

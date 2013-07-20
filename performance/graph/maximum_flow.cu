@@ -62,7 +62,7 @@ int main(int argc, char*argv[])
               << A.num_entries << " entries" << "\n\n";
 
     // Generate random capacities in range [4,100)
-    for( int index = 0; index < A.num_entries; index++ )
+    for( size_t index = 0; index < A.num_entries; index++ )
         A.values[index] = (rand() % 100) + 4;
 
     std::cout << " Device ";
