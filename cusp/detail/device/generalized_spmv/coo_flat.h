@@ -25,7 +25,12 @@
 
 #include <thrust/copy.h>
 #include <thrust/iterator/iterator_traits.h>
+
+#if THRUST_VERSION >= 100700
 #include <thrust/system/cuda/detail/detail/uninitialized.h>
+#else
+#include <cusp/detail/device/generalized_spmv/uninitialized.h>
+#endif
 
 namespace cusp
 {
@@ -238,12 +243,16 @@ void spmv_coo_kernel_postprocess(SizeType        num_outputs,
                                  OutputIterator1 row_carries,
                                  OutputIterator2 val_carries)
 {
+#if THRUST_VERSION >= 100700
+    using namespace thrust::system::cuda::detail::detail;
+#endif
+
     typedef typename thrust::iterator_value<OutputIterator1>::type IndexType;
     typedef typename thrust::iterator_value<OutputIterator2>::type ValueType;
-    typedef thrust::system::cuda::detail::detail::uninitialized<IndexType> RowCarryType;
-    typedef thrust::system::cuda::detail::detail::uninitialized<ValueType> ValCarryType;
-    typedef thrust::system::cuda::detail::detail::uninitialized<IndexType[BLOCK_SIZE + 1]> RowType;
-    typedef thrust::system::cuda::detail::detail::uninitialized<ValueType[BLOCK_SIZE + 1]> ValType;
+    typedef uninitialized<IndexType> RowCarryType;
+    typedef uninitialized<ValueType> ValCarryType;
+    typedef uninitialized<IndexType[BLOCK_SIZE + 1]> RowType;
+    typedef uninitialized<ValueType[BLOCK_SIZE + 1]> ValType;
 
     __shared__ RowType rows_data;
     __shared__ ValType vals_data;
@@ -383,15 +392,19 @@ void spmv_coo_kernel(SizeType        num_entries,
                      OutputIterator1 row_carries,
                      OutputIterator2 val_carries)
 {
+#if THRUST_VERSION >= 100700
+    using namespace thrust::system::cuda::detail::detail;
+#endif
+
     typedef typename thrust::iterator_value<IndexIterator1>::type IndexType1;
     typedef typename thrust::iterator_value<IndexIterator2>::type IndexType2;
     typedef typename thrust::iterator_value<ValueIterator1>::type ValueType1;
     typedef typename thrust::iterator_value<ValueIterator2>::type ValueType2;
     typedef typename thrust::iterator_value<ValueIterator4>::type ValueType4;
-    typedef thrust::system::cuda::detail::detail::uninitialized<IndexType1> RowCarryType;
-    typedef thrust::system::cuda::detail::detail::uninitialized<ValueType4> ValCarryType;
-    typedef thrust::system::cuda::detail::detail::uninitialized<IndexType1[K][BLOCK_SIZE + 1]> RowType;
-    typedef thrust::system::cuda::detail::detail::uninitialized<ValueType4[K][BLOCK_SIZE + 1]> ValType;
+    typedef uninitialized<IndexType1> RowCarryType;
+    typedef uninitialized<ValueType4> ValCarryType;
+    typedef uninitialized<IndexType1[K][BLOCK_SIZE + 1]> RowType;
+    typedef uninitialized<ValueType4[K][BLOCK_SIZE + 1]> ValType;
 
     __shared__ RowType rows_data;
     __shared__ ValType vals_data;
