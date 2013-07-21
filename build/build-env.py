@@ -284,7 +284,7 @@ def Environment():
   # XXX we shouldn't have to link against cudart unless we're using the
   #     cuda runtime, but cudafe inserts some dependencies when compiling .cu files
   # XXX ideally this gets handled in nvcc.py if possible
-  env.Append(LIBS = 'cudart')
+  env.Append(LIBS = ['cudart','stdc++','m'])
 
   if env['backend'] == 'ocelot':
     if os.name == 'posix':
@@ -322,9 +322,9 @@ def Environment():
   # on shared libraries
   # XXX we should probably just copy the entire environment
   if os.name == 'posix':
-    if env['PLATFORM'] == "darwin":
-      env['ENV']['DYLD_LIBRARY_PATH'] = os.environ['DYLD_LIBRARY_PATH']
-    else:
+    if ('DYLD_LIBRARY_PATH' in os.environ) and (env['PLATFORM'] == "darwin") :
+      	env['ENV']['DYLD_LIBRARY_PATH'] = os.environ['DYLD_LIBRARY_PATH']
+    elif 'LD_LIBRARY_PATH' in os.environ:
       env['ENV']['LD_LIBRARY_PATH'] = os.environ['LD_LIBRARY_PATH']
 
   # generate help text
