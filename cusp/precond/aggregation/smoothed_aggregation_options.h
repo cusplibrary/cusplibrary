@@ -16,6 +16,9 @@
 
 #pragma once
 
+#include <cusp/coo_matrix.h>
+#include <cusp/csr_matrix.h>
+#include <cusp/hyb_matrix.h>
 #include <cusp/transpose.h>
 #include <cusp/multiply.h>
 
@@ -35,32 +38,63 @@ namespace aggregation
 {
 namespace detail
 {
-    template <typename MatrixType>
-    struct Dinv_A : public cusp::linear_operator<typename MatrixType::value_type, typename MatrixType::memory_space>
+template <typename MatrixType>
+struct Dinv_A : public cusp::linear_operator<typename MatrixType::value_type, typename MatrixType::memory_space>
+{
+    const MatrixType& A;
+    const cusp::precond::diagonal<typename MatrixType::value_type, typename MatrixType::memory_space> Dinv;
+
+    Dinv_A(const MatrixType& A)
+        : A(A), Dinv(A),
+          cusp::linear_operator<typename MatrixType::value_type, typename MatrixType::memory_space>(A.num_rows, A.num_cols, A.num_entries + A.num_rows)
+    {}
+
+    template <typename Array1, typename Array2>
+    void operator()(const Array1& x, Array2& y) const
     {
-        const MatrixType& A;
-        const cusp::precond::diagonal<typename MatrixType::value_type, typename MatrixType::memory_space> Dinv;
+        cusp::multiply(A,x,y);
+        cusp::multiply(Dinv,y,y);
+    }
+};
 
-        Dinv_A(const MatrixType& A)
-            : A(A), Dinv(A),
-              cusp::linear_operator<typename MatrixType::value_type, typename MatrixType::memory_space>(A.num_rows, A.num_cols, A.num_entries + A.num_rows)
-        {}
+template <typename MatrixType>
+double estimate_rho_Dinv_A(const MatrixType& A)
+{
+    detail::Dinv_A<MatrixType> Dinv_A(A);
 
-        template <typename Array1, typename Array2>
-        void operator()(const Array1& x, Array2& y) const
-        {
-            cusp::multiply(A,x,y);
-            cusp::multiply(Dinv,y,y);
-        }
-    };
+    return cusp::detail::ritz_spectral_radius(Dinv_A, 8);
+}
+
 
 } // end namespace detail
 
-template<typename ValueType>
+template <typename IndexType, typename ValueType, typename MemorySpace>
+struct amg_container {};
+
+template <typename IndexType, typename ValueType>
+struct amg_container<IndexType,ValueType,cusp::host_memory>
+{
+    // use CSR on host
+    typedef typename cusp::csr_matrix<IndexType,ValueType,cusp::host_memory> setup_type;
+    typedef typename cusp::csr_matrix<IndexType,ValueType,cusp::host_memory> solve_type;
+};
+
+template <typename IndexType, typename ValueType>
+struct amg_container<IndexType,ValueType,cusp::device_memory>
+{
+    // use COO on device
+    typedef typename cusp::coo_matrix<IndexType,ValueType,cusp::device_memory> setup_type;
+    typedef typename cusp::hyb_matrix<IndexType,ValueType,cusp::device_memory> solve_type;
+};
+
+template<typename IndexType, typename ValueType, typename MemorySpace>
 class smoothed_aggregation_options
 {
-
 public:
+
+    typedef typename amg_container<IndexType,ValueType,MemorySpace>::setup_type MatrixType;
+    typedef cusp::array1d<IndexType,MemorySpace> IndexArray;
+    typedef cusp::array1d<ValueType,MemorySpace> ValueArray;
 
     const ValueType theta;
     const ValueType omega;
@@ -72,49 +106,35 @@ public:
         : theta(theta), omega(omega), min_level_size(coarse_grid_size), max_levels(max_levels)
     {}
 
-    template <typename MatrixType>
-    double estimate_rho_Dinv_A(const MatrixType& A)
-    {
-        detail::Dinv_A<MatrixType> Dinv_A(A);
-
-        return cusp::detail::ritz_spectral_radius(Dinv_A, 8);
-    }
-
-    template<typename MatrixType>
-    void strength_of_connection(const MatrixType& A, MatrixType& C)
+    virtual void strength_of_connection(const MatrixType& A, MatrixType& C) const
     {
         cusp::precond::aggregation::symmetric_strength_of_connection(A, C, theta);
     }
 
-    template<typename MatrixType, typename ArrayType>
-    void aggregate(const MatrixType& C, ArrayType& aggregates)
+    virtual void aggregate(const MatrixType& C, IndexArray& aggregates) const
     {
         cusp::precond::aggregation::standard_aggregation(C, aggregates);
     }
 
-    template<typename ArrayType1, typename ArrayType2, typename MatrixType>
-    void fit_candidates(const ArrayType1& aggregates, const ArrayType2& B, MatrixType& T, ArrayType2& B_coarse)
+    virtual void fit_candidates(const IndexArray& aggregates, const ValueArray& B, MatrixType& T, ValueArray& B_coarse) const
     {
         cusp::precond::aggregation::fit_candidates(aggregates, B, T, B_coarse);
     }
 
-    template<typename MatrixType>
-    void smooth_prolongator(const MatrixType& A, const MatrixType& T, MatrixType& P, ValueType& rho_DinvA)
+    virtual void smooth_prolongator(const MatrixType& A, const MatrixType& T, MatrixType& P, ValueType& rho_DinvA) const
     {
         // compute spectral radius of diag(C)^-1 * C
-        rho_DinvA = estimate_rho_Dinv_A(A);
+        rho_DinvA = detail::estimate_rho_Dinv_A(A);
 
         cusp::precond::aggregation::smooth_prolongator(A, T, P, omega, rho_DinvA);
     }
 
-    template<typename MatrixType>
-    void form_restriction(const MatrixType& P, MatrixType& R)
+    virtual void form_restriction(const MatrixType& P, MatrixType& R) const
     {
         cusp::transpose(P,R);
     }
 
-    template<typename MatrixType>
-    void galerkin_product(const MatrixType& R, const MatrixType& A, const MatrixType& P, MatrixType& RAP)
+    virtual void galerkin_product(const MatrixType& R, const MatrixType& A, const MatrixType& P, MatrixType& RAP) const
     {
         // TODO test speed of R * (A * P) vs. (R * A) * P
         MatrixType AP;

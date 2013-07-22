@@ -45,6 +45,7 @@ template <typename IndexType, typename ValueType, typename MemorySpace, typename
 template <typename MatrixType>
 smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverType>
 ::smoothed_aggregation(const MatrixType& A)
+  : sa_options(default_sa_options)
 {
     typedef typename cusp::array1d_view< thrust::constant_iterator<ValueType> > ConstantView;
 
@@ -54,17 +55,33 @@ smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverType>
 }
 
 template <typename IndexType, typename ValueType, typename MemorySpace, typename SmootherType, typename SolverType>
-template <typename MatrixType, typename ArrayType>
+template <typename MatrixType, typename Options>
 smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverType>
-::smoothed_aggregation(const MatrixType& A, const ArrayType& B)
+::smoothed_aggregation(const MatrixType& A,
+                       const Options& sa_options)
+  : sa_options(sa_options)
+{
+    typedef typename cusp::array1d_view< thrust::constant_iterator<ValueType> > ConstantView;
+
+    ConstantView B(thrust::constant_iterator<ValueType>(1),
+                   thrust::constant_iterator<ValueType>(1) + A.num_rows);
+    sa_initialize(A, B);
+}
+
+template <typename IndexType, typename ValueType, typename MemorySpace, typename SmootherType, typename SolverType>
+template <typename MatrixType>
+smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverType>
+::smoothed_aggregation(const MatrixType& A, const cusp::array1d<ValueType,MemorySpace>& B)
+  : sa_options(default_sa_options)
 {
     sa_initialize(A, B);
 }
 
 template <typename IndexType, typename ValueType, typename MemorySpace, typename SmootherType, typename SolverType>
-template <typename MatrixType, typename ArrayType>
+template <typename MatrixType, typename Options>
 smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverType>
-::smoothed_aggregation(const MatrixType& A, const ArrayType& B, const smoothed_aggregation_options<ValueType>& sa_options)
+::smoothed_aggregation(const MatrixType& A, const cusp::array1d<ValueType,MemorySpace>& B,
+                       const Options& sa_options)
   : sa_options(sa_options)
 {
     sa_initialize(A, B);
