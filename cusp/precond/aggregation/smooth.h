@@ -32,8 +32,8 @@ template <typename MatrixType, typename ValueType>
 void smooth_prolongator(const MatrixType& S,
                         const MatrixType& T,
                         MatrixType& P,
-                        const ValueType omega = 4.0/3.0,
-                        const ValueType rho_Dinv_S = 0.0);
+                        const ValueType omega,
+                        const ValueType rho_Dinv_S);
 
 } // end namespace aggregation
 } // end namespace precond

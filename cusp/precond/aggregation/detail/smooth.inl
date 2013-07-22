@@ -58,7 +58,7 @@ void smooth_prolongator(const MatrixType& S,
     // TODO handle case with unaggregated nodes more gracefully
     if (T.num_entries == T.num_rows) {
 
-        const ValueType lambda = omega / (rho_Dinv_S == 0.0 ? estimate_rho_Dinv_A(S) : rho_Dinv_S);
+        const ValueType lambda = omega / rho_Dinv_S;
 
         // temp <- -lambda * S(i,j) * T(j,k)
         MatrixType temp(S.num_rows, T.num_cols, S.num_entries + T.num_entries);
@@ -121,7 +121,7 @@ void smooth_prolongator(const MatrixType& S,
                           D_inv_S.values.begin(),
                           thrust::divides<ValueType>());
 
-        const ValueType lambda = omega / (rho_Dinv_S == 0.0 ? estimate_rho_Dinv_A(S) : rho_Dinv_S);
+        const ValueType lambda = omega / rho_Dinv_S;
         cusp::blas::scal( D_inv_S.values, lambda );
 
         MatrixType temp;
@@ -160,7 +160,7 @@ void smooth_prolongator(const MatrixType& S,
             D_inv_S.values[index] /= diagonal;
     }
 
-    const ValueType lambda = omega / (rho_Dinv_S == 0.0 ? estimate_rho_Dinv_A(S) : rho_Dinv_S);
+    const ValueType lambda = omega / rho_Dinv_S;
     cusp::blas::scal( D_inv_S.values, lambda );
 
     MatrixType temp;
