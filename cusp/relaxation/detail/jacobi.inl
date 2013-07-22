@@ -20,6 +20,7 @@
 
 #include <cusp/multiply.h>
 #include <cusp/detail/format_utils.h>
+#include <cusp/precond/aggregation/smoothed_aggregation_options.h>
 
 #include <thrust/functional.h>
 #include <thrust/transform.h>
@@ -100,9 +101,18 @@ template <typename ValueType, typename MemorySpace>
 template<typename MatrixType>
     jacobi<ValueType,MemorySpace>
     ::jacobi(const cusp::precond::aggregation::sa_level<MatrixType>& sa_level, ValueType weight)
-        : default_omega(weight/sa_level.rho_DinvA), temp(sa_level.A_.num_rows)
+        : temp(sa_level.A_.num_rows)
     {
         CUSP_PROFILE_SCOPED();
+
+        if(sa_level.rho_DinvA == ValueType(0))
+        {
+          default_omega = weight / cusp::precond::aggregation::detail::estimate_rho_Dinv_A(sa_level.A_);
+        }
+        else
+        {
+          default_omega = weight / sa_level.rho_DinvA;
+        }
 
         // extract the main diagonal
         cusp::detail::extract_diagonal(sa_level.A_, diagonal);

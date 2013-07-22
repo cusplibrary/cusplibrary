@@ -31,6 +31,8 @@
 #include <cusp/hyb_matrix.h>
 #include <cusp/multilevel.h>
 
+#include <cusp/precond/aggregation/smoothed_aggregation_options.h>
+
 #include <cusp/relaxation/jacobi.h>
 
 #include <cusp/detail/spectral_radius.h>
@@ -47,25 +49,6 @@ namespace aggregation
  *  \{
  */
 
-template <typename IndexType, typename ValueType, typename MemorySpace>
-struct amg_container {};
-
-template <typename IndexType, typename ValueType>
-struct amg_container<IndexType,ValueType,cusp::host_memory>
-{
-    // use CSR on host
-    typedef typename cusp::csr_matrix<IndexType,ValueType,cusp::host_memory> setup_type;
-    typedef typename cusp::csr_matrix<IndexType,ValueType,cusp::host_memory> solve_type;
-};
-
-template <typename IndexType, typename ValueType>
-struct amg_container<IndexType,ValueType,cusp::device_memory>
-{
-    // use COO on device
-    typedef typename cusp::coo_matrix<IndexType,ValueType,cusp::device_memory> setup_type;
-    typedef typename cusp::hyb_matrix<IndexType,ValueType,cusp::device_memory> solve_type;
-};
-
 template<typename MatrixType>
 struct sa_level
 {
@@ -73,16 +56,17 @@ struct sa_level
     typedef typename MatrixType::value_type ValueType;
     typedef typename MatrixType::memory_space MemorySpace;
 
-    MatrixType A_; 					  // matrix
+    MatrixType A_; 					                              // matrix
     cusp::array1d<IndexType,MemorySpace> aggregates;      // aggregates
     cusp::array1d<ValueType,MemorySpace> B;               // near-nullspace candidates
 
     ValueType rho_DinvA;
 
-    sa_level() {}
+    sa_level() : rho_DinvA(0) {}
 
     template<typename SA_Level_Type>
-    sa_level(const SA_Level_Type& sa_level) : A_(sa_level.A_), aggregates(sa_level.aggregates), B(sa_level.B), rho_DinvA(sa_level.rho_DinvA) {}
+    sa_level(const SA_Level_Type& sa_level)
+      : A_(sa_level.A_), aggregates(sa_level.aggregates), B(sa_level.B), rho_DinvA(sa_level.rho_DinvA) {}
 };
 
 
@@ -90,10 +74,11 @@ struct sa_level
  *  smoothed aggregation
  *
  */
-template <typename IndexType, typename ValueType, typename MemorySpace, 
+template <typename IndexType, typename ValueType, typename MemorySpace,
 	  typename SmootherType = cusp::relaxation::jacobi<ValueType,MemorySpace>,
 	  typename SolverType = cusp::detail::lu_solver<ValueType,cusp::host_memory> >
-class smoothed_aggregation : public cusp::multilevel< typename amg_container<IndexType,ValueType,MemorySpace>::solve_type, SmootherType, SolverType>
+class smoothed_aggregation :
+  public cusp::multilevel< typename amg_container<IndexType,ValueType,MemorySpace>::solve_type, SmootherType, SolverType>
 {
 
     typedef typename amg_container<IndexType,ValueType,MemorySpace>::setup_type SetupMatrixType;
@@ -102,15 +87,23 @@ class smoothed_aggregation : public cusp::multilevel< typename amg_container<Ind
 
 public:
 
-    ValueType theta;
-
+    const smoothed_aggregation_options<IndexType,ValueType,MemorySpace> & sa_options;
+    const smoothed_aggregation_options<IndexType,ValueType,MemorySpace> default_sa_options;
     std::vector< sa_level<SetupMatrixType> > sa_levels;
 
     template <typename MatrixType>
-    smoothed_aggregation(const MatrixType& A, const ValueType theta=0);
+    smoothed_aggregation(const MatrixType& A);
 
-    template <typename MatrixType, typename ArrayType>
-    smoothed_aggregation(const MatrixType& A, const ArrayType& B, const ValueType theta=0);
+    template <typename MatrixType, typename Options>
+    smoothed_aggregation(const MatrixType& A,
+                         const Options& sa_options);
+
+    template <typename MatrixType>
+    smoothed_aggregation(const MatrixType& A, const cusp::array1d<ValueType,MemorySpace>& B);
+
+    template <typename MatrixType, typename Options>
+    smoothed_aggregation(const MatrixType& A, const cusp::array1d<ValueType,MemorySpace>& B,
+                         const Options& sa_options);
 
     template <typename MemorySpace2,typename SmootherType2,typename SolverType2>
     smoothed_aggregation(const smoothed_aggregation<IndexType,ValueType,MemorySpace2,SmootherType2,SolverType2>& M);
@@ -118,7 +111,7 @@ public:
 protected:
 
     template <typename MatrixType, typename ArrayType>
-    void init(const MatrixType& A, const ArrayType& B);
+    void sa_initialize(const MatrixType& A, const ArrayType& B);
 
     void extend_hierarchy(void);
 };

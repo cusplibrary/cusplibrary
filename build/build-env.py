@@ -275,6 +275,10 @@ def Environment():
   # get linker switches
   env.Append(LINKFLAGS = getLINKFLAGS(env['mode'], env['backend'], env['hostspblas'], env.subst('$LINK')))
    
+  # silence unknown pragma warnings
+  env.Append(CFLAGS = ['-Wno-unknown-pragmas'])
+  env.Append(CXXFLAGS = ['-Wno-unknown-pragmas'])
+
   # get CUDA paths
   (cuda_exe_path,cuda_lib_path,cuda_inc_path) = get_cuda_paths()
   env.Append(LIBPATH = [cuda_lib_path])
