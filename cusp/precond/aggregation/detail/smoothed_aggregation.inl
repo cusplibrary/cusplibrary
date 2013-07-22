@@ -17,16 +17,6 @@
 #include <cusp/blas.h>
 #include <cusp/elementwise.h>
 #include <cusp/multiply.h>
-#include <cusp/monitor.h>
-#include <cusp/transpose.h>
-#include <cusp/precond/diagonal.h>
-#include <cusp/krylov/arnoldi.h>
-
-#include <cusp/graph/maximal_independent_set.h>
-#include <cusp/precond/aggregation/aggregate.h>
-#include <cusp/precond/aggregation/smooth.h>
-#include <cusp/precond/aggregation/strength.h>
-#include <cusp/precond/aggregation/tentative.h>
 
 #include <cusp/detail/format_utils.h>
 
@@ -38,37 +28,6 @@ namespace aggregation
 {
 namespace detail
 {
-
-template <typename MatrixType>
-struct Dinv_A : public cusp::linear_operator<typename MatrixType::value_type, typename MatrixType::memory_space>
-{
-    const MatrixType& A;
-    const cusp::precond::diagonal<typename MatrixType::value_type, typename MatrixType::memory_space> Dinv;
-
-    Dinv_A(const MatrixType& A)
-        : A(A), Dinv(A),
-          cusp::linear_operator<typename MatrixType::value_type, typename MatrixType::memory_space>(A.num_rows, A.num_cols, A.num_entries + A.num_rows)
-    {}
-
-    template <typename Array1, typename Array2>
-    void operator()(const Array1& x, Array2& y) const
-    {
-        cusp::multiply(A,x,y);
-        cusp::multiply(Dinv,y,y);
-    }
-};
-
-template <typename MatrixType>
-double estimate_rho_Dinv_A(const MatrixType& A)
-{
-    typedef typename MatrixType::value_type   ValueType;
-    typedef typename MatrixType::memory_space MemorySpace;
-
-    Dinv_A<MatrixType> Dinv_A(A);
-
-    return cusp::detail::ritz_spectral_radius(Dinv_A, 8);
-}
-
 
 template <typename Matrix>
 void setup_level_matrix(Matrix& dst, Matrix& src) {
@@ -85,30 +44,54 @@ void setup_level_matrix(Matrix1& dst, Matrix2& src) {
 template <typename IndexType, typename ValueType, typename MemorySpace, typename SmootherType, typename SolverType>
 template <typename MatrixType>
 smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverType>
-::smoothed_aggregation(const MatrixType& A, const ValueType theta)
-    : theta(theta)
+::smoothed_aggregation(const MatrixType& A)
+  : sa_options(default_sa_options)
 {
     typedef typename cusp::array1d_view< thrust::constant_iterator<ValueType> > ConstantView;
 
     ConstantView B(thrust::constant_iterator<ValueType>(1),
                    thrust::constant_iterator<ValueType>(1) + A.num_rows);
-    init(A, B);
+    sa_initialize(A, B);
 }
 
 template <typename IndexType, typename ValueType, typename MemorySpace, typename SmootherType, typename SolverType>
-template <typename MatrixType, typename ArrayType>
+template <typename MatrixType, typename Options>
 smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverType>
-::smoothed_aggregation(const MatrixType& A, const ArrayType& B, const ValueType theta)
-    : theta(theta)
+::smoothed_aggregation(const MatrixType& A,
+                       const Options& sa_options)
+  : sa_options(sa_options)
 {
-    init(A, B);
+    typedef typename cusp::array1d_view< thrust::constant_iterator<ValueType> > ConstantView;
+
+    ConstantView B(thrust::constant_iterator<ValueType>(1),
+                   thrust::constant_iterator<ValueType>(1) + A.num_rows);
+    sa_initialize(A, B);
+}
+
+template <typename IndexType, typename ValueType, typename MemorySpace, typename SmootherType, typename SolverType>
+template <typename MatrixType>
+smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverType>
+::smoothed_aggregation(const MatrixType& A, const cusp::array1d<ValueType,MemorySpace>& B)
+  : sa_options(default_sa_options)
+{
+    sa_initialize(A, B);
+}
+
+template <typename IndexType, typename ValueType, typename MemorySpace, typename SmootherType, typename SolverType>
+template <typename MatrixType, typename Options>
+smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverType>
+::smoothed_aggregation(const MatrixType& A, const cusp::array1d<ValueType,MemorySpace>& B,
+                       const Options& sa_options)
+  : sa_options(sa_options)
+{
+    sa_initialize(A, B);
 }
 
 template <typename IndexType, typename ValueType, typename MemorySpace, typename SmootherType, typename SolverType>
 template <typename MemorySpace2, typename SmootherType2, typename SolverType2>
 smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverType>
 ::smoothed_aggregation(const smoothed_aggregation<IndexType,ValueType,MemorySpace2,SmootherType2,SolverType2>& M)
-    : theta(M.theta), Parent(M)
+    : sa_options(M.sa_options), Parent(M)
 {
    for( size_t lvl = 0; lvl < M.sa_levels.size(); lvl++ )
       sa_levels.push_back(M.sa_levels[lvl]);
@@ -117,12 +100,12 @@ smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverType>
 template <typename IndexType, typename ValueType, typename MemorySpace, typename SmootherType, typename SolverType>
 template <typename MatrixType, typename ArrayType>
 void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverType>
-::init(const MatrixType& A, const ArrayType& B)
+::sa_initialize(const MatrixType& A, const ArrayType& B)
 {
     CUSP_PROFILE_SCOPED();
 
     Parent* ML = this;
-    ML->levels.reserve(20); // avoid reallocations which force matrix copies
+    ML->levels.reserve(sa_options.max_levels); // avoid reallocations which force matrix copies
 
     sa_levels.push_back(sa_level<SetupMatrixType>());
     ML->levels.push_back(typename Parent::level());
@@ -130,7 +113,8 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverTyp
     sa_levels.back().B = B;
     sa_levels.back().A_ = A; // copy
 
-    while (sa_levels.back().A_.num_rows > 100)
+    while ((sa_levels.back().A_.num_rows > sa_options.min_level_size) &&
+           (sa_levels.size() < sa_options.max_levels))
         extend_hierarchy();
 
     ML->solver = SolverType(sa_levels.back().A_);
@@ -152,40 +136,32 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverTyp
     {
         // compute stength of connection matrix
         SetupMatrixType C;
-        symmetric_strength_of_connection(sa_levels.back().A_, C, theta);
+        sa_options.strength_of_connection(sa_levels.back().A_, C);
 
         // compute aggregates
         aggregates.resize(C.num_rows);
         cusp::blas::fill(aggregates,IndexType(0));
-        standard_aggregation(C, aggregates);
+        sa_options.aggregate(C, aggregates);
     }
-
-    // compute spectral radius of diag(C)^-1 * C
-    sa_levels.back().rho_DinvA = detail::estimate_rho_Dinv_A(sa_levels.back().A_);
 
     SetupMatrixType P;
     cusp::array1d<ValueType,MemorySpace>  B_coarse;
     {
         // compute tenative prolongator and coarse nullspace vector
         SetupMatrixType 				T;
-        fit_candidates(aggregates, sa_levels.back().B, T, B_coarse);
+        sa_options.fit_candidates(aggregates, sa_levels.back().B, T, B_coarse);
 
         // compute prolongation operator
-        smooth_prolongator(sa_levels.back().A_, T, P, ValueType(4.0/3.0), sa_levels.back().rho_DinvA);  // TODO if C != A then compute rho_Dinv_C
+        sa_options.smooth_prolongator(sa_levels.back().A_, T, P, sa_levels.back().rho_DinvA);  // TODO if C != A then compute rho_Dinv_C
     }
 
     // compute restriction operator (transpose of prolongator)
     SetupMatrixType R;
-    cusp::transpose(P,R);
+    sa_options.form_restriction(P,R);
 
     // construct Galerkin product R*A*P
     SetupMatrixType RAP;
-    {
-        // TODO test speed of R * (A * P) vs. (R * A) * P
-        SetupMatrixType AP;
-        cusp::multiply(sa_levels.back().A_, P, AP);
-        cusp::multiply(R, AP, RAP);
-    }
+    sa_options.galerkin_product(R,sa_levels.back().A_,P,RAP);
 
     ML->levels.back().smoother = SmootherType(sa_levels.back());
 
