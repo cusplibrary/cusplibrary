@@ -28,8 +28,6 @@
 
 #if THRUST_VERSION >= 100700
 #include <thrust/system/cuda/detail/detail/uninitialized.h>
-#else
-#include <cusp/detail/device/generalized_spmv/uninitialized.h>
 #endif
 
 namespace cusp
@@ -243,12 +241,12 @@ void spmv_coo_kernel_postprocess(SizeType        num_outputs,
                                  OutputIterator1 row_carries,
                                  OutputIterator2 val_carries)
 {
-#if THRUST_VERSION >= 100700
-    using namespace thrust::system::cuda::detail::detail;
-#endif
-
     typedef typename thrust::iterator_value<OutputIterator1>::type IndexType;
     typedef typename thrust::iterator_value<OutputIterator2>::type ValueType;
+
+#if THRUST_VERSION >= 100700
+    using namespace thrust::system::cuda::detail::detail;
+
     typedef uninitialized<IndexType> RowCarryType;
     typedef uninitialized<ValueType> ValCarryType;
     typedef uninitialized<IndexType[BLOCK_SIZE + 1]> RowType;
@@ -271,6 +269,13 @@ void spmv_coo_kernel_postprocess(SizeType        num_outputs,
         row_carry_data.construct();
         val_carry_data.construct();
     }
+#else
+    __shared__ IndexType row_carry;
+    __shared__ ValueType val_carry;
+
+    __shared__ IndexType rows[BLOCK_SIZE + 1];
+    __shared__ ValueType vals[BLOCK_SIZE + 1];
+#endif
 
     __syncthreads();
 
@@ -392,15 +397,15 @@ void spmv_coo_kernel(SizeType        num_entries,
                      OutputIterator1 row_carries,
                      OutputIterator2 val_carries)
 {
-#if THRUST_VERSION >= 100700
-    using namespace thrust::system::cuda::detail::detail;
-#endif
-
     typedef typename thrust::iterator_value<IndexIterator1>::type IndexType1;
     typedef typename thrust::iterator_value<IndexIterator2>::type IndexType2;
     typedef typename thrust::iterator_value<ValueIterator1>::type ValueType1;
     typedef typename thrust::iterator_value<ValueIterator2>::type ValueType2;
     typedef typename thrust::iterator_value<ValueIterator4>::type ValueType4;
+
+#if THRUST_VERSION >= 100700
+    using namespace thrust::system::cuda::detail::detail;
+
     typedef uninitialized<IndexType1> RowCarryType;
     typedef uninitialized<ValueType4> ValCarryType;
     typedef uninitialized<IndexType1[K][BLOCK_SIZE + 1]> RowType;
@@ -423,6 +428,14 @@ void spmv_coo_kernel(SizeType        num_entries,
         row_carry_data.construct();
         val_carry_data.construct();
     }
+#else
+    __shared__ IndexType1 row_carry;
+    __shared__ ValueType4 val_carry;
+
+    __shared__ IndexType1 rows[K][BLOCK_SIZE + 1];
+    __shared__ ValueType4 vals[K][BLOCK_SIZE + 1];
+#endif
+
     __syncthreads(); // is this really necessary?
 
     SizeType interval_begin = interval_size * blockIdx.x;
