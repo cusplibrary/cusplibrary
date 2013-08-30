@@ -1,4 +1,37 @@
 #######################################
+#            Cusp v0.4.0              #
+#######################################
+
+Summary
+  Cusp v0.4.0 provides support for CUDA 5.5 and Thrust v1.7.  Version
+  0.4.0 includes several new graph algorithms based on backend integration
+  with back40computing, a refactored smoothed aggregation solver allowing
+  user-defined functions for core components and experimental work concerning
+  sparse matrix visualization.
+
+New Features
+  array2d formats allow access to row and column elements regardless of orientation
+  gallery method to generate grids
+  OpenGL implementation of spy to view sparse matrices
+  Generalized multilevel class
+  Added Sparse * Dense multiplication routine
+
+  Algorithms
+     cusp::graph::bfs
+     cusp::graph::connected_components
+     cusp::graph::hilbert_curve
+     cusp::graph::maximum_flow
+     cusp::graph::max_flow_to_min_cut
+     cusp::graph::pseudo_peripheral_vertex
+     cusp::graph::symmetric_rcm
+     cusp::krylov::cr
+
+Bug Fixes
+  Resolved issues related to Thrust 1.6 & Thrust 1.7
+  Resolved issues related to CUDA 5.5
+  Silenced warnings concerning uninitialized memory in generalized SpMV
+
+#######################################
 #            Cusp v0.3.1              #
 #######################################
 

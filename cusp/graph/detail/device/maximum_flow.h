@@ -36,6 +36,7 @@ namespace detail
 {
 namespace device
 {
+#ifdef CUSP_GRAPH_EXPERIMENTAL
 namespace detail
 {
 template <typename IndexType, typename ValueType, unsigned int VECTORS_PER_BLOCK, unsigned int THREADS_PER_VECTOR>
@@ -232,6 +233,14 @@ maximum_flow(const MatrixType& G, ArrayType& flow, IndexType src, IndexType sink
 
     return max_flow;
 }
+#else
+template<typename MatrixType, typename ArrayType, typename IndexType>
+typename MatrixType::value_type
+maximum_flow(const MatrixType& G, ArrayType& flow, IndexType src, IndexType sink)
+{
+  throw cusp::runtime_exception("Maximum flow solver on GPU is experimental, not intended for production or benchmark usage.");
+}
+#endif
 
 } // end namespace device
 } // end namespace detail
