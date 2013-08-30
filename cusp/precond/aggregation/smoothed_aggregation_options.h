@@ -102,8 +102,13 @@ public:
     const size_t max_levels;
 
     smoothed_aggregation_options(const ValueType theta = 0.0, const ValueType omega = 4.0/3.0,
-                                 const size_t coarse_grid_size = 100, const size_t max_levels = 20)
-        : theta(theta), omega(omega), min_level_size(coarse_grid_size), max_levels(max_levels)
+                                 const size_t min_level_size = 100, const size_t max_levels = 20)
+        : theta(theta), omega(omega), min_level_size(min_level_size), max_levels(max_levels)
+    {}
+
+    template<typename MemorySpace2>
+    smoothed_aggregation_options(const smoothed_aggregation_options<IndexType,ValueType,MemorySpace2>& M)
+        : theta(M.theta), omega(M.omega), min_level_size(M.min_level_size), max_levels(M.max_levels)
     {}
 
     virtual void strength_of_connection(const MatrixType& A, MatrixType& C) const
