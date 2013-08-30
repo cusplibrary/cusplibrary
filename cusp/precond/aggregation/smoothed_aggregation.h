@@ -22,20 +22,16 @@
 #pragma once
 
 #include <cusp/detail/config.h>
+#include <cusp/detail/spectral_radius.h>
 
-#include <vector> // TODO replace with host_vector
 #include <cusp/linear_operator.h>
-
-#include <cusp/coo_matrix.h>
-#include <cusp/csr_matrix.h>
-#include <cusp/hyb_matrix.h>
 #include <cusp/multilevel.h>
 
 #include <cusp/precond/aggregation/smoothed_aggregation_options.h>
 
 #include <cusp/relaxation/jacobi.h>
 
-#include <cusp/detail/spectral_radius.h>
+#include <vector> // TODO replace with host_vector
 
 namespace cusp
 {
