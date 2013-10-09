@@ -124,6 +124,10 @@ class lu_solver : public cusp::linear_operator<ValueType,MemorySpace>
         : linear_operator<ValueType,MemorySpace>()
     { }
 
+    lu_solver(const lu_solver<ValueType,MemorySpace>& M)
+        : lu(M.lu), pivot(M.pivot), linear_operator<ValueType,MemorySpace>(M.num_rows, M.num_cols, M.num_entries)
+    { }
+
     template <typename MatrixType>
     lu_solver(const MatrixType& A) 
         : linear_operator<ValueType,MemorySpace>(A.num_rows, A.num_cols, A.num_entries)
