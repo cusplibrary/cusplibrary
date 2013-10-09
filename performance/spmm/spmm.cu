@@ -127,9 +127,9 @@ float time_cusparse(const InputType& A,
     int * csrColIndA = thrust::raw_pointer_cast(&A_.column_indices[0]);
     float * csrValA  = thrust::raw_pointer_cast(&A_.values[0]);
 
-    int * csrRowPtrB = thrust::raw_pointer_cast(&A_.row_offsets[0]);
-    int * csrColIndB = thrust::raw_pointer_cast(&A_.column_indices[0]);
-    float * csrValB  = thrust::raw_pointer_cast(&A_.values[0]);
+    int * csrRowPtrB = thrust::raw_pointer_cast(&B_.row_offsets[0]);
+    int * csrColIndB = thrust::raw_pointer_cast(&B_.column_indices[0]);
+    float * csrValB  = thrust::raw_pointer_cast(&B_.values[0]);
 
     int * csrRowPtrC;
     int * csrColIndC;
