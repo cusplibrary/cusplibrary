@@ -44,6 +44,9 @@ namespace graph
 template<typename MatrixType>
 void symmetric_rcm(MatrixType& G);
 
+template<typename MatrixType, typename ArrayType>
+void symmetric_rcm(MatrixType& G, ArrayType& permutation);
+
 /*! \}
  */
 
