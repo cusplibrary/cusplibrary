@@ -23,7 +23,7 @@
 #endif //_OPENMP
  
 //MW: add some OpenMP pragmas
-//MW: better write own file and include with  #ifdef _OPENMP
+//MW: better write own file and include with  #ifdef _OPENMP?
 //MW: is there a resize without preserving values? (at least a copy scales with number of threads)
 
 namespace cusp
@@ -126,7 +126,6 @@ void csr_transform_elementwise(const Matrix1& A,
         // MW iterate through list without destroying it
 #ifdef _OPENMP
         IndexType j = C_row_offsets[i];
-        //C.row_offsets[i] = j;
 #endif //_OPENMP
         for(IndexType jj = 0; jj < length; jj++)
         {
@@ -302,9 +301,6 @@ void spmm_csr(const Matrix1& A,
                     Matrix3& C)
 {
     typedef typename Matrix3::index_type IndexType;
-    //dg::Timer t;
-
-    //t.tic();
     IndexType num_nonzeros = 
         spmm_csr_pass1(A.num_rows, B.num_cols,
                        A.row_offsets, A.column_indices,
@@ -312,10 +308,6 @@ void spmm_csr(const Matrix1& A,
                          
     // Resize output
     C.resize(A.num_rows, B.num_cols, num_nonzeros);
-    //t.toc();
-    //std::cout << "First pass took  "<<t.diff()<<"s\n";
-    
-    //t.tic();
     num_nonzeros =
       spmm_csr_pass2(A.num_rows, B.num_cols,
                      A.row_offsets, A.column_indices, A.values,
@@ -324,8 +316,6 @@ void spmm_csr(const Matrix1& A,
 
     // Resize output again since pass2 omits explict zeros
     C.resize(A.num_rows, B.num_cols, num_nonzeros);
-    //t.toc();
-    //std::cout << "Second pass took "<<t.diff()<<"s\n";
 }
 #else
 template <typename Matrix1,
@@ -337,13 +327,10 @@ void spmm_csr(const Matrix1& A,
 {
     typedef typename Matrix3::index_type IndexType;
     typedef typename Matrix3::value_type ValueType;
-    //dg::Timer t;
     cusp::array1d<IndexType, cusp::host_memory> C_row_offsets( A.num_rows + 1);
-    //C.resize( A.num_rows, B.num_cols, 0); //MW: cheap
     C_row_offsets[0] = 0;
     typedef typename Matrix1::index_type IndexType1;
     typedef typename Matrix2::index_type IndexType2;
-    //t.tic();
 #pragma omp parallel 
 {
     cusp::array1d<size_t, cusp::host_memory> mask(B.num_cols, A.num_rows);
@@ -371,15 +358,9 @@ void spmm_csr(const Matrix1& A,
     } //omp for
 }//omp parallel
     thrust::inclusive_scan( thrust::omp::par, C_row_offsets.begin(), C_row_offsets.end(), C_row_offsets.begin()); //MW: fast
-    //t.toc();
-    //std::cout << "First part took   "<<t.diff()<<"s\n";
-
-    //t.tic();
     size_t num_entries_in_C = C_row_offsets[A.num_rows];
     cusp::array1d<IndexType, cusp::host_memory> C_column_indices( num_entries_in_C);
     cusp::array1d<ValueType, cusp::host_memory> C_values( num_entries_in_C);
-    //C.resize(A.num_rows, B.num_cols, C.row_offsets[A.num_rows]);
-    //C.row_offsets[A.num_rows] = C_row_offsets[A.num_rows];
     
 #pragma omp parallel 
 {
@@ -440,8 +421,6 @@ void spmm_csr(const Matrix1& A,
     C.column_indices.swap( C_column_indices);
     C.values.swap( C_values);
     C.resize(A.num_rows, B.num_cols, num_entries_in_C); //MW: cheap
-    //t.toc();
-    //std::cout << "Second part took  "<<t.diff()<<"s\n";
 
     // XXX note: entries of C are unsorted within each row
 
