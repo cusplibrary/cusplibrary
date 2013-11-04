@@ -241,8 +241,8 @@ void csr_to_ell(const Matrix1& src, Matrix2& dst,
     typedef typename Matrix2::value_type ValueType;
 
     // compute number of nonzeros
-
     size_t num_entries = 0;
+#pragma omp parallel for reduction( +: num_entries)
     for(size_t i = 0; i < src.num_rows; i++)
         num_entries += thrust::min<size_t>(num_entries_per_row, src.row_offsets[i+1] - src.row_offsets[i]); 
 
@@ -254,6 +254,7 @@ void csr_to_ell(const Matrix1& src, Matrix2& dst,
     thrust::fill(dst.column_indices.values.begin(), dst.column_indices.values.end(), invalid_index);
     thrust::fill(dst.values.values.begin(),         dst.values.values.end(),         ValueType(0));
 
+#pragma omp parallel for
     for(size_t i = 0; i < src.num_rows; i++)
     {
         size_t n = 0;
