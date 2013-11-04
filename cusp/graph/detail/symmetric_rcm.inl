@@ -39,23 +39,24 @@ void symmetric_rcm(MatrixType& G, ArrayType& permutation, cusp::csr_format)
     typedef typename MatrixType::memory_space MemorySpace;
 
     // find peripheral vertex and return BFS levels from vertex
-    cusp::array1d<IndexType,MemorySpace> levels(G.num_rows);
-    cusp::graph::pseudo_peripheral_vertex(G, levels);
+    cusp::graph::pseudo_peripheral_vertex(G, permutation);
 
     // sort vertices by level in BFS traversal
-    thrust::sequence(permutation.begin(), permutation.end());
-    thrust::sort_by_key(levels.begin(), levels.end(), permutation.begin()); 
-    // transpose to form RCM permutation matrix
-    thrust::scatter(thrust::counting_iterator<IndexType>(0), thrust::counting_iterator<IndexType>(G.num_rows), 
-                    permutation.begin(), levels.begin());
+    cusp::array1d<IndexType,MemorySpace> levels(G.num_rows);
+    thrust::sequence(levels.begin(), levels.end());
+    thrust::sort_by_key(permutation.begin(), permutation.end(), levels.begin());
+    // form RCM permutation matrix
+    thrust::scatter(thrust::counting_iterator<IndexType>(0),
+                    thrust::counting_iterator<IndexType>(G.num_rows),
+                    levels.begin(), permutation.begin());
 
     // expand offsets to indices
     cusp::array1d<IndexType,MemorySpace> row_indices(G.num_entries);
     cusp::detail::offsets_to_indices(G.row_offsets, row_indices);
 
     // reorder rows and column according to permutation
-    thrust::gather(row_indices.begin(), row_indices.end(), levels.begin(), row_indices.begin());
-    thrust::gather(G.column_indices.begin(), G.column_indices.end(), levels.begin(), G.column_indices.begin());
+    thrust::gather(row_indices.begin(), row_indices.end(), permutation.begin(), row_indices.begin());
+    thrust::gather(G.column_indices.begin(), G.column_indices.end(), permutation.begin(), G.column_indices.begin());
 
     // order COO matrix
     cusp::detail::sort_by_row_and_column(row_indices, G.column_indices, G.values);
@@ -93,9 +94,6 @@ void symmetric_rcm(MatrixType& G)
     typedef typename MatrixType::memory_space MemorySpace;
 
     CUSP_PROFILE_SCOPED();
-
-    if(G.num_rows != G.num_cols)
-        throw cusp::invalid_input_exception("matrix must be square");
 
     cusp::array1d<IndexType,MemorySpace> permutation(G.num_rows);
     cusp::graph::symmetric_rcm(G, permutation);

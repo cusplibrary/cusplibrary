@@ -48,8 +48,10 @@ void RCM(const MatrixType& G)
     typedef cusp::array1d<IndexType,MemorySpace> Array;
 
     GraphType G_rcm(G);
+    Array permutation(G.num_rows);
+
     timer t;
-    cusp::graph::symmetric_rcm(G_rcm);
+    cusp::graph::symmetric_rcm(G_rcm, permutation);
     std::cout << " RCM time : " << t.milliseconds_elapsed() << " (ms)." << std::endl;
     std::cout << " Bandwidth after RCM : " << bandwidth(G_rcm) << std::endl;
 }
