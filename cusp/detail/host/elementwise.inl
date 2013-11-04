@@ -18,7 +18,7 @@
 
 #include <cusp/format.h>
 #include <cusp/csr_matrix.h>
-#include <cusp/detail/host/detail/csr.h>
+#include <cusp/detail/host/detail/csr_elementwise.h>
 
 namespace cusp
 {
