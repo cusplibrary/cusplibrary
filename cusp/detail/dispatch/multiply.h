@@ -15,9 +15,11 @@
  */
     
 #include <cusp/array1d.h>
-
+//MW: if device is openmp then do not include cuda stuff and redirect device multiply to host
 #include <cusp/detail/host/multiply.h>
+#if !(THRUST_DEVICE_SYSTEM == THRUST_DEVICE_SYSTEM_OMP || THRUST_DEVICE_SYSTEM== THRUST_DEVICE_SYSTEM_CPP)
 #include <cusp/detail/device/multiply.h>
+#endif 
 
 namespace cusp
 {
@@ -55,7 +57,11 @@ void multiply(const LinearOperator&  A,
               cusp::device_memory,
               cusp::device_memory)
 {
+#if (THRUST_DEVICE_SYSTEM == THRUST_DEVICE_SYSTEM_OMP || THRUST_DEVICE_SYSTEM== THRUST_DEVICE_SYSTEM_CPP)
+    cusp::detail::host::multiply(A, B, C);
+#else
     cusp::detail::device::multiply(A, B, C);
+#endif
 }
 
 } // end namespace dispatch

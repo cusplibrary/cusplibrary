@@ -3,6 +3,7 @@
 #include <thrust/functional.h>
 #include <cusp/detail/functional.h>
 
+//MW: add some OpenMP pragmas
 namespace cusp
 {
 namespace detail
@@ -77,7 +78,8 @@ void spmv_csr(const Matrix&  A,
 {
     typedef typename Matrix::index_type  IndexType;
     typedef typename Vector2::value_type ValueType;
- 
+
+#pragma omp parallel for 
     for(size_t i = 0; i < A.num_rows; i++)
     {
         const IndexType& row_start = A.row_offsets[i];
