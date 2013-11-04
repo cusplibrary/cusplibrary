@@ -110,7 +110,7 @@ void TestAdd(void)
             }
         }
     }
-    
+
     SparseMatrix A = DenseMatrix(2,2,1);
     SparseMatrix B = DenseMatrix(2,3,1); 
     SparseMatrix C = DenseMatrix(3,2,1); 
@@ -128,11 +128,11 @@ void TestSubtract(void)
 {
     typedef cusp::array2d<float,cusp::host_memory> DenseMatrix;
 
-    //thrust::host_vector< DenseMatrix > matrices;
+    /*thrust::host_vector< DenseMatrix > matrices;*/
     std::vector< DenseMatrix > matrices;
 
     example_matrices(matrices);
-    
+
     // test add for every pair of compatible matrices
     for(size_t i = 0; i < matrices.size(); i++)
     {
@@ -155,8 +155,8 @@ void TestSubtract(void)
     }
 
     SparseMatrix A = DenseMatrix(2,2,1);
-    SparseMatrix B = DenseMatrix(2,3,1); 
-    SparseMatrix C = DenseMatrix(3,2,1); 
+    SparseMatrix B = DenseMatrix(2,3,1);
+    SparseMatrix C = DenseMatrix(3,2,1);
     SparseMatrix D;
 
     ASSERT_THROWS(cusp::subtract(A,B,D), cusp::invalid_input_exception);
