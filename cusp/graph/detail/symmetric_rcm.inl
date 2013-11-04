@@ -31,8 +31,8 @@ namespace graph
 namespace detail
 {
 
-template<typename MatrixType>
-void symmetric_rcm(MatrixType& G, cusp::csr_format)
+template<typename MatrixType, typename ArrayType>
+void symmetric_rcm(MatrixType& G, ArrayType& permutation, cusp::csr_format)
 {
     typedef typename MatrixType::index_type IndexType;
     typedef typename MatrixType::value_type ValueType;
@@ -43,11 +43,11 @@ void symmetric_rcm(MatrixType& G, cusp::csr_format)
     cusp::graph::pseudo_peripheral_vertex(G, levels);
 
     // sort vertices by level in BFS traversal
-    cusp::array1d<IndexType,MemorySpace> perm(G.num_rows);
-    thrust::sequence(perm.begin(), perm.end());
-    thrust::sort_by_key(levels.begin(), levels.end(), perm.begin()); 
+    thrust::sequence(permutation.begin(), permutation.end());
+    thrust::sort_by_key(levels.begin(), levels.end(), permutation.begin()); 
     // transpose to form RCM permutation matrix
-    thrust::scatter(thrust::counting_iterator<IndexType>(0), thrust::counting_iterator<IndexType>(G.num_rows), perm.begin(), levels.begin());
+    thrust::scatter(thrust::counting_iterator<IndexType>(0), thrust::counting_iterator<IndexType>(G.num_rows), 
+                    permutation.begin(), levels.begin());
 
     // expand offsets to indices
     cusp::array1d<IndexType,MemorySpace> row_indices(G.num_entries);
@@ -67,8 +67,8 @@ void symmetric_rcm(MatrixType& G, cusp::csr_format)
 // General Path //
 //////////////////
 
-template<typename MatrixType, typename Format>
-void symmetric_rcm(MatrixType& G)
+template<typename MatrixType, typename ArrayType, typename Format>
+void symmetric_rcm(MatrixType& G, ArrayType& permutation, Format& format)
 {
   typedef typename MatrixType::index_type   IndexType;
   typedef typename MatrixType::value_type   ValueType;
@@ -77,7 +77,7 @@ void symmetric_rcm(MatrixType& G)
   // convert matrix to CSR format and compute on the host
   cusp::csr_matrix<IndexType,ValueType,MemorySpace> G_csr(G);
 
-  G = cusp::graph::symmetric_rcm(G_csr);
+  G = cusp::graph::symmetric_rcm(G_csr, permutation);
 }
 
 } // end namespace detail
@@ -89,12 +89,27 @@ void symmetric_rcm(MatrixType& G)
 template<typename MatrixType>
 void symmetric_rcm(MatrixType& G)
 {
+    typedef typename MatrixType::index_type IndexType;
+    typedef typename MatrixType::memory_space MemorySpace;
+
     CUSP_PROFILE_SCOPED();
 
     if(G.num_rows != G.num_cols)
         throw cusp::invalid_input_exception("matrix must be square");
 
-    cusp::graph::detail::symmetric_rcm(G, typename MatrixType::format());
+    cusp::array1d<IndexType,MemorySpace> permutation(G.num_rows);
+    cusp::graph::symmetric_rcm(G, permutation);
+}
+
+template<typename MatrixType, typename ArrayType>
+void symmetric_rcm(MatrixType& G, ArrayType& permutation)
+{
+    CUSP_PROFILE_SCOPED();
+
+    if(G.num_rows != G.num_cols)
+        throw cusp::invalid_input_exception("matrix must be square");
+
+    cusp::graph::detail::symmetric_rcm(G, permutation, typename MatrixType::format());
 }
 
 } // end namespace graph
