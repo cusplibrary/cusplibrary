@@ -140,7 +140,7 @@ namespace cusp
 	blas::fill(s,ValueType(0.0));
 	s[0] = beta;
 	i = -1;
-	resid[0] = s[0];
+	resid[0] = abs(s[0]);
 	if (monitor.finished(resid)){
 	  break;
 	}
@@ -169,7 +169,7 @@ namespace cusp
 	  
 	  PlaneRotation(H,cs,sn,s,i);
 	  
-	  resid[0] = s[i+1];
+	  resid[0] = abs(s[i+1]);
 	  
 	  //check convergence condition
 	  if (monitor.finished(resid)){
