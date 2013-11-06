@@ -119,61 +119,19 @@ void breadth_first_search(const MatrixType& G, const typename MatrixType::index_
     csr_problem.graph_slices.push_back(new GraphSlice(gpu, 0));
     csr_problem.graph_slices[0]->nodes = nodes;
     csr_problem.graph_slices[0]->edges = edges;
-
-    if (b40c::util::B40CPerror(cudaMalloc(
-                                   (void**) &csr_problem.graph_slices[0]->d_column_indices,
-                                   csr_problem.graph_slices[0]->edges * sizeof(VertexId)),
-                               "CsrProblem cudaMalloc d_column_indices failed", __FILE__, __LINE__))
-    {
-        throw cusp::runtime_exception("B40C cudaMalloc failed.");
-    }
-
-    if (b40c::util::B40CPerror(cudaMemcpy(
-                                   csr_problem.graph_slices[0]->d_column_indices,
-                                   thrust::raw_pointer_cast(&G.column_indices[0]),
-                                   csr_problem.graph_slices[0]->edges * sizeof(VertexId),
-                                   cudaMemcpyDeviceToDevice),
-                               "CsrProblem cudaMemcpy d_column_indices failed", __FILE__, __LINE__))
-    {
-        throw cusp::runtime_exception("B40C cudaMemcpy failed.");
-    }
-
-    if (b40c::util::B40CPerror(cudaMalloc(
-                                   (void**) &csr_problem.graph_slices[0]->d_row_offsets,
-                                   (csr_problem.graph_slices[0]->nodes + 1) * sizeof(SizeT)),
-                               "CsrProblem cudaMalloc d_row_offsets failed", __FILE__, __LINE__))
-    {
-        throw cusp::runtime_exception("B40C cudaMalloc failed.");
-    }
-
-    if (b40c::util::B40CPerror(cudaMemcpy(
-                                   csr_problem.graph_slices[0]->d_row_offsets,
-                                   thrust::raw_pointer_cast(&G.row_offsets[0]),
-                                   (csr_problem.graph_slices[0]->nodes + 1) * sizeof(SizeT),
-                                   cudaMemcpyDeviceToDevice),
-                               "CsrProblem cudaMemcpy d_row_offsets failed", __FILE__, __LINE__))
-    {
-        throw cusp::runtime_exception("B40C cudaMemcpy failed.");
-    }
+    csr_problem.graph_slices[0]->d_row_offsets = (VertexId *) thrust::raw_pointer_cast(&G.row_offsets[0]);
+    csr_problem.graph_slices[0]->d_column_indices = (VertexId *) thrust::raw_pointer_cast(&G.column_indices[0]);
+    csr_problem.graph_slices[0]->d_labels = (VertexId *) thrust::raw_pointer_cast(&labels[0]);
 
     b40c::graph::bfs::EnactorHybrid<false/*INSTRUMENT*/>  hybrid(false);
     csr_problem.Reset(hybrid.GetFrontierType(), max_queue_sizing);
 
     hybrid.EnactSearch(csr_problem, src, max_grid_size);
 
-    VertexId* labels_ptr = thrust::raw_pointer_cast(&labels[0]);
-
-    // Special case for only one GPU, which may be set as with
-    // an ordinal other than 0.
-    if (b40c::util::B40CPerror(cudaMemcpy(
-                                   labels_ptr,
-                                   csr_problem.graph_slices[0]->d_labels,
-                                   sizeof(VertexId) * csr_problem.graph_slices[0]->nodes,
-                                   cudaMemcpyDeviceToDevice),
-                               "CsrProblem cudaMemcpy d_labels failed", __FILE__, __LINE__))
-    {
-        throw cusp::runtime_exception("B40C results extraction failed.");
-    }
+    // Unset pointers to prevent csr_problem deallocations
+    csr_problem.graph_slices[0]->d_row_offsets = (VertexId *) NULL;
+    csr_problem.graph_slices[0]->d_column_indices = (VertexId *) NULL;
+    csr_problem.graph_slices[0]->d_labels = (VertexId *) NULL;
 
     CUSP_REOPEN_STDOUT;
 #else
