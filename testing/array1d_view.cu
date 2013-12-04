@@ -336,7 +336,6 @@ void TestArray1dViewAssignment(void)
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestArray1dViewAssignment);
 
-
 template <typename MemorySpace>
 void TestArray1dViewResize(void)
 {
@@ -437,9 +436,18 @@ void TestArray1dViewCountingIterator(void)
   ASSERT_EQUAL(V.size(), 4);
   ASSERT_EQUAL(V[0], 5);
   ASSERT_EQUAL(V[3], 8);
+
+  cusp::counting_array<int> W(5, 9);
+  ASSERT_EQUAL(W.size(), 4);
+  ASSERT_EQUAL(W[0], 5);
+  ASSERT_EQUAL(W[3], 8);
+
+  cusp::constant_array<int> X(5);
+  ASSERT_EQUAL(X[0], 5);
+  ASSERT_EQUAL(X[3], 5);
+  ASSERT_EQUAL(X[200],5);
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestArray1dViewCountingIterator);
-
 
 template <typename MemorySpace>
 void TestArray1dViewZipIterator(void)
@@ -506,3 +514,33 @@ void TestArray1dViewEquality(void)
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestArray1dViewEquality);
 
+template <typename MemorySpace>
+void TestArray1dViewSubarray(void)
+{
+  typedef typename cusp::array1d<int, MemorySpace> Array;
+  typedef typename Array::iterator                 Iterator;
+  typedef cusp::array1d_view<Iterator>             View;
+
+  Array A(4);
+  A[0] = 10; A[1] = 20; A[2] = 30; A[3] = 40;
+
+  View V = A.subarray(1,3);
+
+  ASSERT_EQUAL(V.size(),     3);
+  ASSERT_EQUAL_QUIET(V.begin(), A.begin() + 1);
+  ASSERT_EQUAL_QUIET(V.end(),   A.begin() + 4);
+
+  V = A.subarray(0,1);
+
+  ASSERT_EQUAL(V.size(),     2);
+  ASSERT_EQUAL_QUIET(V.begin(), A.begin() + 0);
+  ASSERT_EQUAL_QUIET(V.end(),   A.begin() + 2);
+
+  V = A.subarray(1,3);
+  View W = V.subarray(0,1);
+
+  ASSERT_EQUAL(W.size(),     2);
+  ASSERT_EQUAL_QUIET(W.begin(), A.begin() + 1);
+  ASSERT_EQUAL_QUIET(W.end(),   A.begin() + 3);
+}
+DECLARE_HOST_DEVICE_UNITTEST(TestArray1dViewSubarray);
