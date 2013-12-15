@@ -25,15 +25,25 @@ namespace detail
 
 class timer
 {
-  public:
     size_t calls;
     bool paused;
-    double milliseconds;
+    float milliseconds;
     cudaEvent_t _start;
     cudaEvent_t _end;
 
-    timer() : _start(NULL), _end(NULL)
-    { 
+    float milliseconds_elapsed()
+    {
+      float elapsed_time;
+      gpuErrchk(cudaEventRecord(_end, 0));
+      gpuErrchk(cudaEventSynchronize(_end));
+      gpuErrchk(cudaEventElapsedTime(&elapsed_time, _start, _end));
+      return elapsed_time;
+    }
+
+  public:
+
+    timer() : _start(NULL),_end(NULL)
+    {
       reset();
     }
 
@@ -42,7 +52,7 @@ class timer
       stop();
     }
 
-    void operator+=(const timer &b) 
+    void operator+=(const timer &b)
     {
       milliseconds += b.milliseconds;
       calls += b.calls;
@@ -51,86 +61,80 @@ class timer
     bool is_empty(void)  const { return milliseconds == 0.0; }
     bool is_paused(void) const { return paused; }
 
-    void unpause(void) 
-    { 
+    void unpause(void)
+    {
       cudaEventRecord(_start,0);
-      paused = false; 
+      paused = false;
     }
 
-    void pause(void) 
-    { 
+    void pause(void)
+    {
       stop();
-      cudaEventCreate(&_start); 
+      cudaEventCreate(&_start);
       cudaEventCreate(&_end);
-      paused = true; 
-    }            
+      paused = true;
+    }
 
-    void start(void) 
-    { 
-      ++calls; 
-      cudaEventCreate(&_start); 
+    void start(void)
+    {
+      ++calls;
+      cudaEventCreate(&_start);
       cudaEventCreate(&_end);
       cudaEventRecord(_start,0);
     }
 
-    void stop(void) 
-    { 
-      if(_start != NULL && _end != NULL )
-      {
-        milliseconds += milliseconds_elapsed(); 
-
+    void stop(void)
+    {
+      if(_start != NULL && _end != NULL)
+        milliseconds += milliseconds_elapsed();
+      if(_start != NULL )
         cudaEventDestroy(_start);
+      if(_end != NULL )
         cudaEventDestroy(_end);
 
-        _start = NULL;
-        _end   = NULL;
-      }
+      _start = NULL;
+      _end   = NULL;
     }
 
     void soft_stop(void) 
-    { 
-      if ( !paused ) 
-        milliseconds = milliseconds_elapsed(); 
+    {
+      if ( !paused )
+        milliseconds = milliseconds_elapsed();
     }
 
     void reset(void) 
-    { 
+    {
       if(_start != NULL ) cudaEventDestroy(_start);
       if(_end   != NULL ) cudaEventDestroy(_end);
 
-      cudaEventCreate(&_start); 
-      cudaEventCreate(&_end);
+      _start = NULL;
+      _end = NULL;
 
       calls = 0;
       paused = false;
       milliseconds = 0.0;
     }
 
-    void soft_reset(void) 
-    { 
-      calls = 0; 
-      milliseconds = 0.0; 
+    void soft_reset(void)
+    {
+      calls = 0;
+      milliseconds = 0.0;
 
       cudaEventDestroy(_start);
       cudaEventDestroy(_end);
-      cudaEventCreate(&_start); 
+      cudaEventCreate(&_start);
       cudaEventCreate(&_end);
     }
 
-    float milliseconds_elapsed()
-    { 
-      float elapsed_time;
-      cudaEventRecord(_end, 0);
-      cudaEventSynchronize(_end);
-      cudaEventElapsedTime(&elapsed_time, _start, _end);
-      return elapsed_time;
+    float total_milliseconds()
+    {
+      return milliseconds;
     }
 
-    float seconds_elapsed()
-    { 
-      return milliseconds_elapsed() / 1000.0;
+    float total_seconds()
+    {
+      return milliseconds / 1000.0;
     }
-
 };
 
 } // end namespace detail
