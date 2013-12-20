@@ -54,7 +54,8 @@ template <typename Array1,
          typename Array2>
 void axpy(const Array1& x,
           Array2& y,
-          typename Array1::value_type alpha)
+          typename Array1::value_type alpha,
+          cusp::device_memory)
 {
     typedef typename Array1::value_type ValueType;
 
@@ -77,7 +78,8 @@ template <typename Array1,
          typename ScalarType>
 void axpy(const Array1& x,
           const Array2& y,
-          ScalarType alpha)
+          ScalarType alpha,
+          cusp::device_memory)
 {
     CUSP_PROFILE_SCOPED();
     throw cusp::not_implemented_exception("CUBLAS axpy not implemented");
@@ -92,7 +94,8 @@ void axpby(const Array1& x,
            const Array2& y,
            Array3& z,
            ScalarType1 alpha,
-           ScalarType2 beta)
+           ScalarType2 beta,
+           cusp::device_memory)
 {
     CUSP_PROFILE_SCOPED();
     throw cusp::not_implemented_exception("CUBLAS axpby not implemented");
@@ -107,7 +110,8 @@ void axpby(const Array1& x,
            const Array2& y,
            const Array3& z,
            ScalarType1 alpha,
-           ScalarType2 beta)
+           ScalarType2 beta,
+           cusp::device_memory)
 {
     CUSP_PROFILE_SCOPED();
     throw cusp::not_implemented_exception("CUBLAS axpby not implemented");
@@ -126,7 +130,8 @@ void axpbypcz(const Array1& x,
               Array4& output,
               ScalarType1 alpha,
               ScalarType2 beta,
-              ScalarType3 gamma)
+              ScalarType3 gamma,
+              cusp::device_memory)
 {
     CUSP_PROFILE_SCOPED();
     throw cusp::not_implemented_exception("CUBLAS axpbypcz not implemented");
@@ -145,7 +150,8 @@ void axpbypcz(const Array1& x,
               const Array4& output,
               ScalarType1 alpha,
               ScalarType2 beta,
-              ScalarType3 gamma)
+              ScalarType3 gamma,
+              cusp::device_memory)
 {
     CUSP_PROFILE_SCOPED();
     throw cusp::not_implemented_exception("CUBLAS axpbypcz not implemented");
@@ -156,7 +162,8 @@ template <typename Array1,
          typename Array3>
 void xmy(const Array1& x,
          const Array2& y,
-         Array3& output)
+         Array3& output,
+         cusp::device_memory)
 {
     CUSP_PROFILE_SCOPED();
     throw cusp::not_implemented_exception("CUBLAS xmy not implemented");
@@ -167,7 +174,8 @@ template <typename Array1,
          typename Array3>
 void xmy(const Array1& x,
          const Array2& y,
-         const Array3& output)
+         const Array3& output,
+         cusp::device_memory)
 {
     CUSP_PROFILE_SCOPED();
     throw cusp::not_implemented_exception("CUBLAS xmy not implemented");
@@ -176,7 +184,8 @@ void xmy(const Array1& x,
 template <typename Array1,
          typename Array2>
 void copy(const Array1& x,
-          Array2& y)
+          Array2& y,
+          cusp::device_memory)
 {
     CUSP_PROFILE_SCOPED();
     throw cusp::not_implemented_exception("CUBLAS copy not implemented");
@@ -185,7 +194,8 @@ void copy(const Array1& x,
 template <typename Array1,
          typename Array2>
 void copy(const Array1& x,
-          const Array2& y)
+          const Array2& y,
+          cusp::device_memory)
 {
     CUSP_PROFILE_SCOPED();
     throw cusp::not_implemented_exception("CUBLAS copy not implemented");
@@ -195,7 +205,8 @@ template <typename Array1,
          typename Array2>
 typename Array1::value_type
 dot(const Array1& x,
-    const Array2& y)
+    const Array2& y,
+    cusp::device_memory)
 {
     CUSP_PROFILE_SCOPED();
     throw cusp::not_implemented_exception("CUBLAS dot not implemented");
@@ -205,7 +216,8 @@ dot(const Array1& x,
 
 template <typename Array>
 void fill(Array& x,
-          typename Array::value_type alpha)
+          typename Array::value_type alpha,
+          cusp::device_memory)
 {
     CUSP_PROFILE_SCOPED();
     throw cusp::not_implemented_exception("CUBLAS fill not implemented");
@@ -213,7 +225,8 @@ void fill(Array& x,
 
 template <typename Array>
 void fill(const Array& x,
-          typename Array::value_type alpha)
+          typename Array::value_type alpha,
+          cusp::device_memory)
 {
     CUSP_PROFILE_SCOPED();
     throw cusp::not_implemented_exception("CUBLAS fill not implemented");
@@ -221,7 +234,7 @@ void fill(const Array& x,
 
 template <typename Array>
 typename norm_type<typename Array::value_type>::type
-nrm1(const Array& x)
+nrm1(const Array& x, cusp::device_memory)
 {
     CUSP_PROFILE_SCOPED();
     throw cusp::not_implemented_exception("CUBLAS nrm1 not implemented");
@@ -231,7 +244,7 @@ nrm1(const Array& x)
 
 template <typename Array>
 typename norm_type<typename Array::value_type>::type
-nrm2(const Array& x)
+nrm2(const Array& x, cusp::device_memory)
 {
     CUSP_PROFILE_SCOPED();
     throw cusp::not_implemented_exception("CUBLAS nrm2 not implemented");
@@ -241,7 +254,7 @@ nrm2(const Array& x)
 
 template <typename Array>
 typename Array::value_type
-nrmmax(const Array& x)
+nrmmax(const Array& x, cusp::device_memory)
 {
     CUSP_PROFILE_SCOPED();
     throw cusp::not_implemented_exception("CUBLAS nrmmax not implemented");
@@ -251,7 +264,8 @@ nrmmax(const Array& x)
 
 template <typename Array>
 void scal(Array& x,
-          typename Array::value_type alpha)
+          typename Array::value_type alpha,
+          cusp::device_memory)
 {
     CUSP_PROFILE_SCOPED();
     throw cusp::not_implemented_exception("CUBLAS scal not implemented");
@@ -259,14 +273,18 @@ void scal(Array& x,
 
 template <typename Array>
 void scal(const Array& x,
-          typename Array::value_type alpha)
+          typename Array::value_type alpha,
+          cusp::device_memory)
 {
     CUSP_PROFILE_SCOPED();
     throw cusp::not_implemented_exception("CUBLAS scal not implemented");
 }
 
 template<typename Array2d1, typename Array1d1, typename Array1d2>
-void gemv(const Array2d1& A, const Array1d1& x, Array1d2& y)
+void gemv(const Array2d1& A,
+          const Array1d1& x,
+          Array1d2& y,
+          cusp::device_memory)
 {
     typedef typename Array2d1::value_type ValueType;
 
@@ -292,7 +310,10 @@ void gemv(const Array2d1& A, const Array1d1& x, Array1d2& y)
 }
 
 template<typename Array2d1, typename Array2d2, typename Array2d3>
-void gemm(Array2d1& A, Array2d2& B, Array2d3& C)
+void gemm(Array2d1& A,
+          Array2d2& B,
+          Array2d3& C,
+          cusp::device_memory)
 {
     typedef typename Array2d1::value_type ValueType;
 
