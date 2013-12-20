@@ -23,6 +23,9 @@
 #include <thrust/detail/config.h>
 #include <thrust/version.h>
 
+#include <cusp/detail/config/host_blas_system.h>
+#include <cusp/detail/config/device_blas_system.h>
+
 // Cusp supports Thrust v1.3 and above
 #if THRUST_VERSION < 100500
 #error "Thrust v1.5.0 or newer is required"

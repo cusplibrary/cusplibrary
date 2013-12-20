@@ -109,6 +109,7 @@ void standard_aggregation(const Matrix& C,
     IndexType num_aggregates = *thrust::max_element(aggregates.begin(), aggregates.end()) + 1;
     Array sorted_aggregates(aggregates);
     Array aggregate_counts(num_aggregates);
+    Array reduced_aggregates(num_aggregates);
 
     // compute sizes of the aggregates
     thrust::sort(sorted_aggregates.begin(), sorted_aggregates.end());

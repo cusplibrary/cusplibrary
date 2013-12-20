@@ -160,6 +160,54 @@ void multiply(const Matrix&  A,
         cusp::multiply(A, B.column(j), C.column(j));
 }
 
+/////////////////////////////////
+// Permutation Matrix Multiply //
+/////////////////////////////////
+template <typename Matrix,
+         typename Vector1,
+         typename Vector2>
+void multiply(const Matrix&  A,
+              const Vector1& B,
+              Vector2& C,
+              cusp::permutation_format,
+              cusp::array1d_format,
+              cusp::array1d_format)
+{
+    thrust::gather(A.permutation.begin(), A.permutation.end(), B.begin(), C.begin());
+}
+
+// template <typename Matrix,
+//          typename Vector1,
+//          typename Vector2>
+// void multiply(const Matrix& A,
+//               const Vector1& B,
+//               Vector2& C,
+//               cusp::permutation_format,
+//               cusp::array2d_format,
+//               cusp::array2d_format)
+// {
+//    typedef typename Vector1::orientation Orientation1;
+//    typedef typename Vector2::orientation Orientation2;
+// 
+//    // define types used to programatically generate row_indices
+//    typedef typename thrust::counting_iterator<int> IndexIterator;
+//    typedef typename thrust::transform_iterator<modulus_value<int>, IndexIterator> RowIndexIterator;
+//    typedef typename thrust::transform_iterator<divide_value<int>, IndexIterator> ColIndexIterator;
+// 
+//    RowIndexIterator row_indices_begin(IndexIterator(0), modulus_value<int>(B.pitch));
+//    ColIndexIterator col_indices_begin(IndexIterator(0), divide_value<int>(B.pitch));
+// 
+//    IndexIterator begin(0);
+// 
+//    // prefer coalesced writes to coalesced reads
+//    cusp::detail::logical_to_physical_functor  <int, Orientation1>               func1(B.num_rows, B.num_cols, B.pitch);
+//    cusp::detail::logical_to_physical_functor  <int, Orientation2>               func2(C.num_rows, C.num_cols, C.pitch);
+// 
+//    thrust::copy(thrust::make_permutation_iterator(B.values.begin(), thrust::make_transform_iterator(perm_begin, func1)),
+//                 thrust::make_permutation_iterator(B.values.begin(), thrust::make_transform_iterator(perm_end,   func1)),
+//                 thrust::make_permutation_iterator(C.values.begin(), thrust::make_transform_iterator(begin, func2)));
+// }
+
 // Ensure 2D arrays are stored in column-major format
 template <typename Matrix,
          typename Vector1,

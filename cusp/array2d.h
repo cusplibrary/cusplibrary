@@ -174,7 +174,7 @@ struct row_or_column_view<Iterator,true>
     typedef cusp::array1d_view<Iterator> ArrayType;
 
     template< typename Array >
-    static ArrayType get_array(Array& A, size_t i ) {
+    static ArrayType get_array(Array& A, size_t i) {
         return ArrayType(A.values.begin() + A.pitch * i,
                          A.values.begin() + A.pitch * i + cusp::detail::minor_dimension(A.num_rows, A.num_cols, typename Array::orientation()));
     }
@@ -187,8 +187,9 @@ struct row_or_column_view<Iterator,false>
     typedef cusp::array1d_view<typename StrideType::iterator> ArrayType;
 
     template< typename Array >
-    static ArrayType get_array(Array& A, size_t i ) {
-        cusp::detail::strided_range<Iterator> strided_range(A.values.begin() + i, A.values.end(), A.pitch);
+    static ArrayType get_array(Array& A, size_t i) {
+        cusp::detail::strided_range<Iterator> strided_range(A.values.begin() + i,
+            A.values.begin() + A.pitch * cusp::detail::major_dimension(A.num_rows, A.num_cols, typename Array::orientation()), A.pitch);
         return ArrayType(strided_range.begin(), strided_range.end());
     }
 };
@@ -422,7 +423,7 @@ public:
     // TODO check values.size()
 
     // construct from array2d container
-    array2d_view(      array2d<typename Parent::value_type, typename Parent::memory_space, orientation>& a)
+    array2d_view(array2d<typename Parent::value_type, typename Parent::memory_space, orientation>& a)
         : Parent(a), values(a.values), pitch(a.pitch) {}
 
     array2d_view(const array2d<typename Parent::value_type, typename Parent::memory_space, orientation>& a)

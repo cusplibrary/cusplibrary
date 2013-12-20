@@ -45,7 +45,7 @@ namespace detail
         if(array1.size() != array2.size())
             throw cusp::invalid_input_exception("array dimensions do not match");
     }
-    
+
     template <typename Array1, typename Array2, typename Array3>
     void assert_same_dimensions(const Array1& array1,
                                 const Array2& array2,
@@ -54,7 +54,7 @@ namespace detail
         assert_same_dimensions(array1, array2);
         assert_same_dimensions(array2, array3);
     }
-    
+
     template <typename Array1, typename Array2, typename Array3, typename Array4>
     void assert_same_dimensions(const Array1& array1,
                                 const Array2& array2,
@@ -777,13 +777,6 @@ void scal(const Array& x,
     cusp::blas::thrustblas::detail::scal(x.begin(), x.end(), alpha);
 }
 } // end namespace thrustblas
-
-template <typename Array>
-void print(typename Array::memory_space, const Array& x)
-{
-  std::cout << "Running thrustblas." << std::endl;
-}
-
 } // end namespace blas
 } // end namespace cusp
 

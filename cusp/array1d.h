@@ -240,17 +240,6 @@ public:
         return view(m_begin + i, m_begin + j + 1);
     }
 
-    // this allows updating values in views. used mainly with respect to array2d
-    // views of rows and columns i.e A.row(i) = B.row(i)
-    template <typename Array>
-    void assign(const Array& a)
-    {
-        if(a.size() == m_size)
-          thrust::copy(a.begin(), a.end(), this->begin());
-        else
-          throw cusp::not_implemented_exception("Views of different size cannot be assigned");
-    }
-
     // TODO is there any value in supporting the two-argument form?
     //      i.e.  void resize(size_type new_size, value_type x = value_type())
     void resize(size_type new_size)
@@ -300,7 +289,7 @@ class constant_array : public cusp::array1d_view< thrust::constant_iterator<Valu
 
 public:
 
-  constant_array(ValueType value) : Parent(iterator(value), iterator(value)){}
+  constant_array(ValueType value, size_t size) : Parent(iterator(value), iterator(value) + size){}
 };
 
 /* Convenience functions */

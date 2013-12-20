@@ -22,7 +22,7 @@
 
 #include <cusp/detail/config.h>
 
-#include <cusp/blas.h>
+#include <cusp/blas/blas.h>
 
 #include <limits>
 #include <iostream>

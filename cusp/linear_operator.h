@@ -23,8 +23,8 @@
 #include <cusp/detail/config.h>
 
 #include <cusp/format.h>
-#include <cusp/blas.h>
 #include <cusp/exception.h>
+#include <cusp/blas/blas.h>
 #include <cusp/detail/matrix_base.h>
 
 namespace cusp
@@ -47,13 +47,13 @@ class linear_operator : public cusp::detail::matrix_base<IndexType,ValueType,Mem
 
 template <typename ValueType, typename MemorySpace, typename IndexType=int>
 class identity_operator : public linear_operator<ValueType,MemorySpace,IndexType>
-{       
+{
     typedef linear_operator<ValueType,MemorySpace> Parent;
     public:
 
-    identity_operator() 
+    identity_operator()
         : Parent() {}
-    
+
     identity_operator(IndexType num_rows, IndexType num_cols)
         : Parent(num_rows, num_cols) {}
 

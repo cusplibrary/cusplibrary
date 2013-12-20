@@ -14,9 +14,10 @@
  *  limitations under the License.
  */
 
+#pragma once
 
 #include <cusp/array1d.h>
-
+#include <cusp/complex.h>
 #include <cusp/exception.h>
 
 #include <thrust/copy.h>
@@ -34,7 +35,6 @@ namespace cusp
 {
 namespace blas
 {
-
 namespace detail
 {
     template <typename Array1, typename Array2>
@@ -277,7 +277,7 @@ namespace detail
                      thrust::make_zip_iterator(thrust::make_tuple(first1, first2, first3, output)) + N,
                      detail::AXPBYPCZ<ScalarType1,ScalarType2,ScalarType3>(alpha, beta, gamma));
   }
-  
+
   template <typename InputIterator1,
 	    typename InputIterator2,
 	    typename OutputIterator>
@@ -289,7 +289,7 @@ namespace detail
     typedef typename thrust::iterator_value<OutputIterator>::type ScalarType;
     thrust::transform(first1, last1, first2, output, detail::XMY<ScalarType>());
   }
-  
+
   template <typename InputIterator,
 	    typename ForwardIterator>
   void copy(InputIterator   first1,
@@ -298,7 +298,7 @@ namespace detail
   {
     thrust::copy(first1, last1, first2);
   }
-  
+
   template <typename InputIterator1,
 	    typename InputIterator2>
   typename thrust::iterator_value<InputIterator1>::type
@@ -332,19 +332,19 @@ namespace detail
   {
     thrust::fill(first, last, alpha);
   }
-  
+
   template <typename InputIterator>
   typename norm_type<typename thrust::iterator_value<InputIterator>::type>::type
   nrm1(InputIterator first,
        InputIterator last)
   {
     typedef typename thrust::iterator_value<InputIterator>::type ValueType;
-    
+
     detail::absolute<ValueType> unary_op;
     thrust::plus<ValueType>     binary_op;
-    
+
     ValueType init = 0;
-    
+
     return abs(thrust::transform_reduce(first, last, unary_op, init, binary_op));
   }
 
@@ -390,7 +390,6 @@ namespace detail
   }
 } // end namespace detail
 
-
 template <typename ForwardIterator1,
           typename ForwardIterator2,
           typename ScalarType>
@@ -415,7 +414,7 @@ void axpy(const Array1& x,
 }
 
 template <typename Array1,
-          typename Array2, 
+          typename Array2,
 	  typename ScalarType>
 void axpy(const Array1& x,
           const Array2& y,
@@ -649,8 +648,6 @@ typename Array1::value_type
     return cusp::blas::detail::dotc(x.begin(), x.end(), y.begin());
 }
 
-
-
 template <typename ForwardIterator,
           typename ScalarType>
 void fill(ForwardIterator first,
@@ -778,7 +775,6 @@ void scal(const Array& x,
     CUSP_PROFILE_SCOPED();
     cusp::blas::detail::scal(x.begin(), x.end(), alpha);
 }
-
 } // end namespace blas
 } // end namespace cusp
 

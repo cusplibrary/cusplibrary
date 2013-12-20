@@ -17,6 +17,7 @@
 #include <cusp/dia_matrix.h>
 #include <cusp/ell_matrix.h>
 #include <cusp/hyb_matrix.h>
+#include <cusp/permutation_matrix.h>
 
 /////////////////////////////////////////
 // Sparse Matrix-Matrix Multiplication //
@@ -397,7 +398,6 @@ void TestSparseMatrixVectorMultiply()
 }
 DECLARE_SPARSE_MATRIX_UNITTEST(TestSparseMatrixVectorMultiply);
 
-
 //////////////////////////////
 // General Linear Operators //
 //////////////////////////////
@@ -427,4 +427,35 @@ void TestMultiplyIdentityOperator(void)
     ASSERT_EQUAL(y[3], -3.0f);
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestMultiplyIdentityOperator);
+
+
+///////////////////////////
+// Permutation Operators //
+///////////////////////////
+
+template <class MemorySpace>
+void TestMultiplyPermutationOperator(void)
+{
+    cusp::array1d<float, MemorySpace> x(4);
+    cusp::array1d<float, MemorySpace> y(4);
+
+    x[0] =  7.0f;
+    x[1] =  5.0f;
+    x[2] =  4.0f;
+    x[3] = -3.0f;
+
+    cusp::permutation_matrix<int, MemorySpace> P(4);
+    P.permutation[0] = 3;
+    P.permutation[1] = 2;
+    P.permutation[2] = 1;
+    P.permutation[3] = 0;
+
+    cusp::multiply(P, x, y);
+
+    ASSERT_EQUAL(y[0], -3.0f);
+    ASSERT_EQUAL(y[1],  4.0f);
+    ASSERT_EQUAL(y[2],  5.0f);
+    ASSERT_EQUAL(y[3],  7.0f);
+}
+DECLARE_HOST_DEVICE_UNITTEST(TestMultiplyPermutationOperator);
 

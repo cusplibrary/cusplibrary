@@ -16,10 +16,10 @@
 
 
 #include <cusp/array1d.h>
-#include <cusp/blas.h>
 #include <cusp/multiply.h>
 #include <cusp/monitor.h>
 #include <cusp/linear_operator.h>
+#include <cusp/blas/blas.h>
 
 namespace blas = cusp::blas;
 

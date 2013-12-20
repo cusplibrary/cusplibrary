@@ -1,6 +1,6 @@
 #include <unittest/unittest.h>
 
-#include <cusp/blas.h>
+#include <cusp/blas/blas.h>
 
 
 template <class MemorySpace>

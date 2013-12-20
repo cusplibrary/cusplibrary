@@ -31,54 +31,41 @@ namespace graph
 namespace detail
 {
 
-template<typename MatrixType, typename ArrayType>
-void symmetric_rcm(MatrixType& G, ArrayType& permutation, cusp::csr_format)
+template<typename MatrixType, typename PermutationType>
+void symmetric_rcm(const MatrixType& G, PermutationType& P, cusp::csr_format)
 {
     typedef typename MatrixType::index_type IndexType;
     typedef typename MatrixType::value_type ValueType;
     typedef typename MatrixType::memory_space MemorySpace;
 
     // find peripheral vertex and return BFS levels from vertex
-    cusp::graph::pseudo_peripheral_vertex(G, permutation);
+    cusp::graph::pseudo_peripheral_vertex(G, P.permutation);
 
     // sort vertices by level in BFS traversal
     cusp::array1d<IndexType,MemorySpace> levels(G.num_rows);
     thrust::sequence(levels.begin(), levels.end());
-    thrust::sort_by_key(permutation.begin(), permutation.end(), levels.begin());
+    thrust::sort_by_key(P.permutation.begin(), P.permutation.end(), levels.begin());
     // form RCM permutation matrix
     thrust::scatter(thrust::counting_iterator<IndexType>(0),
                     thrust::counting_iterator<IndexType>(G.num_rows),
-                    levels.begin(), permutation.begin());
-
-    // expand offsets to indices
-    cusp::array1d<IndexType,MemorySpace> row_indices(G.num_entries);
-    cusp::detail::offsets_to_indices(G.row_offsets, row_indices);
-
-    // reorder rows and column according to permutation
-    thrust::gather(row_indices.begin(), row_indices.end(), permutation.begin(), row_indices.begin());
-    thrust::gather(G.column_indices.begin(), G.column_indices.end(), permutation.begin(), G.column_indices.begin());
-
-    // order COO matrix
-    cusp::detail::sort_by_row_and_column(row_indices, G.column_indices, G.values);
-    // update row_offsets to match reordering
-    cusp::detail::indices_to_offsets(row_indices, G.row_offsets);
+                    levels.begin(), P.permutation.begin());
 }
 
 //////////////////
 // General Path //
 //////////////////
 
-template<typename MatrixType, typename ArrayType, typename Format>
-void symmetric_rcm(MatrixType& G, ArrayType& permutation, Format& format)
+template<typename MatrixType, typename PermutationType, typename Format>
+void symmetric_rcm(const MatrixType& G, PermutationType& P, Format& format)
 {
-  typedef typename MatrixType::index_type   IndexType;
-  typedef typename MatrixType::value_type   ValueType;
-  typedef typename MatrixType::memory_space MemorySpace;
+    typedef typename MatrixType::index_type   IndexType;
+    typedef typename MatrixType::value_type   ValueType;
+    typedef typename MatrixType::memory_space MemorySpace;
 
-  // convert matrix to CSR format and compute on the host
-  cusp::csr_matrix<IndexType,ValueType,MemorySpace> G_csr(G);
+    // convert matrix to CSR format and compute on the host
+    cusp::csr_matrix<IndexType,ValueType,MemorySpace> G_csr(G);
 
-  G = cusp::graph::symmetric_rcm(G_csr, permutation);
+    cusp::graph::symmetric_rcm(G_csr, P);
 }
 
 } // end namespace detail
@@ -87,27 +74,15 @@ void symmetric_rcm(MatrixType& G, ArrayType& permutation, Format& format)
 // Entry Point //
 /////////////////
 
-template<typename MatrixType>
-void symmetric_rcm(MatrixType& G)
-{
-    typedef typename MatrixType::index_type IndexType;
-    typedef typename MatrixType::memory_space MemorySpace;
-
-    CUSP_PROFILE_SCOPED();
-
-    cusp::array1d<IndexType,MemorySpace> permutation(G.num_rows);
-    cusp::graph::symmetric_rcm(G, permutation);
-}
-
-template<typename MatrixType, typename ArrayType>
-void symmetric_rcm(MatrixType& G, ArrayType& permutation)
+template<typename MatrixType, typename PermutationType>
+void symmetric_rcm(const MatrixType& G, PermutationType& P)
 {
     CUSP_PROFILE_SCOPED();
 
     if(G.num_rows != G.num_cols)
         throw cusp::invalid_input_exception("matrix must be square");
 
-    cusp::graph::detail::symmetric_rcm(G, permutation, typename MatrixType::format());
+    cusp::graph::detail::symmetric_rcm(G, P, typename MatrixType::format());
 }
 
 } // end namespace graph

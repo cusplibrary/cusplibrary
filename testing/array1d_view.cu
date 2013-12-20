@@ -442,10 +442,10 @@ void TestArray1dViewCountingIterator(void)
   ASSERT_EQUAL(W[0], 5);
   ASSERT_EQUAL(W[3], 8);
 
-  cusp::constant_array<int> X(5);
+  cusp::constant_array<int> X(5, 200);
   ASSERT_EQUAL(X[0], 5);
   ASSERT_EQUAL(X[3], 5);
-  ASSERT_EQUAL(X[200],5);
+  ASSERT_EQUAL(X[199],5);
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestArray1dViewCountingIterator);
 

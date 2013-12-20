@@ -152,6 +152,35 @@ void multiply(const Matrix&  A,
         cusp::multiply(A, B.column(j), C.column(j));
 }
 
+/////////////////////////////////
+// Permutation Matrix Multiply //
+/////////////////////////////////
+template <typename Matrix,
+         typename Vector1,
+         typename Vector2>
+void multiply(const Matrix&  A,
+              const Vector1& B,
+              Vector2& C,
+              cusp::permutation_format,
+              cusp::array1d_format,
+              cusp::array1d_format)
+{
+    thrust::gather(A.permutation.begin(), A.permutation.end(), B.begin(), C.begin());
+}
+
+template <typename Matrix,
+         typename Vector1,
+         typename Vector2>
+void multiply(const Matrix&  A,
+              const Vector1& B,
+              Vector2& C,
+              cusp::array1d_format,
+              cusp::permutation_format,
+              cusp::array1d_format)
+{
+    thrust::gather(A.permutation.begin(), A.permutation.end(), B.begin(), C.begin());
+}
+
 ////////////////////////////////////////
 // Dense Matrix-Matrix Multiplication //
 ////////////////////////////////////////

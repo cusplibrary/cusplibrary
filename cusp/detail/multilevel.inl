@@ -14,9 +14,9 @@
  *  limitations under the License.
  */
 
-#include <cusp/blas.h>
 #include <cusp/multiply.h>
 #include <cusp/monitor.h>
+#include <cusp/blas/blas.h>
 
 namespace cusp
 {
