@@ -34,9 +34,9 @@ class timer
     float milliseconds_elapsed()
     {
       float elapsed_time;
-      gpuErrchk(cudaEventRecord(_end, 0));
-      gpuErrchk(cudaEventSynchronize(_end));
-      gpuErrchk(cudaEventElapsedTime(&elapsed_time, _start, _end));
+      cudaEventRecord(_end, 0);
+      cudaEventSynchronize(_end);
+      cudaEventElapsedTime(&elapsed_time, _start, _end);
       return elapsed_time;
     }
 
