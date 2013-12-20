@@ -56,7 +56,6 @@ struct device_blas_policy
 } // end blas
 } // end cusp
 
-
 #define __CUSP_HOST_BLAS_SYSTEM <__CUSP_HOST_BLAS_ROOT/blas.h>
 #include __CUSP_HOST_BLAS_SYSTEM
 #undef __CUSP_HOST_BLAS_SYSTEM
@@ -703,8 +702,10 @@ template <typename Array,
 void fill(Array& x,
           ScalarType alpha)
 {
+    typedef typename Array::value_type ValueType;
+
     CUSP_PROFILE_SCOPED();
-    cusp::blas::detail::fill(x.begin(), x.end(), alpha,
+    cusp::blas::detail::fill(x.begin(), x.end(), ValueType(alpha),
         typename Array::memory_space());
 }
 
@@ -713,9 +714,7 @@ template <typename Array,
 void fill(const Array& x,
           ScalarType alpha)
 {
-    CUSP_PROFILE_SCOPED();
-    cusp::blas::detail::fill(x.begin(), x.end(), alpha,
-        typename Array::memory_space());
+  cusp::blas::fill(const_cast<Array&>(x), alpha);
 }
 
 

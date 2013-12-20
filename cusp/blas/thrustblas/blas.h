@@ -43,7 +43,7 @@ template <typename Array1,
 void axpy(const Array1& x,
           Array2& y,
           ScalarType alpha,
-          cusp::any_memory)
+          cusp::host_memory)
 {
     CUSP_PROFILE_SCOPED();
     detail::assert_same_dimensions(x, y);
@@ -56,7 +56,7 @@ template <typename Array1,
 void axpy(const Array1& x,
           const Array2& y,
           ScalarType alpha,
-          cusp::any_memory)
+          cusp::host_memory)
 {
     CUSP_PROFILE_SCOPED();
     detail::assert_same_dimensions(x, y);
@@ -73,7 +73,7 @@ void axpby(const Array1& x,
            Array3& z,
            ScalarType1 alpha,
            ScalarType2 beta,
-           cusp::any_memory)
+           cusp::host_memory)
 {
     CUSP_PROFILE_SCOPED();
     detail::assert_same_dimensions(x, y, z);
@@ -90,7 +90,7 @@ void axpby(const Array1& x,
            const Array3& z,
            ScalarType1 alpha,
            ScalarType2 beta,
-           cusp::any_memory)
+           cusp::host_memory)
 {
     CUSP_PROFILE_SCOPED();
     detail::assert_same_dimensions(x, y, z);
@@ -111,7 +111,7 @@ void axpbypcz(const Array1& x,
               ScalarType1 alpha,
               ScalarType2 beta,
               ScalarType3 gamma,
-              cusp::any_memory)
+              cusp::host_memory)
 {
     CUSP_PROFILE_SCOPED();
     detail::assert_same_dimensions(x, y, z, output);
@@ -132,7 +132,7 @@ void axpbypcz(const Array1& x,
               ScalarType1 alpha,
               ScalarType2 beta,
               ScalarType3 gamma,
-              cusp::any_memory)
+              cusp::host_memory)
 {
     CUSP_PROFILE_SCOPED();
     detail::assert_same_dimensions(x, y, z, output);
@@ -145,7 +145,7 @@ template <typename Array1,
 void xmy(const Array1& x,
          const Array2& y,
          Array3& output,
-         cusp::any_memory)
+         cusp::host_memory)
 {
     CUSP_PROFILE_SCOPED();
     detail::assert_same_dimensions(x, y, output);
@@ -158,7 +158,7 @@ template <typename Array1,
 void xmy(const Array1& x,
          const Array2& y,
          const Array3& output,
-         cusp::any_memory)
+         cusp::host_memory)
 {
     CUSP_PROFILE_SCOPED();
     detail::assert_same_dimensions(x, y, output);
@@ -169,7 +169,7 @@ template <typename Array1,
          typename Array2>
 void copy(const Array1& x,
           Array2& y,
-          cusp::any_memory)
+          cusp::host_memory)
 {
     CUSP_PROFILE_SCOPED();
     detail::assert_same_dimensions(x, y);
@@ -180,7 +180,7 @@ template <typename Array1,
          typename Array2>
 void copy(const Array1& x,
           const Array2& y,
-          cusp::any_memory)
+          cusp::host_memory)
 {
     CUSP_PROFILE_SCOPED();
     detail::assert_same_dimensions(x, y);
@@ -193,7 +193,7 @@ template <typename Array1,
 typename Array1::value_type
 dot(const Array1& x,
     const Array2& y,
-    cusp::any_memory)
+    cusp::host_memory)
 {
     CUSP_PROFILE_SCOPED();
     detail::assert_same_dimensions(x, y);
@@ -206,37 +206,30 @@ template <typename Array1,
 typename Array1::value_type
 dotc(const Array1& x,
      const Array2& y,
-     cusp::any_memory)
+     cusp::host_memory)
 {
     CUSP_PROFILE_SCOPED();
     detail::assert_same_dimensions(x, y);
     return cusp::blas::thrustblas::detail::dotc(x.begin(), x.end(), y.begin());
 }
 
-template <typename Array,
+template <typename DerivedPolicy,
+         typename Array,
          typename ScalarType>
-void fill(Array& x,
-          ScalarType alpha,
-          cusp::any_memory)
+void fill(blas_policy<DerivedPolicy> &policy,
+          Array& x,
+          ScalarType alpha)
 {
-    CUSP_PROFILE_SCOPED();
-    cusp::blas::thrustblas::detail::fill(x.begin(), x.end(), alpha);
-}
+    typedef typename Array::value_type ValueType;
 
-template <typename Array,
-         typename ScalarType>
-void fill(const Array& x,
-          ScalarType alpha,
-          cusp::any_memory)
-{
     CUSP_PROFILE_SCOPED();
-    cusp::blas::thrustblas::detail::fill(x.begin(), x.end(), alpha);
+    cusp::blas::detail::fill(x.begin(), x.end(), ValueType(alpha));
 }
 
 template <typename Array>
 typename norm_type<typename Array::value_type>::type
 nrm1(const Array& x,
-     cusp::any_memory)
+     cusp::host_memory)
 {
     CUSP_PROFILE_SCOPED();
     return cusp::blas::thrustblas::detail::nrm1(x.begin(), x.end());
@@ -245,7 +238,7 @@ nrm1(const Array& x,
 template <typename Array>
 typename norm_type<typename Array::value_type>::type
 nrm2(const Array& x,
-     cusp::any_memory)
+     cusp::host_memory)
 {
     CUSP_PROFILE_SCOPED();
     return cusp::blas::thrustblas::detail::nrm2(x.begin(), x.end());
@@ -254,27 +247,29 @@ nrm2(const Array& x,
 template <typename Array>
 typename Array::value_type
 nrmmax(const Array& x,
-       cusp::any_memory)
+       cusp::host_memory)
 {
     CUSP_PROFILE_SCOPED();
     return cusp::blas::thrustblas::detail::nrmmax(x.begin(), x.end());
 }
 
-template <typename Array,
+template <typename DerivedPolicy,
+         typename Array,
          typename ScalarType>
-void scal(Array& x,
-          ScalarType alpha,
-          cusp::any_memory)
+void scal(blas_policy<DerivedPolicy> &policy,
+          Array& x,
+          ScalarType alpha)
 {
     CUSP_PROFILE_SCOPED();
     cusp::blas::thrustblas::detail::scal(x.begin(), x.end(), alpha);
 }
 
-template <typename Array,
+template <typename DerivedPolicy,
+         typename Array,
          typename ScalarType>
-void scal(const Array& x,
-          ScalarType alpha,
-          cusp::any_memory)
+void scal(blas_policy<DerivedPolicy> &policy,
+          const Array& x,
+          ScalarType alpha)
 {
     CUSP_PROFILE_SCOPED();
     cusp::blas::thrustblas::detail::scal(x.begin(), x.end(), alpha);
