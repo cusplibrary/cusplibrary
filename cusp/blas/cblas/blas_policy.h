@@ -29,13 +29,7 @@ namespace cblas
 namespace detail
 {
 
-// forward declaration of execution_policy
-template<typename> struct blas_policy;
-
-template<typename Derived>
-  struct blas_policy
-    : cusp::blas::blas_policy<Derived>
-{};
+template<typename MemorySpace> struct blas_policy{};
 
 } // end detail
 

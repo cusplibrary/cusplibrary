@@ -27,16 +27,14 @@ namespace blas
 namespace cblas
 {
 template <typename Array1,
-          typename Array2>
+          typename Array2,
+          typename ScalarType>
 void axpy(const Array1& x,
                 Array2& y,
-          typename Array1::value_type alpha)
+          ScalarType alpha)
 {
     typedef typename Array1::value_type ValueType;
 
-    CUSP_PROFILE_SCOPED();
-
-    int m = x.size();
     int n = y.size();
 
     ValueType* x_p = thrust::raw_pointer_cast(&x[0]);
@@ -46,200 +44,161 @@ void axpy(const Array1& x,
 }
 
 template <typename Array1,
-          typename Array2,
-	        typename ScalarType>
-void axpy(const Array1& x,
-          const Array2& y,
-          ScalarType alpha)
-{
-    CUSP_PROFILE_SCOPED();
-    throw cusp::not_implemented_exception("cblas axpy not implemented");
-}
-
-template <typename Array1,
-          typename Array2,
-          typename Array3,
-	  typename ScalarType1,
-	  typename ScalarType2>
-void axpby(const Array1& x,
+         typename Array2,
+         typename Array3,
+         typename ScalarType1,
+         typename ScalarType2>
+void axpby(const cblas::detail::blas_policy<typename Array3::memory_space>& policy,
+           const Array1& x,
            const Array2& y,
-                 Array3& z,
+           Array3& z,
            ScalarType1 alpha,
            ScalarType2 beta)
 {
-    CUSP_PROFILE_SCOPED();
-    throw cusp::not_implemented_exception("cblas axpby not implemented");
+    throw cusp::not_implemented_exception("CUBLAS axpby not implemented");
 }
 
 template <typename Array1,
-          typename Array2,
-          typename Array3,
-	  typename ScalarType1,
-	  typename ScalarType2>
-void axpby(const Array1& x,
-           const Array2& y,
-           const Array3& z,
-           ScalarType1 alpha,
-           ScalarType2 beta)
-{
-    CUSP_PROFILE_SCOPED();
-    throw cusp::not_implemented_exception("cblas axpby not implemented");
-}
-
-template <typename Array1,
-          typename Array2,
-          typename Array3,
-          typename Array4,
-	  typename ScalarType1,
-	  typename ScalarType2,
-	  typename ScalarType3>
-void axpbypcz(const Array1& x,
+         typename Array2,
+         typename Array3,
+         typename Array4,
+         typename ScalarType1,
+         typename ScalarType2,
+         typename ScalarType3>
+void axpbypcz(const cblas::detail::blas_policy<typename Array4::memory_space>& policy,
+              const Array1& x,
               const Array2& y,
               const Array3& z,
-	            Array4& output,
-	      ScalarType1 alpha,
-	      ScalarType2 beta,
-	      ScalarType3 gamma)
+              Array4& output,
+              ScalarType1 alpha,
+              ScalarType2 beta,
+              ScalarType3 gamma)
 {
-    CUSP_PROFILE_SCOPED();
-    throw cusp::not_implemented_exception("cblas axpbypcz not implemented");
+    throw cusp::not_implemented_exception("CUBLAS axpbypcz not implemented");
 }
 
 template <typename Array1,
-          typename Array2,
-          typename Array3,
-          typename Array4,
-	  typename ScalarType1,
-	  typename ScalarType2,
-	  typename ScalarType3>
-void axpbypcz(const Array1& x,
-              const Array2& y,
-              const Array3& z,
-              const Array4& output,
-	      ScalarType1 alpha,
-	      ScalarType2 beta,
-	      ScalarType3 gamma)
-{
-    CUSP_PROFILE_SCOPED();
-    throw cusp::not_implemented_exception("cblas axpbypcz not implemented");
-}
-
-template <typename Array1,
-          typename Array2,
-          typename Array3>
-void xmy(const Array1& x,
+         typename Array2,
+         typename Array3>
+void xmy(const cblas::detail::blas_policy<typename Array3::memory_space>& policy,
+         const Array1& x,
          const Array2& y,
-               Array3& output)
+         Array3& output)
 {
-    CUSP_PROFILE_SCOPED();
-    throw cusp::not_implemented_exception("cblas xmy not implemented");
+    typedef typename Array3::value_type ValueType;
+
+    int n = x.size();
+
+    output = y;
+
+    ValueType *x_p = thrust::raw_pointer_cast(&x[0]);
+    ValueType *output_p = thrust::raw_pointer_cast(&output[0]);
+
+    detail::xmy(n, x_p, output_p);
 }
 
 template <typename Array1,
-          typename Array2,
-          typename Array3>
-void xmy(const Array1& x,
-         const Array2& y,
-         const Array3& output)
-{
-    CUSP_PROFILE_SCOPED();
-    throw cusp::not_implemented_exception("cblas xmy not implemented");
-}
-
-template <typename Array1,
-          typename Array2>
-void copy(const Array1& x,
-                Array2& y)
-{
-    CUSP_PROFILE_SCOPED();
-    throw cusp::not_implemented_exception("cblas copy not implemented");
-}
-
-template <typename Array1,
-          typename Array2>
-void copy(const Array1& x,
-          const Array2& y)
-{
-    CUSP_PROFILE_SCOPED();
-    throw cusp::not_implemented_exception("cblas copy not implemented");
-}
-
-template <typename Array1,
-          typename Array2>
+         typename Array2>
 typename Array1::value_type
-    dot(const Array1& x,
-        const Array2& y)
+dot(const cblas::detail::blas_policy<typename Array1::memory_space>& policy,
+    const Array1& x,
+    const Array2& y)
 {
-    CUSP_PROFILE_SCOPED();
-    throw cusp::not_implemented_exception("cblas dot not implemented");
+    typedef typename Array2::value_type ValueType;
 
-    return 0;
+    int n = y.size();
+
+    const ValueType* x_p = thrust::raw_pointer_cast(&x[0]);
+    const ValueType* y_p = thrust::raw_pointer_cast(&y[0]);
+
+    return cblas::detail::dot(n, x_p, 1, y_p, 1);
 }
 
-template <typename Array>
-void fill(Array& x,
-	  typename Array::value_type alpha)
+template <typename Array1,
+         typename Array2>
+typename Array1::value_type
+dotc(const cblas::detail::blas_policy<typename Array1::memory_space>& policy,
+    const Array1& x,
+    const Array2& y)
 {
-    CUSP_PROFILE_SCOPED();
-    throw cusp::not_implemented_exception("cblas fill not implemented");
-}
+    typedef typename Array2::value_type ValueType;
 
-template <typename Array>
-void fill(const Array& x,
-          typename Array::value_type alpha)
-{
-    CUSP_PROFILE_SCOPED();
-    throw cusp::not_implemented_exception("cblas fill not implemented");
+    int n = y.size();
+
+    const ValueType* x_p = thrust::raw_pointer_cast(&x[0]);
+    const ValueType* y_p = thrust::raw_pointer_cast(&y[0]);
+
+    ValueType result;
+
+    cblas::detail::dotc(n, x_p, 1, y_p, 1, &result);
+
+    return result;
 }
 
 template <typename Array>
 typename norm_type<typename Array::value_type>::type
-    nrm1(const Array& x)
+nrm1(const cblas::detail::blas_policy<typename Array::memory_space>& policy,
+     const Array& x)
 {
-    CUSP_PROFILE_SCOPED();
-    throw cusp::not_implemented_exception("cblas nrm1 not implemented");
+    typedef typename Array::value_type ValueType;
 
-    return 0;
+    int n = x.size();
+
+    const ValueType* x_p = thrust::raw_pointer_cast(&x[0]);
+
+    return cblas::detail::asum(n, x_p, 1);
 }
 
 template <typename Array>
 typename norm_type<typename Array::value_type>::type
-    nrm2(const Array& x)
+nrm2(const cblas::detail::blas_policy<typename Array::memory_space>& policy,
+     const Array& x)
 {
-    CUSP_PROFILE_SCOPED();
-    throw cusp::not_implemented_exception("cblas nrm2 not implemented");
+    typedef typename Array::value_type ValueType;
 
-    return 0;
+    int n = x.size();
+
+    const ValueType* x_p = thrust::raw_pointer_cast(&x[0]);
+
+    return cblas::detail::nrm2(n, x_p, 1);
 }
 
 template <typename Array>
 typename Array::value_type
-    nrmmax(const Array& x)
+nrmmax(const cblas::detail::blas_policy<typename Array::memory_space>& policy,
+       const Array& x)
 {
-    CUSP_PROFILE_SCOPED();
-    throw cusp::not_implemented_exception("cblas nrmmax not implemented");
+    typedef typename Array::value_type ValueType;
+    typedef typename norm_type<ValueType>::type ResultType;
 
-    return 0;
+    int n = x.size();
+
+    const ValueType* x_p = thrust::raw_pointer_cast(&x[0]);
+
+    int index = cblas::detail::amax(n, x_p, 1);
+
+    return x[index];
 }
 
-template <typename Array>
-void scal(Array& x,
-          typename Array::value_type alpha)
+template <typename Array, typename ScalarType>
+void scal(const cblas::detail::blas_policy<typename Array::memory_space>& policy,
+          Array& x,
+          ScalarType alpha)
 {
-    CUSP_PROFILE_SCOPED();
-    throw cusp::not_implemented_exception("cblas scal not implemented");
-}
+    typedef typename Array::value_type ValueType;
 
-template <typename Array>
-void scal(const Array& x,
-          typename Array::value_type alpha)
-{
-    CUSP_PROFILE_SCOPED();
-    throw cusp::not_implemented_exception("cblas scal not implemented");
+    int n = x.size();
+
+    const ValueType* x_p = thrust::raw_pointer_cast(&x[0]);
+
+    cblas::detail::scal(n, alpha, x_p, 1);
 }
 
 template<typename Array2d1, typename Array1d1, typename Array1d2>
-void gemv(const Array2d1& A, const Array1d1& x, Array1d2& y)
+void gemv(const cblas::detail::blas_policy<typename Array1d2::memory_space>& policy,
+          const Array2d1& A,
+          const Array1d1& x,
+          Array1d2& y)
 {
     typedef typename Array2d1::value_type ValueType;
 
@@ -261,7 +220,10 @@ void gemv(const Array2d1& A, const Array1d1& x, Array1d2& y)
 }
 
 template<typename Array2d1, typename Array2d2, typename Array2d3>
-void gemm(Array2d1& A, Array2d2& B, Array2d3& C)
+void gemm(const cblas::detail::blas_policy<typename Array2d3::memory_space>& policy,
+          const Array2d1& A,
+          const Array2d2& B,
+          Array2d3& C)
 {
     typedef typename Array2d1::value_type ValueType;
 

@@ -29,13 +29,7 @@ namespace thrustblas
 namespace detail
 {
 
-// forward declaration of execution_policy
-template<typename> struct blas_policy;
-
-template<typename Derived>
-  struct blas_policy
-    : cusp::blas::blas_policy<Derived>
-{};
+template<typename MemorySpace> struct blas_policy{};
 
 } // end detail
 
@@ -45,7 +39,7 @@ using cusp::blas::thrustblas::detail::blas_policy;
 } // end thrustblas
 } // end blas
 
-// alias items at top-level
+// // alias items at top-level
 namespace thrustblas
 {
 

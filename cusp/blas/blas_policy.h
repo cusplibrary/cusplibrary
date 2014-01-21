@@ -18,46 +18,96 @@
 
 #include <cusp/detail/config.h>
 
+#define __CUSP_HOST_BLAS_POLICY_HEADER <__CUSP_HOST_BLAS_ROOT/blas_policy.h>
+#include __CUSP_HOST_BLAS_POLICY_HEADER
+#undef __CUSP_HOST_BLAS_POLICY_HEADER
+
+#define __CUSP_DEVICE_BLAS_POLICY_HEADER <__CUSP_DEVICE_BLAS_ROOT/blas_policy.h>
+#include __CUSP_DEVICE_BLAS_POLICY_HEADER
+#undef __CUSP_DEVICE_BLAS_POLICY_HEADER
+
 namespace cusp
 {
 namespace blas
 {
-namespace detail
+
+/// helper classes [4.3].
+template<typename _Tp, _Tp __v>
+  struct integral_constant
+  {
+    static const _Tp                      value = __v;
+    typedef _Tp                           value_type;
+    typedef integral_constant<_Tp, __v>   type;
+  };
+
+/// typedef for true_type
+typedef integral_constant<bool, true>     true_type;
+
+/// typedef for true_type
+typedef integral_constant<bool, false>    false_type;
+
+template<typename T> struct is_floating_point                                : public false_type {};
+template<>           struct is_floating_point<float>                         : public true_type {};
+template<>           struct is_floating_point<double>                        : public true_type {};
+template<>           struct is_floating_point< cusp::complex<float>  >       : public true_type {};
+template<>           struct is_floating_point< cusp::complex<double> >       : public true_type {};
+
+template<typename T>
+struct type_wrapper
 {
+  typedef T type;
+};
 
-template<typename DerivedPolicy> struct blas_policy_base {};
+template<typename ValueType, typename MemorySpace>
+struct blas_policy
+{
+    typedef cusp::blas::thrustblas::blas_policy<MemorySpace> type;
+};
 
+template<typename ValueType>
+struct blas_policy<ValueType,cusp::host_memory>
+{
+    typedef typename thrust::detail::eval_if<is_floating_point<ValueType>::value,
+        type_wrapper< cusp::blas::__CUSP_HOST_BLAS_NAMESPACE::blas_policy<cusp::host_memory> >,
+        type_wrapper< cusp::blas::thrustblas::blas_policy<cusp::host_memory> >
+        >::type type;
+};
 
-template<typename DerivedPolicy>
+template<typename ValueType>
+struct blas_policy<ValueType,cusp::device_memory>
+{
+    typedef typename thrust::detail::eval_if<is_floating_point<ValueType>::value,
+        type_wrapper< cusp::blas::__CUSP_DEVICE_BLAS_NAMESPACE::blas_policy<cusp::device_memory> >,
+        type_wrapper< cusp::blas::thrustblas::blas_policy<cusp::device_memory> >
+        >::type type;
+};
+
+template<typename Policy>
 __host__ __device__
-inline blas_policy_base<DerivedPolicy> &strip_const(const blas_policy_base<DerivedPolicy> &x)
+inline const Policy &derived_cast(Policy &x)
 {
-  return const_cast<blas_policy_base<DerivedPolicy>&>(x);
-}
+  typedef typename Policy::DerivedPolicy DerivedPolicy;
 
-
-template<typename DerivedPolicy>
-__host__ __device__
-inline DerivedPolicy &derived_cast(blas_policy_base<DerivedPolicy> &x)
-{
   return static_cast<DerivedPolicy&>(x);
 }
 
-
-template<typename DerivedPolicy>
+template<typename Policy>
 __host__ __device__
-inline const DerivedPolicy &derived_cast(const blas_policy_base<DerivedPolicy> &x)
+inline const Policy &derived_cast(const Policy &x)
 {
+  typedef typename Policy::DerivedPolicy DerivedPolicy;
+
   return static_cast<const DerivedPolicy&>(x);
 }
 
-} // end detail
-
-template<typename DerivedPolicy>
-  struct blas_policy
-    : cusp::blas::detail::blas_policy_base<DerivedPolicy>
-{};
-
 } // end blas
 } // end cusp
+
+#define __CUSP_HOST_BLAS_SYSTEM <__CUSP_HOST_BLAS_ROOT/blas.h>
+#include __CUSP_HOST_BLAS_SYSTEM
+#undef __CUSP_HOST_BLAS_SYSTEM
+
+#define __CUSP_DEVICE_BLAS_SYSTEM <__CUSP_DEVICE_BLAS_ROOT/blas.h>
+#include __CUSP_DEVICE_BLAS_SYSTEM
+#undef __CUSP_DEVICE_BLAS_SYSTEM
 
