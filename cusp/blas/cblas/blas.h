@@ -24,12 +24,11 @@ namespace cusp
 {
 namespace blas
 {
-namespace cblas
-{
 template <typename Array1,
           typename Array2,
           typename ScalarType>
-void axpy(const Array1& x,
+void axpy(const cblas::detail::blas_policy<typename Array1::memory_space>& policy,
+          const Array1& x,
                 Array2& y,
           ScalarType alpha)
 {
@@ -37,64 +36,10 @@ void axpy(const Array1& x,
 
     int n = y.size();
 
-    ValueType* x_p = thrust::raw_pointer_cast(&x[0]);
+    const ValueType* x_p = thrust::raw_pointer_cast(&x[0]);
     ValueType* y_p = thrust::raw_pointer_cast(&y[0]);
 
-    detail::axpy(n, alpha, x_p, 1, y_p, 1);
-}
-
-template <typename Array1,
-         typename Array2,
-         typename Array3,
-         typename ScalarType1,
-         typename ScalarType2>
-void axpby(const cblas::detail::blas_policy<typename Array3::memory_space>& policy,
-           const Array1& x,
-           const Array2& y,
-           Array3& z,
-           ScalarType1 alpha,
-           ScalarType2 beta)
-{
-    throw cusp::not_implemented_exception("CUBLAS axpby not implemented");
-}
-
-template <typename Array1,
-         typename Array2,
-         typename Array3,
-         typename Array4,
-         typename ScalarType1,
-         typename ScalarType2,
-         typename ScalarType3>
-void axpbypcz(const cblas::detail::blas_policy<typename Array4::memory_space>& policy,
-              const Array1& x,
-              const Array2& y,
-              const Array3& z,
-              Array4& output,
-              ScalarType1 alpha,
-              ScalarType2 beta,
-              ScalarType3 gamma)
-{
-    throw cusp::not_implemented_exception("CUBLAS axpbypcz not implemented");
-}
-
-template <typename Array1,
-         typename Array2,
-         typename Array3>
-void xmy(const cblas::detail::blas_policy<typename Array3::memory_space>& policy,
-         const Array1& x,
-         const Array2& y,
-         Array3& output)
-{
-    typedef typename Array3::value_type ValueType;
-
-    int n = x.size();
-
-    output = y;
-
-    ValueType *x_p = thrust::raw_pointer_cast(&x[0]);
-    ValueType *output_p = thrust::raw_pointer_cast(&output[0]);
-
-    detail::xmy(n, x_p, output_p);
+    cblas::detail::axpy(n, &alpha, x_p, 1, y_p, 1);
 }
 
 template <typename Array1,
@@ -189,9 +134,9 @@ void scal(const cblas::detail::blas_policy<typename Array::memory_space>& policy
 
     int n = x.size();
 
-    const ValueType* x_p = thrust::raw_pointer_cast(&x[0]);
+    ValueType* x_p = thrust::raw_pointer_cast(&x[0]);
 
-    cblas::detail::scal(n, alpha, x_p, 1);
+    cblas::detail::scal(n, &alpha, x_p, 1);
 }
 
 template<typename Array2d1, typename Array1d1, typename Array1d2>
@@ -215,7 +160,7 @@ void gemv(const cblas::detail::blas_policy<typename Array1d2::memory_space>& pol
     ValueType *x_p = thrust::raw_pointer_cast(&x[0]);
     ValueType *y_p = thrust::raw_pointer_cast(&y[0]);
 
-    detail::gemv(order, trans, m, n, alpha,
+    cblas::detail::gemv(order, trans, m, n, alpha,
                  A_p, m, x_p, 1, beta, y_p, 1);
 }
 
@@ -242,12 +187,11 @@ void gemm(const cblas::detail::blas_policy<typename Array2d3::memory_space>& pol
     ValueType * B_p = thrust::raw_pointer_cast(&B(0,0));
     ValueType * C_p = thrust::raw_pointer_cast(&C(0,0));
 
-    detail::gemm(order, transa, transb,
+    cblas::detail::gemm(order, transa, transb,
                  m, n, k, alpha, A_p, m,
                  B_p, k, beta, C_p, m);
 }
 
-} // end namespace cblas
 } // end namespace blas
 } // end namespace cusp
 

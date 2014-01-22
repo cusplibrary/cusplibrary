@@ -49,8 +49,6 @@ void axpy(const Array1& x,
                 Array2& y,
           ScalarType alpha);
 
-/*! \p axpy : scaled vector addition (y = alpha * x + y)
- */
 template <typename Array1,
           typename Array2,
           typename ScalarType>
@@ -71,8 +69,6 @@ void axpby(const Array1& x,
            ScalarType1 alpha,
            ScalarType2 beta);
 
-/*! \p axpby : linear combination of two vectors (output = alpha * x + beta * y)
- */
 template <typename Array1,
           typename Array2,
           typename Array3,
@@ -101,8 +97,6 @@ void axpbypcz(const Array1& x,
               ScalarType2 beta,
               ScalarType3 gamma);
 
-/*! \p axpbycz : linear combination of three vectors (output = alpha * x + beta * y + gamma * z)
- */
 template <typename Array1,
           typename Array2,
           typename Array3,
@@ -127,8 +121,6 @@ void xmy(const Array1& x,
          const Array2& y,
                Array3& output);
 
-/*! \p xmy : elementwise multiplication of two vectors (output[i] = x[i] * y[i])
- */
 template <typename Array1,
           typename Array2,
           typename Array3>
@@ -143,8 +135,6 @@ template <typename Array1,
 void copy(const Array1& array1,
                 Array2& array2);
 
-/*! \p copy : vector copy (y = x)
- */
 template <typename Array1,
           typename Array2>
 void copy(const Array1& array1,
@@ -173,8 +163,6 @@ template <typename Array,
 void fill(Array& array,
           ScalarType alpha);
 
-/*! \p fill : vector fill (x[i] = alpha)
- */
 template <typename Array,
           typename ScalarType>
 void fill(const Array& array,
@@ -198,20 +186,31 @@ template <typename Array>
 typename Array::value_type
     nrmmax(const Array& array);
 
-/*! \p nrmmax : scale vector (x[i] = alpha * x[i])
+/*! \p scal : scale vector (x[i] = alpha * x[i])
  */
 template <typename Array,
           typename ScalarType>
 void scal(Array& x,
           ScalarType alpha);
 
-/*! \p nrmmax : scale vector (x[i] = alpha * x[i])
- */
 template <typename Array,
           typename ScalarType>
 void scal(const Array& x,
           ScalarType alpha);
 
+template<typename Array2d,
+         typename Array1,
+         typename Array2>
+void gemv(const Array2d& A,
+          const Array1& x,
+          Array2& y);
+
+template<typename Array2d1,
+         typename Array2d2,
+         typename Array2d3>
+void gemm(const Array2d1& A,
+          const Array2d2& B,
+          Array2d3& C);
 /*! \}
  */
 

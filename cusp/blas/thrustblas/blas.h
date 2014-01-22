@@ -209,59 +209,6 @@ void axpy(const thrustblas::detail::blas_policy<typename Array2::memory_space>& 
                      detail::AXPY<ScalarType>(alpha));
 }
 
-template <typename Array1,
-         typename Array2,
-         typename Array3,
-         typename ScalarType1,
-         typename ScalarType2>
-void axpby(const thrustblas::detail::blas_policy<typename Array3::memory_space>& policy,
-           const Array1& x,
-           const Array2& y,
-           Array3& z,
-           ScalarType1 alpha,
-           ScalarType2 beta)
-{
-    size_t N = x.size();
-    thrust::for_each(thrust::make_zip_iterator(thrust::make_tuple(x.begin(), y.begin(), z.begin())),
-                     thrust::make_zip_iterator(thrust::make_tuple(x.begin(), y.begin(), z.begin())) + N,
-                     detail::AXPBY<ScalarType1,ScalarType2>(alpha, beta));
-}
-
-template <typename Array1,
-         typename Array2,
-         typename Array3,
-         typename Array4,
-         typename ScalarType1,
-         typename ScalarType2,
-         typename ScalarType3>
-void axpbypcz(const thrustblas::detail::blas_policy<typename Array4::memory_space>& policy,
-              const Array1& x,
-              const Array2& y,
-              const Array3& z,
-              Array4& output,
-              ScalarType1 alpha,
-              ScalarType2 beta,
-              ScalarType3 gamma)
-{
-    size_t N = x.size();
-    thrust::for_each(thrust::make_zip_iterator(thrust::make_tuple(x.begin(), y.begin(), z.begin(), output.begin())),
-                     thrust::make_zip_iterator(thrust::make_tuple(x.begin(), y.begin(), z.begin(), output.begin())) + N,
-                     detail::AXPBYPCZ<ScalarType1,ScalarType2,ScalarType3>(alpha, beta, gamma));
-}
-
-template <typename Array1,
-         typename Array2,
-         typename Array3>
-void xmy(const thrustblas::detail::blas_policy<typename Array1::memory_space>& policy,
-         const Array1& x,
-         const Array2& y,
-         Array3& output)
-{
-    typedef typename Array1::value_type ScalarType;
-
-    thrust::transform(x.begin(), x.end(), y.begin(), output.begin(), detail::XMY<ScalarType>());
-}
-
 // TODO properly harmonize heterogenous types
 template <typename Array1,
          typename Array2>
@@ -341,6 +288,26 @@ void scal(const thrustblas::detail::blas_policy<typename Array::memory_space>& p
     thrust::for_each(x.begin(),
                      x.end(),
                      detail::SCAL<ScalarType>(alpha));
+}
+
+template<typename Array2d,
+         typename Array1,
+         typename Array2>
+void gemv(const thrustblas::detail::blas_policy<typename Array2::memory_space>& policy,
+          const Array2d& A,
+          const Array1& x,
+          Array2& y)
+{
+}
+
+template<typename Array2d1,
+         typename Array2d2,
+         typename Array2d3>
+void gemm(const thrustblas::detail::blas_policy<typename Array2d3::memory_space>& policy,
+          const Array2d1& A,
+          const Array2d2& B,
+          Array2d3& C)
+{
 }
 
 } // end namespace blas

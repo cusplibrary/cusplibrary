@@ -26,6 +26,8 @@
 #include __CUSP_DEVICE_BLAS_POLICY_HEADER
 #undef __CUSP_DEVICE_BLAS_POLICY_HEADER
 
+#include <cusp/blas/thrustblas/blas_policy.h>
+
 namespace cusp
 {
 namespace blas
@@ -82,24 +84,6 @@ struct blas_policy<ValueType,cusp::device_memory>
         >::type type;
 };
 
-template<typename Policy>
-__host__ __device__
-inline const Policy &derived_cast(Policy &x)
-{
-  typedef typename Policy::DerivedPolicy DerivedPolicy;
-
-  return static_cast<DerivedPolicy&>(x);
-}
-
-template<typename Policy>
-__host__ __device__
-inline const Policy &derived_cast(const Policy &x)
-{
-  typedef typename Policy::DerivedPolicy DerivedPolicy;
-
-  return static_cast<const DerivedPolicy&>(x);
-}
-
 } // end blas
 } // end cusp
 
@@ -110,4 +94,6 @@ inline const Policy &derived_cast(const Policy &x)
 #define __CUSP_DEVICE_BLAS_SYSTEM <__CUSP_DEVICE_BLAS_ROOT/blas.h>
 #include __CUSP_DEVICE_BLAS_SYSTEM
 #undef __CUSP_DEVICE_BLAS_SYSTEM
+
+#include <cusp/blas/thrustblas/blas.h>
 

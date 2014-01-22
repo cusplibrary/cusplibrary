@@ -86,7 +86,7 @@ void axpy(const Array1& x,
     typedef typename Array2::value_type ValueType;
     typedef typename Array2::memory_space MemorySpace;
     blas_policy<ValueType,MemorySpace> policy;
-    cusp::blas::axpy(policy, x, y, alpha);
+    cusp::blas::axpy(policy, x, y, ValueType(alpha));
 }
 
 template <typename Array1,
@@ -104,38 +104,20 @@ template <typename Array1,
          typename Array3,
          typename ScalarType1,
          typename ScalarType2>
-void axpby(const blas_policy<typename Array3::value_type,typename Array3::memory_space>& policy,
-           const Array1& x,
-           const Array2& y,
-           Array3& z,
-           ScalarType1 alpha,
-           ScalarType2 beta)
-{
-    typedef typename Array3::value_type ValueType;
-    typedef typename Array3::memory_space MemorySpace;
-    typedef typename blas_policy<ValueType,MemorySpace>::type DerivedPolicy;
-
-    CUSP_PROFILE_SCOPED();
-
-    detail::assert_same_dimensions(x, y, z);
-    cusp::blas::axpby(DerivedPolicy(), x, y, z, alpha, beta);
-}
-
-template <typename Array1,
-         typename Array2,
-         typename Array3,
-         typename ScalarType1,
-         typename ScalarType2>
 void axpby(const Array1& x,
            const Array2& y,
            Array3& z,
            ScalarType1 alpha,
            ScalarType2 beta)
 {
-    typedef typename Array3::value_type ValueType;
-    typedef typename Array3::memory_space MemorySpace;
-    blas_policy<ValueType,MemorySpace> policy;
-    cusp::blas::axpby(policy, x, y, z, alpha, beta);
+    CUSP_PROFILE_SCOPED();
+
+    detail::assert_same_dimensions(x, y, z);
+
+    size_t N = x.size();
+    thrust::for_each(thrust::make_zip_iterator(thrust::make_tuple(x.begin(), y.begin(), z.begin())),
+                     thrust::make_zip_iterator(thrust::make_tuple(x.begin(), y.begin(), z.begin())) + N,
+                     detail::AXPBY<ScalarType1,ScalarType2>(alpha, beta));
 }
 
 template <typename Array1,
@@ -159,32 +141,6 @@ template <typename Array1,
          typename ScalarType1,
          typename ScalarType2,
          typename ScalarType3>
-void axpbypcz(const blas_policy<typename Array4::value_type,typename Array4::memory_space>& policy,
-              const Array1& x,
-              const Array2& y,
-              const Array3& z,
-              Array4& output,
-              ScalarType1 alpha,
-              ScalarType2 beta,
-              ScalarType3 gamma)
-{
-    typedef typename Array4::value_type ValueType;
-    typedef typename Array4::memory_space MemorySpace;
-    typedef typename blas_policy<ValueType,MemorySpace>::type DerivedPolicy;
-
-    CUSP_PROFILE_SCOPED();
-
-    detail::assert_same_dimensions(x, y, z, output);
-    cusp::blas::axpbypcz(DerivedPolicy(), x, y, z, output, alpha, beta, gamma);
-}
-
-template <typename Array1,
-         typename Array2,
-         typename Array3,
-         typename Array4,
-         typename ScalarType1,
-         typename ScalarType2,
-         typename ScalarType3>
 void axpbypcz(const Array1& x,
               const Array2& y,
               const Array3& z,
@@ -193,10 +149,14 @@ void axpbypcz(const Array1& x,
               ScalarType2 beta,
               ScalarType3 gamma)
 {
-    typedef typename Array4::value_type ValueType;
-    typedef typename Array4::memory_space MemorySpace;
-    blas_policy<ValueType,MemorySpace> policy;
-    cusp::blas::axpbypcz(policy, x, y, z, output, alpha, beta, gamma);
+    CUSP_PROFILE_SCOPED();
+
+    detail::assert_same_dimensions(x, y, z, output);
+
+    size_t N = x.size();
+    thrust::for_each(thrust::make_zip_iterator(thrust::make_tuple(x.begin(), y.begin(), z.begin(), output.begin())),
+                     thrust::make_zip_iterator(thrust::make_tuple(x.begin(), y.begin(), z.begin(), output.begin())) + N,
+                     detail::AXPBYPCZ<ScalarType1,ScalarType2,ScalarType3>(alpha, beta, gamma));
 }
 
 template <typename Array1,
@@ -220,32 +180,16 @@ void axpbypcz(const Array1& x,
 template <typename Array1,
          typename Array2,
          typename Array3>
-void xmy(const blas_policy<typename Array3::value_type,typename Array3::memory_space>& policy,
-         const Array1& x,
-         const Array2& y,
-         Array3& output)
-{
-    typedef typename Array3::value_type ValueType;
-    typedef typename Array3::memory_space MemorySpace;
-    typedef typename blas_policy<ValueType,MemorySpace>::type DerivedPolicy;
-
-    CUSP_PROFILE_SCOPED();
-
-    detail::assert_same_dimensions(x, y, output);
-    cusp::blas::xmy(DerivedPolicy(), x, y, output);
-}
-
-template <typename Array1,
-         typename Array2,
-         typename Array3>
 void xmy(const Array1& x,
          const Array2& y,
          Array3& output)
 {
-    typedef typename Array1::value_type ValueType;
-    typedef typename Array1::memory_space MemorySpace;
-    blas_policy<ValueType,MemorySpace> policy;
-    cusp::blas::xmy(policy, x, y, output);
+    typedef typename Array3::value_type ValueType;
+
+    CUSP_PROFILE_SCOPED();
+
+    detail::assert_same_dimensions(x, y, output);
+    thrust::transform(x.begin(), x.end(), y.begin(), output.begin(), detail::XMY<ValueType>());
 }
 
 template <typename Array1,
@@ -451,7 +395,7 @@ void scal(Array& x,
     typedef typename Array::value_type ValueType;
     typedef typename Array::memory_space MemorySpace;
     blas_policy<ValueType,MemorySpace> policy;
-    cusp::blas::scal(policy, x, alpha);
+    cusp::blas::scal(policy, x, ValueType(alpha));
 }
 
 template <typename Array,
@@ -460,6 +404,66 @@ void scal(const Array& x,
           ScalarType alpha)
 {
     cusp::blas::scal(const_cast<Array&>(x), alpha);
+}
+
+template<typename Array2d,
+         typename Array1,
+         typename Array2>
+void gemv(const blas_policy<typename Array2::value_type,typename Array2::memory_space>& policy,
+          const Array2d& A,
+          const Array1& x,
+          Array2& y)
+{
+    typedef typename Array2::value_type ValueType;
+    typedef typename Array2::memory_space MemorySpace;
+    typedef typename blas_policy<ValueType,MemorySpace>::type DerivedPolicy;
+
+    CUSP_PROFILE_SCOPED();
+
+    cusp::blas::gemv(DerivedPolicy(), A, x, y);
+}
+
+template<typename Array2d,
+         typename Array1,
+         typename Array2>
+void gemv(const Array2d& A,
+          const Array1& x,
+          Array2& y)
+{
+    typedef typename Array2::value_type ValueType;
+    typedef typename Array2::memory_space MemorySpace;
+    blas_policy<ValueType,MemorySpace> policy;
+    cusp::blas::gemv(policy, A, x, y);
+}
+
+template<typename Array2d1,
+         typename Array2d2,
+         typename Array2d3>
+void gemm(const blas_policy<typename Array2d3::value_type,typename Array2d3::memory_space>& policy,
+          const Array2d1& A,
+          const Array2d2& B,
+          Array2d3& C)
+{
+    typedef typename Array2d3::value_type ValueType;
+    typedef typename Array2d3::memory_space MemorySpace;
+    typedef typename blas_policy<ValueType,MemorySpace>::type DerivedPolicy;
+
+    CUSP_PROFILE_SCOPED();
+
+    cusp::blas::gemm(DerivedPolicy(), A, B, C);
+}
+
+template<typename Array2d1,
+         typename Array2d2,
+         typename Array2d3>
+void gemm(const Array2d1& A,
+          const Array2d2& B,
+          Array2d3& C)
+{
+    typedef typename Array2d3::value_type ValueType;
+    typedef typename Array2d3::memory_space MemorySpace;
+    blas_policy<ValueType,MemorySpace> policy;
+    cusp::blas::gemm(policy, A, B, C);
 }
 } // end namespace blas
 } // end namespace cusp

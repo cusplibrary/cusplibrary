@@ -73,98 +73,6 @@ void axpy(const cublas::detail::blas_policy<typename Array2::memory_space>& poli
 }
 
 template <typename Array1,
-         typename Array2,
-         typename Array3,
-         typename ScalarType1,
-         typename ScalarType2>
-void axpby(const cublas::detail::blas_policy<typename Array3::memory_space>& policy,
-           const Array1& x,
-           const Array2& y,
-           Array3& z,
-           ScalarType1 alpha,
-           ScalarType2 beta)
-{
-    typedef typename Array3::value_type ValueType;
-
-    int n = z.size();
-
-    const ValueType* x_p = thrust::raw_pointer_cast(&x[0]);
-    const ValueType* y_p = thrust::raw_pointer_cast(&y[0]);
-    ValueType* z_p = thrust::raw_pointer_cast(&z[0]);
-
-    if(cublas::detail::axpy(cublas::__cublas.handle, n, &alpha, x_p, 1, z_p, 1) != CUBLAS_STATUS_SUCCESS)
-    {
-        throw cusp::runtime_exception("CUBLAS axpby failed!");
-    }
-    if(cublas::detail::axpy(cublas::__cublas.handle, n, &beta, y_p, 1, z_p, 1) != CUBLAS_STATUS_SUCCESS)
-    {
-        throw cusp::runtime_exception("CUBLAS axpby failed!");
-    }
-}
-
-template <typename Array1,
-         typename Array2,
-         typename Array3,
-         typename Array4,
-         typename ScalarType1,
-         typename ScalarType2,
-         typename ScalarType3>
-void axpbypcz(const cublas::detail::blas_policy<typename Array4::memory_space>& policy,
-              const Array1& x,
-              const Array2& y,
-              const Array3& z,
-              Array4& output,
-              ScalarType1 alpha,
-              ScalarType2 beta,
-              ScalarType3 gamma)
-{
-    typedef typename Array3::value_type ValueType;
-
-    int n = output.size();
-
-    const ValueType* x_p = thrust::raw_pointer_cast(&x[0]);
-    const ValueType* y_p = thrust::raw_pointer_cast(&y[0]);
-    const ValueType* z_p = thrust::raw_pointer_cast(&z[0]);
-    ValueType* output_p = thrust::raw_pointer_cast(&output[0]);
-
-    if(cublas::detail::axpy(cublas::__cublas.handle, n, &alpha, x_p, 1, output_p, 1) != CUBLAS_STATUS_SUCCESS)
-    {
-        throw cusp::runtime_exception("CUBLAS axpbypcz failed!");
-    }
-    if(cublas::detail::axpy(cublas::__cublas.handle, n, &beta, y_p, 1, output_p, 1) != CUBLAS_STATUS_SUCCESS)
-    {
-        throw cusp::runtime_exception("CUBLAS axpbypcz failed!");
-    }
-    if(cublas::detail::axpy(cublas::__cublas.handle, n, &gamma, z_p, 1, output_p, 1) != CUBLAS_STATUS_SUCCESS)
-    {
-        throw cusp::runtime_exception("CUBLAS axpbypcz failed!");
-    }
-}
-
-template <typename Array1,
-         typename Array2,
-         typename Array3>
-void xmy(const cublas::detail::blas_policy<typename Array3::memory_space>& policy,
-         const Array1& x,
-         const Array2& y,
-         Array3& output)
-{
-    typedef typename Array3::value_type ValueType;
-
-    int n = x.size();
-
-    output = y;
-
-    const ValueType *x_p = thrust::raw_pointer_cast(&x[0]);
-    ValueType *output_p = thrust::raw_pointer_cast(&output[0]);
-
-    if(cublas::detail::xmy(cublas::__cublas.handle, n, x_p, output_p) != CUBLAS_STATUS_SUCCESS)
-    {
-        throw cusp::runtime_exception("CUBLAS xmy failed!");
-    }
-}
-
-template <typename Array1,
          typename Array2>
 typename Array1::value_type
 dot(const cublas::detail::blas_policy<typename Array1::memory_space>& policy,
@@ -197,21 +105,19 @@ dotc(const cublas::detail::blas_policy<typename Array1::memory_space>& policy,
 {
     typedef typename Array2::value_type ValueType;
 
-    return ValueType(0);
+    int n = y.size();
 
-    // int n = y.size();
+    const ValueType* x_p = thrust::raw_pointer_cast(&x[0]);
+    const ValueType* y_p = thrust::raw_pointer_cast(&y[0]);
 
-    // const ValueType* x_p = thrust::raw_pointer_cast(&x[0]);
-    // const ValueType* y_p = thrust::raw_pointer_cast(&y[0]);
+    ValueType result;
 
-    // ValueType result;
+    if(cublas::detail::dotc(cublas::__cublas.handle, n, x_p, 1, y_p, 1, &result) != CUBLAS_STATUS_SUCCESS)
+    {
+        throw cusp::runtime_exception("CUBLAS dotc failed!");
+    }
 
-    // if(cublas::detail::dotc(cublas::__cublas.handle, n, x_p, 1, y_p, 1, &result) != CUBLAS_STATUS_SUCCESS)
-    // {
-    //     throw cusp::runtime_exception("CUBLAS dotc failed!");
-    // }
-
-    // return result;
+    return result;
 }
 
 template <typename Array>
@@ -276,7 +182,7 @@ nrmmax(const cublas::detail::blas_policy<typename Array::memory_space>& policy,
         throw cusp::runtime_exception("CUBLAS amax failed!");
     }
 
-    return x[index];
+    return x[index-1];
 }
 
 template <typename Array, typename ScalarType>
@@ -312,8 +218,8 @@ void gemv(const cublas::detail::blas_policy<typename Array1d2::memory_space>& po
     ValueType alpha = 1.0;
     ValueType beta = 0.0;
 
-    ValueType *A_p = thrust::raw_pointer_cast(&A[0]);
-    ValueType *x_p = thrust::raw_pointer_cast(&x[0]);
+    const ValueType *A_p = thrust::raw_pointer_cast(&A[0]);
+    const ValueType *x_p = thrust::raw_pointer_cast(&x[0]);
     ValueType *y_p = thrust::raw_pointer_cast(&y[0]);
 
     cublasStatus_t result;
@@ -343,8 +249,8 @@ void gemm(const cublas::detail::blas_policy<typename Array2d3::memory_space>& po
     ValueType alpha = 1.0;
     ValueType beta = 0.0;
 
-    ValueType * A_p = thrust::raw_pointer_cast(&A(0,0));
-    ValueType * B_p = thrust::raw_pointer_cast(&B(0,0));
+    const ValueType * A_p = thrust::raw_pointer_cast(&A(0,0));
+    const ValueType * B_p = thrust::raw_pointer_cast(&B(0,0));
     ValueType * C_p = thrust::raw_pointer_cast(&C(0,0));
 
     cublasStatus_t result;
