@@ -87,7 +87,7 @@ spmv_dia_kernel(const IndexType num_rows,
             ValueType sum = (base == 0) ? ValueType(0) : y[row];
     
             // index into values array
-            IndexType idx = row * pitch + base;
+            IndexType idx = row + pitch * base;
     
             for(IndexType n = 0; n < chunk_size; n++)
             {
@@ -99,7 +99,7 @@ spmv_dia_kernel(const IndexType num_rows,
                     sum += A_ij * fetch_x<UseCache>(col, x);
                 }
         
-                idx ++;
+                idx += pitch;
             }
     
             y[row] = sum;
