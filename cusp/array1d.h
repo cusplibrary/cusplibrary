@@ -154,11 +154,11 @@ class array1d_view
       : m_begin(), m_size(0), m_capacity(0) {}
 
     template <typename Array>
-    explicit array1d_view(Array& a)
+    array1d_view(Array& a)
       : m_begin(a.begin()), m_size(a.size()), m_capacity(a.capacity()) {}
     
     template <typename Array>
-    explicit array1d_view(const Array& a)
+    array1d_view(const Array& a)
       : m_begin(a.begin()), m_size(a.size()), m_capacity(a.capacity()) {}
 
     // should these be templated?
