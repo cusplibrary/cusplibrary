@@ -45,7 +45,10 @@ int STDOUT_FILENO;
 	_close(STDOUT_COPY); \
 	SetStdHandle(STD_OUTPUT_HANDLE, hStdOut); \
 	}while(0);
+
 #else
+
+#include <unistd.h>
 int STDOUT_COPY;
 
 #define CUSP_CLOSE_STDOUT do{\
