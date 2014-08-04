@@ -40,12 +40,10 @@ void breadth_first_search(const MatrixType& G, const typename MatrixType::index_
 template<bool MARK_PREDECESSORS, typename MatrixType, typename ArrayType, typename Format>
 void breadth_first_search(const MatrixType& G, const typename MatrixType::index_type src, ArrayType& labels, Format)
 {
-  typedef typename MatrixType::index_type   IndexType;
-  typedef typename MatrixType::value_type   ValueType;
-  typedef typename MatrixType::memory_space MemorySpace;
-
   // convert matrix to CSR format and compute on the host
-  cusp::csr_matrix<IndexType,ValueType,MemorySpace> G_csr(G);
+  cusp::csr_matrix<typename MatrixType::index_type,
+                   typename MatrixType::value_type,
+                   typename MatrixType::memory_space> G_csr(G);
 
   cusp::graph::breadth_first_search(G_csr, src, labels);
 }

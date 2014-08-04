@@ -343,3 +343,70 @@ void TestArray2dViewColumnView(void)
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestArray2dViewColumnView);
 
+template <class Space>
+void TestArray2dViewRowViewAssign(void)
+{
+  // row view of row major matrix
+  {
+    cusp::array2d<float, Space, cusp::row_major> C(3, 2, -1);
+    typename cusp::array2d<float, Space, cusp::row_major>::view A(C);
+    typedef thrust::counting_iterator<int> Iterator;
+
+    cusp::array1d_view<Iterator> V(Iterator(5), Iterator(7));
+
+    cusp::blas::copy(V, A.row(2));
+
+    ASSERT_EQUAL(A(2,0), 5);
+    ASSERT_EQUAL(A(2,1), 6);
+  }
+
+  // row view of column major matrix
+  {
+    cusp::array2d<float, Space, cusp::column_major> C(3, 2, -1);
+    typename cusp::array2d<float, Space, cusp::column_major>::view A(C);
+    typedef thrust::counting_iterator<int> Iterator;
+
+    cusp::array1d_view<Iterator> V(Iterator(5), Iterator(7));
+
+    cusp::blas::copy(V, A.row(2));
+
+    ASSERT_EQUAL(A(2,0), 5);
+    ASSERT_EQUAL(A(2,1), 6);
+  }
+}
+DECLARE_HOST_DEVICE_UNITTEST(TestArray2dViewRowViewAssign);
+
+template <class Space>
+void TestArray2dViewColumnViewAssign(void)
+{
+  // column view of column major matrix
+  {
+    cusp::array2d<float, Space, cusp::column_major> C(3, 2, -1);
+    typename cusp::array2d<float, Space, cusp::column_major>::view A(C);
+    typedef thrust::counting_iterator<int> Iterator;
+
+    cusp::array1d_view<Iterator> V(Iterator(5), Iterator(8));
+
+    cusp::blas::copy(V, A.column(1));
+
+    ASSERT_EQUAL(A(0,1), 5);
+    ASSERT_EQUAL(A(1,1), 6);
+    ASSERT_EQUAL(A(2,1), 7);
+  }
+
+  // column view of row major matrix
+  {
+    cusp::array2d<float, Space, cusp::row_major> C(3, 2, -1);
+    typename cusp::array2d<float, Space, cusp::row_major>::view A(C);
+    typedef thrust::counting_iterator<int> Iterator;
+
+    cusp::array1d_view<Iterator> V(Iterator(5), Iterator(8));
+
+    cusp::blas::copy(V, A.column(1));
+
+    ASSERT_EQUAL(A(0,1), 5);
+    ASSERT_EQUAL(A(1,1), 6);
+    ASSERT_EQUAL(A(2,1), 7);
+  }
+}
+DECLARE_HOST_DEVICE_UNITTEST(TestArray2dViewColumnViewAssign);

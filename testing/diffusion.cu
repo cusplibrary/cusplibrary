@@ -1,7 +1,7 @@
 #include <unittest/unittest.h>
 
+#include <cusp/blas/blas.h>
 #include <cusp/gallery/diffusion.h>
-#include <cusp/blas.h>
 
 void TestDiffusionFE(void)
 {

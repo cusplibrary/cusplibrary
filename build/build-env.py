@@ -7,7 +7,7 @@ import platform
 
 def get_cuda_paths():
   """Determines CUDA {bin,lib,include} paths
-  
+
   returns (bin_path,lib_path,inc_path)
   """
 
@@ -22,7 +22,7 @@ def get_cuda_paths():
     inc_path = '/usr/local/cuda/include'
   else:
     raise ValueError, 'Error: unknown OS.  Where is nvcc installed?'
-   
+
   if platform.machine()[-2:] == '64':
     lib_path += '64'
 
@@ -38,7 +38,7 @@ def get_cuda_paths():
 
 def get_mkl_paths():
   """Determines MKL {lib,include} paths
-  
+
   returns (lib_path,inc_path)
   """
 
@@ -70,7 +70,7 @@ def get_mkl_paths():
     inc_path = os.environ['MKLROOT'] + '/include'
   else:
     raise ValueError, 'Error: unknown OS.  Where is nvcc installed?'
-   
+
   return (lib_path,inc_path)
 
 def getTools():
@@ -120,7 +120,7 @@ def getCFLAGS(mode, backend, warn, warnings_as_errors, hostspblas, b40c, CC):
   # build with B40C enabled 
   if b40c == True :
     result.append('-D__CUSP_USE_B40C__') 
-  
+
   if CC == 'cl':
     result.append('/bigobj')
 
@@ -239,10 +239,20 @@ def Environment():
   # add a variable to filter source files by a regex
   vars.Add('tests', help='Filter test files using a regex')
 
-  # add a variable to handle the device backend
+  # add a variable to handle the host sparse BLAS backend
   hostspblas_variable = EnumVariable('hostspblas', 'Host sparse math library', 'cusp',
                                   allowed_values = ('cusp', 'mkl'))
   vars.Add(hostspblas_variable)
+
+  # add a variable to handle the host BLAS backend
+  hostblas_variable = EnumVariable('hostblas', 'Host BLAS library', 'thrust',
+                                  allowed_values = ('thrust', 'cblas'))
+  vars.Add(hostblas_variable)
+
+  # add a variable to handle the device BLSA backend
+  deviceblas_variable = EnumVariable('deviceblas', 'Device BLAS library', 'thrust',
+                                  allowed_values = ('thrust', 'cublas'))
+  vars.Add(deviceblas_variable)
 
   # add a variable to enable B40C support
   vars.Add(BoolVariable('b40c', 'Enable support for B40C', 0))
@@ -259,9 +269,19 @@ def Environment():
   env.Tool('nvcc', toolpath = [os.path.join(thisDir)])
 
   # get the preprocessor define to use for the backend
-  backend_define = { 'cuda' : 'THRUST_DEVICE_SYSTEM_CUDA', 'omp' : 'THRUST_DEVICE_SYSTEM_OMP', 'ocelot' : 'THRUST_DEVICE_SYSTEM_CUDA' }[env['backend']] 
+  backend_define = { 'cuda' : 'THRUST_DEVICE_SYSTEM_CUDA', 'omp' : 'THRUST_DEVICE_SYSTEM_OMP', 'ocelot' : 'THRUST_DEVICE_SYSTEM_CUDA' }[env['backend']]
   env.Append(CFLAGS = ['-DTHRUST_DEVICE_SYSTEM=%s' % backend_define])
   env.Append(CXXFLAGS = ['-DTHRUST_DEVICE_SYSTEM=%s' % backend_define])
+
+  # get the preprocessor define to use for the device BLAS backend
+  device_blas_backend_define = { 'thrust' : 'CUSP_DEVICE_BLAS_THRUST', 'cublas' : 'CUSP_DEVICE_BLAS_CUBLAS' }[env['deviceblas']]
+  env.Append(CFLAGS = ['-DCUSP_DEVICE_BLAS_SYSTEM=%s' % device_blas_backend_define])
+  env.Append(CXXFLAGS = ['-DCUSP_DEVICE_BLAS_SYSTEM=%s' % device_blas_backend_define])
+
+  # get the preprocessor define to use for the host BLAS backend
+  host_blas_backend_define = { 'thrust' : 'CUSP_HOST_BLAS_THRUST', 'cblas' : 'CUSP_HOST_BLAS_CBLAS' }[env['hostblas']]
+  env.Append(CFLAGS = ['-DCUSP_HOST_BLAS_SYSTEM=%s' % host_blas_backend_define])
+  env.Append(CXXFLAGS = ['-DCUSP_HOST_BLAS_SYSTEM=%s' % host_blas_backend_define])
 
   # get C compiler switches
   env.Append(CFLAGS = getCFLAGS(env['mode'], env['backend'], env['Wall'], env['Werror'], env['hostspblas'], env['b40c'], env.subst('$CC')))
@@ -274,10 +294,11 @@ def Environment():
 
   # get linker switches
   env.Append(LINKFLAGS = getLINKFLAGS(env['mode'], env['backend'], env['hostspblas'], env.subst('$LINK')))
-   
-  # silence unknown pragma warnings
-  env.Append(CFLAGS = ['-Wno-unknown-pragmas'])
-  env.Append(CXXFLAGS = ['-Wno-unknown-pragmas'])
+
+  # hack to silence unknown pragma warnings
+  env.Append(NVCCFLAGS = ['-Xcompiler', '-Wno-unknown-pragmas'])
+  # hack to silence unused local typedefs warnings
+  env.Append(NVCCFLAGS = ['-Xcompiler', '-Wno-unused-local-typedefs'])
 
   # get CUDA paths
   (cuda_exe_path,cuda_lib_path,cuda_inc_path) = get_cuda_paths()
@@ -303,11 +324,14 @@ def Environment():
     else:
       raise ValueError, "Unknown OS.  What is the name of the OpenMP library?"
 
+  if env['deviceblas'] == 'cublas':
+    env.Append(LIBS = ['cublas'])
+
   if env['hostspblas'] == 'mkl':
     intel_lib = 'mkl_intel'
     if platform.machine()[-2:] == '64':
 	intel_lib += '_lp64'
-    
+
     (mkl_lib_path,mkl_inc_path) = get_mkl_paths()
     env.Append(CPPPATH = [mkl_inc_path])
     env.Append(LIBPATH = [mkl_lib_path])

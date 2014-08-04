@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2009 NVIDIA Corporation
+ *  Copyright 2008-2012 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,32 +14,37 @@
  *  limitations under the License.
  */
 
-
-/*! \file format.h
- *  \brief Format types
- */
-
 #pragma once
 
 #include <cusp/detail/config.h>
+#include <cusp/blas/blas_policy.h>
 
 namespace cusp
 {
+namespace blas
+{
+namespace thrustblas
+{
+// put the canonical tag in the same ns as the backend's entry points
+namespace detail
+{
 
-struct known_format {};
-struct unknown_format {};
+template<typename MemorySpace> struct blas_policy{};
 
-struct dense_format : public known_format {};
-struct array1d_format : public dense_format {};
-struct array2d_format : public dense_format {};
+} // end detail
 
-struct sparse_format : public known_format {};
-struct coo_format : public sparse_format {};
-struct csr_format : public sparse_format {};
-struct dia_format : public sparse_format {};
-struct ell_format : public sparse_format {};
-struct hyb_format : public sparse_format {};
-struct permutation_format : public sparse_format {};
+// alias execution_policy and tag here
+using cusp::blas::thrustblas::detail::blas_policy;
 
-} // end namespace cusp
+} // end thrustblas
+} // end blas
+
+// // alias items at top-level
+namespace thrustblas
+{
+
+using cusp::blas::thrustblas::blas_policy;
+
+} // end thrustblas
+} // end cusp
 

@@ -18,10 +18,10 @@
 #pragma once
 
 #include <cusp/array1d.h>
-#include <cusp/blas.h>
 #include <cusp/coo_matrix.h>
 #include <cusp/csr_matrix.h>
 
+#include <cusp/blas/blas.h>
 #include <cusp/detail/format_utils.h>
 
 #include <thrust/adjacent_difference.h>

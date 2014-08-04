@@ -1,4 +1,5 @@
 #include <cusp/csr_matrix.h>
+#include <cusp/permutation_matrix.h>
 #include <cusp/print.h>
 
 #include <cusp/gallery/poisson.h>
@@ -48,11 +49,13 @@ void RCM(const MatrixType& G)
     typedef cusp::array1d<IndexType,MemorySpace> Array;
 
     GraphType G_rcm(G);
-    Array permutation(G.num_rows);
+    cusp::permutation_matrix<IndexType,MemorySpace> P(G.num_rows);
 
     timer t;
-    cusp::graph::symmetric_rcm(G_rcm, permutation);
+    cusp::graph::symmetric_rcm(G_rcm, P);
     std::cout << " RCM time : " << t.milliseconds_elapsed() << " (ms)." << std::endl;
+
+    P.symmetric_permute(G_rcm);
     std::cout << " Bandwidth after RCM : " << bandwidth(G_rcm) << std::endl;
 }
 

@@ -14,11 +14,11 @@ void TestBiConjugateGradientStabilized(void)
 
     cusp::array1d<float, MemorySpace> x(A.num_rows, 0.0f);
     cusp::array1d<float, MemorySpace> b(A.num_rows, 1.0f);
-    
+
     cusp::default_monitor<float> monitor(b, 20, 1e-4);
 
     cusp::krylov::bicgstab(A, x, b, monitor);
-    
+
     // check residual norm
     cusp::array1d<float, MemorySpace> residual(A.num_rows, 0.0f);
     cusp::multiply(A, x, residual);

@@ -18,7 +18,7 @@
  *  \brief Inline file for diagonal.h
  */
 
-#include <cusp/blas.h>
+#include <cusp/blas/blas.h>
 #include <cusp/detail/format_utils.h>
 
 #include <thrust/functional.h>

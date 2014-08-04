@@ -18,7 +18,7 @@
  *  \brief Inline file for ainv.h
  */
 
-#include <cusp/blas.h>
+#include <cusp/blas/blas.h>
 #include <cusp/detail/format_utils.h>
 #include <cusp/transpose.h>
 #include <cusp/multiply.h>

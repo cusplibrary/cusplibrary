@@ -41,11 +41,8 @@ namespace graph
  *
  *  \see http://en.wikipedia.org/wiki/Cuthill-McKee_algorithm
  */
-template<typename MatrixType>
-void symmetric_rcm(MatrixType& G);
-
 template<typename MatrixType, typename ArrayType>
-void symmetric_rcm(MatrixType& G, ArrayType& permutation);
+void symmetric_rcm(const MatrixType& G, ArrayType& permutation);
 
 /*! \}
  */

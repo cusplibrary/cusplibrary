@@ -45,7 +45,10 @@ int STDOUT_FILENO;
 	_close(STDOUT_COPY); \
 	SetStdHandle(STD_OUTPUT_HANDLE, hStdOut); \
 	}while(0);
+
 #else
+
+#include <unistd.h>
 int STDOUT_COPY;
 
 #define CUSP_CLOSE_STDOUT do{\
@@ -85,20 +88,19 @@ template<bool MARK_PREDECESSORS, typename MatrixType, typename ArrayType>
 void breadth_first_search(const MatrixType& G, const typename MatrixType::index_type src,
                           ArrayType& labels)
 {
-    typedef typename MatrixType::index_type VertexId;
-    typedef typename MatrixType::index_type SizeT;
-
 #ifdef __CUSP_USE_B40C__
+    typedef typename MatrixType::index_type VertexId;
+
     CUSP_CLOSE_STDOUT;
 
-    typedef b40c::graph::bfs::CsrProblem<VertexId, SizeT, MARK_PREDECESSORS> CsrProblem;
+    typedef b40c::graph::bfs::CsrProblem<VertexId, VertexId, MARK_PREDECESSORS> CsrProblem;
     typedef typename CsrProblem::GraphSlice  GraphSlice;
 
     int max_grid_size = 0;
     double max_queue_sizing = 1.15;
 
-    int nodes = G.num_rows;
-    int edges = G.num_entries;
+    VertexId nodes = G.num_rows;
+    VertexId edges = G.num_entries;
 
     CsrProblem csr_problem;
     csr_problem.nodes = nodes;
@@ -126,7 +128,7 @@ void breadth_first_search(const MatrixType& G, const typename MatrixType::index_
     b40c::graph::bfs::EnactorHybrid<false/*INSTRUMENT*/>  hybrid(false);
     csr_problem.Reset(hybrid.GetFrontierType(), max_queue_sizing);
 
-    hybrid.EnactSearch(csr_problem, src, max_grid_size);
+    hybrid.EnactSearch<CsrProblem>(csr_problem, src, max_grid_size);
 
     // Unset pointers to prevent csr_problem deallocations
     csr_problem.graph_slices[0]->d_row_offsets = (VertexId *) NULL;

@@ -17,11 +17,12 @@
 
 #pragma once
 
-#include <cusp/blas.h>
-#include <cusp/multiply.h>
-#include <cusp/krylov/arnoldi.h>
 #include <cusp/array1d.h>
 #include <cusp/array2d.h>
+#include <cusp/multiply.h>
+
+#include <cusp/blas/blas.h>
+#include <cusp/krylov/arnoldi.h>
 #include <cusp/detail/random.h>
 #include <cusp/detail/format_utils.h>
 
