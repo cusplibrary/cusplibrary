@@ -26,11 +26,7 @@ int main(int argc, char*argv[])
 {
     srand(time(NULL));
 
-    typedef int   IndexType;
-    typedef float ValueType;
-    typedef cusp::host_memory MemorySpace;
-
-    cusp::csr_matrix<IndexType, ValueType, MemorySpace> A;
+    cusp::csr_matrix<int,float,cusp::host_memory> A;
     size_t size = 1024;
 
     if (argc == 1)
