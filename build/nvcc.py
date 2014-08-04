@@ -17,7 +17,7 @@ import platform
 
 def get_cuda_paths():
   """Determines CUDA {bin,lib,include} paths
-  
+
   returns (bin_path,lib_path,inc_path)
   """
 
@@ -32,7 +32,7 @@ def get_cuda_paths():
     inc_path = '/usr/local/cuda/include'
   else:
     raise ValueError, 'Error: unknown OS.  Where is nvcc installed?'
-   
+
   if platform.machine()[-2:] == '64':
     lib_path += '64'
 
@@ -107,15 +107,15 @@ def generate(env):
   else:
     env['NVCC'] = 'nvcc'
     env['SHNVCC'] = 'nvcc'
-  
+
   # set the include path, and pass both c compiler flags and c++ compiler flags
   env['NVCCFLAGS'] = SCons.Util.CLVar('')
   env['SHNVCCFLAGS'] = SCons.Util.CLVar('') + ' -shared'
-  
+
   # 'NVCC Command'
   env['NVCCCOM']   = '$NVCC -o $TARGET -c $NVCCFLAGS $_NVCCWRAPCFLAGS $NVCCWRAPCCFLAGS $_NVCCCOMCOM $SOURCES'
   env['SHNVCCCOM'] = '$SHNVCC -o $TARGET -c $SHNVCCFLAGS $_NVCCWRAPSHCFLAGS $_NVCCWRAPSHCCFLAGS $_NVCCCOMCOM $SOURCES'
-  
+
   # the suffix of CUDA source files is '.cu'
   env['CUDAFILESUFFIX'] = '.cu'
 
@@ -124,7 +124,7 @@ def generate(env):
 
   # XXX intelligently detect location of nvcc and cuda libraries here
   (bin_path,lib_path,inc_path) = get_cuda_paths()
-    
+
   env.PrependENVPath('PATH', bin_path)
 
 def exists(env):

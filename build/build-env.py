@@ -120,7 +120,7 @@ def getCFLAGS(mode, backend, warn, warnings_as_errors, hostspblas, b40c, CC):
   # build with B40C enabled 
   if b40c == True :
     result.append('-D__CUSP_USE_B40C__') 
-  
+
   if CC == 'cl':
     result.append('/bigobj')
 
@@ -295,9 +295,10 @@ def Environment():
   # get linker switches
   env.Append(LINKFLAGS = getLINKFLAGS(env['mode'], env['backend'], env['hostspblas'], env.subst('$LINK')))
 
-  # silence unknown pragma warnings
-  env.Append(CFLAGS = ['-Wno-unknown-pragmas'])
-  env.Append(CXXFLAGS = ['-Wno-unknown-pragmas'])
+  # hack to silence unknown pragma warnings
+  env.Append(NVCCFLAGS = ['-Xcompiler', '-Wno-unknown-pragmas'])
+  # hack to silence unused local typedefs warnings
+  env.Append(NVCCFLAGS = ['-Xcompiler', '-Wno-unused-local-typedefs'])
 
   # get CUDA paths
   (cuda_exe_path,cuda_lib_path,cuda_inc_path) = get_cuda_paths()
