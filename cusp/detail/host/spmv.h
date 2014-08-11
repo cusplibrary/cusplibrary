@@ -79,23 +79,22 @@ void spmv_csr(const Matrix&  A,
     typedef typename Matrix::index_type  IndexType;
     typedef typename Vector2::value_type ValueType;
 
-#pragma omp parallel for 
     for(size_t i = 0; i < A.num_rows; i++)
     {
         const IndexType& row_start = A.row_offsets[i];
         const IndexType& row_end   = A.row_offsets[i+1];
- 
+
         ValueType accumulator = initialize(y[i]);
- 
+
         for (IndexType jj = row_start; jj < row_end; jj++)
         {
             const IndexType& j   = A.column_indices[jj];
             const ValueType& Aij = A.values[jj];
             const ValueType& xj  = x[j];
- 
+
             accumulator = reduce(accumulator, combine(Aij, xj));
         }
- 
+
         y[i] = accumulator;
     }
 }
@@ -157,7 +156,7 @@ void spmv_dia(const Matrix&  A,
 
             const ValueType& xj = x[j_start + n];
                   ValueType& yi = y[i_start + n];
-    
+
             yi = reduce(yi, combine(Aij, xj));
         }
     }
@@ -200,7 +199,7 @@ void spmv_ell(const Matrix&  A,
     const size_t& num_entries_per_row = A.column_indices.num_cols;
 
     const IndexType invalid_index = Matrix::invalid_index;
-    
+
     for(size_t i = 0; i < A.num_rows; i++)
         y[i] = initialize(y[i]);
 
