@@ -1,5 +1,5 @@
-#include <cusp/blas.h>
 #include <cusp/array2d.h>
+#include <cusp/blas/blas.h>
 #include <cusp/print.h>
 #include <iostream>
 
