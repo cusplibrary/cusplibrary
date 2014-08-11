@@ -6,7 +6,7 @@
 
 #include <cusp/gallery/poisson.h>
 #include <cusp/io/matrix_market.h>
-#include <cusp/blas.h>
+#include <cusp/blas/blas.h>
 
 #include <thrust/binary_search.h>
 

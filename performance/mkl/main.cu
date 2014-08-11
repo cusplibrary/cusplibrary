@@ -1,7 +1,7 @@
 #include <cusp/gallery/poisson.h>
 #include <cusp/krylov/cg.h>
 #include <cusp/io/matrix_market.h>
-#include <cusp/blas.h>
+#include <cusp/blas/blas.h>
 #include <cusp/multiply.h>
 
 #include <cusp/coo_matrix.h>

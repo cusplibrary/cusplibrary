@@ -23,7 +23,7 @@ def get_cuda_paths():
   else:
     raise ValueError, 'Error: unknown OS.  Where is nvcc installed?'
 
-  if platform.machine()[-2:] == '64':
+  if platform.machine()[-2:] == '64' and platform.platform()[:6] != 'Darwin':
     lib_path += '64'
 
   # override with environement variables
@@ -115,8 +115,8 @@ def getCFLAGS(mode, backend, warn, warnings_as_errors, hostspblas, b40c, CC):
     result.append(gCompilerOptions[CC]['debug'])
     result.append('-DTHRUST_DEBUG')
   # force 32b code on darwin
-  if platform.platform()[:6] == 'Darwin':
-    result.append('-m32')
+  # if platform.platform()[:6] == 'Darwin':
+  #   result.append('-m32')
   # build with B40C enabled 
   if b40c == True :
     result.append('-D__CUSP_USE_B40C__') 
@@ -153,9 +153,11 @@ def getCXXFLAGS(mode, backend, warn, warnings_as_errors, hostspblas, b40c, CXX):
     result.append(gCompilerOptions[CXX]['debug'])
   # enable exception handling
   result.append(gCompilerOptions[CXX]['exception_handling'])
+
   # force 32b code on darwin
-  if platform.platform()[:6] == 'Darwin':
-    result.append('-m32')
+  # if platform.platform()[:6] == 'Darwin':
+  #   result.append('-m32')
+
   # build with B40C enabled 
   if b40c is not None :
     result.append('-D__CUSP_USE_B40C__') 
@@ -194,9 +196,10 @@ def getLINKFLAGS(mode, backend, hostspblas, LINK):
   if mode == 'debug':
     # turn on debug mode
     result.append(gLinkerOptions[LINK]['debug'])
+
   # force 32b code on darwin
-  if platform.platform()[:6] == 'Darwin':
-    result.append('-m32')
+  # if platform.platform()[:6] == 'Darwin':
+  #   result.append('-m32')
 
   # XXX make this portable
   if backend == 'ocelot':
@@ -298,7 +301,8 @@ def Environment():
   # hack to silence unknown pragma warnings
   env.Append(NVCCFLAGS = ['-Xcompiler', '-Wno-unknown-pragmas'])
   # hack to silence unused local typedefs warnings
-  env.Append(NVCCFLAGS = ['-Xcompiler', '-Wno-unused-local-typedefs'])
+  if float(env['CCVERSION'][:3]) >= 4.8 :
+    env.Append(NVCCFLAGS = ['-Xcompiler', '-Wno-unused-local-typedefs'])
 
   # get CUDA paths
   (cuda_exe_path,cuda_lib_path,cuda_inc_path) = get_cuda_paths()

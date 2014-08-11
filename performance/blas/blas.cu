@@ -1,5 +1,5 @@
 #include <cusp/array1d.h>
-#include <cusp/blas.h>
+#include <cusp/blas/blas.h>
 
 #include <iostream>
 #include <stdio.h>
@@ -19,9 +19,9 @@ struct test_nrm2
     {
         cusp::blas::nrm2(x); 
     }
-    
+
     std::string name(void) const { return (sizeof(T) == 4) ? "snrm2" : "dnrm2"; }
-    
+
     size_t bytes(void) const { return n * sizeof(T); }
 };
 
@@ -38,9 +38,9 @@ struct test_dot
     {
         cusp::blas::dot(x, y);
     }
-    
+
     std::string name(void) const { return (sizeof(T) == 4) ? "sdot" : "ddot"; }
-    
+
     size_t bytes(void) const { return 2 * n * sizeof(T); }
 };
 
@@ -57,9 +57,9 @@ struct test_axpy
     {
         cusp::blas::axpy(x, y, T(1.0));
     }
-    
+
     std::string name(void) const { return (sizeof(T) == 4) ? "saxpy" : "daxpy"; }
-    
+
     size_t bytes(void) const { return 3 * n * sizeof(T); }
 };
 
