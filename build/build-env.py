@@ -301,7 +301,7 @@ def Environment():
   # hack to silence unknown pragma warnings
   env.Append(NVCCFLAGS = ['-Xcompiler', '-Wno-unknown-pragmas'])
   # hack to silence unused local typedefs warnings
-  if float(env['CCVERSION']) >= 4.8 :
+  if float(env['CCVERSION'][:3]) >= 4.8 :
     env.Append(NVCCFLAGS = ['-Xcompiler', '-Wno-unused-local-typedefs'])
 
   # get CUDA paths
