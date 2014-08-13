@@ -439,7 +439,7 @@ public:
 
     typename values_array_type::reference operator()(const size_t i, const size_t j) const
     {
-        return values[detail::index_of(i, j, pitch, orientation())];
+        return values[cusp::detail::index_of(i, j, pitch, orientation())];
     }
 
     void resize(size_t num_rows, size_t num_cols, size_t pitch)
