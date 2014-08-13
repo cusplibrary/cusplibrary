@@ -18,7 +18,7 @@ void check_residuals(LinearOperator& A, VectorType1& xs, VectorType2& b, VectorT
         ValueType s = sigma[i];
 
         cusp::array1d<ValueType, MemorySpace> residual(A.num_rows, 0.0f);
-        
+
         // TODO replace this with a array1d view of a array2d
         cusp::array1d<ValueType, MemorySpace> x(xs.begin() + i * N, xs.begin() + (i + 1) * N);
         cusp::multiply(A, x, residual);
@@ -61,7 +61,7 @@ void TestConjugateGradientM(void)
     //  relative_tolerance = 1e-6
     cusp::default_monitor<ValueType> monitor(b, 100, 1e-6);
 
-    // solve the linear systems (A + \sigma_i * I) * x = b for each 
+    // solve the linear systems (A + \sigma_i * I) * x = b for each
     // sigma_i with the Conjugate Gradient method
     cusp::krylov::cg_m(A, x, b, sigma, monitor);
 

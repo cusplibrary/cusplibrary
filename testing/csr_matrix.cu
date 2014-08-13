@@ -24,23 +24,29 @@ void TestCsrMatrixCopyConstructor(void)
     matrix.row_offsets[1] = 2;
     matrix.row_offsets[2] = 4;
     matrix.row_offsets[3] = 6;
-    
-    matrix.column_indices[0] = 0;  matrix.values[0] = 0; 
-    matrix.column_indices[1] = 1;  matrix.values[1] = 1;
-    matrix.column_indices[2] = 0;  matrix.values[2] = 2;
-    matrix.column_indices[3] = 1;  matrix.values[3] = 3;
-    matrix.column_indices[4] = 0;  matrix.values[4] = 4;
-    matrix.column_indices[5] = 1;  matrix.values[5] = 5;
+
+    matrix.column_indices[0] = 0;
+    matrix.values[0] = 0;
+    matrix.column_indices[1] = 1;
+    matrix.values[1] = 1;
+    matrix.column_indices[2] = 0;
+    matrix.values[2] = 2;
+    matrix.column_indices[3] = 1;
+    matrix.values[3] = 3;
+    matrix.column_indices[4] = 0;
+    matrix.values[4] = 4;
+    matrix.column_indices[5] = 1;
+    matrix.values[5] = 5;
 
     cusp::csr_matrix<int, float, Space> copy_of_matrix(matrix);
-    
+
     ASSERT_EQUAL(copy_of_matrix.num_rows,              3);
     ASSERT_EQUAL(copy_of_matrix.num_cols,              2);
     ASSERT_EQUAL(copy_of_matrix.num_entries,           6);
     ASSERT_EQUAL(copy_of_matrix.row_offsets.size(),    4);
     ASSERT_EQUAL(copy_of_matrix.column_indices.size(), 6);
     ASSERT_EQUAL(copy_of_matrix.values.size(),         6);
-   
+
     ASSERT_EQUAL(copy_of_matrix.row_offsets,    matrix.row_offsets);
     ASSERT_EQUAL(copy_of_matrix.column_indices, matrix.column_indices);
     ASSERT_EQUAL(copy_of_matrix.values,         matrix.values);
@@ -51,7 +57,7 @@ template <class Space>
 void TestCsrMatrixResize(void)
 {
     cusp::csr_matrix<int, float, Space> matrix;
-    
+
     matrix.resize(3, 2, 6);
 
     ASSERT_EQUAL(matrix.num_rows,              3);
@@ -68,22 +74,27 @@ void TestCsrMatrixSwap(void)
 {
     cusp::csr_matrix<int, float, Space> A(1, 2, 2);
     cusp::csr_matrix<int, float, Space> B(3, 1, 3);
-  
+
     A.row_offsets[0] = 0;
     A.row_offsets[1] = 2;
-    
-    A.column_indices[0] = 0;  A.values[0] = 0;
-    A.column_indices[1] = 1;  A.values[1] = 1;
-    
+
+    A.column_indices[0] = 0;
+    A.values[0] = 0;
+    A.column_indices[1] = 1;
+    A.values[1] = 1;
+
     B.row_offsets[0] = 0;
     B.row_offsets[1] = 1;
     B.row_offsets[2] = 2;
     B.row_offsets[3] = 3;
-    
-    B.column_indices[0] = 0;  B.values[0] = 0;
-    B.column_indices[1] = 0;  B.values[1] = 1;
-    B.column_indices[2] = 0;  B.values[2] = 2;
-    
+
+    B.column_indices[0] = 0;
+    B.values[0] = 0;
+    B.column_indices[1] = 0;
+    B.values[1] = 1;
+    B.column_indices[2] = 0;
+    B.values[2] = 2;
+
     cusp::csr_matrix<int, float, Space> A_copy(A);
     cusp::csr_matrix<int, float, Space> B_copy(B);
 

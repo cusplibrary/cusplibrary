@@ -8,16 +8,17 @@
 #include <string>
 #include <limits>
 
-const size_t standard_test_sizes[] = 
-        {0, 1, 2, 3, 4, 5, 8, 10, 13, 16, 17, 19, 27, 30, 31, 32,
-         33, 35, 42, 53, 58, 63, 64, 65, 72, 97, 100, 127, 128, 129, 142, 183, 192, 201, 240, 255, 256,
-         257, 302, 511, 512, 513, 687, 900, 1023, 1024, 1025, 1565, 1786, 1973, 2047, 2048, 2049, 3050, 4095, 4096,
-         4097, 5030, 7791, 10000, 10027, 12345, 16384, 17354, 26255, 32768, 43718, 65533, 65536,
-         65539, 123456, 131072, 731588, 1048575, 1048576,
-         3398570, 9760840, (1 << 24) - 1, (1 << 24),
-         (1 << 24) + 1, (1 << 25) - 1, (1 << 25), (1 << 25) + 1, (1 << 26) - 1, 1 << 26,
-         (1 << 26) + 1, (1 << 27) - 1, (1 << 27)};
-        
+const size_t standard_test_sizes[] =
+{   0, 1, 2, 3, 4, 5, 8, 10, 13, 16, 17, 19, 27, 30, 31, 32,
+    33, 35, 42, 53, 58, 63, 64, 65, 72, 97, 100, 127, 128, 129, 142, 183, 192, 201, 240, 255, 256,
+    257, 302, 511, 512, 513, 687, 900, 1023, 1024, 1025, 1565, 1786, 1973, 2047, 2048, 2049, 3050, 4095, 4096,
+    4097, 5030, 7791, 10000, 10027, 12345, 16384, 17354, 26255, 32768, 43718, 65533, 65536,
+    65539, 123456, 131072, 731588, 1048575, 1048576,
+    3398570, 9760840, (1 << 24) - 1, (1 << 24),
+    (1 << 24) + 1, (1 << 25) - 1, (1 << 25), (1 << 25) + 1, (1 << 26) - 1, 1 << 26,
+    (1 << 26) + 1, (1 << 27) - 1, (1 << 27)
+};
+
 const size_t tiny_threshold    = 1 <<  5;  //   32
 const size_t small_threshold   = 1 <<  8;  //  256
 const size_t medium_threshold  = 1 << 12;  //   4K
@@ -75,7 +76,7 @@ void UnitTestDriver::register_test(UnitTest * test)
 
 UnitTest::UnitTest(const char * _name) : name(_name)
 {
-  UnitTestDriver::s_driver().register_test(this);
+    UnitTestDriver::s_driver().register_test(this);
 }
 
 
@@ -88,9 +89,9 @@ void process_args(int argc, char ** argv,
     {
         std::string arg(argv[i]);
 
-        // look for --key or --key=value arguments 
+        // look for --key or --key=value arguments
         if (arg.substr(0,2) == "--")
-        {   
+        {
             std::string::size_type n = arg.find('=',2);
 
             if (n == std::string::npos)
@@ -173,7 +174,7 @@ struct TestResult
     TestStatus  status;
     std::string name;
     std::string message;
-    
+
     TestResult(const TestStatus status, const UnitTest& u)
         : status(status), name(u.name)
     { }
@@ -203,7 +204,7 @@ void report_results(std::vector< TestResult >& test_results)
     std::cout << std::endl;
 
     std::string hline = "================================================================";
-  
+
     std::sort(test_results.begin(), test_results.end());
 
     size_t num_failures = 0;
@@ -217,17 +218,23 @@ void report_results(std::vector< TestResult >& test_results)
         if (tr.status != Pass)
         {
             std::cout << hline << std::endl;
-        
+
             switch(tr.status)
             {
-                case Failure:
-                    std::cout << "FAILURE";       num_failures++;       break;
-                case KnownFailure:
-                    std::cout << "KNOWN FAILURE"; num_known_failures++; break;
-                case Error:
-                    std::cout << "ERROR";         num_errors++;         break;
-                default:
-                    break;
+            case Failure:
+                std::cout << "FAILURE";
+                num_failures++;
+                break;
+            case KnownFailure:
+                std::cout << "KNOWN FAILURE";
+                num_known_failures++;
+                break;
+            case Error:
+                std::cout << "ERROR";
+                num_errors++;
+                break;
+            default:
+                break;
             }
 
             std::cout << ": " << tr.name << std::endl << tr.message << std::endl;
@@ -254,7 +261,7 @@ bool UnitTestDriver::run_tests(std::vector<UnitTest *>& tests_to_run, const Argu
 {
     bool verbose = kwargs.count("verbose");
     bool concise = kwargs.count("concise");
-    
+
     std::vector< TestResult > test_results;
 
     if (verbose && concise)
@@ -278,10 +285,10 @@ bool UnitTestDriver::run_tests(std::vector<UnitTest *>& tests_to_run, const Argu
         }
 
         return false;
-    } 
+    }
 
 
-    for(size_t i = 0; i < tests_to_run.size(); i++){
+    for(size_t i = 0; i < tests_to_run.size(); i++) {
         UnitTest& test = *tests_to_run[i];
 
         if (verbose)
@@ -294,7 +301,7 @@ bool UnitTestDriver::run_tests(std::vector<UnitTest *>& tests_to_run, const Argu
 
             // test passed
             record_result(TestResult(Pass, test), test_results);
-        } 
+        }
         catch (unittest::UnitTestFailure& f)
         {
             record_result(TestResult(Failure, test, f.message), test_results);
@@ -319,16 +326,20 @@ bool UnitTestDriver::run_tests(std::vector<UnitTest *>& tests_to_run, const Argu
             {
                 switch(test_results.back().status)
                 {
-                    case Pass:
-                        std::cout << "\r[PASS]             "; break;
-                    case Failure:
-                        std::cout << "\r[FAILURE]          "; break;
-                    case KnownFailure:
-                        std::cout << "\r[KNOWN FAILURE]    "; break;
-                    case Error:
-                        std::cout << "\r[ERROR]            "; break;
-                    default:
-                        break;
+                case Pass:
+                    std::cout << "\r[PASS]             ";
+                    break;
+                case Failure:
+                    std::cout << "\r[FAILURE]          ";
+                    break;
+                case KnownFailure:
+                    std::cout << "\r[KNOWN FAILURE]    ";
+                    break;
+                case Error:
+                    std::cout << "\r[ERROR]            ";
+                    break;
+                default:
+                    break;
                 }
 
                 std::cout << " " << test.name << std::endl;
@@ -337,21 +348,25 @@ bool UnitTestDriver::run_tests(std::vector<UnitTest *>& tests_to_run, const Argu
             {
                 switch(test_results.back().status)
                 {
-                    case Pass:
-                        std::cout << "."; break;
-                    case Failure:
-                        std::cout << "F"; break;
-                    case KnownFailure:
-                        std::cout << "K"; break;
-                    case Error:
-                        std::cout << "E"; break;
-                    default:
-                        break;
+                case Pass:
+                    std::cout << ".";
+                    break;
+                case Failure:
+                    std::cout << "F";
+                    break;
+                case KnownFailure:
+                    std::cout << "K";
+                    break;
+                case Error:
+                    std::cout << "E";
+                    break;
+                default:
+                    break;
                 }
             }
         }
 
-        
+
         error = cudaGetLastError();
         if(error && error != cudaErrorMemoryAllocation)
         {
@@ -421,7 +436,7 @@ bool UnitTestDriver::run_tests(const ArgumentSet& args, const ArgumentMap& kwarg
                     if (search != lb->first.substr(0,len-1))
                         break;
 
-                    tests_to_run.push_back(lb->second); 
+                    tests_to_run.push_back(lb->second);
                     lb++;
                     matches++;
                 }
@@ -433,7 +448,7 @@ bool UnitTestDriver::run_tests(const ArgumentSet& args, const ArgumentMap& kwarg
 
                 if (lb != test_map.end())
                 {
-                    tests_to_run.push_back(lb->second); 
+                    tests_to_run.push_back(lb->second);
                     matches++;
                 }
             }
@@ -450,8 +465,8 @@ bool UnitTestDriver::run_tests(const ArgumentSet& args, const ArgumentMap& kwarg
 UnitTestDriver &
 UnitTestDriver::s_driver()
 {
-  static UnitTestDriver s_instance;
-  return s_instance;
+    static UnitTestDriver s_instance;
+    return s_instance;
 }
 
 int main(int argc, char **argv)
@@ -460,7 +475,7 @@ int main(int argc, char **argv)
     ArgumentMap kwargs;
 
     process_args(argc, argv, args, kwargs);
-    
+
     if(kwargs.count("help"))
     {
         usage(argc, argv);
@@ -472,7 +487,7 @@ int main(int argc, char **argv)
         UnitTestDriver::s_driver().list_tests();
         return 0;
     }
-    
+
     if(kwargs.count("sizes"))
     {
         set_test_sizes(kwargs["sizes"]);
@@ -487,7 +502,7 @@ int main(int argc, char **argv)
         int device_id  = kwargs.count("device") ? atoi(kwargs["device"].c_str()) :  0;
         cudaSetDevice(device_id);
     }
-        
+
     if(kwargs.count("verbose"))
         list_devices();
 
@@ -495,6 +510,6 @@ int main(int argc, char **argv)
 
     if (kwargs.count("concise"))
         std::cout << ((passed) ? "PASSED" : "FAILED") << std::endl;
-   
+
     return (passed) ? EXIT_SUCCESS : EXIT_FAILURE;
 }

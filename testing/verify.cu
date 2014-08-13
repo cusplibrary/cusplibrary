@@ -13,9 +13,15 @@ template <typename MemorySpace>
 void TestIsValidMatrixCoo(void)
 {
     cusp::array2d<float, MemorySpace> A(3,3);
-    A(0,0) = 0;  A(0,1) = 1;  A(0,2) = 0;
-    A(1,0) = 1;  A(1,1) = 0;  A(1,2) = 1;
-    A(2,0) = 0;  A(2,1) = 1;  A(2,2) = 0;
+    A(0,0) = 0;
+    A(0,1) = 1;
+    A(0,2) = 0;
+    A(1,0) = 1;
+    A(1,1) = 0;
+    A(1,2) = 1;
+    A(2,0) = 0;
+    A(2,1) = 1;
+    A(2,2) = 0;
 
     // basic tests
     {
@@ -30,7 +36,7 @@ void TestIsValidMatrixCoo(void)
         M.row_indices[1] = 0;
         ASSERT_EQUAL(cusp::is_valid_matrix(M), false);
     }
-    
+
     // invalid column_indices
     {
         cusp::coo_matrix<int, float, MemorySpace> M(A);
@@ -50,9 +56,15 @@ template <typename MemorySpace>
 void TestIsValidMatrixCsr(void)
 {
     cusp::array2d<float, MemorySpace> A(3,3);
-    A(0,0) = 0;  A(0,1) = 1;  A(0,2) = 0;
-    A(1,0) = 1;  A(1,1) = 0;  A(1,2) = 1;
-    A(2,0) = 0;  A(2,1) = 1;  A(2,2) = 0;
+    A(0,0) = 0;
+    A(0,1) = 1;
+    A(0,2) = 0;
+    A(1,0) = 1;
+    A(1,1) = 0;
+    A(1,2) = 1;
+    A(2,0) = 0;
+    A(2,1) = 1;
+    A(2,2) = 0;
 
     // basic tests
     {
@@ -69,7 +81,7 @@ void TestIsValidMatrixCsr(void)
         M.row_offsets[3] = 4;
         ASSERT_EQUAL(cusp::is_valid_matrix(M), false);
     }
-    
+
     // invalid column_indices
     {
         cusp::csr_matrix<int, float, MemorySpace> M(A);
@@ -89,9 +101,15 @@ template <typename MemorySpace>
 void TestIsValidMatrixDia(void)
 {
     cusp::array2d<float, MemorySpace> A(3,3);
-    A(0,0) = 0;  A(0,1) = 1;  A(0,2) = 0;
-    A(1,0) = 1;  A(1,1) = 0;  A(1,2) = 1;
-    A(2,0) = 0;  A(2,1) = 1;  A(2,2) = 0;
+    A(0,0) = 0;
+    A(0,1) = 1;
+    A(0,2) = 0;
+    A(1,0) = 1;
+    A(1,1) = 0;
+    A(1,2) = 1;
+    A(2,0) = 0;
+    A(2,1) = 1;
+    A(2,2) = 0;
 
     // basic tests
     {
@@ -113,9 +131,15 @@ template <typename MemorySpace>
 void TestIsValidMatrixEll(void)
 {
     cusp::array2d<float, MemorySpace> A(3,3);
-    A(0,0) = 0;  A(0,1) = 1;  A(0,2) = 0;
-    A(1,0) = 1;  A(1,1) = 0;  A(1,2) = 1;
-    A(2,0) = 0;  A(2,1) = 1;  A(2,2) = 0;
+    A(0,0) = 0;
+    A(0,1) = 1;
+    A(0,2) = 0;
+    A(1,0) = 1;
+    A(1,1) = 0;
+    A(1,2) = 1;
+    A(2,0) = 0;
+    A(2,1) = 1;
+    A(2,2) = 0;
 
     // basic tests
     {
@@ -170,9 +194,15 @@ template <typename MemorySpace>
 void TestIsValidMatrixHyb(void)
 {
     cusp::array2d<float, MemorySpace> A(3,3);
-    A(0,0) = 0;  A(0,1) = 1;  A(0,2) = 0;
-    A(1,0) = 1;  A(1,1) = 0;  A(1,2) = 1;
-    A(2,0) = 0;  A(2,1) = 1;  A(2,2) = 0;
+    A(0,0) = 0;
+    A(0,1) = 1;
+    A(0,2) = 0;
+    A(1,0) = 1;
+    A(1,1) = 0;
+    A(1,2) = 1;
+    A(2,0) = 0;
+    A(2,1) = 1;
+    A(2,2) = 0;
 
     // basic tests
     {
@@ -206,9 +236,15 @@ template <typename MemorySpace>
 void TestIsValidMatrixArray2d(void)
 {
     cusp::array2d<float, MemorySpace> A(3,3);
-    A(0,0) = 0;  A(0,1) = 1;  A(0,2) = 0;
-    A(1,0) = 1;  A(1,1) = 0;  A(1,2) = 1;
-    A(2,0) = 0;  A(2,1) = 1;  A(2,2) = 0;
+    A(0,0) = 0;
+    A(0,1) = 1;
+    A(0,2) = 0;
+    A(1,0) = 1;
+    A(1,1) = 0;
+    A(1,2) = 1;
+    A(2,0) = 0;
+    A(2,1) = 1;
+    A(2,2) = 0;
 
     // basic tests
     {
@@ -238,16 +274,22 @@ template <typename MatrixType>
 void TestAssertIsValidMatrix(void)
 {
     cusp::array2d<float, cusp::host_memory> A(3,3);
-    A(0,0) = 0;  A(0,1) = 1;  A(0,2) = 0;
-    A(1,0) = 1;  A(1,1) = 0;  A(1,2) = 1;
-    A(2,0) = 0;  A(2,1) = 1;  A(2,2) = 0;
+    A(0,0) = 0;
+    A(0,1) = 1;
+    A(0,2) = 0;
+    A(1,0) = 1;
+    A(1,1) = 0;
+    A(1,2) = 1;
+    A(2,0) = 0;
+    A(2,1) = 1;
+    A(2,2) = 0;
 
     // should not throw
     {
         MatrixType M(A);
         cusp::assert_is_valid_matrix(M);
     }
-   
+
     // should throw
     {
         MatrixType M(A);

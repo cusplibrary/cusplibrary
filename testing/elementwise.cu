@@ -14,31 +14,47 @@ template <typename Vector>
 void example_matrices(Vector& matrices)
 {
     cusp::array2d<float,cusp::host_memory> A(3,2);
-    A(0,0) = 1.0; A(0,1) = 2.0;
-    A(1,0) = 3.0; A(1,1) = 0.0;
-    A(2,0) = 5.0; A(2,1) = 6.0;
-    
+    A(0,0) = 1.0;
+    A(0,1) = 2.0;
+    A(1,0) = 3.0;
+    A(1,1) = 0.0;
+    A(2,0) = 5.0;
+    A(2,1) = 6.0;
+
     cusp::array2d<float,cusp::host_memory> B(2,4);
-    B(0,0) = 0.0; B(0,1) = 2.0; B(0,2) = 3.0; B(0,3) = 4.0;
-    B(1,0) = 5.0; B(1,1) = 0.0; B(1,2) = 0.0; B(1,3) = 8.0;
+    B(0,0) = 0.0;
+    B(0,1) = 2.0;
+    B(0,2) = 3.0;
+    B(0,3) = 4.0;
+    B(1,0) = 5.0;
+    B(1,1) = 0.0;
+    B(1,2) = 0.0;
+    B(1,3) = 8.0;
 
     cusp::array2d<float,cusp::host_memory> C(2,2);
-    C(0,0) = 0.0; C(0,1) = 0.0;
-    C(1,0) = 3.0; C(1,1) = 5.0;
-    
+    C(0,0) = 0.0;
+    C(0,1) = 0.0;
+    C(1,0) = 3.0;
+    C(1,1) = 5.0;
+
     cusp::array2d<float,cusp::host_memory> D(2,1);
     D(0,0) = 2.0;
     D(1,0) = 3.0;
-    
+
     cusp::array2d<float,cusp::host_memory> E(2,2);
-    E(0,0) = 0.0; E(0,1) = 0.0;
-    E(1,0) = 0.0; E(1,1) = 0.0;
-    
+    E(0,0) = 0.0;
+    E(0,1) = 0.0;
+    E(1,0) = 0.0;
+    E(1,1) = 0.0;
+
     cusp::array2d<float,cusp::host_memory> F(3,2);
-    F(0,0) = 0.0; F(0,1) = 1.5;
-    F(1,0) = 0.5; F(1,1) = 0.0;
-    F(2,0) = 0.0; F(2,1) = 0.0;
-    
+    F(0,0) = 0.0;
+    F(0,1) = 1.5;
+    F(1,0) = 0.5;
+    F(1,1) = 0.0;
+    F(2,0) = 0.0;
+    F(2,1) = 0.0;
+
     cusp::array2d<float,cusp::host_memory> G;
     cusp::gallery::poisson5pt(G, 4, 6);
 
@@ -47,13 +63,13 @@ void example_matrices(Vector& matrices)
 
     cusp::array2d<float,cusp::host_memory> I;
     cusp::gallery::random(24, 24, 150, I);
-    
+
     cusp::array2d<float,cusp::host_memory> J;
     cusp::gallery::random(24, 24, 50, J);
 
     cusp::array2d<float,cusp::host_memory> K;
     cusp::gallery::random(24, 12, 20, K);
- 
+
     matrices.push_back(A);
     matrices.push_back(B);
     matrices.push_back(C);
@@ -77,7 +93,7 @@ void TestAdd(void)
     std::vector< DenseMatrix > matrices;
 
     example_matrices(matrices);
-    
+
     // test add for every pair of compatible matrices
     for(size_t i = 0; i < matrices.size(); i++)
     {
@@ -112,8 +128,8 @@ void TestAdd(void)
     }
 
     SparseMatrix A = DenseMatrix(2,2,1);
-    SparseMatrix B = DenseMatrix(2,3,1); 
-    SparseMatrix C = DenseMatrix(3,2,1); 
+    SparseMatrix B = DenseMatrix(2,3,1);
+    SparseMatrix C = DenseMatrix(3,2,1);
     SparseMatrix D;
 
     ASSERT_THROWS(cusp::add(A,B,D), cusp::invalid_input_exception);

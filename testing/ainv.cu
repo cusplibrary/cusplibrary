@@ -29,30 +29,30 @@ struct hash_01
 
 void TestAINVHeap(void)
 {
-  hash_01 rng;
-  int seed = 100;
+    hash_01 rng;
+    int seed = 100;
 
-  for (int trial = 0; trial < 10000; trial ++) {
-    cusp::precond::detail::ainv_matrix_row<int, float> row;
+    for (int trial = 0; trial < 10000; trial ++) {
+        cusp::precond::detail::ainv_matrix_row<int, float> row;
 
-    int size =100;
-    int i;
-    for (i=0; i < size; i++) 
-      row.insert(i, rng(seed++));
+        int size =100;
+        int i;
+        for (i=0; i < size; i++)
+            row.insert(i, rng(seed++));
 
-    for (i=0; i < size; i++) 
-      row.add_to_value(i, rng(seed++) - .5);
+        for (i=0; i < size; i++)
+            row.add_to_value(i, rng(seed++) - .5);
 
-    for (i=0; i < size/2; i++) 
-      row.remove_min();
+        for (i=0; i < size/2; i++)
+            row.remove_min();
 
-    for (i=0; i < size; i++) 
-      row.insert(i+size, rng(seed++));
+        for (i=0; i < size; i++)
+            row.insert(i+size, rng(seed++));
 
-    ASSERT_EQUAL(row.validate_heap(), true);
-    ASSERT_EQUAL(row.validate_backpointers(), true);
+        ASSERT_EQUAL(row.validate_heap(), true);
+        ASSERT_EQUAL(row.validate_backpointers(), true);
 
-  }
+    }
 }
 DECLARE_UNITTEST(TestAINVHeap);
 
@@ -76,7 +76,7 @@ void TestAINVFactorization(void)
 
     cusp::array1d<ValueType,MemorySpace> x(N);
     cusp::array1d<ValueType,MemorySpace> b(N, 0);
-    
+
     thrust::transform(thrust::counting_iterator<unsigned int>(0),
                       thrust::counting_iterator<unsigned int>(N),
                       x.begin(),
@@ -107,7 +107,7 @@ void TestAINVSymmetry(void)
 
     cusp::array1d<ValueType,MemorySpace> x(N);
     cusp::array1d<ValueType,MemorySpace> b(N, 0);
-    
+
     thrust::transform(thrust::counting_iterator<unsigned int>(0),
                       thrust::counting_iterator<unsigned int>(N),
                       x.begin(),
@@ -127,7 +127,7 @@ void TestAINVSymmetry(void)
         ASSERT_EQUAL(monitor.converged(), true);
     }
 
-    // test non-symmetric version 
+    // test non-symmetric version
     {
         cusp::array1d<ValueType,MemorySpace> x_solve = x;
         cusp::precond::nonsym_bridson_ainv<ValueType,MemorySpace> M(A, .1);
@@ -159,7 +159,7 @@ void TestAINVConvergence(void)
 
     cusp::array1d<ValueType,MemorySpace> x(N);
     cusp::array1d<ValueType,MemorySpace> b(N, 0);
-    
+
     thrust::transform(thrust::counting_iterator<unsigned int>(0),
                       thrust::counting_iterator<unsigned int>(N),
                       x.begin(),
@@ -167,7 +167,7 @@ void TestAINVConvergence(void)
 
 
 
-    // test drop tolerance strategy 
+    // test drop tolerance strategy
     {
         cusp::array1d<ValueType,MemorySpace> x_solve = x;
         cusp::precond::scaled_bridson_ainv<ValueType,MemorySpace> M(A, .1);
@@ -178,7 +178,7 @@ void TestAINVConvergence(void)
         ASSERT_EQUAL(monitor.converged(), true);
     }
 
-    // test sparsity strategy 
+    // test sparsity strategy
     {
         cusp::array1d<ValueType,MemorySpace> x_solve = x;
         cusp::precond::scaled_bridson_ainv<ValueType,MemorySpace> M(A, 0, 10);
@@ -189,7 +189,7 @@ void TestAINVConvergence(void)
         ASSERT_EQUAL(monitor.converged(), true);
     }
 
-    // test both 
+    // test both
     {
         cusp::array1d<ValueType,MemorySpace> x_solve = x;
         cusp::precond::scaled_bridson_ainv<ValueType,MemorySpace> M(A, .01, 4);
@@ -199,7 +199,7 @@ void TestAINVConvergence(void)
 
         ASSERT_EQUAL(monitor.converged(), true);
     }
-    // test lin dropping 
+    // test lin dropping
     {
         cusp::array1d<ValueType,MemorySpace> x_solve = x;
         cusp::precond::scaled_bridson_ainv<ValueType,MemorySpace> M(A, 0, -1, true, 4);
@@ -211,7 +211,7 @@ void TestAINVConvergence(void)
     }
 
 
-    // test drop tolerance strategy 
+    // test drop tolerance strategy
     {
         cusp::array1d<ValueType,MemorySpace> x_solve = x;
         cusp::precond::bridson_ainv<ValueType,MemorySpace> M(A, .1);
@@ -222,7 +222,7 @@ void TestAINVConvergence(void)
         ASSERT_EQUAL(monitor.converged(), true);
     }
 
-    // test sparsity strategy 
+    // test sparsity strategy
     {
         cusp::array1d<ValueType,MemorySpace> x_solve = x;
         cusp::precond::bridson_ainv<ValueType,MemorySpace> M(A, 0, 10);
@@ -233,7 +233,7 @@ void TestAINVConvergence(void)
         ASSERT_EQUAL(monitor.converged(), true);
     }
 
-    // test both 
+    // test both
     {
         cusp::array1d<ValueType,MemorySpace> x_solve = x;
         cusp::precond::bridson_ainv<ValueType,MemorySpace> M(A, .01, 4);
@@ -244,7 +244,7 @@ void TestAINVConvergence(void)
         ASSERT_EQUAL(monitor.converged(), true);
     }
 
-    // test lin dropping 
+    // test lin dropping
     {
         cusp::array1d<ValueType,MemorySpace> x_solve = x;
         cusp::precond::bridson_ainv<ValueType,MemorySpace> M(A, 0, -1, true, 4);

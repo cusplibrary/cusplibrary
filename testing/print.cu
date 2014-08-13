@@ -17,13 +17,17 @@ void TestPrintMatrix(void)
 {
     // initialize a 2x3 matrix
     cusp::array2d<float, cusp::host_memory> A(2,3);
-    A(0,0) = 42;  A(0,1) =  0;  A(0,2) = 53;
-    A(1,0) =  0;  A(1,1) = 71;  A(1,2) =  0;
-    
+    A(0,0) = 42;
+    A(0,1) =  0;
+    A(0,2) = 53;
+    A(1,0) =  0;
+    A(1,1) = 71;
+    A(1,2) =  0;
+
     Matrix M(A);
 
     std::ostringstream oss;
-    
+
     cusp::print(M, oss);
 
     // ensure certain substrings are present in the output
