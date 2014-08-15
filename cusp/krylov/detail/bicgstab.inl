@@ -77,8 +77,6 @@ void bicgstab(LinearOperator& A,
     const size_t N = A.num_rows;
 
     // allocate workspace
-    cusp::array1d<ValueType,MemorySpace> y(N);
-
     cusp::array1d<ValueType,MemorySpace>   p(N);
     cusp::array1d<ValueType,MemorySpace>   r(N);
     cusp::array1d<ValueType,MemorySpace>   r_star(N);
@@ -88,11 +86,11 @@ void bicgstab(LinearOperator& A,
     cusp::array1d<ValueType,MemorySpace>  Ms(N);
     cusp::array1d<ValueType,MemorySpace> AMs(N);
 
-    // y <- Ax
-    cusp::multiply(A, x, y);
+    // r <- Ax
+    cusp::multiply(A, x, r);
 
     // r <- b - A*x
-    blas::axpby(b, y, r, ValueType(1), ValueType(-1));
+    blas::axpby(b, r, r, ValueType(1), ValueType(-1));
 
     // p <- r
     blas::copy(r, p);
