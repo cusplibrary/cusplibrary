@@ -33,8 +33,10 @@ template <class MemorySpace>
 void TestBiConjugateGradientStabilizedZeroResidual(void)
 {
     cusp::array2d<float, MemorySpace> M(2,2);
-    M(0,0) = 8; M(0,1) = 0;
-    M(1,0) = 0; M(1,1) = 4;
+    M(0,0) = 8;
+    M(0,1) = 0;
+    M(1,0) = 0;
+    M(1,1) = 4;
 
     cusp::csr_matrix<int, float, MemorySpace> A(M);
 
@@ -44,7 +46,7 @@ void TestBiConjugateGradientStabilizedZeroResidual(void)
     cusp::multiply(A, x, b);
 
     cusp::default_monitor<float> monitor(b, 20, 0.0f);
-    
+
     cusp::krylov::bicgstab(A, x, b, monitor);
 
     // check residual norm

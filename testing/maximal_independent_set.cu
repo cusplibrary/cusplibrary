@@ -9,7 +9,7 @@
 #include <cusp/ell_matrix.h>
 #include <cusp/hyb_matrix.h>
 #include <cusp/multiply.h>
-#include <cusp/gallery/poisson.h> 
+#include <cusp/gallery/poisson.h>
 
 // check whether the MIS is valid
 template <typename MatrixType, typename ArrayType>
@@ -31,7 +31,7 @@ bool is_valid_mis(MatrixType& A, ArrayType& stencil)
         for(IndexType jj = csr.row_offsets[i]; jj < csr.row_offsets[i + 1]; jj++)
         {
             size_t j = csr.column_indices[jj];
-           
+
             // XXX if/when MIS code filters explicit zeros we need to do that here too
 
             if (i != j && mis[j])
@@ -50,8 +50,8 @@ bool is_valid_mis(MatrixType& A, ArrayType& stencil)
         {
             if (num_mis_neighbors == 0)
             {
-               std::cout << "Node " << i << " is not in the MIS and has no MIS neighbors" << std::endl;
-               return false; 
+                std::cout << "Node " << i << " is not in the MIS and has no MIS neighbors" << std::endl;
+                return false;
             }
         }
     }
@@ -108,18 +108,42 @@ void TestMaximalIndependentSet(void)
 
     // two components of two nodes
     cusp::array2d<float,cusp::host_memory> A(4,4);
-    A(0,0) = 1; A(0,1) = 1; A(0,2) = 0; A(0,3) = 0;
-    A(1,0) = 1; A(1,1) = 1; A(1,2) = 0; A(1,3) = 0;
-    A(2,0) = 0; A(2,1) = 0; A(2,2) = 1; A(2,3) = 1;
-    A(3,0) = 0; A(3,1) = 0; A(3,2) = 1; A(3,3) = 1;
-    
+    A(0,0) = 1;
+    A(0,1) = 1;
+    A(0,2) = 0;
+    A(0,3) = 0;
+    A(1,0) = 1;
+    A(1,1) = 1;
+    A(1,2) = 0;
+    A(1,3) = 0;
+    A(2,0) = 0;
+    A(2,1) = 0;
+    A(2,2) = 1;
+    A(2,3) = 1;
+    A(3,0) = 0;
+    A(3,1) = 0;
+    A(3,2) = 1;
+    A(3,3) = 1;
+
     // linear graph
     cusp::array2d<float,cusp::host_memory> B(4,4);
-    B(0,0) = 1; B(0,1) = 1; B(0,2) = 0; B(0,3) = 0;
-    B(1,0) = 1; B(1,1) = 1; B(1,2) = 1; B(1,3) = 0;
-    B(2,0) = 0; B(2,1) = 1; B(2,2) = 1; B(2,3) = 1;
-    B(3,0) = 0; B(3,1) = 0; B(3,2) = 1; B(3,3) = 1;
-    
+    B(0,0) = 1;
+    B(0,1) = 1;
+    B(0,2) = 0;
+    B(0,3) = 0;
+    B(1,0) = 1;
+    B(1,1) = 1;
+    B(1,2) = 1;
+    B(1,3) = 0;
+    B(2,0) = 0;
+    B(2,1) = 1;
+    B(2,2) = 1;
+    B(2,3) = 1;
+    B(3,0) = 0;
+    B(3,1) = 0;
+    B(3,2) = 1;
+    B(3,3) = 1;
+
     // complete graph
     cusp::array2d<float,cusp::host_memory> C(6,6,1);
 
@@ -129,11 +153,11 @@ void TestMaximalIndependentSet(void)
     cusp::coo_matrix<int,float,cusp::host_memory> E;
     cusp::gallery::poisson5pt(E, 3, 3);
     thrust::fill(E.values.begin(), E.values.end(), 1.0f);
-    
+
     cusp::coo_matrix<int,float,cusp::host_memory> F;
     cusp::gallery::poisson5pt(F, 13, 17);
     thrust::fill(F.values.begin(), F.values.end(), 1.0f);
-    
+
     cusp::coo_matrix<int,float,cusp::host_memory> G;
     cusp::gallery::poisson5pt(G, 23, 24);
     thrust::fill(G.values.begin(), G.values.end(), 1.0f);

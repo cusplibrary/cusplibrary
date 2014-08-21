@@ -16,7 +16,7 @@ void TestConjugateGradient(void)
     cusp::array1d<float, MemorySpace> b(A.num_rows, 1.0f);
 
     cusp::default_monitor<float> monitor(b, 20, 1e-4);
-    
+
     cusp::krylov::cg(A, x, b, monitor);
 
     // check residual norm
@@ -33,8 +33,10 @@ template <class MemorySpace>
 void TestConjugateGradientZeroResidual(void)
 {
     cusp::array2d<float, MemorySpace> M(2,2);
-    M(0,0) = 8; M(0,1) = 0;
-    M(1,0) = 0; M(1,1) = 4;
+    M(0,0) = 8;
+    M(0,1) = 0;
+    M(1,0) = 0;
+    M(1,1) = 4;
 
     cusp::csr_matrix<int, float, MemorySpace> A(M);
 
@@ -44,7 +46,7 @@ void TestConjugateGradientZeroResidual(void)
     cusp::multiply(A, x, b);
 
     cusp::default_monitor<float> monitor(b, 20, 0.0f);
-    
+
     cusp::krylov::cg(A, x, b, monitor);
 
     // check residual norm

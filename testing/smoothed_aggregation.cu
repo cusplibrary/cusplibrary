@@ -353,7 +353,7 @@ void TestSmoothedAggregationHostToDevice(void)
 
     // test as preconditioner
     {
-    	cusp::coo_matrix<IndexType,ValueType,cusp::device_memory> A_d(A_h);
+        cusp::coo_matrix<IndexType,ValueType,cusp::device_memory> A_d(A_h);
         cusp::array1d<ValueType,cusp::device_memory> b = unittest::random_samples<ValueType>(A_d.num_rows);
         cusp::array1d<ValueType,cusp::device_memory> x = unittest::random_samples<ValueType>(A_d.num_rows);
 

@@ -29,7 +29,8 @@ void TestEstimateSpectralRadius(void)
 
     // 2x2 Poisson problem
     {
-        cusp::csr_matrix<int, float, MemorySpace> A; cusp::gallery::poisson5pt(A, 2, 2); 
+        cusp::csr_matrix<int, float, MemorySpace> A;
+        cusp::gallery::poisson5pt(A, 2, 2);
         float rho = 6.0;
         ASSERT_EQUAL((std::abs(cusp::detail::estimate_spectral_radius(A) - rho) / rho) < 0.1f, true);
         ASSERT_EQUAL((std::abs(cusp::detail::ritz_spectral_radius(A) - rho) / rho) < 0.1f, true);
@@ -39,7 +40,8 @@ void TestEstimateSpectralRadius(void)
 
     // 4x4 Poisson problem
     {
-        cusp::csr_matrix<int, float, MemorySpace> A; cusp::gallery::poisson5pt(A, 4, 4); 
+        cusp::csr_matrix<int, float, MemorySpace> A;
+        cusp::gallery::poisson5pt(A, 4, 4);
         float rho = 7.2360679774997871;
         ASSERT_EQUAL((std::abs(cusp::detail::estimate_spectral_radius(A) - rho) / rho) < 0.1f, true);
         ASSERT_EQUAL((std::abs(cusp::detail::ritz_spectral_radius(A) - rho) / rho) < 0.1f, true);

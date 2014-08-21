@@ -30,7 +30,7 @@ struct TestRandomIntegersDistribution
                 counts(nibble, (raw >> (4 * nibble)) % 16)++;
             }
         }
-        
+
         //std::cout << "min " << *thrust::min_element(counts.values.begin(), counts.values.end()) << std::endl;
         //std::cout << "max " << *thrust::max_element(counts.values.begin(), counts.values.end()) << std::endl;
         //cusp::print_matrix(counts);
@@ -38,7 +38,7 @@ struct TestRandomIntegersDistribution
         size_t expected = n / 16;
         size_t min_bin = *thrust::min_element(counts.values.begin(), counts.values.end());
         size_t max_bin = *thrust::max_element(counts.values.begin(), counts.values.end());
-        
+
         ASSERT_GEQUAL(min_bin, (size_t) (0.95 * expected));
         ASSERT_LEQUAL(max_bin, (size_t) (1.05 * expected));
     }
@@ -64,7 +64,7 @@ struct TestRandomRealsDistribution
 
             buckets[ size_t(val * T(buckets.size())) ]++;
         }
-        
+
 //        std::cout << "min " << *thrust::min_element(buckets.begin(), buckets.end()) << std::endl;
 //        std::cout << "max " << *thrust::max_element(buckets.begin(), buckets.end()) << std::endl;
 //        cusp::print_matrix(buckets);
@@ -72,7 +72,7 @@ struct TestRandomRealsDistribution
         size_t expected = n / buckets.size();
         size_t min_bin = *thrust::min_element(buckets.begin(), buckets.end());
         size_t max_bin = *thrust::max_element(buckets.begin(), buckets.end());
-        
+
         ASSERT_GEQUAL(min_bin, (size_t) (0.95 * expected));
         ASSERT_LEQUAL(max_bin, (size_t) (1.05 * expected));
     }

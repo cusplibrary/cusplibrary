@@ -152,7 +152,7 @@ void CompareSparseMatrixDenseMatrixMultiply(DenseMatrixType A, DenseMatrixType B
     DenseSpaceMatrixType _B(B.num_rows, B.num_cols, ValueType(0), cusp::detail::round_up(B.num_rows, size_t(128)));
     // Copy columns of B into _B
     for(size_t i = 0; i < B.num_cols; i++ )
-	cusp::blas::copy(B_space.column(i), _B.column(i));
+        cusp::blas::copy(B_space.column(i), _B.column(i));
 
     // test container
     {

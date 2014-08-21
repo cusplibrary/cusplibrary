@@ -21,7 +21,7 @@ void TestOffsetsToIndices(void)
     offsets[5] =  2;
     offsets[6] =  5;
     offsets[7] = 10;
-    
+
     cusp::array1d<int, Space> expected(10);
     expected[0] = 2;
     expected[1] = 4;
@@ -83,8 +83,10 @@ void TestExtractDiagonal(void)
 
     {
         cusp::array2d<float, Space> A(2,2);
-        A(0,0) = 1.0;  A(0,1) = 2.0;
-        A(1,0) = 3.0;  A(1,1) = 4.0;
+        A(0,0) = 1.0;
+        A(0,1) = 2.0;
+        A(1,0) = 3.0;
+        A(1,1) = 4.0;
 
         cusp::array1d<float, Space> expected(2);
         expected[0] = 1.0;
@@ -96,12 +98,21 @@ void TestExtractDiagonal(void)
 
         ASSERT_EQUAL(output, expected);
     }
-    
+
     {
         cusp::array2d<float, Space> A(3,4);
-        A(0,0) = 0.0;  A(0,1) = 0.0;  A(0,2) = 4.0;  A(0,3) = 0.0;  
-        A(1,0) = 1.0;  A(1,1) = 2.0;  A(1,2) = 0.0;  A(1,3) = 6.0;
-        A(2,0) = 0.0;  A(2,1) = 3.0;  A(2,2) = 5.0;  A(2,3) = 0.0;
+        A(0,0) = 0.0;
+        A(0,1) = 0.0;
+        A(0,2) = 4.0;
+        A(0,3) = 0.0;
+        A(1,0) = 1.0;
+        A(1,1) = 2.0;
+        A(1,2) = 0.0;
+        A(1,3) = 6.0;
+        A(2,0) = 0.0;
+        A(2,1) = 3.0;
+        A(2,2) = 5.0;
+        A(2,3) = 0.0;
 
         cusp::array1d<float, Space> expected(3);
         expected[0] = 0.0;
@@ -114,14 +125,34 @@ void TestExtractDiagonal(void)
 
         ASSERT_EQUAL(output, expected);
     }
-    
+
     {
         cusp::array2d<float, Space> A(5,5);
-        A(0,0) = 1.0;  A(0,1) = 1.0;   A(0,2) = 2.0;   A(0,3) = 0.0;   A(0,4) = 0.0; 
-        A(1,0) = 3.0;  A(1,1) = 4.0;   A(1,2) = 0.0;   A(1,3) = 0.0;   A(1,4) = 0.0;
-        A(2,0) = 0.0;  A(2,1) = 6.0;   A(2,2) = 0.0;   A(2,3) = 0.0;   A(2,4) = 0.0;
-        A(3,0) = 0.0;  A(3,1) = 0.0;   A(3,2) = 7.0;   A(3,3) = 8.0;   A(3,4) = 0.0;
-        A(4,0) = 0.0;  A(4,1) = 0.0;   A(4,2) = 0.0;   A(4,3) = 0.0;   A(4,4) = 9.0;
+        A(0,0) = 1.0;
+        A(0,1) = 1.0;
+        A(0,2) = 2.0;
+        A(0,3) = 0.0;
+        A(0,4) = 0.0;
+        A(1,0) = 3.0;
+        A(1,1) = 4.0;
+        A(1,2) = 0.0;
+        A(1,3) = 0.0;
+        A(1,4) = 0.0;
+        A(2,0) = 0.0;
+        A(2,1) = 6.0;
+        A(2,2) = 0.0;
+        A(2,3) = 0.0;
+        A(2,4) = 0.0;
+        A(3,0) = 0.0;
+        A(3,1) = 0.0;
+        A(3,2) = 7.0;
+        A(3,3) = 8.0;
+        A(3,4) = 0.0;
+        A(4,0) = 0.0;
+        A(4,1) = 0.0;
+        A(4,2) = 0.0;
+        A(4,3) = 0.0;
+        A(4,4) = 9.0;
 
         cusp::array1d<float, Space> expected(5);
         expected[0] = 1.0;
