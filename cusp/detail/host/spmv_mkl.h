@@ -38,14 +38,14 @@ namespace host
 
 // TODO Implement spmv_coo method compatible with HYB SpMV
 template <typename Matrix,
-          typename Vector1,
-          typename Vector2,
-          typename UnaryFunction,
-          typename BinaryFunction1,
-          typename BinaryFunction2>
+         typename Vector1,
+         typename Vector2,
+         typename UnaryFunction,
+         typename BinaryFunction1,
+         typename BinaryFunction2>
 void spmv_coo(const Matrix&  A,
               const Vector1& x,
-                    Vector2& y,
+              Vector2& y,
               UnaryFunction   initialize,
               BinaryFunction1 combine,
               BinaryFunction2 reduce)
@@ -69,38 +69,38 @@ void spmv_coo(const Matrix&  A,
 
 template<typename IndexType>
 void spmv_coo( 	char * transa,
-		IndexType * num_rows,
-		IndexType * num_cols,
-		float * A_values,
-		IndexType * row_indices,
-		IndexType * column_indices,
-		IndexType * num_entries,
-		float * x,
-		float * y) 
+                IndexType * num_rows,
+                IndexType * num_cols,
+                float * A_values,
+                IndexType * row_indices,
+                IndexType * column_indices,
+                IndexType * num_entries,
+                float * x,
+                float * y)
 {
-    mkl_cspblas_scoogemv(transa, num_rows, A_values, row_indices, column_indices, num_entries, x, y); 
+    mkl_cspblas_scoogemv(transa, num_rows, A_values, row_indices, column_indices, num_entries, x, y);
 }
 
 template<typename IndexType>
 void spmv_coo( 	char * transa,
-		IndexType * num_rows,
-		IndexType * num_cols,
-		double * A_values,
-		IndexType * row_indices,
-		IndexType * column_indices,
-		IndexType * num_entries,
-		double * x,
-		double * y) 
+                IndexType * num_rows,
+                IndexType * num_cols,
+                double * A_values,
+                IndexType * row_indices,
+                IndexType * column_indices,
+                IndexType * num_entries,
+                double * x,
+                double * y)
 {
-    mkl_cspblas_dcoogemv(transa, num_rows, A_values, row_indices, column_indices, num_entries, x, y); 
+    mkl_cspblas_dcoogemv(transa, num_rows, A_values, row_indices, column_indices, num_entries, x, y);
 }
 
 template <typename Matrix,
-          typename Vector1,
-          typename Vector2>
+         typename Vector1,
+         typename Vector2>
 void spmv_coo(const Matrix&  A,
               const Vector1& x,
-                    Vector2& y)
+              Vector2& y)
 {
     typedef typename Matrix::index_type IndexType;
     typedef typename Matrix::value_type ValueType;
@@ -119,18 +119,18 @@ void spmv_coo(const Matrix&  A,
     // TODO Check if  matrix dimensions allow conversion to 32-bit indexing (i.e. num_cols < 2^32)
     if( sizeof(IndexType) > 4 )
     {
-	cusp::array1d<MKL_INT,cusp::host_memory> I_32(A.row_indices);
-	cusp::array1d<MKL_INT,cusp::host_memory> J_32(A.column_indices);
+        cusp::array1d<MKL_INT,cusp::host_memory> I_32(A.row_indices);
+        cusp::array1d<MKL_INT,cusp::host_memory> J_32(A.column_indices);
 
-    	MKL_INT * pI_32 = (MKL_INT *) thrust::raw_pointer_cast(&I_32[0]);
-	MKL_INT * pJ_32 = (MKL_INT *) thrust::raw_pointer_cast(&J_32[0]);
+        MKL_INT * pI_32 = (MKL_INT *) thrust::raw_pointer_cast(&I_32[0]);
+        MKL_INT * pJ_32 = (MKL_INT *) thrust::raw_pointer_cast(&J_32[0]);
 
         spmv_coo(&transa,m,n,V,pI_32,pJ_32,nnz,X,Y);
     }
     else
     {
-    	MKL_INT * I = (MKL_INT *) thrust::raw_pointer_cast(&A.row_indices[0]);
-	MKL_INT * J = (MKL_INT *) thrust::raw_pointer_cast(&A.column_indices[0]);
+        MKL_INT * I = (MKL_INT *) thrust::raw_pointer_cast(&A.row_indices[0]);
+        MKL_INT * J = (MKL_INT *) thrust::raw_pointer_cast(&A.column_indices[0]);
 
         spmv_coo(&transa,m,n,V,I,J,nnz,X,Y);
     }
@@ -142,36 +142,36 @@ void spmv_coo(const Matrix&  A,
 //////////////
 template<typename IndexType>
 void spmv_csr( 	char * transa,
-		IndexType * num_rows,
-		IndexType * num_cols,
-		float * A_values,
-		IndexType * column_indices,
-		IndexType * row_offsets,
-		float * x,
-		float * y) 
+                IndexType * num_rows,
+                IndexType * num_cols,
+                float * A_values,
+                IndexType * column_indices,
+                IndexType * row_offsets,
+                float * x,
+                float * y)
 {
-    mkl_cspblas_scsrgemv(transa, num_rows, A_values, row_offsets, column_indices, x, y); 
+    mkl_cspblas_scsrgemv(transa, num_rows, A_values, row_offsets, column_indices, x, y);
 }
 
 template<typename IndexType>
 void spmv_csr( 	char * transa,
-		IndexType * num_rows,
-		IndexType * num_cols,
-		double * A_values,
-		IndexType * column_indices,
-		IndexType * row_offsets,
-		double * x,
-		double * y) 
+                IndexType * num_rows,
+                IndexType * num_cols,
+                double * A_values,
+                IndexType * column_indices,
+                IndexType * row_offsets,
+                double * x,
+                double * y)
 {
-    mkl_cspblas_dcsrgemv(transa, num_rows, A_values, row_offsets, column_indices, x, y); 
+    mkl_cspblas_dcsrgemv(transa, num_rows, A_values, row_offsets, column_indices, x, y);
 }
 
 template <typename Matrix,
-          typename Vector1,
-          typename Vector2>
+         typename Vector1,
+         typename Vector2>
 void spmv_csr(const Matrix&  A,
               const Vector1& x,
-                    Vector2& y)
+              Vector2& y)
 {
     typedef typename Matrix::index_type IndexType;
     typedef typename Matrix::value_type ValueType;
@@ -189,18 +189,18 @@ void spmv_csr(const Matrix&  A,
     // TODO Check if  matrix dimensions allow conversion to 32-bit indexing (i.e. num_cols < 2^32)
     if( sizeof(IndexType) > 4 )
     {
-	cusp::array1d<MKL_INT,cusp::host_memory> P_32(A.row_offsets);
-	cusp::array1d<MKL_INT,cusp::host_memory> J_32(A.column_indices);
+        cusp::array1d<MKL_INT,cusp::host_memory> P_32(A.row_offsets);
+        cusp::array1d<MKL_INT,cusp::host_memory> J_32(A.column_indices);
 
-    	MKL_INT * pP_32 = (MKL_INT *) thrust::raw_pointer_cast(&P_32[0]);
-	MKL_INT * pJ_32 = (MKL_INT *) thrust::raw_pointer_cast(&J_32[0]);
+        MKL_INT * pP_32 = (MKL_INT *) thrust::raw_pointer_cast(&P_32[0]);
+        MKL_INT * pJ_32 = (MKL_INT *) thrust::raw_pointer_cast(&J_32[0]);
 
         spmv_csr(&transa,m,n,V,pJ_32,pP_32,X,Y);
     }
     else
     {
-    	MKL_INT * P = (MKL_INT *) thrust::raw_pointer_cast(&A.row_offsets[0]);
-	MKL_INT * J = (MKL_INT *) thrust::raw_pointer_cast(&A.column_indices[0]);
+        MKL_INT * P = (MKL_INT *) thrust::raw_pointer_cast(&A.row_offsets[0]);
+        MKL_INT * J = (MKL_INT *) thrust::raw_pointer_cast(&A.column_indices[0]);
 
         spmv_csr(&transa,m,n,V,J,P,X,Y);
     }
@@ -213,14 +213,14 @@ void spmv_csr(const Matrix&  A,
 
 // TODO Reconcile DIA data layout between CUSP and MKL SpMV kernels
 template <typename Matrix,
-          typename Vector1,
-          typename Vector2,
-          typename UnaryFunction,
-          typename BinaryFunction1,
-          typename BinaryFunction2>
+         typename Vector1,
+         typename Vector2,
+         typename UnaryFunction,
+         typename BinaryFunction1,
+         typename BinaryFunction2>
 void spmv_dia(const Matrix&  A,
               const Vector1& x,
-                    Vector2& y,
+              Vector2& y,
               UnaryFunction   initialize,
               BinaryFunction1 combine,
               BinaryFunction2 reduce)
@@ -248,19 +248,19 @@ void spmv_dia(const Matrix&  A,
             const ValueType& Aij = A.values(i_start + n, i);
 
             const ValueType& xj = x[j_start + n];
-                  ValueType& yi = y[i_start + n];
-    
+            ValueType& yi = y[i_start + n];
+
             yi = reduce(yi, combine(Aij, xj));
         }
     }
 }
 
 template <typename Matrix,
-          typename Vector1,
-          typename Vector2>
+         typename Vector1,
+         typename Vector2>
 void spmv_dia(const Matrix&  A,
               const Vector1& x,
-                    Vector2& y)
+              Vector2& y)
 {
     typedef typename Vector2::value_type ValueType;
 
@@ -275,17 +275,17 @@ void spmv_dia(const Matrix&  A,
 // ELL SpMV //
 //////////////
 template <typename Matrix,
-          typename Vector1,
-          typename Vector2>
+         typename Vector1,
+         typename Vector2>
 void spmv_ell(const Matrix&  A,
               const Vector1& x,
-                    Vector2& y)
+              Vector2& y)
 {
     typedef typename Matrix::index_type IndexType;
     typedef typename Matrix::value_type ValueType;
 
     char transa = 'N';
-    
+
     MKL_INT m   = (MKL_INT) A.num_rows;
     MKL_INT n   = (MKL_INT) A.num_cols;
 
@@ -301,7 +301,7 @@ void spmv_ell(const Matrix&  A,
 
     cusp::array1d<MKL_INT,cusp::host_memory> row_offsets(A.num_rows+1);
     for( IndexType index = 0; index < row_offsets.size(); index++ )
-	row_offsets[index] = index*num_entries_per_row;
+        row_offsets[index] = index*num_entries_per_row;
 
     MKL_INT * P = (MKL_INT *) thrust::raw_pointer_cast(&row_offsets[0]);
     MKL_INT * J = (MKL_INT *) thrust::raw_pointer_cast(&column_indices(0,0));

@@ -17,7 +17,7 @@ struct test_nrm2
 
     void operator()(void)
     {
-        cusp::blas::nrm2(x); 
+        cusp::blas::nrm2(x);
     }
 
     std::string name(void) const { return (sizeof(T) == 4) ? "snrm2" : "dnrm2"; }

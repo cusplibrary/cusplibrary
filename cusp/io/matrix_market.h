@@ -46,13 +46,13 @@ namespace io
  * \code
  * #include <cusp/io/matrix_market.h>
  * #include <cusp/coo_matrix.h>
- * 
+ *
  * int main(void)
  * {
  *     // read matrix stored in A.mtx into a coo_matrix
  *     cusp::coo_matrix<int, float, cusp::device_memory> A;
  *     cusp::io::read_matrix_market_file(A, "A.mtx");
- * 
+ *
  *     return 0;
  * }
  * \endcode
@@ -75,13 +75,13 @@ void read_matrix_market_file(Matrix& mtx, const std::string& filename);
  * \code
  * #include <cusp/io/matrix_market.h>
  * #include <cusp/coo_matrix.h>
- * 
+ *
  * int main(void)
  * {
  *     // read matrix stored in A.mtx into a coo_matrix
  *     cusp::coo_matrix<int, float, cusp::device_memory> A;
  *     cusp::io::read_matrix_market_stream(A, std::cin);
- * 
+ *
  *     return 0;
  * }
  * \endcode
@@ -104,7 +104,7 @@ void read_matrix_market_stream(Matrix& mtx, Stream& input);
  * \code
  * #include <cusp/io/matrix_market.h>
  * #include <cusp/array2d.h>
- * 
+ *
  * int main(void)
  * {
  *     // create a simple example
@@ -112,10 +112,10 @@ void read_matrix_market_stream(Matrix& mtx, Stream& input);
  *     A(0,0) = 10;  A(0,1) =  0;  A(0,2) = 20;  A(0,3) =  0;
  *     A(1,0) =  0;  A(1,1) = 30;  A(1,2) =  0;  A(1,3) = 40;
  *     A(2,0) = 50;  A(2,1) = 60;  A(2,2) = 70;  A(2,3) = 80;
- * 
+ *
  *     // save A into MatrixMarket file
  *     cusp::io::write_matrix_market_file(A, "A.mtx");
- * 
+ *
  *     return 0;
  * }
  * \endcode
@@ -136,7 +136,7 @@ void write_matrix_market_file(const Matrix& mtx, const std::string& filename);
  * \code
  * #include <cusp/io/matrix_market.h>
  * #include <cusp/array2d.h>
- * 
+ *
  * int main(void)
  * {
  *     // create a simple example
@@ -144,10 +144,10 @@ void write_matrix_market_file(const Matrix& mtx, const std::string& filename);
  *     A(0,0) = 10;  A(0,1) =  0;  A(0,2) = 20;  A(0,3) =  0;
  *     A(1,0) =  0;  A(1,1) = 30;  A(1,2) =  0;  A(1,3) = 40;
  *     A(2,0) = 50;  A(2,1) = 60;  A(2,2) = 70;  A(2,3) = 80;
- * 
+ *
  *     // save A into MatrixMarket file
  *     cusp::io::write_matrix_market_stream(A, std::cout);
- * 
+ *
  *     return 0;
  * }
  * \endcode
