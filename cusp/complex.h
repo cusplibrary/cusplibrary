@@ -511,7 +511,11 @@ public:
   // explicitly makes things faster with at least g++
   __host__ __device__
     inline complex<double>(const complex<double> & z)
-    : cuDoubleComplex(z) {}
+    //: cuDoubleComplex(z) {}
+    {
+	  real(z.real());
+	  imag(z.imag());
+    }
 
   __host__ __device__
     inline complex<double>(cuDoubleComplex z)
