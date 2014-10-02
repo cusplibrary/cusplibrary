@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2009 NVIDIA Corporation
+ *  Copyright 2008-2014 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -334,4 +334,3 @@ make_csr_matrix_view(const csr_matrix<IndexType,ValueType,MemorySpace>& m)
 } // end namespace cusp
 
 #include <cusp/detail/csr_matrix.inl>
-

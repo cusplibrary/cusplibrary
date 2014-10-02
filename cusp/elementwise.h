@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2009 NVIDIA Corporation
+ *  Copyright 2008-2014 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -43,20 +43,20 @@ namespace cusp
 /*! \p add : Compute the sum of two matrices
  */
 template <typename Matrix1,
-          typename Matrix2,
-          typename Matrix3>
+         typename Matrix2,
+         typename Matrix3>
 void add(const Matrix1& A,
          const Matrix2& B,
-               Matrix3& C);
+         Matrix3& C);
 
 /*! \p add : Compute the difference of two matrices
  */
 template <typename Matrix1,
-          typename Matrix2,
-          typename Matrix3>
+         typename Matrix2,
+         typename Matrix3>
 void subtract(const Matrix1& A,
               const Matrix2& B,
-                    Matrix3& C);
+              Matrix3& C);
 /*! \}
  */
 

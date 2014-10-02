@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2009 NVIDIA Corporation
+ *  Copyright 2008-2014 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -24,30 +24,30 @@ namespace cusp
 //////////////////
 // Constructors //
 //////////////////
-        
+
 // construct from another matrix
 template <typename IndexType, typename ValueType, class MemorySpace>
 template <typename MatrixType>
 hyb_matrix<IndexType,ValueType,MemorySpace>
-    ::hyb_matrix(const MatrixType& matrix)
-    {
-        cusp::convert(matrix, *this);
-    }
+::hyb_matrix(const MatrixType& matrix)
+{
+    cusp::convert(matrix, *this);
+}
 
 //////////////////////
 // Member Functions //
 //////////////////////
-        
+
 template <typename IndexType, typename ValueType, class MemorySpace>
 template <typename MatrixType>
-    hyb_matrix<IndexType,ValueType,MemorySpace>&
-    hyb_matrix<IndexType,ValueType,MemorySpace>
-    ::operator=(const MatrixType& matrix)
-    {
-        cusp::convert(matrix, *this);
-        
-        return *this;
-    }
+hyb_matrix<IndexType,ValueType,MemorySpace>&
+hyb_matrix<IndexType,ValueType,MemorySpace>
+::operator=(const MatrixType& matrix)
+{
+    cusp::convert(matrix, *this);
+
+    return *this;
+}
 
 } // end namespace cusp
 

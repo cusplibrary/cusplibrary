@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2009 NVIDIA Corporation
+ *  Copyright 2008-2014 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -37,10 +37,10 @@ namespace device
 {
 
 template <typename Matrix1,
-          typename Matrix2,
-          typename Matrix3,
-          typename Array1,
-          typename Array2>
+         typename Matrix2,
+         typename Matrix3,
+         typename Array1,
+         typename Array2>
 void coo_spmm_helper(size_t workspace_size,
                      size_t begin_row,
                      size_t end_row,
@@ -48,15 +48,15 @@ void coo_spmm_helper(size_t workspace_size,
                      size_t end_segment,
                      const Matrix1& A,
                      const Matrix2& B,
-                           Matrix3& C,
+                     Matrix3& C,
                      const Array1& B_row_offsets,
                      const Array1& segment_lengths,
                      const Array1& output_ptr,
-                           Array1& A_gather_locations,
-                           Array1& B_gather_locations,
-                           Array1& I,
-                           Array1& J,
-                           Array2& V)
+                     Array1& A_gather_locations,
+                     Array1& B_gather_locations,
+                     Array1& I,
+                     Array1& J,
+                     Array2& V)
 {
     typedef typename Array1::value_type IndexType;
     typedef typename Array2::value_type ValueType;
@@ -66,7 +66,7 @@ void coo_spmm_helper(size_t workspace_size,
     I.resize(workspace_size);
     J.resize(workspace_size);
     V.resize(workspace_size);
-  
+
     // nothing to do
     if (workspace_size == 0)
     {
@@ -77,11 +77,11 @@ void coo_spmm_helper(size_t workspace_size,
     // compute gather locations of intermediate format
     thrust::fill(A_gather_locations.begin(), A_gather_locations.end(), 0);
     thrust::scatter_if(thrust::counting_iterator<IndexType>(begin_segment), thrust::counting_iterator<IndexType>(end_segment),
-                       output_ptr.begin() + begin_segment, 
+                       output_ptr.begin() + begin_segment,
                        segment_lengths.begin() + begin_segment,
                        A_gather_locations.begin() - output_ptr[begin_segment]);
     thrust::inclusive_scan(A_gather_locations.begin(), A_gather_locations.end(), A_gather_locations.begin(), thrust::maximum<IndexType>());
-  
+
     // compute gather locations of intermediate format
     thrust::fill(B_gather_locations.begin(), B_gather_locations.end(), 1);
     thrust::scatter_if(thrust::make_permutation_iterator(B_row_offsets.begin(), A.column_indices.begin()) + begin_segment,
@@ -94,7 +94,7 @@ void coo_spmm_helper(size_t workspace_size,
                                   B_gather_locations.begin(),
                                   B_gather_locations.begin());
 
-    
+
     thrust::gather(A_gather_locations.begin(), A_gather_locations.end(),
                    A.row_indices.begin(),
                    I.begin());
@@ -124,22 +124,22 @@ void coo_spmm_helper(size_t workspace_size,
 
     // sum values with the same (i,j)
     thrust::reduce_by_key
-        (thrust::make_zip_iterator(thrust::make_tuple(I.begin(), J.begin())),
-         thrust::make_zip_iterator(thrust::make_tuple(I.end(),   J.end())),
-         V.begin(),
-         thrust::make_zip_iterator(thrust::make_tuple(C.row_indices.begin(), C.column_indices.begin())),
-         C.values.begin(),
-         thrust::equal_to< thrust::tuple<IndexType,IndexType> >(),
-         thrust::plus<ValueType>());
+    (thrust::make_zip_iterator(thrust::make_tuple(I.begin(), J.begin())),
+     thrust::make_zip_iterator(thrust::make_tuple(I.end(),   J.end())),
+     V.begin(),
+     thrust::make_zip_iterator(thrust::make_tuple(C.row_indices.begin(), C.column_indices.begin())),
+     C.values.begin(),
+     thrust::equal_to< thrust::tuple<IndexType,IndexType> >(),
+     thrust::plus<ValueType>());
 }
 
 
 template <typename Matrix1,
-          typename Matrix2,
-          typename Matrix3>
+         typename Matrix2,
+         typename Matrix3>
 void spmm_coo(const Matrix1& A,
               const Matrix2& B,
-                    Matrix3& C)
+              Matrix3& C)
 {
     CUSP_PROFILE_SCOPED();
 
@@ -167,7 +167,7 @@ void spmm_coo(const Matrix1& A,
     thrust::gather(A.column_indices.begin(), A.column_indices.end(),
                    B_row_lengths.begin(),
                    segment_lengths.begin());
-    
+
     // output pointer
     cusp::array1d<IndexType,MemorySpace> output_ptr(A.num_entries + 1);
     thrust::exclusive_scan(segment_lengths.begin(), segment_lengths.end(),
@@ -178,17 +178,17 @@ void spmm_coo(const Matrix1& A,
     size_t coo_num_nonzeros = output_ptr[A.num_entries];
 
     size_t workspace_capacity = thrust::min<size_t>(coo_num_nonzeros, 16 << 20);
-    
+
     {
-      // TODO abstract this
-      size_t free, total;
-      cudaMemGetInfo(&free, &total);
+        // TODO abstract this
+        size_t free, total;
+        cudaMemGetInfo(&free, &total);
 
-      // divide free bytes by the size of each workspace unit
-      size_t max_workspace_capacity = free / (4 * sizeof(IndexType) + sizeof(ValueType));
+        // divide free bytes by the size of each workspace unit
+        size_t max_workspace_capacity = free / (4 * sizeof(IndexType) + sizeof(ValueType));
 
-      // use at most one third of the remaining capacity
-      workspace_capacity = thrust::min<size_t>(max_workspace_capacity / 3, workspace_capacity);
+        // use at most one third of the remaining capacity
+        workspace_capacity = thrust::min<size_t>(max_workspace_capacity / 3, workspace_capacity);
     }
 
     // workspace arrays
@@ -228,7 +228,7 @@ void spmm_coo(const Matrix1& A,
         // compute row offsets for A
         cusp::array1d<IndexType,MemorySpace> A_row_offsets(A.num_rows + 1);
         cusp::detail::indices_to_offsets(A.row_indices, A_row_offsets);
-    
+
         // compute worspace requirements for each row
         cusp::array1d<IndexType,MemorySpace> cummulative_row_workspace(A.num_rows);
         thrust::gather(A_row_offsets.begin() + 1, A_row_offsets.end(),
@@ -241,20 +241,20 @@ void spmm_coo(const Matrix1& A,
         while (begin_row < size_t(A.num_rows))
         {
             Container C_slice;
-    
+
             // find largest end_row such that the capacity of [begin_row, end_row) fits in the workspace_capacity
             size_t end_row = thrust::upper_bound(cummulative_row_workspace.begin() + begin_row, cummulative_row_workspace.end(),
                                                  total_work + IndexType(workspace_capacity)) - cummulative_row_workspace.begin();
 
             size_t begin_segment = A_row_offsets[begin_row];
             size_t end_segment   = A_row_offsets[end_row];
-        
+
             // TODO throw exception signaling that there is insufficient memory (not necessarily bad_alloc)
             //if (begin_row == end_row)
             //    // workspace wasn't large enough, throw cusp::memory_allocation_failure?
 
             size_t workspace_size = output_ptr[end_segment] - output_ptr[begin_segment];
-            
+
             total_work += workspace_size;
 
             // TODO remove these when an exception is in place
@@ -277,11 +277,16 @@ void spmm_coo(const Matrix1& A,
         }
 
         // deallocate workspace
-        A_gather_locations.clear(); A_gather_locations.shrink_to_fit();  
-        B_gather_locations.clear(); B_gather_locations.shrink_to_fit();
-        I.clear();                  I.shrink_to_fit();
-        J.clear();                  J.shrink_to_fit();
-        V.clear();                  V.shrink_to_fit();
+        A_gather_locations.clear();
+        A_gather_locations.shrink_to_fit();
+        B_gather_locations.clear();
+        B_gather_locations.shrink_to_fit();
+        I.clear();
+        I.shrink_to_fit();
+        J.clear();
+        J.shrink_to_fit();
+        V.clear();
+        V.shrink_to_fit();
 
         // compute total output size
         size_t C_num_entries = 0;
@@ -290,7 +295,7 @@ void spmm_coo(const Matrix1& A,
 
         // resize output
         C.resize(A.num_rows, B.num_cols, C_num_entries);
-       
+
         // copy slices into output
         size_t base = 0;
         for(typename ContainerList::iterator iter = slices.begin(); iter != slices.end(); ++iter)

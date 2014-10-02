@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2009 NVIDIA Corporation
+ *  Copyright 2008-2014 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -41,17 +41,17 @@ namespace cusp
  *  \code
  *  #include <cusp/array2d.h>
  *  #include <cusp/print.h>
- *  
+ *
  *  int main(void)
  *  {
  *      // initialize a 2x3 matrix
  *      cusp::array2d<float, cusp::host_memory> A(2,3);
  *      A(0,0) = 10;  A(0,1) = 20;  A(0,2) = 30;
  *      A(1,0) = 40;  A(1,1) = 50;  A(1,2) = 60;
- *  
+ *
  *      // print A
  *      cusp::print(A);
- *  
+ *
  *      return 0;
  *  }
  *  \endcode
@@ -74,19 +74,19 @@ void print(const Printable& p);
  *  #include <cusp/print.h>
  *
  *  #include <sstream>
- *  
+ *
  *  int main(void)
  *  {
  *      // initialize a 2x3 matrix
  *      cusp::array2d<float, cusp::host_memory> A(2,3);
  *      A(0,0) = 10;  A(0,1) = 20;  A(0,2) = 30;
  *      A(1,0) = 40;  A(1,1) = 50;  A(1,2) = 60;
- *  
+ *
  *      std::ostringstream oss;
  *
  *      // print A to stream
  *      cusp::print(A, oss);
- *  
+ *
  *      return 0;
  *  }
  *  \endcode

@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2009 NVIDIA Corporation
+ *  Copyright 2008-2014 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@
 // Cusp supports Thrust v1.3 and above
 #if THRUST_VERSION < 100500
 #error "Thrust v1.5.0 or newer is required"
-#endif 
+#endif
 
 // decorator for deprecated features
 #define CUSP_DEPRECATED THRUST_DEPRECATED

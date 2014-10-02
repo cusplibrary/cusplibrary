@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2009 NVIDIA Corporation
+ *  Copyright 2008-2014 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -79,12 +79,14 @@ template <typename Array, typename IndexType, typename MemorySpace> class permut
 template <typename IndexType, class MemorySpace>
 class permutation_matrix : public detail::matrix_base<IndexType,IndexType,MemorySpace,cusp::permutation_format>
 {
-  typedef cusp::detail::matrix_base<IndexType,IndexType,MemorySpace,cusp::permutation_format> Parent;
-  public:
+    typedef cusp::detail::matrix_base<IndexType,IndexType,MemorySpace,cusp::permutation_format> Parent;
+public:
     /*! rebind matrix to a different MemorySpace
      */
     template<typename MemorySpace2>
-    struct rebind { typedef cusp::permutation_matrix<IndexType, MemorySpace2> type; };
+    struct rebind {
+        typedef cusp::permutation_matrix<IndexType, MemorySpace2> type;
+    };
 
     /*! type of permutation indices array
      */
@@ -97,12 +99,12 @@ class permutation_matrix : public detail::matrix_base<IndexType,IndexType,Memory
     /*! equivalent view type
      */
     typedef typename cusp::permutation_matrix_view<typename permutation_array_type::view,
-                                           IndexType, MemorySpace> view;
+            IndexType, MemorySpace> view;
 
     /*! equivalent const_view type
      */
     typedef typename cusp::permutation_matrix_view<typename permutation_array_type::const_view,
-                                                    IndexType, MemorySpace> const_view;
+            IndexType, MemorySpace> const_view;
 
     /*! Storage for the permutation indices
      */
@@ -119,8 +121,8 @@ class permutation_matrix : public detail::matrix_base<IndexType,IndexType,Memory
      *  \param num_entries Number of nonzero matrix entries.
      */
     permutation_matrix(size_t num_rows)
-      : Parent(num_rows, num_rows, num_rows),
-        permutation(cusp::counting_array<int>(num_rows)) {}
+        : Parent(num_rows, num_rows, num_rows),
+          permutation(cusp::counting_array<int>(num_rows)) {}
 
     /*! Construct a \p permutation_matrix from another matrix.
      *
@@ -128,7 +130,7 @@ class permutation_matrix : public detail::matrix_base<IndexType,IndexType,Memory
      */
     template<typename MemorySpace2>
     permutation_matrix(const permutation_matrix<IndexType,MemorySpace2>& P)
-      : Parent(P), permutation(P.permutation) {}
+        : Parent(P), permutation(P.permutation) {}
 
     /*! Construct a \p permutation_matrix from another matrix.
      *
@@ -136,14 +138,14 @@ class permutation_matrix : public detail::matrix_base<IndexType,IndexType,Memory
      */
     template<typename Array1>
     permutation_matrix(size_t num_rows, const Array1& permutation)
-      : Parent(num_rows, num_rows, num_rows), permutation(permutation) {}
+        : Parent(num_rows, num_rows, num_rows), permutation(permutation) {}
 
     /*! Resize matrix dimensions and underlying storage
      */
     void resize(size_t num_rows)
     {
-      Parent::resize(num_rows, num_rows, num_rows);
-      permutation.resize(num_rows);
+        Parent::resize(num_rows, num_rows, num_rows);
+        permutation.resize(num_rows);
     }
 
     /*! Swap the contents of two \p permutation_matrix objects.
@@ -152,8 +154,8 @@ class permutation_matrix : public detail::matrix_base<IndexType,IndexType,Memory
      */
     void swap(permutation_matrix& matrix)
     {
-      Parent::swap(matrix);
-      permutation.swap(matrix.permutation);
+        Parent::swap(matrix);
+        permutation.swap(matrix.permutation);
     }
 
     /*! Permute rows and columns of matrix elements
@@ -177,12 +179,12 @@ class permutation_matrix : public detail::matrix_base<IndexType,IndexType,Memory
  *
  */
 template <typename Array,
-          typename IndexType   = typename Array::value_type,
-          typename MemorySpace = typename Array::memory_space>
+         typename IndexType   = typename Array::value_type,
+         typename MemorySpace = typename Array::memory_space>
 class permutation_matrix_view : public cusp::detail::matrix_base<IndexType,IndexType,MemorySpace,cusp::permutation_format>
 {
-  typedef cusp::detail::matrix_base<IndexType,IndexType,MemorySpace,cusp::permutation_format> Parent;
-  public:
+    typedef cusp::detail::matrix_base<IndexType,IndexType,MemorySpace,cusp::permutation_format> Parent;
+public:
     typedef Array permutation_array_type;
 
     /*! equivalent container type
@@ -199,25 +201,25 @@ class permutation_matrix_view : public cusp::detail::matrix_base<IndexType,Index
 
     // construct empty view
     permutation_matrix_view(void)
-      : Parent() {}
+        : Parent() {}
 
     // construct from existing permutation matrix or view
     permutation_matrix_view(permutation_matrix<IndexType,MemorySpace>& P)
-      : Parent(P),
-        permutation(P.permutation) {}
+        : Parent(P),
+          permutation(P.permutation) {}
 
     // TODO check sizes here
     template<typename Array1>
     permutation_matrix_view(size_t num_rows, const Array1& permutation)
-      : Parent(num_rows, num_rows, num_rows),
-        permutation(permutation) {}
+        : Parent(num_rows, num_rows, num_rows),
+          permutation(permutation) {}
 
     /*! Resize matrix dimensions and underlying storage
      */
     void resize(size_t num_rows)
     {
-      Parent::resize(num_rows, num_rows, num_rows);
-      permutation.resize(num_rows);
+        Parent::resize(num_rows, num_rows, num_rows);
+        permutation.resize(num_rows);
     }
 
     /*! Permute rows and columns of matrix elements
@@ -232,33 +234,33 @@ template <typename Array>
 permutation_matrix_view<Array>
 make_permutation_matrix_view(size_t num_rows, Array permutation)
 {
-  return permutation_matrix_view<Array>
-    (num_rows, permutation);
+    return permutation_matrix_view<Array>
+           (num_rows, permutation);
 }
 
 template <typename Array,
-          typename IndexType,
-          typename MemorySpace>
+         typename IndexType,
+         typename MemorySpace>
 permutation_matrix_view<Array,IndexType,MemorySpace>
 make_permutation_matrix_view(const permutation_matrix_view<Array,IndexType,MemorySpace>& m)
 {
-  return permutation_matrix_view<Array,IndexType,MemorySpace>(m);
+    return permutation_matrix_view<Array,IndexType,MemorySpace>(m);
 }
 
 template <typename IndexType, class MemorySpace>
 typename permutation_matrix<IndexType,MemorySpace>::view
 make_permutation_matrix_view(permutation_matrix<IndexType,MemorySpace>& m)
 {
-  return make_permutation_matrix_view
-    (m.num_rows, make_array1d_view(m.permutation));
+    return make_permutation_matrix_view
+           (m.num_rows, make_array1d_view(m.permutation));
 }
 
 template <typename IndexType, class MemorySpace>
 typename permutation_matrix<IndexType,MemorySpace>::const_view
 make_permutation_matrix_view(const permutation_matrix<IndexType,MemorySpace>& m)
 {
-  return make_permutation_matrix_view
-    (m.num_rows, make_array1d_view(m.permutation));
+    return make_permutation_matrix_view
+           (m.num_rows, make_array1d_view(m.permutation));
 }
 /*! \}
  */

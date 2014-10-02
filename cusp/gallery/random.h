@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2009 NVIDIA Corporation
+ *  Copyright 2008-2014 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -64,7 +64,7 @@ void random(size_t num_rows, size_t num_cols, size_t num_samples, MatrixType& ou
                          - thrust::make_zip_iterator(thrust::make_tuple(coo.row_indices.begin(), coo.column_indices.begin()));
 
     coo.resize(num_rows, num_cols, num_entries);
-    
+
     output = coo;
 }
 /*! \}

@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2009 NVIDIA Corporation
+ *  Copyright 2008-2014 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -45,4 +45,3 @@ void convert(const SourceType& src, DestinationType& dst);
 } // end namespace cusp
 
 #include <cusp/detail/convert.inl>
-

@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2009 NVIDIA Corporation
+ *  Copyright 2008-2014 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 /*! \file copy.h
  *  \brief Performs (deep) copy operations between containers and views.
  */
-    
+
 #pragma once
 
 #include <cusp/detail/config.h>

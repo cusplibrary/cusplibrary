@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2009 NVIDIA Corporation
+ *  Copyright 2008-2014 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -33,107 +33,111 @@ class timer
 
     float milliseconds_elapsed()
     {
-      float elapsed_time;
-      cudaEventRecord(_end, 0);
-      cudaEventSynchronize(_end);
-      cudaEventElapsedTime(&elapsed_time, _start, _end);
-      return elapsed_time;
+        float elapsed_time;
+        cudaEventRecord(_end, 0);
+        cudaEventSynchronize(_end);
+        cudaEventElapsedTime(&elapsed_time, _start, _end);
+        return elapsed_time;
     }
 
-  public:
+public:
 
     timer() : _start(NULL),_end(NULL)
     {
-      reset();
+        reset();
     }
 
     ~timer()
     {
-      stop();
+        stop();
     }
 
     void operator+=(const timer &b)
     {
-      milliseconds += b.milliseconds;
-      calls += b.calls;
+        milliseconds += b.milliseconds;
+        calls += b.calls;
     }
 
-    bool is_empty(void)  const { return milliseconds == 0.0; }
-    bool is_paused(void) const { return paused; }
+    bool is_empty(void)  const {
+        return milliseconds == 0.0;
+    }
+    bool is_paused(void) const {
+        return paused;
+    }
 
     void unpause(void)
     {
-      cudaEventRecord(_start,0);
-      paused = false;
+        cudaEventRecord(_start,0);
+        paused = false;
     }
 
     void pause(void)
     {
-      stop();
-      cudaEventCreate(&_start);
-      cudaEventCreate(&_end);
-      paused = true;
+        stop();
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_end);
+        paused = true;
     }
 
     void start(void)
     {
-      ++calls;
-      cudaEventCreate(&_start);
-      cudaEventCreate(&_end);
-      cudaEventRecord(_start,0);
+        ++calls;
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_end);
+        cudaEventRecord(_start,0);
     }
 
     void stop(void)
     {
-      if(_start != NULL && _end != NULL)
-        milliseconds += milliseconds_elapsed();
-      if(_start != NULL )
-        cudaEventDestroy(_start);
-      if(_end != NULL )
-        cudaEventDestroy(_end);
+        if(_start != NULL && _end != NULL)
+            milliseconds += milliseconds_elapsed();
+        if(_start != NULL )
+            cudaEventDestroy(_start);
+        if(_end != NULL )
+            cudaEventDestroy(_end);
 
-      _start = NULL;
-      _end   = NULL;
+        _start = NULL;
+        _end   = NULL;
     }
 
-    void soft_stop(void) 
+    void soft_stop(void)
     {
-      if ( !paused )
-        milliseconds = milliseconds_elapsed();
+        if ( !paused )
+            milliseconds = milliseconds_elapsed();
     }
 
-    void reset(void) 
+    void reset(void)
     {
-      if(_start != NULL ) cudaEventDestroy(_start);
-      if(_end   != NULL ) cudaEventDestroy(_end);
+        if(_start != NULL ) cudaEventDestroy(_start);
+        if(_end   != NULL ) cudaEventDestroy(_end);
 
-      _start = NULL;
-      _end = NULL;
+        _start = NULL;
+        _end = NULL;
 
-      calls = 0;
-      paused = false;
-      milliseconds = 0.0;
+        calls = 0;
+        paused = false;
+        milliseconds = 0.0;
     }
 
     void soft_reset(void)
     {
-      calls = 0;
-      milliseconds = 0.0;
+        calls = 0;
+        milliseconds = 0.0;
 
-      cudaEventDestroy(_start);
-      cudaEventDestroy(_end);
-      cudaEventCreate(&_start);
-      cudaEventCreate(&_end);
+        cudaEventDestroy(_start);
+        cudaEventDestroy(_end);
+        cudaEventCreate(&_start);
+        cudaEventCreate(&_end);
     }
 
     float total_milliseconds()
     {
-      return milliseconds;
+        return milliseconds;
     }
 
     float total_seconds()
     {
-      return milliseconds / 1000.0;
+        return milliseconds / 1000.0;
     }
 };
 

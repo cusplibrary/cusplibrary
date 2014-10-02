@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2009 NVIDIA Corporation
+ *  Copyright 2008-2014 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -266,13 +266,13 @@ protected:
 template <typename ValueType>
 class counting_array : public cusp::array1d_view< thrust::counting_iterator<ValueType> >
 {
-  typedef thrust::counting_iterator<ValueType> iterator;
-  typedef cusp::array1d_view<iterator> Parent;
+    typedef thrust::counting_iterator<ValueType> iterator;
+    typedef cusp::array1d_view<iterator> Parent;
 
 public:
 
-  counting_array(ValueType size) : Parent(iterator(0), iterator(size)){}
-  counting_array(ValueType start, ValueType finish) : Parent(iterator(start), iterator(finish)){}
+    counting_array(ValueType size) : Parent(iterator(0), iterator(size)) {}
+    counting_array(ValueType start, ValueType finish) : Parent(iterator(start), iterator(finish)) {}
 };
 
 /*! \p constant_array : One-dimensional constant array view
@@ -284,12 +284,12 @@ public:
 template <typename ValueType>
 class constant_array : public cusp::array1d_view< thrust::constant_iterator<ValueType> >
 {
-  typedef thrust::constant_iterator<ValueType> iterator;
-  typedef cusp::array1d_view<iterator> Parent;
+    typedef thrust::constant_iterator<ValueType> iterator;
+    typedef cusp::array1d_view<iterator> Parent;
 
 public:
 
-  constant_array(ValueType value, size_t size) : Parent(iterator(value), iterator(value) + size){}
+    constant_array(ValueType value, size_t size) : Parent(iterator(value), iterator(value) + size) {}
 };
 
 /* Convenience functions */

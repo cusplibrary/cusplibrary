@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2010 NVIDIA Corporation
+ *  Copyright 2008-2014 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@
 
 #include <cusp/detail/config.h>
 
-//  This is the only cusp header that is guaranteed to 
+//  This is the only cusp header that is guaranteed to
 //  change with every cusp release.
 //
 //  CUSP_VERSION % 100 is the sub-minor version

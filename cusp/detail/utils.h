@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2009 NVIDIA Corporation
+ *  Copyright 2008-2014 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ IntegralType round_up(IntegralType n, IntegralType k)
 template <typename Iterator>
 class strided_range
 {
-    public:
+public:
 
     typedef typename thrust::iterator_difference<Iterator>::type difference_type;
 
@@ -48,7 +48,7 @@ class strided_range
 
         __host__ __device__
         difference_type operator()(const difference_type& i) const
-        { 
+        {
             return stride * i;
         }
     };
@@ -63,7 +63,7 @@ class strided_range
     // construct strided_range for the range [first,last)
     strided_range(Iterator first, Iterator last, difference_type stride)
         : first(first), last(last), stride(stride) {}
-   
+
     iterator begin(void) const
     {
         return PermutationIterator(first, TransformIterator(CountingIterator(0), stride_functor(stride)));
@@ -73,8 +73,8 @@ class strided_range
     {
         return begin() + ((last - first) + (stride - 1)) / stride;
     }
-    
-    protected:
+
+protected:
     Iterator first;
     Iterator last;
     difference_type stride;

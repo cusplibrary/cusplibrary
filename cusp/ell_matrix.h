@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2009 NVIDIA Corporation
+ *  Copyright 2008-2014 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -342,4 +342,3 @@ make_ell_matrix_view(const ell_matrix<IndexType,ValueType,MemorySpace>& m);
 
 #include <cusp/array2d.h>
 #include <cusp/detail/ell_matrix.inl>
-

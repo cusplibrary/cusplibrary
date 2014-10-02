@@ -32,54 +32,54 @@
 #undef fastcall
 
 #if defined(_MSC_VER)
-        #undef __PRETTY_FUNCTION__
-        #define __PRETTY_FUNCTION__ __FUNCSIG__
-        #define PROFILE_CONCAT( a, b ) a "/" b
+#undef __PRETTY_FUNCTION__
+#define __PRETTY_FUNCTION__ __FUNCSIG__
+#define PROFILE_CONCAT( a, b ) a "/" b
 
-        #define noinline __declspec(noinline)
-        #define fastcall __fastcall
+#define noinline __declspec(noinline)
+#define fastcall __fastcall
 #else
-        #define PROFILE_CONCAT( a, b ) b
+#define PROFILE_CONCAT( a, b ) b
 
-        #define noinline __attribute__ ((noinline))
-        #define fastcall
+#define noinline __attribute__ ((noinline))
+#define fastcall
 #endif
 
 #if defined(__PROFILER_FULL_TYPE_EXPANSION__)
-        #define PROFILE_FUNCTION() __PRETTY_FUNCTION__
+#define PROFILE_FUNCTION() __PRETTY_FUNCTION__
 #else
-        #define PROFILE_FUNCTION() __FUNCTION__
+#define PROFILE_FUNCTION() __FUNCTION__
 #endif
 
 #if defined(__PROFILER_ENABLED__)
-        // function
-        #define PROFILE_PAUSE()             cusp::detail::profiler::pause()
-        #define PROFILE_UNPAUSE()           cusp::detail::profiler::unpause()
-        #define PROFILE_PAUSE_SCOPED()      cusp::detail::profiler::ScopedPause profilerpause##__LINE__
+// function
+#define PROFILE_PAUSE()             cusp::detail::profiler::pause()
+#define PROFILE_UNPAUSE()           cusp::detail::profiler::unpause()
+#define PROFILE_PAUSE_SCOPED()      cusp::detail::profiler::ScopedPause profilerpause##__LINE__
 
-        #define PROFILE_START_RAW( text )   cusp::detail::profiler::enter( text )
-        #define PROFILE_START()             PROFILE_START_RAW( PROFILE_FUNCTION()  )
-        #define PROFILE_START_DESC( desc )  PROFILE_START_RAW( PROFILE_CONCAT( PROFILE_FUNCTION(), desc ) )
+#define PROFILE_START_RAW( text )   cusp::detail::profiler::enter( text )
+#define PROFILE_START()             PROFILE_START_RAW( PROFILE_FUNCTION()  )
+#define PROFILE_START_DESC( desc )  PROFILE_START_RAW( PROFILE_CONCAT( PROFILE_FUNCTION(), desc ) )
 
-        #define PROFILE_SCOPED_RAW( text )  cusp::detail::profiler::Scoped profiler##__LINE__ ( text )
-        #define PROFILE_SCOPED()            PROFILE_SCOPED_RAW( PROFILE_FUNCTION() )
-        #define PROFILE_SCOPED_DESC( desc ) PROFILE_SCOPED_RAW( PROFILE_CONCAT( PROFILE_FUNCTION(), desc ) )
+#define PROFILE_SCOPED_RAW( text )  cusp::detail::profiler::Scoped profiler##__LINE__ ( text )
+#define PROFILE_SCOPED()            PROFILE_SCOPED_RAW( PROFILE_FUNCTION() )
+#define PROFILE_SCOPED_DESC( desc ) PROFILE_SCOPED_RAW( PROFILE_CONCAT( PROFILE_FUNCTION(), desc ) )
 
-        #define PROFILE_STOP()              profiler::exit()
+#define PROFILE_STOP()              profiler::exit()
 #else
-        #define PROFILE_PAUSE()
-        #define PROFILE_UNPAUSE()
-        #define PROFILE_PAUSE_SCOPED()
+#define PROFILE_PAUSE()
+#define PROFILE_UNPAUSE()
+#define PROFILE_PAUSE_SCOPED()
 
-        #define PROFILE_START_RAW( text )
-        #define PROFILE_START()
-        #define PROFILE_START_DESC( desc )
+#define PROFILE_START_RAW( text )
+#define PROFILE_START()
+#define PROFILE_START_DESC( desc )
 
-        #define PROFILE_SCOPED_RAW( text )
-        #define PROFILE_SCOPED()
-        #define PROFILE_SCOPED_DESC( desc )
+#define PROFILE_SCOPED_RAW( text )
+#define PROFILE_SCOPED()
+#define PROFILE_SCOPED_DESC( desc )
 
-        #define PROFILE_STOP()
+#define PROFILE_STOP()
 #endif
 
 namespace cusp
@@ -88,32 +88,40 @@ namespace detail
 {
 namespace profiler
 {
-        /*
-        =============
-        Interface functions
-        =============
-        */
+/*
+=============
+Interface functions
+=============
+*/
 
-        void detect( int argc, const char *argv[] );
-        void detect( const char *commandLine );
-        void dump();
-        void fastcall enter( const char *name );
-        void fastcall exit();
-        void fastcall pause();
-        void fastcall unpause();
-        void reset();
+void detect( int argc, const char *argv[] );
+void detect( const char *commandLine );
+void dump();
+void fastcall enter( const char *name );
+void fastcall exit();
+void fastcall pause();
+void fastcall unpause();
+void reset();
 
-        struct Scoped 
-	{
-                Scoped( const char *name ) { PROFILE_START_RAW( name ); }
-                ~Scoped() { PROFILE_STOP(); }
-        };
+struct Scoped
+{
+    Scoped( const char *name ) {
+        PROFILE_START_RAW( name );
+    }
+    ~Scoped() {
+        PROFILE_STOP();
+    }
+};
 
-        struct ScopedPause 
-	{
-                ScopedPause() { PROFILE_PAUSE(); }
-                ~ScopedPause() { PROFILE_UNPAUSE(); }
-        };
+struct ScopedPause
+{
+    ScopedPause() {
+        PROFILE_PAUSE();
+    }
+    ~ScopedPause() {
+        PROFILE_UNPAUSE();
+    }
+};
 
 } // end namespace profiler
 } // end namespace detail

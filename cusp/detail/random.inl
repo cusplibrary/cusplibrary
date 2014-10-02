@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2009 NVIDIA Corporation
+ *  Copyright 2008-2014 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -88,7 +88,7 @@ struct integer_to_real : public thrust::unary_function<UnsignedInteger,Real>
 template <typename T>
 struct random_integer_iterator
 {
-    public:
+public:
     typedef           ptrdiff_t                                               IndexType;
     typedef typename thrust::counting_iterator<IndexType>                     CountingIterator;
     typedef          random_integer_functor<IndexType,T>                      Functor;
@@ -112,7 +112,7 @@ struct random_real_iterator<float>
     typedef typename random_integer_iterator<unsigned int>::type                RandomIterator;
     typedef          integer_to_real<unsigned int, float>                       Functor;
     typedef typename thrust::transform_iterator<Functor, RandomIterator, float> TransformIterator;
-    
+
     typedef TransformIterator type;
 
     static type make(const size_t seed)
@@ -146,13 +146,13 @@ struct random_real_iterator<double>
 template <typename T>
 class random_integers : public cusp::array1d_view<typename detail::random_integer_iterator<T>::type>
 {
-    protected:
+protected:
     typedef typename detail::random_integer_iterator<T>::type Iterator;
     typedef typename cusp::array1d_view<Iterator>             Parent;
 
-    public:
+public:
     random_integers(const size_t n, const size_t seed = 0)
-        : Parent(detail::random_integer_iterator<T>::make(seed), 
+        : Parent(detail::random_integer_iterator<T>::make(seed),
                  detail::random_integer_iterator<T>::make(seed) + n)
     {}
 };
@@ -160,13 +160,13 @@ class random_integers : public cusp::array1d_view<typename detail::random_intege
 template <typename T>
 class random_reals : public cusp::array1d_view<typename detail::random_real_iterator<T>::type>
 {
-    protected:
+protected:
     typedef typename detail::random_real_iterator<T>::type Iterator;
     typedef typename cusp::array1d_view<Iterator>          Parent;
 
-    public:
+public:
     random_reals(const size_t n, const size_t seed = 0)
-        : Parent(detail::random_real_iterator<T>::make(seed), 
+        : Parent(detail::random_real_iterator<T>::make(seed),
                  detail::random_real_iterator<T>::make(seed) + n)
     {}
 };

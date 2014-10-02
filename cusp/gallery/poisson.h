@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2009 NVIDIA Corporation
+ *  Copyright 2008-2014 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -152,4 +152,3 @@ void poisson27pt(      MatrixType& matrix, size_t m, size_t n, size_t l)
 
 } // end namespace gallery
 } // end namespace cusp
-
