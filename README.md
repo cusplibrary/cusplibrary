@@ -50,7 +50,6 @@ CUSP releases are labeled using version identifiers having three fields:
 <h3>Contributors</h3>
 
 CUSP is developed as an open-source project by [NVIDIA Research](http://research.nvidia.com).
-The primary developers of Cusp are [Steven Dalton](http://research.nvidia.com/users/steven-dalton).
 
 <br><hr>
 <h3>Open Source License</h3>
