@@ -23,6 +23,7 @@
 #include <thrust/gather.h>
 #include <thrust/iterator/counting_iterator.h>
 #include <thrust/iterator/transform_iterator.h>
+#include <thrust/detail/type_traits.h>
 
 namespace cusp
 {
@@ -147,9 +148,17 @@ void copy(const T1& src, T2& dst,
           cusp::array2d_format,
           cusp::array2d_format)
 {
-    copy_array2d(src, dst,
-                 typename T1::orientation(),
-                 typename T2::orientation());
+    if (thrust::detail::is_same<typename T1::orientation, typename T2::orientation>::value)
+    {
+        copy_array2d(src, dst,
+            typename T1::orientation());
+    }
+    else
+    {
+        copy_array2d(src, dst,
+            typename T1::orientation(),
+            typename T2::orientation());
+    }
 }
 
 } // end namespace detail

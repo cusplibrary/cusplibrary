@@ -166,7 +166,7 @@ __inline__ __device__ cusp::complex<double> fetch_x(const int& i, const cusp::co
       {
 	int2 vr = tex1Dfetch(tex_x_double, i*2);
 	int2 vi = tex1Dfetch(tex_x_double, i*2+1);
-        return cusp::complex<double<(__hiloint2double(vr.y, vr.x),__hiloint2double(vr.y, vr.x));
+        return cusp::complex<double<(__hiloint2double(vr.y, vr.x),__hiloint2double(vi.y, vi.x));
     }
     else
 #endif // CUSP_USE_TEXTURE_MEMORY
