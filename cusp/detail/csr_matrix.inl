@@ -22,15 +22,15 @@ namespace cusp
 //////////////////
 // Constructors //
 //////////////////
-        
+
 // construct from a different matrix
 template <typename IndexType, typename ValueType, class MemorySpace>
 template <typename MatrixType>
 csr_matrix<IndexType,ValueType,MemorySpace>
-    ::csr_matrix(const MatrixType& matrix)
-    {
-        cusp::convert(matrix, *this);
-    }
+::csr_matrix(const MatrixType& matrix)
+{
+    cusp::convert(matrix, *this);
+}
 
 //////////////////////
 // Member Functions //
@@ -39,14 +39,14 @@ csr_matrix<IndexType,ValueType,MemorySpace>
 // assignment from another matrix
 template <typename IndexType, typename ValueType, class MemorySpace>
 template <typename MatrixType>
-    csr_matrix<IndexType,ValueType,MemorySpace>&
-    csr_matrix<IndexType,ValueType,MemorySpace>
-    ::operator=(const MatrixType& matrix)
-    {
-        cusp::convert(matrix, *this);
-        
-        return *this;
-    }
+csr_matrix<IndexType,ValueType,MemorySpace>&
+csr_matrix<IndexType,ValueType,MemorySpace>
+::operator=(const MatrixType& matrix)
+{
+    cusp::convert(matrix, *this);
+
+    return *this;
+}
 
 } // end namespace cusp
 

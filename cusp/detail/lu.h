@@ -39,7 +39,7 @@ int lu_factor(cusp::array2d<ValueType,MemorySpace,Orientation>& A,
         // find the pivot row
         pivot[k] = k;
         ValueType max = std::fabs(A(k,k));
-        
+
         for (int j = k + 1; j < n; j++)
         {
             if (max < std::fabs(A(j,k)))
@@ -59,7 +59,7 @@ int lu_factor(cusp::array2d<ValueType,MemorySpace,Orientation>& A,
         if (A(k,k) == 0.0)
             return -1;
 
-        // otherwise find the lower triangular matrix elements for column k. 
+        // otherwise find the lower triangular matrix elements for column k.
         for (int i = k + 1; i < n; i++)
             A(i,k) /= A(k,k);
 
@@ -78,10 +78,10 @@ template <typename IndexType, typename ValueType, typename MemorySpace, typename
 int lu_solve(const cusp::array2d<ValueType,MemorySpace,Orientation>& A,
              const cusp::array1d<IndexType,MemorySpace>& pivot,
              const cusp::array1d<ValueType,MemorySpace>& b,
-                   cusp::array1d<ValueType,MemorySpace>& x)
+             cusp::array1d<ValueType,MemorySpace>& x)
 {
     const int n = A.num_rows;
-   
+
     // copy rhs to x
     x = b;
 
@@ -119,7 +119,7 @@ class lu_solver : public cusp::linear_operator<ValueType,MemorySpace>
     cusp::array2d<ValueType,cusp::host_memory> lu;
     cusp::array1d<int,cusp::host_memory>       pivot;
 
-    public:
+public:
     lu_solver()
         : linear_operator<ValueType,MemorySpace>()
     { }
@@ -129,7 +129,7 @@ class lu_solver : public cusp::linear_operator<ValueType,MemorySpace>
     { }
 
     template <typename MatrixType>
-    lu_solver(const MatrixType& A) 
+    lu_solver(const MatrixType& A)
         : linear_operator<ValueType,MemorySpace>(A.num_rows, A.num_cols, A.num_entries)
     {
         CUSP_PROFILE_SCOPED();

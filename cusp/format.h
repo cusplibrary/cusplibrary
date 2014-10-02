@@ -42,4 +42,3 @@ struct hyb_format : public sparse_format {};
 struct permutation_format : public sparse_format {};
 
 } // end namespace cusp
-

@@ -42,7 +42,7 @@ namespace cusp
  */
 template <typename MatrixType, typename SmootherType, typename SolverType>
 class multilevel : public cusp::linear_operator<typename MatrixType::value_type,
-    						typename MatrixType::memory_space>
+    typename MatrixType::memory_space>
 {
 public:
 
@@ -61,17 +61,17 @@ public:
 
         SmootherType smoother;
 
-	level(){}
+        level() {}
 
-	template<typename Level_Type>
-	level(const Level_Type& level) : R(level.R), A(level.A), P(level.P), x(level.x), b(level.b), residual(level.residual), smoother(level.smoother){}
+        template<typename Level_Type>
+        level(const Level_Type& level) : R(level.R), A(level.A), P(level.P), x(level.x), b(level.b), residual(level.residual), smoother(level.smoother) {}
     };
 
     SolverType solver;
 
     std::vector<level> levels;
 
-    multilevel(){};
+    multilevel() {};
 
     template <typename MatrixType2, typename SmootherType2, typename SolverType2>
     multilevel(const multilevel<MatrixType2, SmootherType2, SolverType2>& M);

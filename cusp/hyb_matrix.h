@@ -312,4 +312,3 @@ public:
 } // end namespace cusp
 
 #include <cusp/detail/hyb_matrix.inl>
-

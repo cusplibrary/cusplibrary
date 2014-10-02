@@ -28,4 +28,3 @@ template <typename IndexType, typename ValueType, typename MemorySpace> class el
 template <typename IndexType, typename ValueType, typename MemorySpace> class hyb_matrix;
 
 } // end namespace cusp
-

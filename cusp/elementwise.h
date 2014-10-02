@@ -43,20 +43,20 @@ namespace cusp
 /*! \p add : Compute the sum of two matrices
  */
 template <typename Matrix1,
-          typename Matrix2,
-          typename Matrix3>
+         typename Matrix2,
+         typename Matrix3>
 void add(const Matrix1& A,
          const Matrix2& B,
-               Matrix3& C);
+         Matrix3& C);
 
 /*! \p add : Compute the difference of two matrices
  */
 template <typename Matrix1,
-          typename Matrix2,
-          typename Matrix3>
+         typename Matrix2,
+         typename Matrix3>
 void subtract(const Matrix1& A,
               const Matrix2& B,
-                    Matrix3& C);
+              Matrix3& C);
 /*! \}
  */
 

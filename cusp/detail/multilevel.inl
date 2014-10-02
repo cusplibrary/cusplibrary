@@ -24,11 +24,11 @@ namespace cusp
 template <typename MatrixType, typename SmootherType, typename SolverType>
 template <typename MatrixType2, typename SmootherType2, typename SolverType2>
 multilevel<MatrixType,SmootherType,SolverType>
-::multilevel(const multilevel<MatrixType2,SmootherType2,SolverType2>& M) 
-  : solver(M.solver)
+::multilevel(const multilevel<MatrixType2,SmootherType2,SolverType2>& M)
+    : solver(M.solver)
 {
-   for( size_t lvl = 0; lvl < M.levels.size(); lvl++ )
-      levels.push_back(M.levels[lvl]);
+    for( size_t lvl = 0; lvl < M.levels.size(); lvl++ )
+        levels.push_back(M.levels[lvl]);
 }
 
 template <typename MatrixType, typename SmootherType, typename SolverType>
@@ -107,7 +107,7 @@ void multilevel<MatrixType,SmootherType,SolverType>
     }
     else
     {
-    	/* const MatrixType& A = levels[i].A; */
+        /* const MatrixType& A = levels[i].A; */
 
         // presmooth
         /* levels[i].smoother.presmooth(A, b, x); */

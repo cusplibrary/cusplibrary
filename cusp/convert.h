@@ -45,4 +45,3 @@ void convert(const SourceType& src, DestinationType& dst);
 } // end namespace cusp
 
 #include <cusp/detail/convert.inl>
-

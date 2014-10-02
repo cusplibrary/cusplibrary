@@ -342,4 +342,3 @@ make_ell_matrix_view(const ell_matrix<IndexType,ValueType,MemorySpace>& m);
 
 #include <cusp/array2d.h>
 #include <cusp/detail/ell_matrix.inl>
-

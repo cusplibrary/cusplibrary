@@ -189,7 +189,7 @@ struct row_or_column_view<Iterator,false>
     template< typename Array >
     static ArrayType get_array(Array& A, size_t i) {
         cusp::detail::strided_range<Iterator> strided_range(A.values.begin() + i,
-            A.values.begin() + A.pitch * cusp::detail::major_dimension(A.num_rows, A.num_cols, typename Array::orientation()), A.pitch);
+                A.values.begin() + A.pitch * cusp::detail::major_dimension(A.num_rows, A.num_cols, typename Array::orientation()), A.pitch);
         return ArrayType(strided_range.begin(), strided_range.end());
     }
 };
@@ -287,7 +287,7 @@ public:
     array2d(size_t num_rows, size_t num_cols, const ValueType& value, size_t pitch)
         : Parent(num_rows, num_cols, num_rows * num_cols),
           pitch(pitch),
-          values(pitch * cusp::detail::major_dimension(num_rows, num_cols, orientation()), value) 
+          values(pitch * cusp::detail::major_dimension(num_rows, num_cols, orientation()), value)
     {
         if (pitch < cusp::detail::minor_dimension(num_rows, num_cols, orientation()))
             throw cusp::invalid_input_exception("pitch cannot be less than minor dimension");

@@ -368,4 +368,3 @@ make_coo_matrix_view(const coo_matrix<IndexType,ValueType,MemorySpace>& m)
 } // end namespace cusp
 
 #include <cusp/detail/coo_matrix.inl>
-

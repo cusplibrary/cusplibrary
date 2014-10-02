@@ -152,4 +152,3 @@ void poisson27pt(      MatrixType& matrix, size_t m, size_t n, size_t l)
 
 } // end namespace gallery
 } // end namespace cusp
-

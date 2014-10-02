@@ -334,4 +334,3 @@ make_csr_matrix_view(const csr_matrix<IndexType,ValueType,MemorySpace>& m)
 } // end namespace cusp
 
 #include <cusp/detail/csr_matrix.inl>
-

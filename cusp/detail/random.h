@@ -33,4 +33,3 @@ class random_reals;
 } // end namespace cusp
 
 #include <cusp/detail/random.inl>
-

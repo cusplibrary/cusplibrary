@@ -13,7 +13,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-    
+
 #include <cusp/detail/dispatch/convert.h>
 
 #include <cusp/copy.h>
@@ -22,25 +22,25 @@ namespace cusp
 {
 namespace detail
 {
-  
+
 // same format
 template <typename SourceType, typename DestinationType,
-          typename T1>
+         typename T1>
 void convert(const SourceType& src, DestinationType& dst,
              T1, T1)
 {
-  cusp::copy(src, dst);
+    cusp::copy(src, dst);
 }
 
 // different formats
 template <typename SourceType, typename DestinationType,
-          typename T1, typename T2>
+         typename T1, typename T2>
 void convert(const SourceType& src, DestinationType& dst,
              T1, T2)
 {
-  cusp::detail::dispatch::convert(src, dst,
-      typename SourceType::memory_space(),
-      typename DestinationType::memory_space());
+    cusp::detail::dispatch::convert(src, dst,
+                                    typename SourceType::memory_space(),
+                                    typename DestinationType::memory_space());
 }
 
 } // end namespace detail
@@ -51,11 +51,11 @@ void convert(const SourceType& src, DestinationType& dst,
 template <typename SourceType, typename DestinationType>
 void convert(const SourceType& src, DestinationType& dst)
 {
-  CUSP_PROFILE_SCOPED();
+    CUSP_PROFILE_SCOPED();
 
-  cusp::detail::convert(src, dst,
-      typename SourceType::format(),
-      typename DestinationType::format());
+    cusp::detail::convert(src, dst,
+                          typename SourceType::format(),
+                          typename DestinationType::format());
 }
 
 } // end namespace cusp

@@ -44,14 +44,14 @@ template <typename T>
 struct absolute : public thrust::unary_function<T,T>
 {
     __host__ __device__
-	T operator()(T x)
-	{
-	    return x < 0 ? -x : x;
-	}
+    T operator()(T x)
+    {
+        return x < 0 ? -x : x;
+    }
 };
 
 
-template <typename Matrix>    
+template <typename Matrix>
 double estimate_spectral_radius(const Matrix& A, size_t k = 20)
 {
     CUSP_PROFILE_SCOPED();
@@ -74,14 +74,14 @@ double estimate_spectral_radius(const Matrix& A, size_t k = 20)
         cusp::multiply(A, x, y);
         x.swap(y);
     }
-   
+
     if (k == 0)
         return 0;
     else
         return cusp::blas::nrm2(x) / cusp::blas::nrm2(y);
 }
 
-template <typename Matrix>    
+template <typename Matrix>
 double ritz_spectral_radius(const Matrix& A, size_t k = 10)
 {
     CUSP_PROFILE_SCOPED();
@@ -94,7 +94,7 @@ double ritz_spectral_radius(const Matrix& A, size_t k = 10)
     return estimate_spectral_radius(H);
 }
 
-template <typename Matrix>    
+template <typename Matrix>
 double ritz_spectral_radius_symmetric(const Matrix& A, size_t k = 10)
 {
     CUSP_PROFILE_SCOPED();
@@ -107,7 +107,7 @@ double ritz_spectral_radius_symmetric(const Matrix& A, size_t k = 10)
     return estimate_spectral_radius(H);
 }
 
-template <typename IndexType, typename ValueType, typename MemorySpace>    
+template <typename IndexType, typename ValueType, typename MemorySpace>
 double disks_spectral_radius(const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& A)
 {
     CUSP_PROFILE_SCOPED();
@@ -118,8 +118,8 @@ double disks_spectral_radius(const cusp::coo_matrix<IndexType,ValueType,MemorySp
     cusp::array1d<IndexType, MemorySpace> row_sums(N);
 
     {
-      cusp::array1d<IndexType, MemorySpace> temp(N);
-      thrust::reduce_by_key
+        cusp::array1d<IndexType, MemorySpace> temp(N);
+        thrust::reduce_by_key
         (A.row_indices.begin(), A.row_indices.end(),
          thrust::make_transform_iterator(A.values.begin(), absolute<ValueType>()),
          temp.begin(),
@@ -129,7 +129,7 @@ double disks_spectral_radius(const cusp::coo_matrix<IndexType,ValueType,MemorySp
     return *thrust::max_element(row_sums.begin(), row_sums.end());
 }
 
-template <typename Matrix> 
+template <typename Matrix>
 double disks_spectral_radius(const Matrix& A)
 {
     typedef typename Matrix::index_type   IndexType;

@@ -295,4 +295,3 @@ void sort_by_row_and_column(Array1& rows, Array2& columns, Array3& values)
 
 } // end namespace detail
 } // end namespace cusp
-

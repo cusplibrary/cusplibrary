@@ -30,12 +30,12 @@ namespace gallery
 {
 
 template <typename MatrixType,
-          typename StencilPoint,
-          typename GridDimension>
+         typename StencilPoint,
+         typename GridDimension>
 void generate_matrix_from_stencil(      MatrixType& matrix,
-                                  const cusp::array1d<StencilPoint,cusp::host_memory>& stencil,
-                                  const GridDimension& grid);
-                            
+                                        const cusp::array1d<StencilPoint,cusp::host_memory>& stencil,
+                                        const GridDimension& grid);
+
 } // end namespace gallery
 } // end namespace cusp
 

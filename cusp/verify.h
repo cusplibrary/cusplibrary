@@ -37,4 +37,3 @@ void assert_is_valid_matrix(const MatrixType& A);
 } // end namespace cusp
 
 #include <cusp/detail/verify.inl>
-

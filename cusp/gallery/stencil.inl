@@ -37,7 +37,7 @@ struct inside_grid_helper
     static bool inside_grid(StencilPoint point, GridDimension grid, IndexType index)
     {
         IndexType x = index % thrust::get<i>(grid) + thrust::get<i>(thrust::get<0>(point));
-        
+
         if (x < 0 || x >= thrust::get<i>(grid))
             return false;
         else
@@ -112,9 +112,9 @@ OutputIterator unpack_tuple(const Tuple & t, OutputIterator output)
 
 
 template <typename IndexType,
-          typename ValueType,
-          typename StencilPoint,
-          typename GridDimension>
+         typename ValueType,
+         typename StencilPoint,
+         typename GridDimension>
 struct fill_diagonal_entries
 {
     StencilPoint point;
@@ -136,13 +136,13 @@ struct fill_diagonal_entries
 } // end namespace detail
 
 template <typename IndexType,
-          typename ValueType,
-          typename MemorySpace,
-          typename StencilPoint,
-          typename GridDimension>
+         typename ValueType,
+         typename MemorySpace,
+         typename StencilPoint,
+         typename GridDimension>
 void generate_matrix_from_stencil(      cusp::dia_matrix<IndexType,ValueType,MemorySpace>& matrix,
-                                  const cusp::array1d<StencilPoint,cusp::host_memory>& stencil,
-                                  const GridDimension& grid)
+                                        const cusp::array1d<StencilPoint,cusp::host_memory>& stencil,
+                                        const GridDimension& grid)
 {
     IndexType num_dimensions = thrust::tuple_size<GridDimension>::value;
 
@@ -178,7 +178,7 @@ void generate_matrix_from_stencil(      cusp::dia_matrix<IndexType,ValueType,Mem
     {
         thrust::transform(thrust::counting_iterator<IndexType>(0),
                           thrust::counting_iterator<IndexType>(num_rows),
-                          matrix.values.values.begin() + matrix.values.pitch * i, 
+                          matrix.values.values.begin() + matrix.values.pitch * i,
                           detail::fill_diagonal_entries<IndexType,ValueType,StencilPoint,GridDimension>(stencil[i], grid));
     }
 
@@ -187,11 +187,11 @@ void generate_matrix_from_stencil(      cusp::dia_matrix<IndexType,ValueType,Mem
 
 // TODO add an entry point and make this the default path
 template <typename MatrixType,
-          typename StencilPoint,
-          typename GridDimension>
+         typename StencilPoint,
+         typename GridDimension>
 void generate_matrix_from_stencil(      MatrixType& matrix,
-                                  const cusp::array1d<StencilPoint,cusp::host_memory>& stencil,
-                                  const GridDimension& grid)
+                                        const cusp::array1d<StencilPoint,cusp::host_memory>& stencil,
+                                        const GridDimension& grid)
 {
     CUSP_PROFILE_SCOPED();
 
@@ -204,7 +204,7 @@ void generate_matrix_from_stencil(      MatrixType& matrix,
 
     cusp::convert(dia, matrix);
 }
-                            
+
 } // end namespace gallery
 } // end namespace cusp
 

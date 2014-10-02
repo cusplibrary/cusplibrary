@@ -29,7 +29,7 @@
 // Cusp supports Thrust v1.3 and above
 #if THRUST_VERSION < 100500
 #error "Thrust v1.5.0 or newer is required"
-#endif 
+#endif
 
 // decorator for deprecated features
 #define CUSP_DEPRECATED THRUST_DEPRECATED

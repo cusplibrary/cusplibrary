@@ -337,4 +337,3 @@ make_dia_matrix_view(const dia_matrix<IndexType,ValueType,MemorySpace>& m);
 
 #include <cusp/array2d.h>
 #include <cusp/detail/dia_matrix.inl>
-

@@ -20,26 +20,26 @@
 namespace cusp
 {
 
-    template<typename IndexType>
-    class matrix_shape
+template<typename IndexType>
+class matrix_shape
+{
+public:
+    typedef IndexType index_type;
+
+    index_type num_rows;
+    index_type num_cols;
+
+    matrix_shape()
+        : num_rows(0), num_cols(0) {}
+
+    matrix_shape(IndexType rows, IndexType cols)
+        : num_rows(rows), num_cols(cols) {}
+
+    void swap(matrix_shape& shape)
     {
-        public:
-            typedef IndexType index_type;
-
-            index_type num_rows;
-            index_type num_cols;
-            
-            matrix_shape()
-                : num_rows(0), num_cols(0) {}
-
-            matrix_shape(IndexType rows, IndexType cols)
-                : num_rows(rows), num_cols(cols) {}
-
-            void swap(matrix_shape& shape)
-            {
-                thrust::swap(num_rows, shape.num_rows);
-                thrust::swap(num_cols, shape.num_cols);
-            }
-    };
+        thrust::swap(num_rows, shape.num_rows);
+        thrust::swap(num_cols, shape.num_cols);
+    }
+};
 
 } // end namespace cusp

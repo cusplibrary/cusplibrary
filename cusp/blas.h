@@ -25,5 +25,5 @@
 
 namespace cusp
 {
-  using namespace blas;
+using namespace blas;
 } // end cusp namespace

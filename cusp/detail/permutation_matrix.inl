@@ -69,4 +69,3 @@ void permutation_matrix_view<Array,IndexType,MemorySpace>
 }
 
 } // end namespace cusp
-

@@ -22,7 +22,7 @@
 
 #include <cusp/detail/config.h>
 
-//  This is the only cusp header that is guaranteed to 
+//  This is the only cusp header that is guaranteed to
 //  change with every cusp release.
 //
 //  CUSP_VERSION % 100 is the sub-minor version

@@ -17,7 +17,7 @@
 /*! \file copy.h
  *  \brief Performs (deep) copy operations between containers and views.
  */
-    
+
 #pragma once
 
 #include <cusp/detail/config.h>

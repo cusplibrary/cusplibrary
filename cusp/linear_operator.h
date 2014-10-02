@@ -33,23 +33,23 @@ namespace cusp
 template <typename ValueType, typename MemorySpace, typename IndexType=int>
 class linear_operator : public cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::unknown_format>
 {
-  typedef cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::unknown_format> Parent;
- public:
-  linear_operator()
-      : Parent() {}
+    typedef cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::unknown_format> Parent;
+public:
+    linear_operator()
+        : Parent() {}
 
-  linear_operator(IndexType num_rows, IndexType num_cols)
-      : Parent(num_rows, num_cols) {}
+    linear_operator(IndexType num_rows, IndexType num_cols)
+        : Parent(num_rows, num_cols) {}
 
-  linear_operator(IndexType num_rows, IndexType num_cols, IndexType num_entries)
-      : Parent(num_rows, num_cols, num_entries) {}
+    linear_operator(IndexType num_rows, IndexType num_cols, IndexType num_entries)
+        : Parent(num_rows, num_cols, num_entries) {}
 }; // linear_operator
 
 template <typename ValueType, typename MemorySpace, typename IndexType=int>
 class identity_operator : public linear_operator<ValueType,MemorySpace,IndexType>
 {
     typedef linear_operator<ValueType,MemorySpace> Parent;
-    public:
+public:
 
     identity_operator()
         : Parent() {}
@@ -58,7 +58,7 @@ class identity_operator : public linear_operator<ValueType,MemorySpace,IndexType
         : Parent(num_rows, num_cols) {}
 
     template <typename VectorType1,
-              typename VectorType2>
+             typename VectorType2>
     void operator()(const VectorType1& x, VectorType2& y) const
     {
         cusp::blas::copy(x, y);
