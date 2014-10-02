@@ -3,7 +3,7 @@
 
 Current release: v0.4.0 (August 30, 2013)
 
-View the project at [CUSP Website](http://cusplibrary.github.com/cusplibrary) and the [cusp-users discussion forum](http://groups.google.com/group/cusp-users) for information and questions.
+View the project at [CUSP Website](http://cusplibrary.github.io) and the [cusp-users discussion forum](http://groups.google.com/group/cusp-users) for information and questions.
 
 <br><hr>
 <h3>A Simple Example</h3>
@@ -32,34 +32,18 @@ int main(void)
 }
 ```
 
-Each thread block uses cub::BlockRadixSort to collectively sort 
-its own input segment.  The class is specialized by the 
-data type being sorted, by the number of threads per block, by the number of 
-keys per thread, and implicitly by the targeted compilation architecture.  
-
-The cub::BlockLoad and cub::BlockStore classes are similarly specialized.    
-Furthermore, to provide coalesced accesses to device memory, these primitives are 
-configured to access memory using a striped access pattern (where consecutive threads 
-simultaneously access consecutive items) and then <em>transpose</em> the keys into 
-a [<em>blocked arrangement</em>](index.html#sec4sec3) of elements across threads. 
-
-Once specialized, these classes expose opaque \p TempStorage member types.  
-The thread block uses these storage types to statically allocate the union of 
-shared memory needed by the thread block.  (Alternatively these storage types 
-could be aliased to global memory allocations).
-
 <br><hr>
 <h3>Stable Releases</h3>
 
-CUB releases are labeled using version identifiers having three fields: 
+CUSP releases are labeled using version identifiers having three fields: 
  
 | Date | Version |
 | ---- | ------- |
-| 05/23/2014 | [CUB v1.3.2](https://github.com/NVlabs/cub/archive/1.3.2.zip) |
-| 04/01/2014 | [CUB v1.2.3](https://github.com/NVlabs/cub/archive/1.2.3.zip) |
-| 12/10/2013 | [CUB v1.1.1](https://github.com/NVlabs/cub/archive/1.1.1.zip) |
-| 08/08/2013 | [CUB v1.0.1](https://github.com/NVlabs/cub/archive/1.0.1.zip) |
-| 03/07/2013 | [CUB v0.9.0](https://github.com/NVlabs/cub/archive/0.9.zip) |
+| 08/30/2013 | [CUSP v0.4.0](https://github.com/sdalton1/cusplibrary/archive/0.4.0.zip) |
+| 03/08/2012 | [CUSP v0.3.1](https://github.com/sdalton1/cusplibrary/archive/0.3.1.zip) |
+| 02/04/2012 | [CUSP v0.3.0](https://github.com/sdalton1/cusplibrary/archive/0.3.0.zip) |
+| 05/30/2011 | [CUSP v0.2.0](https://github.com/sdalton1/cusplibrary/archive/0.2.0.zip) |
+| 07/10/2010 | [CUSP v0.1.0](https://github.com/sdalton1/cusplibrary/archive/0.1.0.zip) |
 
 
 <br><hr>
