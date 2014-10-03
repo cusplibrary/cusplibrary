@@ -98,7 +98,7 @@ struct conjugate<cusp::complex<T> > : public thrust::unary_function<cusp::comple
     __host__ __device__
     cusp::complex<T> operator()(cusp::complex<T> x)
     {
-        return cusp::conj(x);
+        return thrust::conj(x);
     }
 };
 
