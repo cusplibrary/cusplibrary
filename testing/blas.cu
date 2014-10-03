@@ -1,7 +1,7 @@
 #include <unittest/unittest.h>
 
+#include <cusp/complex.h>
 #include <cusp/blas/blas.h>
-
 
 template <class MemorySpace>
 void TestAxpy(void)
@@ -254,25 +254,29 @@ DECLARE_HOST_DEVICE_UNITTEST(TestDot);
 template <class MemorySpace>
 void TestDotc(void)
 {
-    typedef typename cusp::array1d<float, MemorySpace>       Array;
-    typedef typename cusp::array1d<float, MemorySpace>::view View;
+    typedef typename cusp::array1d<cusp::complex<float>, MemorySpace>       Array;
+    typedef typename cusp::array1d<cusp::complex<float>, MemorySpace>::view View;
 
-    // TODO test complex types
     Array x(6);
     Array y(6);
 
-    x[0] =  7.0f;
-    y[0] =  0.0f;
-    x[1] =  5.0f;
-    y[1] = -2.0f;
-    x[2] =  4.0f;
-    y[2] =  0.0f;
-    x[3] = -3.0f;
-    y[3] =  5.0f;
-    x[4] =  0.0f;
-    y[4] =  6.0f;
-    x[5] =  4.0f;
-    y[5] =  1.0f;
+    x[0] = cusp::complex<float>( 7.0f, 0.0f);
+    y[0] = cusp::complex<float>( 0.0f, 0.0f);
+
+    x[1] = cusp::complex<float>( 5.0f, 0.0f);
+    y[1] = cusp::complex<float>(-2.0f, 0.0f);
+
+    x[2] = cusp::complex<float>( 4.0f, 0.0f);
+    y[2] = cusp::complex<float>( 0.0f, 0.0f);
+
+    x[3] = cusp::complex<float>(-3.0f, 0.0f);
+    y[3] = cusp::complex<float>( 5.0f, 0.0f);
+
+    x[4] = cusp::complex<float>( 0.0f, 0.0f);
+    y[4] = cusp::complex<float>( 6.0f, 0.0f);
+
+    x[5] = cusp::complex<float>( 4.0f, 0.0f);
+    y[5] = cusp::complex<float>( 1.0f, 0.0f);
 
     ASSERT_EQUAL(cusp::blas::dotc(x, y), -21.0f);
 

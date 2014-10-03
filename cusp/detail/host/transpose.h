@@ -47,28 +47,28 @@ void transpose(const MatrixType1& A, MatrixType2& At,
     At.resize(A.num_cols, A.num_rows, A.num_entries);
 
     typedef typename MatrixType2::index_type   IndexType;
-    
+
     cusp::array1d<IndexType,cusp::host_memory> starting_pos(A.num_cols+1, 0);
 
     if( A.num_entries > 0 )
     {
-	for( size_t i = 0; i < A.num_entries; i++ )
+        for( size_t i = 0; i < A.num_entries; i++ )
         {
-	   IndexType col = A.column_indices[i];
-	   starting_pos[col+1]++;
+            IndexType col = A.column_indices[i];
+            starting_pos[col+1]++;
         }
 
-	for( size_t i = 1; i < A.num_cols+1; i++ )
-	   starting_pos[i] += starting_pos[i-1];
+        for( size_t i = 1; i < A.num_cols+1; i++ )
+            starting_pos[i] += starting_pos[i-1];
 
-	for( size_t i = 0; i < A.num_entries; i++ )
+        for( size_t i = 0; i < A.num_entries; i++ )
         {
-	   IndexType col = A.column_indices[i];
-           IndexType j = starting_pos[col]++;
+            IndexType col = A.column_indices[i];
+            IndexType j = starting_pos[col]++;
 
-	   At.row_indices[j] = A.column_indices[i];
-	   At.column_indices[j] = A.row_indices[i];
-	   At.values[j] = A.values[i];
+            At.row_indices[j] = A.column_indices[i];
+            At.column_indices[j] = A.row_indices[i];
+            At.values[j] = A.values[i];
         }
     }
 }
@@ -85,34 +85,34 @@ void transpose(const MatrixType1& A, MatrixType2& At,
 
     if( A.num_entries > 0 )
     {
-	for( size_t i = 0; i < At.num_rows+1; i++ )
-	   At.row_offsets[i] = 0;
+        for( size_t i = 0; i < At.num_rows+1; i++ )
+            At.row_offsets[i] = 0;
 
-	for( size_t i = 0; i < At.num_entries; i++ )
-	{
-	   IndexType col = A.column_indices[i];
-	   At.row_offsets[col+1]++;
-	}
+        for( size_t i = 0; i < At.num_entries; i++ )
+        {
+            IndexType col = A.column_indices[i];
+            At.row_offsets[col+1]++;
+        }
 
-	for( size_t i = 1; i < At.num_rows+1; i++ )
-	   At.row_offsets[i] += At.row_offsets[i-1];
+        for( size_t i = 1; i < At.num_rows+1; i++ )
+            At.row_offsets[i] += At.row_offsets[i-1];
 
-	cusp::array1d<IndexType,cusp::host_memory> starting_pos( At.row_offsets );
+        cusp::array1d<IndexType,cusp::host_memory> starting_pos( At.row_offsets );
 
-	for( size_t row = 0; row < A.num_rows; row++ )
-	{
-	   IndexType row_start = A.row_offsets[row];
-	   IndexType row_end   = A.row_offsets[row+1];
+        for( size_t row = 0; row < A.num_rows; row++ )
+        {
+            IndexType row_start = A.row_offsets[row];
+            IndexType row_end   = A.row_offsets[row+1];
 
-	   for( IndexType i = row_start; i < row_end; i++ )
-           {
-	      IndexType col = A.column_indices[i];
-              IndexType j   = starting_pos[col]++;
+            for( IndexType i = row_start; i < row_end; i++ )
+            {
+                IndexType col = A.column_indices[i];
+                IndexType j   = starting_pos[col]++;
 
-	      At.column_indices[j] = row;
-	      At.values[j] = A.values[i];
-           }
-	}
+                At.column_indices[j] = row;
+                At.values[j] = A.values[i];
+            }
+        }
     }
 }
 
