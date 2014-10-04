@@ -63,8 +63,8 @@ void axpy(const cublas::detail::blas_policy<typename Array2::memory_space>& poli
 
     int n = y.size();
 
-    const ValueType* x_p = thrust::raw_pointer_cast(&x[0]);
-    ValueType* y_p = thrust::raw_pointer_cast(&y[0]);
+    const ValueType* x_p = x.raw_data();
+    ValueType* y_p = y.raw_data();
 
     if(cublas::detail::axpy(cublas::__cublas.handle, n, &alpha, x_p, 1, y_p, 1) != CUBLAS_STATUS_SUCCESS)
     {
@@ -83,8 +83,8 @@ dot(const cublas::detail::blas_policy<typename Array1::memory_space>& policy,
 
     int n = y.size();
 
-    const ValueType* x_p = thrust::raw_pointer_cast(&x[0]);
-    const ValueType* y_p = thrust::raw_pointer_cast(&y[0]);
+    const ValueType* x_p = x.raw_data();
+    const ValueType* y_p = y.raw_data();
 
     ValueType result;
 
@@ -107,8 +107,8 @@ dotc(const cublas::detail::blas_policy<typename Array1::memory_space>& policy,
 
     int n = y.size();
 
-    const ValueType* x_p = thrust::raw_pointer_cast(&x[0]);
-    const ValueType* y_p = thrust::raw_pointer_cast(&y[0]);
+    const ValueType* x_p = x.raw_data();
+    const ValueType* y_p = y.raw_data();
 
     ValueType result;
 
@@ -130,7 +130,7 @@ nrm1(const cublas::detail::blas_policy<typename Array::memory_space>& policy,
 
     int n = x.size();
 
-    const ValueType* x_p = thrust::raw_pointer_cast(&x[0]);
+    const ValueType* x_p = x.raw_data();
 
     ResultType result;
 
@@ -152,7 +152,7 @@ nrm2(const cublas::detail::blas_policy<typename Array::memory_space>& policy,
 
     int n = x.size();
 
-    const ValueType* x_p = thrust::raw_pointer_cast(&x[0]);
+    const ValueType* x_p = x.raw_data();
 
     ResultType result;
 
@@ -175,7 +175,7 @@ nrmmax(const cublas::detail::blas_policy<typename Array::memory_space>& policy,
     int index;
     int n = x.size();
 
-    const ValueType* x_p = thrust::raw_pointer_cast(&x[0]);
+    const ValueType* x_p = x.raw_data();
 
     if(cublas::detail::amax(cublas::__cublas.handle, n, x_p, 1, &index) != CUBLAS_STATUS_SUCCESS)
     {
@@ -194,7 +194,7 @@ void scal(const cublas::detail::blas_policy<typename Array::memory_space>& polic
 
     int n = x.size();
 
-    ValueType* x_p = thrust::raw_pointer_cast(&x[0]);
+    ValueType* x_p = x.raw_data();
 
     if(cublas::detail::scal(cublas::__cublas.handle, n, &alpha, x_p, 1) != CUBLAS_STATUS_SUCCESS)
     {
@@ -218,9 +218,9 @@ void gemv(const cublas::detail::blas_policy<typename Array1d2::memory_space>& po
     ValueType alpha = 1.0;
     ValueType beta = 0.0;
 
-    const ValueType *A_p = thrust::raw_pointer_cast(&A[0]);
-    const ValueType *x_p = thrust::raw_pointer_cast(&x[0]);
-    ValueType *y_p = thrust::raw_pointer_cast(&y[0]);
+    const ValueType *A_p = A.raw_data();
+    const ValueType *x_p = x.raw_data();
+    ValueType *y_p = y.raw_data();
 
     cublasStatus_t result;
 
@@ -249,9 +249,9 @@ void gemm(const cublas::detail::blas_policy<typename Array2d3::memory_space>& po
     ValueType alpha = 1.0;
     ValueType beta = 0.0;
 
-    const ValueType * A_p = thrust::raw_pointer_cast(&A(0,0));
-    const ValueType * B_p = thrust::raw_pointer_cast(&B(0,0));
-    ValueType * C_p = thrust::raw_pointer_cast(&C(0,0));
+    const ValueType * A_p = A.raw_data();
+    const ValueType * B_p = B.raw_data();
+    ValueType * C_p = C.raw_data();
 
     cublasStatus_t result;
 

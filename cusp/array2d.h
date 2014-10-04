@@ -25,176 +25,14 @@
 #include <cusp/memory.h>
 #include <cusp/format.h>
 #include <cusp/array1d.h>
+
+#include <cusp/detail/array2d_format_utils.h>
 #include <cusp/detail/matrix_base.h>
-#include <cusp/detail/utils.h>
 
 #include <thrust/functional.h>
 
-// TODO move indexing stuff to /detail/
-
 namespace cusp
 {
-
-struct row_major    {};
-struct column_major {};
-
-// forward definitions
-template<typename Array, class Orientation> class array2d_view;
-
-namespace detail
-{
-// (i,j) -> major dimension
-// (i,j) -> minor dimension
-// logical n -> (i,j)
-// (i,j) -> logical n
-// (i,j) -> physical n
-// logical n -> physical n
-// logical n -> physical n (translated)
-
-template <typename IndexType>
-__host__ __device__
-IndexType minor_dimension(IndexType num_rows, IndexType num_cols, row_major)    {
-    return num_cols;
-}
-
-template <typename IndexType>
-__host__ __device__
-IndexType minor_dimension(IndexType num_rows, IndexType num_cols, column_major) {
-    return num_rows;
-}
-
-template <typename IndexType>
-__host__ __device__
-IndexType major_dimension(IndexType num_rows, IndexType num_cols, row_major)    {
-    return num_rows;
-}
-
-template <typename IndexType>
-__host__ __device__
-IndexType major_dimension(IndexType num_rows, IndexType num_cols, column_major) {
-    return num_cols;
-}
-
-// convert logical linear index into a logical (i,j) index
-template <typename IndexType>
-__host__ __device__
-IndexType linear_index_to_row_index(IndexType linear_index, IndexType num_rows, IndexType num_cols, row_major)    {
-    return linear_index / num_cols;
-}
-
-template <typename IndexType>
-__host__ __device__
-IndexType linear_index_to_col_index(IndexType linear_index, IndexType num_rows, IndexType num_cols, row_major)    {
-    return linear_index % num_cols;
-}
-
-template <typename IndexType>
-__host__ __device__
-IndexType linear_index_to_row_index(IndexType linear_index, IndexType num_rows, IndexType num_cols, column_major)    {
-    return linear_index % num_rows;
-}
-
-template <typename IndexType>
-__host__ __device__
-IndexType linear_index_to_col_index(IndexType linear_index, IndexType num_rows, IndexType num_cols, column_major)    {
-    return linear_index / num_rows;
-}
-
-// convert a logical (i,j) index into a physical linear index
-template <typename IndexType>
-__host__ __device__
-IndexType index_of(IndexType i, IndexType j, IndexType pitch, row_major)    {
-    return i * pitch + j;
-}
-
-template <typename IndexType>
-__host__ __device__
-IndexType index_of(IndexType i, IndexType j, IndexType pitch, column_major) {
-    return j * pitch + i;
-}
-
-template <typename IndexType, typename Orientation>
-__host__ __device__
-IndexType logical_to_physical(IndexType linear_index, IndexType num_rows, IndexType num_cols, IndexType pitch, Orientation)
-{
-    IndexType i = linear_index_to_row_index(linear_index, num_rows, num_cols, Orientation());
-    IndexType j = linear_index_to_col_index(linear_index, num_rows, num_cols, Orientation());
-
-    return index_of(i, j, pitch, Orientation());
-}
-
-// convert logical linear index in the source into a physical linear index in the destination
-template <typename IndexType, typename Orientation1, typename Orientation2>
-__host__ __device__
-IndexType logical_to_other_physical(IndexType linear_index, IndexType num_rows, IndexType num_cols, IndexType pitch, Orientation1, Orientation2)
-{
-    IndexType i = linear_index_to_row_index(linear_index, num_rows, num_cols, Orientation1());
-    IndexType j = linear_index_to_col_index(linear_index, num_rows, num_cols, Orientation1());
-
-    return index_of(i, j, pitch, Orientation2());
-}
-
-// functors
-template <typename IndexType, typename Orientation>
-struct logical_to_physical_functor : public thrust::unary_function<IndexType,IndexType>
-{
-    IndexType num_rows, num_cols, pitch;
-
-    logical_to_physical_functor(IndexType num_rows, IndexType num_cols, IndexType pitch)
-        : num_rows(num_rows), num_cols(num_cols), pitch(pitch) {}
-
-    __host__ __device__
-    IndexType operator()(const IndexType i) const
-    {
-        return logical_to_physical(i, num_rows, num_cols, pitch, Orientation());
-    }
-};
-
-template <typename IndexType, typename Orientation1, typename Orientation2>
-struct logical_to_other_physical_functor : public thrust::unary_function<IndexType,IndexType>
-{
-    IndexType num_rows, num_cols, pitch;
-
-    logical_to_other_physical_functor(IndexType num_rows, IndexType num_cols, IndexType pitch)
-        : num_rows(num_rows), num_cols(num_cols), pitch(pitch) {}
-
-    __host__ __device__
-    IndexType operator()(const IndexType i) const
-    {
-        return logical_to_other_physical(i, num_rows, num_cols, pitch, Orientation1(), Orientation2());
-    }
-};
-
-template <typename Iterator, bool same_orientation>
-struct row_or_column_view {};
-
-template <typename Iterator>
-struct row_or_column_view<Iterator,true>
-{
-    typedef cusp::array1d_view<Iterator> ArrayType;
-
-    template< typename Array >
-    static ArrayType get_array(Array& A, size_t i) {
-        return ArrayType(A.values.begin() + A.pitch * i,
-                         A.values.begin() + A.pitch * i + cusp::detail::minor_dimension(A.num_rows, A.num_cols, typename Array::orientation()));
-    }
-};
-
-template <typename Iterator>
-struct row_or_column_view<Iterator,false>
-{
-    typedef typename cusp::detail::strided_range<Iterator> StrideType;
-    typedef cusp::array1d_view<typename StrideType::iterator> ArrayType;
-
-    template< typename Array >
-    static ArrayType get_array(Array& A, size_t i) {
-        cusp::detail::strided_range<Iterator> strided_range(A.values.begin() + i,
-                A.values.begin() + A.pitch * cusp::detail::major_dimension(A.num_rows, A.num_cols, typename Array::orientation()), A.pitch);
-        return ArrayType(strided_range.begin(), strided_range.end());
-    }
-};
-
-} // end namespace detail
 
 // TODO document mapping of (i,j) onto values[pitch * i + j] or values[pitch * j + i]
 // TODO document that array2d operations will try to respect .pitch of destination argument
@@ -215,24 +53,24 @@ struct row_or_column_view<Iterator,false>
  *
  * \TODO example
  */
-template<typename ValueType, class MemorySpace, class Orientation = cusp::row_major>
-class array2d : public cusp::detail::matrix_base<int,ValueType,MemorySpace,cusp::array2d_format>
+template<typename T, class MemorySpace, class Orientation = cusp::row_major>
+class array2d : public cusp::detail::matrix_base<int,T,MemorySpace,cusp::array2d_format>
 {
-    typedef typename cusp::detail::matrix_base<int,ValueType,MemorySpace,cusp::array2d_format> Parent;
+    typedef typename cusp::detail::matrix_base<int,T,MemorySpace,cusp::array2d_format> Parent;
 
 public:
     typedef Orientation orientation;
 
     template<typename MemorySpace2>
     struct rebind {
-        typedef cusp::array2d<ValueType, MemorySpace2, Orientation> type;
+        typedef cusp::array2d<T, MemorySpace2, Orientation> type;
     };
 
-    typedef typename cusp::array1d<ValueType, MemorySpace> values_array_type;
+    typedef typename cusp::array1d<T, MemorySpace> values_array_type;
 
     /*! equivalent container type
      */
-    typedef typename cusp::array2d<ValueType, MemorySpace, Orientation> container;
+    typedef typename cusp::array2d<T, MemorySpace, Orientation> container;
 
     /*! equivalent view type
      */
@@ -278,13 +116,13 @@ public:
           values(num_rows * num_cols) {}
 
     // construct matrix with given shape, number of entries and fill with a given value
-    array2d(size_t num_rows, size_t num_cols, const ValueType& value)
+    array2d(size_t num_rows, size_t num_cols, const T& value)
         : Parent(num_rows, num_cols, num_rows * num_cols),
           pitch(cusp::detail::minor_dimension(num_rows, num_cols, orientation())),
           values(num_rows * num_cols, value) {}
 
     // construct matrix with given shape, number of entries, pitch and fill with a given value
-    array2d(size_t num_rows, size_t num_cols, const ValueType& value, size_t pitch)
+    array2d(size_t num_rows, size_t num_cols, const T& value, size_t pitch)
         : Parent(num_rows, num_cols, num_rows * num_cols),
           pitch(pitch),
           values(pitch * cusp::detail::major_dimension(num_rows, num_cols, orientation()), value)
@@ -305,6 +143,11 @@ public:
     typename values_array_type::const_reference operator()(const size_t i, const size_t j) const
     {
         return values[cusp::detail::index_of(i, j, pitch, orientation())];
+    }
+
+    T* raw_data(void)
+    {
+        return values.raw_data();
     }
 
     void resize(size_t num_rows, size_t num_cols, size_t pitch)
@@ -501,16 +344,16 @@ make_array2d_view(const array2d_view<Array, Orientation>& a)
     return array2d_view<Array,Orientation>(a);
 }
 
-template<typename ValueType, class MemorySpace, class Orientation>
-array2d_view<typename cusp::array1d_view<typename cusp::array1d<ValueType,MemorySpace>::iterator >, Orientation>
-make_array2d_view(cusp::array2d<ValueType,MemorySpace,Orientation>& a)
+template<typename T, class MemorySpace, class Orientation>
+array2d_view<typename cusp::array1d_view<typename cusp::array1d<T,MemorySpace>::iterator >, Orientation>
+make_array2d_view(cusp::array2d<T,MemorySpace,Orientation>& a)
 {
     return cusp::make_array2d_view(a.num_rows, a.num_cols, a.pitch, cusp::make_array1d_view(a.values), Orientation());
 }
 
-template<typename ValueType, class MemorySpace, class Orientation>
-array2d_view<typename cusp::array1d_view<typename cusp::array1d<ValueType,MemorySpace>::const_iterator >, Orientation>
-make_array2d_view(const cusp::array2d<ValueType,MemorySpace,Orientation>& a)
+template<typename T, class MemorySpace, class Orientation>
+array2d_view<typename cusp::array1d_view<typename cusp::array1d<T,MemorySpace>::const_iterator >, Orientation>
+make_array2d_view(const cusp::array2d<T,MemorySpace,Orientation>& a)
 {
     return cusp::make_array2d_view(a.num_rows, a.num_cols, a.pitch, cusp::make_array1d_view(a.values), Orientation());
 }

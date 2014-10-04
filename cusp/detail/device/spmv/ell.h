@@ -36,14 +36,14 @@ namespace device
 template <typename IndexType, typename ValueType, size_t BLOCK_SIZE, bool UseCache>
 __launch_bounds__(BLOCK_SIZE,1)
 __global__ void
-spmv_ell_kernel(const IndexType num_rows, 
-                const IndexType num_cols, 
+spmv_ell_kernel(const IndexType num_rows,
+                const IndexType num_cols,
                 const IndexType num_cols_per_row,
                 const IndexType pitch,
                 const IndexType * Aj,
-                const ValueType * Ax, 
-                const ValueType * x, 
-                      ValueType * y)
+                const ValueType * Ax,
+                const ValueType * x,
+                ValueType * y)
 {
     const IndexType invalid_index = cusp::ell_matrix<IndexType, ValueType, cusp::device_memory>::invalid_index;
 
@@ -75,11 +75,11 @@ spmv_ell_kernel(const IndexType num_rows,
 
 
 template <bool UseCache,
-          typename Matrix,
-          typename ValueType>
-void __spmv_ell(const Matrix&    A, 
-                const ValueType* x, 
-                      ValueType* y)
+         typename Matrix,
+         typename ValueType>
+void __spmv_ell(const Matrix&    A,
+                const ValueType* x,
+                ValueType* y)
 {
     typedef typename Matrix::index_type IndexType;
 
@@ -92,35 +92,35 @@ void __spmv_ell(const Matrix&    A,
 
     // TODO generalize this
     assert(A.column_indices.pitch == A.values.pitch);
-    
+
     if (UseCache)
         bind_x(x);
 
     spmv_ell_kernel<IndexType,ValueType,BLOCK_SIZE,UseCache> <<<NUM_BLOCKS, BLOCK_SIZE>>>
-        (A.num_rows, A.num_cols,
-         num_entries_per_row, pitch,
-         thrust::raw_pointer_cast(&A.column_indices.values[0]), 
-         thrust::raw_pointer_cast(&A.values.values[0]),
-         x, y);
+    (A.num_rows, A.num_cols,
+     num_entries_per_row, pitch,
+     A.column_indices.values.raw_data(),
+     A.values.values.raw_data(),
+     x, y);
 
     if (UseCache)
         unbind_x(x);
 }
 
 template <typename Matrix,
-          typename ValueType>
-void spmv_ell(const Matrix&    A, 
-              const ValueType* x, 
-                    ValueType* y)
+         typename ValueType>
+void spmv_ell(const Matrix&    A,
+              const ValueType* x,
+              ValueType* y)
 {
     __spmv_ell<false>(A, x, y);
 }
 
 template <typename Matrix,
-          typename ValueType>
+         typename ValueType>
 void spmv_ell_tex(const Matrix&    A,
-                  const ValueType* x, 
-                        ValueType* y)
+                  const ValueType* x,
+                  ValueType* y)
 {
     __spmv_ell<true>(A, x, y);
 }

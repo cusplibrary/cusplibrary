@@ -111,9 +111,9 @@ void spmv_coo(const Matrix&  A,
     MKL_INT * n   = (MKL_INT *) &A.num_cols;
     MKL_INT * nnz = (MKL_INT *) &A.num_entries;
 
-    ValueType * V = (ValueType *) thrust::raw_pointer_cast(&A.values[0]);
-    ValueType * X = (ValueType *) thrust::raw_pointer_cast(&x[0]);
-    ValueType * Y = (ValueType *) thrust::raw_pointer_cast(&y[0]);
+    ValueType * V = (ValueType *) A.values.raw_data();
+    ValueType * X = (ValueType *) x.raw_data();
+    ValueType * Y = (ValueType *) y.raw_data();
 
     // Intel MKL sparse matrix functions only support 32-bit index types
     // TODO Check if  matrix dimensions allow conversion to 32-bit indexing (i.e. num_cols < 2^32)
@@ -122,15 +122,15 @@ void spmv_coo(const Matrix&  A,
         cusp::array1d<MKL_INT,cusp::host_memory> I_32(A.row_indices);
         cusp::array1d<MKL_INT,cusp::host_memory> J_32(A.column_indices);
 
-        MKL_INT * pI_32 = (MKL_INT *) thrust::raw_pointer_cast(&I_32[0]);
-        MKL_INT * pJ_32 = (MKL_INT *) thrust::raw_pointer_cast(&J_32[0]);
+        MKL_INT * pI_32 = (MKL_INT *) I_32.raw_data();
+        MKL_INT * pJ_32 = (MKL_INT *) J_32.raw_data();
 
         spmv_coo(&transa,m,n,V,pI_32,pJ_32,nnz,X,Y);
     }
     else
     {
-        MKL_INT * I = (MKL_INT *) thrust::raw_pointer_cast(&A.row_indices[0]);
-        MKL_INT * J = (MKL_INT *) thrust::raw_pointer_cast(&A.column_indices[0]);
+        MKL_INT * I = (MKL_INT *) A.row_indices.raw_data();
+        MKL_INT * J = (MKL_INT *) A.column_indices.raw_data();
 
         spmv_coo(&transa,m,n,V,I,J,nnz,X,Y);
     }
@@ -181,9 +181,9 @@ void spmv_csr(const Matrix&  A,
     MKL_INT * m   = (MKL_INT *) &A.num_rows;
     MKL_INT * n   = (MKL_INT *) &A.num_cols;
 
-    ValueType * V = (ValueType *) thrust::raw_pointer_cast(&A.values[0]);
-    ValueType * X = (ValueType *) thrust::raw_pointer_cast(&x[0]);
-    ValueType * Y = (ValueType *) thrust::raw_pointer_cast(&y[0]);
+    ValueType * V = (ValueType *) A.values.raw_data();
+    ValueType * X = (ValueType *) x.raw_data();
+    ValueType * Y = (ValueType *) y.raw_data();
 
     // Intel MKL sparse matrix functions only support 32-bit index types
     // TODO Check if  matrix dimensions allow conversion to 32-bit indexing (i.e. num_cols < 2^32)
@@ -192,15 +192,15 @@ void spmv_csr(const Matrix&  A,
         cusp::array1d<MKL_INT,cusp::host_memory> P_32(A.row_offsets);
         cusp::array1d<MKL_INT,cusp::host_memory> J_32(A.column_indices);
 
-        MKL_INT * pP_32 = (MKL_INT *) thrust::raw_pointer_cast(&P_32[0]);
-        MKL_INT * pJ_32 = (MKL_INT *) thrust::raw_pointer_cast(&J_32[0]);
+        MKL_INT * pP_32 = (MKL_INT *) P_32.raw_data();
+        MKL_INT * pJ_32 = (MKL_INT *) J_32.raw_data();
 
         spmv_csr(&transa,m,n,V,pJ_32,pP_32,X,Y);
     }
     else
     {
-        MKL_INT * P = (MKL_INT *) thrust::raw_pointer_cast(&A.row_offsets[0]);
-        MKL_INT * J = (MKL_INT *) thrust::raw_pointer_cast(&A.column_indices[0]);
+        MKL_INT * P = (MKL_INT *) A.row_offsets.raw_data();
+        MKL_INT * J = (MKL_INT *) A.column_indices.raw_data();
 
         spmv_csr(&transa,m,n,V,J,P,X,Y);
     }
@@ -295,16 +295,16 @@ void spmv_ell(const Matrix&  A,
 
     MKL_INT num_entries_per_row = column_indices.num_cols;
 
-    ValueType * V = (ValueType *) thrust::raw_pointer_cast(&values(0,0));
-    ValueType * X = (ValueType *) thrust::raw_pointer_cast(&x[0]);
-    ValueType * Y = (ValueType *) thrust::raw_pointer_cast(&y[0]);
+    ValueType * V = (ValueType *) values.raw_data();
+    ValueType * X = (ValueType *) x.raw_data();
+    ValueType * Y = (ValueType *) y.raw_data();
 
     cusp::array1d<MKL_INT,cusp::host_memory> row_offsets(A.num_rows+1);
     for( IndexType index = 0; index < row_offsets.size(); index++ )
         row_offsets[index] = index*num_entries_per_row;
 
-    MKL_INT * P = (MKL_INT *) thrust::raw_pointer_cast(&row_offsets[0]);
-    MKL_INT * J = (MKL_INT *) thrust::raw_pointer_cast(&column_indices(0,0));
+    MKL_INT * P = (MKL_INT *) row_offsets.raw_data();
+    MKL_INT * J = (MKL_INT *) column_indices.raw_data();
 
     spmv_csr(&transa,&m,&n,V,J,P,X,Y);
 }
