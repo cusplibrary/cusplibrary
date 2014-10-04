@@ -119,6 +119,16 @@ public:
         return view(Parent::begin() + i, Parent::begin() + j + 1);
     }
 
+    T* raw_data(void)
+    {
+        return thrust::raw_pointer_cast(&Parent::m_storage[0]);
+    }
+
+    const T* raw_data(void) const
+    {
+        return thrust::raw_pointer_cast(&Parent::m_storage[0]);
+    }
+
     // TODO specialize resize()
 }; // class array1d
 /*! \}
@@ -233,6 +243,16 @@ public:
     pointer data(void)
     {
         return &front();
+    }
+
+    value_type* raw_data(void)
+    {
+        return thrust::raw_pointer_cast(&front());
+    }
+
+    const value_type* raw_data(void) const
+    {
+        return thrust::raw_pointer_cast(&front());
     }
 
     view subarray(size_type i, size_type j)

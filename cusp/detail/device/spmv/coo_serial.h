@@ -27,17 +27,17 @@ namespace device
 
 // COO format SpMV kernel that uses only one thread
 // This is incredibly slow, so it is only useful for testing purposes,
-// *extremely* small matrices, or a few elements at the end of a 
+// *extremely* small matrices, or a few elements at the end of a
 // larger matrix
 
 template <typename IndexType, typename ValueType>
 __global__ void
 spmv_coo_serial_kernel(const IndexType num_entries,
-                       const IndexType * I, 
-                       const IndexType * J, 
-                       const ValueType * V, 
-                       const ValueType * x, 
-                             ValueType * y)
+                       const IndexType * I,
+                       const IndexType * J,
+                       const ValueType * V,
+                       const ValueType * x,
+                       ValueType * y)
 {
     for(IndexType n = 0; n < num_entries; n++)
     {
@@ -47,19 +47,19 @@ spmv_coo_serial_kernel(const IndexType num_entries,
 
 
 template <typename Matrix,
-          typename ValueType>
-void spmv_coo_serial_device(const Matrix&    A, 
-                            const ValueType* x, 
-                                  ValueType* y)
+         typename ValueType>
+void spmv_coo_serial_device(const Matrix&    A,
+                            const ValueType* x,
+                            ValueType* y)
 {
     typedef typename Matrix::index_type IndexType;
 
-    const IndexType * I = thrust::raw_pointer_cast(&A.row_indices[0]);
-    const IndexType * J = thrust::raw_pointer_cast(&A.column_indices[0]);
-    const ValueType * V = thrust::raw_pointer_cast(&A.values[0]);
+    const IndexType * I = A.row_indices.raw_data();
+    const IndexType * J = A.column_indices.raw_data();
+    const ValueType * V = A.values.raw_data();
 
     spmv_coo_serial_kernel<IndexType,ValueType> <<<1,1>>>
-        (A.num_entries, I, J, V, x, y);
+    (A.num_entries, I, J, V, x, y);
 }
 
 } // end namespace device

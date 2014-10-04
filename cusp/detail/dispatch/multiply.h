@@ -13,13 +13,13 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-    
+
 #include <cusp/array1d.h>
 //MW: if device is not cuda then do not include cuda stuff and redirect device multiply to host
 #include <cusp/detail/host/multiply.h>
 #if THRUST_DEVICE_SYSTEM == THRUST_DEVICE_SYSTEM_CUDA
 #include <cusp/detail/device/multiply.h>
-#endif 
+#endif
 
 namespace cusp
 {
@@ -32,11 +32,11 @@ namespace dispatch
 // Host Paths //
 ////////////////
 template <typename LinearOperator,
-          typename MatrixOrVector1,
-          typename MatrixOrVector2>
+         typename MatrixOrVector1,
+         typename MatrixOrVector2>
 void multiply(const LinearOperator&  A,
               const MatrixOrVector1& B,
-                    MatrixOrVector2& C,
+              MatrixOrVector2& C,
               cusp::host_memory,
               cusp::host_memory,
               cusp::host_memory)
@@ -48,11 +48,11 @@ void multiply(const LinearOperator&  A,
 // Device Paths //
 //////////////////
 template <typename LinearOperator,
-          typename MatrixOrVector1,
-          typename MatrixOrVector2>
+         typename MatrixOrVector1,
+         typename MatrixOrVector2>
 void multiply(const LinearOperator&  A,
               const MatrixOrVector1& B,
-                    MatrixOrVector2& C,
+              MatrixOrVector2& C,
               cusp::device_memory,
               cusp::device_memory,
               cusp::device_memory)

@@ -66,9 +66,9 @@ void multiply(const Matrix&  A,
               cusp::array1d_format)
 {
 #ifdef CUSP_USE_TEXTURE_MEMORY
-    cusp::detail::device::spmv_coo_flat_tex(A, thrust::raw_pointer_cast(&B[0]), thrust::raw_pointer_cast(&C[0]));
+    cusp::detail::device::spmv_coo_flat_tex(A, B.raw_data(), C.raw_data());
 #else
-    cusp::detail::device::spmv_coo_flat(A, thrust::raw_pointer_cast(&B[0]), thrust::raw_pointer_cast(&C[0]));
+    cusp::detail::device::spmv_coo_flat(A, B.raw_data(), C.raw_data());
 #endif
 }
 
@@ -83,9 +83,9 @@ void multiply(const Matrix&  A,
               cusp::array1d_format)
 {
 #ifdef CUSP_USE_TEXTURE_MEMORY
-    cusp::detail::device::spmv_csr_vector_tex(A, thrust::raw_pointer_cast(&B[0]), thrust::raw_pointer_cast(&C[0]));
+    cusp::detail::device::spmv_csr_vector_tex(A, B.raw_data(), C.raw_data());
 #else
-    cusp::detail::device::spmv_csr_vector(A, thrust::raw_pointer_cast(&B[0]), thrust::raw_pointer_cast(&C[0]));
+    cusp::detail::device::spmv_csr_vector(A, B.raw_data(), C.raw_data());
 #endif
 }
 
@@ -100,9 +100,9 @@ void multiply(const Matrix&  A,
               cusp::array1d_format)
 {
 #ifdef CUSP_USE_TEXTURE_MEMORY
-    cusp::detail::device::spmv_dia_tex(A, thrust::raw_pointer_cast(&B[0]), thrust::raw_pointer_cast(&C[0]));
+    cusp::detail::device::spmv_dia_tex(A, B.raw_data(), C.raw_data());
 #else
-    cusp::detail::device::spmv_dia(A, thrust::raw_pointer_cast(&B[0]), thrust::raw_pointer_cast(&C[0]));
+    cusp::detail::device::spmv_dia(A, B.raw_data(), C.raw_data());
 #endif
 }
 
@@ -117,9 +117,9 @@ void multiply(const Matrix&  A,
               cusp::array1d_format)
 {
 #ifdef CUSP_USE_TEXTURE_MEMORY
-    cusp::detail::device::spmv_ell_tex(A, thrust::raw_pointer_cast(&B[0]), thrust::raw_pointer_cast(&C[0]));
+    cusp::detail::device::spmv_ell_tex(A, B.raw_data(), C.raw_data());
 #else
-    cusp::detail::device::spmv_ell(A, thrust::raw_pointer_cast(&B[0]), thrust::raw_pointer_cast(&C[0]));
+    cusp::detail::device::spmv_ell(A, B.raw_data(), C.raw_data());
 #endif
 }
 
@@ -134,9 +134,9 @@ void multiply(const Matrix&  A,
               cusp::array1d_format)
 {
 #ifdef CUSP_USE_TEXTURE_MEMORY
-    cusp::detail::device::spmv_hyb_tex(A, thrust::raw_pointer_cast(&B[0]), thrust::raw_pointer_cast(&C[0]));
+    cusp::detail::device::spmv_hyb_tex(A, B.raw_data(), C.raw_data());
 #else
-    cusp::detail::device::spmv_hyb(A, thrust::raw_pointer_cast(&B[0]), thrust::raw_pointer_cast(&C[0]));
+    cusp::detail::device::spmv_hyb(A, B.raw_data(), C.raw_data());
 #endif
 }
 
@@ -188,21 +188,21 @@ void multiply(const Matrix&  A,
 // {
 //    typedef typename Vector1::orientation Orientation1;
 //    typedef typename Vector2::orientation Orientation2;
-// 
+//
 //    // define types used to programatically generate row_indices
 //    typedef typename thrust::counting_iterator<int> IndexIterator;
 //    typedef typename thrust::transform_iterator<modulus_value<int>, IndexIterator> RowIndexIterator;
 //    typedef typename thrust::transform_iterator<divide_value<int>, IndexIterator> ColIndexIterator;
-// 
+//
 //    RowIndexIterator row_indices_begin(IndexIterator(0), modulus_value<int>(B.pitch));
 //    ColIndexIterator col_indices_begin(IndexIterator(0), divide_value<int>(B.pitch));
-// 
+//
 //    IndexIterator begin(0);
-// 
+//
 //    // prefer coalesced writes to coalesced reads
 //    cusp::detail::logical_to_physical_functor  <int, Orientation1>               func1(B.num_rows, B.num_cols, B.pitch);
 //    cusp::detail::logical_to_physical_functor  <int, Orientation2>               func2(C.num_rows, C.num_cols, C.pitch);
-// 
+//
 //    thrust::copy(thrust::make_permutation_iterator(B.values.begin(), thrust::make_transform_iterator(perm_begin, func1)),
 //                 thrust::make_permutation_iterator(B.values.begin(), thrust::make_transform_iterator(perm_end,   func1)),
 //                 thrust::make_permutation_iterator(C.values.begin(), thrust::make_transform_iterator(begin, func2)));

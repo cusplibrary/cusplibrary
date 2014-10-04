@@ -28,20 +28,20 @@ namespace device
 {
 
 template <typename Matrix,
-          typename ValueType>
-void spmv_hyb(const Matrix&    A, 
-              const ValueType* x, 
-                    ValueType* y)
+         typename ValueType>
+void spmv_hyb(const Matrix&    A,
+              const ValueType* x,
+              ValueType* y)
 {
     spmv_ell(A.ell, x, y);
     __spmv_coo_flat<false, false>(A.coo, x, y);
 }
 
 template <typename Matrix,
-          typename ValueType>
+         typename ValueType>
 void spmv_hyb_tex(const Matrix&    A,
-                  const ValueType* x, 
-                        ValueType* y)
+                  const ValueType* x,
+                  ValueType* y)
 {
     spmv_ell_tex(A.ell, x, y);
     __spmv_coo_flat<true, false>(A.coo, x, y);
