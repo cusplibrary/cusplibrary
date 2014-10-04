@@ -13,67 +13,11 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-
-#ifdef __CUSP_USE_B40C__
-#undef B40C_LOG_MEM_BANKS
-#undef B40C_LOG_WARP_THREADS
-#undef B40C_WARP_THREADS
-#undef TallyWarpVote
-#undef WarpVoteAll
-#undef FastMul
-
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-
-#ifdef _WIN32
-#include <Windows.h>
-#include <io.h>
-
-HANDLE hStdOut;
-int STDOUT_COPY;
-int STDOUT_FILENO;
-
-#define CUSP_CLOSE_STDOUT do{\
-	hStdOut = GetStdHandle(STD_OUTPUT_HANDLE); \
-	STDOUT_FILENO = _open_osfhandle((HFILE)hStdOut, O_WRONLY|O_TEXT); \
-	STDOUT_COPY = _dup(STDOUT_FILENO); \
-	_close(STDOUT_FILENO); \
-	}while(0);
-#define CUSP_REOPEN_STDOUT do{\
-	_dup2(STDOUT_COPY, STDOUT_FILENO); \
-	_close(STDOUT_COPY); \
-	SetStdHandle(STD_OUTPUT_HANDLE, hStdOut); \
-	}while(0);
-
-#else
-
-#include <unistd.h>
-int STDOUT_COPY;
-
-#define CUSP_CLOSE_STDOUT do{\
-	fflush(stdout); \
-	STDOUT_COPY = dup(STDOUT_FILENO); \
-    close(STDOUT_FILENO); \
-	}while(0);
-#define CUSP_REOPEN_STDOUT do{\
-	dup2(STDOUT_COPY, STDOUT_FILENO); \
-	close(STDOUT_COPY); \
-	}while(0);
-#endif // end ifdef _WIN32
-
-#include <b40c/graph/bfs/csr_problem.cuh>
-#include <b40c/graph/bfs/enactor_hybrid.cuh>
-
-#undef B40C_LOG_MEM_BANKS
-#undef B40C_LOG_WARP_THREADS
-#undef B40C_WARP_THREADS
-#undef TallyWarpVote
-#undef WarpVoteAll
-#undef FastMul
-#endif // end ifdef __CUSP_USE_B40C__
+#pragma once
 
 #include <cusp/exception.h>
+
+#include <cusp/graph/detail/device/b40c.h>
 
 namespace cusp
 {
@@ -88,10 +32,7 @@ template<bool MARK_PREDECESSORS, typename MatrixType, typename ArrayType>
 void breadth_first_search(const MatrixType& G, const typename MatrixType::index_type src,
                           ArrayType& labels)
 {
-#ifdef __CUSP_USE_B40C__
     typedef typename MatrixType::index_type VertexId;
-
-    CUSP_CLOSE_STDOUT;
 
     typedef b40c::graph::bfs::CsrProblem<VertexId, VertexId, MARK_PREDECESSORS> CsrProblem;
     typedef typename CsrProblem::GraphSlice  GraphSlice;
@@ -134,11 +75,6 @@ void breadth_first_search(const MatrixType& G, const typename MatrixType::index_
     csr_problem.graph_slices[0]->d_row_offsets = (VertexId *) NULL;
     csr_problem.graph_slices[0]->d_column_indices = (VertexId *) NULL;
     csr_problem.graph_slices[0]->d_labels = (VertexId *) NULL;
-
-    CUSP_REOPEN_STDOUT;
-#else
-    throw cusp::not_implemented_exception("Device BFS implementation depends on B40C support.");
-#endif
 }
 
 } // end namespace device
