@@ -15,7 +15,7 @@ void TestConjugateGradient(void)
     cusp::array1d<float, MemorySpace> x(A.num_rows, 0.0f);
     cusp::array1d<float, MemorySpace> b(A.num_rows, 1.0f);
 
-    cusp::default_monitor<float> monitor(b, 20, 1e-4);
+    cusp::monitor<float> monitor(b, 20, 1e-4);
 
     cusp::krylov::cg(A, x, b, monitor);
 
@@ -45,7 +45,7 @@ void TestConjugateGradientZeroResidual(void)
 
     cusp::multiply(A, x, b);
 
-    cusp::default_monitor<float> monitor(b, 20, 0.0f);
+    cusp::monitor<float> monitor(b, 20, 0.0f);
 
     cusp::krylov::cg(A, x, b, monitor);
 

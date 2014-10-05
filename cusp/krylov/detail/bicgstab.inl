@@ -36,7 +36,7 @@ void bicgstab(LinearOperator& A,
 {
     typedef typename LinearOperator::value_type   ValueType;
 
-    cusp::default_monitor<ValueType> monitor(b);
+    cusp::monitor<ValueType> monitor(b);
 
     cusp::krylov::bicgstab(A, x, b, monitor);
 }

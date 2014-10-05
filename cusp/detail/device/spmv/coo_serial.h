@@ -47,19 +47,21 @@ spmv_coo_serial_kernel(const IndexType num_entries,
 
 
 template <typename Matrix,
-         typename ValueType>
-void spmv_coo_serial_device(const Matrix&    A,
-                            const ValueType* x,
-                            ValueType* y)
+          typename Array1,
+          typename Array2>
+void spmv_coo_serial_device(const Matrix& A,
+                            const Array1& x,
+                                  Array2& y)
 {
     typedef typename Matrix::index_type IndexType;
+    typedef typename Matrix::value_type ValueType;
 
     const IndexType * I = A.row_indices.raw_data();
     const IndexType * J = A.column_indices.raw_data();
     const ValueType * V = A.values.raw_data();
 
     spmv_coo_serial_kernel<IndexType,ValueType> <<<1,1>>>
-    (A.num_entries, I, J, V, x, y);
+    (A.num_entries, I, J, V, x.raw_data(), y.raw_data());
 }
 
 } // end namespace device

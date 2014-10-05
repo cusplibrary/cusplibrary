@@ -13,7 +13,7 @@ void TestMonitorSimple(void)
     r[0] = 10;
     r[1] =  0;
 
-    cusp::default_monitor<float> monitor(b, 5, 0.5, 1.0);
+    cusp::monitor<float> monitor(b, 5, 0.5, 1.0);
 
     ASSERT_EQUAL(monitor.finished(r), false);
     ASSERT_EQUAL(monitor.iteration_count(), 0);
@@ -57,6 +57,12 @@ void TestMonitorSimple(void)
 
     ASSERT_EQUAL(monitor.finished(r), true);
     ASSERT_EQUAL(monitor.iteration_count(), 5);
+    ASSERT_EQUAL(monitor.residual_norm(), 7.0);
+
+    monitor.reset(r);
+
+    ASSERT_EQUAL(monitor.finished(r), false);
+    ASSERT_EQUAL(monitor.iteration_count(), 0);
     ASSERT_EQUAL(monitor.residual_norm(), 7.0);
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestMonitorSimple);

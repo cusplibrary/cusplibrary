@@ -113,12 +113,13 @@ spmv_dia_kernel(const IndexType num_rows,
 
 template <bool UseCache,
          typename Matrix,
-         typename ValueType>
-void __spmv_dia(const Matrix&    A,
-                const ValueType* x,
-                ValueType* y)
+         typename Array>
+void __spmv_dia(const Matrix& A,
+                const Array&  x,
+                Array& y)
 {
     typedef typename Matrix::index_type IndexType;
+    typedef typename Matrix::value_type ValueType;
 
     const size_t BLOCK_SIZE = 256;
     const size_t MAX_BLOCKS = cusp::detail::device::arch::max_active_blocks(spmv_dia_kernel<IndexType, ValueType, BLOCK_SIZE, UseCache>, BLOCK_SIZE, (size_t) sizeof(IndexType) * BLOCK_SIZE);
@@ -131,37 +132,37 @@ void __spmv_dia(const Matrix&    A,
     if (num_diagonals == 0)
     {
         // empty matrix
-        thrust::fill(thrust::device_pointer_cast(y), thrust::device_pointer_cast(y) + A.num_rows, ValueType(0));
+        thrust::fill(y.begin(), y.begin() + A.num_rows, ValueType(0));
         return;
     }
 
     if (UseCache)
-        bind_x(x);
+        bind_x(x.raw_data());
 
     spmv_dia_kernel<IndexType, ValueType, BLOCK_SIZE, UseCache> <<<NUM_BLOCKS, BLOCK_SIZE>>>
     (A.num_rows, A.num_cols, num_diagonals, pitch,
      A.diagonal_offsets.raw_data(),
      A.values.values.raw_data(),
-     x, y);
+     x.raw_data(), y.raw_data());
 
     if (UseCache)
-        unbind_x(x);
+        unbind_x(x.raw_data());
 }
 
 template <typename Matrix,
-         typename ValueType>
-void spmv_dia(const Matrix&    A,
-              const ValueType* x,
-              ValueType* y)
+          typename Array>
+void spmv_dia(const Matrix& A,
+              const Array&  x,
+              Array& y)
 {
     __spmv_dia<false>(A, x, y);
 }
 
 template <typename Matrix,
-         typename ValueType>
-void spmv_dia_tex(const Matrix&    A,
-                  const ValueType* x,
-                  ValueType* y)
+          typename Array>
+void spmv_dia_tex(const Matrix& A,
+                  const Array&  x,
+                  Array& y)
 {
     __spmv_dia<true>(A, x, y);
 }

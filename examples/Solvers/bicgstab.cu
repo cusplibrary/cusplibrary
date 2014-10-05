@@ -23,7 +23,7 @@ int main(void)
     // set stopping criteria:
     //  iteration_limit    = 100
     //  relative_tolerance = 1e-3
-    cusp::verbose_monitor<ValueType> monitor(b, 100, 1e-3);
+    cusp::monitor<ValueType> monitor(b, 100, 1e-3, 0, true);
 
     // set preconditioner (identity)
     cusp::identity_operator<ValueType, MemorySpace> M(A.num_rows, A.num_rows);

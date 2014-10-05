@@ -26,22 +26,22 @@ public:
     }
 };
 
-template <typename Monitor>
-void report_status(Monitor& monitor)
-{
-    if (monitor.converged())
-    {
-        std::cout << "Solver converged to " << monitor.tolerance() << " tolerance";
-        std::cout << " after " << monitor.iteration_count() << " iterations";
-        std::cout << " (" << monitor.residual_norm() << " final residual)" << std::endl;
-    }
-    else
-    {
-        std::cout << "Solver reached iteration limit " << monitor.iteration_limit() << " before converging";
-        std::cout << " to " << monitor.tolerance() << " tolerance ";
-        std::cout << " (" << monitor.residual_norm() << " final residual)" << std::endl;
-    }
-}
+/* template <typename Monitor> */
+/* void report_status(Monitor& monitor) */
+/* { */
+/*     if (monitor.converged()) */
+/*     { */
+/*         std::cout << "Solver converged to " << monitor.tolerance() << " tolerance"; */
+/*         std::cout << " after " << monitor.iteration_count() << " iterations"; */
+/*         std::cout << " (" << monitor.residual_norm() << " final residual)" << std::endl; */
+/*     } */
+/*     else */
+/*     { */
+/*         std::cout << "Solver reached iteration limit " << monitor.iteration_limit() << " before converging"; */
+/*         std::cout << " to " << monitor.tolerance() << " tolerance "; */
+/*         std::cout << " (" << monitor.residual_norm() << " final residual)" << std::endl; */
+/*     } */
+/* } */
 
 template<typename MatrixType, typename Prec>
 void run_amg(const MatrixType& A, Prec& M)
@@ -55,7 +55,7 @@ void run_amg(const MatrixType& A, Prec& M)
     cusp::array1d<ValueType, MemorySpace> b(A.num_rows, 1);
 
     // set stopping criteria (iteration_limit = 1000, relative_tolerance = 1e-10)
-    cusp::default_monitor<ValueType> monitor(b, 1000, 1e-10);
+    cusp::monitor<ValueType> monitor(b, 1000, 1e-10);
 
     // solve
     timer t1;
@@ -63,7 +63,7 @@ void run_amg(const MatrixType& A, Prec& M)
     std::cout << "solved system  in " << t1.milliseconds_elapsed() << " ms " << std::endl;
 
     // report status
-    report_status(monitor);
+    monitor.print();
 }
 
 int main(int argc, char ** argv)
@@ -89,7 +89,7 @@ int main(int argc, char ** argv)
         cusp::array1d<ValueType, MemorySpace> b(A.num_rows, 1);
 
         // set stopping criteria (iteration_limit = 10000, relative_tolerance = 1e-10)
-        cusp::default_monitor<ValueType> monitor(b, 10000, 1e-10);
+        cusp::monitor<ValueType> monitor(b, 10000, 1e-10);
 
         // solve
         timer t0;
@@ -97,7 +97,7 @@ int main(int argc, char ** argv)
         std::cout << "solved system  in " << t0.milliseconds_elapsed() << " ms " << std::endl;
 
         // report status
-        report_status(monitor);
+        monitor.print();
     }
 
     // solve with smoothed aggregation algebraic multigrid preconditioner

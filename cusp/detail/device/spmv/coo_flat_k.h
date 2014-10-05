@@ -286,17 +286,17 @@ spmv_coo_flat_k_kernel(const IndexType N,
 }
 
 
-template <typename IndexType, typename ValueType, bool UseCache, bool InitializeY>
+template <typename IndexType, typename ValueType, typename Array1, typename Array2, bool UseCache, bool InitializeY>
 void __spmv_coo_flat_k(const coo_matrix<IndexType,ValueType,cusp::device_memory>& coo,
-                       const ValueType * d_x,
-                       ValueType * d_y)
+                       const Array1& d_x,
+                             Array2& d_y)
 {
     const IndexType * I = coo.row_indices.raw_data();
     const IndexType * J = coo.column_indices.raw_data();
     const ValueType * V = coo.values.raw_data();
 
     if (InitializeY)
-        thrust::fill(thrust::device_pointer_cast(d_y), thrust::device_pointer_cast(d_y) + coo.num_rows, ValueType(0));
+        thrust::fill(d_y.begin(), d_y.begin() + coo.num_rows, ValueType(0));
 
     if(coo.num_entries == 0)
     {
@@ -326,13 +326,13 @@ void __spmv_coo_flat_k(const coo_matrix<IndexType,ValueType,cusp::device_memory>
     const unsigned int interval_size = unit_size * num_iters;
 
     if (UseCache)
-        bind_x(d_x);
+        bind_x(d_x.raw_data());
 
     cusp::array1d<IndexType,cusp::device_memory> temp_rows(num_blocks);
     cusp::array1d<ValueType,cusp::device_memory> temp_vals(num_blocks);
 
     spmv_coo_flat_k_kernel<CTA_SIZE,K,UseCache,IndexType,ValueType> <<<num_blocks,CTA_SIZE>>>
-    (N, interval_size, I, J, V, d_x, d_y,
+    (N, interval_size, I, J, V, d_x.raw_data(), d_y.raw_data(),
      temp_rows.raw_data(), temp_vals.raw_data());
 
 //    spmv_coo_serial_kernel<IndexType,ValueType> <<<1,1>>>
@@ -342,22 +342,22 @@ void __spmv_coo_flat_k(const coo_matrix<IndexType,ValueType,cusp::device_memory>
     (num_blocks, temp_rows.raw_data(), temp_vals.raw_data(), d_y);
 
     if (UseCache)
-        unbind_x(d_x);
+        unbind_x(d_x.raw_data());
 }
 
-template <typename IndexType, typename ValueType>
+template <typename IndexType, typename ValueType, typename Array1, typename Array2>
 void spmv_coo_flat_k(const coo_matrix<IndexType,ValueType,cusp::device_memory>& coo,
-                     const ValueType * d_x,
-                     ValueType * d_y)
+                     const Array1& d_x,
+                           Array2& d_y)
 {
     __spmv_coo_flat_k<IndexType, ValueType, false, true>(coo, d_x, d_y);
 }
 
 
-template <typename IndexType, typename ValueType>
+template <typename IndexType, typename ValueType, typename Array1, typename Array2>
 void spmv_coo_flat_k_tex(const coo_matrix<IndexType,ValueType,cusp::device_memory>& coo,
-                         const ValueType * d_x,
-                         ValueType * d_y)
+                         const Arra12& d_x,
+                         Array2& d_y)
 {
     __spmv_coo_flat_k<IndexType, ValueType, true, true>(coo, d_x, d_y);
 }

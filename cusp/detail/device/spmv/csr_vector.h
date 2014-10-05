@@ -125,12 +125,13 @@ spmv_csr_vector_kernel(const IndexType num_rows,
     }
 }
 
-template <bool UseCache, unsigned int THREADS_PER_VECTOR, typename Matrix, typename ValueType>
-void __spmv_csr_vector(const Matrix&    A,
-                       const ValueType* x,
-                       ValueType* y)
+template <bool UseCache, unsigned int THREADS_PER_VECTOR, typename Matrix, typename Array1, typename Array2>
+void __spmv_csr_vector(const Matrix& A,
+                       const Array1& x,
+                             Array2& y)
 {
     typedef typename Matrix::index_type IndexType;
+    typedef typename Matrix::value_type ValueType;
 
     const size_t THREADS_PER_BLOCK  = 128;
     const size_t VECTORS_PER_BLOCK  = THREADS_PER_BLOCK / THREADS_PER_VECTOR;
@@ -139,24 +140,25 @@ void __spmv_csr_vector(const Matrix&    A,
     const size_t NUM_BLOCKS = std::min<size_t>(MAX_BLOCKS, DIVIDE_INTO(A.num_rows, VECTORS_PER_BLOCK));
 
     if (UseCache)
-        bind_x(x);
+        bind_x(x.raw_data());
 
     spmv_csr_vector_kernel<IndexType, ValueType, VECTORS_PER_BLOCK, THREADS_PER_VECTOR, UseCache> <<<NUM_BLOCKS, THREADS_PER_BLOCK>>>
     (A.num_rows,
      A.row_offsets.raw_data(),
      A.column_indices.raw_data(),
      A.values.raw_data(),
-     x, y);
+     x.raw_data(), y.raw_data());
 
     if (UseCache)
-        unbind_x(x);
+        unbind_x(x.raw_data());
 }
 
 template <typename Matrix,
-         typename ValueType>
-void spmv_csr_vector(const Matrix&    A,
-                     const ValueType* x,
-                     ValueType* y)
+          typename Array1,
+          typename Array2>
+void spmv_csr_vector(const Matrix& A,
+                     const Array1&  x,
+                           Array2& y)
 {
     typedef typename Matrix::index_type IndexType;
 
@@ -183,10 +185,11 @@ void spmv_csr_vector(const Matrix&    A,
 }
 
 template <typename Matrix,
-         typename ValueType>
-void spmv_csr_vector_tex(const Matrix&    A,
-                         const ValueType* x,
-                         ValueType* y)
+          typename Array1,
+          typename Array2>
+void spmv_csr_vector_tex(const Matrix& A,
+                         const Array1&  x,
+                               Array2& y)
 {
     typedef typename Matrix::index_type IndexType;
 

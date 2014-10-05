@@ -73,45 +73,49 @@ spmv_csr_scalar_kernel(const IndexType num_rows,
 
 template <bool UseCache,
          typename Matrix,
-         typename ValueType>
+         typename Array1,
+         typename Array2>
 void __spmv_csr_scalar(const Matrix&    A,
-                       const ValueType* x,
-                       ValueType* y)
+                       const Array1& x,
+                             Array2& y)
 {
     typedef typename Matrix::index_type IndexType;
+    typedef typename Matrix::value_type ValueType;
 
     const size_t BLOCK_SIZE = 256;
     const size_t MAX_BLOCKS = cusp::detail::device::arch::max_active_blocks(spmv_csr_scalar_kernel<UseCache, IndexType, ValueType>, BLOCK_SIZE, (size_t) 0);
     const size_t NUM_BLOCKS = std::min(MAX_BLOCKS, DIVIDE_INTO(A.num_rows, BLOCK_SIZE));
 
     if (UseCache)
-        bind_x(x);
+        bind_x(x.raw_data());
 
     spmv_csr_scalar_kernel<UseCache,IndexType,ValueType> <<<NUM_BLOCKS, BLOCK_SIZE>>>
     (A.num_rows,
      A.row_offsets.raw_data(),
      A.column_indices.raw_data(),
      A.values.raw_data(),
-     x, y);
+     x.raw_data(), y.raw_data());
 
     if (UseCache)
-        unbind_x(x);
+        unbind_x(x.raw_data());
 }
 
 template <typename Matrix,
-         typename ValueType>
+         typename Array1,
+         typename Array2>
 void spmv_csr_scalar(const Matrix&    A,
-                     const ValueType* x,
-                     ValueType* y)
+                     const Array1& x,
+                           Array2& y)
 {
     __spmv_csr_scalar<false>(A, x, y);
 }
 
 template <typename Matrix,
-         typename ValueType>
+         typename Array1,
+         typename Array2>
 void spmv_csr_scalar_tex(const Matrix&    A,
-                         const ValueType* x,
-                         ValueType* y)
+                         const Array1& x,
+                               Array2& y)
 {
     __spmv_csr_scalar<true>(A, x, y);
 }

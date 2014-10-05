@@ -365,23 +365,24 @@ spmv_coo_reduce_update_kernel(const IndexType num_warps,
     }
 }
 
-
 template <bool UseCache,
          bool InitializeY,
          typename Matrix,
-         typename ValueType>
-void __spmv_coo_flat(const Matrix&    A,
-                     const ValueType* x,
-                     ValueType* y)
+         typename Array1,
+         typename Array2>
+void __spmv_coo_flat(const Matrix& A,
+                     const Array1&  x,
+                     Array2& y)
 {
     typedef typename Matrix::index_type IndexType;
+    typedef typename Matrix::value_type ValueType;
 
     const IndexType * I = A.row_indices.raw_data();
     const IndexType * J = A.column_indices.raw_data();
     const ValueType * V = A.values.raw_data();
 
     if (InitializeY)
-        thrust::fill(thrust::device_pointer_cast(y), thrust::device_pointer_cast(y) + A.num_rows, ValueType(0));
+        thrust::fill(y.begin(), y.begin() + A.num_rows, ValueType(0));
 
     if(A.num_entries == 0)
     {
@@ -392,7 +393,7 @@ void __spmv_coo_flat(const Matrix&    A,
     {
         // small matrix
         spmv_coo_serial_kernel<IndexType,ValueType> <<<1,1>>>
-        (A.num_entries, I, J, V, x, y);
+        (A.num_entries, I, J, V, x.raw_data(), y.raw_data());
         return;
     }
 
@@ -412,44 +413,133 @@ void __spmv_coo_flat(const Matrix&    A,
     const unsigned int active_warps = (interval_size == 0) ? 0 : DIVIDE_INTO(tail, interval_size);
 
     if (UseCache)
-        bind_x(x);
+        bind_x(x.raw_data());
 
     cusp::array1d<IndexType,cusp::device_memory> temp_rows(active_warps);
     cusp::array1d<ValueType,cusp::device_memory> temp_vals(active_warps);
 
     spmv_coo_flat_kernel<IndexType, ValueType, BLOCK_SIZE, UseCache> <<<num_blocks, BLOCK_SIZE>>>
-    (tail, interval_size, I, J, V, x, y,
+    (tail, interval_size, I, J, V, x.raw_data(), y.raw_data(),
      temp_rows.raw_data(), temp_vals.raw_data());
 
     spmv_coo_reduce_update_kernel<IndexType, ValueType, BLOCK_SIZE> <<<1, BLOCK_SIZE>>>
-    (active_warps, temp_rows.raw_data(), temp_vals.raw_data(), y);
+    (active_warps, temp_rows.raw_data(), temp_vals.raw_data(), y.raw_data());
 
     spmv_coo_serial_kernel<IndexType,ValueType> <<<1,1>>>
-    (A.num_entries - tail, I + tail, J + tail, V + tail, x, y);
+    (A.num_entries - tail, I + tail, J + tail, V + tail, x.raw_data(), y.raw_data());
 
     if (UseCache)
-        unbind_x(x);
+        unbind_x(x.raw_data());
+}
+
+template <bool UseCache,
+         bool InitializeY,
+         typename Matrix,
+         typename Array1,
+         typename Array2>
+void __spmv_coo_flat(const Matrix& A,
+                     const Array1& x,
+                     const Array2& y)
+{
+    typedef typename Matrix::index_type IndexType;
+    typedef typename Matrix::value_type ValueType;
+
+    const IndexType * I = A.row_indices.raw_data();
+    const IndexType * J = A.column_indices.raw_data();
+    const ValueType * V = A.values.raw_data();
+
+    if (InitializeY)
+        thrust::fill(((Array2&)y).begin(), ((Array2&)y).begin() + A.num_rows, ValueType(0));
+
+    if(A.num_entries == 0)
+    {
+        // empty matrix
+        return;
+    }
+    else if (A.num_entries < static_cast<size_t>(WARP_SIZE))
+    {
+        // small matrix
+        spmv_coo_serial_kernel<IndexType,ValueType> <<<1,1>>>
+        (A.num_entries, I, J, V, x.raw_data(), (ValueType*) y.raw_data());
+        return;
+    }
+
+    const unsigned int BLOCK_SIZE = 256;
+    const unsigned int MAX_BLOCKS = cusp::detail::device::arch::max_active_blocks(spmv_coo_flat_kernel<IndexType, ValueType, BLOCK_SIZE, UseCache>, BLOCK_SIZE, (size_t) 0);
+    const unsigned int WARPS_PER_BLOCK = BLOCK_SIZE / WARP_SIZE;
+
+    const unsigned int num_units  = A.num_entries / WARP_SIZE;
+    const unsigned int num_warps  = std::min(num_units, WARPS_PER_BLOCK * MAX_BLOCKS);
+    const unsigned int num_blocks = DIVIDE_INTO(num_warps, WARPS_PER_BLOCK);
+    const unsigned int num_iters  = DIVIDE_INTO(num_units, num_warps);
+
+    const unsigned int interval_size = WARP_SIZE * num_iters;
+
+    const IndexType tail = num_units * WARP_SIZE; // do the last few nonzeros separately (fewer than WARP_SIZE elements)
+
+    const unsigned int active_warps = (interval_size == 0) ? 0 : DIVIDE_INTO(tail, interval_size);
+
+    if (UseCache)
+        bind_x(x.raw_data());
+
+    cusp::array1d<IndexType,cusp::device_memory> temp_rows(active_warps);
+    cusp::array1d<ValueType,cusp::device_memory> temp_vals(active_warps);
+
+    spmv_coo_flat_kernel<IndexType, ValueType, BLOCK_SIZE, UseCache> <<<num_blocks, BLOCK_SIZE>>>
+    (tail, interval_size, I, J, V, x.raw_data(), (ValueType*) y.raw_data(),
+     temp_rows.raw_data(), temp_vals.raw_data());
+
+    spmv_coo_reduce_update_kernel<IndexType, ValueType, BLOCK_SIZE> <<<1, BLOCK_SIZE>>>
+    (active_warps, temp_rows.raw_data(), temp_vals.raw_data(), (ValueType*) y.raw_data());
+
+    spmv_coo_serial_kernel<IndexType,ValueType> <<<1,1>>>
+    (A.num_entries - tail, I + tail, J + tail, V + tail, x.raw_data(), (ValueType*) y.raw_data());
+
+    if (UseCache)
+        unbind_x(x.raw_data());
 }
 
 template <typename Matrix,
-         typename ValueType>
+          typename Array1,
+          typename Array2>
 void spmv_coo_flat(const Matrix& A,
-                   const ValueType * x,
-                   ValueType * y)
+                   const Array1& x,
+                   const Array2& y)
 {
     __spmv_coo_flat<false, true>(A, x, y);
 }
 
 
 template <typename Matrix,
-         typename ValueType>
+          typename Array1,
+          typename Array2>
 void spmv_coo_flat_tex(const Matrix& A,
-                       const ValueType * x,
-                       ValueType * y)
+                       const Array1& x,
+                       const Array2& y)
 {
     __spmv_coo_flat<true, true>(A, x, y);
 }
 
+template <typename Matrix,
+          typename Array1,
+          typename Array2>
+void spmv_coo_flat(const Matrix& A,
+                   const Array1& x,
+                   Array2& y)
+{
+    __spmv_coo_flat<false, true>(A, x, y);
+}
+
+
+template <typename Matrix,
+          typename Array1,
+          typename Array2>
+void spmv_coo_flat_tex(const Matrix& A,
+                       const Array1& x,
+                       Array2& y)
+{
+    __spmv_coo_flat<true, true>(A, x, y);
+}
 
 } // end namespace device
 } // end namespace detail

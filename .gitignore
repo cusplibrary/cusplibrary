@@ -58,4 +58,17 @@ examples/Algorithms/multiply
 examples/Algorithms/blas
 examples/LinearOperator/stencil
 examples/Version/version
+examples/Monitors/monitor
+examples/Solvers/cr
+
+performance/amg/smoothed_aggregation
+performance/csr_vector/csr_vector
+performance/graph/breadth_first_search
+performance/graph/connected_components
+performance/graph/hilbert_curve
+performance/graph/maximum_flow
+performance/graph/pseudo_peripheral
+performance/graph/symmetric_rcm
+performance/overhead/memory
+performance/spmv/spmv
 #<AutoIgnore/>

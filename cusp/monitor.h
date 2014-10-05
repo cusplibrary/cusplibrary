@@ -21,8 +21,8 @@
 #pragma once
 
 #include <cusp/detail/config.h>
-
 #include <cusp/blas/blas.h>
+#include <cusp/complex.h>
 
 #include <limits>
 #include <iostream>
@@ -69,7 +69,7 @@ namespace cusp
  *      // set stopping criteria:
  *      //  iteration_limit    = 100
  *      //  relative_tolerance = 1e-6
- *      cusp::default_monitor<float> monitor(b, 100, 1e-6);
+ *      cusp::monitor<float> monitor(b, 100, 1e-6);
  *
  *      // solve the linear system A x = b
  *      cusp::krylov::cg(A, x, b, monitor);
@@ -94,10 +94,10 @@ namespace cusp
  *
  */
 template <typename ValueType>
-class default_monitor
+class monitor
 {
 public:
-    typedef typename norm_type<ValueType>::type Real;
+    typedef typename cusp::norm_type<ValueType>::type Real;
 
     /*! Construct a \p default_monitor for a given right-hand-side \p b
      *
@@ -114,32 +114,28 @@ public:
      *  \tparam VectorType vector
      */
     template <typename Vector>
-    default_monitor(const Vector& b, size_t iteration_limit = 500, Real relative_tolerance = 1e-5, Real absolute_tolerance = 0)
+    monitor(const Vector& b, size_t iteration_limit = 500, Real relative_tolerance = 1e-5, Real absolute_tolerance = 0, bool verbose = false)
         : b_norm(cusp::blas::nrm2(b)),
           r_norm(std::numeric_limits<Real>::max()),
           iteration_limit_(iteration_limit),
           iteration_count_(0),
           relative_tolerance_(relative_tolerance),
-          absolute_tolerance_(absolute_tolerance)
-    {}
+          absolute_tolerance_(absolute_tolerance),
+          verbose(verbose)
+    {
+          if(verbose) {
+              std::cout << "Solver will continue until ";
+              std::cout << "residual norm " << relative_tolerance << " or reaching ";
+              std::cout << iteration_limit << " iterations " << std::endl;
+              std::cout << "  Iteration Number  | Residual Norm" << std::endl;
+          }
+          residuals.reserve(iteration_limit);
+    }
 
     /*! increment the iteration count
      */
     void operator++(void) {
         ++iteration_count_;    // prefix increment
-    }
-
-    /*! applies convergence criteria to determine whether iteration is finished
-     *
-     *  \param r residual vector of the linear system (r = b - A x)
-     *  \tparam Vector vector
-     */
-    template <typename Vector>
-    bool finished(const Vector& r)
-    {
-        r_norm = cusp::blas::nrm2(r);
-
-        return converged() || iteration_count() >= iteration_limit();
     }
 
     /*! whether the last tested residual satifies the convergence tolerance
@@ -188,8 +184,37 @@ public:
         return absolute_tolerance() + relative_tolerance() * b_norm;
     }
 
+    /*! applies convergence criteria to determine whether iteration is finished
+     *
+     *  \param r residual vector of the linear system (r = b - A x)
+     *  \tparam Vector vector
+     */
+    template <typename Vector>
+    bool finished(const Vector& r);
+
+    void set_verbose(bool verbose_ = true) {
+      verbose = verbose_;
+    }
+
+    template <typename Vector>
+    void reset(const Vector& b) {
+        b_norm = cusp::blas::nrm2(b);
+        r_norm = std::numeric_limits<Real>::max();
+        iteration_count_ = 0;
+        residuals.resize(0);
+    }
+
+    void print(void);
+
+    Real immediate_rate(void);
+
+    Real geometric_rate(void);
+
+    Real average_rate(void);
+
 protected:
 
+    bool verbose;
     Real r_norm;
     Real b_norm;
     Real relative_tolerance_;
@@ -197,161 +222,9 @@ protected:
 
     size_t iteration_limit_;
     size_t iteration_count_;
-};
-
-/*! \p verbose_monitor is similar to \p default monitor except that
- * it displays the solver status during iteration and reports a
- * summary after iteration has stopped.
- *
- * \tparam ValueType scalar type used in the solver (e.g. \c float or \c cusp::complex<double>).
- *
- * \see \p default_monitor
- */
-template <typename ValueType>
-class verbose_monitor : public default_monitor<ValueType>
-{
-    typedef typename norm_type<ValueType>::type Real;
-    typedef cusp::default_monitor<ValueType> super;
-
-public:
-    /*! Construct a \p verbose_monitor for a given right-hand-side \p b
-     *
-     *  The \p verbose_monitor terminates iteration when the residual norm
-     *  satisfies the condition
-     *       ||b - A x|| <= absolute_tolerance + relative_tolerance * ||b||
-     *  or when the iteration limit is reached.
-     *
-     *  \param b right-hand-side of the linear system A x = b
-     *  \param iteration_limit maximum number of solver iterations to allow
-     *  \param relative_tolerance determines convergence criteria
-     *  \param absolute_tolerance determines convergence criteria
-     *
-     *  \tparam VectorType vector
-     */
-    template <typename Vector>
-    verbose_monitor(const Vector& b, size_t iteration_limit = 500, Real relative_tolerance = 1e-5, Real absolute_tolerance = 0)
-        : super(b, iteration_limit, relative_tolerance, absolute_tolerance)
-    {
-        std::cout << "Solver will continue until ";
-        std::cout << "residual norm " << super::tolerance() << " or reaching ";
-        std::cout << super::iteration_limit() << " iterations " << std::endl;
-        std::cout << "  Iteration Number  | Residual Norm" << std::endl;
-    }
-
-    template <typename Vector>
-    bool finished(const Vector& r)
-    {
-        super::r_norm = cusp::blas::nrm2(r);
-
-        std::cout << "       "  << std::setw(10) << super::iteration_count();
-        std::cout << "       "  << std::setw(10) << std::scientific << super::residual_norm() << std::endl;
-
-        if (super::converged())
-        {
-            std::cout << "Successfully converged after " << super::iteration_count() << " iterations." << std::endl;
-            return true;
-        }
-        else if (super::iteration_count() >= super::iteration_limit())
-        {
-            std::cout << "Failed to converge after " << super::iteration_count() << " iterations." << std::endl;
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-};
-/*! \}
- */
-
-
-/*! \p convergence_monitor is similar to \p default monitor except that
- * it displays the solver status during iteration and reports a
- * summary after iteration has stopped.
- *
- * \tparam ValueType scalar type used in the solver (e.g. \c float or \c cusp::complex<double>).
- *
- * \see \p default_monitor
- */
-template <typename ValueType>
-class convergence_monitor : public default_monitor<ValueType>
-{
-    typedef typename norm_type<ValueType>::type Real;
-    typedef cusp::default_monitor<ValueType> super;
-
-public:
-    /*! Construct a \p convergence_monitor for a given right-hand-side \p b
-     *
-     *  The \p convergence_monitor terminates iteration when the residual norm
-     *  satisfies the condition
-     *       ||b - A x|| <= absolute_tolerance + relative_tolerance * ||b||
-     *  or when the iteration limit is reached.
-     *
-     *  \param b right-hand-side of the linear system A x = b
-     *  \param iteration_limit maximum number of solver iterations to allow
-     *  \param relative_tolerance determines convergence criteria
-     *  \param absolute_tolerance determines convergence criteria
-     *
-     *  \tparam VectorType vector
-     */
-
     cusp::array1d<Real,cusp::host_memory> residuals;
-
-    template <typename Vector>
-    convergence_monitor(const Vector& b, size_t iteration_limit = 500, Real relative_tolerance = 1e-5, Real absolute_tolerance = 0)
-        : super(b, iteration_limit, relative_tolerance, absolute_tolerance)
-    {
-        residuals.reserve(iteration_limit);
-    }
-
-    template <typename Vector>
-    bool finished(const Vector& r)
-    {
-        super::r_norm = cusp::blas::nrm2(r);
-        residuals.push_back(super::r_norm);
-
-        return super::converged() || super::iteration_count() >= super::iteration_limit();
-    }
-
-    void print(void)
-    {
-        std::cout << "Solver will continue until ";
-        std::cout << "residual norm " << super::tolerance() << " or reaching ";
-        std::cout << super::iteration_limit() << " iterations " << std::endl;
-
-        std::cout << "Ran " << super::iteration_count();
-        std::cout << " iterations with a final residual of ";
-        std::cout << super::r_norm << std::endl;
-
-        std::cout << "geometric convergence factor : " << geometric_rate() << std::endl;
-        std::cout << "immediate convergence factor : " << immediate_rate() << std::endl;
-        std::cout << "average convergence factor   : " << average_rate() << std::endl;
-    }
-
-    Real immediate_rate(void)
-    {
-        size_t num = residuals.size();
-        return residuals[num-1] / residuals[num-2];
-    }
-
-    Real geometric_rate(void)
-    {
-        size_t num = residuals.size();
-        return std::pow(residuals[num-1] / residuals[0], Real(1.0)/num);
-    }
-
-    Real average_rate(void)
-    {
-        size_t num = residuals.size();
-        cusp::array1d<Real,cusp::host_memory> avg_vec(num-1);
-        thrust::transform(residuals.begin() + 1, residuals.end(), residuals.begin(), avg_vec.begin(), thrust::divides<Real>());
-        Real sum = thrust::reduce(avg_vec.begin(), avg_vec.end(), Real(0), thrust::plus<Real>());
-        return sum / Real(avg_vec.size());
-    }
 };
-/*! \}
- */
 
 } // end namespace cusp
 
+#include <cusp/detail/monitor.inl>

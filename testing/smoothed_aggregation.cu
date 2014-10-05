@@ -303,7 +303,7 @@ void TestSmoothedAggregation(void)
         cusp::array1d<ValueType,MemorySpace> x = unittest::random_samples<ValueType>(A.num_rows);
 
         // set stopping criteria (iteration_limit = 40, relative_tolerance = 1e-4)
-        cusp::convergence_monitor<ValueType> monitor(b, 40, 1e-4);
+        cusp::monitor<ValueType> monitor(b, 40, 1e-4);
         M.solve(b,x,monitor);
 
         ASSERT_EQUAL(monitor.converged(), true);
@@ -316,7 +316,7 @@ void TestSmoothedAggregation(void)
         cusp::array1d<ValueType,MemorySpace> x = unittest::random_samples<ValueType>(A.num_rows);
 
         // set stopping criteria (iteration_limit = 20, relative_tolerance = 1e-4)
-        cusp::convergence_monitor<ValueType> monitor(b, 20, 1e-4);
+        cusp::monitor<ValueType> monitor(b, 20, 1e-4);
         cusp::krylov::cg(A, x, b, monitor, M);
 
         ASSERT_EQUAL(monitor.converged(), true);
@@ -344,7 +344,7 @@ void TestSmoothedAggregationHostToDevice(void)
         cusp::array1d<ValueType,cusp::device_memory> x = unittest::random_samples<ValueType>(A_h.num_rows);
 
         // set stopping criteria (iteration_limit = 40, relative_tolerance = 1e-4)
-        cusp::convergence_monitor<ValueType> monitor(b, 40, 1e-4);
+        cusp::monitor<ValueType> monitor(b, 40, 1e-4);
         M_d.solve(b,x,monitor);
 
         ASSERT_EQUAL(monitor.converged(), true);
@@ -358,7 +358,7 @@ void TestSmoothedAggregationHostToDevice(void)
         cusp::array1d<ValueType,cusp::device_memory> x = unittest::random_samples<ValueType>(A_d.num_rows);
 
         // set stopping criteria (iteration_limit = 20, relative_tolerance = 1e-4)
-        cusp::convergence_monitor<ValueType> monitor(b, 20, 1e-4);
+        cusp::monitor<ValueType> monitor(b, 20, 1e-4);
         cusp::krylov::cg(A_d, x, b, monitor, M_d);
 
         ASSERT_EQUAL(monitor.converged(), true);

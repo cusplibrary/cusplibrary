@@ -1,4 +1,5 @@
 #include <cusp/hyb_matrix.h>
+#include <cusp/monitor.h>
 #include <cusp/gallery/poisson.h>
 #include <cusp/krylov/cg_m.h>
 
@@ -31,7 +32,7 @@ int main(void)
     // set stopping criteria:
     //  iteration_limit    = 100
     //  relative_tolerance = 1e-6
-    cusp::verbose_monitor<ValueType> monitor(b, 100, 1e-6);
+    cusp::monitor<ValueType> monitor(b, 100, 1e-6, 0, true);
 
     // solve the linear systems (A + \sigma_i * I) * x = b for each 
     // sigma_i with the Conjugate Gradient method
