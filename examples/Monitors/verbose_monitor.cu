@@ -18,12 +18,15 @@ int main(void)
     // set stopping criteria:
     //  iteration_limit    = 100
     //  relative_tolerance = 1e-6
+    //  absolute tolerance = 0
+    //  verbose            = true
     cusp::monitor<float> monitor(b, 100, 1e-6, 0, true);
 
     // solve the linear system A x = b
     cusp::krylov::cg(A, x, b, monitor);
 
     // monitor will report solver progress and results
+    monitor.print();
 
     return 0;
 }
