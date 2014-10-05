@@ -66,9 +66,9 @@ void multiply(const Matrix&  A,
               cusp::array1d_format)
 {
 #ifdef CUSP_USE_TEXTURE_MEMORY
-    cusp::detail::device::spmv_coo_flat_tex(A, B.raw_data(), C.raw_data());
+    cusp::detail::device::spmv_coo_flat_tex(A, B, C);
 #else
-    cusp::detail::device::spmv_coo_flat(A, B.raw_data(), C.raw_data());
+    cusp::detail::device::spmv_coo_flat(A, B, C);
 #endif
 }
 
@@ -83,9 +83,9 @@ void multiply(const Matrix&  A,
               cusp::array1d_format)
 {
 #ifdef CUSP_USE_TEXTURE_MEMORY
-    cusp::detail::device::spmv_csr_vector_tex(A, B.raw_data(), C.raw_data());
+    cusp::detail::device::spmv_csr_vector_tex(A, B, C);
 #else
-    cusp::detail::device::spmv_csr_vector(A, B.raw_data(), C.raw_data());
+    cusp::detail::device::spmv_csr_vector(A, B, C);
 #endif
 }
 
@@ -100,9 +100,9 @@ void multiply(const Matrix&  A,
               cusp::array1d_format)
 {
 #ifdef CUSP_USE_TEXTURE_MEMORY
-    cusp::detail::device::spmv_dia_tex(A, B.raw_data(), C.raw_data());
+    cusp::detail::device::spmv_dia_tex(A, B, C);
 #else
-    cusp::detail::device::spmv_dia(A, B.raw_data(), C.raw_data());
+    cusp::detail::device::spmv_dia(A, B, C);
 #endif
 }
 
@@ -117,9 +117,9 @@ void multiply(const Matrix&  A,
               cusp::array1d_format)
 {
 #ifdef CUSP_USE_TEXTURE_MEMORY
-    cusp::detail::device::spmv_ell_tex(A, B.raw_data(), C.raw_data());
+    cusp::detail::device::spmv_ell_tex(A, B, C);
 #else
-    cusp::detail::device::spmv_ell(A, B.raw_data(), C.raw_data());
+    cusp::detail::device::spmv_ell(A, B, C);
 #endif
 }
 
@@ -134,9 +134,9 @@ void multiply(const Matrix&  A,
               cusp::array1d_format)
 {
 #ifdef CUSP_USE_TEXTURE_MEMORY
-    cusp::detail::device::spmv_hyb_tex(A, B.raw_data(), C.raw_data());
+    cusp::detail::device::spmv_hyb_tex(A, B, C);
 #else
-    cusp::detail::device::spmv_hyb(A, B.raw_data(), C.raw_data());
+    cusp::detail::device::spmv_hyb(A, B, C);
 #endif
 }
 

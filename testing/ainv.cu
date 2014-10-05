@@ -86,7 +86,7 @@ void TestAINVFactorization(void)
 
     // cg should converge in 1 iteration
     // because we're in single precision, this isn't exact, but 1e-5 tolerance should give enough leeway.
-    cusp::default_monitor<ValueType> monitor(b, 1, 0, 1e-5);
+    cusp::monitor<ValueType> monitor(b, 1, 0, 1e-5);
     cusp::krylov::cg(A, x_solve, b, monitor, M);
 
     ASSERT_EQUAL(monitor.converged(), true);
@@ -120,7 +120,7 @@ void TestAINVSymmetry(void)
         cusp::array1d<ValueType,MemorySpace> x_solve = x;
         cusp::precond::bridson_ainv<ValueType,MemorySpace> M(A, .1);
 
-        cusp::default_monitor<ValueType> monitor(b, 125, 0, 1e-5);
+        cusp::monitor<ValueType> monitor(b, 125, 0, 1e-5);
         cusp::krylov::cg(A, x_solve, b, monitor, M);
 
         nrm1 = monitor.residual_norm();
@@ -132,7 +132,7 @@ void TestAINVSymmetry(void)
         cusp::array1d<ValueType,MemorySpace> x_solve = x;
         cusp::precond::nonsym_bridson_ainv<ValueType,MemorySpace> M(A, .1);
 
-        cusp::default_monitor<ValueType> monitor(b, 125, 0, 1e-5);
+        cusp::monitor<ValueType> monitor(b, 125, 0, 1e-5);
         cusp::krylov::cg(A, x_solve, b, monitor, M);
 
         nrm2 = monitor.residual_norm();
@@ -172,7 +172,7 @@ void TestAINVConvergence(void)
         cusp::array1d<ValueType,MemorySpace> x_solve = x;
         cusp::precond::scaled_bridson_ainv<ValueType,MemorySpace> M(A, .1);
 
-        cusp::default_monitor<ValueType> monitor(b, 125, 0, 1e-5);
+        cusp::monitor<ValueType> monitor(b, 125, 0, 1e-5);
         cusp::krylov::cg(A, x_solve, b, monitor, M);
 
         ASSERT_EQUAL(monitor.converged(), true);
@@ -183,7 +183,7 @@ void TestAINVConvergence(void)
         cusp::array1d<ValueType,MemorySpace> x_solve = x;
         cusp::precond::scaled_bridson_ainv<ValueType,MemorySpace> M(A, 0, 10);
 
-        cusp::default_monitor<ValueType> monitor(b, 70, 0, 1e-5);
+        cusp::monitor<ValueType> monitor(b, 70, 0, 1e-5);
         cusp::krylov::cg(A, x_solve, b, monitor, M);
 
         ASSERT_EQUAL(monitor.converged(), true);
@@ -194,7 +194,7 @@ void TestAINVConvergence(void)
         cusp::array1d<ValueType,MemorySpace> x_solve = x;
         cusp::precond::scaled_bridson_ainv<ValueType,MemorySpace> M(A, .01, 4);
 
-        cusp::default_monitor<ValueType> monitor(b, 120, 0, 1e-5);
+        cusp::monitor<ValueType> monitor(b, 120, 0, 1e-5);
         cusp::krylov::cg(A, x_solve, b, monitor, M);
 
         ASSERT_EQUAL(monitor.converged(), true);
@@ -204,7 +204,7 @@ void TestAINVConvergence(void)
         cusp::array1d<ValueType,MemorySpace> x_solve = x;
         cusp::precond::scaled_bridson_ainv<ValueType,MemorySpace> M(A, 0, -1, true, 4);
 
-        cusp::default_monitor<ValueType> monitor(b, 120, 0, 1e-5);
+        cusp::monitor<ValueType> monitor(b, 120, 0, 1e-5);
         cusp::krylov::cg(A, x_solve, b, monitor, M);
 
         ASSERT_EQUAL(monitor.converged(), true);
@@ -216,7 +216,7 @@ void TestAINVConvergence(void)
         cusp::array1d<ValueType,MemorySpace> x_solve = x;
         cusp::precond::bridson_ainv<ValueType,MemorySpace> M(A, .1);
 
-        cusp::default_monitor<ValueType> monitor(b, 125, 0, 1e-5);
+        cusp::monitor<ValueType> monitor(b, 125, 0, 1e-5);
         cusp::krylov::cg(A, x_solve, b, monitor, M);
 
         ASSERT_EQUAL(monitor.converged(), true);
@@ -227,7 +227,7 @@ void TestAINVConvergence(void)
         cusp::array1d<ValueType,MemorySpace> x_solve = x;
         cusp::precond::bridson_ainv<ValueType,MemorySpace> M(A, 0, 10);
 
-        cusp::default_monitor<ValueType> monitor(b, 70, 0, 1e-5);
+        cusp::monitor<ValueType> monitor(b, 70, 0, 1e-5);
         cusp::krylov::cg(A, x_solve, b, monitor, M);
 
         ASSERT_EQUAL(monitor.converged(), true);
@@ -238,7 +238,7 @@ void TestAINVConvergence(void)
         cusp::array1d<ValueType,MemorySpace> x_solve = x;
         cusp::precond::bridson_ainv<ValueType,MemorySpace> M(A, .01, 4);
 
-        cusp::default_monitor<ValueType> monitor(b, 120, 0, 1e-5);
+        cusp::monitor<ValueType> monitor(b, 120, 0, 1e-5);
         cusp::krylov::cg(A, x_solve, b, monitor, M);
 
         ASSERT_EQUAL(monitor.converged(), true);
@@ -249,7 +249,7 @@ void TestAINVConvergence(void)
         cusp::array1d<ValueType,MemorySpace> x_solve = x;
         cusp::precond::bridson_ainv<ValueType,MemorySpace> M(A, 0, -1, true, 4);
 
-        cusp::default_monitor<ValueType> monitor(b, 120, 0, 1e-5);
+        cusp::monitor<ValueType> monitor(b, 120, 0, 1e-5);
         cusp::krylov::cg(A, x_solve, b, monitor, M);
 
         ASSERT_EQUAL(monitor.converged(), true);

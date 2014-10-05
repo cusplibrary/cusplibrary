@@ -18,24 +18,13 @@ int main(void)
     // set stopping criteria:
     //  iteration_limit    = 100
     //  relative_tolerance = 1e-6
-    cusp::default_monitor<float> monitor(b, 100, 1e-6);
+    cusp::monitor<float> monitor(b, 100, 1e-6);
 
     // solve the linear system A x = b
     cusp::krylov::cg(A, x, b, monitor);
 
-    // report solver results
-    if (monitor.converged())
-    {
-        std::cout << "Solver converged to " << monitor.tolerance() << " tolerance";
-        std::cout << " after " << monitor.iteration_count() << " iterations";
-        std::cout << " (" << monitor.residual_norm() << " final residual)" << std::endl;
-    }
-    else
-    {
-        std::cout << "Solver reached iteration limit " << monitor.iteration_limit() << " before converging";
-        std::cout << " to " << monitor.tolerance() << " tolerance ";
-        std::cout << " (" << monitor.residual_norm() << " final residual)" << std::endl;
-    }
+    // monitor will report solver progress and results
+    monitor.print();
 
     return 0;
 }

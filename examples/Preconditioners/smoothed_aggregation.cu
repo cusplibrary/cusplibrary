@@ -33,45 +33,44 @@ int main(void)
 
     // create 2D Poisson problem
     cusp::gallery::poisson5pt(A, 256, 256);
+    cusp::array1d<ValueType, MemorySpace> rhs(A.num_rows, 1);
+    cusp::monitor<ValueType> monitor(rhs, 1000, 1e-6);
 
     // solve without preconditioning
     {
         std::cout << "\nSolving with no preconditioner..." << std::endl;
-    
+
         // allocate storage for solution (x) and right hand side (b)
         cusp::array1d<ValueType, MemorySpace> x(A.num_rows, 0);
-        cusp::array1d<ValueType, MemorySpace> b(A.num_rows, 1);
+        cusp::array1d<ValueType, MemorySpace> b(rhs);
 
-        // set stopping criteria (iteration_limit = 1000, relative_tolerance = 1e-6)
-        cusp::default_monitor<ValueType> monitor(b, 1000, 1e-6);
-        
         // solve
         cusp::krylov::cg(A, x, b, monitor);
 
         // report status
-        report_status(monitor);
+        monitor.print();
     }
 
     // solve with smoothed aggregation algebraic multigrid preconditioner
     {
         std::cout << "\nSolving with smoothed aggregation preconditioner..." << std::endl;
-        
+
         // allocate storage for solution (x) and right hand side (b)
         cusp::array1d<ValueType, MemorySpace> x(A.num_rows, 0);
-        cusp::array1d<ValueType, MemorySpace> b(A.num_rows, 1);
+        cusp::array1d<ValueType, MemorySpace> b(rhs);
 
-        // set stopping criteria (iteration_limit = 1000, relative_tolerance = 1e-6)
-        cusp::default_monitor<ValueType> monitor(b, 1000, 1e-6);
+        // reset the monitor
+        monitor.reset(b);
 
         // setup preconditioner
         cusp::precond::aggregation::smoothed_aggregation<IndexType, ValueType, MemorySpace> M(A);
-        
+
         // solve
         cusp::krylov::cg(A, x, b, monitor, M);
-        
+
         // report status
-        report_status(monitor);
-        
+        monitor.print();
+
         // print hierarchy information
         std::cout << "\nPreconditioner statistics" << std::endl;
         M.print();

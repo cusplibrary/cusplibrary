@@ -59,7 +59,7 @@ void TestConjugateGradientM(void)
     // set stopping criteria:
     //  iteration_limit    = 100
     //  relative_tolerance = 1e-6
-    cusp::default_monitor<ValueType> monitor(b, 100, 1e-6);
+    cusp::monitor<ValueType> monitor(b, 100, 1e-6);
 
     // solve the linear systems (A + \sigma_i * I) * x = b for each
     // sigma_i with the Conjugate Gradient method

@@ -36,7 +36,7 @@ void cr(LinearOperator& A,
 {
     typedef typename LinearOperator::value_type   ValueType;
 
-    cusp::default_monitor<ValueType> monitor(b);
+    cusp::monitor<ValueType> monitor(b);
 
     cusp::krylov::cr(A, x, b, monitor);
 }

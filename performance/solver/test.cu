@@ -9,7 +9,7 @@
 #include <iostream>
 
 #include "../timer.h"
- 
+
 template <typename Matrix>
 void benchmark_matrix(const Matrix& A)
 {
@@ -21,7 +21,7 @@ void benchmark_matrix(const Matrix& A)
     cusp::array1d<ValueType, MemorySpace> x(N,0);
     cusp::array1d<ValueType, MemorySpace> b(N,1);
 
-    cusp::default_monitor<ValueType> monitor(b, 2000, 1e-5);
+    cusp::monitor<ValueType> monitor(b, 2000, 1e-5);
 
     // time solver
     timer t;
@@ -46,10 +46,10 @@ int main(int argc, char** argv)
 {
     typedef int    IndexType;
     typedef double ValueType;
-    
+
     typedef cusp::hyb_matrix<IndexType,ValueType,cusp::host_memory>   HostMatrix;
     typedef cusp::hyb_matrix<IndexType,ValueType,cusp::device_memory> DeviceMatrix;
-    
+
     HostMatrix A;
 
     if (argc == 1)
@@ -65,7 +65,7 @@ int main(int argc, char** argv)
 
     std::cout << "Running solver on host..." << std::endl;
     benchmark_matrix(A);
-    
+
     std::cout << "Running solver on device..." << std::endl;
     benchmark_matrix(DeviceMatrix(A));
 

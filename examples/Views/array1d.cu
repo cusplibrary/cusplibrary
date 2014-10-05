@@ -9,36 +9,36 @@
 
 int main(void)
 {
-  // define array container type
-  typedef cusp::array1d<int, cusp::device_memory> Array;
-  
-  // define array view type
-  typedef Array::view View;
+    // define array container type
+    typedef cusp::array1d<int, cusp::device_memory> Array;
 
-  // allocate array1d container with 10 elements
-  Array array(10,0);
+    // define array view type
+    typedef Array::view View;
 
-  // create view to the first 5 elements of the array
-  View first_half(array.begin(), array.begin() + 5);
+    // allocate array1d container with 10 elements
+    Array array(10,0);
 
-  // create view to the last 5 elements of the array
-  View last_half(array.begin() + 5, array.end());
+    // create view to the first 5 elements of the array
+    View first_half(array.begin(), array.begin() + 5);
 
-  // fill the first half of the array with 1s
-  cusp::blas::fill(first_half, 1);
-  
-  // fill the first half of the array with 2s
-  cusp::blas::fill(last_half,  2);
+    // create view to the last 5 elements of the array
+    View last_half(array.begin() + 5, array.end());
 
-  // print the array
-  cusp::print(array);
+    // fill the first half of the array with 1s
+    cusp::blas::fill(first_half, 1);
 
-  // copy the first half to the last half
-  cusp::copy(first_half, last_half);
-  
-  // print the array
-  cusp::print(array);
+    // fill the first half of the array with 2s
+    cusp::blas::fill(last_half,  2);
 
-  return 0;
+    // print the array
+    cusp::print(array);
+
+    // copy the first half to the last half
+    cusp::copy(first_half, last_half);
+
+    // print the array
+    cusp::print(array);
+
+    return 0;
 }
 

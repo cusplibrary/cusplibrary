@@ -49,7 +49,7 @@ void multilevel<MatrixType,SmootherType,SolverType>
 {
     CUSP_PROFILE_SCOPED();
 
-    cusp::default_monitor<ValueType> monitor(b);
+    cusp::monitor<ValueType> monitor(b);
 
     solve(b, x, monitor);
 }

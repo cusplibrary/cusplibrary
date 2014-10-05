@@ -388,7 +388,7 @@ void cg_m(LinearOperator& A,
 {
     typedef typename LinearOperator::value_type   ValueType;
 
-    cusp::default_monitor<ValueType> monitor(b);
+    cusp::monitor<ValueType> monitor(b);
 
     return cg_m(A, x, b, sigma, monitor);
 }

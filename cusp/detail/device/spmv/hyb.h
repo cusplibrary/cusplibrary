@@ -27,21 +27,19 @@ namespace detail
 namespace device
 {
 
-template <typename Matrix,
-         typename ValueType>
-void spmv_hyb(const Matrix&    A,
-              const ValueType* x,
-              ValueType* y)
+template <typename Matrix, typename Array1, typename Array2>
+void spmv_hyb(const Matrix&   A,
+              const Array1&   x,
+                    Array2&   y)
 {
     spmv_ell(A.ell, x, y);
     __spmv_coo_flat<false, false>(A.coo, x, y);
 }
 
-template <typename Matrix,
-         typename ValueType>
-void spmv_hyb_tex(const Matrix&    A,
-                  const ValueType* x,
-                  ValueType* y)
+template <typename Matrix, typename Array1, typename Array2>
+void spmv_hyb_tex(const Matrix&   A,
+                  const Array1&   x,
+                        Array2&   y)
 {
     spmv_ell_tex(A.ell, x, y);
     __spmv_coo_flat<true, false>(A.coo, x, y);
