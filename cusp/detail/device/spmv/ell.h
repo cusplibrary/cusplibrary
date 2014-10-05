@@ -103,7 +103,7 @@ void __spmv_ell(const Matrix& A,
      num_entries_per_row, pitch,
      A.column_indices.values.raw_data(),
      A.values.values.raw_data(),
-     x.raw_data(), y.raw_data());
+     x.raw_data(), (ValueType*) y.raw_data());
 
     if (UseCache)
         unbind_x(x.raw_data());

@@ -147,7 +147,7 @@ void __spmv_csr_vector(const Matrix& A,
      A.row_offsets.raw_data(),
      A.column_indices.raw_data(),
      A.values.raw_data(),
-     x.raw_data(), y.raw_data());
+     x.raw_data(), (ValueType*) y.raw_data());
 
     if (UseCache)
         unbind_x(x.raw_data());
