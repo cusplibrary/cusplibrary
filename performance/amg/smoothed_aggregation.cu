@@ -26,23 +26,6 @@ public:
     }
 };
 
-/* template <typename Monitor> */
-/* void report_status(Monitor& monitor) */
-/* { */
-/*     if (monitor.converged()) */
-/*     { */
-/*         std::cout << "Solver converged to " << monitor.tolerance() << " tolerance"; */
-/*         std::cout << " after " << monitor.iteration_count() << " iterations"; */
-/*         std::cout << " (" << monitor.residual_norm() << " final residual)" << std::endl; */
-/*     } */
-/*     else */
-/*     { */
-/*         std::cout << "Solver reached iteration limit " << monitor.iteration_limit() << " before converging"; */
-/*         std::cout << " to " << monitor.tolerance() << " tolerance "; */
-/*         std::cout << " (" << monitor.residual_norm() << " final residual)" << std::endl; */
-/*     } */
-/* } */
-
 template<typename MatrixType, typename Prec>
 void run_amg(const MatrixType& A, Prec& M)
 {

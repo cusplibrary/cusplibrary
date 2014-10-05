@@ -113,10 +113,11 @@ spmv_dia_kernel(const IndexType num_rows,
 
 template <bool UseCache,
          typename Matrix,
-         typename Array>
+         typename Array1,
+         typename Array2>
 void __spmv_dia(const Matrix& A,
-                const Array&  x,
-                Array& y)
+                const Array1&  x,
+                      Array2& y)
 {
     typedef typename Matrix::index_type IndexType;
     typedef typename Matrix::value_type ValueType;
@@ -143,26 +144,28 @@ void __spmv_dia(const Matrix& A,
     (A.num_rows, A.num_cols, num_diagonals, pitch,
      A.diagonal_offsets.raw_data(),
      A.values.values.raw_data(),
-     x.raw_data(), y.raw_data());
+     x.raw_data(), (ValueType*) y.raw_data());
 
     if (UseCache)
         unbind_x(x.raw_data());
 }
 
 template <typename Matrix,
-          typename Array>
+          typename Array1,
+          typename Array2>
 void spmv_dia(const Matrix& A,
-              const Array&  x,
-              Array& y)
+              const Array1&  x,
+                    Array2& y)
 {
     __spmv_dia<false>(A, x, y);
 }
 
 template <typename Matrix,
-          typename Array>
+          typename Array1,
+          typename Array2>
 void spmv_dia_tex(const Matrix& A,
-                  const Array&  x,
-                  Array& y)
+                  const Array1&  x,
+                        Array2& y)
 {
     __spmv_dia<true>(A, x, y);
 }

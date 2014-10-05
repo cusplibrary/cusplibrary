@@ -356,8 +356,8 @@ void spmv_coo_flat_k(const coo_matrix<IndexType,ValueType,cusp::device_memory>& 
 
 template <typename IndexType, typename ValueType, typename Array1, typename Array2>
 void spmv_coo_flat_k_tex(const coo_matrix<IndexType,ValueType,cusp::device_memory>& coo,
-                         const Arra12& d_x,
-                         Array2& d_y)
+                         const Array1& d_x,
+                               Array2& d_y)
 {
     __spmv_coo_flat_k<IndexType, ValueType, true, true>(coo, d_x, d_y);
 }

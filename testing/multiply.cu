@@ -261,7 +261,7 @@ void TestSparseMatrixDenseMatrixMultiply(void)
     }
 
 }
-/* DECLARE_SPARSE_MATRIX_UNITTEST(TestSparseMatrixDenseMatrixMultiply); */
+DECLARE_SPARSE_MATRIX_UNITTEST(TestSparseMatrixDenseMatrixMultiply);
 
 
 /////////////////////////////////////////
