@@ -22,10 +22,7 @@
 #pragma once
 
 #include <cusp/detail/config.h>
-
 #include <cusp/complex.h>
-
-#include <thrust/iterator/iterator_traits.h>
 
 namespace cusp
 {
@@ -49,13 +46,6 @@ void axpy(const Array1& x,
                 Array2& y,
           ScalarType alpha);
 
-template <typename Array1,
-          typename Array2,
-          typename ScalarType>
-void axpy(const Array1& x,
-          const Array2& y,
-          ScalarType alpha);
-
 /*! \p axpby : linear combination of two vectors (output = alpha * x + beta * y)
  */
 template <typename Array1,
@@ -66,17 +56,6 @@ template <typename Array1,
 void axpby(const Array1& x,
            const Array2& y,
                  Array3& output,
-           ScalarType1 alpha,
-           ScalarType2 beta);
-
-template <typename Array1,
-          typename Array2,
-          typename Array3,
-          typename ScalarType1,
-          typename ScalarType2>
-void axpby(const Array1& x,
-           const Array2& y,
-           const Array3& output,
            ScalarType1 alpha,
            ScalarType2 beta);
 
@@ -97,21 +76,6 @@ void axpbypcz(const Array1& x,
               ScalarType2 beta,
               ScalarType3 gamma);
 
-template <typename Array1,
-          typename Array2,
-          typename Array3,
-          typename Array4,
-          typename ScalarType1,
-          typename ScalarType2,
-          typename ScalarType3>
-void axpbypcz(const Array1& x,
-              const Array2& y,
-              const Array3& z,
-              const Array4& output,
-              ScalarType1 alpha,
-              ScalarType2 beta,
-              ScalarType3 gamma);
-
 /*! \p xmy : elementwise multiplication of two vectors (output[i] = x[i] * y[i])
  */
 template <typename Array1,
@@ -121,24 +85,12 @@ void xmy(const Array1& x,
          const Array2& y,
                Array3& output);
 
-template <typename Array1,
-          typename Array2,
-          typename Array3>
-void xmy(const Array1& x,
-         const Array2& y,
-         const Array3& output);
-
 /*! \p copy : vector copy (y = x)
  */
 template <typename Array1,
           typename Array2>
 void copy(const Array1& array1,
                 Array2& array2);
-
-template <typename Array1,
-          typename Array2>
-void copy(const Array1& array1,
-          const Array2& array2);
 
 /*! \p dot : dot product (x^T * y)
  */
@@ -161,11 +113,6 @@ typename Array1::value_type
 template <typename Array,
           typename ScalarType>
 void fill(Array& array,
-          ScalarType alpha);
-
-template <typename Array,
-          typename ScalarType>
-void fill(const Array& array,
           ScalarType alpha);
 
 /*! \p nrm1 : vector 1-norm (sum abs(x[i]))
@@ -191,11 +138,6 @@ typename Array::value_type
 template <typename Array,
           typename ScalarType>
 void scal(Array& x,
-          ScalarType alpha);
-
-template <typename Array,
-          typename ScalarType>
-void scal(const Array& x,
           ScalarType alpha);
 
 template<typename Array2d,

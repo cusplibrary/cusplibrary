@@ -14,13 +14,14 @@
  *  limitations under the License.
  */
 
-#pragma once
-
 #include <cusp/array1d.h>
 #include <cusp/complex.h>
 #include <cusp/exception.h>
 
 #include <cusp/blas/blas_policy.h>
+
+#include <thrust/iterator/iterator_traits.h>
+
 
 namespace cusp
 {

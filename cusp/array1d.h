@@ -114,9 +114,9 @@ public:
         return *this;
     }
 
-    view subarray(size_type i, size_type j)
+    view subarray(size_type start_index, size_type num_entries)
     {
-        return view(Parent::begin() + i, Parent::begin() + j + 1);
+        return view(Parent::begin() + start_index, Parent::begin() + start_index + num_entries);
     }
 
     T* raw_data(void)
@@ -145,89 +145,60 @@ public:
  *
  * \TODO example
  */
-template <typename RandomAccessIterator>
-class array1d_view
+template<typename Iterator>
+class array1d_view : public thrust::iterator_adaptor<array1d_view<Iterator>, Iterator>
 {
-public:
-    // what about const_iterator and const_reference?
-    typedef RandomAccessIterator                                             iterator;
-    typedef cusp::array1d_format                                             format;
-    typedef typename thrust::iterator_reference<RandomAccessIterator>::type  reference;
-    typedef typename thrust::iterator_difference<RandomAccessIterator>::type difference_type;
-    typedef typename thrust::iterator_value<RandomAccessIterator>::type      value_type;
-#if THRUST_VERSION >= 100600
-    typedef typename thrust::iterator_system<RandomAccessIterator>::type     memory_space;
-#else
-    typedef typename thrust::iterator_space<RandomAccessIterator>::type      memory_space;
-#endif
-    typedef typename thrust::iterator_pointer<RandomAccessIterator>::type    pointer;
+  public :
 
-    /*! equivalent container type
-     */
-    typedef typename cusp::array1d<value_type,memory_space> container;
+    typedef cusp::array1d_format format;
+    typedef Iterator iterator;
 
-    /*! equivalent view type
-     */
-    typedef typename cusp::array1d_view<RandomAccessIterator> view;
+    typedef thrust::iterator_adaptor<array1d_view<iterator>, iterator>  super_t;
+    typedef typename cusp::array1d_view<iterator>                       view;
 
-    // is this right?
-    typedef size_t size_type;
+    typedef typename super_t::value_type                                value_type;
+    typedef typename super_t::pointer                                   pointer;
+    typedef typename super_t::reference                                 reference;
+    typedef size_t                                                      size_type;
+    typedef typename super_t::difference_type                           difference_type;
+    typedef typename thrust::iterator_system<iterator>::type            memory_space;
 
     array1d_view(void)
-        : m_begin(), m_size(0), m_capacity(0) {}
+        : m_size(0), m_capacity(0) {}
 
     template <typename Array>
-    explicit array1d_view(Array& a)
-        : m_begin(a.begin()), m_size(a.size()), m_capacity(a.capacity()) {}
+    array1d_view(Array& a)
+        : super_t(a.begin()), m_size(a.size()), m_capacity(a.capacity()) {}
 
-    template <typename Array>
-    explicit array1d_view(const Array& a)
-        : m_begin(a.begin()), m_size(a.size()), m_capacity(a.capacity()) {}
+    template <typename InputIterator>
+    array1d_view(InputIterator begin, InputIterator end)
+        : super_t(begin), m_size(end-begin), m_capacity(end-begin) {}
 
-    // should these be templated?
-    array1d_view(RandomAccessIterator first, RandomAccessIterator last)
-        : m_begin(first), m_size(last - first), m_capacity(last - first) {}
-
-    array1d_view& operator=(const array1d_view& a)
-    {
-        m_begin    = a.begin();
-        m_size     = a.size();
-        m_capacity = a.capacity();
-        return *this;
-    }
-
-    //template <typename Array>
-    //array1d_view &operator=(Array &a)
-    //{
-    //  m_begin    = a.begin();
-    //  m_size     = a.size();
-    //  m_capacity = a.capacity();
-    //  return *this;
-    //}
+    friend class thrust::iterator_core_access;
 
     reference front(void) const
     {
-        return m_begin[0];
+        return *begin();
     }
 
     reference back(void) const
     {
-        return m_begin[size() - 1];
+        return *(begin() + (size() - 1));
     }
 
     reference operator[](difference_type n) const
     {
-        return m_begin[n];
+        return *(begin() + n);
     }
 
     iterator begin(void) const
     {
-        return m_begin;
+        return this->base();
     }
 
     iterator end(void) const
     {
-        return m_begin + m_size;
+        return begin() + m_size;
     }
 
     size_type size(void) const
@@ -255,13 +226,6 @@ public:
         return thrust::raw_pointer_cast(&front());
     }
 
-    view subarray(size_type i, size_type j)
-    {
-        return view(m_begin + i, m_begin + j + 1);
-    }
-
-    // TODO is there any value in supporting the two-argument form?
-    //      i.e.  void resize(size_type new_size, value_type x = value_type())
     void resize(size_type new_size)
     {
         if (new_size <= m_capacity)
@@ -271,10 +235,16 @@ public:
             throw cusp::not_implemented_exception("array1d_view cannot resize() larger than capacity()");
     }
 
+    view subarray(size_type start_index, size_type num_entries)
+    {
+        return view(begin() + start_index, begin() + start_index + num_entries);
+    }
+
 protected:
-    iterator  m_begin;
     size_type m_size;
     size_type m_capacity;
+
+  private :
 };
 
 /*! \p counting_array : One-dimensional counting array view

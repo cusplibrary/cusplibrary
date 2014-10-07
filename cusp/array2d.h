@@ -82,22 +82,34 @@ public:
 
     /*! array1d_view of a single row
      */
-    typedef cusp::detail::row_or_column_view<typename values_array_type::iterator,thrust::detail::is_same<Orientation,cusp::row_major>::value> row_view_type;
+    typedef cusp::detail::row_or_column_view<
+      typename values_array_type::iterator,thrust::detail::is_same<Orientation,cusp::row_major>::value>
+      row_view_type;
+
     typedef typename row_view_type::ArrayType row_view;
 
     /*! array1d_view of a single column
      */
-    typedef cusp::detail::row_or_column_view<typename values_array_type::iterator,thrust::detail::is_same<Orientation,cusp::column_major>::value> column_view_type;
+    typedef cusp::detail::row_or_column_view
+      <typename values_array_type::iterator,thrust::detail::is_same<Orientation,cusp::column_major>::value>
+      column_view_type;
+
     typedef typename column_view_type::ArrayType column_view;
 
     /*! const array1d_view of a single row
      */
-    typedef cusp::detail::row_or_column_view<typename values_array_type::const_iterator,thrust::detail::is_same<Orientation,cusp::row_major>::value> const_row_view_type;
+    typedef cusp::detail::row_or_column_view
+      <typename values_array_type::const_iterator,thrust::detail::is_same<Orientation,cusp::row_major>::value>
+      const_row_view_type;
+
     typedef typename const_row_view_type::ArrayType const_row_view;
 
     /*! const array1d_view of a single column
      */
-    typedef cusp::detail::row_or_column_view<typename values_array_type::const_iterator,thrust::detail::is_same<Orientation,cusp::column_major>::value> const_column_view_type;
+    typedef cusp::detail::row_or_column_view
+      <typename values_array_type::const_iterator,thrust::detail::is_same<Orientation,cusp::column_major>::value>
+      const_column_view_type;
+
     typedef typename const_column_view_type::ArrayType const_column_view;
 
     values_array_type values;
@@ -220,14 +232,14 @@ public:
  *
  * \TODO example
  */
-template<typename Array, class Orientation = cusp::row_major>
-class array2d_view : public cusp::detail::matrix_base<int, typename Array::value_type,typename Array::memory_space, cusp::array2d_format>
+template<typename ArrayView, class Orientation = cusp::row_major>
+class array2d_view : public cusp::detail::matrix_base<int, typename ArrayView::value_type,typename ArrayView::memory_space, cusp::array2d_format>
 {
-    typedef cusp::detail::matrix_base<int, typename Array::value_type,typename Array::memory_space, cusp::array2d_format> Parent;
+    typedef cusp::detail::matrix_base<int, typename ArrayView::value_type,typename ArrayView::memory_space, cusp::array2d_format> Parent;
 public:
     typedef Orientation orientation;
 
-    typedef Array values_array_type;
+    typedef ArrayView values_array_type;
 
     values_array_type values;
 
@@ -237,7 +249,7 @@ public:
 
     /*! equivalent view type
      */
-    typedef typename cusp::array2d_view<Array, Orientation> view;
+    typedef typename cusp::array2d_view<ArrayView, Orientation> view;
 
     /*! array1d_view of a single row
      */
@@ -267,9 +279,6 @@ public:
 
     // construct from array2d container
     array2d_view(array2d<typename Parent::value_type, typename Parent::memory_space, orientation>& a)
-        : Parent(a), values(a.values), pitch(a.pitch) {}
-
-    array2d_view(const array2d<typename Parent::value_type, typename Parent::memory_space, orientation>& a)
         : Parent(a), values(a.values), pitch(a.pitch) {}
 
     template <typename Array2>

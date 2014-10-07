@@ -550,15 +550,15 @@ void TestArray1dViewSubarray(void)
 
     V = A.subarray(0,1);
 
-    ASSERT_EQUAL(V.size(),     2);
+    ASSERT_EQUAL(V.size(),     1);
     ASSERT_EQUAL_QUIET(V.begin(), A.begin() + 0);
-    ASSERT_EQUAL_QUIET(V.end(),   A.begin() + 2);
+    ASSERT_EQUAL_QUIET(V.end(),   A.begin() + 1);
 
     V = A.subarray(1,3);
     View W = V.subarray(0,1);
 
-    ASSERT_EQUAL(W.size(),     2);
+    ASSERT_EQUAL(W.size(),     1);
     ASSERT_EQUAL_QUIET(W.begin(), A.begin() + 1);
-    ASSERT_EQUAL_QUIET(W.end(),   A.begin() + 3);
+    ASSERT_EQUAL_QUIET(W.end(),   A.begin() + 2);
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestArray1dViewSubarray);
