@@ -39,11 +39,11 @@ CUSP releases are labeled using version identifiers having three fields:
  
 | Date | Version |
 | ---- | ------- |
-| 08/30/2013 | [CUSP v0.4.0](https://github.com/cusplibrary/cusplibrary/archive/0.4.0.zip) |
-| 03/08/2012 | [CUSP v0.3.1](https://github.com/cusplibrary/cusplibrary/archive/0.3.1.zip) |
-| 02/04/2012 | [CUSP v0.3.0](https://github.com/cusplibrary/cusplibrary/archive/0.3.0.zip) |
-| 05/30/2011 | [CUSP v0.2.0](https://github.com/cusplibrary/cusplibrary/archive/0.2.0.zip) |
-| 07/10/2010 | [CUSP v0.1.0](https://github.com/cusplibrary/cusplibrary/archive/0.1.0.zip) |
+| 08/30/2013 | [CUSP v0.4.0](https://github.com/cusplibrary/cusplibrary/archive/v0.4.0.zip) |
+| 03/08/2012 | [CUSP v0.3.1](https://github.com/cusplibrary/cusplibrary/archive/v0.3.1.zip) |
+| 02/04/2012 | [CUSP v0.3.0](https://github.com/cusplibrary/cusplibrary/archive/v0.3.0.zip) |
+| 05/30/2011 | [CUSP v0.2.0](https://github.com/cusplibrary/cusplibrary/archive/v0.2.0.zip) |
+| 07/10/2010 | [CUSP v0.1.0](https://github.com/cusplibrary/cusplibrary/archive/v0.1.0.zip) |
 
 
 <br><hr>
