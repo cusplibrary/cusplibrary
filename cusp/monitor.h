@@ -212,6 +212,8 @@ public:
 
     Real average_rate(void);
 
+    cusp::array1d<Real,cusp::host_memory> residuals;
+
 protected:
 
     bool verbose;
@@ -222,7 +224,6 @@ protected:
 
     size_t iteration_limit_;
     size_t iteration_count_;
-    cusp::array1d<Real,cusp::host_memory> residuals;
 };
 
 } // end namespace cusp
