@@ -20,14 +20,15 @@
 
 #include <cusp/detail/config.h>
 
-#include <cusp/array1d.h>
 
 #include <fstream>
 #include <iostream>
 #include <streambuf>
 #include <string>
 #include <vector>
+#include <unistd.h>
 
+#include <cusp/array1d.h>
 #include <cusp/plot/detail/convergence_stub.h>
 
 namespace cusp
@@ -67,6 +68,12 @@ void convergence_plotter
     std::ofstream plot(plot_name);
     plot.write(plot_str.c_str(), plot_str.length());
     plot.close();
+
+    size_t size = 0;
+    char * filepath = getcwd(NULL, size);
+    std::string filename = std::string(filepath) + "/" + std::string(plot_name);
+    std::cout << "Created plot : " << filename << std::endl;
+    if(filepath) free(filepath);
 }
 
 } // end namespace plot

@@ -19,16 +19,16 @@ int main(void)
     cusp::gallery::poisson5pt(A, 256, 256);
 
     // set stopping criteria (iteration_limit = 1000, relative_tolerance = 1e-6)
-    cusp::array1d<ValueType, MemorySpace> rhs(A.num_rows, 1);
-    cusp::monitor<ValueType> monitor(rhs);
+    cusp::array1d<ValueType, MemorySpace> x0(A.num_rows, 0);
+    cusp::array1d<ValueType, MemorySpace> b(A.num_rows, 1);
+    cusp::monitor<ValueType> monitor(b);
 
     // solve without preconditioning
     {
         std::cout << "\nSolving with no preconditioner" << std::endl;
 
         // allocate storage for solution (x) and right hand side (b)
-        cusp::array1d<ValueType, MemorySpace> x(A.num_rows, 0);
-        cusp::array1d<ValueType, MemorySpace> b(rhs);
+        cusp::array1d<ValueType, MemorySpace> x(x0);
 
         // solve
         cusp::krylov::cg(A, x, b, monitor);
@@ -42,8 +42,7 @@ int main(void)
         std::cout << "\nSolving with scaled bridson preconditioner (drop tolerance .1)" << std::endl;
 
         // allocate storage for solution (x) and right hand side (b)
-        cusp::array1d<ValueType, MemorySpace> x(A.num_rows, 0);
-        cusp::array1d<ValueType, MemorySpace> b(rhs);
+        cusp::array1d<ValueType, MemorySpace> x(x0);
 
         // reset the monitor
         monitor.reset(b);
@@ -64,8 +63,7 @@ int main(void)
         std::cout << "\nSolving with scaled bridson preconditioner (10 nonzeroes per row)" << std::endl;
 
         // allocate storage for solution (x) and right hand side (b)
-        cusp::array1d<ValueType, MemorySpace> x(A.num_rows, 0);
-        cusp::array1d<ValueType, MemorySpace> b(rhs);
+        cusp::array1d<ValueType, MemorySpace> x(x0);
 
         // reset the monitor
         monitor.reset(b);
@@ -86,8 +84,7 @@ int main(void)
         std::cout << "\nSolving with AINV preconditioner (Lin strategy, p=2)" << std::endl;
 
         // allocate storage for solution (x) and right hand side (b)
-        cusp::array1d<ValueType, MemorySpace> x(A.num_rows, 0);
-        cusp::array1d<ValueType, MemorySpace> b(rhs);
+        cusp::array1d<ValueType, MemorySpace> x(x0);
 
         // reset the monitor
         monitor.reset(b);

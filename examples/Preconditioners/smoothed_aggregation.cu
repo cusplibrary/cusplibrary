@@ -33,16 +33,17 @@ int main(void)
 
     // create 2D Poisson problem
     cusp::gallery::poisson5pt(A, 256, 256);
-    cusp::array1d<ValueType, MemorySpace> rhs(A.num_rows, 1);
-    cusp::monitor<ValueType> monitor(rhs, 1000, 1e-6);
+
+    cusp::array1d<ValueType, MemorySpace> x0(A.num_rows, 0);
+    cusp::array1d<ValueType, MemorySpace> b(A.num_rows, 1);
+    cusp::monitor<ValueType> monitor(b, 1000, 1e-6);
 
     // solve without preconditioning
     {
         std::cout << "\nSolving with no preconditioner..." << std::endl;
 
         // allocate storage for solution (x) and right hand side (b)
-        cusp::array1d<ValueType, MemorySpace> x(A.num_rows, 0);
-        cusp::array1d<ValueType, MemorySpace> b(rhs);
+        cusp::array1d<ValueType, MemorySpace> x(x0);
 
         // solve
         cusp::krylov::cg(A, x, b, monitor);
@@ -56,8 +57,7 @@ int main(void)
         std::cout << "\nSolving with smoothed aggregation preconditioner..." << std::endl;
 
         // allocate storage for solution (x) and right hand side (b)
-        cusp::array1d<ValueType, MemorySpace> x(A.num_rows, 0);
-        cusp::array1d<ValueType, MemorySpace> b(rhs);
+        cusp::array1d<ValueType, MemorySpace> x(x0);
 
         // reset the monitor
         monitor.reset(b);

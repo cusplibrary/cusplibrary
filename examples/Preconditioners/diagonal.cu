@@ -21,16 +21,16 @@ int main(void)
 
     // Note: A has poorly scaled rows & columns
     // set stopping criteria (iteration_limit = 100, relative_tolerance = 1e-6, absolute_tolerance = 0, verbose = true)
-    cusp::array1d<ValueType, MemorySpace> rhs(A.num_rows, 1);
-    cusp::monitor<ValueType> monitor(rhs, 100, 1e-6, 0, true);
+    cusp::array1d<ValueType, MemorySpace> x0(A.num_rows, 0);
+    cusp::array1d<ValueType, MemorySpace> b(A.num_rows, 1);
+    cusp::monitor<ValueType> monitor(b, 100, 1e-6, 0, true);
 
     // solve without preconditioning
     {
         std::cout << "\nSolving with no preconditioner" << std::endl;
 
         // allocate storage for solution (x) and right hand side (b)
-        cusp::array1d<ValueType, MemorySpace> x(A.num_rows, 0);
-        cusp::array1d<ValueType, MemorySpace> b(rhs);
+        cusp::array1d<ValueType, MemorySpace> x(x0);
 
         // solve
         cusp::krylov::cg(A, x, b, monitor);
@@ -41,8 +41,7 @@ int main(void)
         std::cout << "\nSolving with diagonal preconditioner (M = D^-1)" << std::endl;
 
         // allocate storage for solution (x) and right hand side (b)
-        cusp::array1d<ValueType, MemorySpace> x(A.num_rows, 0);
-        cusp::array1d<ValueType, MemorySpace> b(rhs);
+        cusp::array1d<ValueType, MemorySpace> x(x0);
 
         // reset the monitor
         monitor.reset(b);
