@@ -15,7 +15,8 @@
  */
 
 /*! \file array1d.h
- *  \brief One-dimensional array
+ *  \brief One-dimensional array of elements that may reside in "host" or
+ *  "device" memory space
  */
 
 #pragma once
@@ -35,7 +36,8 @@
 
 namespace cusp
 {
-// forward definitions
+
+// forward declaration of array1d_view
 template <typename RandomAccessIterator> class array1d_view;
 
 /*! \addtogroup arrays Arrays
@@ -46,12 +48,32 @@ template <typename RandomAccessIterator> class array1d_view;
  *  \{
  */
 
-/*! \p array1d : One-dimensional array container
+/*! A \p array1d vector is a container that supports random access to elements.
+ * The memory associated with a \p array1d vector may reside in either "host"
+ * or "device" memory depending on the supplied allocator embedded in the
+ * MemorySpace template argument. \p array1d vectors inherit a considerable
+ * amount of functionality from the thrust::detail::vector_base case.
  *
  * \tparam T value_type of the array
  * \tparam MemorySpace memory space of the array (cusp::host_memory or cusp::device_memory)
  *
- * \TODO example
+ * \code
+ * #include <cusp/array1d.h>  // Include cusp array1d header file
+ *
+ * int main()
+ * {
+ *   // Allocate a array of size 2 in "host" memory
+ *   cusp::array1d<int,cusp::host_memory> a(2);
+ *
+ *   // Set the first element to 0 and second element to 1
+ *   a[0] = 0;
+ *   a[1] = 1;
+ *
+ *   // Allocate a seceond array in "device" memory that is
+ *   // a copy of the first
+ *   cusp::array1d<int,cusp::device_memory> b(a);
+ * }
+ * \endcode
  */
 template <typename T, typename MemorySpace>
 class array1d : public thrust::detail::vector_base<T, typename cusp::default_memory_allocator<T, MemorySpace>::type>
@@ -61,17 +83,21 @@ private:
     typedef typename thrust::detail::vector_base<T,Alloc> Parent;
 
 public:
+    /*! \cond */
     typedef MemorySpace memory_space;
     typedef cusp::array1d_format format;
-
-    template<typename MemorySpace2>
-    struct rebind {
-        typedef cusp::array1d<T, MemorySpace2> type;
-    };
+    /*! \endcond */
 
     /*! equivalent container type
      */
     typedef typename cusp::array1d<T,MemorySpace> container;
+
+    /*! equivalent container type in another MemorySpace
+     */
+    template<typename MemorySpace2>
+    struct rebind {
+        typedef cusp::array1d<T, MemorySpace2> type;
+    };
 
     /*! equivalent view type
      */
@@ -81,11 +107,22 @@ public:
      */
     typedef typename cusp::array1d_view<typename Parent::const_iterator> const_view;
 
+    /*! associated size_type
+     */
     typedef typename Parent::size_type  size_type;
+
+    /*! associated value_type
+     */
     typedef typename Parent::value_type value_type;
 
+    /*! This constructor creates an empty \p array1d vector.
+     */
     array1d(void) : Parent() {}
 
+    /*! This constructor creates a \p array1d vector with the given
+     *  size.
+     *  \param n The number of elements to initially create.
+     */
     explicit array1d(size_type n)
         : Parent()
     {
@@ -96,17 +133,39 @@ public:
         }
     }
 
-    array1d(size_type n, const value_type &value)
+    /*! This constructor creates a \p array1d vector with copies
+     *  of an exemplar element.
+     *  \param n The number of elements to initially create.
+     *  \param value An element to copy.
+     */
+    explicit array1d(size_type n, const value_type &value)
         : Parent(n, value) {}
 
-    template<typename Array>
-    array1d(const Array& a, typename thrust::detail::enable_if<!thrust::detail::is_convertible<Array,size_type>::value>::type * = 0)
+    /*! Copy constructor copies from an exemplar \p array1d vector.
+     *  \param v The \p array1d vector to copy.
+     */
+    array1d(const array1d& a)
         : Parent(a.begin(), a.end()) {}
 
+    /*! Copy constructor copies from an exemplar \p array1d vector with different type
+     * memory space.
+     *  \param v The \p array1d vector to copy.
+     */
+    template<typename OtherT, typename OtherMemorySpace>
+    array1d(const array1d<OtherT,OtherMemorySpace> &v)
+      :Parent(v) {}
+
+    /*! This constructor builds a \p array1d vector from a range.
+     *  \param first The beginning of the range.
+     *  \param last The end of the range.
+     */
     template<typename InputIterator>
     array1d(InputIterator first, InputIterator last)
         : Parent(first, last) {}
 
+    /*! Assign operator copies from an exemplar \p array1d vector.
+     *  \param v The \p array1d vector to copy.
+     */
     template<typename Array>
     array1d &operator=(const Array& a)
     {
@@ -114,22 +173,30 @@ public:
         return *this;
     }
 
+    /*! Extract a small vector from a \p array1d vector.
+     *  \param start_index The starting index of the sub-array.
+     *  \param num_entries The number of entries in the sub-array.
+     */
     view subarray(size_type start_index, size_type num_entries)
     {
         return view(Parent::begin() + start_index, Parent::begin() + start_index + num_entries);
     }
 
+    /*! Retrieve a raw pointer to the underlying memory contained in the \p
+     * array1d vector.
+     */
     T* raw_data(void)
     {
         return thrust::raw_pointer_cast(&Parent::m_storage[0]);
     }
 
+    /*! Retrieve a raw const pointer to the underlying memory contained in
+     * the \p array1d vector.
+     */
     const T* raw_data(void) const
     {
         return thrust::raw_pointer_cast(&Parent::m_storage[0]);
     }
-
-    // TODO specialize resize()
 }; // class array1d
 /*! \}
  */
@@ -139,11 +206,34 @@ public:
  *  \{
  */
 
-/*! \p array1d_view : One-dimensional array view
+/*! A \p array1d_view vector is a container that wraps existing iterators in \p array1d
+ * datatypes to interoperate with cusp algorithms. \p array1d_view datatypes
+ * are interoperable with a wide range of iterators exposed by Thrust and the
+ * STL library.
  *
- * \tparam RandomAccessIterator Underlying iterator type
+ * \parame Iterator The iterator type used to encapsulate the underlying data.
+ * #include <cusp/array1d.h>  // Include cusp array1d header file
  *
- * \TODO example
+ * int main()
+ * {
+ *   // Define the container type
+ *   typedef cusp::array1d<int, cusp::device_memory Array;
+ *
+ *   // Get reference to array view type
+ *   typedef Array::view View;
+ *
+ *   // Allocate array1d container with 10 elements
+ *   Array array(10,0);
+ *
+ *   // Create view to the first 5 elements of the array
+ *   View first_half(array.begin(), array.begin() + 5);
+ *
+ *   // Update entries in first_half
+ *   first_half[0] = 0; first_half[1] = 1; first_half[2] = 2;
+ *
+ *   // print the array with updated values
+ *   cusp::print(array);
+ * }
  */
 template<typename Iterator>
 class array1d_view : public thrust::iterator_adaptor<array1d_view<Iterator>, Iterator>
@@ -281,6 +371,8 @@ public:
 
     constant_array(ValueType value, size_t size) : Parent(iterator(value), iterator(value) + size) {}
 };
+/*! \}
+ */
 
 /* Convenience functions */
 
