@@ -34,6 +34,18 @@
 #include <thrust/iterator/constant_iterator.h>
 #include <thrust/iterator/counting_iterator.h>
 
+template <typename T>
+struct has_iterator
+{
+    template <typename U>
+    static char helper(typename U::iterator* x);
+
+    template <typename U>
+    static long helper(U* x);
+
+    static const bool value = (sizeof(helper<T>(0)) == 1);
+};
+
 namespace cusp
 {
 
@@ -141,33 +153,29 @@ public:
     explicit array1d(size_type n, const value_type &value)
         : Parent(n, value) {}
 
-    /*! Copy constructor copies from an exemplar \p array1d vector.
-     *  \param v The \p array1d vector to copy.
+    /*! Copy constructor copies from an exemplar array with iterator
+     *  \tparam Array Input array type supporting iterators
+     *  \param v The vector to copy.
      */
-    array1d(const array1d& a)
-        : Parent(a.begin(), a.end()) {}
-
-    /*! Copy constructor copies from an exemplar \p array1d vector with different type
-     * memory space.
-     *  \param v The \p array1d vector to copy.
-     */
-    template<typename OtherT, typename OtherMemorySpace>
-    array1d(const array1d<OtherT,OtherMemorySpace> &v)
-      :Parent(v) {}
+    template<typename ArrayType>
+    array1d(const ArrayType &v,
+            typename thrust::detail::enable_if<has_iterator<ArrayType>::value>::type* = 0)
+        : Parent(v.begin(), v.end()) {}
 
     /*! This constructor builds a \p array1d vector from a range.
+     *  \tparam Iterator iterator type of \p array1d_view
      *  \param first The beginning of the range.
      *  \param last The end of the range.
      */
-    template<typename InputIterator>
-    array1d(InputIterator first, InputIterator last)
+    template<typename Iterator>
+    array1d(Iterator first, Iterator last)
         : Parent(first, last) {}
 
     /*! Assign operator copies from an exemplar \p array1d vector.
      *  \param v The \p array1d vector to copy.
      */
-    template<typename Array>
-    array1d &operator=(const Array& a)
+    template<typename ArrayType>
+    array1d &operator=(const ArrayType& a)
     {
         Parent::assign(a.begin(), a.end());
         return *this;
@@ -238,7 +246,7 @@ public:
 template<typename Iterator>
 class array1d_view : public thrust::iterator_adaptor<array1d_view<Iterator>, Iterator>
 {
-  public :
+public :
 
     typedef cusp::array1d_format format;
     typedef Iterator iterator;
@@ -249,7 +257,7 @@ class array1d_view : public thrust::iterator_adaptor<array1d_view<Iterator>, Ite
     typedef typename super_t::value_type                                value_type;
     typedef typename super_t::pointer                                   pointer;
     typedef typename super_t::reference                                 reference;
-    typedef size_t                                                      size_type;
+    typedef typename super_t::difference_type                           size_type;
     typedef typename super_t::difference_type                           difference_type;
     typedef typename thrust::iterator_system<iterator>::type            memory_space;
 
@@ -306,22 +314,33 @@ class array1d_view : public thrust::iterator_adaptor<array1d_view<Iterator>, Ite
         return &front();
     }
 
+    const pointer data(void) const
+    {
+        return &front();
+    }
+
     value_type* raw_data(void)
     {
-        return thrust::raw_pointer_cast(&front());
+        return thrust::raw_pointer_cast(data());
     }
 
     const value_type* raw_data(void) const
     {
-        return thrust::raw_pointer_cast(&front());
+        return thrust::raw_pointer_cast(data());
     }
+
+    // TODO : Check if iterator is trivial
+    // typename thrust::detail::enable_if< thrust::detail::is_trivial_iterator<iterator>::value, value_type* >::type
+    // raw_data(void)
+    // {
+    //     return thrust::raw_pointer_cast(&front());
+    // }
 
     void resize(size_type new_size)
     {
         if (new_size <= m_capacity)
             m_size = new_size;
         else
-            // XXX is not_implemented_exception the right choice?
             throw cusp::not_implemented_exception("array1d_view cannot resize() larger than capacity()");
     }
 
@@ -334,7 +353,7 @@ protected:
     size_type m_size;
     size_type m_capacity;
 
-  private :
+private :
 };
 
 /*! \p counting_array : One-dimensional counting array view
@@ -346,10 +365,13 @@ protected:
 template <typename ValueType>
 class counting_array : public cusp::array1d_view< thrust::counting_iterator<ValueType> >
 {
-    typedef thrust::counting_iterator<ValueType> iterator;
-    typedef cusp::array1d_view<iterator> Parent;
+private:
+
+    typedef cusp::array1d_view< thrust::counting_iterator<ValueType> > Parent;
 
 public:
+
+    typedef typename Parent::iterator iterator;
 
     counting_array(ValueType size) : Parent(iterator(0), iterator(size)) {}
     counting_array(ValueType start, ValueType finish) : Parent(iterator(start), iterator(finish)) {}
@@ -364,10 +386,13 @@ public:
 template <typename ValueType>
 class constant_array : public cusp::array1d_view< thrust::constant_iterator<ValueType> >
 {
-    typedef thrust::constant_iterator<ValueType> iterator;
-    typedef cusp::array1d_view<iterator> Parent;
+private:
+
+    typedef cusp::array1d_view< thrust::constant_iterator<ValueType> > Parent;
 
 public:
+
+    typedef typename Parent::iterator iterator;
 
     constant_array(ValueType value, size_t size) : Parent(iterator(value), iterator(value) + size) {}
 };
