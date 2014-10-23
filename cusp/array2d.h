@@ -14,8 +14,8 @@
  *  limitations under the License.
  */
 
-/*! \file array2d.h
- *  \brief Two-dimensional array
+/*! \file
+ * \brief 2D array of elements that may reside in "host" or "device" memory space
  */
 
 #pragma once

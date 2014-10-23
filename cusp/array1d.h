@@ -14,9 +14,9 @@
  *  limitations under the License.
  */
 
-/*! \file array1d.h
- *  \brief One-dimensional array of elements that may reside in "host" or
- *  "device" memory space
+/**
+ * \file
+ * \brief 1D array of elements that may reside in "host" or "device" memory space
  */
 
 #pragma once
@@ -50,27 +50,43 @@ namespace cusp
 {
 
 // forward declaration of array1d_view
-template <typename RandomAccessIterator> class array1d_view;
+template <typename Iterator> class array1d_view;
 
-/*! \addtogroup arrays Arrays
+/**
+ *  \addtogroup arrays Arrays
+ *  \par Overview
+ *  Basic 1D and 2D datatypes for processing algorithms
+ *  in "host" and "device" memory space. Consists of containers,
+ *  representing arrays with explicit memory allocations, and
+ *  views, representing generic iterators wrapped in containers.
  */
 
-/*! \addtogroup array_containers Array Containers
+/**
+ *  \addtogroup array_containers Array Containers
  *  \ingroup arrays
  *  \{
  */
 
-/*! A \p array1d vector is a container that supports random access to elements.
- * The memory associated with a \p array1d vector may reside in either "host"
- * or "device" memory depending on the supplied allocator embedded in the
- * MemorySpace template argument. \p array1d vectors inherit a considerable
- * amount of functionality from the thrust::detail::vector_base case.
+/**
+ * \brief The array1d class is a 1D vector container that may contain elements
+ * stored in "host" or "device" memory space
  *
  * \tparam T value_type of the array
  * \tparam MemorySpace memory space of the array (cusp::host_memory or cusp::device_memory)
  *
+ * \par Overview
+ * A array1d vector is a container that supports random access to elements.
+ * The memory associated with a array1d vector may reside in either "host"
+ * or "device" memory depending on the supplied allocator embedded in the
+ * MemorySpace template argument. array1d vectors inherit a considerable
+ * amount of functionality from the thrust::detail::vector_base case.
+ *  \see http://thrust.github.io/doc/classthrust_1_1host__vector.html
+ *  \see http://thrust.github.io/doc/classthrust_1_1device__vector.html
+ *
+ * \par Example
  * \code
- * #include <cusp/array1d.h>  // Include cusp array1d header file
+ * // include cusp array1d header file
+ * #include <cusp/array1d.h>
  *
  * int main()
  * {
@@ -98,34 +114,19 @@ public:
     /*! \cond */
     typedef MemorySpace memory_space;
     typedef cusp::array1d_format format;
-    /*! \endcond */
 
-    /*! equivalent container type
-     */
     typedef typename cusp::array1d<T,MemorySpace> container;
 
-    /*! equivalent container type in another MemorySpace
-     */
     template<typename MemorySpace2>
     struct rebind {
         typedef cusp::array1d<T, MemorySpace2> type;
     };
 
-    /*! equivalent view type
-     */
     typedef typename cusp::array1d_view<typename Parent::iterator> view;
-
-    /*! equivalent const_view type
-     */
     typedef typename cusp::array1d_view<typename Parent::const_iterator> const_view;
-
-    /*! associated size_type
-     */
     typedef typename Parent::size_type  size_type;
-
-    /*! associated value_type
-     */
     typedef typename Parent::value_type value_type;
+    /*! \endcond */
 
     /*! This constructor creates an empty \p array1d vector.
      */
@@ -163,7 +164,7 @@ public:
         : Parent(v.begin(), v.end()) {}
 
     /*! This constructor builds a \p array1d vector from a range.
-     *  \tparam Iterator iterator type of \p array1d_view
+     *  \tparam Iterator iterator type of copy elements
      *  \param first The beginning of the range.
      *  \param last The end of the range.
      */
@@ -172,7 +173,8 @@ public:
         : Parent(first, last) {}
 
     /*! Assign operator copies from an exemplar \p array1d vector.
-     *  \param v The \p array1d vector to copy.
+     *  \param a The \p array1d vector to copy.
+     *  \return array1d copy of input vector
      */
     template<typename ArrayType>
     array1d &operator=(const ArrayType& a)
@@ -184,6 +186,30 @@ public:
     /*! Extract a small vector from a \p array1d vector.
      *  \param start_index The starting index of the sub-array.
      *  \param num_entries The number of entries in the sub-array.
+     *  \return array1d_view containing elements [start_index,...,start_index+num_entries)
+     *
+     * \code
+     * // include cusp array1d header file
+     * #include <cusp/array1d.h>
+     * #include <cusp/print.h>
+     *
+     * int main()
+     * {
+     *   typedef cusp::array1d<int,cusp::host_memory> Array;
+     *   typedef typename Array::view ArrayView;
+     *
+     *   // Allocate a array of size 2 in "host" memory
+     *   Array a(2);
+     *
+     *   // Set the first element to 0 and second element to 1
+     *   a[0] = 0;
+     *   a[1] = 1;
+     *
+     *   // create a view starting from element 1 of length 1
+     *   ArrayView first(a.subarray(1,1);
+     *   cusp::print(first);
+     * }
+     * \endcode
      */
     view subarray(size_type start_index, size_type num_entries)
     {
@@ -192,6 +218,7 @@ public:
 
     /*! Retrieve a raw pointer to the underlying memory contained in the \p
      * array1d vector.
+     * \return pointer to first element pointed to by array
      */
     T* raw_data(void)
     {
@@ -200,27 +227,39 @@ public:
 
     /*! Retrieve a raw const pointer to the underlying memory contained in
      * the \p array1d vector.
+     * \return constant pointer to first element pointed to by array
      */
     const T* raw_data(void) const
     {
         return thrust::raw_pointer_cast(&Parent::m_storage[0]);
     }
-}; // class array1d
+}; // end class array1d
 /*! \}
  */
 
-/*! \addtogroup array_views Array Views
+/**
+ *  \addtogroup array_views Array Views
  *  \ingroup arrays
  *  \{
  */
 
-/*! A \p array1d_view vector is a container that wraps existing iterators in \p array1d
- * datatypes to interoperate with cusp algorithms. \p array1d_view datatypes
+/**
+ * \brief The array1d_view class is a 1D vector container that wraps data from
+ * various iterators in a array1d datatype
+ *
+ * \tparam Iterator The iterator type used to encapsulate the underlying data.
+ *
+ * \par Overview
+ * array1d_view vector is a container that wraps existing iterators in array1d
+ * datatypes to interoperate with cusp algorithms. array1d_view datatypes
  * are interoperable with a wide range of iterators exposed by Thrust and the
  * STL library.
  *
- * \parame Iterator The iterator type used to encapsulate the underlying data.
- * #include <cusp/array1d.h>  // Include cusp array1d header file
+ * \par Example
+ * \code
+ * // include cusp array1d header file
+ * #include <cusp/array1d.h>
+ * #include <cusp/print.h>
  *
  * int main()
  * {
@@ -242,35 +281,50 @@ public:
  *   // print the array with updated values
  *   cusp::print(array);
  * }
+ * \endcode
  */
 template<typename Iterator>
 class array1d_view : public thrust::iterator_adaptor<array1d_view<Iterator>, Iterator>
 {
 public :
 
+    /*! \cond */
     typedef cusp::array1d_format format;
     typedef Iterator iterator;
 
-    typedef thrust::iterator_adaptor<array1d_view<iterator>, iterator>  super_t;
-    typedef typename cusp::array1d_view<iterator>                       view;
+    typedef thrust::iterator_adaptor<array1d_view<iterator>, iterator> Parent;
+    typedef typename cusp::array1d_view<iterator>                      view;
 
-    typedef typename super_t::value_type                                value_type;
-    typedef typename super_t::pointer                                   pointer;
-    typedef typename super_t::reference                                 reference;
-    typedef typename super_t::difference_type                           size_type;
-    typedef typename super_t::difference_type                           difference_type;
-    typedef typename thrust::iterator_system<iterator>::type            memory_space;
+    typedef typename Parent::value_type                                value_type;
+    typedef typename Parent::pointer                                   pointer;
+    typedef typename Parent::reference                                 reference;
+    typedef typename Parent::difference_type                           size_type;
+    typedef typename Parent::difference_type                           difference_type;
+    typedef typename thrust::iterator_system<iterator>::type           memory_space;
+    /*! \endcond */
 
+    /*! This constructor creates an empty \p array1d_view vector.
+     */
     array1d_view(void)
         : m_size(0), m_capacity(0) {}
 
-    template <typename Array>
-    array1d_view(Array& a)
-        : super_t(a.begin()), m_size(a.size()), m_capacity(a.capacity()) {}
+    /*! Copy constructor copies from an exemplar array with iterator
+     *  \tparam Array Input array type supporting iterators
+     *  \param a The vector to copy.
+     */
+    template<typename ArrayType>
+    array1d_view(const ArrayType &a,
+            typename thrust::detail::enable_if<has_iterator<ArrayType>::value>::type* = 0)
+        : Parent(a.begin()), m_size(a.size()), m_capacity(a.capacity()) {}
 
+    /*! This constructor builds a \p array1d_view vector from a range.
+     *  \tparam InputIterator iterator type of \p array1d_view
+     *  \param begin The beginning of the range.
+     *  \param end The end of the range.
+     */
     template <typename InputIterator>
     array1d_view(InputIterator begin, InputIterator end)
-        : super_t(begin), m_size(end-begin), m_capacity(end-begin) {}
+        : Parent(begin), m_size(end-begin), m_capacity(end-begin) {}
 
     friend class thrust::iterator_core_access;
 
@@ -319,16 +373,6 @@ public :
         return &front();
     }
 
-    value_type* raw_data(void)
-    {
-        return thrust::raw_pointer_cast(data());
-    }
-
-    const value_type* raw_data(void) const
-    {
-        return thrust::raw_pointer_cast(data());
-    }
-
     // TODO : Check if iterator is trivial
     // typename thrust::detail::enable_if< thrust::detail::is_trivial_iterator<iterator>::value, value_type* >::type
     // raw_data(void)
@@ -344,9 +388,48 @@ public :
             throw cusp::not_implemented_exception("array1d_view cannot resize() larger than capacity()");
     }
 
+    /*! Extract a small vector from a \p array1d_view vector.
+     *  \param start_index The starting index of the sub-array.
+     *  \param num_entries The number of entries in the sub-array.
+     *  \return array1d_view containing elements [start_index,...,start_index+num_entries)
+     *
+     * \code
+     * // include cusp array1d header file
+     * #include <cusp/array1d.h>
+     * #include <cusp/print.h>
+     *
+     * int main()
+     * {
+     *   typedef cusp::array1d<int,cusp::host_memory> Array;
+     *   typedef typename Array::view ArrayView;
+     *
+     *   // Allocate a array of size 2 in "host" memory
+     *   Array a(2);
+     *
+     *   // Set the first element to 0 and second element to 1
+     *   a[0] = 0;
+     *   a[1] = 1;
+     *
+     *   ArrayView a_view(a);
+     *
+     *   // create a view starting from element 1 of length 1
+     *   cusp::print(a_view.subarray(1,1));
+     * }
+     * \endcode
+     */
     view subarray(size_type start_index, size_type num_entries)
     {
         return view(begin() + start_index, begin() + start_index + num_entries);
+    }
+
+    value_type* raw_data(void)
+    {
+        return thrust::raw_pointer_cast(data());
+    }
+
+    const value_type* raw_data(void) const
+    {
+        return thrust::raw_pointer_cast(data());
     }
 
 protected:
@@ -356,14 +439,41 @@ protected:
 private :
 };
 
-/*! \p counting_array : One-dimensional counting array view
+/**
+ * \brief Specialized array1d_view wrapping thrust::counting_iterator
  *
- * \tparam ValueType iterator type
+ * \tparam ValueType counting array element type.
  *
- * \TODO example
+ * \par Overview
+ * The counting_array view is a simple wrapper around the fancy thrust
+ * counting_iterator iterator.
+ * \see http://thrust.github.io/doc/classthrust_1_1counting__iterator.html
+ *
+ * \par Example
+ * \code
+ * // include cusp array1d header file
+ * #include <cusp/array1d.h>
+ * #include <cusp/print.h>
+ *
+ * int main()
+ * {
+ *   // Define the counting array from 0 to 4
+ *   cusp::counting_array<int> v1(5);
+ *
+ *   // Define the counting array from 6 to 9
+ *   cusp::counting_array<int> v2(4,6);
+ *
+ *   // [0,1,2,3,4]
+ *   cusp::print(v1);
+ *
+ *   // [6,7,8,9]
+ *   cusp::print(v2);
+ * }
+ * \endcode
  */
 template <typename ValueType>
-class counting_array : public cusp::array1d_view< thrust::counting_iterator<ValueType> >
+class counting_array
+  : public cusp::array1d_view< thrust::counting_iterator<ValueType> >
 {
 private:
 
@@ -371,20 +481,44 @@ private:
 
 public:
 
-    typedef typename Parent::iterator iterator;
+    /*! \cond */
+    typedef typename Parent::iterator  iterator;
+    typedef typename Parent::size_type size_type;
+    /*! \endcond */
 
-    counting_array(ValueType size) : Parent(iterator(0), iterator(size)) {}
-    counting_array(ValueType start, ValueType finish) : Parent(iterator(start), iterator(finish)) {}
+    counting_array(size_type size, ValueType init = ValueType(0))
+      : Parent(iterator(init), iterator(init) + size) {}
 };
 
-/*! \p constant_array : One-dimensional constant array view
+/**
+ * \brief Specialized array1d_view wrapping thrust::constant_iterator
  *
- * \tparam ValueType iterator type
+ * \tparam ValueType constant array element type.
  *
- * \TODO example
+ * \par Overview
+ * The constant_array view is a simple wrapper around the fancy thrust
+ * constant_iterator iterator.
+ * \see http://thrust.github.io/doc/classthrust_1_1constant__iterator.html
+ *
+ * \par Example
+ * \code
+ * // include cusp array1d header file
+ * #include <cusp/array1d.h>
+ * #include <cusp/print.h>
+ *
+ * int main()
+ * {
+ *   // Define the constant array of length 4 with value 3
+ *   cusp::constant_array<int> v1(4,3);
+ *
+ *   // [3,3,3,3]
+ *   cusp::print(v1);
+ * }
+ * \endcode
  */
 template <typename ValueType>
-class constant_array : public cusp::array1d_view< thrust::constant_iterator<ValueType> >
+class constant_array
+  : public cusp::array1d_view< thrust::constant_iterator<ValueType> >
 {
 private:
 
@@ -392,37 +526,55 @@ private:
 
 public:
 
+    /*! \cond */
     typedef typename Parent::iterator iterator;
+    typedef typename Parent::size_type size_type;
+    /*! \endcond */
 
-    constant_array(ValueType value, size_t size) : Parent(iterator(value), iterator(value) + size) {}
+    constant_array(size_type size, ValueType value)
+      : Parent(iterator(value), iterator(value) + size) {}
 };
-/*! \}
+
+/**
+ *  This is a convenience function for generating an array1d_view
+ *  using iterators
+ *  \tparam Iterator iterator type of copy elements
+ *  \param first The beginning of the range.
+ *  \param last The end of the range.
+ *  \return array1d_view constructed using Iterator
  */
-
-/* Convenience functions */
-
 template <typename Iterator>
 array1d_view<Iterator> make_array1d_view(Iterator first, Iterator last)
 {
     return array1d_view<Iterator>(first, last);
 }
 
-template <typename Iterator>
-array1d_view<Iterator> make_array1d_view(const array1d_view<Iterator>& a)
+/**
+ *  This is a convenience function for generating an array1d_view
+ *  using an array1d
+ *  \tparam T value_type of the array
+ *  \tparam MemorySpace memory space of the array (cusp::host_memory or cusp::device_memory)
+ *  \param v The array1d used to construct array1d_view
+ *  \return array1d_view constructed using input array1d
+ */
+template <typename T, typename MemorySpace>
+typename array1d<T,MemorySpace>::view make_array1d_view(array1d<T,MemorySpace>& v)
 {
-    return make_array1d_view(a.begin(), a.end());
+    return make_array1d_view(v.begin(), v.end());
 }
 
+/**
+ *  This is a convenience function for generating an array1d_view
+ *  using an array1d
+ *  \tparam T value_type of the array
+ *  \tparam MemorySpace memory space of the array (cusp::host_memory or cusp::device_memory)
+ *  \param v The array1d used to construct array1d_view
+ *  \return constant array1d_view constructed using input array1d
+ */
 template <typename T, typename MemorySpace>
-typename array1d<T,MemorySpace>::view make_array1d_view(array1d<T,MemorySpace>& a)
+typename array1d<T,MemorySpace>::const_view make_array1d_view(const array1d<T,MemorySpace>& v)
 {
-    return make_array1d_view(a.begin(), a.end());
-}
-
-template <typename T, typename MemorySpace>
-typename array1d<T,MemorySpace>::const_view make_array1d_view(const array1d<T,MemorySpace>& a)
-{
-    return make_array1d_view(a.begin(), a.end());
+    return make_array1d_view(v.begin(), v.end());
 }
 /*! \}
  */
