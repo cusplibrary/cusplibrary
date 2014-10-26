@@ -446,12 +446,12 @@ void TestArray1dViewCountingIterator(void)
     ASSERT_EQUAL(V[0], 5);
     ASSERT_EQUAL(V[3], 8);
 
-    cusp::counting_array<int> W(5, 9);
+    cusp::counting_array<int> W(4, 5);
     ASSERT_EQUAL(W.size(), 4);
     ASSERT_EQUAL(W[0], 5);
     ASSERT_EQUAL(W[3], 8);
 
-    cusp::constant_array<int> X(5, 200);
+    cusp::constant_array<int> X(200, 5);
     ASSERT_EQUAL(X[0], 5);
     ASSERT_EQUAL(X[3], 5);
     ASSERT_EQUAL(X[199],5);

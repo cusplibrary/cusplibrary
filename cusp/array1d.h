@@ -39,7 +39,7 @@ namespace cusp
 {
 
 // forward declaration of array1d_view
-template <typename Iterator> class array1d_view;
+template <typename RandomAccessIterator> class array1d_view;
 
 /**
  *  \addtogroup arrays Arrays
