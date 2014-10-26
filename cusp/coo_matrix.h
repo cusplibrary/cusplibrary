@@ -40,23 +40,35 @@ template <typename Array1, typename Array2, typename Array3, typename IndexType,
  *  \{
  */
 
-/*! \p coo_matrix : Coordinate matrix container
+/**
+ * \brief coo_matrix represents a sparse matrix in coordinate format
  *
  * \tparam IndexType Type used for matrix indices (e.g. \c int).
  * \tparam ValueType Type used for matrix values (e.g. \c float).
- * \tparam MemorySpace A memory space (e.g. \c cusp::host_memory or cusp::device_memory)
+ * \tparam MemorySpace A memory space (e.g. \c cusp::host_memory or \c cusp::device_memory)
  *
  * \note The matrix entries must be sorted by row index.
  * \note The matrix should not contain duplicate entries.
  *
+ * \par Overview
+ *  A coo_matrix is a sparse matrix container that stores one row and column
+ *  entry per nonzero. The matrix may reside in either "host" or "device"
+ *  memory depending on the MemorySpace. All entries in the coo_matrix are
+ *  sorted according to row indices and internally within each row sorted by
+ *  column indices.
+ *
+ * \par Example
  *  The following code snippet demonstrates how to create a 4-by-3
  *  \p coo_matrix on the host with 6 nonzeros and then copies the
  *  matrix to the device.
  *
  *  \code
- *  #include <cusp/coo_matrix.h>
- *  ...
+ * // include coo_matrix header file
+ * #include <cusp/coo_matrix.h>
+ * #include <cusp/print.h>
  *
+ * int main()
+ * {
  *  // allocate storage for (4,3) matrix with 6 nonzeros
  *  cusp::coo_matrix<int,float,cusp::host_memory> A(4,3,6);
  *
@@ -76,6 +88,10 @@ template <typename Array1, typename Array2, typename Array3, typename IndexType,
  *
  *  // copy to the device
  *  cusp::coo_matrix<int,float,cusp::device_memory> B = A;
+ *
+ *  // print the constructed coo_matrix
+ *  cusp::print(B);
+ *}
  *  \endcode
  *
  */
@@ -84,42 +100,31 @@ class coo_matrix : public cusp::detail::matrix_base<IndexType,ValueType,MemorySp
 {
     typedef cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::coo_format> Parent;
 public:
-    /*! rebind matrix to a different MemorySpace
-     */
+
+    /*! \cond */
     template<typename MemorySpace2>
     struct rebind {
         typedef cusp::coo_matrix<IndexType, ValueType, MemorySpace2> type;
     };
 
-    /*! type of \c row_indices array
-     */
     typedef typename cusp::array1d<IndexType, MemorySpace> row_indices_array_type;
 
-    /*! type of \c column_indices array
-     */
     typedef typename cusp::array1d<IndexType, MemorySpace> column_indices_array_type;
 
-    /*! type of \c values array
-     */
     typedef typename cusp::array1d<ValueType, MemorySpace> values_array_type;
 
-    /*! equivalent container type
-     */
     typedef typename cusp::coo_matrix<IndexType, ValueType, MemorySpace> container;
 
-    /*! equivalent view type
-     */
     typedef typename cusp::coo_matrix_view<typename row_indices_array_type::view,
             typename column_indices_array_type::view,
             typename values_array_type::view,
             IndexType, ValueType, MemorySpace> view;
 
-    /*! equivalent const_view type
-     */
     typedef typename cusp::coo_matrix_view<typename row_indices_array_type::const_view,
             typename column_indices_array_type::const_view,
             typename values_array_type::const_view,
             IndexType, ValueType, MemorySpace> const_view;
+    /*! \endcond */
 
     /*! Storage for the row indices of the COO data structure.
      */

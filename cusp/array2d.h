@@ -78,7 +78,7 @@ namespace cusp
  *
  *   // Allocate a seceond array2d in "device" memory that is
  *   // a copy of the first but in column major
- *   cusp::array1d<int,cusp::device_memory,cusp::column_major> b(a);
+ *   cusp::array2d<int,cusp::device_memory,cusp::column_major> b(a);
  *
  *   // print row-major layout of data
  *   // [0, 1, 2, 3, 4, 5, 6, 7, 8]
@@ -134,14 +134,17 @@ public:
     typedef typename const_column_view_type::ArrayType const_column_view;
     /*! \endcond */
 
+    /*! 1D array of values
+     */
     values_array_type values;
 
-    // minor_dimension + padding
+    /*! The stride between consecutive elements along the major dimension
+     */
     size_t pitch;
 
     /*! This constructor creates an empty \p array2d vector.
      */
-    array2d()
+    array2d(void)
         : Parent(), pitch(0), values(0) {}
 
     /*! This constructor creates a array2d vector with the given
@@ -208,8 +211,8 @@ public:
         return values[cusp::detail::index_of(i, j, pitch, orientation())];
     }
 
-    /*! This method will resize this array2d to the specified number of
-     *  dimensions. If the number of total entries is smaller than this
+    /*! This method will resize this array2d to the specified dimensions.
+     *  If the number of total entries is smaller than this
      *  array2d's current size this array2d is truncated, otherwise this
      *  array2d is extended with the value of new entries undefined.
      *
@@ -225,8 +228,8 @@ public:
         resize(num_rows, num_cols, cusp::detail::minor_dimension(num_rows, num_cols, orientation()));
     }
 
-    /*! This method will resize this array2d to the specified number of
-     *  dimensions. If the number of total entries is smaller than this
+    /*! This method will resize this array2d to the specified dimensions.
+     *  If the number of total entries is smaller than this
      *  array2d's current size this array2d is truncated, otherwise this
      *  array2d is extended with the value of new entries undefined.
      *
@@ -261,35 +264,56 @@ public:
 
     /*! Retrieve a raw pointer to the underlying memory contained in the \p
      * array1d vector.
-     * \return pointer to first element pointed to by array
+     * \return pointer to first element pointed to by array2d, entry (0,0)
      */
     T* raw_data(void)
     {
         return values.raw_data();
     }
 
+    /*! This method generates a array1d_view of row i of this array2d matrix
+     * \return array1d_view of row i
+     */
     row_view row(size_t i)
     {
         return row_view_type::get_array(*this, i);
     }
 
+    /*! This method generates a array1d_view of column i of this array2d matrix
+     * \return array1d_view of column i
+     */
     column_view column(size_t i)
     {
         return column_view_type::get_array(*this, i);
     }
 
+    /*! This method generates a const array1d_view of row i of this array2d matrix
+     * \return const array1d_view of row i
+     */
     const_row_view row(size_t i) const
     {
         return const_row_view_type::get_array(*this, i);
     }
 
+    /*! This method generates a const array1d_view of column i of this array2d matrix
+     * \return const array1d_view of column i
+     */
     const_column_view column(size_t i) const
     {
         return const_column_view_type::get_array(*this, i);
     }
 
+    /*! Assign operator copies from an exemplar \p array2d container.
+     *  \param matrix The \p array2d container to copy.
+     *  \return array2d copy of input matrix
+     */
     array2d& operator=(const array2d& matrix);
 
+    /*! Assign operator copies from an exemplar matrix container.
+     *  \tparam MatrixType The type of matrix to copy.
+     *  \param matrix The matrix to copy.
+     *  \return array2d copy of input matrix.
+     */
     template <typename MatrixType>
     array2d& operator=(const MatrixType& matrix);
 
@@ -303,42 +327,43 @@ public:
  */
 
 /**
- * \brief The array1d_view class is a 1D vector container that wraps data from
- * various iterators in a array1d datatype
+ * \brief The array2d_view is a view of a array2d container.
  *
  * \tparam Iterator The iterator type used to encapsulate the underlying data.
  *
  * \par Overview
- * array1d_view vector is a container that wraps existing iterators in array1d
- * datatypes to interoperate with cusp algorithms. array1d_view datatypes
- * are interoperable with a wide range of iterators exposed by Thrust and the
- * STL library.
+ * array2d_view is a container that wraps existing iterators in array2d
+ * datatypes to interoperate with cusp algorithms.
  *
  * \par Example
  * \code
- * // include cusp array1d header file
- * #include <cusp/array1d.h>
+ * // include cusp array2d header file
+ * #include <cusp/array2d.h>
  * #include <cusp/print.h>
  *
  * int main()
  * {
  *   // Define the container type
- *   typedef cusp::array1d<int, cusp::device_memory Array;
+ *   typedef cusp::array2d<int, cusp::device_memory> Array;
  *
  *   // Get reference to array view type
  *   typedef Array::view View;
  *
  *   // Allocate array1d container with 10 elements
- *   Array array(10,0);
+ *   Array v(3,3);
  *
- *   // Create view to the first 5 elements of the array
- *   View first_half(array.begin(), array.begin() + 5);
+ *   // Set the entries in the matrix using shorthand operator
+ *   v(0,0) = 0; v(0,1) = 1; v(0,2) = 2;
+ *   v(1,0) = 3; v(1,1) = 4; v(1,2) = 5;
+ *   v(2,0) = 6; v(2,1) = 7; v(2,2) = 8;
  *
- *   // Update entries in first_half
- *   first_half[0] = 0; first_half[1] = 1; first_half[2] = 2;
+ *   // Create array2d_view, v_view, from array2d v
+ *   View v_view(v);
  *
- *   // print the array with updated values
- *   cusp::print(array);
+ *   v_view(0,0) = -1; v_view(1,1) = -2; v_view(2,2) = -3;
+ *
+ *   // print the updated array2d matrix
+ *   cusp::print(v);
  * }
  * \endcode
  */
@@ -347,7 +372,9 @@ class array2d_view
   : public  cusp::detail::matrix_base<int, typename ArrayView::value_type,typename ArrayView::memory_space, cusp::array2d_format>
 {
     typedef cusp::detail::matrix_base<int, typename ArrayView::value_type,typename ArrayView::memory_space, cusp::array2d_format> Parent;
+
 public:
+
     /*! \cond */
     typedef Orientation orientation;
 
@@ -366,15 +393,22 @@ public:
     typedef typename column_view_type::ArrayType column_view;
     /*! \endcond */
 
+    /*! 1D array of values.
+     */
     values_array_type values;
 
-    // minor_dimension + padding
+    /*! The stride between consecutive elements along the major dimension.
+     */
     size_t pitch;
 
-    // construct empty view
+    /*! This constructor creates an empty \p array2d vector.
+     */
     array2d_view(void)
         : Parent(), values(0), pitch(0) {}
 
+    /*! This constructor creates a array2d_view from another array2d_view.
+     *  \param a array2d_view used to create this array2d_view.
+     */
     array2d_view(const array2d_view& a)
         : Parent(a), values(a.values), pitch(a.pitch) {}
 
@@ -384,23 +418,61 @@ public:
 
     // TODO check values.size()
 
-    // construct from array2d container
+    /*! This constructor creates a array2d_view from a array2d container.
+     *  \param a array2d used to construct this array2d_view.
+     */
     array2d_view(array2d<typename Parent::value_type, typename Parent::memory_space, orientation>& a)
         : Parent(a), values(a.values), pitch(a.pitch) {}
 
-    template <typename Array2>
-    array2d_view(size_t num_rows, size_t num_cols, size_t pitch, Array2& values)
-        : Parent(num_rows, num_cols, num_rows * num_cols), pitch(pitch), values(values) {}
-
+    /*! This constructor creates a array2d vector with the given
+     *  shape, fills the entries with a given value and sets the pitch.
+     *  \tparam Array2 The type of values used to construct this array2d_view.
+     *  \param num_rows The number of array2d_view rows.
+     *  \param num_cols The number of array2d_view columns.
+     *  \param value The initial value of all entries.
+     *  \param pitch The stride between entries in the major dimension.
+     */
     template <typename Array2>
     array2d_view(size_t num_rows, size_t num_cols, size_t pitch, const Array2& values)
         : Parent(num_rows, num_cols, num_rows * num_cols), pitch(pitch), values(values) {}
 
+    /*! Subscript access to the data contained in this array2d_view.
+     *  \param i Row index for which data should be accessed.
+     *  \param j Column index for which data should be accessed.
+     *  \return Read reference to data.
+     */
     typename values_array_type::reference operator()(const size_t i, const size_t j) const
     {
         return values[cusp::detail::index_of(i, j, pitch, orientation())];
     }
 
+    /*! This method will resize this array2d_view to the specified dimensions.
+     *  If the number of total entries is smaller than this
+     *  array2d_view's current size this array2d_view is truncated, otherwise this
+     *  array2d_view is extended with the value of new entries undefined.
+     *
+     *  \param num_rows The number of rows this array2d_view should contain.
+     *  \param num_cols The number of columns this array2d_view should contain.
+     */
+    void resize(size_t num_rows, size_t num_cols)
+    {
+        // preserve .pitch if possible
+        if (this->num_rows == num_rows && this->num_cols == num_cols)
+            return;
+
+        resize(num_rows, num_cols, cusp::detail::minor_dimension(num_rows, num_cols, orientation()));
+    }
+
+    /*! This method will resize this array2d_view to the specified dimensions.
+     *  If the number of total entries is smaller than this
+     *  array2d_view's current size this array2d_view is truncated, otherwise this
+     *  array2d_view is extended with the value of new entries undefined.
+     *
+     *  \param num_rows The number of rows this array2d_view should contain.
+     *  \param num_cols The number of columns this array2d_view should contain.
+     *  \param pitch The stride between major dimension entries this
+     *  array2d_view should contain.
+     */
     void resize(size_t num_rows, size_t num_cols, size_t pitch)
     {
         if (pitch < cusp::detail::minor_dimension(num_rows, num_cols, orientation()))
@@ -414,37 +486,50 @@ public:
         this->num_entries = num_rows * num_cols;
     }
 
-    void resize(size_t num_rows, size_t num_cols)
-    {
-        // preserve .pitch if possible
-        if (this->num_rows == num_rows && this->num_cols == num_cols)
-            return;
 
-        resize(num_rows, num_cols, cusp::detail::minor_dimension(num_rows, num_cols, orientation()));
-    }
-
+    /*! This method generates a array1d_view of row i of this array2d_view matrix
+     * \return array1d_view of row \p i
+     */
     row_view row(size_t i)
     {
         return row_view_type::get_array(*this, i);
     }
 
+    /*! This method generates a array1d_view of column i of this array2d_view matrix
+     * \return array1d_view of column \p i
+     */
     column_view column(size_t i)
     {
         return column_view_type::get_array(*this, i);
     }
 
+    /*! This method generates a const array1d_view of row i of this array2d_view matrix
+     * \return const array1d_view of row \p i
+     */
     row_view row(size_t i) const
     {
         return row_view_type::get_array(*this, i);
     }
 
+    /*! This method generates a const array1d_view of column i of this array2d_view matrix
+     * \return const array1d_view of column \p i
+     */
     column_view column(size_t i) const
     {
         return column_view_type::get_array(*this, i);
     }
-}; // class array2d_view
+}; // end array2d_view class
 
 
+/** This is a convenience function for generating an array2d_view
+ *  using specified shape and values
+ *  \tparam Iterator array1d_view iterator used to construct array2d_view
+ *  \tparam Orientation orientation of the array (cusp::row_major or cusp::column_major)
+ *  \param num_rows The number of array2d_view rows.
+ *  \param num_cols The number of array2d_view columns.
+ *  \param pitch The stride between entries in the major dimension.
+ *  \param values array1d_view containing this array2d_view's values.
+ */
 template <typename Iterator, typename Orientation>
 array2d_view<typename cusp::array1d_view<Iterator>,Orientation>
 make_array2d_view(size_t num_rows, size_t num_cols, size_t pitch, const cusp::array1d_view<Iterator>& values, Orientation)
@@ -452,6 +537,14 @@ make_array2d_view(size_t num_rows, size_t num_cols, size_t pitch, const cusp::ar
     return array2d_view<typename cusp::array1d_view<Iterator>,Orientation>(num_rows, num_cols, pitch, values);
 }
 
+/**
+ *  This is a convenience function for generating an array2d_view
+ *  using an array2d_view
+ *  \tparam Array Type of input array containing values
+ *  \tparam Orientation orientation of the array (cusp::row_major or cusp::column_major)
+ *  \param v The array2d_view used to construct array2d_view
+ *  \return array2d_view constructed using input array2d_view
+ */
 template <typename Array, typename Orientation>
 array2d_view<Array,Orientation>
 make_array2d_view(const array2d_view<Array, Orientation>& a)
@@ -459,18 +552,36 @@ make_array2d_view(const array2d_view<Array, Orientation>& a)
     return array2d_view<Array,Orientation>(a);
 }
 
+/**
+ *  This is a convenience function for generating an array2d_view
+ *  using an array2d_view
+ *  \tparam T value_type of the array
+ *  \tparam MemorySpace memory space of the array (cusp::host_memory or cusp::device_memory)
+ *  \tparam Orientation orientation of the array (cusp::row_major or cusp::column_major)
+ *  \param v The array2d used to construct array2d_view
+ *  \return array2d_view constructed using input array2d
+ */
 template<typename T, class MemorySpace, class Orientation>
 array2d_view<typename cusp::array1d_view<typename cusp::array1d<T,MemorySpace>::iterator >, Orientation>
-make_array2d_view(cusp::array2d<T,MemorySpace,Orientation>& a)
+make_array2d_view(cusp::array2d<T,MemorySpace,Orientation>& v)
 {
-    return cusp::make_array2d_view(a.num_rows, a.num_cols, a.pitch, cusp::make_array1d_view(a.values), Orientation());
+    return cusp::make_array2d_view(v.num_rows, v.num_cols, v.pitch, cusp::make_array1d_view(v.values), Orientation());
 }
 
+/**
+ *  This is a convenience function for generating an array2d_view
+ *  using an array2d
+ *  \tparam T value_type of the array
+ *  \tparam MemorySpace memory space of the array (cusp::host_memory or cusp::device_memory)
+ *  \tparam Orientation orientation of the array (cusp::row_major or cusp::column_major)
+ *  \param v The const array2d used to construct array2d_view
+ *  \return constant array2d_view constructed using input array2d
+ */
 template<typename T, class MemorySpace, class Orientation>
 array2d_view<typename cusp::array1d_view<typename cusp::array1d<T,MemorySpace>::const_iterator >, Orientation>
-make_array2d_view(const cusp::array2d<T,MemorySpace,Orientation>& a)
+make_array2d_view(const cusp::array2d<T,MemorySpace,Orientation>& v)
 {
-    return cusp::make_array2d_view(a.num_rows, a.num_cols, a.pitch, cusp::make_array1d_view(a.values), Orientation());
+    return cusp::make_array2d_view(v.num_rows, v.num_cols, v.pitch, cusp::make_array1d_view(v.values), Orientation());
 }
 /*! \}
  */

@@ -23,12 +23,16 @@
 #include <cusp/detail/config.h>
 
 #include <cusp/array1d.h>
+#include <cusp/array2d.h>
 #include <cusp/format.h>
 #include <cusp/detail/matrix_base.h>
 #include <cusp/detail/utils.h>
 
 namespace cusp
 {
+
+// Forward definitions
+template <typename Array1, typename Array2, typename IndexType, typename ValueType, typename MemorySpace> class dia_matrix_view;
 
 /*! \addtogroup sparse_matrices Sparse Matrices
  */
@@ -38,28 +42,36 @@ namespace cusp
  *  \{
  */
 
-// Forward definitions
-struct column_major;
-template<typename ValueType, class MemorySpace, class Orientation> class array2d;
-template<typename Array, class Orientation>                        class array2d_view;
-template <typename Array1, typename Array2, typename IndexType, typename ValueType, typename MemorySpace> class dia_matrix_view;
-
-/*! \p dia_matrix : Diagonal matrix container
+/**
+ * \brief dia_matrix represents a sparse matrix in diagonal format
  *
  * \tparam IndexType Type used for matrix indices (e.g. \c int).
  * \tparam ValueType Type used for matrix values (e.g. \c float).
- * \tparam MemorySpace A memory space (e.g. \c cusp::host_memory or cusp::device_memory)
+ * \tparam MemorySpace A memory space (e.g. \c cusp::host_memory or \c cusp::device_memory)
  *
  * \note The diagonal offsets should not contain duplicate entries.
  *
+ * \par Overview
+ *  A dia_matrix is a sparse matrix container that stores each nonzero in
+ *  a dense array2d container according to the diagonal each nonzero resides,
+ *  the diagonal index of an ( \p i , \p j ) entry is | \p i - \p j |. This storage format is
+ *  applicable to small set of matrices with significant structure. Storing the
+ *  underlying entries in a array2d container avoids additional overhead
+ *  associated with row or column indices but requires the storage of invalid
+ *  entries associated with incomplete diagonals.
+ *
+ * \par Example
  *  The following code snippet demonstrates how to create a 4-by-3
  *  \p dia_matrix on the host with 3 diagonals (6 total nonzeros)
  *  and then copies the matrix to the device.
  *
  *  \code
- *  #include <cusp/dia_matrix.h>
- *  ...
+ * // include dia_matrix header file
+ * #include <cusp/dia_matrix.h>
+ * #include <cusp/print.h>
  *
+ * int main()
+ * {
  *  // allocate storage for (4,3) matrix with 6 nonzeros in 3 diagonals
  *  cusp::dia_matrix<int,float,cusp::host_memory> A(4,3,6,3);
  *
@@ -96,6 +108,10 @@ template <typename Array1, typename Array2, typename IndexType, typename ValueTy
  *
  *  // copy to the device
  *  cusp::dia_matrix<int,float,cusp::device_memory> B = A;
+ *
+ *  // print the constructed dia_matrix
+ *  cusp::print(B);
+ * }
  *  \endcode
  *
  */
@@ -106,36 +122,24 @@ class dia_matrix : public cusp::detail::matrix_base<IndexType,ValueType,MemorySp
 public:
     // TODO statically assert is_signed<IndexType>
 
-    /*! rebind matrix to a different MemorySpace
-     */
+    /*! \cond */
     template<typename MemorySpace2>
     struct rebind {
         typedef cusp::dia_matrix<IndexType, ValueType, MemorySpace2> type;
     };
 
-    /*! type of diagonal offsets array
-     */
     typedef typename cusp::array1d<IndexType, MemorySpace>                     diagonal_offsets_array_type;
-
-    /*! type of values array
-     */
     typedef typename cusp::array2d<ValueType, MemorySpace, cusp::column_major> values_array_type;
-
-    /*! equivalent container type
-     */
     typedef typename cusp::dia_matrix<IndexType, ValueType, MemorySpace> container;
 
-    /*! equivalent view type
-     */
     typedef typename cusp::dia_matrix_view<typename diagonal_offsets_array_type::view,
             typename values_array_type::view,
             IndexType, ValueType, MemorySpace> view;
 
-    /*! equivalent const_view type
-     */
     typedef typename cusp::dia_matrix_view<typename diagonal_offsets_array_type::const_view,
             typename values_array_type::const_view,
             IndexType, ValueType, MemorySpace> const_view;
+    /*! \endcond */
 
     /*! Storage for the diagonal offsets.
      */
@@ -335,5 +339,4 @@ make_dia_matrix_view(const dia_matrix<IndexType,ValueType,MemorySpace>& m);
 
 } // end namespace cusp
 
-#include <cusp/array2d.h>
 #include <cusp/detail/dia_matrix.inl>

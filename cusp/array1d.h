@@ -181,18 +181,19 @@ public:
     array1d(Iterator first, Iterator last)
         : Parent(first, last) {}
 
-    /*! Assign operator copies from an exemplar \p array1d vector.
-     *  \param a The \p array1d vector to copy.
+    /*! Assign operator copies from an exemplar \p array1d container.
+     *  \tparam ArrayType The type of array container to copy.
+     *  \param v The array1d vector to copy.
      *  \return array1d copy of input vector
      */
     template<typename ArrayType>
-    array1d &operator=(const ArrayType& a)
+    array1d &operator=(const ArrayType& v)
     {
         Parent::assign(a.begin(), a.end());
         return *this;
     }
 
-    /*! Extract a small vector from a \p array1d vector.
+    /*! Extract a array from a \p array1d container.
      *  \param start_index The starting index of the sub-array.
      *  \param num_entries The number of entries in the sub-array.
      *  \return array1d_view containing elements [start_index,...,start_index+num_entries)
@@ -227,6 +228,36 @@ public:
         return view(Parent::begin() + start_index, Parent::begin() + start_index + num_entries);
     }
 
+    /*! Extract a const array from a \p array1d container.
+     *  \param start_index The starting index of the sub-array.
+     *  \param num_entries The number of entries in the sub-array.
+     *  \return array1d_view containing elements [start_index,...,start_index+num_entries)
+     *
+     * \code
+     * // include cusp array1d header file
+     * #include <cusp/array1d.h>
+     * #include <cusp/print.h>
+     *
+     * int main()
+     * {
+     *   typedef cusp::array1d<int,cusp::host_memory> Array;
+     *   typedef typename Array::const_view ConstArrayView;
+     *
+     *   // Allocate a array of size 2 in "host" memory
+     *   Array a(2);
+     *
+     *   // Set the first element to 0 and second element to 1
+     *   a[0] = 0;
+     *   a[1] = 1;
+     *
+     *   // create a view starting from element 1 of length 1
+     *   ConstArrayView first(a.subarray(1,1);
+     *   cusp::print(first);
+     *
+     *   return 0;
+     * }
+     * \endcode
+     */
     const_view subarray(size_type start_index, size_type num_entries) const
     {
         return const_view(Parent::begin() + start_index, Parent::begin() + start_index + num_entries);
@@ -315,6 +346,7 @@ public :
 
     /*! \cond */
     typedef cusp::array1d_format                                    format;
+    typedef typename thrust::iterator_system<Iterator>::type        memory_space;
 
     // typedef typename thrust::iterator_value<iterator>::type         value_type;
     // typedef typename thrust::iterator_system<iterator>::type        memory_space;
@@ -483,6 +515,9 @@ public :
         return &front();
     }
 
+    /*! This method returns a const pointer to this array1d_view's first element.
+     *  \return A const pointer to the first element of this array1d_view.
+     */
     const_pointer data(void) const
     {
         return &front();
@@ -715,8 +750,8 @@ typename array1d<T,MemorySpace>::view make_array1d_view(array1d<T,MemorySpace>& 
  *  using an array1d_view
  *  \tparam T value_type of the array
  *  \tparam MemorySpace memory space of the array (cusp::host_memory or cusp::device_memory)
- *  \param v The array1d used to construct array1d_view
- *  \return array1d_view constructed using input array1d
+ *  \param v The array1d_view used to construct array1d_view
+ *  \return array1d_view constructed using input array1d_view
  */
 template <typename Iterator>
 typename array1d_view<Iterator>::view make_array1d_view(array1d_view<Iterator>& v)
