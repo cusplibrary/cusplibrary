@@ -92,21 +92,23 @@ void __spmv_ell(const Matrix& A,
     const IndexType pitch               = A.column_indices.pitch;
     const IndexType num_entries_per_row = A.column_indices.num_cols;
 
+    const IndexType * J = thrust::raw_pointer_cast(&A.column_indices(0,0));
+    const ValueType * V = thrust::raw_pointer_cast(&A.values(0,0));
+
+    const ValueType * x_ptr = thrust::raw_pointer_cast(&x[0]);
+    ValueType * y_ptr = thrust::raw_pointer_cast(&y[0]);
+
     // TODO generalize this
     assert(A.column_indices.pitch == A.values.pitch);
 
     if (UseCache)
-        bind_x(x.raw_data());
+        bind_x(x_ptr);
 
     spmv_ell_kernel<IndexType,ValueType,BLOCK_SIZE,UseCache> <<<NUM_BLOCKS, BLOCK_SIZE>>>
-    (A.num_rows, A.num_cols,
-     num_entries_per_row, pitch,
-     A.column_indices.values.raw_data(),
-     A.values.values.raw_data(),
-     x.raw_data(), (ValueType*) y.raw_data());
+    (A.num_rows, A.num_cols, num_entries_per_row, pitch, J, V, x_ptr, y_ptr);
 
     if (UseCache)
-        unbind_x(x.raw_data());
+        unbind_x(x_ptr);
 }
 
 template <typename Matrix,

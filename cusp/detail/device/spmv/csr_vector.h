@@ -139,18 +139,20 @@ void __spmv_csr_vector(const Matrix& A,
     const size_t MAX_BLOCKS = cusp::detail::device::arch::max_active_blocks(spmv_csr_vector_kernel<IndexType, ValueType, VECTORS_PER_BLOCK, THREADS_PER_VECTOR, UseCache>, THREADS_PER_BLOCK, (size_t) 0);
     const size_t NUM_BLOCKS = std::min<size_t>(MAX_BLOCKS, DIVIDE_INTO(A.num_rows, VECTORS_PER_BLOCK));
 
+    const IndexType * R = thrust::raw_pointer_cast(&A.row_offsets[0]);
+    const IndexType * J = thrust::raw_pointer_cast(&A.column_indices[0]);
+    const ValueType * V = thrust::raw_pointer_cast(&A.values[0]);
+    const ValueType * x_ptr = thrust::raw_pointer_cast(&x[0]);
+    ValueType * y_ptr = thrust::raw_pointer_cast(&y[0]);
+
     if (UseCache)
-        bind_x(x.raw_data());
+        bind_x(x_ptr);
 
     spmv_csr_vector_kernel<IndexType, ValueType, VECTORS_PER_BLOCK, THREADS_PER_VECTOR, UseCache> <<<NUM_BLOCKS, THREADS_PER_BLOCK>>>
-    (A.num_rows,
-     A.row_offsets.raw_data(),
-     A.column_indices.raw_data(),
-     A.values.raw_data(),
-     x.raw_data(), (ValueType*) y.raw_data());
+    (A.num_rows, R, J, V, x_ptr, y_ptr);
 
     if (UseCache)
-        unbind_x(x.raw_data());
+        unbind_x(x_ptr);
 }
 
 template <typename Matrix,

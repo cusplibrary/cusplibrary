@@ -100,38 +100,28 @@ template <typename Array1, typename Array2, typename IndexType, typename ValueTy
 template <typename IndexType, typename ValueType, class MemorySpace>
 class ell_matrix : public cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::ell_format>
 {
+private:
     typedef cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::ell_format> Parent;
+
 public:
-    /*! rebind matrix to a different MemorySpace
-     */
-    template<typename MemorySpace2>
-    struct rebind {
-        typedef cusp::ell_matrix<IndexType, ValueType, MemorySpace2> type;
-    };
-
-    /*! type of column indices array
-     */
+    /*! \cond */
+    typedef typename cusp::ell_matrix<IndexType, ValueType, MemorySpace> container;
     typedef typename cusp::array2d<IndexType, MemorySpace, cusp::column_major> column_indices_array_type;
-
-    /*! type of values array
-     */
     typedef typename cusp::array2d<ValueType, MemorySpace, cusp::column_major> values_array_type;
 
-    /*! equivalent container type
-     */
-    typedef typename cusp::ell_matrix<IndexType, ValueType, MemorySpace> container;
-
-    /*! equivalent view type
-     */
     typedef typename cusp::ell_matrix_view<typename column_indices_array_type::view,
             typename values_array_type::view,
             IndexType, ValueType, MemorySpace> view;
 
-    /*! equivalent const_view type
-     */
     typedef typename cusp::ell_matrix_view<typename column_indices_array_type::const_view,
             typename values_array_type::const_view,
             IndexType, ValueType, MemorySpace> const_view;
+
+    template<typename MemorySpace2>
+    struct rebind {
+        typedef cusp::ell_matrix<IndexType, ValueType, MemorySpace2> type;
+    };
+    /*! \endcond */
 
 
     /*! Value used to pad the rows of the column_indices array.
@@ -238,23 +228,17 @@ template <typename Array1,
          typename MemorySpace = typename cusp::minimum_space<typename Array1::memory_space, typename Array2::memory_space>::type >
 class ell_matrix_view : public cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::ell_format>
 {
+private:
     typedef cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::ell_format> Parent;
+
 public:
-    /*! type of \c column_indices array
-     */
+
+    /*! \cond */
     typedef Array1 column_indices_array_type;
-
-    /*! type of \c values array
-     */
     typedef Array2 values_array_type;
-
-    /*! equivalent container type
-     */
     typedef typename cusp::ell_matrix<IndexType, ValueType, MemorySpace> container;
-
-    /*! equivalent view type
-     */
     typedef typename cusp::ell_matrix_view<Array1, Array2, IndexType, ValueType, MemorySpace> view;
+    /*! \endcond */
 
     /*! Value used to pad the rows of the column_indices array.
      */

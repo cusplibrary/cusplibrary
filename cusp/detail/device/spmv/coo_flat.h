@@ -377,9 +377,12 @@ void __spmv_coo_flat(const Matrix& A,
     typedef typename Matrix::index_type IndexType;
     typedef typename Matrix::value_type ValueType;
 
-    const IndexType * I = A.row_indices.raw_data();
-    const IndexType * J = A.column_indices.raw_data();
-    const ValueType * V = A.values.raw_data();
+    const IndexType * I = thrust::raw_pointer_cast(&A.row_indices[0]);
+    const IndexType * J = thrust::raw_pointer_cast(&A.column_indices[0]);
+    const ValueType * V = thrust::raw_pointer_cast(&A.values[0]);
+
+    const ValueType * x_ptr = thrust::raw_pointer_cast(&x[0]);
+    ValueType * y_ptr = thrust::raw_pointer_cast(&y[0]);
 
     if (InitializeY)
         thrust::fill(y.begin(), y.begin() + A.num_rows, ValueType(0));
@@ -393,7 +396,7 @@ void __spmv_coo_flat(const Matrix& A,
     {
         // small matrix
         spmv_coo_serial_kernel<IndexType,ValueType> <<<1,1>>>
-        (A.num_entries, I, J, V, x.raw_data(), (ValueType*) y.raw_data());
+        (A.num_entries, I, J, V, x_ptr, y_ptr);
         return;
     }
 
@@ -413,23 +416,25 @@ void __spmv_coo_flat(const Matrix& A,
     const unsigned int active_warps = (interval_size == 0) ? 0 : DIVIDE_INTO(tail, interval_size);
 
     if (UseCache)
-        bind_x(x.raw_data());
+        bind_x(x_ptr);
 
     cusp::array1d<IndexType,cusp::device_memory> temp_rows(active_warps);
     cusp::array1d<ValueType,cusp::device_memory> temp_vals(active_warps);
 
+    IndexType * temp_rows_ptr = thrust::raw_pointer_cast(temp_rows.data());
+    ValueType * temp_vals_ptr = thrust::raw_pointer_cast(temp_vals.data());
+
     spmv_coo_flat_kernel<IndexType, ValueType, BLOCK_SIZE, UseCache> <<<num_blocks, BLOCK_SIZE>>>
-    (tail, interval_size, I, J, V, x.raw_data(), (ValueType*) y.raw_data(),
-     temp_rows.raw_data(), temp_vals.raw_data());
+    (tail, interval_size, I, J, V, x_ptr, y_ptr, temp_rows_ptr, temp_vals_ptr);
 
     spmv_coo_reduce_update_kernel<IndexType, ValueType, BLOCK_SIZE> <<<1, BLOCK_SIZE>>>
-    (active_warps, temp_rows.raw_data(), temp_vals.raw_data(), (ValueType*) y.raw_data());
+    (active_warps, temp_rows_ptr, temp_vals_ptr, y_ptr);
 
     spmv_coo_serial_kernel<IndexType,ValueType> <<<1,1>>>
-    (A.num_entries - tail, I + tail, J + tail, V + tail, x.raw_data(), (ValueType*) y.raw_data());
+    (A.num_entries - tail, I + tail, J + tail, V + tail, x_ptr, y_ptr);
 
     if (UseCache)
-        unbind_x(x.raw_data());
+        unbind_x(x_ptr);
 }
 
 template <typename Matrix,

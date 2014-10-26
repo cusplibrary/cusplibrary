@@ -21,6 +21,7 @@
 
 #pragma once
 
+#include <typeinfo>
 #include <cusp/detail/config.h>
 
 #include <cusp/memory.h>
@@ -33,18 +34,6 @@
 #include <thrust/detail/vector_base.h>
 #include <thrust/iterator/constant_iterator.h>
 #include <thrust/iterator/counting_iterator.h>
-
-template <typename T>
-struct has_iterator
-{
-    template <typename U>
-    static char helper(typename U::iterator* x);
-
-    template <typename U>
-    static long helper(U* x);
-
-    static const bool value = (sizeof(helper<T>(0)) == 1);
-};
 
 namespace cusp
 {
@@ -108,38 +97,32 @@ class array1d : public thrust::detail::vector_base<T, typename cusp::default_mem
 {
 private:
     typedef typename cusp::default_memory_allocator<T, MemorySpace>::type Alloc;
-    typedef typename thrust::detail::vector_base<T,Alloc> Parent;
+    typedef typename thrust::detail::vector_base<T,Alloc>                 Parent;
 
 public:
     /*! \cond */
-    typedef MemorySpace memory_space;
-    typedef cusp::array1d_format format;
+    typedef MemorySpace                                 memory_space;
+    typedef cusp::array1d_format                        format;
 
-    typedef typename cusp::array1d<T,MemorySpace> container;
+    typedef typename Parent::iterator                   iterator;
+    typedef typename Parent::const_iterator             const_iterator;
+    typedef typename Parent::value_type                 value_type;
+    typedef typename Parent::size_type                  size_type;
+
+    typedef cusp::array1d<T,MemorySpace>                container;
+    typedef typename cusp::array1d_view<iterator>       view;
+    typedef typename cusp::array1d_view<const_iterator> const_view;
 
     template<typename MemorySpace2>
     struct rebind {
         typedef cusp::array1d<T, MemorySpace2> type;
     };
-
-    typedef typename Parent::value_type                 value_type;
-    typedef typename Parent::pointer                    pointer;
-    typedef typename Parent::const_pointer              const_pointer;
-    typedef typename Parent::reference                  reference;
-    typedef typename Parent::const_reference            const_reference;
-    typedef typename Parent::size_type                  size_type;
-    typedef typename Parent::difference_type            difference_type;
-
-    typedef typename Parent::iterator                   iterator;
-    typedef typename Parent::const_iterator             const_iterator;
-
-    typedef typename cusp::array1d_view<iterator>       view;
-    typedef typename cusp::array1d_view<const_iterator> const_view;
     /*! \endcond */
 
     /*! This constructor creates an empty \p array1d vector.
      */
-    array1d(void) : Parent() {}
+    array1d(void)
+      : Parent() {}
 
     /*! This constructor creates a \p array1d vector with the given
      *  size.
@@ -163,35 +146,107 @@ public:
     explicit array1d(size_type n, const value_type &value)
         : Parent(n, value) {}
 
-    /*! Copy constructor copies from an exemplar array with iterator
-     *  \tparam Array Input array type supporting iterators
+    /*! Copy constructor copies from an exemplar array1d
      *  \param v The vector to copy.
      */
-    template<typename ArrayType>
-    array1d(const ArrayType &v,
-            typename thrust::detail::enable_if<has_iterator<ArrayType>::value>::type* = 0)
-        : Parent(v.begin(), v.end()) {}
+    array1d(const array1d &v)
+        : Parent(v) {}
+
+    /*! Assign operator copies from an exemplar \p array1d.
+     *  \param v The \p array1d to copy.
+     */
+    array1d &operator=(const array1d &v)
+    { Parent::operator=(v); return *this; }
+
+    /*! Copy constructor copies from an exemplar std::vector with different type
+     *  \tparam OtherT Type of std::vector
+     *  \tparam OtherAlloc Allocator of std::vector
+     *  \param v The array1d to copy.
+     */
+    template<typename OtherT, typename OtherMem>
+    array1d(const array1d<OtherT, OtherMem> &v)
+        : Parent(v) {}
+
+    /*! Assign operator copies from an exemplar \p std::vector.
+     *  \tparam OtherT Type of std::vector
+     *  \tparam OtherAlloc Allocator of std::vector
+     *  \param v The \p std::vector to copy.
+     */
+    template<typename OtherT, typename OtherMem>
+    array1d &operator=(const array1d<OtherT, OtherMem> &v)
+    { Parent::operator=(v); return *this; }
+
+    /*! Copy constructor copies from an exemplar std::vector with different type
+     *  \tparam OtherT Type of std::vector
+     *  \tparam OtherAlloc Allocator of std::vector
+     *  \param v The array1d to copy.
+     */
+    template<typename OtherT, typename OtherAlloc>
+    array1d(const std::vector<OtherT, OtherAlloc> &v)
+        : Parent(v) {}
+
+    /*! Assign operator copies from an exemplar \p std::vector.
+     *  \tparam OtherT Type of std::vector
+     *  \tparam OtherAlloc Allocator of std::vector
+     *  \param v The \p std::vector to copy.
+     */
+    template<typename OtherT, typename OtherAlloc>
+    array1d &operator=(const std::vector<OtherT, OtherAlloc> &v)
+    { Parent::operator=(v); return *this; }
+
+    /*! Copy constructor copies from an exemplar std::vector with different type
+     *  \tparam OtherT Type of std::vector
+     *  \tparam OtherAlloc Allocator of std::vector
+     *  \param v The array1d to copy.
+     */
+    template<typename OtherT, typename OtherMem>
+    array1d(const thrust::host_vector<OtherT, OtherMem> &v)
+        : Parent(v) {}
+
+    /*! Assign operator copies from an exemplar \p std::vector.
+     *  \tparam OtherT Type of std::vector
+     *  \tparam OtherAlloc Allocator of std::vector
+     *  \param v The \p std::vector to copy.
+     */
+    template<typename OtherT, typename OtherAlloc>
+    array1d &operator=(const thrust::host_vector<OtherT, OtherAlloc> &v)
+    { Parent::operator=(v); return *this; }
+
+    /*! Copy constructor copies from an exemplar std::vector with different type
+     *  \tparam OtherT Type of std::vector
+     *  \tparam OtherAlloc Allocator of std::vector
+     *  \param v The array1d to copy.
+     */
+    template<typename OtherT, typename OtherAlloc>
+    array1d(const thrust::device_vector<OtherT, OtherAlloc> &v)
+        : Parent(v) {}
+
+    /*! Assign operator copies from an exemplar \p std::vector.
+     *  \tparam OtherT Type of std::vector
+     *  \tparam OtherAlloc Allocator of std::vector
+     *  \param v The \p std::vector to copy.
+     */
+    template<typename OtherT, typename OtherAlloc>
+    array1d &operator=(const thrust::device_vector<OtherT, OtherAlloc> &v)
+    { Parent::operator=(v); return *this; }
 
     /*! This constructor builds a \p array1d vector from a range.
      *  \tparam Iterator iterator type of copy elements
      *  \param first The beginning of the range.
      *  \param last The end of the range.
      */
-    template<typename Iterator>
-    array1d(Iterator first, Iterator last)
+    template<typename InputIterator>
+    array1d(InputIterator first, InputIterator last)
         : Parent(first, last) {}
 
-    /*! Assign operator copies from an exemplar \p array1d container.
-     *  \tparam ArrayType The type of array container to copy.
-     *  \param v The array1d vector to copy.
-     *  \return array1d copy of input vector
+    /*! This constructor builds a \p array1d vector from a range.
+     *  \tparam Iterator iterator type of copy elements
+     *  \param first The beginning of the range.
+     *  \param last The end of the range.
      */
-    template<typename ArrayType>
-    array1d &operator=(const ArrayType& v)
-    {
-        Parent::assign(a.begin(), a.end());
-        return *this;
-    }
+    template<typename InputIterator>
+    array1d(const array1d_view<InputIterator> &v)
+        : Parent(v.begin(), v.end()) {}
 
     /*! Extract a array from a \p array1d container.
      *  \param start_index The starting index of the sub-array.
@@ -263,26 +318,6 @@ public:
         return const_view(Parent::begin() + start_index, Parent::begin() + start_index + num_entries);
     }
 
-    /*! Retrieve a raw pointer to the underlying memory contained in the \p
-     * array1d vector.
-     * \return pointer to first element pointed to by array
-     */
-    value_type* raw_data(void)
-    {
-        //return thrust::raw_pointer_cast(&Parent::m_storage[0]);
-        return thrust::raw_pointer_cast(Parent::data());
-    }
-
-    /*! Retrieve a raw const pointer to the underlying memory contained in the \p
-     * array1d vector.
-     * \return cosnt pointer to first element pointed to by array
-     */
-    const value_type* raw_data(void) const
-    {
-        //return thrust::raw_pointer_cast(&Parent::m_storage[0]);
-        return thrust::raw_pointer_cast(Parent::data());
-    }
-
 }; // end class array1d
 /*! \}
  */
@@ -333,43 +368,30 @@ public:
  * }
  * \endcode
  */
-template<typename Iterator>
-class array1d_view //: public thrust::iterator_adaptor<array1d_view<Iterator>, Iterator>
+template<typename RandomAccessIterator>
+class array1d_view : public thrust::iterator_adaptor<array1d_view<RandomAccessIterator>, RandomAccessIterator>
 {
 private :
-    //typedef thrust::iterator_adaptor<array1d_view<Iterator>, Iterator> Parent;
-    typedef typename cusp::default_memory_allocator<typename thrust::iterator_value<Iterator>::type,
-                                                    typename thrust::iterator_system<Iterator>::type>::type Alloc;
-    typedef typename thrust::detail::vector_base<typename thrust::iterator_value<Iterator>::type,Alloc> Base;
+    typedef thrust::iterator_adaptor<array1d_view<RandomAccessIterator>, RandomAccessIterator> Parent;
 
 public :
 
     /*! \cond */
-    typedef cusp::array1d_format                                    format;
-    typedef typename thrust::iterator_system<Iterator>::type        memory_space;
+    typedef RandomAccessIterator                                                iterator;
+    typedef cusp::array1d_format                                                format;
 
-    // typedef typename thrust::iterator_value<iterator>::type         value_type;
-    // typedef typename thrust::iterator_system<iterator>::type        memory_space;
-    // typedef typename thrust::iterator_pointer<iterator>::type       pointer;
-    // typedef typename thrust::iterator_reference<iterator>::type     reference;
-    // typedef typename thrust::iterator_difference<iterator>::type    difference_type;
-    // typedef typename thrust::iterator_difference<iterator>::type    size_type;
+    typedef typename thrust::iterator_value<RandomAccessIterator>::type         value_type;
+    typedef typename thrust::iterator_system<RandomAccessIterator>::type        memory_space;
+    typedef typename thrust::iterator_pointer<RandomAccessIterator>::type       pointer;
+    typedef typename thrust::iterator_reference<RandomAccessIterator>::type     reference;
+    typedef typename thrust::iterator_difference<RandomAccessIterator>::type    difference_type;
+    typedef typename thrust::iterator_difference<RandomAccessIterator>::type    size_type;
 
-    typedef typename Base::value_type                              value_type;
-    typedef typename Base::pointer                                 pointer;
-    typedef typename Base::const_pointer                           const_pointer;
-    typedef typename Base::reference                               reference;
-    typedef typename Base::const_reference                         const_reference;
-    typedef typename Base::size_type                               size_type;
-    typedef typename Base::difference_type                         difference_type;
-
-    typedef typename Base::iterator                                iterator;
-    typedef typename Base::const_iterator                          const_iterator;
-
-    typedef typename cusp::array1d_view<iterator>                  view;
-
-    // friend class thrust::iterator_core_access;
+    typedef typename cusp::array1d<value_type,memory_space>                     container;
+    typedef typename cusp::array1d_view<RandomAccessIterator>                   view;
     /*! \endcond */
+
+    friend class thrust::iterator_core_access;
 
     /*! This constructor creates an empty \p array1d_view vector.
      */
@@ -381,30 +403,29 @@ public :
      *  \param v The vector to copy.
      */
     template<typename ArrayType>
-    array1d_view(ArrayType &v,
-                 typename thrust::detail::enable_if<has_iterator<ArrayType>::value>::type* = 0)
-        : m_begin(v.begin()), m_size(v.size()), m_capacity(v.capacity()) {}
+    array1d_view(ArrayType &v)
+        : Parent(v.begin()), m_size(v.size()), m_capacity(v.capacity()) {}
 
     template<typename ArrayType>
-    array1d_view(const ArrayType &v,
-                 typename thrust::detail::enable_if<has_iterator<ArrayType>::value>::type* = 0)
-        : m_begin(v.begin()), m_size(v.size()), m_capacity(v.capacity()) {}
+    array1d_view(const ArrayType &v)
+        : Parent(v.begin()), m_size(v.size()), m_capacity(v.capacity()) {}
 
     /*! This constructor builds a \p array1d_view vector from a range.
      *  \param begin The beginning of the range.
      *  \param end The end of the range.
      */
-    array1d_view(Iterator begin, Iterator end)
-        : m_begin(begin), m_size(end-begin), m_capacity(end-begin) {}
+    template<typename InputIterator>
+    array1d_view(InputIterator begin, InputIterator end)
+        : Parent(begin), m_size(end-begin), m_capacity(end-begin) {}
 
     /*! Assign operator copies from an exemplar \p array1d_view vector.
      *  \param a The \p array1d_view vector to copy.
      *  \return array1d_view copy of input vector
      */
-    array1d_view& operator=(const array1d_view& v) {
-        m_begin    = v.begin();
-        m_size     = v.size();
-        m_capacity = v.capacity();
+    array1d_view &operator=(const array1d_view& v) {
+        this->base_reference()  = v.begin();
+        m_size                  = v.size();
+        m_capacity              = v.capacity();
         return *this;
     }
 
@@ -412,32 +433,18 @@ public :
      *  array1d_view.
      *  \return The first element of this array1d_view.
      */
-    reference front(void)
+    reference front(void) const
     {
-        //return *begin();
-        return m_begin[0];
-    }
-
-    const_reference front(void) const
-    {
-        //return *begin();
-        return m_begin[0];
+        return *begin();
     }
 
     /*! This method returns a reference referring to the last element of
      *  this array1d_view.
      *  \return The last element of this array1d_view.
      */
-    reference back(void)
+    reference back(void) const
     {
-        //return *(begin() + (size() - 1));
-        return m_begin[size() -1];
-    }
-
-    const_reference back(void) const
-    {
-        //return *(begin() + (size() - 1));
-        return m_begin[size() -1];
+        return *(begin() + (size() - 1));
     }
 
     /*! \brief Subscript access to the data contained in this array1d_view.
@@ -448,48 +455,27 @@ public :
      *  Note that data access with this operator is unchecked and
      *  out_of_range lookups are not defined.
      */
-    reference operator[](size_type n)
+    reference operator[](size_type n) const
     {
-        // return *(begin() + n);
-        return m_begin[n];
-    }
-
-    const_reference operator[](size_type n) const
-    {
-        // return *(begin() + n);
-        return m_begin[n];
+        return *(begin() + n);
     }
 
     /*! This method returns an iterator pointing to the beginning of
      *  this array1d_view.
      *  \return base iterator
      */
-    iterator begin(void)
+    iterator begin(void) const
     {
-        //return this->base();
-        return m_begin;
-    }
-
-    const_iterator begin(void) const
-    {
-        //return this->base();
-        return m_begin;
+        return this->base();
     }
 
     /*! This method returns an iterator pointing to one element past the
      *  last of this array1d_view.
      *  \return begin() + size().
      */
-    iterator end(void)
+    iterator end(void) const
     {
-        // return begin() + m_size;
-        return m_begin + m_size;
-    }
-
-    const_iterator end(void) const
-    {
-        // return begin() + m_size;
-        return m_begin + m_size;
+        return begin() + m_size;
     }
 
     /*! Returns the number of elements in this array1d_view.
@@ -507,27 +493,11 @@ public :
         return m_capacity;
     }
 
-    /*! This method returns a pointer to this array1d_view's first element.
-     *  \return A pointer to the first element of this array1d_view.
-     */
-    pointer data(void)
-    {
-        return &front();
-    }
-
-    /*! This method returns a const pointer to this array1d_view's first element.
-     *  \return A const pointer to the first element of this array1d_view.
-     */
-    const_pointer data(void) const
-    {
-        return &front();
-    }
-
-    // TODO : Check if iterator is trivial
-    // typename thrust::detail::enable_if< thrust::detail::is_trivial_iterator<iterator>::value, value_type* >::type
-    // raw_data(void)
+    // Thrust does not export iterator pointer types so data is not valid
+    // see http://thrust.github.io/doc/classthrust_1_1iterator__facade.html
+    // pointer data(void)
     // {
-    //     return thrust::raw_pointer_cast(&front());
+    //     return &front();
     // }
 
     /*! \brief Resizes this array1d_view to the specified number of elements.
@@ -582,33 +552,12 @@ public :
         return view(begin() + start_index, begin() + start_index + num_entries);
     }
 
-    /*! Retrieve a raw pointer to the underlying memory contained in the \p
-     * array1d vector.
-     * \return pointer to first element pointed to by array
-     */
-    value_type* raw_data(void)
-    {
-        return thrust::raw_pointer_cast(data());
-    }
-
-    /*! Retrieve a raw pointer to the underlying memory contained in the \p
-     * array1d vector.
-     * \return pointer to first element pointed to by array
-     */
-    const value_type* raw_data(void) const
-    {
-        return thrust::raw_pointer_cast(data());
-    }
-
 protected:
     // The size of this array1d_view, in number of elements.
     size_type m_size;
 
     // The capacity of this array1d_view, in number of elements.
     size_type m_capacity;
-
-    // Copy of base iterator
-    Iterator m_begin;
 };
 
 /**

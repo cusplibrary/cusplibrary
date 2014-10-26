@@ -138,19 +138,19 @@ void multiply(const Matrix&  A,
 // Sparse Matrix-BlockVector Multiply //
 ////////////////////////////////////////
 //// TODO specialize
-template <typename Matrix,
-         typename Vector1,
-         typename Vector2>
-void multiply(const Matrix&  A,
-              const Vector1& B,
-              Vector2& C,
-              cusp::sparse_format,
-              cusp::array2d_format,
-              cusp::array2d_format)
-{
-    for( size_t j = 0; j < B.num_cols; j++ )
-        cusp::multiply(A, B.column(j), C.column(j));
-}
+// template <typename Matrix,
+//          typename Vector1,
+//          typename Vector2>
+// void multiply(const Matrix&  A,
+//               const Vector1& B,
+//               Vector2& C,
+//               cusp::sparse_format,
+//               cusp::array2d_format,
+//               cusp::array2d_format)
+// {
+//     for( size_t j = 0; j < B.num_cols; j++ )
+//         cusp::multiply(A, B.column(j), C.column(j));
+// }
 
 /////////////////////////////////
 // Permutation Matrix Multiply //

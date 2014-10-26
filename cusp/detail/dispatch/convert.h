@@ -13,7 +13,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-    
+
 #include <cusp/array1d.h>
 
 #include <cusp/copy.h>
@@ -45,7 +45,7 @@ void convert(const SourceType& src, DestinationType& dst, cusp::host_memory, cus
     // first convert on host, then transfer to device
     typedef typename DestinationType::container DestinationContainerType;
     typedef typename DestinationContainerType::template rebind<cusp::host_memory>::type HostDestinationContainerType;
-    
+
     HostDestinationContainerType tmp;
 
     cusp::detail::host::convert(src, tmp);
@@ -62,7 +62,7 @@ void convert(const SourceType& src, DestinationType& dst, cusp::device_memory, c
     // first transfer to host, then convert on host
     typedef typename SourceType::container SourceContainerType;
     typedef typename SourceContainerType::template rebind<cusp::host_memory>::type HostSourceContainerType;
-    
+
     HostSourceContainerType tmp(src);
 
     cusp::detail::host::convert(tmp, dst);

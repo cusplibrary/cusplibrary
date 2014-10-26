@@ -137,17 +137,19 @@ void __spmv_dia(const Matrix& A,
         return;
     }
 
+    const IndexType * D = thrust::raw_pointer_cast(&A.diagonal_offsets[0]);
+    const ValueType * V = thrust::raw_pointer_cast(&A.values(0,0));
+    const ValueType * x_ptr = thrust::raw_pointer_cast(&x[0]);
+    ValueType * y_ptr = thrust::raw_pointer_cast(&y[0]);
+
     if (UseCache)
-        bind_x(x.raw_data());
+        bind_x(x_ptr);
 
     spmv_dia_kernel<IndexType, ValueType, BLOCK_SIZE, UseCache> <<<NUM_BLOCKS, BLOCK_SIZE>>>
-    (A.num_rows, A.num_cols, num_diagonals, pitch,
-     A.diagonal_offsets.raw_data(),
-     A.values.values.raw_data(),
-     x.raw_data(), (ValueType*) y.raw_data());
+    (A.num_rows, A.num_cols, num_diagonals, pitch, D, V, x_ptr, y_ptr);
 
     if (UseCache)
-        unbind_x(x.raw_data());
+        unbind_x(x_ptr);
 }
 
 template <typename Matrix,
