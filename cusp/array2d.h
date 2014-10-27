@@ -92,6 +92,8 @@ namespace cusp
 template<typename ValueType, class MemorySpace, class Orientation = cusp::row_major>
 class array2d : public cusp::detail::matrix_base<int,ValueType,MemorySpace,cusp::array2d_format>
 {
+private:
+
     typedef typename cusp::detail::matrix_base<int,ValueType,MemorySpace,cusp::array2d_format> Parent;
 
 public:

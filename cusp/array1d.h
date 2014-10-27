@@ -145,25 +145,25 @@ public:
     array1d(const array1d &v)
         : Parent(v) {}
 
-    /*! Assign operator copies from an exemplar \p array1d.
-     *  \param v The \p array1d to copy.
+    /*! Assign operator copies from an exemplar array1d.
+     *  \param v The array1d to copy.
      */
     array1d &operator=(const array1d &v)
     { Parent::operator=(v); return *this; }
 
-    /*! Copy constructor copies from an exemplar std::vector with different type
-     *  \tparam OtherT Type of std::vector
-     *  \tparam OtherAlloc Allocator of std::vector
+    /*! Copy constructor copies from an exemplar array1d with different type
+     *  \tparam OtherT Type of array1d
+     *  \tparam OtherMem Allocator of array1d
      *  \param v The array1d to copy.
      */
     template<typename OtherT, typename OtherMem>
     array1d(const array1d<OtherT, OtherMem> &v)
         : Parent(v) {}
 
-    /*! Assign operator copies from an exemplar \p std::vector.
-     *  \tparam OtherT Type of std::vector
-     *  \tparam OtherAlloc Allocator of std::vector
-     *  \param v The \p std::vector to copy.
+    /*! Assign operator copies from an exemplar array1d.
+     *  \tparam OtherT Type of array1d
+     *  \tparam OtherMem Allocator of array1d
+     *  \param v The array1d to copy.
      */
     template<typename OtherT, typename OtherMem>
     array1d &operator=(const array1d<OtherT, OtherMem> &v)
@@ -187,37 +187,37 @@ public:
     array1d &operator=(const std::vector<OtherT, OtherAlloc> &v)
     { Parent::operator=(v); return *this; }
 
-    /*! Copy constructor copies from an exemplar std::vector with different type
-     *  \tparam OtherT Type of std::vector
-     *  \tparam OtherAlloc Allocator of std::vector
-     *  \param v The array1d to copy.
+    /*! Copy constructor copies from an exemplar host_vector with different type
+     *  \tparam OtherT Type of host_vector
+     *  \tparam OtherAlloc Allocator of host_vector
+     *  \param v The host_vector to copy.
      */
-    template<typename OtherT, typename OtherMem>
-    array1d(const thrust::host_vector<OtherT, OtherMem> &v)
+    template<typename OtherT, typename OtherAlloc>
+    array1d(const thrust::host_vector<OtherT, OtherAlloc> &v)
         : Parent(v) {}
 
-    /*! Assign operator copies from an exemplar \p std::vector.
-     *  \tparam OtherT Type of std::vector
-     *  \tparam OtherAlloc Allocator of std::vector
-     *  \param v The \p std::vector to copy.
+    /*! Assign operator copies from an exemplar host_vector.
+     *  \tparam OtherT Type of host_vector
+     *  \tparam OtherAlloc Allocator of host_vector
+     *  \param v The host_vector to copy.
      */
     template<typename OtherT, typename OtherAlloc>
     array1d &operator=(const thrust::host_vector<OtherT, OtherAlloc> &v)
     { Parent::operator=(v); return *this; }
 
-    /*! Copy constructor copies from an exemplar std::vector with different type
-     *  \tparam OtherT Type of std::vector
-     *  \tparam OtherAlloc Allocator of std::vector
-     *  \param v The array1d to copy.
+    /*! Copy constructor copies from an exemplar device_vector with different type
+     *  \tparam OtherT Type of device_vector
+     *  \tparam OtherAlloc Allocator of device_vector
+     *  \param v The device_vector to copy.
      */
     template<typename OtherT, typename OtherAlloc>
     array1d(const thrust::device_vector<OtherT, OtherAlloc> &v)
         : Parent(v) {}
 
-    /*! Assign operator copies from an exemplar \p std::vector.
-     *  \tparam OtherT Type of std::vector
-     *  \tparam OtherAlloc Allocator of std::vector
-     *  \param v The \p std::vector to copy.
+    /*! Assign operator copies from an exemplar device_vector.
+     *  \tparam OtherT Type of device_vector
+     *  \tparam OtherAlloc Allocator of device_vector
+     *  \param v The device_vector to copy.
      */
     template<typename OtherT, typename OtherAlloc>
     array1d &operator=(const thrust::device_vector<OtherT, OtherAlloc> &v)
