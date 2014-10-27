@@ -32,6 +32,17 @@ array2d<ValueType,MemorySpace,Orientation>
     cusp::convert(matrix, *this);
 }
 
+template<typename ValueType, class MemorySpace, class Orientation>
+array2d<ValueType,MemorySpace,Orientation>
+::array2d(const size_t num_rows, const size_t num_cols, const ValueType& value, size_t pitch)
+    : Parent(num_rows, num_cols, num_rows * num_cols),
+      pitch(pitch),
+      values(pitch * cusp::detail::major_dimension(num_rows, num_cols, orientation()), value)
+{
+    if (pitch < cusp::detail::minor_dimension(num_rows, num_cols, orientation()))
+        throw cusp::invalid_input_exception("pitch cannot be less than minor dimension");
+}
+
 //////////////////////
 // Member Functions //
 //////////////////////
@@ -55,6 +66,164 @@ array2d<ValueType,MemorySpace,Orientation>
     cusp::convert(matrix, *this);
 
     return *this;
+}
+
+
+template <typename ValueType, class MemorySpace, class Orientation>
+typename array2d<ValueType,MemorySpace,Orientation>::values_array_type::reference
+array2d<ValueType,MemorySpace,Orientation>
+::operator()(const size_t i, const size_t j)
+{
+    return values[cusp::detail::index_of(i, j, pitch, orientation())];
+}
+
+template <typename ValueType, class MemorySpace, class Orientation>
+typename array2d<ValueType,MemorySpace,Orientation>::values_array_type::const_reference
+array2d<ValueType,MemorySpace,Orientation>
+::operator()(const size_t i, const size_t j) const
+{
+    return values[cusp::detail::index_of(i, j, pitch, orientation())];
+}
+
+template <typename ValueType, class MemorySpace, class Orientation>
+void
+array2d<ValueType,MemorySpace,Orientation>
+::resize(const size_t num_rows, const size_t num_cols)
+{
+    // preserve .pitch if possible
+    if (this->num_rows == num_rows && this->num_cols == num_cols)
+        return;
+
+    resize(num_rows, num_cols, cusp::detail::minor_dimension(num_rows, num_cols, orientation()));
+}
+
+template <typename ValueType, class MemorySpace, class Orientation>
+void
+array2d<ValueType,MemorySpace,Orientation>
+::resize(const size_t num_rows, const size_t num_cols, const size_t pitch)
+{
+    if (pitch < cusp::detail::minor_dimension(num_rows, num_cols, orientation()))
+        throw cusp::invalid_input_exception("pitch cannot be less than minor dimension");
+
+    values.resize(pitch * cusp::detail::major_dimension(num_rows, num_cols, orientation()));
+
+    this->num_rows    = num_rows;
+    this->num_cols    = num_cols;
+    this->pitch       = pitch;
+    this->num_entries = num_rows * num_cols;
+}
+
+template <typename ValueType, class MemorySpace, class Orientation>
+void
+array2d<ValueType,MemorySpace,Orientation>
+::swap(array2d& matrix)
+{
+    Parent::swap(matrix);
+    thrust::swap(this->pitch, matrix.pitch);
+    values.swap(matrix.values);
+}
+
+template <typename ValueType, class MemorySpace, class Orientation>
+array2d<ValueType,MemorySpace,Orientation>::row_view
+array2d<ValueType,MemorySpace,Orientation>
+::row(const size_t i)
+{
+    return row_view_type::get_array(*this, i);
+}
+
+template <typename ValueType, class MemorySpace, class Orientation>
+array2d<ValueType,MemorySpace,Orientation>::column_view
+array2d<ValueType,MemorySpace,Orientation>
+::column(const size_t i)
+{
+    return column_view_type::get_array(*this, i);
+}
+
+template <typename ValueType, class MemorySpace, class Orientation>
+array2d<ValueType,MemorySpace,Orientation>::const_row_view
+array2d<ValueType,MemorySpace,Orientation>
+::row(const size_t i) const
+{
+    return const_row_view_type::get_array(*this, i);
+}
+
+template <typename ValueType, class MemorySpace, class Orientation>
+array2d<ValueType,MemorySpace,Orientation>::const_column_view
+array2d<ValueType,MemorySpace,Orientation>
+::column(const size_t i) const
+{
+    return const_column_view_type::get_array(*this, i);
+}
+
+template<typename ArrayView, class Orientation>
+typename array2d_view<ArrayView,Orientation>::values_array_type::reference
+array2d_view<ArrayView,Orientation>
+::operator()(const size_t i, const size_t j) const
+{
+    return values[cusp::detail::index_of(i, j, pitch, orientation())];
+}
+
+template<typename ArrayView, class Orientation>
+void
+array2d_view<ArrayView,Orientation>
+::resize(const size_t num_rows, const size_t num_cols)
+{
+    if (pitch < cusp::detail::minor_dimension(num_rows, num_cols, orientation()))
+        throw cusp::invalid_input_exception("pitch cannot be less than minor dimension");
+
+    values.resize(pitch * cusp::detail::major_dimension(num_rows, num_cols, orientation()));
+
+    this->num_rows    = num_rows;
+    this->num_cols    = num_cols;
+    this->num_entries = num_rows * num_cols;
+}
+
+template<typename ArrayView, class Orientation>
+void
+array2d_view<ArrayView,Orientation>
+::resize(const size_t num_rows, const size_t num_cols, const size_t pitch)
+{
+    if (pitch < cusp::detail::minor_dimension(num_rows, num_cols, orientation()))
+        throw cusp::invalid_input_exception("pitch cannot be less than minor dimension");
+
+    values.resize(pitch * cusp::detail::major_dimension(num_rows, num_cols, orientation()));
+
+    this->num_rows    = num_rows;
+    this->num_cols    = num_cols;
+    this->pitch       = pitch;
+    this->num_entries = num_rows * num_cols;
+}
+
+template<typename ArrayView, class Orientation>
+array2d_view<ArrayView,Orientation>::row_view
+array2d_view<ArrayView,Orientation>
+::row(const size_t i)
+{
+    return row_view_type::get_array(*this, i);
+}
+
+template<typename ArrayView, class Orientation>
+array2d_view<ArrayView,Orientation>::column_view
+array2d_view<ArrayView,Orientation>
+::column(const size_t i)
+{
+    return column_view_type::get_array(*this, i);
+}
+
+template<typename ArrayView, class Orientation>
+array2d_view<ArrayView,Orientation>::row_view
+array2d_view<ArrayView,Orientation>
+::row(const size_t i) const
+{
+    return row_view_type::get_array(*this, i);
+}
+
+template<typename ArrayView, class Orientation>
+array2d_view<ArrayView,Orientation>::column_view
+array2d_view<ArrayView,Orientation>
+::column(const size_t i) const
+{
+    return column_view_type::get_array(*this, i);
 }
 
 /////////////////////

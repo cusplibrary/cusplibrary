@@ -28,6 +28,108 @@ bool array1d_equal(const Array1& lhs, const Array2& rhs)
 
 } // end namespace detail
 
+template<typename T, typename MemorySpace>
+array1d<T,MemorySpace>::view
+array1d<T,MemorySpace>
+::subarray(size_type start_index, size_type num_entries)
+{
+    return view(Parent::begin() + start_index, Parent::begin() + start_index + num_entries);
+} // end array1d::subarray
+
+template<typename T, typename MemorySpace>
+array1d<T,MemorySpace>::const_view
+array1d<T,MemorySpace>
+::subarray(size_type start_index, size_type num_entries) const
+{
+    return const_view(Parent::begin() + start_index, Parent::begin() + start_index + num_entries);
+} // end array1d::subarray
+
+template<typename RandomAccessIterator>
+array1d_view<RandomAccessIterator>&
+array1d_view<RandomAccessIterator>
+::operator=(const array1d_view& v)
+{
+    this->base_reference()  = v.begin();
+    m_size                  = v.size();
+    m_capacity              = v.capacity();
+    return *this;
+} // end array1d_view::operator=
+
+template<typename RandomAccessIterator>
+array1d_view<RandomAccessIterator>::reference
+array1d_view<RandomAccessIterator>
+::front(void) const
+{
+    return *begin();
+} // end array1d_view::front
+
+template<typename RandomAccessIterator>
+array1d_view<RandomAccessIterator>::reference
+array1d_view<RandomAccessIterator>
+::back(void) const
+{
+    return *(begin() + (size() - 1));
+} // end array1d_view::back
+
+template<typename RandomAccessIterator>
+array1d_view<RandomAccessIterator>::reference
+array1d_view<RandomAccessIterator>
+::operator[](size_type n) const
+{
+    return *(begin() + n);
+} // end array1d_view::operator[]
+
+template<typename RandomAccessIterator>
+array1d_view<RandomAccessIterator>::iterator
+array1d_view<RandomAccessIterator>
+::begin(void) const
+{
+    return this->base();
+} // end array1d_view::begin
+
+template<typename RandomAccessIterator>
+array1d_view<RandomAccessIterator>::iterator
+array1d_view<RandomAccessIterator>
+::end(void) const
+{
+    return begin() + m_size;
+} // end array1d_view::end
+
+template<typename RandomAccessIterator>
+array1d_view<RandomAccessIterator>::size_type
+array1d_view<RandomAccessIterator>
+::size(void) const
+{
+    return m_size;
+} // end array1d_view::size
+
+template<typename RandomAccessIterator>
+array1d_view<RandomAccessIterator>::size_type
+array1d_view<RandomAccessIterator>
+::capacity(void) const
+{
+    return m_capacity;
+} // end array1d_view::capacity
+
+template<typename RandomAccessIterator>
+void
+array1d_view<RandomAccessIterator>
+::resize(size_type new_size)
+{
+    if (new_size <= m_capacity)
+        m_size = new_size;
+    else
+        throw cusp::not_implemented_exception("array1d_view cannot resize() larger than capacity()");
+} // end array1d_view::resize
+
+template<typename RandomAccessIterator>
+array1d_view<RandomAccessIterator>::view
+array1d_view<RandomAccessIterator>
+::subarray(size_type start_index, size_type num_entries)
+{
+    return view(begin() + start_index, begin() + start_index + num_entries);
+} // end array1d_view::subarray
+
 ////////////////////////
 // Equality Operators //
 ////////////////////////

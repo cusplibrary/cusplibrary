@@ -98,15 +98,13 @@ template <typename Array1, typename Array2, typename Array3, typename IndexType,
 template <typename IndexType, typename ValueType, class MemorySpace>
 class coo_matrix : public cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::coo_format>
 {
+private:
+
     typedef cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::coo_format> Parent;
+
 public:
 
     /*! \cond */
-    template<typename MemorySpace2>
-    struct rebind {
-        typedef cusp::coo_matrix<IndexType, ValueType, MemorySpace2> type;
-    };
-
     typedef typename cusp::array1d<IndexType, MemorySpace> row_indices_array_type;
 
     typedef typename cusp::array1d<IndexType, MemorySpace> column_indices_array_type;
@@ -124,6 +122,11 @@ public:
             typename column_indices_array_type::const_view,
             typename values_array_type::const_view,
             IndexType, ValueType, MemorySpace> const_view;
+
+    template<typename MemorySpace2>
+    struct rebind {
+        typedef cusp::coo_matrix<IndexType, ValueType, MemorySpace2> type;
+    };
     /*! \endcond */
 
     /*! Storage for the row indices of the COO data structure.
@@ -227,26 +230,27 @@ public:
  *
  */
 template <typename Array1,
-         typename Array2,
-         typename Array3,
-         typename IndexType   = typename Array1::value_type,
-         typename ValueType   = typename Array3::value_type,
-         typename MemorySpace = typename cusp::minimum_space<typename Array1::memory_space, typename Array2::memory_space, typename Array3::memory_space>::type >
+          typename Array2,
+          typename Array3,
+          typename IndexType   = typename Array1::value_type,
+          typename ValueType   = typename Array3::value_type,
+          typename MemorySpace = typename cusp::minimum_space<typename Array1::memory_space, typename Array2::memory_space, typename Array3::memory_space>::type >
 class coo_matrix_view : public cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::coo_format>
 {
+private:
+
     typedef cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::coo_format> Parent;
+
 public:
+
+    /*! \cond */
     typedef Array1 row_indices_array_type;
     typedef Array2 column_indices_array_type;
     typedef Array3 values_array_type;
 
-    /*! equivalent container type
-     */
     typedef typename cusp::coo_matrix<IndexType, ValueType, MemorySpace> container;
-
-    /*! equivalent view type
-     */
     typedef typename cusp::coo_matrix_view<Array1, Array2, Array3, IndexType, ValueType, MemorySpace> view;
+    /*! \endcond */
 
     /*! View of the row indices of the COO data structure.  Also called the "row pointer" array.
      */

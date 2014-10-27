@@ -129,14 +129,7 @@ public:
      *  \param n The number of elements to initially create.
      */
     explicit array1d(size_type n)
-        : Parent()
-    {
-        if(n > 0)
-        {
-            Parent::m_storage.allocate(n);
-            Parent::m_size = n;
-        }
-    }
+        : Parent(n) {}
 
     /*! This constructor creates a \p array1d vector with copies
      *  of an exemplar element.
@@ -278,10 +271,7 @@ public:
      * }
      * \endcode
      */
-    view subarray(size_type start_index, size_type num_entries)
-    {
-        return view(Parent::begin() + start_index, Parent::begin() + start_index + num_entries);
-    }
+    view subarray(size_type start_index, size_type num_entries);
 
     /*! Extract a const array from a \p array1d container.
      *  \param start_index The starting index of the sub-array.
@@ -313,10 +303,7 @@ public:
      * }
      * \endcode
      */
-    const_view subarray(size_type start_index, size_type num_entries) const
-    {
-        return const_view(Parent::begin() + start_index, Parent::begin() + start_index + num_entries);
-    }
+    const_view subarray(size_type start_index, size_type num_entries) const;
 
 }; // end class array1d
 /*! \}
@@ -374,6 +361,8 @@ class array1d_view : public thrust::iterator_adaptor<array1d_view<RandomAccessIt
 private :
     typedef thrust::iterator_adaptor<array1d_view<RandomAccessIterator>, RandomAccessIterator> Parent;
 
+    friend class thrust::iterator_core_access;
+
 public :
 
     /*! \cond */
@@ -391,8 +380,6 @@ public :
     typedef typename cusp::array1d_view<RandomAccessIterator>                   view;
     /*! \endcond */
 
-    friend class thrust::iterator_core_access;
-
     /*! This constructor creates an empty \p array1d_view vector.
      */
     array1d_view(void)
@@ -404,10 +391,6 @@ public :
      */
     template<typename ArrayType>
     array1d_view(ArrayType &v)
-        : Parent(v.begin()), m_size(v.size()), m_capacity(v.capacity()) {}
-
-    template<typename ArrayType>
-    array1d_view(const ArrayType &v)
         : Parent(v.begin()), m_size(v.size()), m_capacity(v.capacity()) {}
 
     /*! This constructor builds a \p array1d_view vector from a range.
@@ -422,30 +405,19 @@ public :
      *  \param a The \p array1d_view vector to copy.
      *  \return array1d_view copy of input vector
      */
-    array1d_view &operator=(const array1d_view& v) {
-        this->base_reference()  = v.begin();
-        m_size                  = v.size();
-        m_capacity              = v.capacity();
-        return *this;
-    }
+    array1d_view &operator=(const array1d_view& v);
 
     /*! This method returns a reference pointing to the first element of this
      *  array1d_view.
      *  \return The first element of this array1d_view.
      */
-    reference front(void) const
-    {
-        return *begin();
-    }
+    reference front(void) const;
 
     /*! This method returns a reference referring to the last element of
      *  this array1d_view.
      *  \return The last element of this array1d_view.
      */
-    reference back(void) const
-    {
-        return *(begin() + (size() - 1));
-    }
+    reference back(void) const;
 
     /*! \brief Subscript access to the data contained in this array1d_view.
      *  \param n The index of the element for which data should be accessed.
@@ -455,43 +427,28 @@ public :
      *  Note that data access with this operator is unchecked and
      *  out_of_range lookups are not defined.
      */
-    reference operator[](size_type n) const
-    {
-        return *(begin() + n);
-    }
+    reference operator[](size_type n) const;
 
     /*! This method returns an iterator pointing to the beginning of
      *  this array1d_view.
      *  \return base iterator
      */
-    iterator begin(void) const
-    {
-        return this->base();
-    }
+    iterator begin(void) const;
 
     /*! This method returns an iterator pointing to one element past the
      *  last of this array1d_view.
      *  \return begin() + size().
      */
-    iterator end(void) const
-    {
-        return begin() + m_size;
-    }
+    iterator end(void) const;
 
     /*! Returns the number of elements in this array1d_view.
      */
-    size_type size(void) const
-    {
-        return m_size;
-    }
+    size_type size(void) const;
 
     /*! Returns the number of elements which have been reserved in this
      *  array1d_view.
      */
-    size_type capacity(void) const
-    {
-        return m_capacity;
-    }
+    size_type capacity(void) const;
 
     // Thrust does not export iterator pointer types so data is not valid
     // see http://thrust.github.io/doc/classthrust_1_1iterator__facade.html
@@ -508,13 +465,7 @@ public :
      *  elements. If the number is smaller than this array1d_view's current
      *  size this array1d_view is truncated, otherwise throws an error.
      */
-    void resize(size_type new_size)
-    {
-        if (new_size <= m_capacity)
-            m_size = new_size;
-        else
-            throw cusp::not_implemented_exception("array1d_view cannot resize() larger than capacity()");
-    }
+    void resize(size_type new_size);
 
     /*! Extract a small vector from a \p array1d_view vector.
      *  \param start_index The starting index of the sub-array.
@@ -547,16 +498,17 @@ public :
      * return 0;
      * \endcode
      */
-    view subarray(size_type start_index, size_type num_entries)
-    {
-        return view(begin() + start_index, begin() + start_index + num_entries);
-    }
+    view subarray(size_type start_index, size_type num_entries);
 
 protected:
-    // The size of this array1d_view, in number of elements.
+    /*!
+     * The size of this array1d_view, in number of elements.
+     */
     size_type m_size;
 
-    // The capacity of this array1d_view, in number of elements.
+    /*!
+     * The capacity of this array1d_view, in number of elements.
+     */
     size_type m_capacity;
 };
 

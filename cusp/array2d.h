@@ -89,10 +89,10 @@ namespace cusp
  * }
  * \endcode
  */
-template<typename T, class MemorySpace, class Orientation = cusp::row_major>
-class array2d : public cusp::detail::matrix_base<int,T,MemorySpace,cusp::array2d_format>
+template<typename ValueType, class MemorySpace, class Orientation = cusp::row_major>
+class array2d : public cusp::detail::matrix_base<int,ValueType,MemorySpace,cusp::array2d_format>
 {
-    typedef typename cusp::detail::matrix_base<int,T,MemorySpace,cusp::array2d_format> Parent;
+    typedef typename cusp::detail::matrix_base<int,ValueType,MemorySpace,cusp::array2d_format> Parent;
 
 public:
     /*! \cond */
@@ -100,36 +100,36 @@ public:
 
     template<typename MemorySpace2>
     struct rebind {
-        typedef cusp::array2d<T, MemorySpace2, Orientation> type;
+        typedef cusp::array2d<ValueType, MemorySpace2, Orientation> type;
     };
 
-    typedef typename cusp::array1d<T, MemorySpace> values_array_type;
-    typedef typename cusp::array2d<T, MemorySpace, Orientation> container;
+    typedef typename cusp::array1d<ValueType, MemorySpace> values_array_type;
+    typedef typename cusp::array2d<ValueType, MemorySpace, Orientation> container;
 
     typedef typename cusp::array2d_view<typename values_array_type::view, Orientation> view;
     typedef typename cusp::array2d_view<typename values_array_type::const_view, Orientation> const_view;
 
     typedef cusp::detail::row_or_column_view<
-      typename values_array_type::iterator,thrust::detail::is_same<Orientation,cusp::row_major>::value>
-      row_view_type;
+    typename values_array_type::iterator,thrust::detail::is_same<Orientation,cusp::row_major>::value>
+    row_view_type;
 
     typedef typename row_view_type::ArrayType row_view;
 
     typedef cusp::detail::row_or_column_view
-      <typename values_array_type::iterator,thrust::detail::is_same<Orientation,cusp::column_major>::value>
-      column_view_type;
+    <typename values_array_type::iterator,thrust::detail::is_same<Orientation,cusp::column_major>::value>
+    column_view_type;
 
     typedef typename column_view_type::ArrayType column_view;
 
     typedef cusp::detail::row_or_column_view
-      <typename values_array_type::const_iterator,thrust::detail::is_same<Orientation,cusp::row_major>::value>
-      const_row_view_type;
+    <typename values_array_type::const_iterator,thrust::detail::is_same<Orientation,cusp::row_major>::value>
+    const_row_view_type;
 
     typedef typename const_row_view_type::ArrayType const_row_view;
 
     typedef cusp::detail::row_or_column_view
-      <typename values_array_type::const_iterator,thrust::detail::is_same<Orientation,cusp::column_major>::value>
-      const_column_view_type;
+    <typename values_array_type::const_iterator,thrust::detail::is_same<Orientation,cusp::column_major>::value>
+    const_column_view_type;
 
     typedef typename const_column_view_type::ArrayType const_column_view;
     /*! \endcond */
@@ -163,7 +163,7 @@ public:
      *  \param num_cols The number of array2d columns.
      *  \param value The initial value of all entries.
      */
-    array2d(size_t num_rows, size_t num_cols, const T& value)
+    array2d(size_t num_rows, size_t num_cols, const ValueType& value)
         : Parent(num_rows, num_cols, num_rows * num_cols),
           pitch(cusp::detail::minor_dimension(num_rows, num_cols, orientation())),
           values(num_rows * num_cols, value) {}
@@ -175,14 +175,7 @@ public:
      *  \param value The initial value of all entries.
      *  \param pitch The stride between entries in the major dimension.
      */
-    array2d(size_t num_rows, size_t num_cols, const T& value, size_t pitch)
-        : Parent(num_rows, num_cols, num_rows * num_cols),
-          pitch(pitch),
-          values(pitch * cusp::detail::major_dimension(num_rows, num_cols, orientation()), value)
-    {
-        if (pitch < cusp::detail::minor_dimension(num_rows, num_cols, orientation()))
-            throw cusp::invalid_input_exception("pitch cannot be less than minor dimension");
-    }
+    array2d(const size_t num_rows, const size_t num_cols, const ValueType& value, const size_t pitch);
 
     /*! This constructor creates a array2d vector from another matrix
      *  \tparam MatrixType Type of the input matrix
@@ -196,20 +189,14 @@ public:
      *  \param j Column index for which data should be accessed.
      *  \return Read/write reference to data.
      */
-    typename values_array_type::reference operator()(const size_t i, const size_t j)
-    {
-        return values[cusp::detail::index_of(i, j, pitch, orientation())];
-    }
+    typename values_array_type::reference operator()(const size_t i, const size_t j);
 
     /*! Subscript access to the data contained in this array2d.
      *  \param i Row index for which data should be accessed.
      *  \param j Column index for which data should be accessed.
      *  \return Read reference to data.
      */
-    typename values_array_type::const_reference operator()(const size_t i, const size_t j) const
-    {
-        return values[cusp::detail::index_of(i, j, pitch, orientation())];
-    }
+    typename values_array_type::const_reference operator()(const size_t i, const size_t j) const;
 
     /*! This method will resize this array2d to the specified dimensions.
      *  If the number of total entries is smaller than this
@@ -219,14 +206,7 @@ public:
      *  \param num_rows The number of rows this array2d should contain
      *  \param num_cols The number of columns this array2d should contain
      */
-    void resize(size_t num_rows, size_t num_cols)
-    {
-        // preserve .pitch if possible
-        if (this->num_rows == num_rows && this->num_cols == num_cols)
-            return;
-
-        resize(num_rows, num_cols, cusp::detail::minor_dimension(num_rows, num_cols, orientation()));
-    }
+    void resize(const size_t num_rows, const size_t num_cols);
 
     /*! This method will resize this array2d to the specified dimensions.
      *  If the number of total entries is smaller than this
@@ -238,70 +218,36 @@ public:
      *  \param pitch The stride between major dimension entries this array2d
      *  should contain
      */
-    void resize(size_t num_rows, size_t num_cols, size_t pitch)
-    {
-        if (pitch < cusp::detail::minor_dimension(num_rows, num_cols, orientation()))
-            throw cusp::invalid_input_exception("pitch cannot be less than minor dimension");
-
-        values.resize(pitch * cusp::detail::major_dimension(num_rows, num_cols, orientation()));
-
-        this->num_rows    = num_rows;
-        this->num_cols    = num_cols;
-        this->pitch       = pitch;
-        this->num_entries = num_rows * num_cols;
-    }
-
+    void resize(const size_t num_rows, const size_t num_cols, const size_t pitch);
 
     /*! This method swaps the contents of this array2d with another array2d.
      *  \param v The array2d with which to swap.
      */
-    void swap(array2d& matrix)
-    {
-        Parent::swap(matrix);
-        thrust::swap(this->pitch, matrix.pitch);
-        values.swap(matrix.values);
-    }
-
-    /*! Retrieve a raw pointer to the underlying memory contained in the \p
-     * array1d vector.
-     * \return pointer to first element pointed to by array2d, entry (0,0)
-     */
-    T* raw_data(void)
-    {
-        return values.raw_data();
-    }
+    void swap(array2d& matrix);
 
     /*! This method generates a array1d_view of row i of this array2d matrix
+     * \param i The row index used to create array1d_view
      * \return array1d_view of row i
      */
-    row_view row(size_t i)
-    {
-        return row_view_type::get_array(*this, i);
-    }
+    row_view row(const size_t i);
 
     /*! This method generates a array1d_view of column i of this array2d matrix
+     * \param i The column index used to create array1d_view
      * \return array1d_view of column i
      */
-    column_view column(size_t i)
-    {
-        return column_view_type::get_array(*this, i);
-    }
+    column_view column(const size_t i);
 
     /*! This method generates a const array1d_view of row i of this array2d matrix
+     * \param i The row index used to create array1d_view
      * \return const array1d_view of row i
      */
-    const_row_view row(size_t i) const
-    {
-        return const_row_view_type::get_array(*this, i);
-    }
+    const_row_view row(const size_t i) const;
 
     /*! This method generates a const array1d_view of column i of this array2d matrix
+     * \param i The column index used to create array1d_view
      * \return const array1d_view of column i
      */
-    const_column_view column(size_t i) const
-    {
-        return const_column_view_type::get_array(*this, i);
-    }
+    const_column_view column(const size_t i) const;
 
     /*! Assign operator copies from an exemplar \p array2d container.
      *  \param matrix The \p array2d container to copy.
@@ -369,8 +315,10 @@ public:
  */
 template<typename ArrayView, class Orientation = cusp::row_major>
 class array2d_view
-  : public  cusp::detail::matrix_base<int, typename ArrayView::value_type,typename ArrayView::memory_space, cusp::array2d_format>
+    : public  cusp::detail::matrix_base<int, typename ArrayView::value_type,typename ArrayView::memory_space, cusp::array2d_format>
 {
+private:
+
     typedef cusp::detail::matrix_base<int, typename ArrayView::value_type,typename ArrayView::memory_space, cusp::array2d_format> Parent;
 
 public:
@@ -385,11 +333,11 @@ public:
     typedef typename cusp::array2d_view<ArrayView, Orientation> view;
 
     typedef cusp::detail::row_or_column_view<
-      typename values_array_type::iterator,thrust::detail::is_same<Orientation,cusp::row_major>::value> row_view_type;
+    typename values_array_type::iterator,thrust::detail::is_same<Orientation,cusp::row_major>::value> row_view_type;
     typedef typename row_view_type::ArrayType row_view;
 
     typedef cusp::detail::row_or_column_view<
-      typename values_array_type::iterator,thrust::detail::is_same<Orientation,cusp::column_major>::value> column_view_type;
+    typename values_array_type::iterator,thrust::detail::is_same<Orientation,cusp::column_major>::value> column_view_type;
     typedef typename column_view_type::ArrayType column_view;
     /*! \endcond */
 
@@ -416,8 +364,6 @@ public:
     //template <typename Array2, typename Orientation2>
     //array2d_view(const array2d_view<Array2,Orientation2>& A)
 
-    // TODO check values.size()
-
     /*! This constructor creates a array2d_view from a array2d container.
      *  \param a array2d used to construct this array2d_view.
      */
@@ -441,10 +387,7 @@ public:
      *  \param j Column index for which data should be accessed.
      *  \return Read reference to data.
      */
-    typename values_array_type::reference operator()(const size_t i, const size_t j) const
-    {
-        return values[cusp::detail::index_of(i, j, pitch, orientation())];
-    }
+    typename values_array_type::reference operator()(const size_t i, const size_t j) const;
 
     /*! This method will resize this array2d_view to the specified dimensions.
      *  If the number of total entries is smaller than this
@@ -454,14 +397,7 @@ public:
      *  \param num_rows The number of rows this array2d_view should contain.
      *  \param num_cols The number of columns this array2d_view should contain.
      */
-    void resize(size_t num_rows, size_t num_cols)
-    {
-        // preserve .pitch if possible
-        if (this->num_rows == num_rows && this->num_cols == num_cols)
-            return;
-
-        resize(num_rows, num_cols, cusp::detail::minor_dimension(num_rows, num_cols, orientation()));
-    }
+    void resize(const size_t num_rows, const size_t num_cols);
 
     /*! This method will resize this array2d_view to the specified dimensions.
      *  If the number of total entries is smaller than this
@@ -473,51 +409,31 @@ public:
      *  \param pitch The stride between major dimension entries this
      *  array2d_view should contain.
      */
-    void resize(size_t num_rows, size_t num_cols, size_t pitch)
-    {
-        if (pitch < cusp::detail::minor_dimension(num_rows, num_cols, orientation()))
-            throw cusp::invalid_input_exception("pitch cannot be less than minor dimension");
-
-        values.resize(pitch * cusp::detail::major_dimension(num_rows, num_cols, orientation()));
-
-        this->num_rows    = num_rows;
-        this->num_cols    = num_cols;
-        this->pitch       = pitch;
-        this->num_entries = num_rows * num_cols;
-    }
-
+    void resize(const size_t num_rows, const size_t num_cols, const size_t pitch);
 
     /*! This method generates a array1d_view of row i of this array2d_view matrix
+     * \param i The row index used to create array1d_view
      * \return array1d_view of row \p i
      */
-    row_view row(size_t i)
-    {
-        return row_view_type::get_array(*this, i);
-    }
+    row_view row(size_t i);
 
     /*! This method generates a array1d_view of column i of this array2d_view matrix
+     * \param i The column index used to create array1d_view
      * \return array1d_view of column \p i
      */
-    column_view column(size_t i)
-    {
-        return column_view_type::get_array(*this, i);
-    }
+    column_view column(size_t i);
 
     /*! This method generates a const array1d_view of row i of this array2d_view matrix
+     * \param i The row index used to create array1d_view
      * \return const array1d_view of row \p i
      */
-    row_view row(size_t i) const
-    {
-        return row_view_type::get_array(*this, i);
-    }
+    row_view row(size_t i) const;
 
     /*! This method generates a const array1d_view of column i of this array2d_view matrix
+     * \param i The column index used to create array1d_view
      * \return const array1d_view of column \p i
      */
-    column_view column(size_t i) const
-    {
-        return column_view_type::get_array(*this, i);
-    }
+    column_view column(size_t i) const;
 }; // end array2d_view class
 
 
