@@ -410,5 +410,33 @@ void assert_is_valid_matrix(const MatrixType& A)
         throw cusp::format_exception(oss.str());
 }
 
+template <typename Array1, typename Array2>
+void assert_same_dimensions(const Array1& array1,
+                            const Array2& array2)
+{
+    if(array1.size() != array2.size())
+        throw cusp::invalid_input_exception("array dimensions do not match");
+}
+
+template <typename Array1, typename Array2, typename Array3>
+void assert_same_dimensions(const Array1& array1,
+                            const Array2& array2,
+                            const Array3& array3)
+{
+    assert_same_dimensions(array1, array2);
+    assert_same_dimensions(array2, array3);
+}
+
+template <typename Array1, typename Array2, typename Array3, typename Array4>
+void assert_same_dimensions(const Array1& array1,
+                            const Array2& array2,
+                            const Array3& array3,
+                            const Array4& array4)
+{
+    assert_same_dimensions(array1, array2);
+    assert_same_dimensions(array2, array3);
+    assert_same_dimensions(array3, array4);
+}
+
 } // end namespace cusp
 

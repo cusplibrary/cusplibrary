@@ -38,19 +38,6 @@ namespace cusp
 namespace detail
 {
 
-// TODO move this to a shared header
-// absolute<T> computes the absolute value of a number f(x) -> |x|
-template <typename T>
-struct absolute : public thrust::unary_function<T,T>
-{
-    __host__ __device__
-    T operator()(T x)
-    {
-        return x < 0 ? -x : x;
-    }
-};
-
-
 template <typename Matrix>
 double estimate_spectral_radius(const Matrix& A, size_t k = 20)
 {

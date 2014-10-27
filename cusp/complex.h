@@ -31,20 +31,16 @@
 namespace cusp
 {
 
-template <typename T> struct complex : public thrust::complex<T>
-{
-public:
-    typedef typename thrust::complex<T> Parent;
-
-    inline __host__ __device__
-    complex(const T & re = T(), const T& im = T()) : Parent(re,im) {};
-
-    inline __host__ __device__
-    complex(const thrust::complex<T>& z) : Parent(z) {};
-
-    inline __host__
-    complex(const std::complex<T>& z) : Parent(z) {};
-};
+/**
+ *  \brief Complex number type imported from thrust
+ *
+ *  \par Overview
+ *  Thrust 1.8.0 provides a robust support for complex numbers
+ *  and Cusp imports this implementation for use in all algorithms.
+ *
+ *  \see https://github.com/thrust/thrust/blob/master/thrust/complex.h
+ */
+using thrust::complex;
 
 template <typename T>
 struct norm_type {

@@ -110,9 +110,14 @@ public:
      *  \param iteration_limit maximum number of solver iterations to allow
      *  \param relative_tolerance determines convergence criteria
      *  \param absolute_tolerance determines convergence criteria
+     *  \param verbose Controls printing status updates during execution
      */
     template <typename VectorType>
-    monitor(const VectorType& b, size_t iteration_limit = 500, Real relative_tolerance = 1e-5, Real absolute_tolerance = 0, bool verbose = false);
+    monitor(const VectorType& b,
+            const size_t iteration_limit = 500,
+            const Real relative_tolerance = 1e-5,
+            const Real absolute_tolerance = 0,
+            const bool verbose = false);
 
     /*! increment the iteration count
      */

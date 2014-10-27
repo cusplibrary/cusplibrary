@@ -26,7 +26,7 @@ namespace cusp
 template <typename ValueType>
 template <typename VectorType>
 monitor<ValueType>
-::monitor(const VectorType& b, size_t iteration_limit = 500, Real relative_tolerance = 1e-5, Real absolute_tolerance = 0, bool verbose = false)
+::monitor(const VectorType& b, size_t iteration_limit, Real relative_tolerance, Real absolute_tolerance, bool verbose)
     : b_norm(cusp::blas::nrm2(b)),
       r_norm(std::numeric_limits<Real>::max()),
       iteration_limit_(iteration_limit),
@@ -35,21 +35,23 @@ monitor<ValueType>
       absolute_tolerance_(absolute_tolerance),
       verbose(verbose)
 {
-      if(verbose) {
-          std::cout << "Solver will continue until ";
-          std::cout << "residual norm " << relative_tolerance << " or reaching ";
-          std::cout << iteration_limit << " iterations " << std::endl;
-          std::cout << "  Iteration Number  | Residual Norm" << std::endl;
-      }
-      residuals.reserve(iteration_limit);
+    if(verbose)
+    {
+        std::cout << "Solver will continue until ";
+        std::cout << "residual norm " << relative_tolerance << " or reaching ";
+        std::cout << iteration_limit << " iterations " << std::endl;
+        std::cout << "  Iteration Number  | Residual Norm" << std::endl;
+    }
+
+    residuals.reserve(iteration_limit);
 }
 
 template <typename ValueType>
 void
 monitor<ValueType>
-::operator++(void) const
+::operator++(void)
 {
-    return ++iteration_count_;
+    ++iteration_count_;
 }
 
 template <typename ValueType>
@@ -109,15 +111,17 @@ monitor<ValueType>
 }
 
 template <typename ValueType>
-void monitor<ValueType>
-::set_verbose(bool verbose)
+void
+monitor<ValueType>
+::set_verbose(bool verbose_)
 {
-  verbose = verbose_;
+    verbose = verbose_;
 }
 
 template <typename ValueType>
 template <typename Vector>
-void monitor<ValueType>
+void
+monitor<ValueType>
 ::reset(const Vector& b)
 {
     b_norm = cusp::blas::nrm2(b);
@@ -127,7 +131,8 @@ void monitor<ValueType>
 }
 
 template <typename ValueType>
-void monitor<ValueType>
+void
+monitor<ValueType>
 ::print(void)
 {
     // report solver results
@@ -160,7 +165,8 @@ template <typename Vector>
 bool monitor<ValueType>
 ::finished(const Vector& r)
 {
-    if(verbose) {
+    if(verbose)
+    {
         std::cout << "       "  << std::setw(10) << iteration_count();
         std::cout << "       "  << std::setw(10) << std::scientific << residual_norm() << std::endl;
     }
@@ -185,7 +191,8 @@ bool monitor<ValueType>
 }
 
 template <typename ValueType>
-typename monitor<ValueType>::Real monitor<ValueType>
+typename monitor<ValueType>::Real
+monitor<ValueType>
 ::immediate_rate(void)
 {
     size_t num = residuals.size();
@@ -193,7 +200,8 @@ typename monitor<ValueType>::Real monitor<ValueType>
 }
 
 template <typename ValueType>
-typename monitor<ValueType>::Real monitor<ValueType>
+typename monitor<ValueType>::Real
+monitor<ValueType>
 ::geometric_rate(void)
 {
     size_t num = residuals.size();
@@ -201,7 +209,8 @@ typename monitor<ValueType>::Real monitor<ValueType>
 }
 
 template <typename ValueType>
-typename monitor<ValueType>::Real monitor<ValueType>
+typename monitor<ValueType>::Real
+monitor<ValueType>
 ::average_rate(void)
 {
     size_t num = residuals.size();

@@ -17,6 +17,7 @@
 #include <cusp/array1d.h>
 #include <cusp/complex.h>
 #include <cusp/exception.h>
+#include <cusp/verify.h>
 
 #include <cusp/blas/blas_policy.h>
 
@@ -27,37 +28,6 @@ namespace cusp
 {
 namespace blas
 {
-namespace detail
-{
-
-template <typename Array1, typename Array2>
-void assert_same_dimensions(const Array1& array1,
-                            const Array2& array2)
-{
-    if(array1.size() != array2.size())
-        throw cusp::invalid_input_exception("array dimensions do not match");
-}
-
-template <typename Array1, typename Array2, typename Array3>
-void assert_same_dimensions(const Array1& array1,
-                            const Array2& array2,
-                            const Array3& array3)
-{
-    assert_same_dimensions(array1, array2);
-    assert_same_dimensions(array2, array3);
-}
-
-template <typename Array1, typename Array2, typename Array3, typename Array4>
-void assert_same_dimensions(const Array1& array1,
-                            const Array2& array2,
-                            const Array3& array3,
-                            const Array4& array4)
-{
-    assert_same_dimensions(array1, array2);
-    assert_same_dimensions(array2, array3);
-    assert_same_dimensions(array3, array4);
-}
-} // end namespace detail
 
 template <typename Array1,
          typename Array2,
@@ -73,7 +43,7 @@ void axpy(const blas_policy<typename Array2::value_type,typename Array2::memory_
 
     CUSP_PROFILE_SCOPED();
 
-    detail::assert_same_dimensions(x, y);
+    cusp::assert_same_dimensions(x, y);
     cusp::blas::axpy(DerivedPolicy(), x, y, alpha);
 }
 
@@ -92,16 +62,6 @@ void axpy(const Array1& x,
 
 template <typename Array1,
          typename Array2,
-         typename ScalarType>
-void axpy(const Array1& x,
-          const Array2& y,
-          ScalarType alpha)
-{
-    cusp::blas::axpy(x, const_cast<Array2&>(y), alpha);
-}
-
-template <typename Array1,
-         typename Array2,
          typename Array3,
          typename ScalarType1,
          typename ScalarType2>
@@ -113,26 +73,12 @@ void axpby(const Array1& x,
 {
     CUSP_PROFILE_SCOPED();
 
-    detail::assert_same_dimensions(x, y, z);
+    cusp::assert_same_dimensions(x, y, z);
 
     size_t N = x.size();
     thrust::for_each(thrust::make_zip_iterator(thrust::make_tuple(x.begin(), y.begin(), z.begin())),
                      thrust::make_zip_iterator(thrust::make_tuple(x.begin(), y.begin(), z.begin())) + N,
-                     detail::AXPBY<ScalarType1,ScalarType2>(alpha, beta));
-}
-
-template <typename Array1,
-         typename Array2,
-         typename Array3,
-         typename ScalarType1,
-         typename ScalarType2>
-void axpby(const Array1& x,
-           const Array2& y,
-           const Array3& z,
-           ScalarType1 alpha,
-           ScalarType2 beta)
-{
-    cusp::blas::axpby(x, y, const_cast<Array3&>(z), alpha, beta);
+                     cusp::detail::AXPBY<ScalarType1,ScalarType2>(alpha, beta));
 }
 
 template <typename Array1,
@@ -152,30 +98,12 @@ void axpbypcz(const Array1& x,
 {
     CUSP_PROFILE_SCOPED();
 
-    detail::assert_same_dimensions(x, y, z, output);
+    cusp::assert_same_dimensions(x, y, z, output);
 
     size_t N = x.size();
     thrust::for_each(thrust::make_zip_iterator(thrust::make_tuple(x.begin(), y.begin(), z.begin(), output.begin())),
                      thrust::make_zip_iterator(thrust::make_tuple(x.begin(), y.begin(), z.begin(), output.begin())) + N,
-                     detail::AXPBYPCZ<ScalarType1,ScalarType2,ScalarType3>(alpha, beta, gamma));
-}
-
-template <typename Array1,
-         typename Array2,
-         typename Array3,
-         typename Array4,
-         typename ScalarType1,
-         typename ScalarType2,
-         typename ScalarType3>
-void axpbypcz(const Array1& x,
-              const Array2& y,
-              const Array3& z,
-              const Array4& output,
-              ScalarType1 alpha,
-              ScalarType2 beta,
-              ScalarType3 gamma)
-{
-    cusp::blas::axpbypcz(x, y, z, const_cast<Array4&>(output), alpha, beta, gamma);
+                     cusp::detail::AXPBYPCZ<ScalarType1,ScalarType2,ScalarType3>(alpha, beta, gamma));
 }
 
 template <typename Array1,
@@ -189,18 +117,8 @@ void xmy(const Array1& x,
 
     CUSP_PROFILE_SCOPED();
 
-    detail::assert_same_dimensions(x, y, output);
-    thrust::transform(x.begin(), x.end(), y.begin(), output.begin(), detail::XMY<ValueType>());
-}
-
-template <typename Array1,
-         typename Array2,
-         typename Array3>
-void xmy(const Array1& x,
-         const Array2& y,
-         const Array3& output)
-{
-    cusp::blas::xmy(x, y, const_cast<Array3&>(output));
+    cusp::assert_same_dimensions(x, y, output);
+    thrust::transform(x.begin(), x.end(), y.begin(), output.begin(), cusp::detail::XMY<ValueType>());
 }
 
 template <typename Array1,
@@ -210,25 +128,27 @@ void copy(const Array1& x,
 {
     CUSP_PROFILE_SCOPED();
 
-    detail::assert_same_dimensions(x, y);
+    cusp::assert_same_dimensions(x, y);
+    thrust::copy(x.begin(), x.end(), y.begin());
+}
+
+template <typename Array1,
+          typename RandomAccessIterator>
+void copy(const Array1& x,
+          cusp::array1d_view<RandomAccessIterator> y)
+{
+    CUSP_PROFILE_SCOPED();
+
+    cusp::assert_same_dimensions(x, y);
     thrust::copy(x.begin(), x.end(), y.begin());
 }
 
 template <typename Array1,
          typename Array2>
-void copy(const Array1& x,
-          const Array2& y)
-{
-    cusp::blas::copy(x, const_cast<Array2&>(y));
-}
-
-// TODO properly harmonize heterogenous types
-template <typename Array1,
-         typename Array2>
 typename Array1::value_type
 dot(const blas_policy<typename Array1::value_type,typename Array1::memory_space>& policy,
-    const Array1& x,
-    const Array2& y)
+     const Array1& x,
+     const Array2& y)
 {
     typedef typename Array1::value_type ValueType;
     typedef typename Array1::memory_space MemorySpace;
@@ -245,7 +165,7 @@ typename Array1::value_type
 dot(const Array1& x,
     const Array2& y)
 {
-    detail::assert_same_dimensions(x, y);
+    cusp::assert_same_dimensions(x, y);
 
     typedef typename Array1::value_type ValueType;
     typedef typename Array1::memory_space MemorySpace;
@@ -276,7 +196,7 @@ typename Array1::value_type
 dotc(const Array1& x,
      const Array2& y)
 {
-    detail::assert_same_dimensions(x, y);
+    cusp::assert_same_dimensions(x, y);
 
     typedef typename Array1::value_type ValueType;
     typedef typename Array1::memory_space MemorySpace;
@@ -284,20 +204,20 @@ dotc(const Array1& x,
     return cusp::blas::dotc(policy, x, y);
 }
 
-template <typename Array,
+template <typename ArrayType,
          typename ScalarType>
-void fill(Array& x,
-          ScalarType alpha)
+void fill(ArrayType& x,
+          const ScalarType alpha)
 {
     thrust::fill(x.begin(), x.end(), alpha);
 }
 
-template <typename Array,
-         typename ScalarType>
-void fill(const Array& x,
-          ScalarType alpha)
+template <typename RandomAccessIterator,
+          typename ScalarType>
+void fill(cusp::array1d_view<RandomAccessIterator> x,
+          const ScalarType alpha)
 {
-    cusp::blas::fill(const_cast<Array&>(x), alpha);
+    thrust::fill(x.begin(), x.end(), alpha);
 }
 
 template <typename Array>
@@ -399,12 +319,12 @@ void scal(Array& x,
     cusp::blas::scal(policy, x, ValueType(alpha));
 }
 
-template <typename Array,
+template <typename RandomAccessIterator,
          typename ScalarType>
-void scal(const Array& x,
+void scal(cusp::array1d_view<RandomAccessIterator> x,
           ScalarType alpha)
 {
-    cusp::blas::scal(const_cast<Array&>(x), alpha);
+    thrust::for_each(x.begin(), x.end(), cusp::detail::SCAL<ScalarType>(alpha));
 }
 
 template<typename Array2d,

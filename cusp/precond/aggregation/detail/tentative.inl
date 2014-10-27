@@ -20,6 +20,7 @@
 #include <cusp/convert.h>
 #include <cusp/csr_matrix.h>
 #include <cusp/detail/format_utils.h>
+#include <cusp/detail/functional.h>
 
 #include <thrust/count.h>
 #include <thrust/functional.h>
@@ -36,15 +37,6 @@ namespace detail
 {
 
 using namespace thrust::placeholders;
-
-template <typename T>
-struct sqrt_functor : thrust::unary_function<T,T>
-{
-    __host__ __device__
-    T operator()(const T& x) {
-        return sqrt(x);
-    }
-};
 
 template <typename Array1,
          typename Array2,
@@ -82,14 +74,14 @@ void fit_candidates(const Array1& aggregates,
 
         // compute sum of squares for each column of Q (rows of Qt)
         cusp::array1d<IndexType, MemorySpace> temp(num_aggregates);
-        thrust::transform(Qt.values.begin(), Qt.values.end(), Qt.values.begin(), cusp::blas::detail::square<ValueType>());
+        thrust::transform(Qt.values.begin(), Qt.values.end(), Qt.values.begin(), cusp::detail::square<ValueType>());
         thrust::reduce_by_key(Qt.row_indices.begin(), Qt.row_indices.end(),
                               Qt.values.begin(),
                               temp.begin(),
                               R.begin());
 
         // compute square root of each column sum
-        thrust::transform(R.begin(), R.end(), R.begin(), sqrt_functor<ValueType>());
+        thrust::transform(R.begin(), R.end(), R.begin(), cusp::detail::sqrt_functor<ValueType>());
     }
 
     // rescale columns of Q

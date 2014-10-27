@@ -29,7 +29,10 @@ void TestAxpy(void)
     ASSERT_EQUAL(y[2],   8.0);
     ASSERT_EQUAL(y[3],  -1.0);
 
-    cusp::blas::axpy(View(x), View(y), 2.0f);
+    View view_x(x);
+    View view_y(y);
+
+    cusp::blas::axpy(view_x, view_y, 2.0f);
 
     ASSERT_EQUAL(y[0],  28.0);
     ASSERT_EQUAL(y[1],  18.0);
@@ -75,7 +78,11 @@ void TestAxpby(void)
     z[2] = 0.0f;
     z[3] = 0.0f;
 
-    cusp::blas::axpby(View(x), View(y), View(z), 2.0f, 1.0f);
+    View view_x(x);
+    View view_y(y);
+    View view_z(z);
+
+    cusp::blas::axpby(view_x, view_y, view_z, 2.0f, 1.0f);
 
     ASSERT_EQUAL(z[0],  14.0);
     ASSERT_EQUAL(z[1],   8.0);
@@ -126,7 +133,12 @@ void TestAxpbypcz(void)
     w[2] = 0.0f;
     w[3] = 0.0f;
 
-    cusp::blas::axpbypcz(View(x), View(y), View(z), View(w), 2.0f, 1.0f, 3.0f);
+    View view_x(x);
+    View view_y(y);
+    View view_z(z);
+    View view_w(w);
+
+    cusp::blas::axpbypcz(view_x, view_y, view_z, view_w, 2.0f, 1.0f, 3.0f);
 
     ASSERT_EQUAL(w[0],  17.0);
     ASSERT_EQUAL(w[1],   8.0);
@@ -172,7 +184,11 @@ void TestXmy(void)
     z[2] = 0.0f;
     z[3] = 0.0f;
 
-    cusp::blas::xmy(View(x), View(y), View(z));
+    View view_x(x);
+    View view_y(y);
+    View view_z(z);
+
+    cusp::blas::xmy(view_x, view_y, view_z);
 
     ASSERT_EQUAL(z[0],   0.0f);
     ASSERT_EQUAL(z[1], -10.0f);

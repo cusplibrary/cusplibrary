@@ -139,85 +139,85 @@ public:
     explicit array1d(size_type n, const value_type &value)
         : Parent(n, value) {}
 
-    /*! Copy constructor copies from an exemplar array1d
-     *  \param v The vector to copy.
+    /*! Copy constructor copies from an exemplar \p array1d
+     *  \param v The \p array1d to copy.
      */
     array1d(const array1d &v)
         : Parent(v) {}
 
-    /*! Assign operator copies from an exemplar array1d.
-     *  \param v The array1d to copy.
+    /*! Assign operator copies from an exemplar \p array1d.
+     *  \param v The \p array1d to copy.
      */
     array1d &operator=(const array1d &v)
     { Parent::operator=(v); return *this; }
 
-    /*! Copy constructor copies from an exemplar array1d with different type
-     *  \tparam OtherT Type of array1d
-     *  \tparam OtherMem Allocator of array1d
-     *  \param v The array1d to copy.
+    /*! Copy constructor copies from an exemplar \p array1d with different type
+     *  \tparam OtherT Type of \p array1d
+     *  \tparam OtherMem Allocator of \p array1d
+     *  \param v The \p array1d to copy.
      */
     template<typename OtherT, typename OtherMem>
     array1d(const array1d<OtherT, OtherMem> &v)
         : Parent(v) {}
 
-    /*! Assign operator copies from an exemplar array1d.
-     *  \tparam OtherT Type of array1d
-     *  \tparam OtherMem Allocator of array1d
-     *  \param v The array1d to copy.
+    /*! Assign operator copies from an exemplar \p array1d.
+     *  \tparam OtherT Type of \p array1d
+     *  \tparam OtherMem Allocator of \p array1d
+     *  \param v The \p array1d to copy.
      */
     template<typename OtherT, typename OtherMem>
     array1d &operator=(const array1d<OtherT, OtherMem> &v)
     { Parent::operator=(v); return *this; }
 
-    /*! Copy constructor copies from an exemplar std::vector with different type
-     *  \tparam OtherT Type of std::vector
-     *  \tparam OtherAlloc Allocator of std::vector
-     *  \param v The array1d to copy.
+    /*! Copy constructor copies from an exemplar \p std::vector with different type
+     *  \tparam OtherT Type of \p std::vector
+     *  \tparam OtherAlloc Allocator of \p std::vector
+     *  \param v The \p std::vector to copy.
      */
     template<typename OtherT, typename OtherAlloc>
     array1d(const std::vector<OtherT, OtherAlloc> &v)
         : Parent(v) {}
 
     /*! Assign operator copies from an exemplar \p std::vector.
-     *  \tparam OtherT Type of std::vector
-     *  \tparam OtherAlloc Allocator of std::vector
+     *  \tparam OtherT Type of \p std::vector
+     *  \tparam OtherAlloc Allocator of \p std::vector
      *  \param v The \p std::vector to copy.
      */
     template<typename OtherT, typename OtherAlloc>
     array1d &operator=(const std::vector<OtherT, OtherAlloc> &v)
     { Parent::operator=(v); return *this; }
 
-    /*! Copy constructor copies from an exemplar host_vector with different type
-     *  \tparam OtherT Type of host_vector
-     *  \tparam OtherAlloc Allocator of host_vector
-     *  \param v The host_vector to copy.
+    /*! Copy constructor copies from an exemplar \p thrust::host_vector with different type
+     *  \tparam OtherT Type of \p thrust::host_vector
+     *  \tparam OtherAlloc Allocator of \p thrust::host_vector
+     *  \param v The \p thrust::host_vector to copy.
      */
     template<typename OtherT, typename OtherAlloc>
     array1d(const thrust::host_vector<OtherT, OtherAlloc> &v)
         : Parent(v) {}
 
-    /*! Assign operator copies from an exemplar host_vector.
-     *  \tparam OtherT Type of host_vector
-     *  \tparam OtherAlloc Allocator of host_vector
-     *  \param v The host_vector to copy.
+    /*! Assign operator copies from an exemplar \p thrust::host_vector.
+     *  \tparam OtherT Type of \p thrust::host_vector
+     *  \tparam OtherAlloc Allocator of \p thrust::host_vector
+     *  \param v The \p thrust::host_vector to copy.
      */
     template<typename OtherT, typename OtherAlloc>
     array1d &operator=(const thrust::host_vector<OtherT, OtherAlloc> &v)
     { Parent::operator=(v); return *this; }
 
-    /*! Copy constructor copies from an exemplar device_vector with different type
-     *  \tparam OtherT Type of device_vector
-     *  \tparam OtherAlloc Allocator of device_vector
-     *  \param v The device_vector to copy.
+    /*! Copy constructor copies from an exemplar \p thrust::device_vector with different type
+     *  \tparam OtherT Type of \p thrust::device_vector
+     *  \tparam OtherAlloc Allocator of \p thrust::device_vector
+     *  \param v The \p thrust::device_vector to copy.
      */
     template<typename OtherT, typename OtherAlloc>
     array1d(const thrust::device_vector<OtherT, OtherAlloc> &v)
         : Parent(v) {}
 
-    /*! Assign operator copies from an exemplar device_vector.
-     *  \tparam OtherT Type of device_vector
-     *  \tparam OtherAlloc Allocator of device_vector
-     *  \param v The device_vector to copy.
+    /*! Assign operator copies from an exemplar \p thrust::device_vector.
+     *  \tparam OtherT Type of \p thrust::device_vector
+     *  \tparam OtherAlloc Allocator of \p thrust::device_vector
+     *  \param v The \p thrust::device_vector to copy.
      */
     template<typename OtherT, typename OtherAlloc>
     array1d &operator=(const thrust::device_vector<OtherT, OtherAlloc> &v)
@@ -232,10 +232,9 @@ public:
     array1d(InputIterator first, InputIterator last)
         : Parent(first, last) {}
 
-    /*! This constructor builds a \p array1d vector from a range.
-     *  \tparam Iterator iterator type of copy elements
-     *  \param first The beginning of the range.
-     *  \param last The end of the range.
+    /*! Copy constructor copies from an exemplar \p array1d_view
+     *  \tparam InputIterator iterator type of copy elements
+     *  \param v The \p array1d_view to copy.
      */
     template<typename InputIterator>
     array1d(const array1d_view<InputIterator> &v)
@@ -244,7 +243,7 @@ public:
     /*! Extract a array from a \p array1d container.
      *  \param start_index The starting index of the sub-array.
      *  \param num_entries The number of entries in the sub-array.
-     *  \return array1d_view containing elements [start_index,...,start_index+num_entries)
+     *  \return \p array1d_view containing elements [start_index,...,start_index+num_entries)
      *
      * \code
      * // include cusp array1d header file
@@ -264,7 +263,7 @@ public:
      *   a[1] = 1;
      *
      *   // create a view starting from element 1 of length 1
-     *   ArrayView first(a.subarray(1,1);
+     *   ArrayView first(a.subarray(1,1));
      *   cusp::print(first);
      *
      *   return 0;
@@ -276,7 +275,7 @@ public:
     /*! Extract a const array from a \p array1d container.
      *  \param start_index The starting index of the sub-array.
      *  \param num_entries The number of entries in the sub-array.
-     *  \return array1d_view containing elements [start_index,...,start_index+num_entries)
+     *  \return \p array1d_view containing elements [start_index,...,start_index+num_entries)
      *
      * \code
      * // include cusp array1d header file
@@ -296,7 +295,7 @@ public:
      *   a[1] = 1;
      *
      *   // create a view starting from element 1 of length 1
-     *   ConstArrayView first(a.subarray(1,1);
+     *   ConstArrayView first(a.subarray(1,1));
      *   cusp::print(first);
      *
      *   return 0;
@@ -402,24 +401,24 @@ public :
         : Parent(begin), m_size(end-begin), m_capacity(end-begin) {}
 
     /*! Assign operator copies from an exemplar \p array1d_view vector.
-     *  \param a The \p array1d_view vector to copy.
-     *  \return array1d_view copy of input vector
+     *  \param v The \p array1d_view vector to copy.
+     *  \return \p array1d_view copy of input vector
      */
     array1d_view &operator=(const array1d_view& v);
 
     /*! This method returns a reference pointing to the first element of this
-     *  array1d_view.
-     *  \return The first element of this array1d_view.
+     *  \p array1d_view.
+     *  \return The first element of this \p array1d_view.
      */
     reference front(void) const;
 
     /*! This method returns a reference referring to the last element of
-     *  this array1d_view.
-     *  \return The last element of this array1d_view.
+     *  this \p array1d_view.
+     *  \return The last element of this \p array1d_view.
      */
     reference back(void) const;
 
-    /*! \brief Subscript access to the data contained in this array1d_view.
+    /*! \brief Subscript access to the data contained in this \p array1d_view.
      *  \param n The index of the element for which data should be accessed.
      *  \return Read/write reference to data.
      *
@@ -430,23 +429,23 @@ public :
     reference operator[](size_type n) const;
 
     /*! This method returns an iterator pointing to the beginning of
-     *  this array1d_view.
+     *  this \p array1d_view.
      *  \return base iterator
      */
     iterator begin(void) const;
 
     /*! This method returns an iterator pointing to one element past the
-     *  last of this array1d_view.
+     *  last of this \p array1d_view.
      *  \return begin() + size().
      */
     iterator end(void) const;
 
-    /*! Returns the number of elements in this array1d_view.
+    /*! Returns the number of elements in this \p array1d_view.
      */
     size_type size(void) const;
 
     /*! Returns the number of elements which have been reserved in this
-     *  array1d_view.
+     *  \p array1d_view.
      */
     size_type capacity(void) const;
 
@@ -457,7 +456,7 @@ public :
     //     return &front();
     // }
 
-    /*! \brief Resizes this array1d_view to the specified number of elements.
+    /*! \brief Resizes this \p array1d_view to the specified number of elements.
      *  \param new_size Number of elements this array1d_view should contain.
      *  \throw std::length_error If n exceeds max_size9).
      *
@@ -470,7 +469,7 @@ public :
     /*! Extract a small vector from a \p array1d_view vector.
      *  \param start_index The starting index of the sub-array.
      *  \param num_entries The number of entries in the sub-array.
-     *  \return array1d_view containing elements [start_index,...,start_index+num_entries)
+     *  \return \p array1d_view containing elements [start_index,...,start_index+num_entries)
      *
      * \code
      * // include cusp array1d header file
@@ -518,8 +517,8 @@ protected:
  * \tparam ValueType counting array element type.
  *
  * \par Overview
- * The counting_array view is a simple wrapper around the fancy thrust
- * counting_iterator iterator.
+ * The \p counting_array view is a simple wrapper around
+ * thrust::counting_iterator.
  * \see http://thrust.github.io/doc/classthrust_1_1counting__iterator.html
  *
  * \par Example
@@ -574,8 +573,8 @@ public:
  * \tparam ValueType constant array element type.
  *
  * \par Overview
- * The constant_array view is a simple wrapper around the fancy thrust
- * constant_iterator iterator.
+ * The \p constant_array view is a simple wrapper around
+ * constant_iterator.
  * \see http://thrust.github.io/doc/classthrust_1_1constant__iterator.html
  *
  * \par Example
@@ -619,12 +618,12 @@ public:
 };
 
 /**
- *  This is a convenience function for generating an array1d_view
+ *  This is a convenience function for generating an \p array1d_view
  *  using iterators
  *  \tparam Iterator iterator type of copy elements
  *  \param first The beginning of the range.
  *  \param last The end of the range.
- *  \return array1d_view constructed using Iterator
+ *  \return \p array1d_view constructed using Iterator
  */
 template <typename Iterator>
 array1d_view<Iterator> make_array1d_view(Iterator first, Iterator last)
@@ -633,12 +632,12 @@ array1d_view<Iterator> make_array1d_view(Iterator first, Iterator last)
 }
 
 /**
- *  This is a convenience function for generating an array1d_view
- *  using an array1d
+ *  This is a convenience function for generating an \p array1d_view
+ *  using an \p array1d
  *  \tparam T value_type of the array
  *  \tparam MemorySpace memory space of the array (cusp::host_memory or cusp::device_memory)
- *  \param v The array1d used to construct array1d_view
- *  \return array1d_view constructed using input array1d
+ *  \param v The \p array1d used to construct \p array1d_view
+ *  \return \p array1d_view constructed using input \p array1d
  */
 template <typename T, typename MemorySpace>
 typename array1d<T,MemorySpace>::view make_array1d_view(array1d<T,MemorySpace>& v)
@@ -661,12 +660,12 @@ typename array1d_view<Iterator>::view make_array1d_view(array1d_view<Iterator>& 
 }
 
 /**
- *  This is a convenience function for generating an array1d_view
- *  using an array1d
+ *  This is a convenience function for generating an \p array1d_view
+ *  using an \p array1d
  *  \tparam T value_type of the array
  *  \tparam MemorySpace memory space of the array (cusp::host_memory or cusp::device_memory)
- *  \param v The array1d used to construct array1d_view
- *  \return constant array1d_view constructed using input array1d
+ *  \param v The \p array1d used to construct \p array1d_view
+ *  \return constant \p array1d_view constructed using input \p array1d
  */
 template <typename T, typename MemorySpace>
 typename array1d<T,MemorySpace>::const_view make_array1d_view(const array1d<T,MemorySpace>& v)
