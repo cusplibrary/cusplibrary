@@ -24,6 +24,109 @@ namespace cusp
 {
 
 template <typename ValueType>
+template <typename VectorType>
+monitor<ValueType>
+::monitor(const VectorType& b, size_t iteration_limit = 500, Real relative_tolerance = 1e-5, Real absolute_tolerance = 0, bool verbose = false)
+    : b_norm(cusp::blas::nrm2(b)),
+      r_norm(std::numeric_limits<Real>::max()),
+      iteration_limit_(iteration_limit),
+      iteration_count_(0),
+      relative_tolerance_(relative_tolerance),
+      absolute_tolerance_(absolute_tolerance),
+      verbose(verbose)
+{
+      if(verbose) {
+          std::cout << "Solver will continue until ";
+          std::cout << "residual norm " << relative_tolerance << " or reaching ";
+          std::cout << iteration_limit << " iterations " << std::endl;
+          std::cout << "  Iteration Number  | Residual Norm" << std::endl;
+      }
+      residuals.reserve(iteration_limit);
+}
+
+template <typename ValueType>
+void
+monitor<ValueType>
+::operator++(void) const
+{
+    return ++iteration_count_;
+}
+
+template <typename ValueType>
+bool
+monitor<ValueType>
+::converged(void) const
+{
+    return residual_norm() <= tolerance();
+}
+
+template <typename ValueType>
+typename monitor<ValueType>::Real
+monitor<ValueType>
+::residual_norm(void) const
+{
+    return r_norm;
+}
+
+template <typename ValueType>
+size_t
+monitor<ValueType>
+::iteration_count(void) const
+{
+    return iteration_count_;
+}
+
+template <typename ValueType>
+size_t
+monitor<ValueType>
+::iteration_limit(void) const
+{
+    return iteration_limit_;
+}
+
+template <typename ValueType>
+typename monitor<ValueType>::Real
+monitor<ValueType>
+::relative_tolerance(void) const
+{
+    return relative_tolerance_;
+}
+
+template <typename ValueType>
+typename monitor<ValueType>::Real
+monitor<ValueType>
+::absolute_tolerance(void) const
+{
+    return absolute_tolerance_;
+}
+
+template <typename ValueType>
+typename monitor<ValueType>::Real
+monitor<ValueType>
+::tolerance(void) const
+{
+    return absolute_tolerance() + relative_tolerance() * b_norm;
+}
+
+template <typename ValueType>
+void monitor<ValueType>
+::set_verbose(bool verbose)
+{
+  verbose = verbose_;
+}
+
+template <typename ValueType>
+template <typename Vector>
+void monitor<ValueType>
+::reset(const Vector& b)
+{
+    b_norm = cusp::blas::nrm2(b);
+    r_norm = std::numeric_limits<Real>::max();
+    iteration_count_ = 0;
+    residuals.resize(0);
+}
+
+template <typename ValueType>
 void monitor<ValueType>
 ::print(void)
 {

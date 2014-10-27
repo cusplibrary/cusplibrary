@@ -32,12 +32,13 @@ namespace cusp
 
 /*! \p transpose : transpose a matrix
  *
- * \param A input matrix
- * \param At output matrix (transpose of A)
- *
  * \tparam MatrixType1 matrix
  * \tparam MatrixType2 matrix
  *
+ * \param A input matrix
+ * \param At output matrix (transpose of A)
+ *
+ * \par Example
  *  The following code snippet demonstrates how to use \p transpose.
  *
  *  \code
