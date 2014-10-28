@@ -26,8 +26,8 @@ namespace cusp
 {
 namespace krylov
 {
-/*! \addtogroup iterative_solvers Iterative Solvers
- *  \addtogroup krylov_methods Krylov Methods
+/*! \addtogroup iterative_solvers iterative solvers
+ *  \addtogroup krylov_methods krylov methods
  *  \ingroup iterative_solvers
  *  \{
  */
@@ -60,8 +60,8 @@ void bicg(LinearOperator& A,
  *
  * Solves the linear system A x = b with preconditioner \p M.
  *
- * \param A matrix of the linear system 
- * \param At conjugate tranpose of the matrix of the linear system 
+ * \param A matrix of the linear system
+ * \param At conjugate tranpose of the matrix of the linear system
  * \param x approximate solution of the linear system
  * \param b right-hand side of the linear system
  * \param monitor montiors iteration and determines stopping conditions
@@ -73,7 +73,7 @@ void bicg(LinearOperator& A,
  * \tparam Monitor is a monitor such as \p default_monitor or \p verbose_monitor
  * \tparam Preconditioner is a matrix or subclass of \p linear_operator
  *
- *  The following code snippet demonstrates how to use \p bicg to 
+ *  The following code snippet demonstrates how to use \p bicg to
  *  solve a 10x10 Poisson problem.
  *
  *  \code
@@ -81,7 +81,7 @@ void bicg(LinearOperator& A,
  *  #include <cusp/monitor.h>
  *  #include <cusp/krylov/bicg.h>
  *  #include <cusp/gallery/poisson.h>
- *  
+ *
  *  int main(void)
  *  {
  *      // create an empty sparse matrix structure (CSR format)
@@ -111,8 +111,7 @@ void bicg(LinearOperator& A,
  *  }
  *  \endcode
  *
- *  \see \p default_monitor
- *  \see \p verbose_monitor
+ *  \see \p monitor
  */
 template <class LinearOperator,
           class Vector,

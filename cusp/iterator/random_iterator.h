@@ -24,49 +24,13 @@
 namespace cusp
 {
 
-// Integer hash functions
-template <typename IndexType, typename T>
-struct random_integer_functor : public thrust::unary_function<IndexType,T>
+/*! \cond */
+namespace detail
 {
-    size_t seed;
-
-    random_integer_functor(const size_t seed)
-        : seed(seed) {}
-
-    // source: http://www.concentric.net/~ttwang/tech/inthash.htm
-    __host__ __device__
-    T hash(const IndexType i, thrust::detail::false_type) const
-    {
-        unsigned int h = (unsigned int) i ^ (unsigned int) seed;
-        h = ~h + (h << 15);
-        h =  h ^ (h >> 12);
-        h =  h + (h <<  2);
-        h =  h ^ (h >>  4);
-        h =  h + (h <<  3) + (h << 11);
-        h =  h ^ (h >> 16);
-        return T(h);
-    }
-
-    __host__ __device__
-    T hash(const IndexType i, thrust::detail::true_type) const
-    {
-        unsigned long long h = (unsigned long long) i ^ (unsigned long long) seed;
-        h = ~h + (h << 21);
-        h =  h ^ (h >> 24);
-        h = (h + (h <<  3)) + (h << 8);
-        h =  h ^ (h >> 14);
-        h = (h + (h <<  2)) + (h << 4);
-        h =  h ^ (h >> 28);
-        h =  h + (h << 31);
-        return T(h);
-    }
-
-    __host__ __device__
-    T operator()(const IndexType i) const
-    {
-        return hash(i, typename thrust::detail::integral_constant<bool, sizeof(IndexType) == 8 || sizeof(T) == 8>::type());
-    }
-};
+  // Forward definition
+  template<typename,typename> struct random_integer_functor;
+} // end detail
+/*! \endcond */
 
 /*! \addtogroup iterators
  *  \{
@@ -108,6 +72,7 @@ class random_iterator
 {
 public:
 
+    /*! \cond */
     typedef T                                                                            value_type;
     typedef T*                                                                           pointer;
     typedef T&                                                                           reference;
@@ -116,12 +81,13 @@ public:
     typedef thrust::random_access_traversal_tag                                          iterator_category;
 
     typedef std::ptrdiff_t                                                               IndexType;
-    typedef random_integer_functor<IndexType,T>                                          IndexFunctor;
+    typedef detail::random_integer_functor<IndexType,T>                                  IndexFunctor;
     typedef typename thrust::counting_iterator<IndexType>                                RandomCountingIterator;
     typedef typename thrust::transform_iterator<IndexFunctor, RandomCountingIterator, T> RandomTransformIterator;
 
     // type of the random_range iterator
     typedef RandomTransformIterator                                                      iterator;
+    /*! \endcond */
 
     IndexFunctor index_func;
 

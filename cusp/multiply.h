@@ -26,6 +26,7 @@ namespace cusp
 {
 
 /*! \addtogroup algorithms Algorithms
+ *  \addtogroup matrix_algorithms Matrix Algorithms
  *  \ingroup algorithms
  *  \{
  */

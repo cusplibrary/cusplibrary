@@ -27,11 +27,13 @@ namespace cusp
 namespace graph
 {
 /*! \addtogroup algorithms Algorithms
+ *  \addtogroup graph_algorithms Graph Algorithms
+ *  \brief Generic algorithms for processing graphs represented in CSR and COO formats
  *  \ingroup algorithms
  *  \{
  */
 
-/*! \p breadth_first_search : Performs a Breadth-first traversal of a graph 
+/*! \p breadth_first_search : Performs a Breadth-first traversal of a graph
  * starting from a given source vertex.
  *
  * \param A symmetric matrix that represents a graph

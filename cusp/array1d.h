@@ -339,7 +339,7 @@ public:
  * int main()
  * {
  *   // Define the container type
- *   typedef cusp::array1d<int, cusp::device_memory Array;
+ *   typedef cusp::array1d<int, cusp::device_memory> Array;
  *
  *   // Get reference to array view type
  *   typedef Array::view View;

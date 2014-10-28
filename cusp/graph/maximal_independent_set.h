@@ -27,6 +27,7 @@ namespace cusp
 namespace graph
 {
 /*! \addtogroup algorithms Algorithms
+ *  \addtogroup graph_algorithms Graph
  *  \ingroup algorithms
  *  \{
  */
@@ -38,7 +39,7 @@ namespace graph
  * of the MIS with the property that no two vertices in the set are joined
  * by a path of \p k edges or less.  The standard MIS is therefore a MIS(1).
  *
- * The MIS(k) is represented by an array of {0,1} values.  Specifically,  
+ * The MIS(k) is represented by an array of {0,1} values.  Specifically,
  * <tt>stencil[i]</tt> is 1 if vertex \p i is a member of the MIS(k) and
  * 0 otherwise.
  *
@@ -49,9 +50,8 @@ namespace graph
  * \tparam Matrix matrix
  * \tparam Array array
  *
- *  \see http://en.wikipedia.org/wiki/Maximal_independent_set
+ * \see http://en.wikipedia.org/wiki/Maximal_independent_set
  */
-    
 template <typename Matrix, typename Array>
 size_t maximal_independent_set(const Matrix& A, Array& stencil, size_t k = 1);
 

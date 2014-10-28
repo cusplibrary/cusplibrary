@@ -27,6 +27,7 @@ namespace cusp
 namespace graph
 {
 /*! \addtogroup algorithms Algorithms
+ *  \addtogroup graph_algorithms Graph Algorithms
  *  \ingroup algorithms
  *  \{
  */

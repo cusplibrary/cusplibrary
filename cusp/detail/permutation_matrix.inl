@@ -46,9 +46,10 @@ template <typename MatrixType>
 void permutation_matrix<ValueType,MemorySpace,IndexType>
 ::symmetric_permute(MatrixType& A)
 {
-    typedef typename MatrixType::value_type ValueType;
+    typedef typename MatrixType::index_type IndexType2;
+    typedef typename MatrixType::value_type ValueType2;
 
-    cusp::coo_matrix<IndexType,ValueType,MemorySpace> B(A);
+    cusp::coo_matrix<IndexType2,ValueType2,MemorySpace> B(A);
 
     // reorder rows and column according to permutation
     thrust::gather(B.row_indices.begin(), B.row_indices.end(), permutation.begin(), B.row_indices.begin());
@@ -80,9 +81,10 @@ void
 permutation_matrix_view<Array,ValueType,MemorySpace,IndexType>
 ::symmetric_permute(MatrixType& A)
 {
-    typedef typename MatrixType::value_type ValueType;
+    typedef typename MatrixType::index_type IndexType2;
+    typedef typename MatrixType::value_type ValueType2;
 
-    cusp::coo_matrix<IndexType,ValueType,MemorySpace> B(A);
+    cusp::coo_matrix<IndexType2,ValueType2,MemorySpace> B(A);
 
     // reorder rows and column according to permutation
     thrust::gather(B.row_indices.begin(), B.row_indices.end(), permutation.begin(), B.row_indices.begin());
