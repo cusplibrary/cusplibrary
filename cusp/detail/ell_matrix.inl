@@ -14,6 +14,7 @@
  *  limitations under the License.
  */
 
+#include <cusp/array2d.h>
 #include <cusp/convert.h>
 #include <cusp/detail/utils.h>
 
@@ -23,6 +24,17 @@ namespace cusp
 //////////////////
 // Constructors //
 //////////////////
+
+template <typename IndexType, typename ValueType, class MemorySpace>
+ell_matrix<IndexType,ValueType,MemorySpace>
+::ell_matrix(const size_t num_rows, const size_t num_cols, const size_t num_entries,
+             const size_t num_entries_per_row, const size_t alignment)
+    : Parent(num_rows, num_cols, num_entries)
+{
+    // TODO use array2d constructor when it can accept pitch
+    column_indices.resize(num_rows, num_entries_per_row, cusp::detail::round_up(num_rows, alignment));
+    values.resize        (num_rows, num_entries_per_row, cusp::detail::round_up(num_rows, alignment));
+}
 
 // construct from a different matrix
 template <typename IndexType, typename ValueType, class MemorySpace>
@@ -36,6 +48,38 @@ ell_matrix<IndexType,ValueType,MemorySpace>
 //////////////////////
 // Member Functions //
 //////////////////////
+
+template <typename IndexType, typename ValueType, class MemorySpace>
+void
+ell_matrix<IndexType,ValueType,MemorySpace>
+::swap(ell_matrix& matrix)
+{
+    Parent::swap(matrix);
+    column_indices.swap(matrix.column_indices);
+    values.swap(matrix.values);
+}
+
+template <typename IndexType, typename ValueType, class MemorySpace>
+void
+ell_matrix<IndexType,ValueType,MemorySpace>
+::resize(const size_t num_rows, const size_t num_cols, const size_t num_entries,
+         const size_t num_entries_per_row)
+{
+    Parent::resize(num_rows, num_cols, num_entries);
+    column_indices.resize(num_rows, num_entries_per_row);
+    values.resize(num_rows, num_entries_per_row);
+}
+
+template <typename IndexType, typename ValueType, class MemorySpace>
+void
+ell_matrix<IndexType,ValueType,MemorySpace>
+::resize(const size_t num_rows, const size_t num_cols, const size_t num_entries,
+         const size_t num_entries_per_row, const size_t alignment)
+{
+    Parent::resize(num_rows, num_cols, num_entries);
+    column_indices.resize(num_rows, num_entries_per_row, cusp::detail::round_up(num_rows, alignment));
+    values.resize        (num_rows, num_entries_per_row, cusp::detail::round_up(num_rows, alignment));
+}
 
 // assignment from another matrix
 template <typename IndexType, typename ValueType, class MemorySpace>

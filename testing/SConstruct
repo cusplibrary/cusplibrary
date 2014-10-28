@@ -47,6 +47,10 @@ if 'tests' in env:
 
   sources = filtered_sources
 
+if 'single_test' in env:
+  filename = env['single_test']+'.cu'
+  sources = ['testframework.cu', filename]
+
 # add the directory containing this file to the include path
 this_file = inspect.currentframe().f_code.co_filename
 this_dir = os.path.dirname(this_file)

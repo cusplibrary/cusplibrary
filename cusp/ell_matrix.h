@@ -101,24 +101,29 @@ template <typename IndexType, typename ValueType, class MemorySpace>
 class ell_matrix : public cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::ell_format>
 {
 private:
+
     typedef cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::ell_format> Parent;
 
 public:
     /*! \cond */
-    typedef typename cusp::ell_matrix<IndexType, ValueType, MemorySpace> container;
     typedef typename cusp::array2d<IndexType, MemorySpace, cusp::column_major> column_indices_array_type;
     typedef typename cusp::array2d<ValueType, MemorySpace, cusp::column_major> values_array_type;
 
-    typedef typename cusp::ell_matrix_view<typename column_indices_array_type::view,
+    typedef typename cusp::ell_matrix<IndexType, ValueType, MemorySpace>       container;
+
+    typedef typename cusp::ell_matrix_view<
+            typename column_indices_array_type::view,
             typename values_array_type::view,
             IndexType, ValueType, MemorySpace> view;
 
-    typedef typename cusp::ell_matrix_view<typename column_indices_array_type::const_view,
+    typedef typename cusp::ell_matrix_view<
+            typename column_indices_array_type::const_view,
             typename values_array_type::const_view,
             IndexType, ValueType, MemorySpace> const_view;
 
     template<typename MemorySpace2>
-    struct rebind {
+    struct rebind
+    {
         typedef cusp::ell_matrix<IndexType, ValueType, MemorySpace2> type;
     };
     /*! \endcond */
@@ -138,7 +143,7 @@ public:
 
     /*! Construct an empty \p ell_matrix.
      */
-    ell_matrix() {}
+    ell_matrix(void) {}
 
     /*! Construct an \p ell_matrix with a specific shape, number of nonzero entries,
      *  and maximum number of nonzero entries per row.
@@ -149,14 +154,8 @@ public:
      *  \param num_entries_per_row Maximum number of nonzeros per row.
      *  \param alignment Amount of padding used to align the data structure (default 32).
      */
-    ell_matrix(size_t num_rows, size_t num_cols, size_t num_entries,
-               size_t num_entries_per_row, size_t alignment = 32)
-        : Parent(num_rows, num_cols, num_entries)
-    {
-        // TODO use array2d constructor when it can accept pitch
-        column_indices.resize(num_rows, num_entries_per_row, cusp::detail::round_up(num_rows, alignment));
-        values.resize        (num_rows, num_entries_per_row, cusp::detail::round_up(num_rows, alignment));
-    }
+    ell_matrix(const size_t num_rows, const size_t num_cols, const size_t num_entries,
+               const size_t num_entries_per_row, const size_t alignment = 32);
 
     /*! Construct an \p ell_matrix from another matrix.
      *
@@ -167,34 +166,19 @@ public:
 
     /*! Resize matrix dimensions and underlying storage
      */
-    void resize(size_t num_rows, size_t num_cols, size_t num_entries,
-                size_t num_entries_per_row)
-    {
-        Parent::resize(num_rows, num_cols, num_entries);
-        column_indices.resize(num_rows, num_entries_per_row);
-        values.resize(num_rows, num_entries_per_row);
-    }
+    void resize(const size_t num_rows, const size_t num_cols, const size_t num_entries,
+                const size_t num_entries_per_row);
 
     /*! Resize matrix dimensions and underlying storage
      */
-    void resize(size_t num_rows, size_t num_cols, size_t num_entries,
-                size_t num_entries_per_row, size_t alignment)
-    {
-        Parent::resize(num_rows, num_cols, num_entries);
-        column_indices.resize(num_rows, num_entries_per_row, cusp::detail::round_up(num_rows, alignment));
-        values.resize        (num_rows, num_entries_per_row, cusp::detail::round_up(num_rows, alignment));
-    }
+    void resize(const size_t num_rows, const size_t num_cols, const size_t num_entries,
+                const size_t num_entries_per_row, const size_t alignment);
 
     /*! Swap the contents of two \p ell_matrix objects.
      *
      *  \param matrix Another \p ell_matrix with the same IndexType and ValueType.
      */
-    void swap(ell_matrix& matrix)
-    {
-        Parent::swap(matrix);
-        column_indices.swap(matrix.column_indices);
-        values.swap(matrix.values);
-    }
+    void swap(ell_matrix& matrix);
 
     /*! Assignment from another matrix.
      *
@@ -305,11 +289,8 @@ make_ell_matrix_view(size_t num_rows,
                      Array1 column_indices,
                      Array2 values);
 
-template <typename Array1,
-         typename Array2,
-         typename IndexType,
-         typename ValueType,
-         typename MemorySpace>
+template <typename Array1, typename Array2, typename IndexType,
+          typename ValueType, typename MemorySpace>
 ell_matrix_view<Array1,Array2,IndexType,ValueType,MemorySpace>
 make_ell_matrix_view(const ell_matrix_view<Array1,Array2,IndexType,ValueType,MemorySpace>& m);
 
@@ -325,5 +306,4 @@ make_ell_matrix_view(const ell_matrix<IndexType,ValueType,MemorySpace>& m);
 
 } // end namespace cusp
 
-#include <cusp/array2d.h>
 #include <cusp/detail/ell_matrix.inl>

@@ -41,8 +41,14 @@ template <typename Matrix1, typename Matrix2, typename IndexType, typename Value
  *  \{
  */
 
-/*! \p hyb_matrix : Hybrid ELL/COO matrix container
+/*! \brief hyb_matrix represents a sparse matrix in hybrid ELL and COO
+ * container
  *
+ * \tparam IndexType Type used for matrix indices (e.g. \c int).
+ * \tparam ValueType Type used for matrix values (e.g. \c float).
+ * \tparam MemorySpace A memory space (e.g. \c cusp::host_memory or cusp::device_memory)
+ *
+ * \par Overview
  * The \p hyb_matrix is a combination of the \p ell_matrix and
  * \p coo_matrix formats.  Specifically, the \p hyb_matrix format
  * splits a matrix into two portions, one stored in ELL format
@@ -60,63 +66,70 @@ template <typename Matrix1, typename Matrix2, typename IndexType, typename Value
  * nonzeros per row in the ELL data structure and the remaining entries of
  * exceptional rows in the COO format.
  *
- * \tparam IndexType Type used for matrix indices (e.g. \c int).
- * \tparam ValueType Type used for matrix values (e.g. \c float).
- * \tparam MemorySpace A memory space (e.g. \c cusp::host_memory or cusp::device_memory)
- *
  * \note The \p ell_matrix entries must be sorted by column index.
  * \note The \p ell_matrix entries within each row should be shifted to the left.
  * \note The \p coo_matrix entries must be sorted by row index.
  * \note The matrix should not contain duplicate entries.
  *
+ * \par Example
  *  The following code snippet demonstrates how to create a \p hyb_matrix.
  *  In practice we usually do not construct the HYB format directly and
  *  instead convert from a simpler format such as (COO, CSR) into HYB.
  *
  *  \code
+ * // include hyb_matrix header file
  *  #include <cusp/hyb_matrix.h>
- *  ...
+ *  #include <cusp/print.h>
  *
- *  // allocate storage for (4,3) matrix with 8 nonzeros
- *  //     ELL portion has 5 nonzeros and storage for 2 nonzeros per row
- *  //     COO portion has 3 nonzeros
+ *  int main()
+ *  {
  *
- *  cusp::hyb_matrix<int, float, cusp::host_memory> A(3, 4, 5, 3, 2);
+ *    // allocate storage for (4,3) matrix with 8 nonzeros
+ *    //     ELL portion has 5 nonzeros and storage for 2 nonzeros per row
+ *    //     COO portion has 3 nonzeros
  *
- *  // Initialize A to represent the following matrix
- *  // [10  20  30  40]
- *  // [ 0  50   0   0]
- *  // [60   0  70  80]
+ *    cusp::hyb_matrix<int, float, cusp::host_memory> A(3, 4, 5, 3, 2);
  *
- *  // A is split into ELL and COO parts as follows
- *  // [10  20  30  40]    [10  20   0   0]     [ 0   0  30  40]
- *  // [ 0  50   0   0]  = [ 0  50   0   0]  +  [ 0   0   0   0]
- *  // [60   0  70  80]    [60   0  70   0]     [ 0   0   0  80]
+ *    // Initialize A to represent the following matrix
+ *    // [10  20  30  40]
+ *    // [ 0  50   0   0]
+ *    // [60   0  70  80]
+ *
+ *    // A is split into ELL and COO parts as follows
+ *    // [10  20  30  40]    [10  20   0   0]     [ 0   0  30  40]
+ *    // [ 0  50   0   0]  = [ 0  50   0   0]  +  [ 0   0   0   0]
+ *    // [60   0  70  80]    [60   0  70   0]     [ 0   0   0  80]
+ *
+ *    // Initialize ELL part
+ *
+ *    // X is used to fill unused entries in the ELL portion of the matrix
+ *    const int X = cusp::ell_matrix<int,float,cusp::host_memory>::invalid_index;
+ *
+ *    // first row
+ *    A.ell.column_indices(0,0) = 0; A.ell.values(0,0) = 10;
+ *    A.ell.column_indices(0,1) = 1; A.ell.values(0,1) = 20;
+ *
+ *    // second row
+ *    A.ell.column_indices(1,0) = 1; A.ell.values(1,0) = 50;  // shifted to leftmost position
+ *    A.ell.column_indices(1,1) = X; A.ell.values(1,1) =  0;  // padding
+ *
+ *    // third row
+ *    A.ell.column_indices(2,0) = 0; A.ell.values(2,0) = 60;
+ *    A.ell.column_indices(2,1) = 2; A.ell.values(2,1) = 70;  // shifted to leftmost position
  *
  *
- *  // Initialize ELL part
+ *    // Initialize COO part
+ *    A.coo.row_indices[0] = 0;  A.coo.column_indices[0] = 2;  A.coo.values[0] = 30;
+ *    A.coo.row_indices[1] = 0;  A.coo.column_indices[1] = 3;  A.coo.values[1] = 40;
+ *    A.coo.row_indices[2] = 2;  A.coo.column_indices[2] = 3;  A.coo.values[2] = 80;
  *
- *  // X is used to fill unused entries in the ELL portion of the matrix
- *  const int X = cusp::ell_matrix<int,float,cusp::host_memory>::invalid_index;
- *
- *  // first row
- *  A.ell.column_indices(0,0) = 0; A.ell.values(0,0) = 10;
- *  A.ell.column_indices(0,1) = 1; A.ell.values(0,1) = 20;
- *
- *  // second row
- *  A.ell.column_indices(1,0) = 1; A.ell.values(1,0) = 50;  // shifted to leftmost position
- *  A.ell.column_indices(1,1) = X; A.ell.values(1,1) =  0;  // padding
- *
- *  // third row
- *  A.ell.column_indices(2,0) = 0; A.ell.values(2,0) = 60;
- *  A.ell.column_indices(2,1) = 2; A.ell.values(2,1) = 70;  // shifted to leftmost position
- *
- *
- *  // Initialize COO part
- *  A.coo.row_indices[0] = 0;  A.coo.column_indices[0] = 2;  A.coo.values[0] = 30;
- *  A.coo.row_indices[1] = 0;  A.coo.column_indices[1] = 3;  A.coo.values[1] = 40;
- *  A.coo.row_indices[2] = 2;  A.coo.column_indices[2] = 3;  A.coo.values[2] = 80;
- *
+ *    // print the ELL portion
+ *    cusp::print(A.ell);
+ *    // print the COO portion
+ *    cusp::print(A.coo);
+ *    // print the aggregate
+ *    cusp::print(A);
+ *  }
  *  \endcode
  *
  *  \see \p ell_matrix
@@ -125,38 +138,32 @@ template <typename Matrix1, typename Matrix2, typename IndexType, typename Value
 template <typename IndexType, typename ValueType, class MemorySpace>
 class hyb_matrix : public cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::hyb_format>
 {
-    typedef cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::hyb_format> Parent;
-public:
-    /*! rebind matrix to a different MemorySpace
-     */
-    template<typename MemorySpace2>
-    struct rebind {
-        typedef cusp::hyb_matrix<IndexType, ValueType, MemorySpace2> type;
-    };
+private:
 
-    /*! equivalent container type
-     */
+    typedef cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::hyb_format> Parent;
+
+public:
+
+    /*! \cond */
+    typedef cusp::ell_matrix<IndexType,ValueType,MemorySpace> ell_matrix_type;
+    typedef cusp::coo_matrix<IndexType,ValueType,MemorySpace> coo_matrix_type;
+
     typedef typename cusp::hyb_matrix<IndexType, ValueType, MemorySpace> container;
 
-    /*! equivalent view type
-     */
     typedef typename cusp::hyb_matrix_view<typename cusp::ell_matrix<IndexType,ValueType,MemorySpace>::view,
             typename cusp::coo_matrix<IndexType,ValueType,MemorySpace>::view,
             IndexType, ValueType, MemorySpace> view;
 
-    /*! equivalent const_view type
-     */
     typedef typename cusp::hyb_matrix_view<typename cusp::ell_matrix<IndexType,ValueType,MemorySpace>::const_view,
             typename cusp::coo_matrix<IndexType,ValueType,MemorySpace>::const_view,
             IndexType, ValueType, MemorySpace> const_view;
 
-    /*! type of \p ELL portion of the HYB structure
-     */
-    typedef cusp::ell_matrix<IndexType,ValueType,MemorySpace> ell_matrix_type;
-
-    /*! type of \p COO portion of the HYB structure
-     */
-    typedef cusp::coo_matrix<IndexType,ValueType,MemorySpace> coo_matrix_type;
+    template<typename MemorySpace2>
+    struct rebind
+    {
+        typedef cusp::hyb_matrix<IndexType, ValueType, MemorySpace2> type;
+    };
+    /*! \endcond */
 
     /*! Storage for the \p ell_matrix portion.
      */
@@ -168,7 +175,7 @@ public:
 
     /*! Construct an empty \p hyb_matrix.
      */
-    hyb_matrix() {}
+    hyb_matrix(void) {}
 
     /*! Construct a \p hyb_matrix with a specific shape and separation into ELL and COO portions.
      *
@@ -249,23 +256,19 @@ template <typename Matrix1,
          typename MemorySpace = typename cusp::minimum_space<typename Matrix1::memory_space, typename Matrix2::memory_space>::type >
 class hyb_matrix_view : public cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::hyb_format>
 {
-    typedef cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::hyb_format> Parent;
-public:
-    /*! type of \p ELL portion of the HYB structure
-     */
-    typedef Matrix1 ell_matrix_type;
+private:
 
-    /*! type of \p COO portion of the HYB structure
-     */
+    typedef cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::hyb_format> Parent;
+
+public:
+
+    /*! \cond */
+    typedef Matrix1 ell_matrix_type;
     typedef Matrix2 coo_matrix_type;
 
-    /*! equivalent container type
-     */
     typedef typename cusp::hyb_matrix<IndexType, ValueType, MemorySpace> container;
-
-    /*! equivalent view type
-     */
     typedef typename cusp::hyb_matrix_view<Matrix1, Matrix2, IndexType, ValueType, MemorySpace> view;
+    /*! \endcond */
 
     /*! View to the \p ELL portion of the HYB structure.
      */

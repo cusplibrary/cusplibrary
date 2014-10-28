@@ -118,27 +118,34 @@ template <typename Array1, typename Array2, typename IndexType, typename ValueTy
 template <typename IndexType, typename ValueType, class MemorySpace>
 class dia_matrix : public cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::dia_format>
 {
+private:
+
     typedef cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::dia_format> Parent;
+
 public:
     // TODO statically assert is_signed<IndexType>
 
     /*! \cond */
-    template<typename MemorySpace2>
-    struct rebind {
-        typedef cusp::dia_matrix<IndexType, ValueType, MemorySpace2> type;
-    };
-
     typedef typename cusp::array1d<IndexType, MemorySpace>                     diagonal_offsets_array_type;
     typedef typename cusp::array2d<ValueType, MemorySpace, cusp::column_major> values_array_type;
-    typedef typename cusp::dia_matrix<IndexType, ValueType, MemorySpace> container;
 
-    typedef typename cusp::dia_matrix_view<typename diagonal_offsets_array_type::view,
+    typedef typename cusp::dia_matrix<IndexType, ValueType, MemorySpace>       container;
+
+    typedef typename cusp::dia_matrix_view<
+            typename diagonal_offsets_array_type::view,
             typename values_array_type::view,
             IndexType, ValueType, MemorySpace> view;
 
-    typedef typename cusp::dia_matrix_view<typename diagonal_offsets_array_type::const_view,
+    typedef typename cusp::dia_matrix_view<
+            typename diagonal_offsets_array_type::const_view,
             typename values_array_type::const_view,
             IndexType, ValueType, MemorySpace> const_view;
+
+    template<typename MemorySpace2>
+    struct rebind
+    {
+        typedef cusp::dia_matrix<IndexType, ValueType, MemorySpace2> type;
+    };
     /*! \endcond */
 
     /*! Storage for the diagonal offsets.
@@ -151,7 +158,7 @@ public:
 
     /*! Construct an empty \p dia_matrix.
      */
-    dia_matrix() {}
+    dia_matrix(void) {}
 
     /*! Construct a \p dia_matrix with a specific shape, number of nonzero entries,
      *  and number of occupied diagonals.
@@ -162,14 +169,8 @@ public:
      *  \param num_diagonals Number of occupied diagonals.
      *  \param alignment Amount of padding used to align the data structure (default 32).
      */
-    dia_matrix(size_t num_rows, size_t num_cols, size_t num_entries,
-               size_t num_diagonals, size_t alignment = 32)
-        : Parent(num_rows, num_cols, num_entries),
-          diagonal_offsets(num_diagonals)
-    {
-        // TODO use array2d constructor when it can accept pitch
-        values.resize(num_rows, num_diagonals, cusp::detail::round_up(num_rows, alignment));
-    }
+    dia_matrix(const size_t num_rows, const size_t num_cols, const size_t num_entries,
+               const size_t num_diagonals, const size_t alignment = 32);
 
     /*! Construct a \p dia_matrix from another matrix.
      *
@@ -180,34 +181,19 @@ public:
 
     /*! Resize matrix dimensions and underlying storage
      */
-    void resize(size_t num_rows, size_t num_cols, size_t num_entries,
-                size_t num_diagonals)
-    {
-        Parent::resize(num_rows, num_cols, num_entries);
-        diagonal_offsets.resize(num_diagonals);
-        values.resize(num_rows, num_diagonals);
-    }
+    void resize(const size_t num_rows, const size_t num_cols, const size_t num_entries,
+                const size_t num_diagonals);
 
     /*! Resize matrix dimensions and underlying storage
      */
-    void resize(size_t num_rows, size_t num_cols, size_t num_entries,
-                size_t num_diagonals, size_t alignment)
-    {
-        Parent::resize(num_rows, num_cols, num_entries);
-        diagonal_offsets.resize(num_diagonals);
-        values.resize(num_rows, num_diagonals, cusp::detail::round_up(num_rows, alignment));
-    }
+    void resize(const size_t num_rows, const size_t num_cols, const size_t num_entries,
+                const size_t num_diagonals, const size_t alignment);
 
     /*! Swap the contents of two \p dia_matrix objects.
      *
      *  \param matrix Another \p dia_matrix with the same IndexType and ValueType.
      */
-    void swap(dia_matrix& matrix)
-    {
-        Parent::swap(matrix);
-        diagonal_offsets.swap(matrix.diagonal_offsets);
-        values.swap(matrix.values);
-    }
+    void swap(dia_matrix& matrix);
 
     /*! Assignment from another matrix.
      *
@@ -240,23 +226,17 @@ template <typename Array1,
          typename MemorySpace = typename cusp::minimum_space<typename Array1::memory_space, typename Array2::memory_space>::type >
 class dia_matrix_view : public cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::dia_format>
 {
+private:
+
     typedef cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::dia_format> Parent;
+
 public:
-    /*! type of \c diagonal_offsets array
-     */
+    /*! \cond */
     typedef Array1 diagonal_offsets_array_type;
-
-    /*! type of \c column_indices array
-     */
     typedef Array2 values_array_type;
-
-    /*! equivalent container type
-     */
     typedef typename cusp::dia_matrix<IndexType, ValueType, MemorySpace> container;
-
-    /*! equivalent view type
-     */
     typedef typename cusp::dia_matrix_view<Array1, Array2, IndexType, ValueType, MemorySpace> view;
+    /*! \endcond */
 
     /*! Storage for the diagonal offsets.
      */
@@ -268,30 +248,38 @@ public:
 
     /*! Construct an empty \p dia_matrix_view.
      */
-    dia_matrix_view() {}
+    dia_matrix_view(void) {}
 
     template <typename OtherArray1, typename OtherArray2>
     dia_matrix_view(size_t num_rows, size_t num_cols, size_t num_entries,
                     OtherArray1& diagonal_offsets, OtherArray2& values)
-        : Parent(num_rows, num_cols, num_entries), diagonal_offsets(diagonal_offsets), values(values) {}
+        : Parent(num_rows, num_cols, num_entries),
+          diagonal_offsets(diagonal_offsets),
+          values(values) {}
 
     template <typename OtherArray1, typename OtherArray2>
     dia_matrix_view(size_t num_rows, size_t num_cols, size_t num_entries,
                     const OtherArray1& diagonal_offsets, const OtherArray2& values)
-        : Parent(num_rows, num_cols, num_entries), diagonal_offsets(diagonal_offsets), values(values) {}
+        : Parent(num_rows, num_cols, num_entries),
+          diagonal_offsets(diagonal_offsets),
+          values(values) {}
 
     template <typename Matrix>
     dia_matrix_view(Matrix& A)
-        : Parent(A), diagonal_offsets(A.diagonal_offsets), values(A.values) {}
+        : Parent(A),
+          diagonal_offsets(A.diagonal_offsets),
+          values(A.values) {}
 
     template <typename Matrix>
     dia_matrix_view(const Matrix& A)
-        : Parent(A), diagonal_offsets(A.diagonal_offsets), values(A.values) {}
+        : Parent(A),
+          diagonal_offsets(A.diagonal_offsets),
+          values(A.values) {}
 
     /*! Resize matrix dimensions and underlying storage
      */
-    void resize(size_t num_rows, size_t num_cols, size_t num_entries,
-                size_t num_diagonals)
+    void resize(const size_t num_rows, const size_t num_cols, const size_t num_entries,
+                const size_t num_diagonals)
     {
         Parent::resize(num_rows, num_cols, num_entries);
         diagonal_offsets.resize(num_diagonals);
@@ -300,8 +288,8 @@ public:
 
     /*! Resize matrix dimensions and underlying storage
      */
-    void resize(size_t num_rows, size_t num_cols, size_t num_entries,
-                size_t num_diagonals, size_t alignment)
+    void resize(const size_t num_rows, const size_t num_cols, const size_t num_entries,
+                const size_t num_diagonals, const size_t alignment)
     {
         Parent::resize(num_rows, num_cols, num_entries);
         diagonal_offsets.resize(num_diagonals);

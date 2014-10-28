@@ -106,9 +106,7 @@ public:
 
     /*! \cond */
     typedef typename cusp::array1d<IndexType, MemorySpace> row_indices_array_type;
-
     typedef typename cusp::array1d<IndexType, MemorySpace> column_indices_array_type;
-
     typedef typename cusp::array1d<ValueType, MemorySpace> values_array_type;
 
     typedef typename cusp::coo_matrix<IndexType, ValueType, MemorySpace> container;
@@ -124,7 +122,8 @@ public:
             IndexType, ValueType, MemorySpace> const_view;
 
     template<typename MemorySpace2>
-    struct rebind {
+    struct rebind
+    {
         typedef cusp::coo_matrix<IndexType, ValueType, MemorySpace2> type;
     };
     /*! \endcond */
@@ -151,9 +150,11 @@ public:
      *  \param num_cols Number of columns.
      *  \param num_entries Number of nonzero matrix entries.
      */
-    coo_matrix(size_t num_rows, size_t num_cols, size_t num_entries)
+    coo_matrix(const size_t num_rows, const size_t num_cols, const size_t num_entries)
         : Parent(num_rows, num_cols, num_entries),
-          row_indices(num_entries), column_indices(num_entries), values(num_entries) {}
+          row_indices(num_entries),
+          column_indices(num_entries),
+          values(num_entries) {}
 
     /*! Construct a \p coo_matrix from another matrix.
      *
@@ -164,25 +165,13 @@ public:
 
     /*! Resize matrix dimensions and underlying storage
      */
-    void resize(size_t num_rows, size_t num_cols, size_t num_entries)
-    {
-        Parent::resize(num_rows, num_cols, num_entries);
-        row_indices.resize(num_entries);
-        column_indices.resize(num_entries);
-        values.resize(num_entries);
-    }
+    void resize(size_t num_rows, size_t num_cols, size_t num_entries);
 
     /*! Swap the contents of two \p coo_matrix objects.
      *
      *  \param matrix Another \p coo_matrix with the same IndexType and ValueType.
      */
-    void swap(coo_matrix& matrix)
-    {
-        Parent::swap(matrix);
-        row_indices.swap(matrix.row_indices);
-        column_indices.swap(matrix.column_indices);
-        values.swap(matrix.values);
-    }
+    void swap(coo_matrix& matrix);
 
     /*! Assignment from another matrix.
      *

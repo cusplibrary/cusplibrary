@@ -242,6 +242,9 @@ def Environment():
   # add a variable to filter source files by a regex
   vars.Add('tests', help='Filter test files using a regex')
 
+  # add a variable to execute tests for a single file
+  vars.Add('single_test', help='Test a single file')
+
   # add a variable to handle the host sparse BLAS backend
   hostspblas_variable = EnumVariable('hostspblas', 'Host sparse math library', 'cusp',
                                   allowed_values = ('cusp', 'mkl'))

@@ -168,14 +168,11 @@ void
 array2d_view<ArrayView,Orientation>
 ::resize(const size_t num_rows, const size_t num_cols)
 {
-    if (pitch < cusp::detail::minor_dimension(num_rows, num_cols, orientation()))
-        throw cusp::invalid_input_exception("pitch cannot be less than minor dimension");
+    // preserve .pitch if possible
+    if (this->num_rows == num_rows && this->num_cols == num_cols)
+        return;
 
-    values.resize(pitch * cusp::detail::major_dimension(num_rows, num_cols, orientation()));
-
-    this->num_rows    = num_rows;
-    this->num_cols    = num_cols;
-    this->num_entries = num_rows * num_cols;
+    resize(num_rows, num_cols, cusp::detail::minor_dimension(num_rows, num_cols, orientation()));
 }
 
 template<typename ArrayView, class Orientation>

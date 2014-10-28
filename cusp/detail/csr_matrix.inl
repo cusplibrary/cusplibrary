@@ -36,6 +36,28 @@ csr_matrix<IndexType,ValueType,MemorySpace>
 // Member Functions //
 //////////////////////
 
+template <typename IndexType, typename ValueType, class MemorySpace>
+void
+csr_matrix<IndexType,ValueType,MemorySpace>
+::resize(const size_t num_rows, const size_t num_cols, const size_t num_entries)
+{
+    Parent::resize(num_rows, num_cols, num_entries);
+    row_offsets.resize(num_rows + 1);
+    column_indices.resize(num_entries);
+    values.resize(num_entries);
+}
+
+template <typename IndexType, typename ValueType, class MemorySpace>
+void
+csr_matrix<IndexType,ValueType,MemorySpace>
+::swap(csr_matrix& matrix)
+{
+    Parent::swap(matrix);
+    row_offsets.swap(matrix.row_offsets);
+    column_indices.swap(matrix.column_indices);
+    values.swap(matrix.values);
+}
+
 // assignment from another matrix
 template <typename IndexType, typename ValueType, class MemorySpace>
 template <typename MatrixType>
@@ -46,6 +68,20 @@ csr_matrix<IndexType,ValueType,MemorySpace>
     cusp::convert(matrix, *this);
 
     return *this;
+}
+
+
+// construct from a different matrix
+template <typename ArrayType1,typename ArrayType2,typename ArrayType3,
+          typename IndexType, typename ValueType, typename MemorySpace>
+void
+csr_matrix_view<ArrayType1,ArrayType2,ArrayType3,IndexType,ValueType,MemorySpace>
+::resize(const size_t num_rows, const size_t num_cols, const size_t num_entries)
+{
+    Parent::resize(num_rows, num_cols, num_entries);
+    row_offsets.resize(num_rows + 1);
+    column_indices.resize(num_entries);
+    values.resize(num_entries);
 }
 
 } // end namespace cusp

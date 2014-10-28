@@ -88,44 +88,35 @@ template <typename Array1, typename Array2, typename Array3, typename IndexType,
 template <typename IndexType, typename ValueType, class MemorySpace>
 class csr_matrix : public cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::csr_format>
 {
+private:
+
     typedef cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::csr_format> Parent;
+
 public:
-    /*! rebind matrix to a different MemorySpace
-     */
-    template<typename MemorySpace2>
-    struct rebind {
-        typedef cusp::csr_matrix<IndexType, ValueType, MemorySpace2> type;
-    };
 
-    /*! type of row offsets indices array
-     */
+    /*! \cond */
     typedef typename cusp::array1d<IndexType, MemorySpace> row_offsets_array_type;
-
-    /*! type of column indices array
-     */
     typedef typename cusp::array1d<IndexType, MemorySpace> column_indices_array_type;
-
-    /*! type of values array
-     */
     typedef typename cusp::array1d<ValueType, MemorySpace> values_array_type;
 
-    /*! equivalent container type
-     */
     typedef typename cusp::csr_matrix<IndexType, ValueType, MemorySpace> container;
 
-    /*! equivalent view type
-     */
     typedef typename cusp::csr_matrix_view<typename row_offsets_array_type::view,
             typename column_indices_array_type::view,
             typename values_array_type::view,
             IndexType, ValueType, MemorySpace> view;
 
-    /*! equivalent const_view type
-     */
     typedef typename cusp::csr_matrix_view<typename row_offsets_array_type::const_view,
             typename column_indices_array_type::const_view,
             typename values_array_type::const_view,
             IndexType, ValueType, MemorySpace> const_view;
+
+    template<typename MemorySpace2>
+    struct rebind
+    {
+        typedef cusp::csr_matrix<IndexType, ValueType, MemorySpace2> type;
+    };
+    /*! \endcond */
 
     /*! Storage for the row offsets of the CSR data structure.  Also called the "row pointer" array.
      */
@@ -139,10 +130,9 @@ public:
      */
     values_array_type values;
 
-
     /*! Construct an empty \p csr_matrix.
      */
-    csr_matrix() {}
+    csr_matrix(void) {}
 
     /*! Construct a \p csr_matrix with a specific shape and number of nonzero entries.
      *
@@ -152,7 +142,9 @@ public:
      */
     csr_matrix(size_t num_rows, size_t num_cols, size_t num_entries)
         : Parent(num_rows, num_cols, num_entries),
-          row_offsets(num_rows + 1), column_indices(num_entries), values(num_entries) {}
+          row_offsets(num_rows + 1),
+          column_indices(num_entries),
+          values(num_entries) {}
 
     /*! Construct a \p csr_matrix from another matrix.
      *
@@ -163,25 +155,13 @@ public:
 
     /*! Resize matrix dimensions and underlying storage
      */
-    void resize(size_t num_rows, size_t num_cols, size_t num_entries)
-    {
-        Parent::resize(num_rows, num_cols, num_entries);
-        row_offsets.resize(num_rows + 1);
-        column_indices.resize(num_entries);
-        values.resize(num_entries);
-    }
+    void resize(const size_t num_rows, const size_t num_cols, const size_t num_entries);
 
     /*! Swap the contents of two \p csr_matrix objects.
      *
      *  \param matrix Another \p csr_matrix with the same IndexType and ValueType.
      */
-    void swap(csr_matrix& matrix)
-    {
-        Parent::swap(matrix);
-        row_offsets.swap(matrix.row_offsets);
-        column_indices.swap(matrix.column_indices);
-        values.swap(matrix.values);
-    }
+    void swap(csr_matrix& matrix);
 
     /*! Assignment from another matrix.
      *
@@ -216,19 +196,20 @@ template <typename Array1,
          typename MemorySpace = typename cusp::minimum_space<typename Array1::memory_space, typename Array2::memory_space, typename Array3::memory_space>::type >
 class csr_matrix_view : public cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::csr_format>
 {
+private:
+
     typedef cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::csr_format> Parent;
+
 public:
+
+    /*! \cond */
     typedef Array1 row_offsets_array_type;
     typedef Array2 column_indices_array_type;
     typedef Array3 values_array_type;
 
-    /*! equivalent container type
-     */
     typedef typename cusp::csr_matrix<IndexType, ValueType, MemorySpace> container;
-
-    /*! equivalent view type
-     */
     typedef typename cusp::csr_matrix_view<Array1, Array2, Array3, IndexType, ValueType, MemorySpace> view;
+    /*! \endcond */
 
     /*! Storage for the row offsets of the CSR data structure.  Also called the "row pointer" array.
      */
@@ -255,9 +236,9 @@ public:
           values(A.values) {}
 
     // TODO check sizes here
-    csr_matrix_view(size_t num_rows,
-                    size_t num_cols,
-                    size_t num_entries,
+    csr_matrix_view(const size_t num_rows,
+                    const size_t num_cols,
+                    const size_t num_entries,
                     Array1 row_offsets,
                     Array2 column_indices,
                     Array3 values)
@@ -268,13 +249,7 @@ public:
 
     /*! Resize matrix dimensions and underlying storage
      */
-    void resize(size_t num_rows, size_t num_cols, size_t num_entries)
-    {
-        Parent::resize(num_rows, num_cols, num_entries);
-        row_offsets.resize(num_rows + 1);
-        column_indices.resize(num_entries);
-        values.resize(num_entries);
-    }
+    void resize(const size_t num_rows, const size_t num_cols, const size_t num_entries);
 };
 
 /* Convenience functions */

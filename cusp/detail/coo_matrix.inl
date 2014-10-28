@@ -41,6 +41,28 @@ coo_matrix<IndexType,ValueType,MemorySpace>
 // Container Member Functions //
 ////////////////////////////////
 
+template <typename IndexType, typename ValueType, class MemorySpace>
+void
+coo_matrix<IndexType,ValueType,MemorySpace>
+::resize(const size_t num_rows, const size_t num_cols, const size_t num_entries)
+{
+    Parent::resize(num_rows, num_cols, num_entries);
+    row_indices.resize(num_entries);
+    column_indices.resize(num_entries);
+    values.resize(num_entries);
+}
+
+template <typename IndexType, typename ValueType, class MemorySpace>
+void
+coo_matrix<IndexType,ValueType,MemorySpace>
+::swap(coo_matrix& matrix)
+{
+    Parent::swap(matrix);
+    row_indices.swap(matrix.row_indices);
+    column_indices.swap(matrix.column_indices);
+    values.swap(matrix.values);
+}
+
 // assignment from another matrix
 template <typename IndexType, typename ValueType, class MemorySpace>
 template <typename MatrixType>

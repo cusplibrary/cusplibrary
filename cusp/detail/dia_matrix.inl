@@ -23,6 +23,16 @@ namespace cusp
 //////////////////
 // Constructors //
 //////////////////
+template <typename IndexType, typename ValueType, class MemorySpace>
+dia_matrix<IndexType,ValueType,MemorySpace>
+::dia_matrix(const size_t num_rows, const size_t num_cols, const size_t num_entries,
+             const size_t num_diagonals, const size_t alignment)
+        : Parent(num_rows, num_cols, num_entries),
+          diagonal_offsets(num_diagonals)
+{
+    // TODO use array2d constructor when it can accept pitch
+    values.resize(num_rows, num_diagonals, cusp::detail::round_up(num_rows, alignment));
+}
 
 // construct from a different matrix
 template <typename IndexType, typename ValueType, class MemorySpace>
@@ -36,6 +46,38 @@ dia_matrix<IndexType,ValueType,MemorySpace>
 //////////////////////
 // Member Functions //
 //////////////////////
+
+template <typename IndexType, typename ValueType, typename MemorySpace>
+void
+dia_matrix<IndexType,ValueType,MemorySpace>
+::resize(const size_t num_rows, const size_t num_cols, const size_t num_entries,
+         const size_t num_diagonals)
+{
+    Parent::resize(num_rows, num_cols, num_entries);
+    diagonal_offsets.resize(num_diagonals);
+    values.resize(num_rows, num_diagonals);
+}
+
+template <typename IndexType, typename ValueType, typename MemorySpace>
+void
+dia_matrix<IndexType,ValueType,MemorySpace>
+::resize(const size_t num_rows, const size_t num_cols, const size_t num_entries,
+         const size_t num_diagonals, const size_t alignment)
+{
+    Parent::resize(num_rows, num_cols, num_entries);
+    diagonal_offsets.resize(num_diagonals);
+    values.resize(num_rows, num_diagonals, cusp::detail::round_up(num_rows, alignment));
+}
+
+template <typename IndexType, typename ValueType, typename MemorySpace>
+void
+dia_matrix<IndexType,ValueType,MemorySpace>
+::swap(dia_matrix& matrix)
+{
+    Parent::swap(matrix);
+    diagonal_offsets.swap(matrix.diagonal_offsets);
+    values.swap(matrix.values);
+}
 
 // copy a matrix in a different format
 template <typename IndexType, typename ValueType, class MemorySpace>
