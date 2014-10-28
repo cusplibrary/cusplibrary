@@ -27,15 +27,18 @@ namespace cusp
 
 /*! \addtogroup utilities Utilities
  *  \ingroup utilities
+ *  \brief Utility functions for IO, etc.
  *  \{
  */
 
-/*! \p print : print a textual representation of an object
- *
- * \param p matrix, array, or other printable object
+/**
+ * \brief print a textual representation of an object
  *
  * \tparam Printable printable type
  *
+ * \param p matrix, array, or other printable object
+ *
+ * \par Example
  *  The following code snippet demonstrates how to use \p print.
  *
  *  \code
@@ -59,14 +62,16 @@ namespace cusp
 template <typename Printable>
 void print(const Printable& p);
 
-/*! \p print : print a textual representation of an object on a given stream
- *
- * \param p matrix, array, or other printable object
- * \param s stream on which to write the output
+/**
+ * \brief Print a textual representation of an object on a given stream
  *
  * \tparam Printable printable type
  * \tparam Stream output stream type
  *
+ * \param p matrix, array, or other printable object
+ * \param s stream on which to write the output
+ *
+ * \par Example
  *  The following code snippet demonstrates how to use \p print.
  *
  *  \code
@@ -93,10 +98,6 @@ void print(const Printable& p);
  */
 template <typename Printable, typename Stream>
 void print(const Printable& p, Stream& s);
-
-template <typename Matrix>
-CUSP_DEPRECATED
-void print_matrix(const Matrix& matrix);
 
 /*! \}
  */

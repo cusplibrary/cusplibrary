@@ -30,6 +30,8 @@ namespace krylov
 /*! \addtogroup iterative_solvers Iterative Solvers
  *  \addtogroup krylov_methods Krylov Methods
  *  \ingroup iterative_solvers
+ *  \brief Iterative Krylov methods for hermitian and non-hermitian linear
+ *  systems.
  *  \{
  */
 

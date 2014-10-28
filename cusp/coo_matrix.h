@@ -37,6 +37,8 @@ template <typename Array1, typename Array2, typename Array3, typename IndexType,
 
 /*! \addtogroup sparse_matrix_containers Sparse Matrix Containers
  *  \ingroup sparse_matrices
+ *  \brief Sparse matrix containers represented in COO, CSR, DIA, ELL, HYB, and
+ *  Permutation
  *  \{
  */
 
@@ -205,6 +207,8 @@ public:
 
 /*! \addtogroup sparse_matrix_views Sparse Matrix Views
  *  \ingroup sparse_matrices
+ *  \brief Sparse matrix containers that wrap existing data or iterators in COO, CSR, DIA, ELL, HYB, and
+ *  Permutation representations
  *  \{
  */
 

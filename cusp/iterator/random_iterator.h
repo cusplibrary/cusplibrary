@@ -68,10 +68,52 @@ struct random_integer_functor : public thrust::unary_function<IndexType,T>
     }
 };
 
+/*! \addtogroup iterators
+ *  \{
+ */
+
+/*! \addtogroup fancyiterator Fancy Iterators
+ *  \ingroup iterators
+ *  \{
+ */
+
+/**
+ *  \brief
+ *
+ *  \par Overview
+ *  \p random_iterator is an iterator which represents a pointer into a range
+ *  of constant values. This iterator is useful for creating a range filled with the same
+ *  value without explicitly storing it in memory. Using \p random_iterator saves both
+ *  memory capacity and bandwidth.
+ *
+ *  \par Example
+ *  The following code snippet demonstrates how to create a \p random_iterator whose
+ *  \c value_type is \c int and whose seed is \c 5.
+ *
+ *  \code
+ *  #include <cusp/iterator/random_iterator.h>
+ *
+ *  int main()
+ *  {
+ *    cusp::random_iterator<int> iter(5);
+ *
+ *    std::cout << iter[0] << std::endl;
+ *    std::cout << iter[1] << std::endl;
+ *    std::cout << iter[2] << std::endl;
+ *  }
+ *  \endcode
+ */
 template<typename T>
 class random_iterator
 {
 public:
+
+    typedef T                                                                            value_type;
+    typedef T*                                                                           pointer;
+    typedef T&                                                                           reference;
+    typedef size_t                                                                       difference_type;
+    typedef size_t                                                                       size_type;
+    typedef thrust::random_access_traversal_tag                                          iterator_category;
 
     typedef std::ptrdiff_t                                                               IndexType;
     typedef random_integer_functor<IndexType,T>                                          IndexFunctor;
@@ -90,7 +132,13 @@ public:
     {
         return RandomTransformIterator(RandomTransformIterator(RandomCountingIterator(0), index_func), index_func);
     }
-};
+}; // end random_iterator
+
+/*! \} // end fancyiterators
+ */
+
+/*! \} // end iterators
+ */
 
 } // end namespace cusp
 

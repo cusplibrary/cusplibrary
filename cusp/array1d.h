@@ -46,7 +46,7 @@ template <typename RandomAccessIterator> class array1d_view;
 /**
  *  \addtogroup arrays Arrays
  *  \par Overview
- *  Basic 1D and 2D datatypes for processing algorithms
+ *  Basic 1D and 2D containers for processing algorithms
  *  in "host" and "device" memory space. Consists of containers,
  *  representing arrays with explicit memory allocations, and
  *  views, representing generic iterators wrapped in containers.
@@ -54,6 +54,7 @@ template <typename RandomAccessIterator> class array1d_view;
 
 /**
  *  \addtogroup array_containers Array Containers
+ *  \brief Basic 1D and 2D containers
  *  \ingroup arrays
  *  \{
  */
@@ -312,6 +313,7 @@ public:
 
 /**
  *  \addtogroup array_views Array Views
+ *  \brief Basic 1D and 2D containers that wrap existing data or iterators
  *  \ingroup arrays
  *  \{
  */
@@ -588,10 +590,10 @@ public:
  * int main()
  * {
  *   // Define the constant array of length 4 with value 3
- *   cusp::constant_array<int> v1(4,3);
+ *   cusp::constant_array<int> v(4,3);
  *
  *   // [3,3,3,3]
- *   cusp::print(v1);
+ *   cusp::print(v);
  * }
  * \endcode
  */
@@ -619,6 +621,30 @@ public:
         : Parent(iterator(value), iterator(value) + size) {}
 };
 
+/**
+ * \brief Specialized array1d_view wrapping cusp::random_iterator
+ *
+ * \tparam ValueType random array element type.
+ *
+ * \par Overview
+ * The \p random_array view is a simple wrapper around
+ * random_iterator for generating random entries in a cusp container.
+ *
+ * \par Example
+ * \code
+ * // include cusp array1d header file
+ * #include <cusp/array1d.h>
+ * #include <cusp/print.h>
+ *
+ * int main()
+ * {
+ *   // Define the constant array of length 4 with seed 3
+ *   cusp::random_array<int> v(4,3);
+ *
+ *   cusp::print(v);
+ * }
+ * \endcode
+ */
 template <typename ValueType>
 class random_array :
   public cusp::array1d_view< typename cusp::random_iterator<ValueType> >

@@ -33,11 +33,12 @@ namespace cusp
 /*! \addtogroup iterative_solvers Iterative Solvers
  *  \addtogroup monitors Monitors
  *  \ingroup iterative_solvers
+ *  \brief Configurable convergence monitors for iterative solvers
  *  \{
  */
 
-/*! \p monitor : Implements standard convergence criteria
- * and reporting for iterative solvers.
+/**
+ * \brief Implements standard convergence criteria and reporting for iterative solvers.
  *
  * \tparam ValueType scalar type used in the solver (e.g. \c float or \c cusp::complex<double>).
  *

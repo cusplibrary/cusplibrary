@@ -23,9 +23,27 @@
 namespace cusp
 {
 
-template <typename IndexType, class MemorySpace>
+template <typename ValueType, typename MemorySpace, typename IndexType>
+void
+permutation_matrix<ValueType,MemorySpace,IndexType>
+::resize(const size_t num_rows)
+{
+    Parent::resize(num_rows, num_rows, num_rows);
+    permutation.resize(num_rows);
+}
+
+template <typename ValueType, typename MemorySpace, typename IndexType>
+void
+permutation_matrix<ValueType,MemorySpace,IndexType>
+::swap(permutation_matrix& matrix)
+{
+    Parent::swap(matrix);
+    permutation.swap(matrix.permutation);
+}
+
+template <typename ValueType, typename MemorySpace, typename IndexType>
 template <typename MatrixType>
-void permutation_matrix<IndexType,MemorySpace>
+void permutation_matrix<ValueType,MemorySpace,IndexType>
 ::symmetric_permute(MatrixType& A)
 {
     typedef typename MatrixType::value_type ValueType;
@@ -46,11 +64,20 @@ void permutation_matrix<IndexType,MemorySpace>
 ///////////////////////////
 // View Member Functions //
 ///////////////////////////
+//
+template <typename Array, typename ValueType, typename MemorySpace, typename IndexType>
+void
+permutation_matrix_view<Array,ValueType,MemorySpace,IndexType>
+::resize(const size_t num_rows)
+{
+    Parent::resize(num_rows, num_rows, num_rows);
+    permutation.resize(num_rows);
+}
 
-
-template <typename Array, typename IndexType, typename MemorySpace>
+template <typename Array, typename ValueType, typename MemorySpace, typename IndexType>
 template <typename MatrixType>
-void permutation_matrix_view<Array,IndexType,MemorySpace>
+void
+permutation_matrix_view<Array,ValueType,MemorySpace,IndexType>
 ::symmetric_permute(MatrixType& A)
 {
     typedef typename MatrixType::value_type ValueType;
