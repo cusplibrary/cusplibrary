@@ -40,50 +40,58 @@ template <typename Array1, typename Array2, typename Array3, typename IndexType,
  *  \{
  */
 
-/*! \p csr_matrix : Compressed Sparse Row matrix container
+/**
+ * \brief csr_matrix represents a sparse matrix in CSR format
  *
  * \tparam IndexType Type used for matrix indices (e.g. \c int).
  * \tparam ValueType Type used for matrix values (e.g. \c float).
- * \tparam MemorySpace A memory space (e.g. \c cusp::host_memory or cusp::device_memory)
+ * \tparam MemorySpace A memory space (e.g. \c cusp::host_memory or \c cusp::device_memory)
  *
+ * \par Overview
  * \note The matrix entries within the same row must be sorted by column index.
  * \note The matrix should not contain duplicate entries.
  *
+ * \par Example
  *  The following code snippet demonstrates how to create a 4-by-3
  *  \p csr_matrix on the host with 6 nonzeros and then copies the
  *  matrix to the device.
  *
  *  \code
+ *  // include the csr_matrix header file
  *  #include <cusp/csr_matrix.h>
- *  ...
+ *  #include <cusp/print.h>
  *
- *  // allocate storage for (4,3) matrix with 4 nonzeros
- *  cusp::csr_matrix<int,float,cusp::host_memory> A(4,3,6);
+ *  int main()
+ *  {
+ *    // allocate storage for (4,3) matrix with 4 nonzeros
+ *    cusp::csr_matrix<int,float,cusp::host_memory> A(4,3,6);
  *
- *  // initialize matrix entries on host
- *  A.row_offsets[0] = 0;  // first offset is always zero
- *  A.row_offsets[1] = 2;
- *  A.row_offsets[2] = 2;
- *  A.row_offsets[3] = 3;
- *  A.row_offsets[4] = 6; // last offset is always num_entries
+ *    // initialize matrix entries on host
+ *    A.row_offsets[0] = 0;  // first offset is always zero
+ *    A.row_offsets[1] = 2;
+ *    A.row_offsets[2] = 2;
+ *    A.row_offsets[3] = 3;
+ *    A.row_offsets[4] = 6; // last offset is always num_entries
  *
- *  A.column_indices[0] = 0; A.values[0] = 10;
- *  A.column_indices[1] = 2; A.values[1] = 20;
- *  A.column_indices[2] = 2; A.values[2] = 30;
- *  A.column_indices[3] = 0; A.values[3] = 40;
- *  A.column_indices[4] = 1; A.values[4] = 50;
- *  A.column_indices[5] = 2; A.values[5] = 60;
+ *    A.column_indices[0] = 0; A.values[0] = 10;
+ *    A.column_indices[1] = 2; A.values[1] = 20;
+ *    A.column_indices[2] = 2; A.values[2] = 30;
+ *    A.column_indices[3] = 0; A.values[3] = 40;
+ *    A.column_indices[4] = 1; A.values[4] = 50;
+ *    A.column_indices[5] = 2; A.values[5] = 60;
  *
- *  // A now represents the following matrix
- *  //    [10  0 20]
- *  //    [ 0  0  0]
- *  //    [ 0  0 30]
- *  //    [40 50 60]
+ *    // A now represents the following matrix
+ *    //    [10  0 20]
+ *    //    [ 0  0  0]
+ *    //    [ 0  0 30]
+ *    //    [40 50 60]
  *
- *  // copy to the device
- *  cusp::csr_matrix<int,float,cusp::device_memory> A = B;
+ *    // copy to the device
+ *    cusp::csr_matrix<int,float,cusp::device_memory> B(A);
+ *
+ *    cusp::print(B);
+ *  }
  *  \endcode
- *
  */
 template <typename IndexType, typename ValueType, class MemorySpace>
 class csr_matrix : public cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::csr_format>
@@ -178,7 +186,8 @@ public:
  *  \{
  */
 
-/*! \p csr_matrix_view : Compressed Sparse Row matrix view
+/**
+ * \brief Compressed Sparse Row (CSR) matrix container
  *
  * \tparam Array1 Type of \c row_offsets array view
  * \tparam Array2 Type of \c column_indices array view
@@ -189,11 +198,11 @@ public:
  *
  */
 template <typename Array1,
-         typename Array2,
-         typename Array3,
-         typename IndexType   = typename Array1::value_type,
-         typename ValueType   = typename Array3::value_type,
-         typename MemorySpace = typename cusp::minimum_space<typename Array1::memory_space, typename Array2::memory_space, typename Array3::memory_space>::type >
+          typename Array2,
+          typename Array3,
+          typename IndexType   = typename Array1::value_type,
+          typename ValueType   = typename Array3::value_type,
+          typename MemorySpace = typename cusp::minimum_space<typename Array1::memory_space, typename Array2::memory_space, typename Array3::memory_space>::type >
 class csr_matrix_view : public cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::csr_format>
 {
 private:

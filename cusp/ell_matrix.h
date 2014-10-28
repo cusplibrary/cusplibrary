@@ -45,55 +45,63 @@ template <typename Array1, typename Array2, typename IndexType, typename ValueTy
  *  \{
  */
 
-/*! \p ell_matrix : ELLPACK/ITPACK matrix container
+/**
+ * \brief ell_matrix represents a sparse matrix in ELLPACK/ITPACK format
  *
  * \tparam IndexType Type used for matrix indices (e.g. \c int).
  * \tparam ValueType Type used for matrix values (e.g. \c float).
- * \tparam MemorySpace A memory space (e.g. \c cusp::host_memory or cusp::device_memory)
+ * \tparam MemorySpace A memory space (e.g. \c cusp::host_memory or \c cusp::device_memory)
  *
+ * \par Overview
  * \note The matrix entries must be sorted by column index.
  * \note The matrix entries within each row should be shifted to the left.
  * \note The matrix should not contain duplicate entries.
  *
+ * \par Example
  *  The following code snippet demonstrates how to create a 4-by-3
  *  \p ell_matrix on the host with 3 nonzeros per row (6 total nonzeros)
  *  and then copies the matrix to the device.
  *
  *  \code
  *  #include <cusp/ell_matrix.h>
- *  ...
+ *  #include <cusp/print.h>
  *
- *  // allocate storage for (4,3) matrix with 6 nonzeros and at most 3 nonzeros per row.
- *  cusp::ell_matrix<int,float,cusp::host_memory> A(4,3,6,3);
+ *  int main()
+ *  {
+ *    // allocate storage for (4,3) matrix with 6 nonzeros and at most 3 nonzeros per row.
+ *    cusp::ell_matrix<int,float,cusp::host_memory> A(4,3,6,3);
  *
- *  // X is used to fill unused entries in the matrix
- *  const int X = cusp::ell_matrix<int,float,cusp::host_memory>::invalid_index;
+ *    // X is used to fill unused entries in the matrix
+ *    const int X = cusp::ell_matrix<int,float,cusp::host_memory>::invalid_index;
  *
- *  // initialize matrix entries on host
- *  A.column_indices(0,0) = 0; A.values(0,0) = 10;
- *  A.column_indices(0,1) = 2; A.values(0,1) = 20;  // shifted to leftmost position
- *  A.column_indices(0,2) = X; A.values(0,2) =  0;  // padding
+ *    // initialize matrix entries on host
+ *    A.column_indices(0,0) = 0; A.values(0,0) = 10;
+ *    A.column_indices(0,1) = 2; A.values(0,1) = 20;  // shifted to leftmost position
+ *    A.column_indices(0,2) = X; A.values(0,2) =  0;  // padding
  *
- *  A.column_indices(1,0) = X; A.values(1,0) =  0;  // padding
- *  A.column_indices(1,1) = X; A.values(1,1) =  0;  // padding
- *  A.column_indices(1,2) = X; A.values(1,2) =  0;  // padding
+ *    A.column_indices(1,0) = X; A.values(1,0) =  0;  // padding
+ *    A.column_indices(1,1) = X; A.values(1,1) =  0;  // padding
+ *    A.column_indices(1,2) = X; A.values(1,2) =  0;  // padding
  *
- *  A.column_indices(2,0) = 2; A.values(2,0) = 30;  // shifted to leftmost position
- *  A.column_indices(2,1) = X; A.values(2,1) =  0;  // padding
- *  A.column_indices(2,2) = X; A.values(2,2) =  0;  // padding
+ *    A.column_indices(2,0) = 2; A.values(2,0) = 30;  // shifted to leftmost position
+ *    A.column_indices(2,1) = X; A.values(2,1) =  0;  // padding
+ *    A.column_indices(2,2) = X; A.values(2,2) =  0;  // padding
  *
- *  A.column_indices(3,0) = 0; A.values(3,0) = 40;
- *  A.column_indices(3,1) = 1; A.values(3,1) = 50;
- *  A.column_indices(3,2) = 2; A.values(3,2) = 60;
+ *    A.column_indices(3,0) = 0; A.values(3,0) = 40;
+ *    A.column_indices(3,1) = 1; A.values(3,1) = 50;
+ *    A.column_indices(3,2) = 2; A.values(3,2) = 60;
  *
- *  // A now represents the following matrix
- *  //    [10  0 20]
- *  //    [ 0  0  0]
- *  //    [ 0  0 30]
- *  //    [40 50 60]
+ *    // A now represents the following matrix
+ *    //    [10  0 20]
+ *    //    [ 0  0  0]
+ *    //    [ 0  0 30]
+ *    //    [40 50 60]
  *
- *  // copy to the device
- *  cusp::ell_matrix<int,float,cusp::device_memory> B = A;
+ *    // copy to the device
+ *    cusp::ell_matrix<int,float,cusp::device_memory> B(A);
+ *
+ *    cusp::print(B);
+ *  }
  *  \endcode
  *
  */

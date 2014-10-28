@@ -43,7 +43,7 @@ template <typename Array1, typename Array2, typename IndexType, typename ValueTy
  */
 
 /**
- * \brief dia_matrix represents a sparse matrix in diagonal format
+ * \brief dia_matrix represents a sparse matrix in diagonal (DIA) format
  *
  * \tparam IndexType Type used for matrix indices (e.g. \c int).
  * \tparam ValueType Type used for matrix values (e.g. \c float).

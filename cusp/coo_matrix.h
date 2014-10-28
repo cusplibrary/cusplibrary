@@ -89,7 +89,7 @@ template <typename Array1, typename Array2, typename Array3, typename IndexType,
  *  //    [40 50 60]
  *
  *  // copy to the device
- *  cusp::coo_matrix<int,float,cusp::device_memory> B = A;
+ *  cusp::coo_matrix<int,float,cusp::device_memory> B(A);
  *
  *  // print the constructed coo_matrix
  *  cusp::print(B);
@@ -144,7 +144,7 @@ public:
 
     /*! Construct an empty \p coo_matrix.
      */
-    coo_matrix() {}
+    coo_matrix(void) {}
 
     /*! Construct a \p coo_matrix with a specific shape and number of nonzero entries.
      *

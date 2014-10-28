@@ -35,14 +35,18 @@ namespace io
  *  \{
  */
 
-/*! \p read_matrix_market_file : Read a MatrixMarket file
+/**
+ * \brief Read a MatrixMarket file
+ *
+ * \tparam Matrix matrix container
  *
  * \param mtx a matrix container (e.g. \p csr_matrix or \p coo_matrix)
  * \param filename file name of the MatrixMarket file
- * \tparam Matrix matrix container
  *
+ * \par Overview
  * \note any contents of \p mtx will be overwritten
  *
+ * \par Example
  * \code
  * #include <cusp/io/matrix_market.h>
  * #include <cusp/coo_matrix.h>
@@ -63,15 +67,19 @@ namespace io
 template <typename Matrix>
 void read_matrix_market_file(Matrix& mtx, const std::string& filename);
 
-/*! \p read_matrix_market_stream : Read MatrixMarket data from a stream.
+/**
+ * \brief Read MatrixMarket data from a stream.
  *
- * \param mtx a matrix container (e.g. \p csr_matrix or \p coo_matrix)
- * \param intput stream from which to read the MatrixMarket contents
  * \tparam Matrix matrix container
  * \tparam Stream stream type
  *
+ * \param mtx a matrix container (e.g. \p csr_matrix or \p coo_matrix)
+ * \param intput stream from which to read the MatrixMarket contents
+ *
+ * \par Overview
  * \note any contents of \p mtx will be overwritten
  *
+ * \par Example
  * \code
  * #include <cusp/io/matrix_market.h>
  * #include <cusp/coo_matrix.h>
@@ -93,14 +101,18 @@ template <typename Matrix, typename Stream>
 void read_matrix_market_stream(Matrix& mtx, Stream& input);
 
 
-/*! \p write_matrix_market_file : Write a MatrixMarket file
+/**
+ * \brief Write a MatrixMarket file
+ *
+ * \tparam Matrix matrix container
  *
  * \param mtx a matrix container (e.g. \p csr_matrix or \p coo_matrix)
  * \param filename file name of the MatrixMarket file
- * \tparam Matrix matrix container
  *
+ * \par Overview
  * \note if the file already exists it will be overwritten
  *
+ * \par Example
  * \code
  * #include <cusp/io/matrix_market.h>
  * #include <cusp/array2d.h>
@@ -126,13 +138,16 @@ void read_matrix_market_stream(Matrix& mtx, Stream& input);
 template <typename Matrix>
 void write_matrix_market_file(const Matrix& mtx, const std::string& filename);
 
-/*! \p write_matrix_market_stream : Write MatrixMarket data to a stream.
+/**
+ * \brief Write MatrixMarket data to a stream.
  *
- * \param mtx a matrix container (e.g. \p csr_matrix or \p coo_matrix)
- * \param output stream to which the MatrixMarket contents will be written
  * \tparam Matrix matrix container
  * \tparam Stream stream type
  *
+ * \param mtx a matrix container (e.g. \p csr_matrix or \p coo_matrix)
+ * \param output stream to which the MatrixMarket contents will be written
+ *
+ * \par Example
  * \code
  * #include <cusp/io/matrix_market.h>
  * #include <cusp/array2d.h>
