@@ -32,8 +32,9 @@ namespace graph
  *  \{
  */
 
-/*! \p maximal_independent_set : computes a maximal independent set (MIS)
- * a graph.  The MIS is a set of vertices such that (1) no two vertices
+/**
+ * Computes a maximal independent set (MIS) a graph. The MIS is a set of
+ * vertices such that (1) no two vertices
  * are adjacent and (2) it is not possible to add another vertex to thes
  * set without violating the first property.  The MIS(k) is a generalization
  * of the MIS with the property that no two vertices in the set are joined
@@ -43,17 +44,51 @@ namespace graph
  * <tt>stencil[i]</tt> is 1 if vertex \p i is a member of the MIS(k) and
  * 0 otherwise.
  *
- * \param A symmetric matrix that represents a graph
+ * \tparam MatrixType Type of input matrix
+ * \tparam ArrayType Type of components array
+ *
+ * \param G symmetric matrix that represents a graph
  * \param stencil array to hold the MIS(k)
  * \param k radius of independence
  *
- * \tparam Matrix matrix
- * \tparam Array array
+ * \return The number of MIS vertices computed for G.
  *
  * \see http://en.wikipedia.org/wiki/Maximal_independent_set
+ *
+ * \par Example
+ *
+ * \code
+ * #include <cusp/csr_matrix.h>
+ * #include <cusp/print.h>
+ * #include <cusp/gallery/grid.h>
+ *
+ * //include bfs header file
+ * #include <cusp/graph/maximal_independent_set.h>
+ *
+ * #include <iostream>
+ *
+ * int main()
+ * {
+ *    // Build a 2D grid on the device
+ *    cusp::csr_matrix<int,float,cusp::device_memory> G;
+ *    cusp::gallery::grid2d(G, 4, 4);
+ *
+ *    cusp::array1d<int,cusp::device_memory> stencil(G.num_rows);
+ *
+ *    // Compute connected components on the device
+ *    size_t num_mis = cusp::graph::maximal_independent_set(G, stencil);
+ *
+ *    // Print the number of components and the per vertex membership
+ *    std::cout << "Computed " << num_mis << " MIS(1) vertices in the graph." <<
+ *    std::endl;
+ *    cusp::print(stencil);
+ *
+ *    return 0;
+ * }
+ * \endcode
  */
-template <typename Matrix, typename Array>
-size_t maximal_independent_set(const Matrix& A, Array& stencil, size_t k = 1);
+template <typename MatrixType, typename ArrayType>
+size_t maximal_independent_set(const MatrixType& G, ArrayType& stencil, size_t k = 1);
 
 /*! \}
  */

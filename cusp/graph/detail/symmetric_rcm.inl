@@ -18,6 +18,7 @@
 
 #include <cusp/array1d.h>
 #include <cusp/exception.h>
+#include <cusp/permutation_matrix.h>
 #include <cusp/graph/pseudo_peripheral.h>
 
 #include <thrust/copy.h>

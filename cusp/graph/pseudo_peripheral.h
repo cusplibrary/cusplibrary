@@ -32,21 +32,61 @@ namespace graph
  *  \{
  */
 
-/*! \p pseudo_peripheral_vertex : finds a pseduo-peripheral vertex
- * a graph. The pseduo-peripheral vertex is the vertex which achieves
- * the diameter of the graph, i.e. achieves the maximum separation distance.
- *
- * \param A symmetric matrix that represents a graph
- * \param BFS level set of vertices starting from pseudo-peripheral vertex
- *
- * \tparam Matrix matrix
- * \tparam Array array
- *
- *  \see http://en.wikipedia.org/wiki/Distance_(graph_theory)
- */
+/*! \cond */
 template<typename MatrixType>
 typename MatrixType::index_type pseudo_peripheral_vertex(const MatrixType& G);
+/*! \endcond */
 
+/**
+ * Finds a pseduo-peripheral vertex in a graph. A peripheral vertex
+ * is the vertex which achieves the diameter of the graph, i.e. achieves the
+ * maximum separation distance.
+ *
+ * \tparam MatrixType Type of input matrix
+ * \tparam ArrayType Type of components array
+ *
+ * \param G A symmetric matrix that represents the graph
+ * \param levels Array containing the level set of all vertices from the
+ * computed pseudo-peripheral vertex.
+ *
+ * \return The computed pseudo-peripheral vertex
+ *
+ * \see http://en.wikipedia.org/wiki/Distance_(graph_theory)
+ *
+ * \par Example
+ *
+ * \code
+ * #include <cusp/csr_matrix.h>
+ * #include <cusp/print.h>
+ * #include <cusp/gallery/grid.h>
+ *
+ * //include pseudo_peripheral header file
+ * #include <cusp/graph/pseudo_peripheral.h>
+ *
+ * #include <iostream>
+ *
+ * int main()
+ * {
+ *    // Build a 2D grid on the device
+ *    cusp::csr_matrix<int,float,cusp::device_memory> G;
+ *    cusp::gallery::grid2d(G, 4, 4);
+ *
+ *    cusp::array1d<int,cusp::device_memory> levels(G.num_rows);
+ *
+ *    // Compute connected components on the device
+ *    int pseudo_vertex = cusp::graph::pseudo_peripheral_vertex(G, levels);
+ *
+ *    // Print the pseudo-peripheral vertex and the level set
+ *    std::cout << "Computed pseudo-peripheral vertex " << pseudo_vertex
+ *    << " in the graph." << std::endl;
+ *
+ *    cusp::print(levels);
+ *
+ *    return 0;
+ * }
+ * \endcode
+ *
+ */
 template<typename MatrixType, typename ArrayType>
 typename MatrixType::index_type pseudo_peripheral_vertex(const MatrixType& G, ArrayType& levels);
 

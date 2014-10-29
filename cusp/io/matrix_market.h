@@ -167,8 +167,8 @@ void write_matrix_market_file(const Matrix& mtx, const std::string& filename);
  * }
  * \endcode
  *
- * \see \p read_matrix_market_file
- * \see \p read_matrix_market_stream
+ * \see read_matrix_market_file
+ * \see read_matrix_market_stream
  */
 template <typename Matrix, typename Stream>
 void write_matrix_market_stream(const Matrix& mtx, Stream& output);

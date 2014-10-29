@@ -32,22 +32,62 @@ namespace graph
  *  \{
  */
 
-/*! \p hilbert_curve : Uses a Hilbert space filling curve to partition
+/**
+ * Uses a Hilbert space filling curve to partition
  * a set of points in 2 or 3 dimensional space.
  *
+ * \param coord Set of points in 2 or 3-D space
+ * \param num_parts Number of partitions to construct
+ * \param parts Partition assigned to each point
  *
- * \param Set of points in 2 or 3-D space
- * \param number of partitions to construct
- * \param partition assigned to each point
+ * \tparam Array2dType Type of input coordinates array
+ * \tparam ArrayType Type of output partition indicator array, parts
  *
- * \tparam Array coord
- * \tparam size_t num_parts
- * \tparam Array parts
+ * \see http://en.wikipedia.org/wiki/Hilbert_curve
  *
- *  \see http://en.wikipedia.org/wiki/Hilbert_curve
+ * \par Example
+ * \code
+ * #include <cusp/array2d.h>
+ * #include <cusp/csr_matrix.h>
+ * #include <cusp/print.h>
+ * #include <cusp/detail/random.h>
+ * #include <cusp/gallery/grid.h>
+ *
+ * //include Hilbert curve header file
+ * #include <cusp/graph/hilbert_curve.h>
+ *
+ * #include <iostream>
+ *
+ * int main()
+ * {
+ *    // Build a 2D grid on the device
+ *    cusp::csr_matrix<int,float,cusp::device_memory> G;
+ *    cusp::gallery::grid2d(G, 4, 4);
+ *
+ *    // Array that indicates partition each vertex belongs
+ *    cusp::array1d<int,cusp::device_memory> parts(G.num_rows);
+ *
+ *    // Partition the graph into 2 parts
+ *    size_t num_parts = 2;
+ *
+ *    // Allocate array of coordinates in 2D
+ *    cusp::array2d<float,cusp::device_memory> coords(G.num_rows, 2);
+ *
+ *    // Generate random coordinates
+ *    cusp::copy(cusp::detail::random_reals<float>(coords.num_entries, rand()), coords.values);
+ *
+ *    // Compute the hilbert space filling curve partitioning the points
+ *    cusp::graph::hilbert_curve(coords, num_parts, parts);
+ *
+ *    // Print the number of components and the per vertex membership
+ *    cusp::print(parts);
+ *
+ *    return 0;
+ * }
+ * \endcode
  */
-template <class Array2d, class Array1d>
-void hilbert_curve(const Array2d& coord, const size_t num_parts, Array1d& parts);
+template <class Array2dType, class ArrayType>
+void hilbert_curve(const Array2dType& coord, const size_t num_parts, ArrayType& parts);
 
 /*! \}
  */

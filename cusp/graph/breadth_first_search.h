@@ -33,17 +33,49 @@ namespace graph
  *  \{
  */
 
-/*! \p breadth_first_search : Performs a Breadth-first traversal of a graph
- * starting from a given source vertex.
+/**
+ * Performs a Breadth-first traversal of a graph starting from a given source vertex.
  *
- * \param A symmetric matrix that represents a graph
- * \param source vertex to begin traversal
- * \param labels of vertices from source in BFS order
+ * \tparam MARK_PREDECESSORS Indicates whether to use level or predecessor markings
+ * \tparam MatrixType Type of input matrix
+ * \tparam ArrayType Type of labels array
  *
- * \tparam Matrix matrix
- * \tparam Array array
+ * \param G A symmetric matrix that represents the graph
+ * \param src The source vertex to begin the BFS traversal
+ * \param labels If MARK_PREDECESSORS is \c false then labels will contain the
+ * level set of all the vertices starting from the source vertex otherwise
+ * labels will contain the immediate ancestor of each vertex forming a ancestor
+ * tree.
  *
  *  \see http://en.wikipedia.org/wiki/Breadth-first_search
+ *
+ *  \par Example
+ *
+ *  \code
+ *  #include <cusp/csr_matrix.h>
+ *  #include <cusp/print.h>
+ *  #include <cusp/gallery/grid.h>
+ *
+ *  //include bfs header file
+ *  #include <cusp/graph/breadth_first_search.h>
+ *
+ *  int main()
+ *  {
+ *     // Build a 2D grid on the device
+ *     cusp::csr_matrix<int,float,cusp::device_memory> G;
+ *     cusp::gallery::grid2d(G, 4, 4);
+ *
+ *     cusp::array1d<int,cusp::device_memory> labels(G.num_rows);
+ *
+ *     // Execute a BFS traversal on the device
+ *     cusp::graph::breadth_first_search<false>(G, 0, labels);
+ *
+ *     // Print the level set constructed from the source vertex
+ *     cusp::print(labels);
+ *
+ *     return 0;
+ *  }
+ *  \endcode
  */
 template<bool MARK_PREDECESSORS, typename MatrixType, typename ArrayType>
 void breadth_first_search(const MatrixType& G, const typename MatrixType::index_type src, ArrayType& labels);
