@@ -117,6 +117,17 @@ coo_matrix<IndexType,ValueType,MemorySpace>
 // View Member Functions //
 ///////////////////////////
 
+template <typename Array1, typename Array2, typename Array3, typename IndexType, typename ValueType, typename MemorySpace>
+void
+coo_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>
+::resize(const size_t num_rows, const size_t num_cols, const size_t num_entries)
+{
+    Parent::resize(num_rows, num_cols, num_entries);
+    row_indices.resize(num_entries);
+    column_indices.resize(num_entries);
+    values.resize(num_entries);
+}
+
 // sort matrix elements by row index
 template <typename Array1, typename Array2, typename Array3, typename IndexType, typename ValueType, typename MemorySpace>
 void

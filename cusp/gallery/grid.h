@@ -14,8 +14,8 @@
  *  limitations under the License.
  */
 
-/*! \file poisson.h
- *  \brief Poisson matrix generators
+/*! \file grid.h
+ *  \brief Grid matrix generators
  */
 
 #pragma once
@@ -29,7 +29,6 @@ namespace cusp
 namespace gallery
 {
 /*! \addtogroup gallery Matrix Gallery
- *  \addtogroup grid Grid
  *  \ingroup gallery
  *  \{
  */

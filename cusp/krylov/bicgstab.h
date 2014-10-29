@@ -66,7 +66,7 @@ void bicgstab(LinearOperator& A,
  *
  * \tparam LinearOperator is a matrix or subclass of \p linear_operator
  * \tparam Vector vector
- * \tparam Monitor is a monitor such as \p default_monitor or \p verbose_monitor
+ * \tparam Monitor is a monitor such as \p default_monitor or \p monitor
  * \tparam Preconditioner is a matrix or subclass of \p linear_operator
  *
  *  The following code snippet demonstrates how to use \p bicgstab to 
@@ -93,7 +93,7 @@ void bicgstab(LinearOperator& A,
  *      // set stopping criteria:
  *      //  iteration_limit    = 100
  *      //  relative_tolerance = 1e-6
- *      cusp::verbose_monitor<float> monitor(b, 100, 1e-6);
+ *      cusp::monitor<float> monitor(b, 100, 1e-6);
  *
  *      // set preconditioner (identity)
  *      cusp::identity_operator<float, cusp::device_memory> M(A.num_rows, A.num_rows);
@@ -105,8 +105,7 @@ void bicgstab(LinearOperator& A,
  *  }
  *  \endcode
  *
- *  \see \p default_monitor
- *  \see \p verbose_monitor
+ *  \see \p monitor
  */
 template <class LinearOperator,
           class Vector,

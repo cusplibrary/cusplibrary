@@ -28,10 +28,13 @@
 
 namespace cusp
 {
+
+/*! \cond */
 // Forward definitions
 template <typename IndexType, typename ValueType, class MemorySpace> class ell_matrix;
 template <typename IndexType, typename ValueType, class MemorySpace> class coo_matrix;
 template <typename Matrix1, typename Matrix2, typename IndexType, typename ValueType, class MemorySpace> class hyb_matrix_view;
+/*! \endcond */
 
 /*! \addtogroup sparse_matrices Sparse Matrices
  */
@@ -41,7 +44,8 @@ template <typename Matrix1, typename Matrix2, typename IndexType, typename Value
  *  \{
  */
 
-/*! \brief hyb_matrix represents a sparse matrix in hybrid ELL and COO
+/**
+ * \brief hyb_matrix represents a sparse matrix in hybrid ELL and COO
  * container
  *
  * \tparam IndexType Type used for matrix indices (e.g. \c int).

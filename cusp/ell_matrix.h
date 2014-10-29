@@ -26,16 +26,17 @@
 #include <cusp/format.h>
 #include <cusp/memory.h>
 #include <cusp/detail/matrix_base.h>
-#include <cusp/detail/utils.h>
 
 namespace cusp
 {
 
+/*! \cond */
 // Forward definitions
 struct column_major;
-template<typename ValueType, class MemorySpace, class Orientation> class array2d;
-template<typename Array, class Orientation>                        class array2d_view;
+template<typename ValueType, typename MemorySpace, typename Orientation> class array2d;
+template<typename Array, typename Orientation>                           class array2d_view;
 template <typename Array1, typename Array2, typename IndexType, typename ValueType, typename MemorySpace> class ell_matrix_view;
+/*! \endcond */
 
 /*! \addtogroup sparse_matrices Sparse Matrices
  */
@@ -46,7 +47,7 @@ template <typename Array1, typename Array2, typename IndexType, typename ValueTy
  */
 
 /**
- * \brief ell_matrix represents a sparse matrix in ELLPACK/ITPACK format
+ * \brief Packed row (ELLPACK/ITPACK) representation of a sparse matrix
  *
  * \tparam IndexType Type used for matrix indices (e.g. \c int).
  * \tparam ValueType Type used for matrix values (e.g. \c float).
@@ -63,6 +64,7 @@ template <typename Array1, typename Array2, typename IndexType, typename ValueTy
  *  and then copies the matrix to the device.
  *
  *  \code
+ *  // include the ell_matrix header file
  *  #include <cusp/ell_matrix.h>
  *  #include <cusp/print.h>
  *
@@ -103,9 +105,8 @@ template <typename Array1, typename Array2, typename IndexType, typename ValueTy
  *    cusp::print(B);
  *  }
  *  \endcode
- *
  */
-template <typename IndexType, typename ValueType, class MemorySpace>
+template <typename IndexType, typename ValueType, typename MemorySpace>
 class ell_matrix : public cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::ell_format>
 {
 private:
@@ -204,14 +205,83 @@ public:
  *  \{
  */
 
-/*! \p ell_matrix_view : ELLPACK/ITPACK matrix view
+/**
+ * \brief Packed row (ELLPACK/ITPACK) view of a sparse matrix
  *
  * \tparam Array1 Type of \c column_indices array view
  * \tparam Array2 Type of \c values array view
  * \tparam IndexType Type used for matrix indices (e.g. \c int).
  * \tparam ValueType Type used for matrix values (e.g. \c float).
- * \tparam MemorySpace A memory space (e.g. \c cusp::host_memory or cusp::device_memory)
+ * \tparam MemorySpace A memory space (e.g. \c cusp::host_memory or \c cusp::device_memory)
  *
+ * \par Overview
+ * \note The matrix entries must be sorted by column index.
+ * \note The matrix entries within each row should be shifted to the left.
+ * \note The matrix should not contain duplicate entries.
+ *
+ * \par Example
+ *  The following code snippet demonstrates how to create a 4-by-3
+ *  \p ell_matrix_view on the host with 3 nonzeros per row.
+ *
+ *  \code
+ *  // include the ell_matrix header file
+ *  #include <cusp/ell_matrix.h>
+ *  #include <cusp/print.h>
+ *
+ *  int main()
+ *  {
+ *    typedef cusp::array2d<int,cusp::host_memory,cusp::column_major> IndexArray;
+ *    typedef cusp::array2d<float,cusp::host_memory,cusp::column_major> ValueArray;
+ *
+ *    typedef typename IndexArray::view IndexArrayView;
+ *    typedef typename ValueArray::view ValueArrayView;
+ *
+ *    // initialize columns and values
+ *    IndexArray column_indices(4,3);
+ *    ValueArray values(4,3);
+ *
+ *    // X is used to fill unused entries in the matrix
+ *    const int X = cusp::ell_matrix<int,float,cusp::host_memory>::invalid_index;
+ *
+ *    // initialize matrix entries on host
+ *    column_indices(0,0) = 0; values(0,0) = 10;
+ *    column_indices(0,1) = 2; values(0,1) = 20;  // shifted to leftmost position
+ *    column_indices(0,2) = X; values(0,2) =  0;  // padding
+ *
+ *    column_indices(1,0) = X; values(1,0) =  0;  // padding
+ *    column_indices(1,1) = X; values(1,1) =  0;  // padding
+ *    column_indices(1,2) = X; values(1,2) =  0;  // padding
+ *
+ *    column_indices(2,0) = 2; values(2,0) = 30;  // shifted to leftmost position
+ *    column_indices(2,1) = X; values(2,1) =  0;  // padding
+ *    column_indices(2,2) = X; values(2,2) =  0;  // padding
+ *
+ *    column_indices(3,0) = 0; values(3,0) = 40;
+ *    column_indices(3,1) = 1; values(3,1) = 50;
+ *    column_indices(3,2) = 2; values(3,2) = 60;
+ *
+ *    // allocate storage for (4,3) matrix with 6 nonzeros
+ *    cusp::coo_matrix_view<IndexArrayView,IndexArrayView,ValueArrayView> A(
+ *    4,3,6,
+ *    cusp::make_array2d_view(column_indices),
+ *    cusp::make_array2d_view(values));
+ *
+ *    // A now represents the following matrix
+ *    //    [10  0 20]
+ *    //    [ 0  0  0]
+ *    //    [ 0  0 30]
+ *    //    [40 50 60]
+ *
+ *    // print the constructed coo_matrix
+ *    cusp::print(A);
+ *
+ *    // change first entry in values array
+ *    values[0] = -1;
+ *
+ *    // print the updated matrix view
+ *    cusp::print(A);
+ *  }
+ *  \endcode
  */
 template <typename Array1,
          typename Array2,
@@ -246,7 +316,7 @@ public:
 
     /*! Construct an empty \p ell_matrix_view.
      */
-    ell_matrix_view() {}
+    ell_matrix_view(void) {}
 
     template <typename OtherArray1, typename OtherArray2>
     ell_matrix_view(size_t num_rows, size_t num_cols, size_t num_entries,
@@ -302,11 +372,11 @@ template <typename Array1, typename Array2, typename IndexType,
 ell_matrix_view<Array1,Array2,IndexType,ValueType,MemorySpace>
 make_ell_matrix_view(const ell_matrix_view<Array1,Array2,IndexType,ValueType,MemorySpace>& m);
 
-template <typename IndexType, typename ValueType, class MemorySpace>
+template <typename IndexType, typename ValueType, typename MemorySpace>
 typename ell_matrix<IndexType,ValueType,MemorySpace>::view
 make_ell_matrix_view(ell_matrix<IndexType,ValueType,MemorySpace>& m);
 
-template <typename IndexType, typename ValueType, class MemorySpace>
+template <typename IndexType, typename ValueType, typename MemorySpace>
 typename ell_matrix<IndexType,ValueType,MemorySpace>::const_view
 make_ell_matrix_view(const ell_matrix<IndexType,ValueType,MemorySpace>& m);
 /*! \}

@@ -41,13 +41,20 @@ template <typename Array1, typename Array2, typename Array3, typename IndexType,
  */
 
 /**
- * \brief csr_matrix represents a sparse matrix in CSR format
+ * \brief Compressed sparse row (CSR) representation a sparse matrix
  *
  * \tparam IndexType Type used for matrix indices (e.g. \c int).
  * \tparam ValueType Type used for matrix values (e.g. \c float).
  * \tparam MemorySpace A memory space (e.g. \c cusp::host_memory or \c cusp::device_memory)
  *
  * \par Overview
+ *  A \p csr_matrix is a sparse matrix container that stores an offset to the
+ *  first entry of each row in matrix and one column
+ *  entry per nonzero. The matrix may reside in either "host" or "device"
+ *  memory depending on the MemorySpace. All entries in the \p csr_matrix are
+ *  sorted according to row and internally sorted within each row by column
+ *  index.
+ *
  * \note The matrix entries within the same row must be sorted by column index.
  * \note The matrix should not contain duplicate entries.
  *
@@ -181,28 +188,100 @@ public:
 /*! \}
  */
 
-/*! \addtogroup sparse_matrix_views Sparse Matrix Views
+/**
+ * \addtogroup sparse_matrix_views Sparse Matrix Views
  *  \ingroup sparse_matrices
  *  \{
  */
 
 /**
- * \brief Compressed Sparse Row (CSR) matrix container
+ * \brief Compressed Sparse Row (CSR) view of a sparse matrix
  *
  * \tparam Array1 Type of \c row_offsets array view
  * \tparam Array2 Type of \c column_indices array view
  * \tparam Array3 Type of \c values array view
  * \tparam IndexType Type used for matrix indices (e.g. \c int).
  * \tparam ValueType Type used for matrix values (e.g. \c float).
- * \tparam MemorySpace A memory space (e.g. \c cusp::host_memory or cusp::device_memory)
+ * \tparam MemorySpace A memory space (e.g. \c cusp::host_memory or \c cusp::device_memory)
  *
+ * \par Overview
+ *  A \p csr_matrix_view is a sparse matrix view of a matrix in CSR format
+ *  constructed from existing data or iterators. All entries in the \p csr_matrix are
+ *  sorted according to rows and internally within each row sorted by
+ *  column indices.
+ *
+ * \note The matrix entries must be sorted by row index.
+ * \note The matrix should not contain duplicate entries.
+ *
+ * \par Example
+ *  The following code snippet demonstrates how to create a 4-by-3
+ *  \p csr_matrix_view on the host with 6 nonzeros.
+ *
+ *  \code
+ * // include csr_matrix header file
+ * #include <cusp/csr_matrix.h>
+ * #include <cusp/print.h>
+ *
+ * int main()
+ * {
+ *    typedef cusp::array1d<int,cusp::host_memory> IndexArray;
+ *    typedef cusp::array1d<float,cusp::host_memory> ValueArray;
+ *
+ *    typedef typename IndexArray::view IndexArrayView;
+ *    typedef typename ValueArray::view ValueArrayView;
+ *
+ *    // initialize rows, columns, and values
+ *    IndexArray row_offsets(6);
+ *    IndexArray column_indices(6);
+ *    ValueArray values(6);
+ *
+ *    // initialize matrix entries on host
+ *    row_offsets[0] = 0;  // first offset is always zero
+ *    row_offsets[1] = 2;
+ *    row_offsets[2] = 2;
+ *    row_offsets[3] = 3;
+ *    row_offsets[4] = 6; // last offset is always num_entries
+ *
+ *    column_indices[0] = 0; values[0] = 10;
+ *    column_indices[1] = 2; values[1] = 20;
+ *    column_indices[2] = 2; values[2] = 30;
+ *    column_indices[3] = 0; values[3] = 40;
+ *    column_indices[4] = 1; values[4] = 50;
+ *    column_indices[5] = 2; values[5] = 60;
+ *
+ *    // allocate storage for (4,3) matrix with 6 nonzeros
+ *    cusp::csr_matrix_view<IndexArrayView,IndexArrayView,ValueArrayView> A(
+ *    4,3,6,
+ *    cusp::make_array1d_view(row_offsets),
+ *    cusp::make_array1d_view(column_indices),
+ *    cusp::make_array1d_view(values));
+ *
+ *    // A now represents the following matrix
+ *    //    [10  0 20]
+ *    //    [ 0  0  0]
+ *    //    [ 0  0 30]
+ *    //    [40 50 60]
+ *
+ *    // print the constructed csr_matrix
+ *    cusp::print(A);
+ *
+ *    // change first entry in values array
+ *    values[0] = -1;
+ *
+ *    // print the updated matrix view
+ *    cusp::print(A);
+ *  }
+ *  \endcode
  */
 template <typename Array1,
           typename Array2,
           typename Array3,
           typename IndexType   = typename Array1::value_type,
           typename ValueType   = typename Array3::value_type,
-          typename MemorySpace = typename cusp::minimum_space<typename Array1::memory_space, typename Array2::memory_space, typename Array3::memory_space>::type >
+          typename MemorySpace = typename cusp::minimum_space<
+                                    typename Array1::memory_space,
+                                    typename Array2::memory_space,
+                                    typename Array3::memory_space>::type >
 class csr_matrix_view : public cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::csr_format>
 {
 private:

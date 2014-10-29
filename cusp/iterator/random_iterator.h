@@ -32,12 +32,9 @@ namespace detail
 } // end detail
 /*! \endcond */
 
-/*! \addtogroup iterators
- *  \{
- */
-
-/*! \addtogroup fancyiterator Fancy Iterators
+/*! \addtogroup iterators Iterators
  *  \ingroup iterators
+ *  \brief Various customized Thrust based iterators
  *  \{
  */
 
@@ -99,9 +96,6 @@ public:
         return RandomTransformIterator(RandomTransformIterator(RandomCountingIterator(0), index_func), index_func);
     }
 }; // end random_iterator
-
-/*! \} // end fancyiterators
- */
 
 /*! \} // end iterators
  */

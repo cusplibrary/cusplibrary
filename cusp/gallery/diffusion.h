@@ -30,19 +30,20 @@
 
 namespace cusp
 {
-
 namespace gallery
 {
 
-/*! \addtogroup gallery Matrix Gallery
- *  \ingroup gallery
- *  \{
- */
-
+/*! \cond */
 struct disc_type {};
-
 struct FD : public disc_type {};
 struct FE : public disc_type {};
+/*! \endcond */
+
+/*! \addtogroup gallery Matrix Gallery
+ *  \ingroup gallery
+ *  \brief Collection of example matrices
+ *  \{
+ */
 
 /*! \p diffusion: Create a matrix representing an anisotropic
  * Poisson problem discretized on an \p m by \p n grid with

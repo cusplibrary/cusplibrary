@@ -28,7 +28,7 @@ namespace cusp
 /*! \addtogroup algorithms Algorithms
  *  \addtogroup matrix_algorithms Matrix Algorithms
  *  \ingroup algorithms
- *  \brief Generic algorithms for processing matrices in sparse and dense
+ *  \brief Algorithms for processing matrices in sparse and dense
  *  formats
  *  \{
  */

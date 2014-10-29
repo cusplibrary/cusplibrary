@@ -28,7 +28,7 @@ namespace graph
 {
 /*! \addtogroup algorithms Algorithms
  *  \addtogroup graph_algorithms Graph Algorithms
- *  \brief Generic algorithms for processing graphs represented in CSR and COO formats
+ *  \brief Algorithms for processing graphs represented in CSR and COO formats
  *  \ingroup algorithms
  *  \{
  */

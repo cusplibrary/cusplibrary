@@ -29,7 +29,6 @@ namespace cusp
 namespace gallery
 {
 /*! \addtogroup gallery Matrix Gallery
- *  \addtogroup poisson Poisson
  *  \ingroup gallery
  *  \{
  */

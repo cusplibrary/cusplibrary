@@ -43,21 +43,21 @@ template <typename Array1, typename Array2, typename Array3, typename IndexType,
  */
 
 /**
- * \brief coo_matrix represents a sparse matrix in coordinate format
+ * \brief Coordinate (COO) representation a sparse matrix
  *
  * \tparam IndexType Type used for matrix indices (e.g. \c int).
  * \tparam ValueType Type used for matrix values (e.g. \c float).
  * \tparam MemorySpace A memory space (e.g. \c cusp::host_memory or \c cusp::device_memory)
  *
- * \note The matrix entries must be sorted by row index.
- * \note The matrix should not contain duplicate entries.
- *
  * \par Overview
- *  A coo_matrix is a sparse matrix container that stores one row and column
+ *  A \p coo_matrix is a sparse matrix container that stores one row and column
  *  entry per nonzero. The matrix may reside in either "host" or "device"
- *  memory depending on the MemorySpace. All entries in the coo_matrix are
+ *  memory depending on the MemorySpace. All entries in the \p coo_matrix are
  *  sorted according to row indices and internally within each row sorted by
  *  column indices.
+ *
+ * \note The matrix entries must be sorted by row index.
+ * \note The matrix should not contain duplicate entries.
  *
  * \par Example
  *  The following code snippet demonstrates how to create a 4-by-3
@@ -178,6 +178,7 @@ public:
     /*! Assignment from another matrix.
      *
      *  \param matrix Another sparse or dense matrix.
+     *  \return \p coo_matrix constructed from existing matrix.
      */
     template <typename MatrixType>
     coo_matrix& operator=(const MatrixType& matrix);
@@ -212,22 +213,87 @@ public:
  *  \{
  */
 
-/*! \p coo_matrix_view : Coordinate matrix view
+/**
+ * \brief Coordinate (COO) view of a sparse matrix
  *
  * \tparam Array1 Type of \c row_indices array view
  * \tparam Array2 Type of \c column_indices array view
  * \tparam Array3 Type of \c values array view
  * \tparam IndexType Type used for matrix indices (e.g. \c int).
  * \tparam ValueType Type used for matrix values (e.g. \c float).
- * \tparam MemorySpace A memory space (e.g. \c cusp::host_memory or cusp::device_memory)
+ * \tparam MemorySpace A memory space (e.g. \c cusp::host_memory or \c cusp::device_memory)
  *
+ * \par Overview
+ * \note The matrix entries must be sorted by row index.
+ * \note The matrix should not contain duplicate entries.
+ *
+ *  A \p coo_matrix_view is a sparse matrix view of a matrix in COO format
+ *  constructed from existing data or iterators. All entries in the \p coo_matrix are
+ *  sorted according to row indices and internally within each row sorted by
+ *  column indices.
+ *
+ * \par Example
+ *  The following code snippet demonstrates how to create a 4-by-3
+ *  \p coo_matrix_view on the host with 6 nonzeros.
+ *
+ *  \code
+ * // include coo_matrix header file
+ * #include <cusp/coo_matrix.h>
+ * #include <cusp/print.h>
+ *
+ * int main()
+ * {
+ *    typedef cusp::array1d<int,cusp::host_memory> IndexArray;
+ *    typedef cusp::array1d<float,cusp::host_memory> ValueArray;
+ *
+ *    typedef typename IndexArray::view IndexArrayView;
+ *    typedef typename ValueArray::view ValueArrayView;
+ *
+ *    // initialize rows, columns, and values
+ *    IndexArray row_indices(6);
+ *    IndexArray column_indices(6);
+ *    ValueArray values(6);
+ *
+ *    row_indices[0] = 0; column_indices[0] = 0; values[0] = 10;
+ *    row_indices[1] = 0; column_indices[1] = 2; values[1] = 20;
+ *    row_indices[2] = 2; column_indices[2] = 2; values[2] = 30;
+ *    row_indices[3] = 3; column_indices[3] = 0; values[3] = 40;
+ *    row_indices[4] = 3; column_indices[4] = 1; values[4] = 50;
+ *    row_indices[5] = 3; column_indices[5] = 2; values[5] = 60;
+ *
+ *    // allocate storage for (4,3) matrix with 6 nonzeros
+ *    cusp::coo_matrix_view<IndexArrayView,IndexArrayView,ValueArrayView> A(
+ *    4,3,6,
+ *    cusp::make_array1d_view(row_indices),
+ *    cusp::make_array1d_view(column_indices),
+ *    cusp::make_array1d_view(values));
+ *
+ *    // A now represents the following matrix
+ *    //    [10  0 20]
+ *    //    [ 0  0  0]
+ *    //    [ 0  0 30]
+ *    //    [40 50 60]
+ *
+ *    // print the constructed coo_matrix
+ *    cusp::print(A);
+ *
+ *    // change first entry in values array
+ *    values[0] = -1;
+ *
+ *    // print the updated matrix view
+ *    cusp::print(A);
+ *  }
+ *  \endcode
  */
 template <typename Array1,
           typename Array2,
           typename Array3,
           typename IndexType   = typename Array1::value_type,
           typename ValueType   = typename Array3::value_type,
-          typename MemorySpace = typename cusp::minimum_space<typename Array1::memory_space, typename Array2::memory_space, typename Array3::memory_space>::type >
+          typename MemorySpace = typename cusp::minimum_space<
+                                    typename Array1::memory_space,
+                                    typename Array2::memory_space,
+                                    typename Array3::memory_space>::type >
 class coo_matrix_view : public cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::coo_format>
 {
 private:
@@ -245,34 +311,41 @@ public:
     typedef typename cusp::coo_matrix_view<Array1, Array2, Array3, IndexType, ValueType, MemorySpace> view;
     /*! \endcond */
 
-    /*! View of the row indices of the COO data structure.  Also called the "row pointer" array.
+    /**
+     * View of the row indices of the COO data structure.  Also called the "row pointer" array.
      */
     row_indices_array_type row_indices;
 
-    /*! View of the column indices of the COO data structure.
+    /**
+     * View of the column indices of the COO data structure.
      */
     column_indices_array_type column_indices;
 
-    /*! View for the nonzero entries of the COO data structure.
+    /**
+     * View for the nonzero entries of the COO data structure.
      */
     values_array_type values;
 
-    // construct empty view
+    /**
+     * Construct an empty \p coo_matrix_view.
+     */
     coo_matrix_view(void)
         : Parent() {}
 
-    // construct from existing COO matrix or view
-    template <typename Matrix>
-    coo_matrix_view(Matrix& A)
-        : Parent(A),
-          row_indices(A.row_indices),
-          column_indices(A.column_indices),
-          values(A.values) {}
-
-    // TODO check sizes here
-    coo_matrix_view(size_t num_rows,
-                    size_t num_cols,
-                    size_t num_entries,
+    /*! Construct a \p coo_matrix_view with a specific shape and number of nonzero entries
+     *  from existing arrays denoting the row indices, column indices, and
+     *  values.
+     *
+     *  \param num_rows Number of rows.
+     *  \param num_cols Number of columns.
+     *  \param num_entries Number of nonzero matrix entries.
+     *  \param row_indices Array containing the row indices.
+     *  \param column_indices Array containing the column indices.
+     *  \param values Array containing the values.
+     */
+    coo_matrix_view(const size_t num_rows,
+                    const size_t num_cols,
+                    const size_t num_entries,
                     Array1 row_indices,
                     Array2 column_indices,
                     Array3 values)
@@ -281,15 +354,20 @@ public:
           column_indices(column_indices),
           values(values) {}
 
+    /*! Construct a \p coo_matrix_view from a existing \p coo_matrix.
+     *
+     *  \param matrix \p coo_matrix used to create view.
+     */
+    coo_matrix_view(coo_matrix<IndexType,ValueType,MemorySpace>& matrix)
+        : Parent(matrix),
+          row_indices(matrix.row_indices),
+          column_indices(matrix.column_indices),
+          values(matrix.values) {}
+
+
     /*! Resize matrix dimensions and underlying storage
      */
-    void resize(size_t num_rows, size_t num_cols, size_t num_entries)
-    {
-        Parent::resize(num_rows, num_cols, num_entries);
-        row_indices.resize(num_entries);
-        column_indices.resize(num_entries);
-        values.resize(num_entries);
-    }
+    void resize(const size_t num_rows, const size_t num_cols, const size_t num_entries);
 
     /*! Sort matrix elements by row index
      */
@@ -314,34 +392,78 @@ public:
 
 /* Convenience functions */
 
-template <typename Array1,
-         typename Array2,
-         typename Array3>
-coo_matrix_view<Array1,Array2,Array3>
-make_coo_matrix_view(size_t num_rows,
-                     size_t num_cols,
-                     size_t num_entries,
-                     Array1 row_indices,
-                     Array2 column_indices,
-                     Array3 values)
+/**
+ *  This is a convenience function for generating an \p coo_matrix_view
+ *  using individual arrays
+ *  \tparam ArrayType1 row indices array type
+ *  \tparam ArrayType2 column indices array type
+ *  \tparam ArrayType3 values array type
+ *
+ *  \param num_rows Number of rows.
+ *  \param num_cols Number of columns.
+ *  \param num_entries Number of nonzero matrix entries.
+ *  \param row_indices Array containing the row indices.
+ *  \param column_indices Array containing the column indices.
+ *  \param values Array containing the values.
+ *
+ *  \return \p coo_matrix_view constructed using input arrays
+ */
+template <typename ArrayType1,
+          typename ArrayType2,
+          typename ArrayType3>
+coo_matrix_view<ArrayType1,ArrayType2,ArrayType3>
+make_coo_matrix_view(const size_t num_rows,
+                     const size_t num_cols,
+                     const size_t num_entries,
+                     ArrayType1 row_indices,
+                     ArrayType2 column_indices,
+                     ArrayType3 values)
 {
-    return coo_matrix_view<Array1,Array2,Array3>
+    return coo_matrix_view<ArrayType1,ArrayType2,ArrayType3>
            (num_rows, num_cols, num_entries,
             row_indices, column_indices, values);
 }
 
-template <typename Array1,
-         typename Array2,
-         typename Array3,
-         typename IndexType,
-         typename ValueType,
-         typename MemorySpace>
-coo_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>
-make_coo_matrix_view(const coo_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>& m)
+/**
+ *  This is a convenience function for generating an \p coo_matrix_view
+ *  using individual arrays with explicit index, value, and memory space
+ *  annotations.
+ *
+ *  \tparam ArrayType1 row indices array type
+ *  \tparam ArrayType2 column indices array type
+ *  \tparam ArrayType3 values array type
+ *  \tparam IndexType  indices type
+ *  \tparam ValueType  values type
+ *  \tparam MemorySpace memory space of the arrays
+ *
+ *  \param m Exemplar \p coo_matrix_view matrix to copy.
+ *
+ *  \return \p coo_matrix_view constructed using input arrays.
+ */
+template <typename ArrayType1,
+          typename ArrayType2,
+          typename ArrayType3,
+          typename IndexType,
+          typename ValueType,
+          typename MemorySpace>
+coo_matrix_view<ArrayType1,ArrayType2,ArrayType3,IndexType,ValueType,MemorySpace>
+make_coo_matrix_view(const coo_matrix_view<ArrayType1,ArrayType2,ArrayType3,IndexType,ValueType,MemorySpace>& m)
 {
-    return coo_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>(m);
+    return coo_matrix_view<ArrayType1,ArrayType2,ArrayType3,IndexType,ValueType,MemorySpace>(m);
 }
 
+/**
+ *  This is a convenience function for generating an \p coo_matrix_view
+ *  using an existing \p coo_matrix.
+ *
+ *  \tparam IndexType  indices type
+ *  \tparam ValueType  values type
+ *  \tparam MemorySpace memory space of the arrays
+ *
+ *  \param m Exemplar \p coo_matrix matrix to copy.
+ *
+ *  \return \p coo_matrix_view constructed using input arrays.
+ */
 template <typename IndexType, typename ValueType, class MemorySpace>
 typename coo_matrix<IndexType,ValueType,MemorySpace>::view
 make_coo_matrix_view(coo_matrix<IndexType,ValueType,MemorySpace>& m)
@@ -353,6 +475,18 @@ make_coo_matrix_view(coo_matrix<IndexType,ValueType,MemorySpace>& m)
             make_array1d_view(m.values));
 }
 
+/**
+ *  This is a convenience function for generating an const \p coo_matrix_view
+ *  using an existing \p coo_matrix.
+ *
+ *  \tparam IndexType  indices type
+ *  \tparam ValueType  values type
+ *  \tparam MemorySpace memory space of the arrays
+ *
+ *  \param m Exemplar \p coo_matrix matrix to copy.
+ *
+ *  \return \p coo_matrix_view constructed using input arrays.
+ */
 template <typename IndexType, typename ValueType, class MemorySpace>
 typename coo_matrix<IndexType,ValueType,MemorySpace>::const_view
 make_coo_matrix_view(const coo_matrix<IndexType,ValueType,MemorySpace>& m)

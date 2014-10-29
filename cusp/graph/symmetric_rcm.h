@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-/*! \file rcm.h
+/*! \file symmetric_rcm.h
  *  \brief Reverse Cuthill-Mckee of a sparse matrix
  */
 
@@ -40,7 +40,7 @@ namespace graph
  *
  * \tparam Matrix matrix
  *
- *  \see http://en.wikipedia.org/wiki/Cuthill-McKee_algorithm
+ * \see http://en.wikipedia.org/wiki/Cuthill-McKee_algorithm
  */
 template<typename MatrixType, typename ArrayType>
 void symmetric_rcm(const MatrixType& G, ArrayType& permutation);

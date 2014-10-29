@@ -39,6 +39,12 @@ struct stride_functor : public thrust::unary_function<T,T>
     }
 };
 
+/*! \addtogroup iterators Iterators
+ *  \ingroup iterators
+ *  \brief Various customized Thrust based iterators
+ *  \{
+ */
+
 template <typename RandomAccessIterator>
 class strided_iterator
 {
@@ -77,7 +83,10 @@ protected:
     RandomAccessIterator first;
     RandomAccessIterator last;
     difference_type stride;
-};
+}; // end strided_iterator
+
+/*! \} // end iterators
+ */
 
 } // end namespace cusp
 
