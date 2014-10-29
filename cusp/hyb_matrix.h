@@ -33,7 +33,7 @@ namespace cusp
 // Forward definitions
 template <typename IndexType, typename ValueType, class MemorySpace> class ell_matrix;
 template <typename IndexType, typename ValueType, class MemorySpace> class coo_matrix;
-template <typename Matrix1, typename Matrix2, typename IndexType, typename ValueType, class MemorySpace> class hyb_matrix_view;
+template <typename MatrixType1, typename MatrixType2, typename IndexType, typename ValueType, class MemorySpace> class hyb_matrix_view;
 /*! \endcond */
 
 /*! \addtogroup sparse_matrices Sparse Matrices
@@ -245,8 +245,8 @@ public:
 /**
  * \brief View of a \p hyb_matrix
  *
- * \tparam Matrix1 Type of \c ell
- * \tparam Matrix2 Type of \c coo
+ * \tparam MatrixType1 Type of \c ell
+ * \tparam MatrixType2 Type of \c coo
  * \tparam IndexType Type used for matrix indices (e.g. \c int).
  * \tparam ValueType Type used for matrix values (e.g. \c float).
  * \tparam MemorySpace A memory space (e.g. \c cusp::host_memory or \c cusp::device_memory)
@@ -327,11 +327,11 @@ public:
  * }
  *  \endcode
  */
-template <typename Matrix1,
-         typename Matrix2,
-         typename IndexType   = typename Matrix1::index_type,
-         typename ValueType   = typename Matrix1::value_type,
-         typename MemorySpace = typename cusp::minimum_space<typename Matrix1::memory_space, typename Matrix2::memory_space>::type >
+template <typename MatrixType1,
+         typename MatrixType2,
+         typename IndexType   = typename MatrixType1::index_type,
+         typename ValueType   = typename MatrixType1::value_type,
+         typename MemorySpace = typename cusp::minimum_space<typename MatrixType1::memory_space, typename MatrixType2::memory_space>::type >
 class hyb_matrix_view : public cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::hyb_format>
 {
 private:
@@ -341,11 +341,11 @@ private:
 public:
 
     /*! \cond */
-    typedef Matrix1 ell_matrix_type;
-    typedef Matrix2 coo_matrix_type;
+    typedef MatrixType1 ell_matrix_type;
+    typedef MatrixType2 coo_matrix_type;
 
     typedef typename cusp::hyb_matrix<IndexType, ValueType, MemorySpace> container;
-    typedef typename cusp::hyb_matrix_view<Matrix1, Matrix2, IndexType, ValueType, MemorySpace> view;
+    typedef typename cusp::hyb_matrix_view<MatrixType1, MatrixType2, IndexType, ValueType, MemorySpace> view;
     /*! \endcond */
 
     /*! View to the \p ELL portion of the HYB structure.
@@ -360,27 +360,68 @@ public:
      */
     hyb_matrix_view(void) {}
 
-    template <typename OtherMatrix1, typename OtherMatrix2>
-    hyb_matrix_view(OtherMatrix1& ell, OtherMatrix2& coo)
+    /*! Construct a \p hyb_matrix_view with a specific shape and number of nonzero entries
+     *  from existing \p ell_matrix and \p coo_matrix matrices.
+     *
+     *  \tparam OtherMatrixType1 Type of \p ell_matrix used to construct view
+     *  \tparam OtherMatrixType2 Type of \p coo_matrix used to construct view
+     *
+     *  \param ell Matrix containing ELL portion of \p hyb_format.
+     *  \param coo Matrix containing COO portion of \p hyb_format.
+     */
+    template <typename OtherMatrixType1, typename OtherMatrixType2>
+    hyb_matrix_view(OtherMatrixType1& ell, OtherMatrixType2& coo)
         : Parent(ell.num_rows, ell.num_cols, ell.num_entries + coo.num_entries), ell(ell), coo(coo) {}
 
-    template <typename OtherMatrix1, typename OtherMatrix2>
-    hyb_matrix_view(const OtherMatrix1& ell, const OtherMatrix2& coo)
+    /*! Construct a \p hyb_matrix_view with a specific shape and number of nonzero entries
+     *  from existing const \p ell_matrix and const \p coo_matrix matrices.
+     *
+     *  \tparam OtherMatrixType1 Type of \p ell_matrix used to construct view
+     *  \tparam OtherMatrixType2 Type of \p coo_matrix used to construct view
+     *
+     *  \param ell Matrix containing ELL portion of \p hyb_format.
+     *  \param coo Matrix containing COO portion of \p hyb_format.
+     */
+    template <typename OtherMatrixType1, typename OtherMatrixType2>
+    hyb_matrix_view(const OtherMatrixType1& ell, const OtherMatrixType2& coo)
         : Parent(ell.num_rows, ell.num_cols, ell.num_entries + coo.num_entries), ell(ell), coo(coo) {}
 
-    hyb_matrix_view(hyb_matrix<IndexType,ValueType,MemorySpace>& A)
-        : Parent(A), ell(A.ell), coo(A.coo) {}
+    /*! Construct a \p hyb_matrix_view from a existing \p hyb_matrix.
+     *
+     *  \param matrix \p hyb_matrix used to create view.
+     */
+    hyb_matrix_view(hyb_matrix<IndexType,ValueType,MemorySpace>& matrix)
+        : Parent(matrix), ell(matrix.ell), coo(matrix.coo) {}
 
-    hyb_matrix_view(const hyb_matrix<IndexType,ValueType,MemorySpace>& A)
-        : Parent(A), ell(A.ell), coo(A.coo) {}
+    /*! Construct a \p hyb_matrix_view from a existing const \p hyb_matrix.
+     *
+     *  \param matrix \p hyb_matrix used to create view.
+     */
+    hyb_matrix_view(const hyb_matrix<IndexType,ValueType,MemorySpace>& matrix)
+        : Parent(matrix), ell(matrix.ell), coo(matrix.coo) {}
 
-    hyb_matrix_view(hyb_matrix_view& A)
-        : Parent(A), ell(A.ell), coo(A.coo) {}
+    /*! Construct a \p hyb_matrix_view from a existing \p hyb_matrix_view.
+     *
+     *  \param matrix \p hyb_matrix_view used to create view.
+     */
+    hyb_matrix_view(hyb_matrix_view& matrix)
+        : Parent(matrix), ell(matrix.ell), coo(matrix.coo) {}
 
-    hyb_matrix_view(const hyb_matrix_view& A)
-        : Parent(A), ell(A.ell), coo(A.coo) {}
+    /*! Construct a \p hyb_matrix_view from a existing const \p hyb_matrix_view.
+     *
+     *  \param matrix \p hyb_matrix_view used to create view.
+     */
+    hyb_matrix_view(const hyb_matrix_view& matrix)
+        : Parent(matrix), ell(matrix.ell), coo(matrix.coo) {}
 
     /*! Resize matrix dimensions and underlying storage
+     *
+     *  \param num_rows Number of rows.
+     *  \param num_cols Number of columns.
+     *  \param num_ell_entries Number of nonzero matrix entries in the ELL portion.
+     *  \param num_coo_entries Number of nonzero matrix entries in the ELL portion.
+     *  \param num_entries_per_row Maximum number of nonzeros per row in the ELL portion.
+     *  \param alignment Amount of padding used to align the ELL data structure (default 32).
      */
     void resize(size_t num_rows, size_t num_cols,
                 size_t num_ell_entries, size_t num_coo_entries,

@@ -32,7 +32,7 @@ namespace cusp
 {
 
 // Forward definitions
-template <typename Array1, typename Array2, typename IndexType, typename ValueType, typename MemorySpace> class dia_matrix_view;
+template <typename ArrayType1, typename ArrayType2, typename IndexType, typename ValueType, typename MemorySpace> class dia_matrix_view;
 
 /*! \addtogroup sparse_matrices Sparse Matrices
  */
@@ -180,11 +180,22 @@ public:
     dia_matrix(const MatrixType& matrix);
 
     /*! Resize matrix dimensions and underlying storage
+     *
+     *  \param num_rows Number of rows.
+     *  \param num_cols Number of columns.
+     *  \param num_entries Number of nonzero matrix entries.
+     *  \param num_diagonals Number of occupied diagonals.
      */
     void resize(const size_t num_rows, const size_t num_cols, const size_t num_entries,
                 const size_t num_diagonals);
 
     /*! Resize matrix dimensions and underlying storage
+     *
+     *  \param num_rows Number of rows.
+     *  \param num_cols Number of columns.
+     *  \param num_entries Number of nonzero matrix entries.
+     *  \param num_diagonals Number of occupied diagonals.
+     *  \param alignment Amount of padding used to align the data structure (default 32).
      */
     void resize(const size_t num_rows, const size_t num_cols, const size_t num_entries,
                 const size_t num_diagonals, const size_t alignment);
@@ -213,8 +224,8 @@ public:
 /**
  * \brief View of a \p dia_matrix
  *
- * \tparam Array1 Type of \c diagonal_offsets
- * \tparam Array2 Type of \c values array view
+ * \tparam ArrayType1 Type of \c diagonal_offsets
+ * \tparam ArrayType2 Type of \c values array view
  * \tparam IndexType Type used for matrix indices (e.g. \c int).
  * \tparam ValueType Type used for matrix values (e.g. \c float).
  * \tparam MemorySpace A memory space (e.g. \c cusp::host_memory or \c cusp::device_memory)
@@ -296,11 +307,11 @@ public:
  * }
  *  \endcode
  */
-template <typename Array1,
-         typename Array2,
-         typename IndexType   = typename Array1::value_type,
-         typename ValueType   = typename Array2::value_type,
-         typename MemorySpace = typename cusp::minimum_space<typename Array1::memory_space, typename Array2::memory_space>::type >
+template <typename ArrayType1,
+         typename ArrayType2,
+         typename IndexType   = typename ArrayType1::value_type,
+         typename ValueType   = typename ArrayType2::value_type,
+         typename MemorySpace = typename cusp::minimum_space<typename ArrayType1::memory_space, typename ArrayType2::memory_space>::type >
 class dia_matrix_view : public cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::dia_format>
 {
 private:
@@ -309,10 +320,10 @@ private:
 
 public:
     /*! \cond */
-    typedef Array1 diagonal_offsets_array_type;
-    typedef Array2 values_array_type;
+    typedef ArrayType1 diagonal_offsets_array_type;
+    typedef ArrayType2 values_array_type;
     typedef typename cusp::dia_matrix<IndexType, ValueType, MemorySpace> container;
-    typedef typename cusp::dia_matrix_view<Array1, Array2, IndexType, ValueType, MemorySpace> view;
+    typedef typename cusp::dia_matrix_view<ArrayType1, ArrayType2, IndexType, ValueType, MemorySpace> view;
     /*! \endcond */
 
     /*! Storage for the diagonal offsets.
@@ -327,75 +338,120 @@ public:
      */
     dia_matrix_view(void) {}
 
-    template <typename OtherArray1, typename OtherArray2>
+    /*! Construct a \p dia_matrix_view with a specific shape and number of nonzero entries
+     *  from existing arrays denoting the diagonal offsets and values.
+     *
+     *  \param num_rows Number of rows.
+     *  \param num_cols Number of columns.
+     *  \param num_entries Number of nonzero matrix entries.
+     *  \param diagonal_offsets Array containing the diagonal offsets.
+     *  \param values Array containing the values.
+     */
+    template <typename OtherArrayType1, typename OtherArrayType2>
     dia_matrix_view(size_t num_rows, size_t num_cols, size_t num_entries,
-                    OtherArray1& diagonal_offsets, OtherArray2& values)
+                    OtherArrayType1& diagonal_offsets, OtherArrayType2& values)
         : Parent(num_rows, num_cols, num_entries),
           diagonal_offsets(diagonal_offsets),
           values(values) {}
 
-    template <typename OtherArray1, typename OtherArray2>
+    /*! Construct a \p dia_matrix_view with a specific shape and number of nonzero entries
+     *  from existing const arrays denoting the diagonal offsets and values.
+     *
+     *  \param num_rows Number of rows.
+     *  \param num_cols Number of columns.
+     *  \param num_entries Number of nonzero matrix entries.
+     *  \param diagonal_offsets Array containing the diagonal offsets.
+     *  \param values Array containing the values.
+     */
+    template <typename OtherArrayType1, typename OtherArrayType2>
     dia_matrix_view(size_t num_rows, size_t num_cols, size_t num_entries,
-                    const OtherArray1& diagonal_offsets, const OtherArray2& values)
+                    const OtherArrayType1& diagonal_offsets, const OtherArrayType2& values)
         : Parent(num_rows, num_cols, num_entries),
           diagonal_offsets(diagonal_offsets),
           values(values) {}
 
-    dia_matrix_view(dia_matrix<IndexType,ValueType,MemorySpace>& A)
-        : Parent(A),
-          diagonal_offsets(A.diagonal_offsets),
-          values(A.values) {}
+    /*! Construct a \p dia_matrix_view from a existing \p dia_matrix.
+     *
+     *  \param matrix \p dia_matrix used to create view.
+     */
+    dia_matrix_view(dia_matrix<IndexType,ValueType,MemorySpace>& matrix)
+        : Parent(matrix),
+          diagonal_offsets(matrix.diagonal_offsets),
+          values(matrix.values) {}
 
-    dia_matrix_view(const dia_matrix<IndexType,ValueType,MemorySpace>& A)
-        : Parent(A),
-          diagonal_offsets(A.diagonal_offsets),
-          values(A.values) {}
+    /*! Construct a \p dia_matrix_view from a existing const \p dia_matrix.
+     *
+     *  \param matrix \p dia_matrix used to create view.
+     */
+    dia_matrix_view(const dia_matrix<IndexType,ValueType,MemorySpace>& matrix)
+        : Parent(matrix),
+          diagonal_offsets(matrix.diagonal_offsets),
+          values(matrix.values) {}
 
-    dia_matrix_view(dia_matrix_view& A)
-        : Parent(A),
-          diagonal_offsets(A.diagonal_offsets),
-          values(A.values) {}
+    /*! Construct a \p dia_matrix_view from a existing \p dia_matrix_view.
+     *
+     *  \param matrix \p dia_matrix_view used to create view.
+     */
+    dia_matrix_view(dia_matrix_view& matrix)
+        : Parent(matrix),
+          diagonal_offsets(matrix.diagonal_offsets),
+          values(matrix.values) {}
 
-    dia_matrix_view(const dia_matrix_view& A)
-        : Parent(A),
-          diagonal_offsets(A.diagonal_offsets),
-          values(A.values) {}
+    /*! Construct a \p dia_matrix_view from a existing const \p dia_matrix_view.
+     *
+     *  \param matrix \p dia_matrix_view used to create view.
+     */
+    dia_matrix_view(const dia_matrix_view& matrix)
+        : Parent(matrix),
+          diagonal_offsets(matrix.diagonal_offsets),
+          values(matrix.values) {}
 
     /*! Resize matrix dimensions and underlying storage
+     *
+     *  \param num_rows Number of rows.
+     *  \param num_cols Number of columns.
+     *  \param num_entries Number of nonzero matrix entries.
+     *  \param num_diagonals Number of occupied diagonals.
      */
     void resize(const size_t num_rows, const size_t num_cols, const size_t num_entries,
                 const size_t num_diagonals);
 
     /*! Resize matrix dimensions and underlying storage
+     *
+     *  \param num_rows Number of rows.
+     *  \param num_cols Number of columns.
+     *  \param num_entries Number of nonzero matrix entries.
+     *  \param num_diagonals Number of occupied diagonals.
+     *  \param alignment Amount of padding used to align the data structure (default 32).
      */
     void resize(const size_t num_rows, const size_t num_cols, const size_t num_entries,
                 const size_t num_diagonals, const size_t alignment);
 }; // class dia_matrix_view
 
 
-template <typename Array1,
-         typename Array2>
-dia_matrix_view<Array1,Array2>
+template <typename ArrayType1,
+         typename ArrayType2>
+dia_matrix_view<ArrayType1,ArrayType2>
 make_dia_matrix_view(size_t num_rows,
                      size_t num_cols,
                      size_t num_entries,
-                     Array1 diagonal_offsets,
-                     Array2 values)
+                     ArrayType1 diagonal_offsets,
+                     ArrayType2 values)
 {
-    return dia_matrix_view<Array1,Array2>
+    return dia_matrix_view<ArrayType1,ArrayType2>
            (num_rows, num_cols, num_entries,
             diagonal_offsets, values);
 }
 
-template <typename Array1,
-         typename Array2,
+template <typename ArrayType1,
+         typename ArrayType2,
          typename IndexType,
          typename ValueType,
          typename MemorySpace>
-dia_matrix_view<Array1,Array2,IndexType,ValueType,MemorySpace>
-make_dia_matrix_view(const dia_matrix_view<Array1,Array2,IndexType,ValueType,MemorySpace>& m)
+dia_matrix_view<ArrayType1,ArrayType2,IndexType,ValueType,MemorySpace>
+make_dia_matrix_view(const dia_matrix_view<ArrayType1,ArrayType2,IndexType,ValueType,MemorySpace>& m)
 {
-    return dia_matrix_view<Array1,Array2,IndexType,ValueType,MemorySpace>(m);
+    return dia_matrix_view<ArrayType1,ArrayType2,IndexType,ValueType,MemorySpace>(m);
 }
 
 template <typename IndexType, typename ValueType, class MemorySpace>

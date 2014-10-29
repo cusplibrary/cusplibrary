@@ -24,13 +24,14 @@
 
 #include <cusp/array1d.h>
 #include <cusp/format.h>
+#include <cusp/memory.h>
 #include <cusp/detail/matrix_base.h>
 
 namespace cusp
 {
 
 // forward definition
-template <typename Array, typename ValueType, typename MemorySpace, typename IndexType> class permutation_matrix_view;
+template <typename ArrayType, typename ValueType, typename MemorySpace, typename IndexType> class permutation_matrix_view;
 
 /*! \addtogroup sparse_matrices Sparse Matrices
  */
@@ -147,13 +148,11 @@ public:
      */
     permutation_matrix(void) {}
 
-    /*! Construct a \p permutation_matrix with a specific shape and number of nonzero entries.
+    /*! Construct a \p permutation_matrix with a specific number of rows.
      *
      *  \param num_rows Number of rows.
-     *  \param num_cols Number of columns.
-     *  \param num_entries Number of nonzero matrix entries.
      */
-    permutation_matrix(size_t num_rows)
+    permutation_matrix(const size_t num_rows)
         : Parent(num_rows, num_rows, num_rows),
           permutation(cusp::counting_array<int>(num_rows)) {}
 
@@ -170,10 +169,12 @@ public:
      *  \param matrix Another sparse or dense matrix.
      */
     template<typename ArrayType>
-    permutation_matrix(size_t num_rows, const ArrayType& permutation)
+    permutation_matrix(const size_t num_rows, const ArrayType& permutation)
         : Parent(num_rows, num_rows, num_rows), permutation(permutation) {}
 
     /*! Resize matrix dimensions and underlying storage
+     *
+     *  \param num_rows Number of rows.
      */
     void resize(const size_t num_rows);
 
@@ -184,9 +185,11 @@ public:
     void swap(permutation_matrix& matrix);
 
     /*! Permute rows and columns of matrix elements
+     *
+     *  \param matrix Input matrix to apply symmetric permutation.
      */
     template<typename MatrixType>
-    void symmetric_permute(MatrixType& A);
+    void symmetric_permute(MatrixType& matrix);
 }; // class permutation_matrix
 /*! \}
  */
@@ -264,9 +267,9 @@ public:
  *  }
  *  \endcode
  */
-template <typename Array,
-         typename ValueType   = typename Array::value_type,
-         typename MemorySpace = typename Array::memory_space,
+template <typename ArrayType,
+         typename ValueType   = typename ArrayType::value_type,
+         typename MemorySpace = typename ArrayType::memory_space,
          typename IndexType   = unsigned int>
 class permutation_matrix_view : public cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::permutation_format>
 {
@@ -277,75 +280,116 @@ private:
 public:
 
     /*! \cond */
-    typedef Array permutation_array_type;
+    typedef ArrayType permutation_array_type;
 
     typedef typename cusp::permutation_matrix<ValueType, MemorySpace> container;
 
-    typedef typename cusp::permutation_matrix_view<Array, ValueType, MemorySpace> view;
+    typedef typename cusp::permutation_matrix_view<ArrayType, ValueType, MemorySpace> view;
     /*! \endcond */
 
     /*! Storage for the permutation indices
      */
     permutation_array_type permutation;
 
-    // construct empty view
+    /*! Construct an empty \p permutation_matrix_view.
+     */
     permutation_matrix_view(void)
         : Parent() {}
 
-    // construct from existing permutation matrix or view
-    permutation_matrix_view(permutation_matrix<ValueType,MemorySpace>& P)
-        : Parent(P),
-          permutation(P.permutation) {}
-
-    // TODO check sizes here
-    template<typename Array1>
-    permutation_matrix_view(size_t num_rows, const Array1& permutation)
+    /*! Construct a \p permutation_matrix_view with a specific number of rows
+     *  from an existing array denoting the permutation indices.
+     *
+     *  \param num_rows Number of rows.
+     *  \param permutation Array containing the permutation indices.
+     */
+    permutation_matrix_view(const size_t num_rows, ArrayType& permutation)
         : Parent(num_rows, num_rows, num_rows),
           permutation(permutation) {}
 
+    /*! Construct a \p permutation_matrix_view with a specific number of rows
+     *  from an existing const array denoting the permutation indices.
+     *
+     *  \param num_rows Number of rows.
+     *  \param permutation Array containing the permutation indices.
+     */
+    permutation_matrix_view(const size_t num_rows, const ArrayType& permutation)
+        : Parent(num_rows, num_rows, num_rows),
+          permutation(permutation) {}
+
+    /*! Construct a \p permutation_matrix_view from a existing \p permutation_matrix.
+     *
+     *  \param matrix \p permutation_matrix used to create view.
+     */
+    permutation_matrix_view(permutation_matrix<ValueType,MemorySpace>& matrix)
+        : Parent(matrix),
+          permutation(matrix.permutation) {}
+
+    /*! Construct a \p permutation_matrix_view from a existing const \p permutation_matrix.
+     *
+     *  \param matrix \p permutation_matrix used to create view.
+     */
+    permutation_matrix_view(const permutation_matrix<ValueType,MemorySpace>& matrix)
+        : Parent(matrix),
+          permutation(matrix.permutation) {}
+
+    /*! Construct a \p permutation_matrix_view from a existing \p permutation_matrix_view.
+     *
+     *  \param matrix \p permutation_matrix_view used to create view.
+     */
+    permutation_matrix_view(permutation_matrix_view<ArrayType>& matrix)
+        : Parent(matrix),
+          permutation(matrix.permutation) {}
+
+    /*! Construct a \p permutation_matrix_view from a existing const \p permutation_matrix_view.
+     *
+     *  \param matrix \p permutation_matrix_view used to create view.
+     */
+    permutation_matrix_view(const permutation_matrix_view<ArrayType>& matrix)
+        : Parent(matrix),
+          permutation(matrix.permutation) {}
+
     /*! Resize matrix dimensions and underlying storage
+     *
+     *  \param num_rows Number of rows.
      */
     void resize(const size_t num_rows);
 
     /*! Permute rows and columns of matrix elements
+     *
+     *  \param matrix Input matrix to apply symmetric permutation.
      */
     template<typename MatrixType>
-    void symmetric_permute(MatrixType& A);
+    void symmetric_permute(MatrixType& matrix);
 };
 
 /* Convenience functions */
 
-template <typename Array>
-permutation_matrix_view<Array>
-make_permutation_matrix_view(size_t num_rows, Array permutation)
+template <typename ArrayType>
+permutation_matrix_view<ArrayType>
+make_permutation_matrix_view(size_t num_rows, ArrayType permutation)
 {
-    return permutation_matrix_view<Array>
-           (num_rows, permutation);
+    return permutation_matrix_view<ArrayType>(num_rows, permutation);
 }
 
-template <typename Array,
-         typename ValueType,
-         typename MemorySpace>
-permutation_matrix_view<Array,ValueType,MemorySpace>
-make_permutation_matrix_view(const permutation_matrix_view<Array,ValueType,MemorySpace>& m)
+template <typename ArrayType, typename ValueType, typename MemorySpace>
+permutation_matrix_view<ArrayType,ValueType,MemorySpace>
+make_permutation_matrix_view(const permutation_matrix_view<ArrayType,ValueType,MemorySpace>& m)
 {
-    return permutation_matrix_view<Array,ValueType,MemorySpace>(m);
+    return permutation_matrix_view<ArrayType,ValueType,MemorySpace>(m);
 }
 
 template <typename ValueType, class MemorySpace>
 typename permutation_matrix<ValueType,MemorySpace>::view
 make_permutation_matrix_view(permutation_matrix<ValueType,MemorySpace>& m)
 {
-    return make_permutation_matrix_view
-           (m.num_rows, make_array1d_view(m.permutation));
+    return make_permutation_matrix_view(m.num_rows, make_array1d_view(m.permutation));
 }
 
 template <typename ValueType, class MemorySpace>
 typename permutation_matrix<ValueType,MemorySpace>::const_view
 make_permutation_matrix_view(const permutation_matrix<ValueType,MemorySpace>& m)
 {
-    return make_permutation_matrix_view
-           (m.num_rows, make_array1d_view(m.permutation));
+    return make_permutation_matrix_view(m.num_rows, make_array1d_view(m.permutation));
 }
 /*! \}
  */
