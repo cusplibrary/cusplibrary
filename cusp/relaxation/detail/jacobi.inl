@@ -70,111 +70,96 @@ struct jacobi_postsmooth_functor
 } // end namespace detail
 
 
-// constructor
 template <typename ValueType, typename MemorySpace>
-    jacobi<ValueType,MemorySpace>
-    ::jacobi() : default_omega(0.0)
-    {
-    }
+template<typename MatrixType>
+jacobi<ValueType,MemorySpace>
+::jacobi(const MatrixType& A, ValueType omega)
+    : default_omega(omega), temp(A.num_rows)
+{
+    CUSP_PROFILE_SCOPED();
 
-template <typename ValueType, typename MemorySpace>
-template<typename MemorySpace2>
-    jacobi<ValueType,MemorySpace>
-    ::jacobi(const jacobi<ValueType,MemorySpace2>& A)
-        : default_omega(A.default_omega), temp(A.temp), diagonal(A.diagonal)
-    {
-    }
+    // extract the main diagonal
+    cusp::detail::extract_diagonal(A, diagonal);
+}
 
 template <typename ValueType, typename MemorySpace>
 template<typename MatrixType>
-    jacobi<ValueType,MemorySpace>
-    ::jacobi(const MatrixType& A, ValueType omega)
-        : default_omega(omega), temp(A.num_rows)
-    {
-        CUSP_PROFILE_SCOPED();
+jacobi<ValueType,MemorySpace>
+::jacobi(const cusp::precond::aggregation::sa_level<MatrixType>& sa_level, ValueType weight)
+    : temp(sa_level.A_.num_rows)
+{
+    CUSP_PROFILE_SCOPED();
 
-        // extract the main diagonal
-        cusp::detail::extract_diagonal(A, diagonal);
+    if(sa_level.rho_DinvA == ValueType(0))
+    {
+        default_omega = weight / cusp::precond::aggregation::detail::estimate_rho_Dinv_A(sa_level.A_);
+    }
+    else
+    {
+        default_omega = weight / sa_level.rho_DinvA;
     }
 
-template <typename ValueType, typename MemorySpace>
-template<typename MatrixType>
-    jacobi<ValueType,MemorySpace>
-    ::jacobi(const cusp::precond::aggregation::sa_level<MatrixType>& sa_level, ValueType weight)
-        : temp(sa_level.A_.num_rows)
-    {
-        CUSP_PROFILE_SCOPED();
-
-        if(sa_level.rho_DinvA == ValueType(0))
-        {
-          default_omega = weight / cusp::precond::aggregation::detail::estimate_rho_Dinv_A(sa_level.A_);
-        }
-        else
-        {
-          default_omega = weight / sa_level.rho_DinvA;
-        }
-
-        // extract the main diagonal
-        cusp::detail::extract_diagonal(sa_level.A_, diagonal);
-    }
+    // extract the main diagonal
+    cusp::detail::extract_diagonal(sa_level.A_, diagonal);
+}
 
 // linear_operator
 template <typename ValueType, typename MemorySpace>
 template<typename MatrixType, typename VectorType1, typename VectorType2>
-    void jacobi<ValueType,MemorySpace>
-    ::operator()(const MatrixType& A, const VectorType1& b, VectorType2& x)
-    {
-        jacobi<ValueType,MemorySpace>::operator()(A,b,x,default_omega);
-    }
+void jacobi<ValueType,MemorySpace>
+::operator()(const MatrixType& A, const VectorType1& b, VectorType2& x)
+{
+    jacobi<ValueType,MemorySpace>::operator()(A,b,x,default_omega);
+}
 
 // override default omega
 template <typename ValueType, typename MemorySpace>
 template<typename MatrixType, typename VectorType1, typename VectorType2>
-    void jacobi<ValueType,MemorySpace>
-    ::operator()(const MatrixType& A, const VectorType1& b, VectorType2& x, ValueType omega)
-    {
-        CUSP_PROFILE_SCOPED();
+void jacobi<ValueType,MemorySpace>
+::operator()(const MatrixType& A, const VectorType1& b, VectorType2& x, ValueType omega)
+{
+    CUSP_PROFILE_SCOPED();
 
-        // y <- A*x
-        cusp::multiply(A, x, temp);
-        
-        // x <- x + omega * D^-1 * (b - y)
-        thrust::transform(thrust::make_zip_iterator(thrust::make_tuple(x.begin(), diagonal.begin(), b.begin(), temp.begin())),
-                          thrust::make_zip_iterator(thrust::make_tuple(x.end(),   diagonal.end(),   b.end(),   temp.end())),
-                          x.begin(),
-                          detail::jacobi_postsmooth_functor<ValueType>(omega));
-    }
+    // y <- A*x
+    cusp::multiply(A, x, temp);
 
-template <typename ValueType, typename MemorySpace>
-template<typename MatrixType, typename VectorType1, typename VectorType2>
-    void jacobi<ValueType,MemorySpace>
-    ::presmooth(const MatrixType&, const VectorType1& b, VectorType2& x)
-    {
-        CUSP_PROFILE_SCOPED();
-        
-        // x <- omega * D^-1 * b 
-        thrust::transform(b.begin(), b.end(),
-                          diagonal.begin(),
-                          x.begin(),
-                          detail::jacobi_presmooth_functor<ValueType>(default_omega));
-    }
+    // x <- x + omega * D^-1 * (b - y)
+    thrust::transform(thrust::make_zip_iterator(thrust::make_tuple(x.begin(), diagonal.begin(), b.begin(), temp.begin())),
+                      thrust::make_zip_iterator(thrust::make_tuple(x.end(),   diagonal.end(),   b.end(),   temp.end())),
+                      x.begin(),
+                      detail::jacobi_postsmooth_functor<ValueType>(omega));
+}
 
 template <typename ValueType, typename MemorySpace>
 template<typename MatrixType, typename VectorType1, typename VectorType2>
-    void jacobi<ValueType,MemorySpace>
-    ::postsmooth(const MatrixType& A, const VectorType1& b, VectorType2& x)
-    {
-        CUSP_PROFILE_SCOPED();
+void jacobi<ValueType,MemorySpace>
+::presmooth(const MatrixType&, const VectorType1& b, VectorType2& x)
+{
+    CUSP_PROFILE_SCOPED();
 
-        // y <- A*x
-        cusp::multiply(A, x, temp);
-        
-        // x <- x + omega * D^-1 * (b - y)
-        thrust::transform(thrust::make_zip_iterator(thrust::make_tuple(x.begin(), diagonal.begin(), b.begin(), temp.begin())),
-                          thrust::make_zip_iterator(thrust::make_tuple(x.end(),   diagonal.end(),   b.end(),   temp.end())),
-                          x.begin(),
-                          detail::jacobi_postsmooth_functor<ValueType>(default_omega));
-    }
+    // x <- omega * D^-1 * b
+    thrust::transform(b.begin(), b.end(),
+                      diagonal.begin(),
+                      x.begin(),
+                      detail::jacobi_presmooth_functor<ValueType>(default_omega));
+}
+
+template <typename ValueType, typename MemorySpace>
+template<typename MatrixType, typename VectorType1, typename VectorType2>
+void jacobi<ValueType,MemorySpace>
+::postsmooth(const MatrixType& A, const VectorType1& b, VectorType2& x)
+{
+    CUSP_PROFILE_SCOPED();
+
+    // y <- A*x
+    cusp::multiply(A, x, temp);
+
+    // x <- x + omega * D^-1 * (b - y)
+    thrust::transform(thrust::make_zip_iterator(thrust::make_tuple(x.begin(), diagonal.begin(), b.begin(), temp.begin())),
+                      thrust::make_zip_iterator(thrust::make_tuple(x.end(),   diagonal.end(),   b.end(),   temp.end())),
+                      x.begin(),
+                      detail::jacobi_postsmooth_functor<ValueType>(default_omega));
+}
 
 
 } // end namespace relaxation

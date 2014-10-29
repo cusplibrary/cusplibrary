@@ -25,6 +25,7 @@
 
 namespace cusp
 {
+/*! \cond */
 namespace precond
 {
 namespace aggregation
@@ -33,6 +34,7 @@ namespace aggregation
 template<typename MatrixType> struct sa_level;
 } // end namespace aggregation
 } // end namespace precond
+/*! \endcond */
 
 namespace relaxation
 {
@@ -45,28 +47,30 @@ public:
     cusp::array1d<ValueType,MemorySpace> diagonal;
     cusp::array1d<ValueType,MemorySpace> temp;
 
-    jacobi();
+    // constructor
+    jacobi() : default_omega(0.0) {}
 
     template <typename MatrixType>
     jacobi(const MatrixType& A, ValueType omega=1.0);
 
-    template <typename MemorySpace2>
-    jacobi(const jacobi<ValueType,MemorySpace2>& A);
+    template<typename MemorySpace2>
+    jacobi(const jacobi<ValueType,MemorySpace2>& A)
+        : default_omega(A.default_omega), temp(A.temp), diagonal(A.diagonal){}
 
     template <typename MatrixType>
     jacobi(const cusp::precond::aggregation::sa_level<MatrixType>& sa_level, ValueType weight=4.0/3.0);
-    
+
     // ignores initial x
     template<typename MatrixType, typename VectorType1, typename VectorType2>
     void presmooth(const MatrixType& A, const VectorType1& b, VectorType2& x);
-   
+
     // smooths initial x
     template<typename MatrixType, typename VectorType1, typename VectorType2>
     void postsmooth(const MatrixType& A, const VectorType1& b, VectorType2& x);
 
     template <typename MatrixType, typename VectorType1, typename VectorType2>
     void operator()(const MatrixType& A, const VectorType1& b, VectorType2& x);
-        
+
     template <typename MatrixType, typename VectorType1, typename VectorType2>
     void operator()(const MatrixType& A, const VectorType1& b, VectorType2& x, ValueType omega);
 };

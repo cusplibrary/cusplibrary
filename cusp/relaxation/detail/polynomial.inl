@@ -69,13 +69,6 @@ void chebyshev_polynomial_coefficients( const ValueType rho,
 }
 }
 
-// constructor
-template <typename ValueType, typename MemorySpace>
-polynomial<ValueType,MemorySpace>
-::polynomial()
-{
-}
-
 template <typename ValueType, typename MemorySpace>
 template<typename MatrixType, typename VectorType>
 polynomial<ValueType,MemorySpace>
@@ -91,13 +84,6 @@ polynomial<ValueType,MemorySpace>
     residual.resize(N);
     y.resize(N);
     h.resize(N);
-}
-
-template <typename ValueType, typename MemorySpace>
-template<typename MemorySpace2>
-polynomial<ValueType,MemorySpace>
-::polynomial(const polynomial<ValueType,MemorySpace2>& A) : default_coefficients(A.default_coefficients), residual(A.residual), h(A.h), y(A.y)
-{
 }
 
 template <typename ValueType, typename MemorySpace>

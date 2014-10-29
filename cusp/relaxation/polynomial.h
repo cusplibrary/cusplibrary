@@ -26,6 +26,7 @@
 
 namespace cusp
 {
+/*! \cond */
 namespace precond
 {
 namespace aggregation
@@ -34,6 +35,7 @@ namespace aggregation
 template<typename MatrixType> struct sa_level;
 } // end namespace aggregation
 } // end namespace precond
+/*! \endcond */
 
 namespace relaxation
 {
@@ -49,13 +51,15 @@ public:
     cusp::array1d<ValueType, MemorySpace> h;
     cusp::array1d<ValueType, MemorySpace> y;
 
-    polynomial();
+    polynomial(void){}
 
     template <typename MatrixType, typename VectorType>
     polynomial(const MatrixType& A, const VectorType& coefficients);
 
-    template <typename MemorySpace2>
-    polynomial(const polynomial<ValueType,MemorySpace2>& A);
+    template<typename MemorySpace2>
+    polynomial(const polynomial<ValueType,MemorySpace2>& A)
+    : default_coefficients(A.default_coefficients),
+      residual(A.residual), h(A.h), y(A.y) {}
 
     template <typename MatrixType>
     polynomial(const cusp::precond::aggregation::sa_level<MatrixType>& sa_level);
@@ -63,7 +67,7 @@ public:
     // ignores initial x
     template<typename MatrixType, typename VectorType1, typename VectorType2>
     void presmooth(const MatrixType& A, const VectorType1& b, VectorType2& x);
-   
+
     // smooths initial x
     template<typename MatrixType, typename VectorType1, typename VectorType2>
     void postsmooth(const MatrixType& A, const VectorType1& b, VectorType2& x);
