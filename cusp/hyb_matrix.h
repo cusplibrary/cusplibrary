@@ -49,7 +49,7 @@ template <typename Matrix1, typename Matrix2, typename IndexType, typename Value
  *
  * \tparam IndexType Type used for matrix indices (e.g. \c int).
  * \tparam ValueType Type used for matrix values (e.g. \c float).
- * \tparam MemorySpace A memory space (e.g. \c cusp::host_memory or cusp::device_memory)
+ * \tparam MemorySpace A memory space (e.g. \c cusp::host_memory or \c cusp::device_memory)
  *
  * \par Overview
  * The \p hyb_matrix is a combination of the \p ell_matrix and
