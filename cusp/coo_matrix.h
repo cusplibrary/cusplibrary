@@ -214,7 +214,7 @@ public:
  */
 
 /**
- * \brief Coordinate (COO) view of a sparse matrix
+ * \brief View of a \p coo_matrix
  *
  * \tparam Array1 Type of \c row_indices array view
  * \tparam Array2 Type of \c column_indices array view

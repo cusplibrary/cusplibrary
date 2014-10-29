@@ -45,8 +45,7 @@ template <typename Matrix1, typename Matrix2, typename IndexType, typename Value
  */
 
 /**
- * \brief hyb_matrix represents a sparse matrix in hybrid ELL and COO
- * container
+ * \brief Hybrid (HYB) representation a sparse matrix
  *
  * \tparam IndexType Type used for matrix indices (e.g. \c int).
  * \tparam ValueType Type used for matrix values (e.g. \c float).
@@ -87,7 +86,6 @@ template <typename Matrix1, typename Matrix2, typename IndexType, typename Value
  *
  *  int main()
  *  {
- *
  *    // allocate storage for (4,3) matrix with 8 nonzeros
  *    //     ELL portion has 5 nonzeros and storage for 2 nonzeros per row
  *    //     COO portion has 3 nonzeros
@@ -244,14 +242,90 @@ public:
  *  \{
  */
 
-/*! \p hyb_matrix_view : Hybrid ELL/COO matrix view
+/**
+ * \brief View of a \p hyb_matrix
  *
  * \tparam Matrix1 Type of \c ell
  * \tparam Matrix2 Type of \c coo
  * \tparam IndexType Type used for matrix indices (e.g. \c int).
  * \tparam ValueType Type used for matrix values (e.g. \c float).
- * \tparam MemorySpace A memory space (e.g. \c cusp::host_memory or cusp::device_memory)
+ * \tparam MemorySpace A memory space (e.g. \c cusp::host_memory or \c cusp::device_memory)
  *
+ * \par Overview
+ *  A \p hyb_matrix_view is a sparse matrix view of a \p hyb_matrix
+ *  constructed from existing data or iterators. See \p ell_matrix and \p
+ *  coo_matrix for format constraints.
+ *
+ *  \note The matrix entries must be sorted by row index.
+ *  \note The matrix should not contain duplicate entries.
+ *
+ * \par Example
+ *  The following code snippet demonstrates how to create a 4-by-3
+ *  \p hyb_matrix_view on the host with 6 nonzeros.
+ *
+ *  \code
+ * // include coo_matrix header file
+ * #include <cusp/hyb_matrix.h>
+ * #include <cusp/print.h>
+ *
+ * int main()
+ * {
+ *    typedef cusp::ell_matrix<int,float,cusp::host_memory>::view EllMatrixView;
+ *    typedef cusp::coo_matrix<int,float,cusp::host_memory>::view CooMatrixView;
+ *
+ *    // allocate storage for (4,3) matrix with 8 nonzeros
+ *    //     ELL portion has 5 nonzeros and storage for 2 nonzeros per row
+ *    //     COO portion has 3 nonzeros
+ *    cusp::ell_matrix<int,float,cusp::host_memory> ell(4,3,5,2);
+ *    cusp::coo_matrix<int,float,cusp::host_memory> coo(4,3,3);
+ *
+ *    // Initialize A to represent the following matrix
+ *    // [10  20  30  40]
+ *    // [ 0  50   0   0]
+ *    // [60   0  70  80]
+ *
+ *    // A is split into ELL and COO parts as follows
+ *    // [10  20  30  40]    [10  20   0   0]     [ 0   0  30  40]
+ *    // [ 0  50   0   0]  = [ 0  50   0   0]  +  [ 0   0   0   0]
+ *    // [60   0  70  80]    [60   0  70   0]     [ 0   0   0  80]
+ *
+ *    // Initialize ELL part
+ *
+ *    // X is used to fill unused entries in the ELL portion of the matrix
+ *    const int X = cusp::ell_matrix<int,float,cusp::host_memory>::invalid_index;
+ *
+ *    // first row
+ *    ell.column_indices(0,0) = 0; ell.values(0,0) = 10;
+ *    ell.column_indices(0,1) = 1; ell.values(0,1) = 20;
+ *
+ *    // second row
+ *    ell.column_indices(1,0) = 1; ell.values(1,0) = 50;  // shifted to leftmost position
+ *    ell.column_indices(1,1) = X; ell.values(1,1) =  0;  // padding
+ *
+ *    // third row
+ *    ell.column_indices(2,0) = 0; ell.values(2,0) = 60;
+ *    ell.column_indices(2,1) = 2; ell.values(2,1) = 70;  // shifted to leftmost position
+ *
+ *    // Initialize COO part
+ *    coo.row_indices[0] = 0;  coo.column_indices[0] = 2;  coo.values[0] = 30;
+ *    coo.row_indices[1] = 0;  coo.column_indices[1] = 3;  coo.values[1] = 40;
+ *    coo.row_indices[2] = 2;  coo.column_indices[2] = 3;  coo.values[2] = 80;
+ *
+ *    // allocate storage for (4,3) matrix with 6 nonzeros
+ *    cusp::hyb_matrix_view<EllMatrixView,CooMatrixView>
+ *    A(cusp::make_ell_matrix_view(ell),
+ *      cusp::make_coo_matrix_view(coo));
+ *
+ *    // print the constructed hyb_matrix
+ *    cusp::print(A);
+ *
+ *    // change first entry in values array
+ *    ell.values(0,0) = -1;
+ *
+ *    // print the updated matrix view
+ *    cusp::print(A);
+ * }
+ *  \endcode
  */
 template <typename Matrix1,
          typename Matrix2,
@@ -284,7 +358,7 @@ public:
 
     /*! Construct an empty \p hyb_matrix_view.
      */
-    hyb_matrix_view() {}
+    hyb_matrix_view(void) {}
 
     template <typename OtherMatrix1, typename OtherMatrix2>
     hyb_matrix_view(OtherMatrix1& ell, OtherMatrix2& coo)
@@ -294,24 +368,23 @@ public:
     hyb_matrix_view(const OtherMatrix1& ell, const OtherMatrix2& coo)
         : Parent(ell.num_rows, ell.num_cols, ell.num_entries + coo.num_entries), ell(ell), coo(coo) {}
 
-    template <typename Matrix>
-    hyb_matrix_view(Matrix& A)
+    hyb_matrix_view(hyb_matrix<IndexType,ValueType,MemorySpace>& A)
         : Parent(A), ell(A.ell), coo(A.coo) {}
 
-    template <typename Matrix>
-    hyb_matrix_view(const Matrix& A)
+    hyb_matrix_view(const hyb_matrix<IndexType,ValueType,MemorySpace>& A)
+        : Parent(A), ell(A.ell), coo(A.coo) {}
+
+    hyb_matrix_view(hyb_matrix_view& A)
+        : Parent(A), ell(A.ell), coo(A.coo) {}
+
+    hyb_matrix_view(const hyb_matrix_view& A)
         : Parent(A), ell(A.ell), coo(A.coo) {}
 
     /*! Resize matrix dimensions and underlying storage
      */
     void resize(size_t num_rows, size_t num_cols,
                 size_t num_ell_entries, size_t num_coo_entries,
-                size_t num_entries_per_row, size_t alignment = 32)
-    {
-        Parent::resize(num_rows, num_cols, num_ell_entries + num_coo_entries);
-        ell.resize(num_rows, num_cols, num_ell_entries, num_entries_per_row, alignment);
-        coo.resize(num_rows, num_cols, num_coo_entries);
-    }
+                size_t num_entries_per_row, size_t alignment = 32);
 };
 /*! \} // end Views
  */

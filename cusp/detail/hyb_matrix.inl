@@ -49,5 +49,17 @@ hyb_matrix<IndexType,ValueType,MemorySpace>
     return *this;
 }
 
+template <typename Matrix1, typename Matrix2, typename IndexType, typename ValueType, typename MemorySpace>
+void
+hyb_matrix_view<Matrix1,Matrix2,IndexType,ValueType,MemorySpace>
+::resize(size_t num_rows, size_t num_cols,
+         size_t num_ell_entries, size_t num_coo_entries,
+         size_t num_entries_per_row, size_t alignment)
+{
+    Parent::resize(num_rows, num_cols, num_ell_entries + num_coo_entries);
+    ell.resize(num_rows, num_cols, num_ell_entries, num_entries_per_row, alignment);
+    coo.resize(num_rows, num_cols, num_coo_entries);
+}
+
 } // end namespace cusp
 

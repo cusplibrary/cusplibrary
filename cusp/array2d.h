@@ -480,7 +480,7 @@ make_array2d_view(const array2d_view<Array, Orientation>& a)
  *  \return array2d_view constructed using input array2d
  */
 template<typename T, class MemorySpace, class Orientation>
-array2d_view<typename cusp::array1d_view<typename cusp::array1d<T,MemorySpace>::iterator >, Orientation>
+array2d_view<typename cusp::array1d_view<typename cusp::array1d<T,MemorySpace>::iterator>, Orientation>
 make_array2d_view(cusp::array2d<T,MemorySpace,Orientation>& v)
 {
     return cusp::make_array2d_view(v.num_rows, v.num_cols, v.pitch, cusp::make_array1d_view(v.values), Orientation());
@@ -496,7 +496,7 @@ make_array2d_view(cusp::array2d<T,MemorySpace,Orientation>& v)
  *  \return constant array2d_view constructed using input array2d
  */
 template<typename T, class MemorySpace, class Orientation>
-array2d_view<typename cusp::array1d_view<typename cusp::array1d<T,MemorySpace>::const_iterator >, Orientation>
+array2d_view<typename cusp::array1d_view<typename cusp::array1d<T,MemorySpace>::const_iterator>, Orientation>
 make_array2d_view(const cusp::array2d<T,MemorySpace,Orientation>& v)
 {
     return cusp::make_array2d_view(v.num_rows, v.num_cols, v.pitch, cusp::make_array1d_view(v.values), Orientation());

@@ -93,53 +93,26 @@ ell_matrix<IndexType,ValueType,MemorySpace>
     return *this;
 }
 
-///////////////////////////
-// Convenience Functions //
-///////////////////////////
-
-template <typename Array1,
-         typename Array2>
-ell_matrix_view<Array1,Array2>
-make_ell_matrix_view(size_t num_rows,
-                     size_t num_cols,
-                     size_t num_entries,
-                     Array1 column_indices,
-                     Array2 values)
-{
-    return ell_matrix_view<Array1,Array2>
-           (num_rows, num_cols, num_entries,
-            column_indices, values);
-}
-
-template <typename Array1,
-         typename Array2,
-         typename IndexType,
-         typename ValueType,
-         typename MemorySpace>
+template <typename Array1, typename Array2, typename IndexType, typename ValueType, class MemorySpace>
+void
 ell_matrix_view<Array1,Array2,IndexType,ValueType,MemorySpace>
-make_ell_matrix_view(const ell_matrix_view<Array1,Array2,IndexType,ValueType,MemorySpace>& m)
+::resize(const size_t num_rows, const size_t num_cols, const size_t num_entries,
+         const size_t num_entries_per_row)
 {
-    return ell_matrix_view<Array1,Array2,IndexType,ValueType,MemorySpace>(m);
+    Parent::resize(num_rows, num_cols, num_entries);
+    column_indices.resize(num_rows, num_entries_per_row);
+    values.resize(num_rows, num_entries_per_row);
 }
 
-template <typename IndexType, typename ValueType, class MemorySpace>
-typename ell_matrix<IndexType,ValueType,MemorySpace>::view
-make_ell_matrix_view(ell_matrix<IndexType,ValueType,MemorySpace>& m)
+template <typename Array1, typename Array2, typename IndexType, typename ValueType, class MemorySpace>
+void
+ell_matrix_view<Array1,Array2,IndexType,ValueType,MemorySpace>
+::resize(const size_t num_rows, const size_t num_cols, const size_t num_entries,
+         const size_t num_entries_per_row, const size_t alignment)
 {
-    return make_ell_matrix_view
-           (m.num_rows, m.num_cols, m.num_entries,
-            cusp::make_array2d_view(m.column_indices),
-            cusp::make_array2d_view(m.values));
-}
-
-template <typename IndexType, typename ValueType, class MemorySpace>
-typename ell_matrix<IndexType,ValueType,MemorySpace>::const_view
-make_ell_matrix_view(const ell_matrix<IndexType,ValueType,MemorySpace>& m)
-{
-    return make_ell_matrix_view
-           (m.num_rows, m.num_cols, m.num_entries,
-            cusp::make_array2d_view(m.column_indices),
-            cusp::make_array2d_view(m.values));
+    Parent::resize(num_rows, num_cols, num_entries);
+    column_indices.resize(num_rows, num_entries_per_row, cusp::detail::round_up(num_rows, alignment));
+    values.resize        (num_rows, num_entries_per_row, cusp::detail::round_up(num_rows, alignment));
 }
 
 } // end namespace cusp

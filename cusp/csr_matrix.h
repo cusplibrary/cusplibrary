@@ -195,7 +195,7 @@ public:
  */
 
 /**
- * \brief Compressed Sparse Row (CSR) view of a sparse matrix
+ * \brief View of a \p csr_matrix
  *
  * \tparam Array1 Type of \c row_offsets array view
  * \tparam Array2 Type of \c column_indices array view
@@ -316,8 +316,28 @@ public:
         : Parent() {}
 
     // construct from existing CSR matrix or view
-    template <typename Matrix>
-    csr_matrix_view(Matrix& A)
+    csr_matrix_view(csr_matrix<IndexType,ValueType,MemorySpace>& A)
+        : Parent(A),
+          row_offsets(A.row_offsets),
+          column_indices(A.column_indices),
+          values(A.values) {}
+
+    // construct from existing CSR matrix or view
+    csr_matrix_view(const csr_matrix<IndexType,ValueType,MemorySpace>& A)
+        : Parent(A),
+          row_offsets(A.row_offsets),
+          column_indices(A.column_indices),
+          values(A.values) {}
+
+    // construct from existing CSR matrix or view
+    csr_matrix_view(csr_matrix_view& A)
+        : Parent(A),
+          row_offsets(A.row_offsets),
+          column_indices(A.column_indices),
+          values(A.values) {}
+
+    // construct from existing CSR matrix or view
+    csr_matrix_view(const csr_matrix_view& A)
         : Parent(A),
           row_offsets(A.row_offsets),
           column_indices(A.column_indices),

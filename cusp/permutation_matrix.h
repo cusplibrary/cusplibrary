@@ -41,15 +41,14 @@ template <typename Array, typename ValueType, typename MemorySpace, typename Ind
  */
 
 /**
- * \brief permutation_matrix represents a permutation matrix
+ * \brief Simple representation a permutation matrix
  *
  * \tparam ValueType Type used for matrix values (e.g. \c float).
  * \tparam MemorySpace A memory space (e.g. \c cusp::host_memory or \c cusp::device_memory)
  * \tparam IndexType Type used for matrix indices (e.g. \c int).
  *
  * \par Overview
- * \note The matrix entries within the same row must be sorted by column index.
- * \note The matrix should not contain duplicate entries.
+ *  This matrix represents a row permutation of the identity matrix.
  *
  * \par Example
  *  The following code snippet demonstrates how to create a 3-by-3
@@ -197,12 +196,73 @@ public:
  *  \{
  */
 
-/*! \p permutation_matrix_view : permutation matrix view
+/**
+ * \brief View of a \p permutation_matrix
  *
- * \tparam Array Type of \c permutation array view
+ * \tparam Array Type of permutation array view
  * \tparam ValueType Type used for matrix indices (e.g. \c int).
  * \tparam MemorySpace A memory space (e.g. \c cusp::host_memory or cusp::device_memory)
  *
+ * \par Overview
+ *
+ *  A \p permutation_matrix_view is a view of a \p permutation_matrix
+ *  constructed from existing data or iterators.
+ *
+ * \par Example
+ *  The following code snippet demonstrates how to create a 3-by-3
+ *  \p permutation_matrix on the host with 3 nonzeros and permutes
+ *  a coo_matrix by first by row and then by column.
+ *
+ *  \code
+ *  // include the permutation_matrix header file
+ *  #include <cusp/coo_matrix.h>
+ *  #include <cusp/multiply.h>
+ *  #include <cusp/permutation_matrix.h>
+ *  #include <cusp/print.h>
+ *
+ *  int main()
+ *  {
+ *    // allocate storage for (3,3) matrix with 5 nonzeros
+ *    cusp::coo_matrix<int,float,cusp::host_memory> A(3,3,5);
+ *
+ *    // initialize matrix entries on host
+ *    A.row_indices[0] = 0; A.column_indices[0] = 0; A.values[0] = 10;
+ *    A.row_indices[1] = 0; A.column_indices[1] = 2; A.values[1] = 20;
+ *    A.row_indices[2] = 0; A.column_indices[2] = 0; A.values[2] = 30;
+ *    A.row_indices[3] = 1; A.column_indices[3] = 1; A.values[3] = 40;
+ *    A.row_indices[4] = 2; A.column_indices[4] = 2; A.values[4] = 50;
+ *
+ *    // A now represents the following matrix
+ *    //    [10  0 20]
+ *    //    [30 40  0]
+ *    //    [ 0  0 50]
+ *
+ *    // generate a index permutation that swaps row or column 0 and 2
+ *    cusp::array1d<int,cusp::host_memory> permutation(3);
+ *    permutation[0] = 2; // 0 maps to 2
+ *    permutation[1] = 1; // 1 maps to 1
+ *    permutation[2] = 0; // 2 maps to 0
+ *
+ *    // allocate storage for (3,3) matrix with 3 nonzeros
+ *    cusp::permutation_matrix<int,cusp::host_memory> P(3, permutation);
+ *
+ *    // P now represents the following permutation matrix
+ *    //    [0 0 1]
+ *    //    [0 1 0]
+ *    //    [1 0 0]
+ *
+ *    // permute the rows of A
+ *    cusp::coo_matrix<int,float,cusp::host_memory> PA;
+ *    cusp::multiply(P, A, PA);
+ *
+ *    // permute the column of PA
+ *    cusp::coo_matrix<int,float,cusp::host_memory> PAP;
+ *    cusp::multiply(PA, P, PAP);
+ *
+ *    // print the permuted matrix
+ *    cusp::print(PAP);
+ *  }
+ *  \endcode
  */
 template <typename Array,
          typename ValueType   = typename Array::value_type,
