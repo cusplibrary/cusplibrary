@@ -31,10 +31,11 @@ namespace cusp
  *  \{
  */
 
-/*! \p transpose : transpose a matrix
+/**
+ * \brief Transpose a matrix
  *
- * \tparam MatrixType1 matrix
- * \tparam MatrixType2 matrix
+ * \tparam MatrixType1 Type of input matrix to transpose
+ * \tparam MatrixType2 Type of output matrix
  *
  * \param A input matrix
  * \param At output matrix (transpose of A)

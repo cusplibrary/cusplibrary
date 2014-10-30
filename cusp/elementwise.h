@@ -42,23 +42,115 @@ namespace cusp
 //                                 Matrix3& C,
 //                                 BinaryFunction op);
 
-/*! \p add : Compute the sum of two matrices
+/**
+ * \brief Compute the sum of two matrices
+ *
+ * \tparam MatrixType1 Type of first matrix
+ * \tparam MatrixType2 Type of second matrix
+ * \tparam MatrixType3 Type of output matrix
+ *
+ * \param A first input matrix
+ * \param B second input matrix
+ * \param C output matrix
+ *
+ * \par Example
+ *  The following code snippet demonstrates how to use \p add.
+ *
+ *  \code
+ *  #include <cusp/elementwise.h>
+ *  #include <cusp/array2d.h>
+ *  #include <cusp/print.h>
+ *
+ *  int main(void)
+ *  {
+ *      // initialize first 2x3 matrix
+ *      cusp::array2d<float, cusp::host_memory> A(2,3);
+ *      A(0,0) = 10;  A(0,1) = 20;  A(0,2) = 30;
+ *      A(1,0) = 40;  A(1,1) = 50;  A(1,2) = 60;
+ *
+ *      // print A
+ *      cusp::print(A);
+ *
+ *      // initialize second 2x3 matrix
+ *      cusp::array2d<float, cusp::host_memory> B(2,3);
+ *      B(0,0) = 60;  B(0,1) = 50;  B(0,2) = 40;
+ *      B(1,0) = 30;  B(1,1) = 20;  B(1,2) = 10;
+ *
+ *      // print B
+ *      cusp::print(B);
+ *
+ *      // compute the sum
+ *      cusp::array2d<float, cusp::host_memory> C;
+ *      cusp::add(A, B, C);
+ *
+ *      // print C
+ *      cusp::print(C);
+ *
+ *      return 0;
+ *  }
+ *  \endcode
  */
-template <typename Matrix1,
-         typename Matrix2,
-         typename Matrix3>
-void add(const Matrix1& A,
-         const Matrix2& B,
-         Matrix3& C);
+template <typename MatrixType1,
+         typename MatrixType2,
+         typename MatrixType3>
+void add(const MatrixType1& A,
+         const MatrixType2& B,
+         MatrixType3& C);
 
-/*! \p add : Compute the difference of two matrices
+/**
+ * \brief Compute the difference of two matrices
+ *
+ * \tparam MatrixType1 Type of first matrix
+ * \tparam MatrixType2 Type of second matrix
+ * \tparam MatrixType3 Type of output matrix
+ *
+ * \param A first input matrix
+ * \param B second input matrix
+ * \param C output matrix
+ *
+ * \par Example
+ *  The following code snippet demonstrates how to use \p subtract.
+ *
+ *  \code
+ *  #include <cusp/elementwise.h>
+ *  #include <cusp/array2d.h>
+ *  #include <cusp/print.h>
+ *
+ *  int main(void)
+ *  {
+ *      // initialize first 2x3 matrix
+ *      cusp::array2d<float, cusp::host_memory> A(2,3);
+ *      A(0,0) = 10;  A(0,1) = 20;  A(0,2) = 30;
+ *      A(1,0) = 40;  A(1,1) = 50;  A(1,2) = 60;
+ *
+ *      // print A
+ *      cusp::print(A);
+ *
+ *      // initialize second 2x3 matrix
+ *      cusp::array2d<float, cusp::host_memory> B(2,3);
+ *      B(0,0) = 60;  B(0,1) = 50;  B(0,2) = 40;
+ *      B(1,0) = 30;  B(1,1) = 20;  B(1,2) = 10;
+ *
+ *      // print B
+ *      cusp::print(B);
+ *
+ *      // compute the subtract
+ *      cusp::array2d<float, cusp::host_memory> C;
+ *      cusp::subtract(A, B, C);
+ *
+ *      // print C
+ *      cusp::print(C);
+ *
+ *      return 0;
+ *  }
+ *  \endcode
  */
-template <typename Matrix1,
-         typename Matrix2,
-         typename Matrix3>
-void subtract(const Matrix1& A,
-              const Matrix2& B,
-              Matrix3& C);
+template <typename MatrixType1,
+         typename MatrixType2,
+         typename MatrixType3>
+void subtract(const MatrixType1& A,
+              const MatrixType2& B,
+              MatrixType3& C);
 /*! \}
  */
 

@@ -31,18 +31,23 @@ namespace cusp
  *  \{
  */
 
-/*! \p multiply : Implements matrix-matrix and matrix-vector multiplication
+/**
+ * \brief Implements matrix-matrix and matrix-vector multiplication
+ *
+ * \par Overview
  *
  * \p multiply can be used with dense matrices, sparse matrices, and user-defined
  * \p linear_operator objects.
+ *
+ * \tparam LinearOperator Type of first matrix
+ * \tparam MatrixOrVector1 Type of second matrix or vector
+ * \tparam MatrixOrVector2 Type of output matrix or vector
  *
  * \param A input matrix
  * \param B input matrix or vector
  * \param C output matrix or vector
  *
- * \tparam LinearOperator matrix
- * \tparam MatrixOrVector1 matrix or vector
- * \tparam MatrixOrVector2 matrix or vector
+ * \par Example
  *
  *  The following code snippet demonstrates how to use \p multiply to
  *  compute a matrix-vector product.

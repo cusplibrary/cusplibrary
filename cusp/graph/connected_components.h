@@ -33,7 +33,7 @@ namespace graph
  */
 
 /**
- * Computes the connected components of a graph
+ * \brief Computes the connected components of a graph
  *
  * \tparam MatrixType Type of input matrix
  * \tparam ArrayType Type of components array

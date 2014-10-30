@@ -31,15 +31,22 @@ namespace cusp
  *  \{
  */
 
-/*! \p copy : Copy one array or matrix to another
+/**
+ * \brief Copy one array or matrix to another
  *
- * \note T1 and T2 must have the same format type
- * \note T2 will be resized as necessary
+ * \tparam SourceType Type of the input matrix to copy
+ * \tparam DestinationType Type of the output matrix
+ *
+ * \param src Input matrix to copy
+ * \param dst Output matrix created by copying src to dst
+ *
+ * \note SourceType and DestinationType must have the same format
+ * \note DestinationType will be resized as necessary
  *
  * \see \p convert
  */
-template <typename T1, typename T2>
-void copy(const T1& src, T2& dst);
+template <typename SourceType, typename DestinationType>
+void copy(const SourceType& src, DestinationType& dst);
 
 /*! \}
  */

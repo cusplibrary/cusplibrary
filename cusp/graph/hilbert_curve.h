@@ -33,8 +33,7 @@ namespace graph
  */
 
 /**
- * Uses a Hilbert space filling curve to partition
- * a set of points in 2 or 3 dimensional space.
+ * \brief Partition a graph using Hilbert curve
  *
  * \param coord Set of points in 2 or 3-D space
  * \param num_parts Number of partitions to construct
@@ -42,6 +41,10 @@ namespace graph
  *
  * \tparam Array2dType Type of input coordinates array
  * \tparam ArrayType Type of output partition indicator array, parts
+ *
+ * \par Overview
+ * Uses a Hilbert space filling curve to partition
+ * a set of points in 2 or 3 dimensional space.
  *
  * \see http://en.wikipedia.org/wiki/Hilbert_curve
  *

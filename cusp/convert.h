@@ -33,11 +33,18 @@ namespace cusp
  *  \{
  */
 
-/*! \p copy : Convert between matrix formats
+/**
+ * \brief Convert between matrix formats
+ *
+ * \tparam SourceType Type of the input matrix to convert
+ * \tparam DestinationType Type of the output matrix to create
+ *
+ * \param src Input matrix to convert
+ * \param dst Output matrix created by converting src to the specified format
  *
  * \note DestinationType will be resized as necessary
  *
- * \see \p cusp::copy
+ * \see \p copy
  */
 template <typename SourceType, typename DestinationType>
 void convert(const SourceType& src, DestinationType& dst);

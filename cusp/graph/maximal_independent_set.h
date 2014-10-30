@@ -33,6 +33,19 @@ namespace graph
  */
 
 /**
+ * \brief Compute maximal independent set of a graph
+ *
+ * \tparam MatrixType Type of input matrix
+ * \tparam ArrayType Type of components array
+ *
+ * \param G symmetric matrix that represents a graph
+ * \param stencil array to hold the MIS(k)
+ * \param k radius of independence
+ *
+ * \return The number of MIS vertices computed for G.
+ *
+ * \par Overview
+ *
  * Computes a maximal independent set (MIS) a graph. The MIS is a set of
  * vertices such that (1) no two vertices
  * are adjacent and (2) it is not possible to add another vertex to thes
@@ -44,14 +57,6 @@ namespace graph
  * <tt>stencil[i]</tt> is 1 if vertex \p i is a member of the MIS(k) and
  * 0 otherwise.
  *
- * \tparam MatrixType Type of input matrix
- * \tparam ArrayType Type of components array
- *
- * \param G symmetric matrix that represents a graph
- * \param stencil array to hold the MIS(k)
- * \param k radius of independence
- *
- * \return The number of MIS vertices computed for G.
  *
  * \see http://en.wikipedia.org/wiki/Maximal_independent_set
  *

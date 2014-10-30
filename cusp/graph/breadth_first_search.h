@@ -34,9 +34,10 @@ namespace graph
  */
 
 /**
- * Performs a Breadth-first traversal of a graph starting from a given source vertex.
+ * \brief Performs a Breadth-first traversal of a graph starting from a given source vertex.
  *
- * \tparam MARK_PREDECESSORS Indicates whether to use level or predecessor markings
+ * \tparam MARK_PREDECESSORS Boolean value indicating whether to return level sets, \c false, or
+ * predecessor, \c true, markers
  * \tparam MatrixType Type of input matrix
  * \tparam ArrayType Type of labels array
  *

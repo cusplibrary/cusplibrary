@@ -38,9 +38,7 @@ typename MatrixType::index_type pseudo_peripheral_vertex(const MatrixType& G);
 /*! \endcond */
 
 /**
- * Finds a pseduo-peripheral vertex in a graph. A peripheral vertex
- * is the vertex which achieves the diameter of the graph, i.e. achieves the
- * maximum separation distance.
+ * \brief Compute the pseudo-peripheral vertex of a graph
  *
  * \tparam MatrixType Type of input matrix
  * \tparam ArrayType Type of components array
@@ -50,6 +48,11 @@ typename MatrixType::index_type pseudo_peripheral_vertex(const MatrixType& G);
  * computed pseudo-peripheral vertex.
  *
  * \return The computed pseudo-peripheral vertex
+ *
+ * \par Overview
+ * Finds a pseduo-peripheral vertex in a graph. A peripheral vertex
+ * is the vertex which achieves the diameter of the graph, i.e. achieves the
+ * maximum separation distance.
  *
  * \see http://en.wikipedia.org/wiki/Distance_(graph_theory)
  *
