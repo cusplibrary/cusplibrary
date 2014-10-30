@@ -99,7 +99,9 @@ void bicg(LinearOperator& A,
  *      // set stopping criteria:
  *      //  iteration_limit    = 100
  *      //  relative_tolerance = 1e-6
- *      cusp::monitor<float> monitor(b, 100, 1e-6);
+ *      //  absolute_tolerance = 0
+ *      //  verbose            = true
+ *      cusp::monitor<float> monitor(b, 100, 1e-6, 0, true);
  *
  *      // set preconditioner (identity)
  *      cusp::identity_operator<float, cusp::device_memory> M(A.num_rows, A.num_rows);
@@ -107,7 +109,7 @@ void bicg(LinearOperator& A,
  *      // solve the linear system A x = b
  *      // because both A and M are hermitian we can use
  *      // them for their own conjugate transpose
- *      cusp::krylov::bicgstab(A, A, x, b, monitor, M, M);
+ *      cusp::krylov::bicg(A, A, x, b, monitor, M, M);
  *
  *      return 0;
  *  }

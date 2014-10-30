@@ -29,27 +29,27 @@ namespace krylov
 {
 
 template <class LinearOperator,
-          class Vector>
+         class Vector>
 void bicg(LinearOperator& A,
-	  LinearOperator& At,
-	  Vector& x,
-	  Vector& b)
+          LinearOperator& At,
+          Vector& x,
+          Vector& b)
 {
     typedef typename LinearOperator::value_type   ValueType;
 
-    cusp::default_monitor<ValueType> monitor(b);
+    cusp::monitor<ValueType> monitor(b);
 
     cusp::krylov::bicg(A, At, x, b, monitor);
 }
 
 template <class LinearOperator,
-          class Vector,
-          class Monitor>
+         class Vector,
+         class Monitor>
 void bicg(LinearOperator& A,
-	  LinearOperator& At,
-	  Vector& x,
-	  Vector& b,
-	  Monitor& monitor)
+          LinearOperator& At,
+          Vector& x,
+          Vector& b,
+          Monitor& monitor)
 {
     typedef typename LinearOperator::value_type   ValueType;
     typedef typename LinearOperator::memory_space MemorySpace;
@@ -60,16 +60,16 @@ void bicg(LinearOperator& A,
 }
 
 template <class LinearOperator,
-          class Vector,
-          class Monitor,
-          class Preconditioner>
+         class Vector,
+         class Monitor,
+         class Preconditioner>
 void bicg(LinearOperator& A,
-	  LinearOperator& At,
-	  Vector& x,
-	  Vector& b,
-	  Monitor& monitor,
-	  Preconditioner& M,
-	  Preconditioner& Mt)
+          LinearOperator& At,
+          Vector& x,
+          Vector& b,
+          Monitor& monitor,
+          Preconditioner& M,
+          Preconditioner& Mt)
 {
     CUSP_PROFILE_SCOPED();
 
@@ -97,8 +97,8 @@ void bicg(LinearOperator& A,
 
     // r <- b - A*x
     blas::axpby(b, y, r, ValueType(1), ValueType(-1));
-    if(monitor.finished(r)){
-      return;
+    if(monitor.finished(r)) {
+        return;
     }
 
     // r_star <- r
@@ -108,7 +108,7 @@ void bicg(LinearOperator& A,
     cusp::multiply(M, r, z);
     // z_star = Mt r_star
     cusp::multiply(Mt, r_star, z_star);
-    
+
     // rho = (z,r_star)
     ValueType rho = blas::dotc(z, r_star);
 
@@ -117,52 +117,52 @@ void bicg(LinearOperator& A,
 
     // p_star <- r
     blas::copy(z_star, p_star);
-    
+
     while (1)
     {
-      // q = A p
-      cusp::multiply(A, p, q);
-      // q_star = At p_star
-      cusp::multiply(At, p_star, q_star);
+        // q = A p
+        cusp::multiply(A, p, q);
+        // q_star = At p_star
+        cusp::multiply(At, p_star, q_star);
 
-      // alpha = (rho) / (p_star, q)
-      ValueType alpha = rho / blas::dotc(p_star, q);
+        // alpha = (rho) / (p_star, q)
+        ValueType alpha = rho / blas::dotc(p_star, q);
 
-      // x += alpha*p
-      blas::axpby(x, p, x, ValueType(1), ValueType(alpha));
+        // x += alpha*p
+        blas::axpby(x, p, x, ValueType(1), ValueType(alpha));
 
-      // r -= alpha*q
-      blas::axpby(r, q, r, ValueType(1), ValueType(-alpha));
-      
-      // r_star -= alpha*q_star
-      blas::axpby(r_star, q_star, r_star, ValueType(1), ValueType(-alpha));
-      
-      if (monitor.finished(r)){
-	break;
-      }
-      
-      // z = M r
-      cusp::multiply(M, r, z);
-      // z_star = Mt r_star
-      cusp::multiply(Mt, r_star, z_star);
-      
-      ValueType prev_rho = rho;
-      // rho = (z,r_star)
-      rho = blas::dotc(z, r_star);
-      if(rho == ValueType(0)){
-	// Failure!
-	// TODO: Make the failure more apparent to the user
-	break;
-      }
-      
-      ValueType beta = rho/prev_rho;
-      
-      // p = beta*p + z
-      blas::axpby(p, z, p, ValueType(beta), ValueType(1));
-      
-      // p_star = beta*p_star + z_star
-      blas::axpby(p_star, z_star, p_star, ValueType(beta), ValueType(1));
-      ++monitor;
+        // r -= alpha*q
+        blas::axpby(r, q, r, ValueType(1), ValueType(-alpha));
+
+        // r_star -= alpha*q_star
+        blas::axpby(r_star, q_star, r_star, ValueType(1), ValueType(-alpha));
+
+        if (monitor.finished(r)) {
+            break;
+        }
+
+        // z = M r
+        cusp::multiply(M, r, z);
+        // z_star = Mt r_star
+        cusp::multiply(Mt, r_star, z_star);
+
+        ValueType prev_rho = rho;
+        // rho = (z,r_star)
+        rho = blas::dotc(z, r_star);
+        if(rho == ValueType(0)) {
+            // Failure!
+            // TODO: Make the failure more apparent to the user
+            break;
+        }
+
+        ValueType beta = rho/prev_rho;
+
+        // p = beta*p + z
+        blas::axpby(p, z, p, ValueType(beta), ValueType(1));
+
+        // p_star = beta*p_star + z_star
+        blas::axpby(p_star, z_star, p_star, ValueType(beta), ValueType(1));
+        ++monitor;
     }
 }
 

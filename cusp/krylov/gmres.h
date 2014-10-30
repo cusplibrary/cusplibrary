@@ -100,7 +100,9 @@ void gmres(LinearOperator& A,
  *      // set stopping criteria:
  *      //  iteration_limit    = 100
  *      //  relative_tolerance = 1e-6
- *      cusp::monitor<float> monitor(b, 100, 1e-6);
+ *      //  absolute_tolerance = 0
+ *      //  verbose            = true
+ *      cusp::monitor<float> monitor(b, 100, 1e-6, 0, true);
  *      int restart = 50;
  *
  *      // set preconditioner (identity)

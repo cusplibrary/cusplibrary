@@ -100,7 +100,9 @@ void cr(LinearOperator& A,
  *      // set stopping criteria:
  *      //  iteration_limit    = 100
  *      //  relative_tolerance = 1e-6
- *      cusp::monitor<float> monitor(b, 100, 1e-6);
+ *      //  absolute_tolerance = 0
+ *      //  verbose            = true
+ *      cusp::monitor<float> monitor(b, 100, 1e-6, 0, true);
  *
  *      // set preconditioner (identity)
  *      cusp::identity_operator<float, cusp::device_memory> M(A.num_rows, A.num_rows);
