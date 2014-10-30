@@ -103,9 +103,10 @@ class monitor
 public:
     typedef typename cusp::norm_type<ValueType>::type Real;
 
-    /*! Constructs a \p monitor for a given right-hand-side \p b
+    /**
+     *  \brief Constructs a \p monitor for a given right-hand-side \p b
      *
-     *  \tparam VectorType vector
+     *  \tparam VectorType Type of initial vector
      *
      *  \param b right-hand-side of the linear system A x = b
      *  \param iteration_limit maximum number of solver iterations to allow
@@ -120,42 +121,62 @@ public:
             const Real absolute_tolerance = 0,
             const bool verbose = false);
 
-    /*! increment the iteration count
+    /**
+     * \brief Increments the iteration count
      */
     void operator++(void);
 
-    /*! whether the last tested residual satifies the convergence tolerance
-     */
-    bool converged() const;
-
-    /*! Euclidean norm of last residual
-     */
-    Real residual_norm() const;
-
-    /*! number of iterations
-     */
-    size_t iteration_count() const;
-
-    /*! maximum number of iterations
-     */
-    size_t iteration_limit() const;
-
-    /*! relative tolerance
-     */
-    Real relative_tolerance() const;
-
-    /*! absolute tolerance
-     */
-    Real absolute_tolerance() const;
-
-    /*! tolerance
+    /**
+     * \brief Indicates whether the last tested residual satisfies the convergence tolerance
      *
-     *  Equal to absolute_tolerance() + relative_tolerance() * ||b||
+     * \return Boolean convergence indicator
+     */
+    bool converged(void) const;
+
+    /**
+     * \brief Euclidean norm of last residual
      *
+     * \return The residual norm
+     */
+    Real residual_norm(void) const;
+
+    /**
+     * \brief Returns the number of iterations that the monitor has executed
+     *
+     * \return Number of iterations
+     */
+    size_t iteration_count(void) const;
+
+    /**
+     * \brief Returns the maximum number of iterations
+     *
+     * \return Maximum number of allowed iterations
+     */
+    size_t iteration_limit(void) const;
+
+    /**
+     * \brief Returns the relative tolerance
+     *
+     * \return absolute_tolerance set for monitor
+     */
+    Real relative_tolerance(void) const;
+
+    /**
+     * \brief Returns the absolute tolerance
+     *
+     * \return absolute_tolerance set for monitor
+     */
+    Real absolute_tolerance(void) const;
+
+    /**
+     *  \brief Return the tolerance equal to absolute_tolerance() + relative_tolerance() * ||b||
+     *
+     * \return tolerance set for monitor
      */
     Real tolerance(void) const;
 
-    /*! applies convergence criteria to determine whether iteration is finished
+    /**
+     *  \brief Applies convergence criteria to determine whether iteration is finished
      *
      *  \tparam Vector vector
      *  \param r residual vector of the linear system (r = b - A x)
@@ -163,19 +184,52 @@ public:
     template <typename Vector>
     bool finished(const Vector& r);
 
+    /**
+     *  \brief Sets the verbosity level of the monitor
+     *
+     *  \param verbose_ If \c true print convergence messages during
+     *  iterations.
+     */
     void set_verbose(bool verbose_ = true);
 
+    /**
+     *  \brief Resets the monitor using same convergence criteria
+     *
+     *  \tparam Vector vector
+     *  \param b initial right hand side
+     */
     template <typename Vector>
     void reset(const Vector& b);
 
+    /**
+     *  \brief Prints the number of iterations and convergence history information.
+     */
     void print(void);
 
+    /**
+     *  \brief Returns the immedidate convergence rate.
+     *
+     *  \return immediate convergence rate.
+     */
     Real immediate_rate(void);
 
+    /**
+     *  \brief Returns the geometric convergence rate.
+     *
+     *  \return geometric convergence rate.
+     */
     Real geometric_rate(void);
 
+    /**
+     *  \brief Returns the average convergence rate.
+     *
+     *  \return average convergence rate.
+     */
     Real average_rate(void);
 
+    /*
+     * Array holding the residuals per iteration
+     */
     cusp::array1d<Real,cusp::host_memory> residuals;
 
 private:

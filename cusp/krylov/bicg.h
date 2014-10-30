@@ -58,9 +58,13 @@ void bicg(LinearOperator& A,
           Monitor& monitor);
 /* \endcond */
 
-/*! \p bicg : Biconjugate Gradient method
+/**
+ * \brief Biconjugate Gradient method
  *
- * Solves the linear system A x = b with preconditioner \p M.
+ * \tparam LinearOperator is a matrix or subclass of \p linear_operator
+ * \tparam Vector vector
+ * \tparam Monitor is a \p monitor
+ * \tparam Preconditioner is a matrix or subclass of \p linear_operator
  *
  * \param A matrix of the linear system
  * \param At conjugate tranpose of the matrix of the linear system
@@ -70,10 +74,10 @@ void bicg(LinearOperator& A,
  * \param M preconditioner for A
  * \param Mt conjugate tranpose of the preconditioner for A
  *
- * \tparam LinearOperator is a matrix or subclass of \p linear_operator
- * \tparam Vector vector
- * \tparam Monitor is a \p monitor
- * \tparam Preconditioner is a matrix or subclass of \p linear_operator
+ * \par Overview
+ * Solves the linear system A x = b with preconditioner \p M.
+ *
+ * \par Example
  *
  *  The following code snippet demonstrates how to use \p bicg to
  *  solve a 10x10 Poisson problem.

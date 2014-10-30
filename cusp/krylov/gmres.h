@@ -59,10 +59,13 @@ void gmres(LinearOperator& A,
            Monitor& monitor);
 /* \endcond */
 
-/*! \p gmres : GMRES method
+/**
+ * \brief GMRES method
  *
- * Solves the nonsymmetric, linear system A x = b
- * with preconditioner \p M.
+ * \tparam LinearOperator is a matrix or subclass of \p linear_operator
+ * \tparam Vector vector
+ * \tparam Monitor is a monitor such as \p default_monitor or \p verbose_monitor
+ * \tparam Preconditioner is a matrix or subclass of \p linear_operator
  *
  * \param A matrix of the linear system
  * \param x approximate solution of the linear system
@@ -71,10 +74,11 @@ void gmres(LinearOperator& A,
  * \param monitor montiors iteration and determines stopping conditions
  * \param M preconditioner for A
  *
- * \tparam LinearOperator is a matrix or subclass of \p linear_operator
- * \tparam Vector vector
- * \tparam Monitor is a monitor such as \p default_monitor or \p verbose_monitor
- * \tparam Preconditioner is a matrix or subclass of \p linear_operator
+ * \par Overview
+ * Solves the nonsymmetric, linear system A x = b
+ * with preconditioner \p M.
+ *
+ * \par Example
  *
  *  The following code snippet demonstrates how to use \p gmres to
  *  solve a 10x10 Poisson problem.

@@ -58,10 +58,13 @@ void cr(LinearOperator& A,
         Monitor& monitor);
 /* \endcond */
 
-/*! \p cr : Conjugate Residual method
+/**
+ * \brief Conjugate Residual method
  *
- * Computes least squares solution of semi-definite linear system A x = b
- * with preconditioner \p M.
+ * \tparam LinearOperator is a matrix or subclass of \p linear_operator
+ * \tparam Vector vector
+ * \tparam Monitor is a \p monitor
+ * \tparam Preconditioner is a matrix or subclass of \p linear_operator
  *
  * \param A matrix of the linear system
  * \param x approximate solution of the linear system
@@ -69,13 +72,12 @@ void cr(LinearOperator& A,
  * \param monitor montiors iteration and determines stopping conditions
  * \param M preconditioner for A
  *
- * \tparam LinearOperator is a matrix or subclass of \p linear_operator
- * \tparam Vector vector
- * \tparam Monitor is a \p monitor
- * \tparam Preconditioner is a matrix or subclass of \p linear_operator
+ * \par Overview
+ * Solves a linear system using the conjugate residual method
  *
  * \note \p A and \p M must be symmetric and semi-definite.
  *
+ * \par Example
  *  The following code snippet demonstrates how to use \p cr to
  *  solve a 10x10 Poisson problem.
  *

@@ -145,13 +145,8 @@ namespace trans_m
 
 } // end namespace trans_m
 
-/*! \addtogroup iterative_solvers Iterative Solvers
- *  \addtogroup krylov_methods Krylov Methods
- *  \ingroup iterative_solvers
- *  \{
- */
-
-/*! \p bicgstab_m : Multi-mass Biconjugate Gradient stabilized method
+/**
+ * \brief Multi-mass Biconjugate Gradient stabilized method
  */
 template <class LinearOperator,
           class VectorType1, class VectorType2, class VectorType3>
@@ -159,7 +154,83 @@ void bicgstab_m(LinearOperator& A,
         VectorType1& x, VectorType2& b, VectorType3& sigma);
 /* \endcond */
 
-/*! \p bicgstab_m : Multi-mass Biconjugate Gradient stabilized method
+/*! \addtogroup iterative_solvers Iterative Solvers
+ *  \addtogroup krylov_methods Krylov Methods
+ *  \ingroup iterative_solvers
+ *  \{
+ */
+
+/**
+ * \brief Multi-mass Biconjugate Gradient stabilized method
+ *
+ * \tparam LinearOperator is a matrix or subclass of \p linear_operator
+ * \tparam Vector vector
+ * \tparam Monitor is a \p monitor
+ * \tparam Preconditioner is a matrix or subclass of \p linear_operator
+ *
+ * \param A matrix of the linear system
+ * \param x approximate solution of the linear system
+ * \param b right-hand side of the linear system
+ * \param sigma array of shifts
+ * \param monitor montiors iteration and determines stopping conditions
+ *
+ * \par Overview
+ *
+ * This routine solves systems of the type
+ *
+ * (A+\sigma Id)x = b
+ *
+ * for a number of different \sigma, iteratively, for sparse A, without
+ * additional matrix-vector multiplication.
+ *
+ * \see http://arxiv.org/abs/hep-lat/9612014
+ *
+ * \par Example
+ *
+ *  The following code snippet demonstrates how to use \p bicgstab to
+ *  solve a 10x10 Poisson problem.
+ *
+ *  \code
+ *  #include <cusp/csr_matrix.h>
+ *  #include <cusp/monitor.h>
+ *  #include <cusp/krylov/bicgstab_m.h>
+ *  #include <cusp/gallery/poisson.h>
+ *
+ *  int main(void)
+ *  {
+ *      // create an empty sparse matrix structure (CSR format)
+ *      cusp::csr_matrix<int, float, cusp::device_memory> A;
+ *
+ *      // initialize matrix
+ *      cusp::gallery::poisson5pt(A, 10, 10);
+ *
+ *      // allocate storage for solution (x) and right hand side (b)
+ *      size_t N_s = 4;
+ *      cusp::array1d<float, cusp::device_memory> x(A.num_rows*N_s, 0);
+ *      cusp::array1d<float, cusp::device_memory> b(A.num_rows, 1);
+ *
+ *      // set sigma values
+ *      cusp::array1d<float, cusp::device_memory> sigma(N_s);
+ *      sigma[0] = 0.1;
+ *      sigma[1] = 0.5;
+ *      sigma[2] = 1.0;
+ *      sigma[3] = 5.0;
+ *
+ *      // set stopping criteria:
+ *      //  iteration_limit    = 100
+ *      //  relative_tolerance = 1e-6
+ *      //  absolute_tolerance = 0
+ *      //  verbose            = true
+ *      cusp::monitor<float> monitor(b, 100, 1e-6, 0, true);
+ *
+ *      // solve the linear system A x = b
+ *      cusp::krylov::bicgstab_m(A, x, b, sigma, monitor);
+ *
+ *      return 0;
+ *  }
+ *  \endcode
+ *
+ *  \see \p monitor
  */
 template <class LinearOperator,
           class VectorType1, class VectorType2, class VectorType3,

@@ -56,9 +56,13 @@ void bicgstab(LinearOperator& A,
               Monitor& monitor);
 /* \endcond */
 
-/*! \p bicgstab : Biconjugate Gradient Stabilized method
+/**
+ * \brief Biconjugate Gradient Stabilized method
  *
- * Solves the linear system A x = b with preconditioner \p M.
+ * \tparam LinearOperator is a matrix or subclass of \p linear_operator
+ * \tparam Vector vector
+ * \tparam Monitor is a \p monitor
+ * \tparam Preconditioner is a matrix or subclass of \p linear_operator
  *
  * \param A matrix of the linear system
  * \param x approximate solution of the linear system
@@ -66,10 +70,11 @@ void bicgstab(LinearOperator& A,
  * \param monitor montiors iteration and determines stopping conditions
  * \param M preconditioner for A
  *
- * \tparam LinearOperator is a matrix or subclass of \p linear_operator
- * \tparam Vector vector
- * \tparam Monitor is a \p monitor
- * \tparam Preconditioner is a matrix or subclass of \p linear_operator
+ * \par Overview
+ *
+ * Solves the linear system A x = b with preconditioner \p M.
+ *
+ * \par Example
  *
  *  The following code snippet demonstrates how to use \p bicgstab to
  *  solve a 10x10 Poisson problem.

@@ -60,10 +60,13 @@ void cg(LinearOperator& A,
         Monitor& monitor);
 /* \endcond */
 
-/*! \p cg : Conjugate Gradient method
+/**
+ * \brief Conjugate Gradient method
  *
- * Solves the symmetric, positive-definite linear system A x = b
- * with preconditioner \p M.
+ * \tparam LinearOperator is a matrix or subclass of \p linear_operator
+ * \tparam Vector vector
+ * \tparam Monitor is a \p monitor
+ * \tparam Preconditioner is a matrix or subclass of \p linear_operator
  *
  * \param A matrix of the linear system
  * \param x approximate solution of the linear system
@@ -71,13 +74,13 @@ void cg(LinearOperator& A,
  * \param monitor monitors iteration and determines stopping conditions
  * \param M preconditioner for A
  *
- * \tparam LinearOperator is a matrix or subclass of \p linear_operator
- * \tparam Vector vector
- * \tparam Monitor is a \p monitor
- * \tparam Preconditioner is a matrix or subclass of \p linear_operator
+ * \par Overview
+ * Solves the symmetric, positive-definite linear system A x = b
+ * with preconditioner \p M.
  *
  * \note \p A and \p M must be symmetric and positive-definite.
  *
+ * \par Example
  *  The following code snippet demonstrates how to use \p cg to
  *  solve a 10x10 Poisson problem.
  *

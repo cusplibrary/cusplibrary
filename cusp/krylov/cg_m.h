@@ -57,10 +57,8 @@ void cg_m(LinearOperator& A,
           VectorType3& sigma);
 /* \endcond */
 
-/*! \p cg_m : Multi-mass Conjugate Gradient method
- *
- * Solves the symmetric, positive-definited linear system (A+\sigma) x = b
- * for some set of constant shifts \p sigma for the price of the smallest shift
+/**
+ * \brief Multi-mass Conjugate Gradient method
  *
  * \param A matrix of the linear system
  * \param x solutions of the system
@@ -68,6 +66,60 @@ void cg_m(LinearOperator& A,
  * \param sigma array of shifts
  * \param monitor monitors interation and determines stoppoing conditions
  *
+ * \par Overview
+ *
+ * Solves the symmetric, positive-definited linear system (A+\sigma) x = b
+ * for some set of constant shifts \p sigma for the price of the smallest shift
+ * iteratively, for sparse A, without additional matrix-vector multiplication.
+ *
+ * \see http://arxiv.org/abs/hep-lat/9612014
+ *
+ * \par Example
+ *
+ *  The following code snippet demonstrates how to use \p bicgstab to
+ *  solve a 10x10 Poisson problem.
+ *
+ *  \code
+ *  #include <cusp/csr_matrix.h>
+ *  #include <cusp/monitor.h>
+ *  #include <cusp/krylov/cg_m.h>
+ *  #include <cusp/gallery/poisson.h>
+ *
+ *  int main(void)
+ *  {
+ *      // create an empty sparse matrix structure (CSR format)
+ *      cusp::csr_matrix<int, float, cusp::device_memory> A;
+ *
+ *      // initialize matrix
+ *      cusp::gallery::poisson5pt(A, 10, 10);
+ *
+ *      // allocate storage for solution (x) and right hand side (b)
+ *      size_t N_s = 4;
+ *      cusp::array1d<float, cusp::device_memory> x(A.num_rows*N_s, 0);
+ *      cusp::array1d<float, cusp::device_memory> b(A.num_rows, 1);
+ *
+ *      // set sigma values
+ *      cusp::array1d<float, cusp::device_memory> sigma(N_s);
+ *      sigma[0] = 0.1;
+ *      sigma[1] = 0.5;
+ *      sigma[2] = 1.0;
+ *      sigma[3] = 5.0;
+ *
+ *      // set stopping criteria:
+ *      //  iteration_limit    = 100
+ *      //  relative_tolerance = 1e-6
+ *      //  absolute_tolerance = 0
+ *      //  verbose            = true
+ *      cusp::monitor<float> monitor(b, 100, 1e-6, 0, true);
+ *
+ *      // solve the linear system A x = b
+ *      cusp::krylov::cg_m(A, x, b, sigma, monitor);
+ *
+ *      return 0;
+ *  }
+ *  \endcode
+ *
+ *  \see \p monitor
  */
 template <class LinearOperator,
          class VectorType1,
