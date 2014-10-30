@@ -32,29 +32,31 @@ namespace krylov
  *  \{
  */
 
+/* \cond */
 /*! \p bicg : Biconjugate Gradient method
  *
  * Solves the linear system A x = b using the default convergence criteria.
  */
 template <class LinearOperator,
-          class Vector>
+         class Vector>
 void bicg(LinearOperator& A,
-	  LinearOperator& At,
-	  Vector& x,
-	  Vector& b);
+          LinearOperator& At,
+          Vector& x,
+          Vector& b);
 
 /*! \p bicgstab : Biconjugate Gradient method
  *
  * Solves the linear system A x = b without preconditioning.
  */
 template <class LinearOperator,
-          class Vector,
-          class Monitor>
+         class Vector,
+         class Monitor>
 void bicg(LinearOperator& A,
-	  LinearOperator& At,
-	  Vector& x,
-	  Vector& b,
-	  Monitor& monitor);
+          LinearOperator& At,
+          Vector& x,
+          Vector& b,
+          Monitor& monitor);
+/* \endcond */
 
 /*! \p bicg : Biconjugate Gradient method
  *
@@ -70,7 +72,7 @@ void bicg(LinearOperator& A,
  *
  * \tparam LinearOperator is a matrix or subclass of \p linear_operator
  * \tparam Vector vector
- * \tparam Monitor is a monitor such as \p default_monitor or \p monitor
+ * \tparam Monitor is a \p monitor
  * \tparam Preconditioner is a matrix or subclass of \p linear_operator
  *
  *  The following code snippet demonstrates how to use \p bicg to
@@ -103,7 +105,7 @@ void bicg(LinearOperator& A,
  *      cusp::identity_operator<float, cusp::device_memory> M(A.num_rows, A.num_rows);
  *
  *      // solve the linear system A x = b
- *      // because both A and M are hermitian we can use 
+ *      // because both A and M are hermitian we can use
  *      // them for their own conjugate transpose
  *      cusp::krylov::bicgstab(A, A, x, b, monitor, M, M);
  *
@@ -114,16 +116,16 @@ void bicg(LinearOperator& A,
  *  \see \p monitor
  */
 template <class LinearOperator,
-          class Vector,
-          class Monitor,
-          class Preconditioner>
-  void bicg(LinearOperator& A,
-	    LinearOperator& At,
-	    Vector& x,
-	    Vector& b,
-	    Monitor& monitor,
-	    Preconditioner& M,
-	    Preconditioner& Mt);
+         class Vector,
+         class Monitor,
+         class Preconditioner>
+void bicg(LinearOperator& A,
+          LinearOperator& At,
+          Vector& x,
+          Vector& b,
+          Monitor& monitor,
+          Preconditioner& M,
+          Preconditioner& Mt);
 /*! \}
  */
 

@@ -27,6 +27,7 @@ namespace cusp
 namespace krylov
 {
 
+/* \cond */
 // TODO move to bicgstab_m.inl
 namespace trans_m
 {
@@ -156,6 +157,7 @@ template <class LinearOperator,
           class VectorType1, class VectorType2, class VectorType3>
 void bicgstab_m(LinearOperator& A,
         VectorType1& x, VectorType2& b, VectorType3& sigma);
+/* \endcond */
 
 /*! \p bicgstab_m : Multi-mass Biconjugate Gradient stabilized method
  */

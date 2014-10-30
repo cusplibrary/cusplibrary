@@ -33,13 +33,14 @@ namespace krylov
  *  \{
  */
 
+/* \cond */
 /*! \p cr : Conjugate Residual method
  *
  * Computes least squares solution of semi-definite linear system A x = b
  * using the default convergence criteria.
  */
 template <class LinearOperator,
-          class Vector>
+         class Vector>
 void cr(LinearOperator& A,
         Vector& x,
         Vector& b);
@@ -49,19 +50,20 @@ void cr(LinearOperator& A,
  * Computes least squares solution of semi-definite linear system A x = b without preconditioning.
  */
 template <class LinearOperator,
-          class Vector,
-          class Monitor>
+         class Vector,
+         class Monitor>
 void cr(LinearOperator& A,
         Vector& x,
         Vector& b,
         Monitor& monitor);
+/* \endcond */
 
 /*! \p cr : Conjugate Residual method
  *
  * Computes least squares solution of semi-definite linear system A x = b
  * with preconditioner \p M.
  *
- * \param A matrix of the linear system 
+ * \param A matrix of the linear system
  * \param x approximate solution of the linear system
  * \param b right-hand side of the linear system
  * \param monitor montiors iteration and determines stopping conditions
@@ -69,12 +71,12 @@ void cr(LinearOperator& A,
  *
  * \tparam LinearOperator is a matrix or subclass of \p linear_operator
  * \tparam Vector vector
- * \tparam Monitor is a monitor such as \p default_monitor or \p verbose_monitor
+ * \tparam Monitor is a \p monitor
  * \tparam Preconditioner is a matrix or subclass of \p linear_operator
  *
  * \note \p A and \p M must be symmetric and semi-definite.
  *
- *  The following code snippet demonstrates how to use \p cr to 
+ *  The following code snippet demonstrates how to use \p cr to
  *  solve a 10x10 Poisson problem.
  *
  *  \code
@@ -82,7 +84,7 @@ void cr(LinearOperator& A,
  *  #include <cusp/monitor.h>
  *  #include <cusp/krylov/cr.h>
  *  #include <cusp/gallery/poisson.h>
- *  
+ *
  *  int main(void)
  *  {
  *      // create an empty sparse matrix structure (CSR format)
@@ -98,7 +100,7 @@ void cr(LinearOperator& A,
  *      // set stopping criteria:
  *      //  iteration_limit    = 100
  *      //  relative_tolerance = 1e-6
- *      cusp::verbose_monitor<float> monitor(b, 100, 1e-6);
+ *      cusp::monitor<float> monitor(b, 100, 1e-6);
  *
  *      // set preconditioner (identity)
  *      cusp::identity_operator<float, cusp::device_memory> M(A.num_rows, A.num_rows);
@@ -109,15 +111,14 @@ void cr(LinearOperator& A,
  *      return 0;
  *  }
  *  \endcode
- 
- *  \see \p default_monitor
- *  \see \p verbose_monitor
+ *
+ *  \see \p monitor
  *
  */
 template <class LinearOperator,
-          class Vector,
-          class Monitor,
-          class Preconditioner>
+         class Vector,
+         class Monitor,
+         class Preconditioner>
 void cr(LinearOperator& A,
         Vector& x,
         Vector& b,

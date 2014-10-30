@@ -35,6 +35,7 @@ namespace krylov
  *  \{
  */
 
+/* \cond */
 /*! \p cg : Conjugate Gradient method
  *
  * Solves the symmetric, positive-definite linear system A x = b
@@ -57,6 +58,7 @@ void cg(LinearOperator& A,
         Vector& x,
         Vector& b,
         Monitor& monitor);
+/* \endcond */
 
 /*! \p cg : Conjugate Gradient method
  *
@@ -66,12 +68,12 @@ void cg(LinearOperator& A,
  * \param A matrix of the linear system
  * \param x approximate solution of the linear system
  * \param b right-hand side of the linear system
- * \param monitor montiors iteration and determines stopping conditions
+ * \param monitor monitors iteration and determines stopping conditions
  * \param M preconditioner for A
  *
  * \tparam LinearOperator is a matrix or subclass of \p linear_operator
  * \tparam Vector vector
- * \tparam Monitor is a monitor such as \p default_monitor or \p verbose_monitor
+ * \tparam Monitor is a \p monitor
  * \tparam Preconditioner is a matrix or subclass of \p linear_operator
  *
  * \note \p A and \p M must be symmetric and positive-definite.
@@ -100,7 +102,7 @@ void cg(LinearOperator& A,
  *      // set stopping criteria:
  *      //  iteration_limit    = 100
  *      //  relative_tolerance = 1e-6
- *      cusp::verbose_monitor<float> monitor(b, 100, 1e-6);
+ *      cusp::monitor<float> monitor(b, 100, 1e-6);
  *
  *      // set preconditioner (identity)
  *      cusp::identity_operator<float, cusp::device_memory> M(A.num_rows, A.num_rows);
@@ -111,9 +113,8 @@ void cg(LinearOperator& A,
  *      return 0;
  *  }
  *  \endcode
-
- *  \see \p default_monitor
- *  \see \p verbose_monitor
+ *
+ *  \see \p monitor
  *
  */
 template <class LinearOperator,

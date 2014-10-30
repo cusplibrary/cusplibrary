@@ -32,12 +32,13 @@ namespace krylov
  *  \{
  */
 
+/* \cond */
 /*! \p bicgstab : Biconjugate Gradient Stabilized method
  *
  * Solves the linear system A x = b using the default convergence criteria.
  */
 template <class LinearOperator,
-          class Vector>
+         class Vector>
 void bicgstab(LinearOperator& A,
               Vector& x,
               Vector& b);
@@ -47,18 +48,19 @@ void bicgstab(LinearOperator& A,
  * Solves the linear system A x = b without preconditioning.
  */
 template <class LinearOperator,
-          class Vector,
-          class Monitor>
+         class Vector,
+         class Monitor>
 void bicgstab(LinearOperator& A,
               Vector& x,
               Vector& b,
               Monitor& monitor);
+/* \endcond */
 
 /*! \p bicgstab : Biconjugate Gradient Stabilized method
  *
  * Solves the linear system A x = b with preconditioner \p M.
  *
- * \param A matrix of the linear system 
+ * \param A matrix of the linear system
  * \param x approximate solution of the linear system
  * \param b right-hand side of the linear system
  * \param monitor montiors iteration and determines stopping conditions
@@ -66,10 +68,10 @@ void bicgstab(LinearOperator& A,
  *
  * \tparam LinearOperator is a matrix or subclass of \p linear_operator
  * \tparam Vector vector
- * \tparam Monitor is a monitor such as \p default_monitor or \p monitor
+ * \tparam Monitor is a \p monitor
  * \tparam Preconditioner is a matrix or subclass of \p linear_operator
  *
- *  The following code snippet demonstrates how to use \p bicgstab to 
+ *  The following code snippet demonstrates how to use \p bicgstab to
  *  solve a 10x10 Poisson problem.
  *
  *  \code
@@ -77,7 +79,7 @@ void bicgstab(LinearOperator& A,
  *  #include <cusp/monitor.h>
  *  #include <cusp/krylov/bicgstab.h>
  *  #include <cusp/gallery/poisson.h>
- *  
+ *
  *  int main(void)
  *  {
  *      // create an empty sparse matrix structure (CSR format)
@@ -108,9 +110,9 @@ void bicgstab(LinearOperator& A,
  *  \see \p monitor
  */
 template <class LinearOperator,
-          class Vector,
-          class Monitor,
-          class Preconditioner>
+         class Vector,
+         class Monitor,
+         class Preconditioner>
 void bicgstab(LinearOperator& A,
               Vector& x,
               Vector& b,

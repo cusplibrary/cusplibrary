@@ -34,6 +34,7 @@ namespace krylov
  *  \{
  */
 
+/* \cond */
 /*! \p cg_m : Multi-mass Conjugate Gradient method
  *
  * Solves the symmetric, positive-definited linear system (A+\sigma) x = b
@@ -54,6 +55,7 @@ void cg_m(LinearOperator& A,
           VectorType1& x,
           VectorType2& b,
           VectorType3& sigma);
+/* \endcond */
 
 /*! \p cg_m : Multi-mass Conjugate Gradient method
  *

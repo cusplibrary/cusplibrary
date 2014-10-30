@@ -32,7 +32,7 @@ namespace cusp
 
 /**
  * \addtogroup iterative_solvers Iterative Solvers
- *  \addtogroup multilevel_methods Multilevel methods
+ *  \addtogroup multilevel_methods Multilevel Methods
  *  \brief Multilevel methods to precondition and solve hermitian linear
  *  systems
  *  \ingroup iterative_solvers
