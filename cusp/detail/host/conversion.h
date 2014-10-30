@@ -506,6 +506,35 @@ void hyb_to_csr(const Matrix1& src, Matrix2& dst)
     }
 }
 
+/////////////////
+// Permutation //
+/////////////////
+
+template <typename Matrix1, typename Matrix2>
+void permutation_to_csr(const Matrix1& src, Matrix2& dst)
+{
+    typedef typename Matrix2::index_type IndexType;
+    typedef typename Matrix2::value_type ValueType;
+
+    dst.resize(src.num_rows, src.num_cols, src.num_entries);
+
+    dst.row_offsets = cusp::counting_array<IndexType>(src.num_rows + 1);
+    dst.column_indices = src.permutation;
+    thrust::fill(dst.values.begin(), dst.values.end(), ValueType(1));
+}
+
+template <typename Matrix1, typename Matrix2>
+void permutation_to_coo(const Matrix1& src, Matrix2& dst)
+{
+    typedef typename Matrix2::index_type IndexType;
+    typedef typename Matrix2::value_type ValueType;
+
+    dst.resize(src.num_rows, src.num_cols, src.num_entries);
+
+    dst.row_indices = cusp::counting_array<IndexType>(src.num_rows);
+    dst.column_indices = src.permutation;
+    thrust::fill(dst.values.begin(), dst.values.end(), ValueType(1));
+}
 
 /////////////////////////
 // Array1d Conversions //

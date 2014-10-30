@@ -61,19 +61,25 @@ template <typename Matrix1, typename Matrix2>
 void convert(const Matrix1& src, Matrix2& dst,
              cusp::csr_format,
              cusp::coo_format)
-{    cusp::detail::host::csr_to_coo(src, dst);    }
+{
+    cusp::detail::host::csr_to_coo(src, dst);
+}
 
 template <typename Matrix1, typename Matrix2>
 void convert(const Matrix1& src, Matrix2& dst,
              cusp::ell_format,
              cusp::coo_format)
-{    cusp::detail::host::ell_to_coo(src, dst);    }
+{
+    cusp::detail::host::ell_to_coo(src, dst);
+}
 
 template <typename Matrix1, typename Matrix2>
 void convert(const Matrix1& src, Matrix2& dst,
              cusp::hyb_format,
              cusp::coo_format)
-{    cusp::detail::host::hyb_to_coo(src, dst);    }
+{
+    cusp::detail::host::hyb_to_coo(src, dst);
+}
 
 template <typename Matrix1, typename Matrix2>
 void convert(const Matrix1& src, Matrix2& dst,
@@ -94,25 +100,41 @@ template <typename Matrix1, typename Matrix2>
 void convert(const Matrix1& src, Matrix2& dst,
              cusp::coo_format,
              cusp::csr_format)
-{    cusp::detail::host::coo_to_csr(src, dst);    }
+{
+    cusp::detail::host::coo_to_csr(src, dst);
+}
 
 template <typename Matrix1, typename Matrix2>
 void convert(const Matrix1& src, Matrix2& dst,
              cusp::dia_format,
              cusp::csr_format)
-{    cusp::detail::host::dia_to_csr(src, dst);    }
+{
+    cusp::detail::host::dia_to_csr(src, dst);
+}
 
 template <typename Matrix1, typename Matrix2>
 void convert(const Matrix1& src, Matrix2& dst,
              cusp::ell_format,
              cusp::csr_format)
-{    cusp::detail::host::ell_to_csr(src, dst);    }
+{
+    cusp::detail::host::ell_to_csr(src, dst);
+}
 
 template <typename Matrix1, typename Matrix2>
 void convert(const Matrix1& src, Matrix2& dst,
              cusp::hyb_format,
              cusp::csr_format)
-{    cusp::detail::host::hyb_to_csr(src, dst);    }
+{
+    cusp::detail::host::hyb_to_csr(src, dst);
+}
+
+template <typename Matrix1, typename Matrix2>
+void convert(const Matrix1& src, Matrix2& dst,
+             cusp::permutation_format,
+             cusp::csr_format)
+{
+    cusp::detail::host::permutation_to_csr(src, dst);
+}
 
 /////////
 // DIA //
@@ -159,7 +181,7 @@ void convert(const Matrix1& src, Matrix2& dst,
              const size_t alignment = 32)
 {
     const size_t max_entries_per_row = cusp::detail::host::compute_max_entries_per_row(src);
-    
+
     const float threshold  = 1e6; // 1M entries
     const float size       = float(max_entries_per_row) * float(src.num_rows);
     const float fill_ratio = size / std::max(1.0f, float(src.num_entries));
@@ -215,7 +237,9 @@ template <typename Matrix1, typename Matrix2>
 void convert(const Matrix1& src, Matrix2& dst,
              cusp::array2d_format,
              cusp::array1d_format)
-{    cusp::detail::host::array2d_to_array1d(src, dst);    }
+{
+    cusp::detail::host::array2d_to_array1d(src, dst);
+}
 
 
 /////////////
@@ -225,35 +249,45 @@ template <typename Matrix1, typename Matrix2>
 void convert(const Matrix1& src, Matrix2& dst,
              cusp::array1d_format,
              cusp::array2d_format)
-{    cusp::detail::host::array1d_to_array2d(src, dst);    }
+{
+    cusp::detail::host::array1d_to_array2d(src, dst);
+}
 
 //////////////////////
-// Dense <-> Sparse //  
+// Dense <-> Sparse //
 //////////////////////
 
 template <typename Matrix1, typename Matrix2>
 void convert(const Matrix1& src, Matrix2& dst,
              cusp::array2d_format,
              cusp::csr_format)
-{    cusp::detail::host::array2d_to_csr(src, dst); }
+{
+    cusp::detail::host::array2d_to_csr(src, dst);
+}
 
 template <typename Matrix1, typename Matrix2>
 void convert(const Matrix1& src, Matrix2& dst,
              cusp::csr_format,
              cusp::array2d_format)
-{    cusp::detail::host::csr_to_array2d(src, dst);    }
+{
+    cusp::detail::host::csr_to_array2d(src, dst);
+}
 
 template <typename Matrix1, typename Matrix2>
 void convert(const Matrix1& src, Matrix2& dst,
              cusp::coo_format,
              cusp::array2d_format)
-{    cusp::detail::host::coo_to_array2d(src, dst);    }
+{
+    cusp::detail::host::coo_to_array2d(src, dst);
+}
 
 template <typename Matrix1, typename Matrix2>
 void convert(const Matrix1& src, Matrix2& dst,
              cusp::array2d_format,
              cusp::coo_format)
-{    cusp::detail::host::array2d_to_coo(src, dst); }
+{
+    cusp::detail::host::array2d_to_coo(src, dst);
+}
 
 template <typename Matrix1, typename Matrix2>
 void convert(const Matrix1& src, Matrix2& dst,
@@ -310,10 +344,10 @@ template <typename Matrix1, typename Matrix2>
 void convert(const Matrix1& src, Matrix2& dst)
 {
     cusp::detail::host::convert(src, dst,
-            typename Matrix1::format(),
-            typename Matrix2::format());
+                                typename Matrix1::format(),
+                                typename Matrix2::format());
 }
-            
+
 } // end namespace host
 } // end namespace detail
 } // end namespace cusp

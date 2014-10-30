@@ -53,6 +53,7 @@ namespace graph
  * \par Example
  *
  * \code
+ * #include <cusp/array2d.h>
  * #include <cusp/csr_matrix.h>
  * #include <cusp/permutation_matrix.h>
  * #include <cusp/print.h>
@@ -67,7 +68,7 @@ namespace graph
  * {
  *    // Build a 2D grid on the device
  *    cusp::csr_matrix<int,float,cusp::device_memory> G;
- *    cusp::gallery::grid2d(G, 4, 4);
+ *    cusp::gallery::grid2d(G, 3, 3);
  *
  *    // Allocate permutation matrix P
  *    cusp::permutation_matrix<int,cusp::device_memory> P(G.num_rows);
@@ -75,8 +76,11 @@ namespace graph
  *    // Compute connected components on the device
  *    cusp::graph::symmetric_rcm(G, P);
  *
+ *    // Convert permutation to dense matrix
+ *    cusp::array2d<float,cusp::device_memory> P_dense(P);
+ *
  *    // Print the permutation matrix
- *    cusp::print(P);
+ *    cusp::print(P_dense);
  *
  *    return 0;
  * }
