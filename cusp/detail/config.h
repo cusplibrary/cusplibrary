@@ -23,6 +23,8 @@
 #include <thrust/detail/config.h>
 #include <thrust/version.h>
 
+#include <cusp/detail/config/host_system.h>
+#include <cusp/detail/config/device_system.h>
 #include <cusp/detail/config/host_blas_system.h>
 #include <cusp/detail/config/device_blas_system.h>
 

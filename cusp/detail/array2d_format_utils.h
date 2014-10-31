@@ -143,6 +143,26 @@ struct logical_to_physical_functor : public thrust::unary_function<IndexType,Ind
     }
 };
 
+// convert logical linear index in the (tranposed) destination into a physical index in the source
+template <typename IndexType, typename Orientation1, typename Orientation2>
+struct transpose_index_functor : public thrust::unary_function<IndexType,IndexType>
+{
+    IndexType num_rows, num_cols, pitch; // source dimensions
+
+    transpose_index_functor(IndexType num_rows, IndexType num_cols, IndexType pitch)
+        : num_rows(num_rows), num_cols(num_cols), pitch(pitch) {}
+
+    __host__ __device__
+    IndexType operator()(IndexType linear_index)
+    {
+        IndexType i = linear_index_to_row_index(linear_index, num_cols, num_rows, Orientation2());
+        IndexType j = linear_index_to_col_index(linear_index, num_cols, num_rows, Orientation2());
+
+        return index_of(j, i, pitch, Orientation1());
+    }
+};
+
+
 template <typename IndexType, typename Orientation1, typename Orientation2>
 struct logical_to_other_physical_functor : public thrust::unary_function<IndexType,IndexType>
 {

@@ -22,6 +22,8 @@
 
 #include <cusp/detail/config.h>
 
+#include <cusp/execution_policy.h>
+
 namespace cusp
 {
 
@@ -71,6 +73,14 @@ namespace cusp
  */
 template <typename MatrixType1, typename MatrixType2>
 void transpose(const MatrixType1& A, MatrixType2& At);
+
+template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
+void transpose(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+               const MatrixType1& A, MatrixType2& At);
+
+template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2, typename Format1, typename Format2>
+void transpose(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+               const MatrixType1& A, MatrixType2& At, Format1& fmt1, Format2& fmt2);
 
 /*! \}
  */

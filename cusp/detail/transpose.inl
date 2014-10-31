@@ -14,105 +14,49 @@
  *  limitations under the License.
  */
 
-#include <cusp/detail/dispatch/transpose.h>
+/*! \file transpose.inl
+ *  \brief Inline file for transpose.h.
+ */
 
-#include <thrust/detail/type_traits.h>
+#include <thrust/detail/config.h>
+#include <thrust/system/detail/generic/select_system.h>
+
+#include <cusp/transpose.h>
+#include <cusp/system/detail/adl/transpose.h>
+#include <cusp/system/detail/generic/transpose.h>
 
 namespace cusp
 {
-namespace detail
-{
 
-// COO format
-template <typename MatrixType1,   typename MatrixType2>
-void transpose(const MatrixType1& A, MatrixType2& At,
-               cusp::coo_format,
-               cusp::coo_format)
+template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2, typename Format1, typename Format2>
+void transpose(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
+               const MatrixType1& A, MatrixType2& At, Format1& fmt1, Format2& fmt2)
 {
-    cusp::detail::dispatch::transpose(A, At,
-                                      typename MatrixType2::memory_space());
+    using cusp::system::detail::generic::transpose;
+    transpose(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, At, fmt1, fmt2);
 }
 
-// CSR format
-template <typename MatrixType1,   typename MatrixType2>
-void transpose(const MatrixType1& A, MatrixType2& At,
-               cusp::csr_format,
-               cusp::csr_format)
+template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
+void transpose(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
+               const MatrixType1& A, MatrixType2& At)
 {
-    cusp::detail::dispatch::transpose(A, At,
-                                      typename MatrixType2::memory_space());
+    using cusp::system::detail::generic::transpose;
+    transpose(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, At,
+              typename MatrixType1::format(), typename MatrixType2::format());
 }
-
-// convert logical linear index in the (tranposed) destination into a physical index in the source
-template <typename IndexType, typename Orientation1, typename Orientation2>
-struct transpose_index_functor : public thrust::unary_function<IndexType,IndexType>
-{
-    IndexType num_rows, num_cols, pitch; // source dimensions
-
-    transpose_index_functor(IndexType num_rows, IndexType num_cols, IndexType pitch)
-        : num_rows(num_rows), num_cols(num_cols), pitch(pitch) {}
-
-    __host__ __device__
-    IndexType operator()(IndexType linear_index)
-    {
-        IndexType i = cusp::detail::linear_index_to_row_index(linear_index, num_cols, num_rows, Orientation2());
-        IndexType j = cusp::detail::linear_index_to_col_index(linear_index, num_cols, num_rows, Orientation2());
-
-        return cusp::detail::index_of(j, i, pitch, Orientation1());
-    }
-};
-
-// Array2d format
-template <typename MatrixType1,   typename MatrixType2>
-void transpose(const MatrixType1& A, MatrixType2& At,
-               cusp::array2d_format,
-               cusp::array2d_format)
-{
-    typedef typename MatrixType1::orientation Orientation1;
-    typedef typename MatrixType2::orientation Orientation2;
-
-    At.resize(A.num_cols, A.num_rows);
-
-    thrust::counting_iterator<size_t> begin(0);
-    thrust::counting_iterator<size_t> end(A.num_entries);
-
-    // prefer coalesced writes to coalesced reads
-    cusp::detail::transpose_index_functor    <size_t, Orientation1, Orientation2> func1(A.num_rows,  A.num_cols,  A.pitch);
-    cusp::detail::logical_to_physical_functor<size_t, Orientation2>               func2(At.num_rows, At.num_cols, At.pitch);
-
-    thrust::copy(thrust::make_permutation_iterator(A.values.begin(),  thrust::make_transform_iterator(begin, func1)),
-                 thrust::make_permutation_iterator(A.values.begin(),  thrust::make_transform_iterator(end,   func1)),
-                 thrust::make_permutation_iterator(At.values.begin(), thrust::make_transform_iterator(begin, func2)));
-}
-
-
-// Default case uses CSR transpose
-template <typename MatrixType1,   typename MatrixType2,
-         typename MatrixFormat1, typename MatrixFormat2>
-void transpose(const MatrixType1& A, MatrixType2& At,
-               MatrixFormat1,  MatrixFormat2)
-{
-    typedef typename MatrixType1::index_type   IndexType;
-    typedef typename MatrixType1::value_type   ValueType;
-    typedef typename MatrixType1::memory_space MemorySpace;
-
-    cusp::csr_matrix<IndexType, ValueType, MemorySpace> A_csr(A);
-    cusp::csr_matrix<IndexType, ValueType, MemorySpace> At_csr;
-    cusp::transpose(A_csr, At_csr);
-
-    cusp::convert(At_csr, At);
-}
-
-} // end namespace detail
 
 template <typename MatrixType1, typename MatrixType2>
 void transpose(const MatrixType1& A, MatrixType2& At)
 {
-    CUSP_PROFILE_SCOPED();
+    using thrust::system::detail::generic::select_system;
 
-    cusp::detail::transpose(A, At,
-                            typename MatrixType1::format(),
-                            typename MatrixType2::format());
+    typedef typename MatrixType1::memory_space System;
+
+    System system;
+
+    std::cout << "Select system : " << typeid(System).name() << std::endl;
+
+    cusp::transpose(select_system(system), A, At, typename MatrixType1::format(), typename MatrixType2::format());
 }
 
 } // end namespace cusp
