@@ -50,6 +50,7 @@ class multilevel : public cusp::linear_operator<typename MatrixType::value_type,
 {
 public:
 
+    /* \cond */
     typedef typename MatrixType::index_type IndexType;
     typedef typename MatrixType::value_type ValueType;
     typedef typename MatrixType::memory_space MemorySpace;
@@ -70,6 +71,7 @@ public:
         template<typename Level_Type>
         level(const Level_Type& level) : R(level.R), A(level.A), P(level.P), x(level.x), b(level.b), residual(level.residual), smoother(level.smoother) {}
     };
+    /* \endcond */
 
     SolverType solver;
 

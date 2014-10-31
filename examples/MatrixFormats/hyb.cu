@@ -8,21 +8,21 @@ int main(void)
     //     COO portion has 3 nonzeros
 
     cusp::hyb_matrix<int, float, cusp::host_memory> A(3, 4, 5, 3, 2);
-    
+
     // Initialize A to represent the following matrix
     // [10  20  30  40]
     // [ 0  50   0   0]
     // [60   0  70  80]
-  
+
     // A is split into ELL and COO parts as follows
-    // [10  20  30  40]    [10  20   0   0]     [ 0   0  30  40] 
+    // [10  20  30  40]    [10  20   0   0]     [ 0   0  30  40]
     // [ 0  50   0   0]  = [ 0  50   0   0]  +  [ 0   0   0   0]
     // [60   0  70  80]    [60   0  70   0]     [ 0   0   0  80]
-    
-    
+
+
     // Initialize ELL part
 
-    // X is used to fill unused entries in the ELL portion of the matrix 
+    // X is used to fill unused entries in the ELL portion of the matrix
     const int X = cusp::ell_matrix<int,float,cusp::host_memory>::invalid_index;
 
     // first row
@@ -30,12 +30,12 @@ int main(void)
     A.ell.column_indices(0,1) = 1; A.ell.values(0,1) = 20;
 
     // second row
-    A.ell.column_indices(1,0) = 1; A.ell.values(1,0) = 50;  // shifted to leftmost position 
+    A.ell.column_indices(1,0) = 1; A.ell.values(1,0) = 50;  // shifted to leftmost position
     A.ell.column_indices(1,1) = X; A.ell.values(1,1) =  0;  // padding
 
     // third row
     A.ell.column_indices(2,0) = 0; A.ell.values(2,0) = 60;
-    A.ell.column_indices(2,1) = 2; A.ell.values(2,1) = 70;  // shifted to leftmost position 
+    A.ell.column_indices(2,1) = 2; A.ell.values(2,1) = 70;  // shifted to leftmost position
 
 
     // Initialize COO part

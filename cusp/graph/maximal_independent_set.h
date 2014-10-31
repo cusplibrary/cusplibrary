@@ -67,7 +67,7 @@ namespace graph
  * #include <cusp/print.h>
  * #include <cusp/gallery/grid.h>
  *
- * //include bfs header file
+ * //include MIS header file
  * #include <cusp/graph/maximal_independent_set.h>
  *
  * #include <iostream>

@@ -18,7 +18,7 @@ int main(void)
     A.values(1,2) =  0;  // outside matrix
     A.values(2,0) = 40;
     A.values(3,0) = 60;
-    
+
     // second diagonal
     A.values(0,1) = 10;
     A.values(1,1) =  0;

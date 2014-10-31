@@ -68,7 +68,7 @@ void cg_m(LinearOperator& A,
  *
  * \par Overview
  *
- * Solves the symmetric, positive-definited linear system (A+\sigma) x = b
+ * Solves the symmetric, positive-definited linear system (A+sigma) x = b
  * for some set of constant shifts \p sigma for the price of the smallest shift
  * iteratively, for sparse A, without additional matrix-vector multiplication.
  *

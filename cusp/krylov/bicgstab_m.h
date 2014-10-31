@@ -178,9 +178,9 @@ void bicgstab_m(LinearOperator& A,
  *
  * This routine solves systems of the type
  *
- * (A+\sigma Id)x = b
+ * (A+sigma Id)x = b
  *
- * for a number of different \sigma, iteratively, for sparse A, without
+ * for a number of different sigma, iteratively, for sparse A, without
  * additional matrix-vector multiplication.
  *
  * \see http://arxiv.org/abs/hep-lat/9612014

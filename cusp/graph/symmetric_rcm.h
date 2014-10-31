@@ -59,7 +59,7 @@ namespace graph
  * #include <cusp/print.h>
  * #include <cusp/gallery/grid.h>
  *
- * //include bfs header file
+ * //include RCM header file
  * #include <cusp/graph/symmetric_rcm.h>
  *
  * #include <iostream>

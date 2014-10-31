@@ -34,7 +34,7 @@ int main(void)
     A.column_indices(3,0) = 0; A.values(3,0) = 40;
     A.column_indices(3,1) = 1; A.values(3,1) = 50;
     A.column_indices(3,2) = 2; A.values(3,2) = 60;
-    
+
     // print matrix entries
     cusp::print(A);
 

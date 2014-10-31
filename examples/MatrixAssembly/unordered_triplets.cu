@@ -49,7 +49,7 @@ int main(void)
 
     // allocate output matrix
     cusp::coo_matrix<int, float, cusp::device_memory> A(num_rows, num_cols, num_entries);
-    
+
     // sum values with the same (i,j) index
     thrust::reduce_by_key(thrust::make_zip_iterator(thrust::make_tuple(I.begin(), J.begin())),
                           thrust::make_zip_iterator(thrust::make_tuple(I.end(),   J.end())),
@@ -58,7 +58,7 @@ int main(void)
                           A.values.begin(),
                           thrust::equal_to< thrust::tuple<int,int> >(),
                           thrust::plus<float>());
-    
+
     // print matrix
     cusp::print(A);
 

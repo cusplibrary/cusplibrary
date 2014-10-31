@@ -9,11 +9,11 @@ int main(void)
     // initialize matrix entries on host
     A.row_offsets[0] = 0;  // first offset is always zero
     A.row_offsets[1] = 2;
-    A.row_offsets[2] = 2;  
+    A.row_offsets[2] = 2;
     A.row_offsets[3] = 3;
     A.row_offsets[4] = 6; // last offset is always num_entries
 
-    A.column_indices[0] = 0; A.values[0] = 10; 
+    A.column_indices[0] = 0; A.values[0] = 10;
     A.column_indices[1] = 2; A.values[1] = 20;
     A.column_indices[2] = 2; A.values[2] = 30;
     A.column_indices[3] = 0; A.values[3] = 40;

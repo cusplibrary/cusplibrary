@@ -42,14 +42,18 @@ namespace cusp
  */
 using thrust::complex;
 
+/* \cond */
 template <typename T>
-struct norm_type {
+struct norm_type
+{
     typedef T type;
 };
 
 template <typename T>
-struct norm_type< cusp::complex<T> > {
+struct norm_type< cusp::complex<T> >
+{
     typedef T type;
 };
+/* \endcond */
 
 } // end namespace cusp

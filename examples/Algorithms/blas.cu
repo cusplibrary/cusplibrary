@@ -21,7 +21,7 @@ int main(void)
     cusp::print(y);
 
     // allocate output vector
-    cusp::array1d<float, cusp::host_memory> z(2);    
+    cusp::array1d<float, cusp::host_memory> z(2);
     // compute z = x .* y (element-wise multiplication)
     cusp::blas::xmy(x,y,z);
     // print z

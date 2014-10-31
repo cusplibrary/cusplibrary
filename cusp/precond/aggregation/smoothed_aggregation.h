@@ -45,6 +45,7 @@ namespace aggregation
  *  \{
  */
 
+/* \cond */
 template<typename MatrixType>
 struct sa_level
 {
@@ -64,6 +65,7 @@ struct sa_level
     sa_level(const SA_Level_Type& sa_level)
       : A_(sa_level.A_), aggregates(sa_level.aggregates), B(sa_level.B), rho_DinvA(sa_level.rho_DinvA) {}
 };
+/* \endcond */
 
 
 /*! \p smoothed_aggregation : algebraic multigrid preconditoner based on

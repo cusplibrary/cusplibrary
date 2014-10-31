@@ -52,7 +52,7 @@ namespace graph
  * #include <cusp/print.h>
  * #include <cusp/gallery/grid.h>
  *
- * //include bfs header file
+ * //include connected components header file
  * #include <cusp/graph/connected_components.h>
  *
  * #include <thrust/fill.h>
