@@ -36,5 +36,10 @@
 
 namespace cusp
 {
-  using thrust::execution_policy;
+
+template<typename DerivedPolicy>
+  struct execution_policy
+    : thrust::execution_policy<DerivedPolicy>
+{};
+
 } // end namespace cusp

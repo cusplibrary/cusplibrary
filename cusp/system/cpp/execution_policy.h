@@ -38,18 +38,16 @@ namespace system
 {
 namespace cpp
 {
-  // alias execution_policy and tag here
-  using thrust::system::cpp::detail::execution_policy;
-  using thrust::system::cpp::detail::tag;
+
+// forward declaration of execution_policy
+template<typename> struct execution_policy;
+
+// specialize execution_policy for tag
+template<>
+  struct execution_policy<thrust::system::cpp::tag>
+    : thrust::execution_policy<thrust::system::cpp::tag>
+{};
+
 } // end namespace cpp
 } // end namespace system
-
-// alias items at top-level
-namespace cpp
-{
-  using thrust::system::cpp::detail::execution_policy;
-  using thrust::system::cpp::detail::tag;
-} // end namespace cpp
-
 } // end namespace cusp
-

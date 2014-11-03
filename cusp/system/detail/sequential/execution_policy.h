@@ -16,32 +16,33 @@
 
 #pragma once
 
-/*! \file thrust/system/cpp/execution_policy.h
- *  \brief Execution policies for Thrust's standard C++ system.
+/*! \file cusp/system/detail/sequential/execution_policy.h
+ *  \brief Execution policies for Cusp's standard sequential system.
  */
 
-#include <thrust/detail/config.h>
+#include <cusp/detail/config.h>
 
 // get the execution policies definitions first
-#include <thrust/system/cuda/detail/execution_policy.h>
-
-// get the definition of par
-#include <thrust/system/cuda/detail/par.h>
+#include <thrust/system/detail/sequential/execution_policy.h>
 
 // now get all the algorithm definitions
 
-#include <cusp/system/cuda/detail/transpose.h>
+#include <cusp/system/detail/sequential/transpose.h>
 
 namespace cusp
 {
 namespace system
 {
-namespace cuda
+namespace detail
+{
+namespace sequential
 {
 
-struct execution_policy : thrust::system::cuda::execution_policy<thrust::system::cuda::tag> {};
-struct tag : thrust::system::cuda::tag {};
+template<typename Derived>
+struct execution_policy : thrust::system::detail::sequential::execution_policy<Derived> {};
+struct tag : thrust::system::detail::sequential::tag {};
 
-} // end namespace cuda
+} // end namespace sequential
+} // end namespace detail
 } // end namespace system
 } // end namespace cusp

@@ -27,22 +27,53 @@
 
 namespace cusp
 {
+namespace detail
+{
 
-template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2, typename Format1, typename Format2>
+template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2, typename MatrixFormat>
 void transpose(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
-               const MatrixType1& A, MatrixType2& At, Format1& fmt1, Format2& fmt2)
+               const MatrixType1& A, MatrixType2& At,
+               MatrixFormat format1, MatrixFormat format2)
 {
     using cusp::system::detail::generic::transpose;
-    transpose(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, At, fmt1, fmt2);
+
+    transpose(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, At, format1);
 }
+
+template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2,
+          typename MatrixFormat1, typename MatrixFormat2>
+void transpose(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
+               const MatrixType1& A, MatrixType2& At,
+               MatrixFormat1 format1, MatrixFormat2 format2)
+{
+    typedef typename MatrixType1::index_type   IndexType1;
+    typedef typename MatrixType1::value_type   ValueType1;
+    typedef typename MatrixType1::memory_space MemorySpace1;
+
+    typedef typename MatrixType2::index_type   IndexType2;
+    typedef typename MatrixType2::value_type   ValueType2;
+    typedef typename MatrixType2::memory_space MemorySpace2;
+
+    cusp::csr_matrix<IndexType1, ValueType1, MemorySpace1> A_csr(A);
+    cusp::csr_matrix<IndexType2, ValueType2, MemorySpace2> At_csr;
+    cusp::transpose(exec, A_csr, At_csr);
+
+    cusp::convert(At_csr, At);
+}
+
+} // end namespace detail
 
 template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
 void transpose(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
                const MatrixType1& A, MatrixType2& At)
 {
-    using cusp::system::detail::generic::transpose;
-    transpose(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, At,
-              typename MatrixType1::format(), typename MatrixType2::format());
+    typedef typename MatrixType1::format Format1;
+    typedef typename MatrixType2::format Format2;
+
+    Format1 format1;
+    Format2 format2;
+
+    cusp::detail::transpose(exec, A, At, format1, format2);
 }
 
 template <typename MatrixType1, typename MatrixType2>
@@ -50,13 +81,13 @@ void transpose(const MatrixType1& A, MatrixType2& At)
 {
     using thrust::system::detail::generic::select_system;
 
-    typedef typename MatrixType1::memory_space System;
+    typedef typename MatrixType1::memory_space System1;
+    typedef typename MatrixType2::memory_space System2;
 
-    System system;
+    System1 system1;
+    System2 system2;
 
-    std::cout << "Select system : " << typeid(System).name() << std::endl;
-
-    cusp::transpose(select_system(system), A, At, typename MatrixType1::format(), typename MatrixType2::format());
+    cusp::transpose(select_system(system1,system2), A, At);
 }
 
 } // end namespace cusp

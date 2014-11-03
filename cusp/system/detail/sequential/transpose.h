@@ -20,8 +20,8 @@
 
 #pragma once
 
-#include <thrust/detail/config.h>
-#include <thrust/system/detail/sequential/execution_policy.h>
+#include <cusp/detail/config.h>
+#include <cusp/system/detail/sequential/execution_policy.h>
 
 #include <cusp/format.h>
 #include <cusp/array1d.h>
@@ -35,14 +35,11 @@ namespace detail
 namespace sequential
 {
 
-using namespace thrust::system::detail::sequential;
-
 // COO format
 template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
-void transpose(sequential::execution_policy<DerivedPolicy>& exec,
+void transpose(thrust::system::detail::sequential::execution_policy<DerivedPolicy>& exec,
                const MatrixType1& A, MatrixType2& At,
-               cusp::coo_format,
-               cusp::coo_format)
+               coo_format)
 {
     At.resize(A.num_cols, A.num_rows, A.num_entries);
 
@@ -77,12 +74,11 @@ void transpose(sequential::execution_policy<DerivedPolicy>& exec,
 
 // CSR format
 template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
-void transpose(sequential::execution_policy<DerivedPolicy>& exec,
+void transpose(thrust::system::detail::sequential::execution_policy<DerivedPolicy>& exec,
                const MatrixType1& A, MatrixType2& At,
-               cusp::csr_format,
-               cusp::csr_format)
+               csr_format)
 {
-    std::cout << "Executing sequential transpose" << std::endl;
+    // std::cout << "Executing sequential transpose" << std::endl;
 
     typedef typename MatrixType2::index_type IndexType;
 
@@ -128,5 +124,9 @@ void transpose(sequential::execution_policy<DerivedPolicy>& exec,
 } // end namespace sequential
 } // end namespace detail
 } // end namespace system
+
+// hack until ADL is operational
+using cusp::system::detail::sequential::transpose;
+
 } // end namespace cusp
 

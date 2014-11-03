@@ -29,12 +29,13 @@ namespace detail
 namespace generic
 {
 
-template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2, typename Format1, typename Format2>
-void transpose(cusp::execution_policy<DerivedPolicy> &exec, const MatrixType1& A, MatrixType2& At, Format1, Format2);
+template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2, typename Format>
+void transpose(thrust::execution_policy<DerivedPolicy> &exec, const MatrixType1& A, MatrixType2& At, Format);
 
 } // end namespace generic
 } // end namespace detail
 } // end namespace system
+
 } // end namespace cusp
 
 #include <cusp/system/detail/generic/transpose.inl>
