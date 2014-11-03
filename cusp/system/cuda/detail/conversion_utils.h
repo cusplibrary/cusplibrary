@@ -47,60 +47,60 @@ namespace detail
 template <typename IndexType>
 struct occupied_diagonal_functor
 {
-  typedef IndexType result_type;
+    typedef IndexType result_type;
 
-  const   IndexType num_rows;
+    const   IndexType num_rows;
 
-  occupied_diagonal_functor(const IndexType num_rows)
-    : num_rows(num_rows) {}
+    occupied_diagonal_functor(const IndexType num_rows)
+        : num_rows(num_rows) {}
 
-  template <typename Tuple>
+    template <typename Tuple>
     __host__ __device__
-  IndexType operator()(const Tuple& t) const
-  {
-    const IndexType i = thrust::get<0>(t);
-    const IndexType j = thrust::get<1>(t);
+    IndexType operator()(const Tuple& t) const
+    {
+        const IndexType i = thrust::get<0>(t);
+        const IndexType j = thrust::get<1>(t);
 
-    return j-i+num_rows;
-  }
+        return j-i+num_rows;
+    }
 };
 
 struct speed_threshold_functor
 {
-  size_t num_rows;
-  float  relative_speed;
-  size_t breakeven_threshold;
+    size_t num_rows;
+    float  relative_speed;
+    size_t breakeven_threshold;
 
-  speed_threshold_functor(const size_t num_rows, const float relative_speed, const size_t breakeven_threshold)
-    : num_rows(num_rows), 
-      relative_speed(relative_speed), 
-      breakeven_threshold(breakeven_threshold)
-  {}
+    speed_threshold_functor(const size_t num_rows, const float relative_speed, const size_t breakeven_threshold)
+        : num_rows(num_rows),
+          relative_speed(relative_speed),
+          breakeven_threshold(breakeven_threshold)
+    {}
 
-  template <typename IndexType>
+    template <typename IndexType>
     __host__ __device__
-  bool operator()(const IndexType rows) const
-  {
-    return relative_speed * (num_rows-rows) < num_rows || (size_t) (num_rows-rows) < breakeven_threshold;
-  }
+    bool operator()(const IndexType rows) const
+    {
+        return relative_speed * (num_rows-rows) < num_rows || (size_t) (num_rows-rows) < breakeven_threshold;
+    }
 };
 
 template <typename Array1, typename Array2>
-size_t count_diagonals(const size_t num_rows, 
-		       const size_t num_cols,
-		       const size_t num_entries,
-		       const Array1& row_indices,
-		       const Array2& column_indices )
+size_t count_diagonals(const size_t num_rows,
+                       const size_t num_cols,
+                       const size_t num_entries,
+                       const Array1& row_indices,
+                       const Array2& column_indices )
 {
     typedef typename Array1::value_type IndexType;
 
     cusp::array1d<IndexType,cusp::device_memory> values(num_rows+num_cols,IndexType(0));
 
-    thrust::scatter(thrust::constant_iterator<IndexType>(1), 
-		    thrust::constant_iterator<IndexType>(1)+num_entries, 
-		    thrust::make_transform_iterator(thrust::make_zip_iterator( thrust::make_tuple( row_indices.begin(), column_indices.begin() ) ), 
-						    occupied_diagonal_functor<IndexType>(num_rows)), 
-		    values.begin());
+    thrust::scatter(thrust::constant_iterator<IndexType>(1),
+                    thrust::constant_iterator<IndexType>(1)+num_entries,
+                    thrust::make_transform_iterator(thrust::make_zip_iterator( thrust::make_tuple( row_indices.begin(), column_indices.begin() ) ),
+                            occupied_diagonal_functor<IndexType>(num_rows)),
+                    values.begin());
 
     return thrust::reduce(values.begin(), values.end());
 }
@@ -128,12 +128,12 @@ size_t compute_max_entries_per_row(const Array1d& row_offsets)
 {
     typedef typename Array1d::value_type IndexType;
 
-    size_t max_entries_per_row = 
-    thrust::inner_product(row_offsets.begin() + 1, row_offsets.end(),
-        row_offsets.begin(),
-        IndexType(0),
-        thrust::maximum<IndexType>(),
-        thrust::minus<IndexType>());
+    size_t max_entries_per_row =
+        thrust::inner_product(row_offsets.begin() + 1, row_offsets.end(),
+                              row_offsets.begin(),
+                              IndexType(0),
+                              thrust::maximum<IndexType>(),
+                              thrust::minus<IndexType>());
 
     return max_entries_per_row;
 }
@@ -162,7 +162,7 @@ size_t compute_optimal_entries_per_row(const  Array1d& row_offsets,
                                        size_t breakeven_threshold)
 {
     typedef typename Array1d::value_type IndexType;
-    
+
     const size_t num_rows = row_offsets.size()-1;
 
     // compute maximum row length
@@ -186,10 +186,10 @@ size_t compute_optimal_entries_per_row(const  Array1d& row_offsets,
                         search_begin + max_cols_per_row + 1,
                         cumulative_histogram.begin());
 
-    // compute optimal ELL column size 
-    IndexType num_cols_per_row = thrust::find_if( cumulative_histogram.begin(), cumulative_histogram.end()-1, 
-						  speed_threshold_functor(num_rows, relative_speed, breakeven_threshold) )
-				 - cumulative_histogram.begin();
+    // compute optimal ELL column size
+    IndexType num_cols_per_row = thrust::find_if( cumulative_histogram.begin(), cumulative_histogram.end()-1,
+                                 speed_threshold_functor(num_rows, relative_speed, breakeven_threshold) )
+                                 - cumulative_histogram.begin();
 
     return num_cols_per_row;
 }
@@ -200,13 +200,13 @@ size_t compute_optimal_entries_per_row(const Matrix& coo,
                                        size_t breakeven_threshold,
                                        cusp::coo_format)
 {
-  typedef typename Matrix::index_type IndexType;
+    typedef typename Matrix::index_type IndexType;
 
-  // contract row indices into row offsets
-  cusp::array1d<IndexType, cusp::device_memory> row_offsets(coo.num_rows+1);
-  cusp::detail::indices_to_offsets(coo.row_indices, row_offsets);
+    // contract row indices into row offsets
+    cusp::array1d<IndexType, cusp::device_memory> row_offsets(coo.num_rows+1);
+    cusp::detail::indices_to_offsets(coo.row_indices, row_offsets);
 
-  return compute_optimal_entries_per_row(row_offsets, relative_speed, breakeven_threshold);
+    return compute_optimal_entries_per_row(row_offsets, relative_speed, breakeven_threshold);
 }
 
 template <typename Matrix>
@@ -215,7 +215,7 @@ size_t compute_optimal_entries_per_row(const Matrix& csr,
                                        size_t breakeven_threshold,
                                        cusp::csr_format)
 {
-  return compute_optimal_entries_per_row(csr.row_offsets, relative_speed, breakeven_threshold);
+    return compute_optimal_entries_per_row(csr.row_offsets, relative_speed, breakeven_threshold);
 }
 
 } // end namespace detail
@@ -223,13 +223,13 @@ size_t compute_optimal_entries_per_row(const Matrix& csr,
 template <typename Matrix>
 size_t count_diagonals(const Matrix& m)
 {
-  return cusp::detail::device::detail::count_diagonals(m, typename Matrix::format());
+    return cusp::detail::device::detail::count_diagonals(m, typename Matrix::format());
 }
 
 template <typename Matrix>
 size_t compute_max_entries_per_row(const Matrix& m)
 {
-  return cusp::detail::device::detail::compute_max_entries_per_row(m, typename Matrix::format());
+    return cusp::detail::device::detail::compute_max_entries_per_row(m, typename Matrix::format());
 }
 
 
@@ -252,8 +252,8 @@ size_t compute_optimal_entries_per_row(const Matrix& m,
                                        float relative_speed = 3.0f,
                                        size_t breakeven_threshold = 4096)
 {
-  return cusp::detail::device::detail::compute_optimal_entries_per_row
-    (m, relative_speed, breakeven_threshold, typename Matrix::format());
+    return cusp::detail::device::detail::compute_optimal_entries_per_row
+           (m, relative_speed, breakeven_threshold, typename Matrix::format());
 }
 
 } // end namespace device

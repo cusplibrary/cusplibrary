@@ -3,7 +3,6 @@
 #include <thrust/functional.h>
 #include <cusp/detail/functional.h>
 
-//MW: add some OpenMP pragmas
 namespace cusp
 {
 namespace detail
@@ -15,14 +14,14 @@ namespace host
 // COO SpMV //
 //////////////
 template <typename Matrix,
-          typename Vector1,
-          typename Vector2,
-          typename UnaryFunction,
-          typename BinaryFunction1,
-          typename BinaryFunction2>
+         typename Vector1,
+         typename Vector2,
+         typename UnaryFunction,
+         typename BinaryFunction1,
+         typename BinaryFunction2>
 void spmv_coo(const Matrix&  A,
               const Vector1& x,
-                    Vector2& y,
+              Vector2& y,
               UnaryFunction   initialize,
               BinaryFunction1 combine,
               BinaryFunction2 reduce)
@@ -45,11 +44,11 @@ void spmv_coo(const Matrix&  A,
 }
 
 template <typename Matrix,
-          typename Vector1,
-          typename Vector2>
+         typename Vector1,
+         typename Vector2>
 void spmv_coo(const Matrix&  A,
               const Vector1& x,
-                    Vector2& y)
+              Vector2& y)
 {
     typedef typename Vector2::value_type ValueType;
 
@@ -64,14 +63,14 @@ void spmv_coo(const Matrix&  A,
 // CSR SpMV //
 //////////////
 template <typename Matrix,
-          typename Vector1,
-          typename Vector2,
-          typename UnaryFunction,
-          typename BinaryFunction1,
-          typename BinaryFunction2>
+         typename Vector1,
+         typename Vector2,
+         typename UnaryFunction,
+         typename BinaryFunction1,
+         typename BinaryFunction2>
 void spmv_csr(const Matrix&  A,
               const Vector1& x,
-                    Vector2& y,
+              Vector2& y,
               UnaryFunction   initialize,
               BinaryFunction1 combine,
               BinaryFunction2 reduce)
@@ -101,11 +100,11 @@ void spmv_csr(const Matrix&  A,
 
 
 template <typename Matrix,
-          typename Vector1,
-          typename Vector2>
+         typename Vector1,
+         typename Vector2>
 void spmv_csr(const Matrix&  A,
               const Vector1& x,
-                    Vector2& y)
+              Vector2& y)
 {
     typedef typename Vector2::value_type ValueType;
 
@@ -120,14 +119,14 @@ void spmv_csr(const Matrix&  A,
 // DIA SpMV //
 //////////////
 template <typename Matrix,
-          typename Vector1,
-          typename Vector2,
-          typename UnaryFunction,
-          typename BinaryFunction1,
-          typename BinaryFunction2>
+         typename Vector1,
+         typename Vector2,
+         typename UnaryFunction,
+         typename BinaryFunction1,
+         typename BinaryFunction2>
 void spmv_dia(const Matrix&  A,
               const Vector1& x,
-                    Vector2& y,
+              Vector2& y,
               UnaryFunction   initialize,
               BinaryFunction1 combine,
               BinaryFunction2 reduce)
@@ -155,7 +154,7 @@ void spmv_dia(const Matrix&  A,
             const ValueType Aij = A.values(i_start + n, i);
 
             const ValueType  xj = x[j_start + n];
-                  ValueType& yi = y[i_start + n];
+            ValueType& yi = y[i_start + n];
 
             yi = reduce(yi, combine(Aij, xj));
         }
@@ -163,11 +162,11 @@ void spmv_dia(const Matrix&  A,
 }
 
 template <typename Matrix,
-          typename Vector1,
-          typename Vector2>
+         typename Vector1,
+         typename Vector2>
 void spmv_dia(const Matrix&  A,
               const Vector1& x,
-                    Vector2& y)
+              Vector2& y)
 {
     typedef typename Vector2::value_type ValueType;
 
@@ -181,14 +180,14 @@ void spmv_dia(const Matrix&  A,
 // ELL SpMV //
 //////////////
 template <typename Matrix,
-          typename Vector1,
-          typename Vector2,
-          typename UnaryFunction,
-          typename BinaryFunction1,
-          typename BinaryFunction2>
+         typename Vector1,
+         typename Vector2,
+         typename UnaryFunction,
+         typename BinaryFunction1,
+         typename BinaryFunction2>
 void spmv_ell(const Matrix&  A,
               const Vector1& x,
-                    Vector2& y,
+              Vector2& y,
               UnaryFunction   initialize,
               BinaryFunction1 combine,
               BinaryFunction2 reduce)
@@ -221,11 +220,11 @@ void spmv_ell(const Matrix&  A,
 
 
 template <typename Matrix,
-          typename Vector1,
-          typename Vector2>
+         typename Vector1,
+         typename Vector2>
 void spmv_ell(const Matrix&  A,
               const Vector1& x,
-                    Vector2& y)
+              Vector2& y)
 {
     typedef typename Vector2::value_type ValueType;
 

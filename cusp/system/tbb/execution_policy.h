@@ -17,7 +17,7 @@
 #pragma once
 
 /*! \file thrust/system/tbb/execution_policy.h
- *  \brief Execution policies for Thrust's OpenMP system.
+ *  \brief Execution policies for Thrust's TBB system.
  */
 
 #include <thrust/detail/config.h>

@@ -36,20 +36,20 @@ namespace device
 {
 
 template <bool UseCache,
-          typename IndexType,
-          typename ValueType,
-          typename UnaryFunction,
-          typename BinaryFunction1,
-          typename BinaryFunction2>
-__global__ 
-void spmv_ell_kernel(const IndexType num_rows, 
-                     const IndexType num_cols, 
+         typename IndexType,
+         typename ValueType,
+         typename UnaryFunction,
+         typename BinaryFunction1,
+         typename BinaryFunction2>
+__global__
+void spmv_ell_kernel(const IndexType num_rows,
+                     const IndexType num_cols,
                      const IndexType num_cols_per_row,
                      const IndexType stride,
                      const IndexType * Aj,
-                     const ValueType * Ax, 
-                     const ValueType * x, 
-                           ValueType * y,
+                     const ValueType * Ax,
+                     const ValueType * x,
+                     ValueType * y,
                      UnaryFunction   initialize,
                      BinaryFunction1 combine,
                      BinaryFunction2 reduce)
@@ -84,61 +84,60 @@ void spmv_ell_kernel(const IndexType num_rows,
 
 
 template <bool UseCache, typename IndexType, typename ValueType>
-void __spmv_ell(const cusp::ell_matrix<IndexType,ValueType,cusp::device_memory>& ell, 
-                const ValueType * x, 
-                      ValueType * y)
+void __spmv_ell(const cusp::ell_matrix<IndexType,ValueType,cusp::device_memory>& ell,
+                const ValueType * x,
+                ValueType * y)
 {
     const unsigned int BLOCK_SIZE = 256;
     const unsigned int MAX_BLOCKS = MAX_THREADS / BLOCK_SIZE;
-//    const unsigned int MAX_BLOCKS = thrust::experimental::arch::max_active_blocks(spmv_ell_kernel<IndexType, ValueType, UseCache>, BLOCK_SIZE, (size_t) 0);
     const unsigned int NUM_BLOCKS = std::min(MAX_BLOCKS, DIVIDE_INTO(ell.num_rows, BLOCK_SIZE));
 
     const IndexType stride              = ell.column_indices.num_rows;
     const IndexType num_entries_per_row = ell.column_indices.num_cols;
-    
+
     if (UseCache)
         bind_x(x);
 
     spmv_ell_kernel<UseCache> <<<NUM_BLOCKS, BLOCK_SIZE>>>
-        (ell.num_rows, ell.num_cols,
-         num_entries_per_row, stride,
-         thrust::raw_pointer_cast(&ell.column_indices.values[0]), 
-         thrust::raw_pointer_cast(&ell.values.values[0]),
-         x, y,
-         thrust::identity<ValueType>(), thrust::multiplies<ValueType>(), thrust::plus<ValueType>());
+    (ell.num_rows, ell.num_cols,
+     num_entries_per_row, stride,
+     thrust::raw_pointer_cast(&ell.column_indices.values[0]),
+     thrust::raw_pointer_cast(&ell.values.values[0]),
+     x, y,
+     thrust::identity<ValueType>(), thrust::multiplies<ValueType>(), thrust::plus<ValueType>());
 
     if (UseCache)
         unbind_x(x);
 }
 
 template <typename IndexType, typename ValueType>
-void spmv_ell(const cusp::ell_matrix<IndexType,ValueType,cusp::device_memory>& ell, 
-              const ValueType * x, 
-                    ValueType * y)
+void spmv_ell(const cusp::ell_matrix<IndexType,ValueType,cusp::device_memory>& ell,
+              const ValueType * x,
+              ValueType * y)
 {
     __spmv_ell<false>(ell, x, y);
 }
 
 template <typename IndexType, typename ValueType>
-void spmv_ell_tex(const cusp::ell_matrix<IndexType,ValueType,cusp::device_memory>& ell, 
-                  const ValueType * x, 
-                        ValueType * y)
+void spmv_ell_tex(const cusp::ell_matrix<IndexType,ValueType,cusp::device_memory>& ell,
+                  const ValueType * x,
+                  ValueType * y)
 {
     __spmv_ell<true>(ell, x, y);
 }
 
 template <typename IndexType, typename ValueType>
-void spmv(const cusp::ell_matrix<IndexType,ValueType,cusp::device_memory>& ell, 
-          const ValueType * x, 
-                ValueType * y)
+void spmv(const cusp::ell_matrix<IndexType,ValueType,cusp::device_memory>& ell,
+          const ValueType * x,
+          ValueType * y)
 {
     spmv_ell(ell, x, y);
 }
 
 template <typename IndexType, typename ValueType>
-void spmv_tex(const cusp::ell_matrix<IndexType,ValueType,cusp::device_memory>& ell, 
-              const ValueType * x, 
-                    ValueType * y)
+void spmv_tex(const cusp::ell_matrix<IndexType,ValueType,cusp::device_memory>& ell,
+              const ValueType * x,
+              ValueType * y)
 {
     spmv_ell_tex(ell, x, y);
 }

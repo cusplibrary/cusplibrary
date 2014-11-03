@@ -17,7 +17,7 @@
 #pragma once
 
 /*! \file thrust/system/cpp/execution_policy.h
- *  \brief Execution policies for Thrust's standard C++ system.
+ *  \brief Execution policies for Thrust's CUDA system.
  */
 
 #include <thrust/detail/config.h>
@@ -30,18 +30,5 @@
 
 // now get all the algorithm definitions
 
+#include <cusp/system/cuda/detail/elementwise.h>
 #include <cusp/system/cuda/detail/transpose.h>
-
-namespace cusp
-{
-namespace system
-{
-namespace cuda
-{
-
-struct execution_policy : thrust::system::cuda::execution_policy<thrust::system::cuda::tag> {};
-struct tag : thrust::system::cuda::tag {};
-
-} // end namespace cuda
-} // end namespace system
-} // end namespace cusp

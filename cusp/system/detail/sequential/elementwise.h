@@ -14,27 +14,152 @@
  *  limitations under the License.
  */
 
+/*! \file elementwise.h
+ *  \brief Sequential implementations of elementwise algorithms.
+ */
+
 #pragma once
+
+#include <cusp/detail/config.h>
+#include <cusp/format.h>
+#include <cusp/array1d.h>
+
+#include <cusp/system/detail/sequential/execution_policy.h>
 
 namespace cusp
 {
+namespace system
+{
 namespace detail
 {
-namespace host
+namespace sequential
 {
 
-template <typename Matrix1,
-          typename Matrix2,
-          typename Matrix3,
+using namespace thrust::system::detail::sequential;
+
+///////////
+// COO   //
+///////////
+
+template <typename DerivedPolicy,
+          typename MatrixType1, typename MatrixType2, typename MatrixType3,
           typename BinaryFunction>
-void transform_elementwise(const Matrix1& A,
-                           const Matrix2& B,
-                                 Matrix3& C,
-                                 BinaryFunction op);
+void elementwise(sequential::execution_policy<DerivedPolicy>& exec,
+                 const MatrixType1& A,
+                 const MatrixType2& B,
+                 MatrixType3& C,
+                 BinaryFunction op,
+                 cusp::csr_format)
+{
+    //Method that works for duplicate and/or unsorted indices
 
-} // end namespace host
+    typedef typename MatrixType3::index_type IndexType;
+    typedef typename MatrixType3::value_type ValueType;
+
+    cusp::array1d<IndexType,cusp::host_memory>  next(A.num_cols, IndexType(-1));
+    cusp::array1d<ValueType,cusp::host_memory> A_row(A.num_cols, ValueType(0));
+    cusp::array1d<ValueType,cusp::host_memory> B_row(A.num_cols, ValueType(0));
+
+    cusp::csr_matrix<IndexType,ValueType,cusp::host_memory> temp(A.num_rows, A.num_cols, A.num_entries + B.num_entries);
+
+    size_t nnz = 0;
+
+    temp.row_offsets[0] = 0;
+
+    for(size_t i = 0; i < A.num_rows; i++)
+    {
+        IndexType head   = -2;
+        IndexType length =  0;
+
+        //add a row of A to A_row
+        IndexType i_start = A.row_offsets[i];
+        IndexType i_end   = A.row_offsets[i + 1];
+        for(IndexType jj = i_start; jj < i_end; jj++)
+        {
+            IndexType j = A.column_indices[jj];
+
+            A_row[j] += A.values[jj];
+
+            if(next[j] == -1) {
+                next[j] = head;
+                head = j;
+                length++;
+            }
+        }
+
+        //add a row of B to B_row
+        i_start = B.row_offsets[i];
+        i_end   = B.row_offsets[i + 1];
+        for(IndexType jj = i_start; jj < i_end; jj++)
+        {
+            IndexType j = B.column_indices[jj];
+
+            B_row[j] += B.values[jj];
+
+            if(next[j] == -1) {
+                next[j] = head;
+                head = j;
+                length++;
+            }
+        }
+
+        // scan through columns where A or B has
+        // contributed a non-zero entry
+        for(IndexType jj = 0; jj < length; jj++)
+        {
+            ValueType result = op(A_row[head], B_row[head]);
+
+            if(result != 0)
+            {
+                temp.column_indices[nnz] = head;
+                temp.values[nnz]         = result;
+                nnz++;
+            }
+
+            IndexType prev = head;
+            head = next[head];
+            next[prev]  = -1;
+
+            A_row[prev] =  0;
+            B_row[prev] =  0;
+        }
+
+        temp.row_offsets[i + 1] = nnz;
+    }
+
+    // TODO replace with destructive assignment?
+
+    temp.resize(A.num_rows, A.num_cols, nnz);
+    cusp::copy(temp, C);
+}
+
+///////////
+// Array //
+///////////
+
+template <typename DerivedPolicy,
+          typename MatrixType1, typename MatrixType2, typename MatrixType3,
+          typename BinaryFunction>
+void elementwise(sequential::execution_policy<DerivedPolicy>& exec,
+                 const MatrixType1& A,
+                 const MatrixType2& B,
+                 MatrixType3& C,
+                 BinaryFunction op,
+                 cusp::array2d_format)
+{
+    C.resize(A.num_rows, A.num_cols);
+
+    for(size_t i = 0; i < A.num_rows; i++)
+        for(size_t j = 0; j < A.num_cols; j++)
+            C(i,j) = op(A(i,j), B(i,j));
+}
+
+} // end namespace sequential
 } // end namespace detail
-} // end namespace cusp
+} // end namespace system
 
-#include <cusp/detail/host/elementwise.inl>
+// hack until ADL is operational
+using cusp::system::detail::sequential::elementwise;
+
+} // end namespace cusp
 

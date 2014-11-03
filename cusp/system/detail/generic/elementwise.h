@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2013 NVIDIA Corporation
+ *  Copyright 2008-2014 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -29,12 +29,16 @@ namespace detail
 namespace generic
 {
 
-template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2, typename Format>
-void transpose(thrust::execution_policy<DerivedPolicy> &exec, const MatrixType1& A, MatrixType2& At, Format);
+template <typename DerivedPolicy,
+          typename MatrixType1, typename MatrixType2, typename MatrixType3,
+          typename BinaryFunction, typename Format>
+void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
+                 const MatrixType1& A, const MatrixType2& B, MatrixType3& C,
+                 BinaryFunction func, Format format);
 
 } // end namespace generic
 } // end namespace detail
 } // end namespace system
 } // end namespace cusp
 
-#include <cusp/system/detail/generic/transpose.inl>
+#include <cusp/system/detail/generic/elementwise.inl>

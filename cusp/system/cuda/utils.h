@@ -40,15 +40,15 @@
 namespace cusp
 {
 namespace detail
-{    
+{
 namespace device
 {
 
 template <typename Size1, typename Size2>
-__host__ __device__ 
+__host__ __device__
 Size1 DIVIDE_INTO(Size1 N, Size2 granularity)
 {
-  return (N + (granularity - 1)) / granularity;
+    return (N + (granularity - 1)) / granularity;
 }
 
 template <typename T>
@@ -61,8 +61,8 @@ thrust::pair<T,T> uniform_splitting(const T N, const T granularity, const T max_
         return thrust::make_pair(granularity, grains);
 
     // insures that:
-    //     num_intervals * interval_size is >= N 
-    //   and 
+    //     num_intervals * interval_size is >= N
+    //   and
     //     (num_intervals - 1) * interval_size is < N
     const T grains_per_interval = DIVIDE_INTO(grains, max_intervals);
     const T interval_size       = grains_per_interval * granularity;

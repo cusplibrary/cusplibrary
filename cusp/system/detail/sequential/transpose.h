@@ -21,10 +21,10 @@
 #pragma once
 
 #include <cusp/detail/config.h>
-#include <cusp/system/detail/sequential/execution_policy.h>
-
 #include <cusp/format.h>
 #include <cusp/array1d.h>
+
+#include <cusp/system/detail/sequential/execution_policy.h>
 
 namespace cusp
 {
@@ -35,9 +35,11 @@ namespace detail
 namespace sequential
 {
 
+using namespace thrust::system::detail::sequential;
+
 // COO format
 template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
-void transpose(thrust::system::detail::sequential::execution_policy<DerivedPolicy>& exec,
+void transpose(sequential::execution_policy<DerivedPolicy>& exec,
                const MatrixType1& A, MatrixType2& At,
                coo_format)
 {
@@ -74,7 +76,7 @@ void transpose(thrust::system::detail::sequential::execution_policy<DerivedPolic
 
 // CSR format
 template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
-void transpose(thrust::system::detail::sequential::execution_policy<DerivedPolicy>& exec,
+void transpose(sequential::execution_policy<DerivedPolicy>& exec,
                const MatrixType1& A, MatrixType2& At,
                csr_format)
 {

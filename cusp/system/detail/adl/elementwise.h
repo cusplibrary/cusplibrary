@@ -18,16 +18,16 @@
 
 #include <thrust/detail/config.h>
 
-// the purpose of this header is to #include the transpose.h header
+// the purpose of this header is to #include the elementwise.h header
 // of the sequential, host, and device systems. It should be #included in any
-// code which uses adl to dispatch transpose
+// code which uses adl to dispatch elementwise
 
-#include <cusp/system/detail/sequential/transpose.h>
+#include <cusp/system/detail/sequential/elementwise.h>
 
-#define __CUSP_HOST_SYSTEM_TRANSPOSE_HEADER <__CUSP_HOST_SYSTEM_ROOT/detail/transpose.h>
-#include __CUSP_HOST_SYSTEM_TRANSPOSE_HEADER
-#undef __CUSP_HOST_SYSTEM_TRANSPOSE_HEADER
+#define __CUSP_HOST_SYSTEM_ELEMENTWISE_HEADER <__CUSP_HOST_SYSTEM_ROOT/detail/elementwise.h>
+#include __CUSP_HOST_SYSTEM_ELEMENTWISE_HEADER
+#undef __CUSP_HOST_SYSTEM_ELEMENTWISE_HEADER
 
-#define __CUSP_DEVICE_SYSTEM_TRANSPOSE_HEADER <__CUSP_DEVICE_SYSTEM_ROOT/detail/transpose.h>
-#include __CUSP_DEVICE_SYSTEM_TRANSPOSE_HEADER
-#undef __CUSP_DEVICE_SYSTEM_TRANSPOSE_HEADER
+#define __CUSP_DEVICE_SYSTEM_ELEMENTWISE_HEADER <__CUSP_DEVICE_SYSTEM_ROOT/detail/elementwise.h>
+#include __CUSP_DEVICE_SYSTEM_ELEMENTWISE_HEADER
+#undef __CUSP_DEVICE_SYSTEM_ELEMENTWISE_HEADER

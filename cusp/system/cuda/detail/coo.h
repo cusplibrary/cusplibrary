@@ -36,25 +36,25 @@ namespace detail
 
 // simplified implementation for plus and minus operators
 template <typename Matrix1,
-          typename Matrix2,
-          typename Matrix3,
-          typename UnaryFunction>
+         typename Matrix2,
+         typename Matrix3,
+         typename UnaryFunction>
 void coo_elementwise_transform_simple(const Matrix1& A,
                                       const Matrix2& B,
-                                            Matrix3& C,
+                                      Matrix3& C,
                                       UnaryFunction op)
 {
     typedef typename Matrix3::index_type   IndexType;
     typedef typename Matrix3::value_type   ValueType;
     typedef typename Matrix3::memory_space MemorySpace;
-  
+
     IndexType A_nnz = A.num_entries;
     IndexType B_nnz = B.num_entries;
 
     if (A_nnz == 0 && B_nnz == 0)
     {
-      C.resize(A.num_rows, A.num_cols, 0);
-      return;
+        C.resize(A.num_rows, A.num_cols, 0);
+        return;
     }
 
     cusp::array1d<IndexType,MemorySpace> rows(A_nnz + B_nnz);
@@ -67,7 +67,7 @@ void coo_elementwise_transform_simple(const Matrix1& A,
     thrust::copy(B.column_indices.begin(), B.column_indices.end(), cols.begin() + A_nnz);
     thrust::copy(A.values.begin(),         A.values.end(),         vals.begin());
 
-    // apply transformation to B's values 
+    // apply transformation to B's values
     thrust::transform(B.values.begin(), B.values.end(), vals.begin() + A_nnz, op);
 
     // sort by (I,J)
@@ -95,11 +95,11 @@ void coo_elementwise_transform_simple(const Matrix1& A,
 }
 
 template <typename Matrix1,
-          typename Matrix2,
-          typename Matrix3>
+         typename Matrix2,
+         typename Matrix3>
 void coo_add(const Matrix1& A,
              const Matrix2& B,
-                   Matrix3& C)
+             Matrix3& C)
 {
     typedef typename Matrix2::value_type ValueType;
 
@@ -107,11 +107,11 @@ void coo_add(const Matrix1& A,
 }
 
 template <typename Matrix1,
-          typename Matrix2,
-          typename Matrix3>
+         typename Matrix2,
+         typename Matrix3>
 void coo_subtract(const Matrix1& A,
                   const Matrix2& B,
-                        Matrix3& C)
+                  Matrix3& C)
 {
     typedef typename Matrix2::value_type ValueType;
 

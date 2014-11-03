@@ -27,22 +27,5 @@
 
 // now get all the algorithm definitions
 
+#include <cusp/system/detail/sequential/elementwise.h>
 #include <cusp/system/detail/sequential/transpose.h>
-
-namespace cusp
-{
-namespace system
-{
-namespace detail
-{
-namespace sequential
-{
-
-template<typename Derived>
-struct execution_policy : thrust::system::detail::sequential::execution_policy<Derived> {};
-struct tag : thrust::system::detail::sequential::tag {};
-
-} // end namespace sequential
-} // end namespace detail
-} // end namespace system
-} // end namespace cusp

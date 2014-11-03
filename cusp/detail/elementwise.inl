@@ -14,63 +14,115 @@
  *  limitations under the License.
  */
 
-#include <cusp/detail/dispatch/elementwise.h>
+/*! \file elementwise.inl
+ *  \brief Inline file for elementwise.h.
+ */
+
+#include <thrust/detail/config.h>
+#include <thrust/system/detail/generic/select_system.h>
+
+#include <cusp/elementwise.h>
+#include <cusp/system/detail/adl/elementwise.h>
+#include <cusp/system/detail/generic/elementwise.h>
 
 namespace cusp
 {
-
-//template <typename Matrix1,
-//          typename Matrix2,
-//          typename Matrix3,
-//          typename BinaryFunction>
-//void transform_elementwise(const Matrix1& A,
-//                           const Matrix2& B,
-//                                 Matrix3& C,
-//                                 BinaryFunction op)
-//{
-//    cusp::detail::dispatch::transform_elementwise(A, B, C, op,
-//            typename Matrix1::memory_space(),
-//            typename Matrix2::memory_space(),
-//            typename Matrix3::memory_space());
-//}
-
-template <typename Matrix1,
-         typename Matrix2,
-         typename Matrix3>
-void add(const Matrix1& A,
-         const Matrix2& B,
-         Matrix3& C)
+namespace detail
 {
-    CUSP_PROFILE_SCOPED();
 
-    // TODO replace with cusp::detail::assert_same_dimensions(A,B);
-    if(A.num_rows != B.num_rows || A.num_cols != B.num_cols)
-        throw cusp::invalid_input_exception("array dimensions do not match");
+template <typename DerivedPolicy,
+          typename MatrixType1, typename MatrixType2, typename MatrixType3,
+          typename BinaryFunction, typename MatrixFormat>
+void elementwise(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
+                 const MatrixType1& A, const MatrixType2& B, MatrixType3& C,
+                 BinaryFunction func,
+                 MatrixFormat format1, MatrixFormat format2, MatrixFormat format3)
+{
+    using cusp::system::detail::generic::elementwise;
 
-    cusp::detail::dispatch::add(A, B, C,
-                                typename Matrix1::memory_space(),
-                                typename Matrix2::memory_space(),
-                                typename Matrix3::memory_space());
-
+    elementwise(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, B, C, func, format1);
 }
 
-template <typename Matrix1,
-         typename Matrix2,
-         typename Matrix3>
-void subtract(const Matrix1& A,
-              const Matrix2& B,
-              Matrix3& C)
+template <typename DerivedPolicy,
+          typename MatrixType1, typename MatrixType2, typename MatrixType3,
+          typename BinaryFunction,
+          typename MatrixFormat1, typename MatrixFormat2, typename MatrixFormat3>
+void elementwise(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
+                 const MatrixType1& A, const MatrixType2& B, MatrixType3& C,
+                 BinaryFunction func,
+                 MatrixFormat1 format1, MatrixFormat2 format2, MatrixFormat3 format3)
 {
-    CUSP_PROFILE_SCOPED();
+    typedef typename MatrixType1::index_type   IndexType1;
+    typedef typename MatrixType1::value_type   ValueType1;
+    typedef typename MatrixType1::memory_space MemorySpace1;
 
-    // TODO replace with cusp::detail::assert_same_dimensions(A,B);
-    if(A.num_rows != B.num_rows || A.num_cols != B.num_cols)
-        throw cusp::invalid_input_exception("array dimensions do not match");
+    typedef typename MatrixType2::index_type   IndexType2;
+    typedef typename MatrixType2::value_type   ValueType2;
+    typedef typename MatrixType2::memory_space MemorySpace2;
 
-    cusp::detail::dispatch::subtract(A, B, C,
-                                     typename Matrix1::memory_space(),
-                                     typename Matrix2::memory_space(),
-                                     typename Matrix3::memory_space());
+    cusp::csr_matrix<IndexType1, ValueType1, MemorySpace1> A_csr(A);
+    cusp::csr_matrix<IndexType2, ValueType2, MemorySpace2> B_csr(B);
+    cusp::csr_matrix<IndexType2, ValueType2, MemorySpace2> C_csr;
+
+    cusp::elementwise(exec, A_csr, B_csr, C_csr, func);
+
+    cusp::convert(C_csr, C);
+}
+
+} // end namespace detail
+
+template <typename DerivedPolicy,
+          typename MatrixType1, typename MatrixType2, typename MatrixType3,
+          typename BinaryFunction>
+void elementwise(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
+                 const MatrixType1& A, const MatrixType2& B, MatrixType3& C,
+                 BinaryFunction func)
+{
+    typedef typename MatrixType1::format Format1;
+    typedef typename MatrixType2::format Format2;
+
+    cusp::assert_same_dimensions(A,B);
+
+    Format1 format1;
+    Format2 format2;
+
+    cusp::detail::elementwise(exec, A, B, C, func, format1, format2);
+}
+
+template <typename MatrixType1, typename MatrixType2, typename MatrixType3>
+void add(const MatrixType1& A, const MatrixType2& B, MatrixType3& C)
+{
+    using thrust::system::detail::generic::select_system;
+
+    typedef typename MatrixType1::value_type   ValueType;
+    typedef thrust::plus<ValueType>            Op;
+
+    typedef typename MatrixType1::memory_space System1;
+    typedef typename MatrixType2::memory_space System2;
+
+    Op op;
+    System1 system1;
+    System2 system2;
+
+    cusp::elementwise(select_system(system1,system2), A, B, C, op);
+}
+
+template <typename MatrixType1, typename MatrixType2, typename MatrixType3>
+void subtract(const MatrixType1& A, const MatrixType2& B, MatrixType3& C)
+{
+    using thrust::system::detail::generic::select_system;
+
+    typedef typename MatrixType1::value_type   ValueType;
+    typedef thrust::minus<ValueType>           Op;
+
+    typedef typename MatrixType1::memory_space System1;
+    typedef typename MatrixType2::memory_space System2;
+
+    Op op;
+    System1 system1;
+    System2 system2;
+
+    cusp::elementwise(select_system(system1,system2), A, B, C, op);
 }
 
 } // end namespace cusp

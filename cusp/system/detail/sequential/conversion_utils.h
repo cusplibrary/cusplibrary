@@ -46,7 +46,7 @@ size_t count_diagonals(const Matrix& csr, cusp::csr_format)
 
     for(size_t i = 0; i < csr.num_rows; i++)
     {
-        for(IndexType jj = csr.row_offsets[i]; jj < csr.row_offsets[i+1]; jj++){
+        for(IndexType jj = csr.row_offsets[i]; jj < csr.row_offsets[i+1]; jj++) {
             IndexType j = csr.column_indices[jj];
             IndexType diagonal_offset = (csr.num_rows - i) + j; //offset shifted by + num_rows
             occupied_diagonals[diagonal_offset] = true;
@@ -61,29 +61,29 @@ size_t compute_max_entries_per_row(const Matrix& csr, cusp::csr_format)
 {
     size_t max_entries_per_row = 0;
     for(size_t i = 0; i < csr.num_rows; i++)
-        max_entries_per_row = std::max<size_t>(max_entries_per_row, csr.row_offsets[i+1] - csr.row_offsets[i]); 
+        max_entries_per_row = std::max<size_t>(max_entries_per_row, csr.row_offsets[i+1] - csr.row_offsets[i]);
     return max_entries_per_row;
 }
 
 template <typename Matrix>
 size_t compute_optimal_entries_per_row(const Matrix& csr,
-                                      float relative_speed,
-                                      size_t breakeven_threshold,
-                                      cusp::csr_format)
+                                       float relative_speed,
+                                       size_t breakeven_threshold,
+                                       cusp::csr_format)
 {
     typedef typename Matrix::index_type IndexType;
-    
+
     // compute maximum row length
     size_t max_cols_per_row = 0;
     for(size_t i = 0; i < csr.num_rows; i++)
-        max_cols_per_row = std::max<size_t>(max_cols_per_row, csr.row_offsets[i+1] - csr.row_offsets[i]); 
+        max_cols_per_row = std::max<size_t>(max_cols_per_row, csr.row_offsets[i+1] - csr.row_offsets[i]);
 
     // compute distribution of nnz per row
     std::vector<IndexType> histogram(max_cols_per_row + 1, 0);
     for(size_t i = 0; i < csr.num_rows; i++)
         histogram[csr.row_offsets[i+1] - csr.row_offsets[i]]++;
 
-    // compute optimal ELL column size 
+    // compute optimal ELL column size
     size_t num_cols_per_row = max_cols_per_row;
     for(size_t i = 0, rows = csr.num_rows; i < max_cols_per_row; i++)
     {
@@ -103,13 +103,13 @@ size_t compute_optimal_entries_per_row(const Matrix& csr,
 template <typename Matrix>
 size_t count_diagonals(const Matrix& m)
 {
-  return cusp::detail::host::detail::count_diagonals(m, typename Matrix::format());
+    return cusp::detail::host::detail::count_diagonals(m, typename Matrix::format());
 }
 
 template <typename Matrix>
 size_t compute_max_entries_per_row(const Matrix& m)
 {
-  return cusp::detail::host::detail::compute_max_entries_per_row(m, typename Matrix::format());
+    return cusp::detail::host::detail::compute_max_entries_per_row(m, typename Matrix::format());
 }
 
 
@@ -132,8 +132,8 @@ size_t compute_optimal_entries_per_row(const Matrix& m,
                                        float relative_speed = 3.0f,
                                        size_t breakeven_threshold = 4096)
 {
-  return cusp::detail::host::detail::compute_optimal_entries_per_row
-    (m, relative_speed, breakeven_threshold, typename Matrix::format());
+    return cusp::detail::host::detail::compute_optimal_entries_per_row
+           (m, relative_speed, breakeven_threshold, typename Matrix::format());
 }
 
 } // end namespace host

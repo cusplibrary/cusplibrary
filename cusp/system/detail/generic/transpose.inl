@@ -85,8 +85,6 @@ void transpose(thrust::execution_policy<DerivedPolicy>& exec,
     typedef typename MatrixType2::index_type   IndexType2;
     typedef typename MatrixType2::memory_space MemorySpace2;
 
-    // std::cout << "Executing generic transpose" << std::endl;
-
     cusp::array1d<IndexType2,MemorySpace2> At_row_indices(A.column_indices);
 
     At.resize(A.num_cols, A.num_rows, A.num_entries);

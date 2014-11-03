@@ -14,27 +14,9 @@
  *  limitations under the License.
  */
 
-
 #pragma once
 
-#include <thrust/detail/config.h>
-#include <thrust/system/detail/generic/tag.h>
+#include <cusp/detail/config.h>
 
-namespace cusp
-{
-namespace system
-{
-namespace detail
-{
-namespace generic
-{
-
-template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2, typename Format>
-void transpose(thrust::execution_policy<DerivedPolicy> &exec, const MatrixType1& A, MatrixType2& At, Format);
-
-} // end namespace generic
-} // end namespace detail
-} // end namespace system
-} // end namespace cusp
-
-#include <cusp/system/detail/generic/transpose.inl>
+// this system inherits elementwise
+#include <cusp/system/cpp/detail/elementwise.h>
