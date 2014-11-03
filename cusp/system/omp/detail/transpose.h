@@ -16,18 +16,7 @@
 
 #pragma once
 
-/*! \file thrust/system/cpp/execution_policy.h
- *  \brief Execution policies for Thrust's standard C++ system.
- */
+#include <cusp/detail/config.h>
 
-#include <thrust/detail/config.h>
-
-// get the execution policies definitions first
-#include <thrust/system/cpp/detail/execution_policy.h>
-
-// get the definition of par
-#include <thrust/system/cpp/detail/par.h>
-
-// now get all the algorithm definitions
-
+// this system inherits transpose
 #include <cusp/system/cpp/detail/transpose.h>

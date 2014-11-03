@@ -16,18 +16,18 @@
 
 #pragma once
 
-/*! \file thrust/system/cpp/execution_policy.h
- *  \brief Execution policies for Thrust's standard C++ system.
+/*! \file thrust/system/tbb/execution_policy.h
+ *  \brief Execution policies for Thrust's OpenMP system.
  */
 
 #include <thrust/detail/config.h>
 
 // get the execution policies definitions first
-#include <thrust/system/cpp/detail/execution_policy.h>
+#include <thrust/system/tbb/detail/execution_policy.h>
 
 // get the definition of par
-#include <thrust/system/cpp/detail/par.h>
+#include <thrust/system/tbb/detail/par.h>
 
 // now get all the algorithm definitions
 
-#include <cusp/system/cpp/detail/transpose.h>
+#include <cusp/system/tbb/detail/transpose.h>
