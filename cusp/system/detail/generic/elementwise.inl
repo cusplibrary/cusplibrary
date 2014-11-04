@@ -36,7 +36,7 @@ template <typename DerivedPolicy,
           typename BinaryFunction>
 void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
                  const MatrixType1& A, const MatrixType2& B, MatrixType3& C,
-                 BinaryFunction func, cusp::array2d_format);
+                 BinaryFunction func, cusp::array2d_format)
 {
     C.resize(A.num_rows, A.num_cols);
 
@@ -51,7 +51,7 @@ template <typename DerivedPolicy,
           typename BinaryFunction>
 void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
                  const MatrixType1& A, const MatrixType2& B, MatrixType3& C,
-                 BinaryFunction func, cusp::coo_format);
+                 BinaryFunction func, cusp::coo_format)
 {
 }
 
@@ -60,7 +60,7 @@ template <typename DerivedPolicy,
           typename BinaryFunction>
 void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
                  const MatrixType1& A, const MatrixType2& B, MatrixType3& C,
-                 BinaryFunction func, cusp::csr_format);
+                 BinaryFunction func, cusp::csr_format)
 {
 }
 
