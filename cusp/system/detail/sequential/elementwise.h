@@ -21,8 +21,11 @@
 #pragma once
 
 #include <cusp/detail/config.h>
+
 #include <cusp/format.h>
 #include <cusp/array1d.h>
+#include <cusp/copy.h>
+#include <cusp/csr_matrix.h>
 
 #include <cusp/system/detail/sequential/execution_policy.h>
 
@@ -49,7 +52,7 @@ void elementwise(sequential::execution_policy<DerivedPolicy>& exec,
                  const MatrixType2& B,
                  MatrixType3& C,
                  BinaryFunction op,
-                 cusp::csr_format)
+                 cusp::csr_format& format)
 {
     //Method that works for duplicate and/or unsorted indices
 
@@ -145,7 +148,7 @@ void elementwise(sequential::execution_policy<DerivedPolicy>& exec,
                  const MatrixType2& B,
                  MatrixType3& C,
                  BinaryFunction op,
-                 cusp::array2d_format)
+                 cusp::array2d_format& format)
 {
     C.resize(A.num_rows, A.num_cols);
 

@@ -43,7 +43,7 @@ namespace generic
 // Array2d format
 template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
 void transpose(thrust::execution_policy<DerivedPolicy>& exec,
-               const MatrixType1& A, MatrixType2& At, array2d_format)
+               const MatrixType1& A, MatrixType2& At, array2d_format& format)
 {
     typedef typename MatrixType1::orientation Orientation1;
     typedef typename MatrixType2::orientation Orientation2;
@@ -66,7 +66,7 @@ void transpose(thrust::execution_policy<DerivedPolicy>& exec,
 // COO format
 template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
 void transpose(thrust::execution_policy<DerivedPolicy>& exec,
-               const MatrixType1& A, MatrixType2& At, coo_format)
+               const MatrixType1& A, MatrixType2& At, coo_format& format)
 {
     At.resize(A.num_cols, A.num_rows, A.num_entries);
 
@@ -80,7 +80,7 @@ void transpose(thrust::execution_policy<DerivedPolicy>& exec,
 // CSR format
 template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
 void transpose(thrust::execution_policy<DerivedPolicy>& exec,
-               const MatrixType1& A, MatrixType2& At, csr_format)
+               const MatrixType1& A, MatrixType2& At, csr_format& format)
 {
     typedef typename MatrixType2::index_type   IndexType2;
     typedef typename MatrixType2::memory_space MemorySpace2;
@@ -101,53 +101,8 @@ void transpose(thrust::execution_policy<DerivedPolicy>& exec,
 // DIA format
 template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
 void transpose(thrust::execution_policy<DerivedPolicy>& exec,
-               const MatrixType1& A, MatrixType2& At, dia_format)
+               const MatrixType1& A, MatrixType2& At, sparse_format& format)
 {
-    // At.resize(A.num_cols, A.num_rows, A.num_entries, A.diagonal_offsets.size());
-    //
-    // thrust::copy(A.diagonal_offsets.begin(), A.diagonal_offsets.end(),
-    //              thrust::make_reverse_iterator(At.diagonal_offsets.begin()));
-    //
-    // cusp::blas::scal(At.diagonal_offsets, -1);
-    //
-    // cusp::transpose(A.values, At.values);
-
-    typedef typename MatrixType1::index_type   IndexType1;
-    typedef typename MatrixType1::value_type   ValueType1;
-    typedef typename MatrixType1::memory_space MemorySpace1;
-
-    cusp::csr_matrix<IndexType1,ValueType1,MemorySpace1> A_csr(A);
-    cusp::transpose(exec, A_csr, At);
-}
-
-// ELL format
-template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
-void transpose(thrust::execution_policy<DerivedPolicy>& exec,
-               const MatrixType1& A, MatrixType2& At, ell_format)
-{
-    // At.resize(A.num_cols, A.num_rows, A.num_entries, A.num_rows);
-    //
-    // cusp::transpose(A.column_indices, At.column_indices);
-    // cusp::transpose(A.values, At.values);
-
-    typedef typename MatrixType1::index_type   IndexType1;
-    typedef typename MatrixType1::value_type   ValueType1;
-    typedef typename MatrixType1::memory_space MemorySpace1;
-
-    cusp::csr_matrix<IndexType1,ValueType1,MemorySpace1> A_csr(A);
-    cusp::transpose(exec, A_csr, At);
-}
-
-// HYB format
-template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
-void transpose(thrust::execution_policy<DerivedPolicy>& exec,
-               const MatrixType1& A, MatrixType2& At, hyb_format)
-{
-    // At.resize(A.num_cols, A.num_rows, A.num_entries, A.ell.num_entries, A.coo.num_entries);
-    //
-    // cusp::transpose(A.ell, At.ell);
-    // cusp::transpose(A.coo, At.coo);
-
     typedef typename MatrixType1::index_type   IndexType1;
     typedef typename MatrixType1::value_type   ValueType1;
     typedef typename MatrixType1::memory_space MemorySpace1;

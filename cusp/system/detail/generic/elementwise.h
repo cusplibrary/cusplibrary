@@ -17,8 +17,8 @@
 
 #pragma once
 
-#include <thrust/detail/config.h>
-#include <thrust/system/detail/generic/tag.h>
+#include <cusp/detail/config.h>
+#include <thrust/execution_policy.h>
 
 namespace cusp
 {
@@ -31,10 +31,11 @@ namespace generic
 
 template <typename DerivedPolicy,
           typename MatrixType1, typename MatrixType2, typename MatrixType3,
-          typename BinaryFunction, typename Format>
+          typename BinaryFunction,
+          typename Format>
 void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
                  const MatrixType1& A, const MatrixType2& B, MatrixType3& C,
-                 BinaryFunction func, Format format);
+                 BinaryFunction op, Format& format);
 
 } // end namespace generic
 } // end namespace detail

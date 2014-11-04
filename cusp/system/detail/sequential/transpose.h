@@ -41,7 +41,7 @@ using namespace thrust::system::detail::sequential;
 template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
 void transpose(sequential::execution_policy<DerivedPolicy>& exec,
                const MatrixType1& A, MatrixType2& At,
-               coo_format)
+               coo_format&)
 {
     At.resize(A.num_cols, A.num_rows, A.num_entries);
 
@@ -78,7 +78,7 @@ void transpose(sequential::execution_policy<DerivedPolicy>& exec,
 template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
 void transpose(sequential::execution_policy<DerivedPolicy>& exec,
                const MatrixType1& A, MatrixType2& At,
-               csr_format)
+               csr_format&)
 {
     // std::cout << "Executing sequential transpose" << std::endl;
 

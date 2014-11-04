@@ -64,13 +64,13 @@ void elementwise(const thrust::detail::execution_policy_base<DerivedPolicy>& exe
     typedef typename MatrixType3::value_type   ValueType3;
     typedef typename MatrixType3::memory_space MemorySpace3;
 
-    cusp::csr_matrix<IndexType1, ValueType1, MemorySpace1> A_csr(A);
-    cusp::csr_matrix<IndexType2, ValueType2, MemorySpace2> B_csr(B);
-    cusp::csr_matrix<IndexType3, ValueType3, MemorySpace3> C_csr;
+    cusp::coo_matrix<IndexType1, ValueType1, MemorySpace1> A_coo(A);
+    cusp::coo_matrix<IndexType2, ValueType2, MemorySpace2> B_coo(B);
+    cusp::coo_matrix<IndexType3, ValueType3, MemorySpace3> C_coo;
 
-    cusp::elementwise(exec, A_csr, B_csr, C_csr, op);
+    cusp::elementwise(exec, A_coo, B_coo, C_coo, op);
 
-    cusp::convert(C_csr, C);
+    cusp::convert(C_coo, C);
 }
 
 } // end namespace detail
