@@ -54,11 +54,11 @@ void multiply(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 {
     using cusp::system::detail::generic::multiply;
 
-    typename LinearOperator::format linear_format;
-    typename MatrixOrVector1::format morv1_format;
-    typename MatrixOrVector2::format morv2_format;
+    typename LinearOperator::format  format1;
+    typename MatrixOrVector1::format format2;
+    typename MatrixOrVector2::format format3;
 
-    cusp::detail::multiply(exec, A, B, C, linear_format, morv1_format, morv2_format);
+    cusp::detail::multiply(exec, A, B, C, format1, format2, format3);
 }
 
 } // end namespace detail
@@ -70,12 +70,11 @@ template <typename DerivedPolicy,
 void multiply(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
               LinearOperator&  A,
               MatrixOrVector1& B,
-              MatrixOrVector2& C,
-              thrust::detail::true_type)
+              MatrixOrVector2& C)
 {
-    typename thrust::detail::is_convertible<typename LinearOperator::format,cusp::known_format>::type is_known;
+    typename thrust::detail::is_convertible<typename LinearOperator::format,known_format>::type is_known_operator;
 
-    cusp::detail::multiply(exec, A, B, C, is_known);
+    cusp::detail::multiply(exec, A, B, C, is_known_operator);
 }
 
 template <typename LinearOperator,
