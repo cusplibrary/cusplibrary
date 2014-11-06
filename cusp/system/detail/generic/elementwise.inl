@@ -59,10 +59,8 @@ template <typename DerivedPolicy,
 void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
                  const MatrixType1& A, const MatrixType2& B, MatrixType3& C,
                  BinaryFunction op,
-                 cusp::coo_format& format)
+                 cusp::coo_format&)
 {
-    std::cout << " Performing elementwise COO " << std::endl;
-
     typedef typename MatrixType3::index_type   IndexType;
     typedef typename MatrixType3::value_type   ValueType;
     typedef typename MatrixType3::memory_space MemorySpace;
@@ -87,7 +85,9 @@ void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
     thrust::copy(A.values.begin(),         A.values.end(),         vals.begin());
 
     // apply transformation to B's values
-    if(thrust::detail::is_same< BinaryFunction, thrust::minus<ValueType> >::value)
+    if(thrust::detail::is_same< BinaryFunction, thrust::plus<ValueType> >::value)
+      thrust::transform(B.values.begin(), B.values.end(), vals.begin() + A_nnz, thrust::identity<ValueType>());
+    else
       thrust::transform(B.values.begin(), B.values.end(), vals.begin() + A_nnz, thrust::negate<ValueType>());
 
     // sort by (I,J)
@@ -119,27 +119,35 @@ template <typename DerivedPolicy,
           typename BinaryFunction>
 void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
                  const MatrixType1& A, const MatrixType2& B, MatrixType3& C,
-                 BinaryFunction op, sparse_format& format)
+                 BinaryFunction op,
+                 cusp::csr_format&)
 {
-    std::cout << " Converting for elementwise " << std::endl;
+    typedef typename MatrixType1::memory_space MemorySpace;
 
-    typedef typename MatrixType1::index_type   IndexType1;
-    typedef typename MatrixType1::value_type   ValueType1;
-    typedef typename MatrixType1::memory_space MemorySpace1;
+    typedef coo_matrix_view<typename MatrixType1::row_offsets_array_type::view,
+                            typename MatrixType1::column_indices_array_type::const_view,
+                            typename MatrixType1::values_array_type::const_view> View1;
+    typedef coo_matrix_view<typename MatrixType2::row_offsets_array_type::view,
+                            typename MatrixType2::column_indices_array_type::const_view,
+                            typename MatrixType2::values_array_type::const_view> View2;
 
-    typedef typename MatrixType2::index_type   IndexType2;
-    typedef typename MatrixType2::value_type   ValueType2;
-    typedef typename MatrixType2::memory_space MemorySpace2;
+    typename MatrixType1::row_offsets_array_type::container A_row_indices(A.num_entries);
+    typename MatrixType2::row_offsets_array_type::container B_row_indices(B.num_entries);
 
-    typedef typename MatrixType3::index_type   IndexType3;
-    typedef typename MatrixType3::value_type   ValueType3;
-    typedef typename MatrixType3::memory_space MemorySpace3;
+    cusp::detail::offsets_to_indices(A.row_offsets, A_row_indices);
+    cusp::detail::offsets_to_indices(B.row_offsets, B_row_indices);
 
-    cusp::coo_matrix<IndexType1,ValueType1,MemorySpace1> A_coo(A);
-    cusp::coo_matrix<IndexType2,ValueType2,MemorySpace2> B_coo(B);
-    cusp::coo_matrix<IndexType3,ValueType3,MemorySpace3> C_coo;
+    View1 A_coo_view(A.num_rows, A.num_cols, A.num_entries,
+                     cusp::make_array1d_view(A_row_indices),
+                     cusp::make_array1d_view(A.column_indices),
+                     cusp::make_array1d_view(A.values));
+    View2 B_coo_view(B.num_rows, B.num_cols, B.num_entries,
+                     cusp::make_array1d_view(B_row_indices),
+                     cusp::make_array1d_view(B.column_indices),
+                     cusp::make_array1d_view(B.values));
+    typename cusp::detail::as_coo_type<MatrixType3>::type C_coo;
 
-    cusp::elementwise(exec, A_coo, B_coo, C_coo, op, coo_format());
+    cusp::elementwise(exec, A_coo_view, B_coo_view, C_coo, op);
 
     cusp::convert(C_coo, C);
 }

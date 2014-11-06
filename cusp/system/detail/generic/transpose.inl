@@ -98,19 +98,6 @@ void transpose(thrust::execution_policy<DerivedPolicy>& exec,
     cusp::detail::indices_to_offsets(At_row_indices, At.row_offsets);
 }
 
-// DIA format
-template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
-void transpose(thrust::execution_policy<DerivedPolicy>& exec,
-               const MatrixType1& A, MatrixType2& At, sparse_format& format)
-{
-    typedef typename MatrixType1::index_type   IndexType1;
-    typedef typename MatrixType1::value_type   ValueType1;
-    typedef typename MatrixType1::memory_space MemorySpace1;
-
-    cusp::csr_matrix<IndexType1,ValueType1,MemorySpace1> A_csr(A);
-    cusp::transpose(exec, A_csr, At);
-}
-
 } // end namespace generic
 } // end namespace detail
 } // end namespace system

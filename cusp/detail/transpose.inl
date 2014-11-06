@@ -22,6 +22,8 @@
 #include <thrust/system/detail/generic/select_system.h>
 
 #include <cusp/transpose.h>
+
+#include <cusp/detail/type_traits.h>
 #include <cusp/system/detail/adl/transpose.h>
 #include <cusp/system/detail/generic/transpose.h>
 
@@ -30,32 +32,38 @@ namespace cusp
 namespace detail
 {
 
-template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2, typename MatrixFormat>
+template<typename MatrixType1, typename MatrixType2>
+struct is_transposeable
+{
+  typedef typename MatrixType1::format format1;
+  typedef typename MatrixType2::format format2;
+
+  typedef typename thrust::detail::eval_if<
+      thrust::detail::is_same<format1,format2>::value,
+          thrust::detail::or_< is_coo<MatrixType1>, is_csr<MatrixType1>, is_array2d<MatrixType1> >,
+          thrust::detail::identity_<thrust::detail::false_type>
+      >::type type;
+};
+
+template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
 void transpose(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
                const MatrixType1& A, MatrixType2& At,
-               MatrixFormat format1, MatrixFormat format2)
+               thrust::detail::true_type)
 {
     using cusp::system::detail::generic::transpose;
 
-    transpose(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, At, format1);
+    typename MatrixType1::format format;
+
+    transpose(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, At, format);
 }
 
-template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2,
-          typename MatrixFormat1, typename MatrixFormat2>
+template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
 void transpose(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
                const MatrixType1& A, MatrixType2& At,
-               MatrixFormat1 format1, MatrixFormat2 format2)
+               thrust::detail::false_type)
 {
-    typedef typename MatrixType1::index_type   IndexType1;
-    typedef typename MatrixType1::value_type   ValueType1;
-    typedef typename MatrixType1::memory_space MemorySpace1;
-
-    typedef typename MatrixType2::index_type   IndexType2;
-    typedef typename MatrixType2::value_type   ValueType2;
-    typedef typename MatrixType2::memory_space MemorySpace2;
-
-    cusp::csr_matrix<IndexType1, ValueType1, MemorySpace1> A_csr(A);
-    cusp::csr_matrix<IndexType2, ValueType2, MemorySpace2> At_csr;
+    typename as_csr_type<MatrixType1>::type A_csr(A);
+    typename as_csr_type<MatrixType2>::type At_csr;
     cusp::transpose(exec, A_csr, At_csr);
 
     cusp::convert(At_csr, At);
@@ -67,13 +75,8 @@ template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
 void transpose(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
                const MatrixType1& A, MatrixType2& At)
 {
-    typedef typename MatrixType1::format Format1;
-    typedef typename MatrixType2::format Format2;
-
-    Format1 format1;
-    Format2 format2;
-
-    cusp::detail::transpose(exec, A, At, format1, format2);
+    typename detail::is_transposeable<MatrixType1,MatrixType2>::type transposeable;
+    cusp::detail::transpose(exec, A, At, transposeable);
 }
 
 template <typename MatrixType1, typename MatrixType2>

@@ -22,6 +22,8 @@
 
 #include <cusp/detail/config.h>
 
+#include <cusp/execution_policy.h>
+
 namespace cusp
 {
 
@@ -86,6 +88,15 @@ template <typename LinearOperator,
          typename MatrixOrVector1,
          typename MatrixOrVector2>
 void multiply(LinearOperator&  A,
+              MatrixOrVector1& B,
+              MatrixOrVector2& C);
+
+template <typename DerivedPolicy,
+         typename LinearOperator,
+         typename MatrixOrVector1,
+         typename MatrixOrVector2>
+void multiply(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+              LinearOperator&  A,
               MatrixOrVector1& B,
               MatrixOrVector2& C);
 /*! \}

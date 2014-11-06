@@ -380,7 +380,10 @@ public :
     typedef typename thrust::iterator_difference<RandomAccessIterator>::type    size_type;
 
     typedef typename cusp::array1d<value_type,memory_space>                     container;
+
+    // TODO: Fixed view types, view == const_view???
     typedef typename cusp::array1d_view<RandomAccessIterator>                   view;
+    typedef typename cusp::array1d_view<RandomAccessIterator>                   const_view;
     /*! \endcond */
 
     /*! This constructor creates an empty \p array1d_view vector.
@@ -708,6 +711,12 @@ typename array1d<T,MemorySpace>::view make_array1d_view(array1d<T,MemorySpace>& 
  */
 template <typename Iterator>
 typename array1d_view<Iterator>::view make_array1d_view(array1d_view<Iterator>& v)
+{
+    return make_array1d_view(v.begin(), v.end());
+}
+
+template <typename Iterator>
+typename array1d_view<Iterator>::view make_array1d_view(const array1d_view<Iterator>& v)
 {
     return make_array1d_view(v.begin(), v.end());
 }

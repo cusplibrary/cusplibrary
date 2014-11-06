@@ -14,45 +14,70 @@
  *  limitations under the License.
  */
 
-#include <cusp/detail/dispatch/multiply.h>
+#include <thrust/detail/config.h>
+#include <thrust/system/detail/generic/select_system.h>
 
-#include <cusp/linear_operator.h>
-#include <thrust/detail/type_traits.h>
+#include <cusp/multiply.h>
+
+#include <cusp/detail/type_traits.h>
+#include <cusp/system/detail/adl/multiply.h>
+#include <cusp/system/detail/generic/multiply.h>
 
 namespace cusp
 {
 namespace detail
 {
 
-template <typename LinearOperator,
+template <typename DerivedPolicy,
+         typename LinearOperator,
          typename MatrixOrVector1,
          typename MatrixOrVector2>
-void multiply(LinearOperator&  A,
+void multiply(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+              LinearOperator&  A,
               MatrixOrVector1& B,
               MatrixOrVector2& C,
-              cusp::unknown_format)
+              thrust::detail::false_type)
 {
     // user-defined LinearOperator
     A(B,C);
 }
 
-template <typename LinearOperator,
+template <typename DerivedPolicy,
+         typename LinearOperator,
          typename MatrixOrVector1,
          typename MatrixOrVector2>
-void multiply(LinearOperator&  A,
+void multiply(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+              LinearOperator&  A,
               MatrixOrVector1& B,
               MatrixOrVector2& C,
-              cusp::known_format)
+              thrust::detail::true_type)
 {
-    // built-in format
-    cusp::detail::dispatch::multiply(A, B, C,
-                                     typename LinearOperator::memory_space(),
-                                     typename MatrixOrVector1::memory_space(),
-                                     typename MatrixOrVector2::memory_space());
+    using cusp::system::detail::generic::multiply;
+
+    typename LinearOperator::format linear_format;
+    typename MatrixOrVector1::format morv1_format;
+    typename MatrixOrVector2::format morv2_format;
+
+    cusp::detail::multiply(exec, A, B, C, linear_format, morv1_format, morv2_format);
 }
 
 } // end namespace detail
 
+template <typename DerivedPolicy,
+         typename LinearOperator,
+         typename MatrixOrVector1,
+         typename MatrixOrVector2>
+void multiply(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+              LinearOperator&  A,
+              MatrixOrVector1& B,
+              MatrixOrVector2& C,
+              thrust::detail::true_type)
+{
+    typename thrust::detail::is_convertible<typename LinearOperator::format,cusp::known_format>::type is_known;
+
+    cusp::detail::multiply(exec, A, B, C, is_known);
+}
+
 template <typename LinearOperator,
          typename MatrixOrVector1,
          typename MatrixOrVector2>
@@ -60,33 +85,17 @@ void multiply(LinearOperator&  A,
               MatrixOrVector1& B,
               MatrixOrVector2& C)
 {
-    CUSP_PROFILE_SCOPED();
+    using thrust::system::detail::generic::select_system;
 
-    // TODO check that dimensions are compatible
+    typedef typename LinearOperator::memory_space  System1;
+    typedef typename MatrixOrVector1::memory_space System2;
+    typedef typename MatrixOrVector2::memory_space System3;
 
-    typedef typename LinearOperator::value_type   ValueType;
-    typedef typename LinearOperator::memory_space MemorySpace;
+    System1 system1;
+    System2 system2;
+    System3 system3;
 
-    cusp::detail::multiply(A, B, C,
-                           typename LinearOperator::format());
-}
-
-template <typename LinearOperator,
-         typename MatrixOrVector1,
-         typename MatrixOrVector2>
-void multiply(const LinearOperator&  A,
-              const MatrixOrVector1& B,
-              MatrixOrVector2& C)
-{
-    CUSP_PROFILE_SCOPED();
-
-    // TODO check that dimensions are compatible
-
-    typedef typename LinearOperator::value_type   ValueType;
-    typedef typename LinearOperator::memory_space MemorySpace;
-
-    cusp::detail::multiply(A, B, C,
-                           typename LinearOperator::format());
+    cusp::multiply(select_system(system1,system2,system3), A, B, C);
 }
 
 } // end namespace cusp
