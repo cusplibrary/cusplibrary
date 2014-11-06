@@ -16,20 +16,7 @@
 
 #pragma once
 
-/*! \file thrust/system/cpp/execution_policy.h
- *  \brief Execution policies for Thrust's CUDA system.
- */
+#include <cusp/detail/config.h>
 
-#include <thrust/detail/config.h>
-
-// get the execution policies definitions first
-#include <thrust/system/cuda/detail/execution_policy.h>
-
-// get the definition of par
-#include <thrust/system/cuda/detail/par.h>
-
-// now get all the algorithm definitions
-
-#include <cusp/system/cuda/detail/elementwise.h>
-#include <cusp/system/cuda/detail/multiply.h>
-#include <cusp/system/cuda/detail/transpose.h>
+// this system inherits multiply
+#include <cusp/system/cpp/detail/multiply.h>

@@ -30,4 +30,6 @@
 
 // now get all the algorithm definitions
 
+#include <cusp/system/tbb/detail/elementwise.h>
+#include <cusp/system/tbb/detail/multiply.h>
 #include <cusp/system/tbb/detail/transpose.h>

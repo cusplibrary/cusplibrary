@@ -30,4 +30,6 @@
 
 // now get all the algorithm definitions
 
+#include <cusp/system/omp/detail/elementwise.h>
+#include <cusp/system/omp/detail/multiply.h>
 #include <cusp/system/omp/detail/transpose.h>
