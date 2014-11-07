@@ -29,3 +29,18 @@
 
 #include <cusp/system/detail/sequential/elementwise.h>
 #include <cusp/system/detail/sequential/transpose.h>
+
+
+namespace cusp
+{
+namespace system
+{
+namespace detail
+{
+namespace sequential
+{
+using namespace thrust::system::detail::sequential;
+} // end namespace sequential
+} // end namespace detail
+} // end namespace system
+} // end namespace cusp

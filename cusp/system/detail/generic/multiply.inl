@@ -42,12 +42,14 @@ namespace generic
 
 template <typename DerivedPolicy,
           typename LinearOperator, typename MatrixOrVector1, typename MatrixOrVector2,
+          typename UnaryFunction,  typename BinaryFunction1, typename BinaryFunction2,
           typename Format1, typename Format2, typename Format3>
-void multiply(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+void multiply(thrust::detail::execution_policy_base<DerivedPolicy> &exec,
               LinearOperator&  A,
               MatrixOrVector1& B,
               MatrixOrVector2& C,
-              Format1&, Format2&, Format3){}
+              UnaryFunction  initialize, BinaryFunction1 combine, BinaryFunction2 reduce,
+              Format1&, Format2&, Format3&){}
 
 } // end namespace generic
 } // end namespace detail

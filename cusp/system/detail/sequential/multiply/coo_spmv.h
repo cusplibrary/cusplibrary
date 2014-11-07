@@ -17,9 +17,9 @@
 #pragma once
 
 #include <cusp/detail/config.h>
+#include <cusp/detail/functional.h>
 
 #include <cusp/format.h>
-#include <cusp/array1d.h>
 
 #include <cusp/system/detail/sequential/execution_policy.h>
 
@@ -32,27 +32,24 @@ namespace detail
 namespace sequential
 {
 
-using namespace thrust::system::detail::sequential;
-
-//////////////
-// COO SpMV //
-//////////////
-template <typename Matrix,
-         typename Vector1,
-         typename Vector2,
+template <typename DerivedPolicy,
+         typename MatrixType,
+         typename VectorType1,
+         typename VectorType2,
          typename UnaryFunction,
          typename BinaryFunction1,
          typename BinaryFunction2>
 void multiply(sequential::execution_policy<DerivedPolicy>& exec,
-              const Matrix&  A,
-              const Vector1& x,
-              Vector2& y,
+              const MatrixType& A,
+              const VectorType1& x,
+              VectorType2& y,
               UnaryFunction   initialize,
               BinaryFunction1 combine,
-              BinaryFunction2 reduce)
+              BinaryFunction2 reduce,
+              coo_format, array1d_format, array1d_format)
 {
-    typedef typename Matrix::index_type  IndexType;
-    typedef typename Vector2::value_type ValueType;
+    typedef typename MatrixType::index_type  IndexType;
+    typedef typename VectorType2::value_type ValueType;
 
     for(size_t i = 0; i < A.num_rows; i++)
         y[i] = initialize(y[i]);
@@ -66,21 +63,6 @@ void multiply(sequential::execution_policy<DerivedPolicy>& exec,
 
         y[i] = reduce(y[i], combine(Aij, xj));
     }
-}
-
-template <typename Matrix,
-         typename Vector1,
-         typename Vector2>
-void multiply(const Matrix&  A,
-              const Vector1& x,
-              Vector2& y)
-{
-    typedef typename Vector2::value_type ValueType;
-
-    spmv_coo(A, x, y,
-             cusp::detail::zero_function<ValueType>(),
-             thrust::multiplies<ValueType>(),
-             thrust::plus<ValueType>());
 }
 
 } // end namespace sequential

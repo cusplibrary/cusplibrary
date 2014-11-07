@@ -54,11 +54,18 @@ void multiply(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 {
     using cusp::system::detail::generic::multiply;
 
+    typedef typename LinearOperator::value_type ValueType;
+
     typename LinearOperator::format  format1;
     typename MatrixOrVector1::format format2;
     typename MatrixOrVector2::format format3;
 
-    cusp::detail::multiply(exec, A, B, C, format1, format2, format3);
+    cusp::detail::zero_function<ValueType> initialize;
+    thrust::multiplies<ValueType> combine;
+    thrust::plus<ValueType> reduce;
+
+    cusp::detail::multiply(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
+                           A, B, C, initialize, combine, reduce, format1, format2, format3);
 }
 
 } // end namespace detail
