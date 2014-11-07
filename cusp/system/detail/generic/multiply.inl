@@ -23,8 +23,6 @@
 #include <thrust/iterator/transform_iterator.h>
 
 #include <cusp/format.h>
-#include <cusp/copy.h>
-#include <cusp/convert.h>
 #include <cusp/coo_matrix.h>
 #include <cusp/csr_matrix.h>
 
@@ -42,14 +40,16 @@ namespace generic
 
 template <typename DerivedPolicy,
           typename LinearOperator, typename MatrixOrVector1, typename MatrixOrVector2,
-          typename UnaryFunction,  typename BinaryFunction1, typename BinaryFunction2,
-          typename Format1, typename Format2, typename Format3>
-void multiply(thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+          typename UnaryFunction,  typename BinaryFunction1, typename BinaryFunction2>
+void multiply(thrust::execution_policy<DerivedPolicy> &exec,
               LinearOperator&  A,
               MatrixOrVector1& B,
               MatrixOrVector2& C,
               UnaryFunction  initialize, BinaryFunction1 combine, BinaryFunction2 reduce,
-              Format1&, Format2&, Format3&){}
+              csr_format&, array1d_format&, array1d_format&)
+{
+  std::cout << " Calling generic spmv " << std::endl;
+}
 
 } // end namespace generic
 } // end namespace detail

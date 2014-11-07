@@ -46,14 +46,14 @@ void multiply(sequential::execution_policy<DerivedPolicy>& exec,
               UnaryFunction   initialize,
               BinaryFunction1 combine,
               BinaryFunction2 reduce,
-              ell_format, array2d_format, array1d_format)
+              ell_format, array1d_format, array1d_format)
 {
-    typedef typename Matrix::index_type  IndexType;
-    typedef typename Vector2::value_type ValueType;
+    typedef typename MatrixType::index_type  IndexType;
+    typedef typename VectorType2::value_type ValueType;
 
     const size_t& num_entries_per_row = A.column_indices.num_cols;
 
-    const IndexType invalid_index = Matrix::invalid_index;
+    const IndexType invalid_index = MatrixType::invalid_index;
 
     for(size_t i = 0; i < A.num_rows; i++)
         y[i] = initialize(y[i]);

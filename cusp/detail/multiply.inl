@@ -64,8 +64,8 @@ void multiply(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
     thrust::multiplies<ValueType> combine;
     thrust::plus<ValueType> reduce;
 
-    cusp::detail::multiply(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
-                           A, B, C, initialize, combine, reduce, format1, format2, format3);
+    multiply(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
+             A, B, C, initialize, combine, reduce, format1, format2, format3);
 }
 
 } // end namespace detail

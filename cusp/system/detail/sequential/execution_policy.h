@@ -25,12 +25,6 @@
 // get the execution policies definitions first
 #include <thrust/system/detail/sequential/execution_policy.h>
 
-// now get all the algorithm definitions
-
-#include <cusp/system/detail/sequential/elementwise.h>
-#include <cusp/system/detail/sequential/transpose.h>
-
-
 namespace cusp
 {
 namespace system
@@ -44,3 +38,11 @@ using namespace thrust::system::detail::sequential;
 } // end namespace detail
 } // end namespace system
 } // end namespace cusp
+
+// now get all the algorithm definitions
+
+#include <cusp/system/detail/sequential/elementwise.h>
+#include <cusp/system/detail/sequential/multiply.h>
+#include <cusp/system/detail/sequential/transpose.h>
+
+
