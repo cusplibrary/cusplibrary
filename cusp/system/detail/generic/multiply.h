@@ -34,7 +34,7 @@ template <typename DerivedPolicy,
           typename LinearOperator, typename MatrixOrVector1, typename MatrixOrVector2,
           typename UnaryFunction,  typename BinaryFunction1, typename BinaryFunction2,
           typename Format1, typename Format2, typename Format3>
-void multiply(thrust::execution_policy<DerivedPolicy> &exec,
+void multiply(thrust::execution_policy<DerivedPolicy>& exec,
               LinearOperator&  A,
               MatrixOrVector1& B,
               MatrixOrVector2& C,

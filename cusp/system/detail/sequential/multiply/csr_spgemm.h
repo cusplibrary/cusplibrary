@@ -16,170 +16,20 @@
 
 #pragma once
 
+#include <cusp/detail/config.h>
+
 #include <cusp/format.h>
-#include <cusp/csr_matrix.h>
 
-#include <cusp/detail/functional.h>
-
-#ifdef INTEL_MKL_SPBLAS
-#include <cusp/detail/host/spmv_mkl.h>
-#else
-#include <cusp/detail/host/spmv.h>
-#endif
-
-#include <cusp/detail/host/detail/coo.h>
-#include <cusp/detail/host/detail/csr.h>
+#include <cusp/system/detail/sequential/execution_policy.h>
 
 namespace cusp
 {
+namespace system
+{
 namespace detail
 {
-namespace host
+namespace sequential
 {
-
-//////////////////////////////////
-// Dense Matrix-Vector Multiply //
-//////////////////////////////////
-template <typename Matrix,
-         typename Vector1,
-         typename Vector2>
-void multiply(const Matrix&  A,
-              const Vector1& B,
-              Vector2& C,
-              cusp::array2d_format,
-              cusp::array1d_format,
-              cusp::array1d_format)
-{
-    typedef typename Vector2::value_type ValueType;
-
-    for(size_t i = 0; i < A.num_rows; i++)
-    {
-        ValueType sum = 0;
-        for(size_t j = 0; j < A.num_cols; j++)
-        {
-            sum += A(i,j) * B[j];
-        }
-        C[i] = sum;
-    }
-}
-
-///////////////////////////////////
-// Sparse Matrix-Vector Multiply //
-///////////////////////////////////
-template <typename Matrix,
-         typename Vector1,
-         typename Vector2>
-void multiply(const Matrix&  A,
-              const Vector1& B,
-              Vector2& C,
-              cusp::coo_format,
-              cusp::array1d_format,
-              cusp::array1d_format)
-{
-    cusp::detail::host::spmv_coo(A, B, C);
-}
-
-template <typename Matrix,
-         typename Vector1,
-         typename Vector2>
-void multiply(const Matrix&  A,
-              const Vector1& B,
-              Vector2& C,
-              cusp::csr_format,
-              cusp::array1d_format,
-              cusp::array1d_format)
-{
-    cusp::detail::host::spmv_csr(A, B, C);
-}
-
-template <typename Matrix,
-         typename Vector1,
-         typename Vector2>
-void multiply(const Matrix&  A,
-              const Vector1& B,
-              Vector2& C,
-              cusp::dia_format,
-              cusp::array1d_format,
-              cusp::array1d_format)
-{
-    cusp::detail::host::spmv_dia(A, B, C);
-}
-
-template <typename Matrix,
-         typename Vector1,
-         typename Vector2>
-void multiply(const Matrix&  A,
-              const Vector1& B,
-              Vector2& C,
-              cusp::ell_format,
-              cusp::array1d_format,
-              cusp::array1d_format)
-{
-    cusp::detail::host::spmv_ell(A, B, C);
-}
-
-template <typename Matrix,
-         typename Vector1,
-         typename Vector2>
-void multiply(const Matrix&  A,
-              const Vector1& B,
-              Vector2& C,
-              cusp::hyb_format,
-              cusp::array1d_format,
-              cusp::array1d_format)
-{
-    typedef typename Vector2::value_type ValueType;
-
-    cusp::detail::host::spmv_ell(A.ell, B, C);
-    cusp::detail::host::spmv_coo(A.coo, B, C, thrust::identity<ValueType>(), thrust::multiplies<ValueType>(), thrust::plus<ValueType>());
-}
-
-////////////////////////////////////////
-// Sparse Matrix-BlockVector Multiply //
-////////////////////////////////////////
-//// TODO specialize
-// template <typename Matrix,
-//          typename Vector1,
-//          typename Vector2>
-// void multiply(const Matrix&  A,
-//               const Vector1& B,
-//               Vector2& C,
-//               cusp::sparse_format,
-//               cusp::array2d_format,
-//               cusp::array2d_format)
-// {
-//     for( size_t j = 0; j < B.num_cols; j++ )
-//         cusp::multiply(A, B.column(j), C.column(j));
-// }
-
-/////////////////////////////////
-// Permutation Matrix Multiply //
-/////////////////////////////////
-template <typename Matrix,
-         typename Vector1,
-         typename Vector2>
-void multiply(const Matrix&  A,
-              const Vector1& B,
-              Vector2& C,
-              cusp::permutation_format,
-              cusp::array1d_format,
-              cusp::array1d_format)
-{
-    thrust::gather(A.permutation.begin(), A.permutation.end(), B.begin(), C.begin());
-}
-
-template <typename Matrix,
-         typename Vector1,
-         typename Vector2>
-void multiply(const Matrix&  A,
-              const Vector1& B,
-              Vector2& C,
-              cusp::array1d_format,
-              cusp::permutation_format,
-              cusp::array1d_format)
-{
-    thrust::gather(A.permutation.begin(), A.permutation.end(), B.begin(), C.begin());
-}
 
 ////////////////////////////////////////
 // Dense Matrix-Matrix Multiplication //
@@ -241,43 +91,8 @@ void multiply(const Matrix1& A,
     cusp::detail::host::detail::spmm_csr(A,B,C);
 }
 
-template <typename Matrix1,
-         typename Matrix2,
-         typename Matrix3>
-void multiply(const Matrix1& A,
-              const Matrix2& B,
-              Matrix3& C,
-              cusp::sparse_format,
-              cusp::sparse_format,
-              cusp::sparse_format)
-{
-    // other formats use CSR * CSR
-    cusp::csr_matrix<typename Matrix1::index_type,typename Matrix1::value_type,cusp::host_memory> A_(A);
-    cusp::csr_matrix<typename Matrix2::index_type,typename Matrix2::value_type,cusp::host_memory> B_(B);
-    cusp::csr_matrix<typename Matrix3::index_type,typename Matrix3::value_type,cusp::host_memory> C_;
-
-    cusp::detail::host::detail::spmm_csr(A_,B_,C_);
-
-    cusp::convert(C_, C);
-}
-
-/////////////////
-// Entry Point //
-/////////////////
-template <typename Matrix,
-         typename MatrixOrVector1,
-         typename MatrixOrVector2>
-void multiply(const Matrix&  A,
-              const MatrixOrVector1& B,
-              MatrixOrVector2& C)
-{
-    cusp::detail::host::multiply(A, B, C,
-                                 typename Matrix::format(),
-                                 typename MatrixOrVector1::format(),
-                                 typename MatrixOrVector2::format());
-}
-
-} // end namespace host
+} // end namespace sequential
 } // end namespace detail
+} // end namespace system
 } // end namespace cusp
 

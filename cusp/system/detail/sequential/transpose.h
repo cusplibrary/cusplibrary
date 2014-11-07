@@ -35,17 +35,15 @@ namespace detail
 namespace sequential
 {
 
-using namespace thrust::system::detail::sequential;
-
 // COO format
 template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
 void transpose(sequential::execution_policy<DerivedPolicy>& exec,
                const MatrixType1& A, MatrixType2& At,
                coo_format&)
 {
-    At.resize(A.num_cols, A.num_rows, A.num_entries);
-
     typedef typename MatrixType2::index_type IndexType;
+
+    At.resize(A.num_cols, A.num_rows, A.num_entries);
 
     cusp::array1d<IndexType,cusp::host_memory> starting_pos(A.num_cols+1, 0);
 
@@ -80,8 +78,6 @@ void transpose(sequential::execution_policy<DerivedPolicy>& exec,
                const MatrixType1& A, MatrixType2& At,
                csr_format&)
 {
-    // std::cout << "Executing sequential transpose" << std::endl;
-
     typedef typename MatrixType2::index_type IndexType;
 
     At.resize(A.num_cols, A.num_rows, A.num_entries);

@@ -46,6 +46,35 @@ void multiply(thrust::execution_policy<DerivedPolicy> &exec,
               MatrixOrVector1& B,
               MatrixOrVector2& C,
               UnaryFunction  initialize, BinaryFunction1 combine, BinaryFunction2 reduce,
+              cusp::permutation_format, cusp::array1d_format, cusp::array1d_format)
+{
+    thrust::gather(A.permutation.begin(), A.permutation.end(), B.begin(), C.begin());
+}
+
+template <typename DerivedPolicy,
+          typename LinearOperator, typename MatrixOrVector1, typename MatrixOrVector2,
+          typename UnaryFunction,  typename BinaryFunction1, typename BinaryFunction2>
+void multiply(thrust::execution_policy<DerivedPolicy> &exec,
+              LinearOperator&  A,
+              MatrixOrVector1& B,
+              MatrixOrVector2& C,
+              UnaryFunction  initialize, BinaryFunction1 combine, BinaryFunction2 reduce,
+              hyb_format&, array1d_format&, array1d_format&)
+{
+    typedef typename MatrixOrVector2::value_type ValueType;
+
+    cusp::multiply(exec, A.ell, B, C, initialize, combine, reduce);
+    cusp::multiply(exec, A.coo, B, C, thrust::identity<ValueType>(), combine, reduce);
+}
+
+template <typename DerivedPolicy,
+          typename LinearOperator, typename MatrixOrVector1, typename MatrixOrVector2,
+          typename UnaryFunction,  typename BinaryFunction1, typename BinaryFunction2>
+void multiply(thrust::execution_policy<DerivedPolicy> &exec,
+              LinearOperator&  A,
+              MatrixOrVector1& B,
+              MatrixOrVector2& C,
+              UnaryFunction  initialize, BinaryFunction1 combine, BinaryFunction2 reduce,
               csr_format&, array1d_format&, array1d_format&)
 {
   std::cout << " Calling generic spmv " << std::endl;

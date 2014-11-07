@@ -38,12 +38,6 @@ namespace detail
 namespace sequential
 {
 
-using namespace thrust::system::detail::sequential;
-
-///////////
-// COO   //
-///////////
-
 template <typename DerivedPolicy,
           typename MatrixType1, typename MatrixType2, typename MatrixType3,
           typename BinaryFunction>
@@ -134,27 +128,6 @@ void elementwise(sequential::execution_policy<DerivedPolicy>& exec,
 
     temp.resize(A.num_rows, A.num_cols, nnz);
     cusp::copy(temp, C);
-}
-
-///////////
-// Array //
-///////////
-
-template <typename DerivedPolicy,
-          typename MatrixType1, typename MatrixType2, typename MatrixType3,
-          typename BinaryFunction>
-void elementwise(sequential::execution_policy<DerivedPolicy>& exec,
-                 const MatrixType1& A,
-                 const MatrixType2& B,
-                 MatrixType3& C,
-                 BinaryFunction op,
-                 cusp::array2d_format& format)
-{
-    C.resize(A.num_rows, A.num_cols);
-
-    for(size_t i = 0; i < A.num_rows; i++)
-        for(size_t j = 0; j < A.num_cols; j++)
-            C(i,j) = op(A(i,j), B(i,j));
 }
 
 } // end namespace sequential
