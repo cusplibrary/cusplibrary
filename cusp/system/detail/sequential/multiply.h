@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <cusp/system/detail/sequential/multiply/coo_spmv.h>
+//#include <cusp/system/detail/sequential/multiply/coo_spmv.h>
 #include <cusp/system/detail/sequential/multiply/csr_spmv.h>
 #include <cusp/system/detail/sequential/multiply/dia_spmv.h>
 #include <cusp/system/detail/sequential/multiply/ell_spmv.h>
