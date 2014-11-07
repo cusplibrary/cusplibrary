@@ -104,5 +104,25 @@ void multiply(LinearOperator&  A,
     cusp::multiply(select_system(system1,system2,system3), A, B, C);
 }
 
+template <typename LinearOperator,
+         typename MatrixOrVector1,
+         typename MatrixOrVector2>
+void multiply(const LinearOperator&  A,
+              const MatrixOrVector1& B,
+              MatrixOrVector2& C)
+{
+    cusp::multiply((LinearOperator)A, (MatrixOrVector1)B, C);
+}
+
+template <typename LinearOperator,
+         typename MatrixOrVector1,
+         typename MatrixOrVector2>
+void multiply(const LinearOperator&  A,
+              MatrixOrVector1& B,
+              MatrixOrVector2& C)
+{
+    cusp::multiply((LinearOperator)A, B, C);
+}
+
 } // end namespace cusp
 

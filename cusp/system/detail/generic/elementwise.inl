@@ -47,9 +47,9 @@ void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
 {
     C.resize(A.num_rows, A.num_cols);
 
-    thrust::transform(A.values.values.begin(), A.values.values.end(),
-                      B.values.values.begin(),
-                      C.values.values.begin(),
+    thrust::transform(A.values.begin(), A.values.end(),
+                      B.values.begin(),
+                      C.values.begin(),
                       op);
 }
 

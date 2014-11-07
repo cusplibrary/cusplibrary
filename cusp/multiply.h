@@ -91,6 +91,13 @@ void multiply(LinearOperator&  A,
               MatrixOrVector1& B,
               MatrixOrVector2& C);
 
+template <typename LinearOperator,
+         typename MatrixOrVector1,
+         typename MatrixOrVector2>
+void multiply(const LinearOperator&  A,
+              const MatrixOrVector1& B,
+              MatrixOrVector2& C);
+
 template <typename DerivedPolicy,
          typename LinearOperator,
          typename MatrixOrVector1,
