@@ -84,10 +84,9 @@ namespace cusp
  *  }
  *  \endcode
  */
-template <typename DerivedPolicy,
-         typename LinearOperator,
-         typename MatrixOrVector1,
-         typename MatrixOrVector2>
+template <typename LinearOperator,
+          typename MatrixOrVector1,
+          typename MatrixOrVector2>
 void multiply(const LinearOperator&  A,
               const MatrixOrVector1& B,
                     MatrixOrVector2& C);
