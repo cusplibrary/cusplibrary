@@ -84,28 +84,37 @@ namespace cusp
  *  }
  *  \endcode
  */
-template <typename LinearOperator,
-         typename MatrixOrVector1,
-         typename MatrixOrVector2>
-void multiply(LinearOperator&  A,
-              MatrixOrVector1& B,
-              MatrixOrVector2& C);
-
-template <typename LinearOperator,
+template <typename DerivedPolicy,
+         typename LinearOperator,
          typename MatrixOrVector1,
          typename MatrixOrVector2>
 void multiply(const LinearOperator&  A,
               const MatrixOrVector1& B,
-              MatrixOrVector2& C);
+                    MatrixOrVector2& C);
 
 template <typename DerivedPolicy,
          typename LinearOperator,
          typename MatrixOrVector1,
          typename MatrixOrVector2>
 void multiply(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-              LinearOperator&  A,
-              MatrixOrVector1& B,
-              MatrixOrVector2& C);
+              const LinearOperator&  A,
+              const MatrixOrVector1& B,
+                    MatrixOrVector2& C);
+
+template <typename DerivedPolicy,
+         typename LinearOperator,
+         typename MatrixOrVector1,
+         typename MatrixOrVector2,
+         typename UnaryFunction,
+         typename BinaryFunction1,
+         typename BinaryFunction2>
+void multiply(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+              const LinearOperator&  A,
+              const MatrixOrVector1& B,
+              MatrixOrVector2& C,
+              UnaryFunction  initialize,
+              BinaryFunction1 combine,
+              BinaryFunction2 reduce);
 /*! \}
  */
 

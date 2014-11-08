@@ -32,40 +32,33 @@ template <typename DerivedPolicy,
          typename LinearOperator,
          typename MatrixOrVector1,
          typename MatrixOrVector2>
-void multiply(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-              LinearOperator&  A,
-              MatrixOrVector1& B,
-              MatrixOrVector2& C,
-              thrust::detail::false_type)
+typename thrust::detail::enable_if<!thrust::detail::is_convertible<typename LinearOperator::format,known_format>::value,void>::type
+multiply(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+         const LinearOperator&  A,
+         const MatrixOrVector1& B,
+         MatrixOrVector2& C)
 {
     // user-defined LinearOperator
-    A(B,C);
+    ((LinearOperator&)A)(B,C);
 }
 
 template <typename DerivedPolicy,
          typename LinearOperator,
          typename MatrixOrVector1,
          typename MatrixOrVector2>
-void multiply(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-              LinearOperator&  A,
-              MatrixOrVector1& B,
-              MatrixOrVector2& C,
-              thrust::detail::true_type)
+typename thrust::detail::enable_if<thrust::detail::is_convertible<typename LinearOperator::format,known_format>::value,void>::type
+multiply(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+         const LinearOperator&  A,
+         const MatrixOrVector1& B,
+         MatrixOrVector2& C)
 {
-    using cusp::system::detail::generic::multiply;
-
     typedef typename LinearOperator::value_type ValueType;
-
-    typename LinearOperator::format  format1;
-    typename MatrixOrVector1::format format2;
-    typename MatrixOrVector2::format format3;
 
     cusp::detail::zero_function<ValueType> initialize;
     thrust::multiplies<ValueType> combine;
     thrust::plus<ValueType> reduce;
 
-    multiply(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
-             A, B, C, initialize, combine, reduce, format1, format2, format3);
+    cusp::multiply(exec, A, B, C, initialize, combine, reduce);
 }
 
 } // end namespace detail
@@ -73,22 +66,47 @@ void multiply(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 template <typename DerivedPolicy,
          typename LinearOperator,
          typename MatrixOrVector1,
+         typename MatrixOrVector2,
+         typename UnaryFunction,
+         typename BinaryFunction1,
+         typename BinaryFunction2>
+void multiply(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+              const LinearOperator&  A,
+              const MatrixOrVector1& B,
+              MatrixOrVector2& C,
+              UnaryFunction  initialize,
+              BinaryFunction1 combine,
+              BinaryFunction2 reduce)
+{
+    typename LinearOperator::format  format1;
+    typename MatrixOrVector1::format format2;
+    typename MatrixOrVector2::format format3;
+
+    using cusp::system::detail::generic::multiply;
+
+    multiply(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
+             (LinearOperator&) A, (MatrixOrVector1&) B, C,
+             initialize, combine, reduce,
+             format1, format2, format3);
+}
+
+template <typename DerivedPolicy,
+         typename LinearOperator,
+         typename MatrixOrVector1,
          typename MatrixOrVector2>
 void multiply(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-              LinearOperator&  A,
-              MatrixOrVector1& B,
+              const LinearOperator&  A,
+              const MatrixOrVector1& B,
               MatrixOrVector2& C)
 {
-    typename thrust::detail::is_convertible<typename LinearOperator::format,known_format>::type is_known_operator;
-
-    cusp::detail::multiply(exec, A, B, C, is_known_operator);
+    cusp::detail::multiply(exec, A, B, C);
 }
 
 template <typename LinearOperator,
          typename MatrixOrVector1,
          typename MatrixOrVector2>
-void multiply(LinearOperator&  A,
-              MatrixOrVector1& B,
+void multiply(const LinearOperator&  A,
+              const MatrixOrVector1& B,
               MatrixOrVector2& C)
 {
     using thrust::system::detail::generic::select_system;
@@ -101,27 +119,7 @@ void multiply(LinearOperator&  A,
     System2 system2;
     System3 system3;
 
-    cusp::multiply(select_system(system1,system2,system3), A, B, C);
-}
-
-template <typename LinearOperator,
-         typename MatrixOrVector1,
-         typename MatrixOrVector2>
-void multiply(const LinearOperator&  A,
-              const MatrixOrVector1& B,
-              MatrixOrVector2& C)
-{
-    cusp::multiply((LinearOperator)A, (MatrixOrVector1)B, C);
-}
-
-template <typename LinearOperator,
-         typename MatrixOrVector1,
-         typename MatrixOrVector2>
-void multiply(const LinearOperator&  A,
-              MatrixOrVector1& B,
-              MatrixOrVector2& C)
-{
-    cusp::multiply((LinearOperator)A, B, C);
+    cusp::detail::multiply(select_system(system1,system2,system3), A, B, C);
 }
 
 } // end namespace cusp

@@ -42,19 +42,20 @@ namespace generic
 {
 
 template<typename BinaryFunction>
-struct combine_functor : BinaryFunction
+struct combine_functor : public BinaryFunction
 {
+    typedef typename BinaryFunction::result_type T;
+
     template<typename Tuple>
     __host__ __device__
-    typename BinaryFunction::result_type
-    operator()(const Tuple& t)
+    T operator()(const Tuple& t)
     {
         return BinaryFunction::operator()(thrust::get<0>(t), thrust::get<1>(t));
     }
 };
 
 template<typename T>
-struct max_functor : thrust::binary_function<T,T,T>
+struct max_functor : public thrust::binary_function<T,T,T>
 {
     const T base;
 
@@ -111,6 +112,7 @@ void multiply(thrust::execution_policy<DerivedPolicy> &exec,
               dia_format&, array1d_format&, array1d_format&)
 {
     typedef typename LinearOperator::index_type IndexType;
+    typedef typename LinearOperator::value_type ValueType;
 
     // define types used to programatically generate row_indices
     typedef typename thrust::counting_iterator<IndexType> IndexIterator;
@@ -132,7 +134,7 @@ void multiply(thrust::execution_policy<DerivedPolicy> &exec,
     ZipIterator offset_modulus_tuple(thrust::make_tuple(offsets_begin, row_indices_begin));
     ColumnIndexIterator column_indices_begin(offset_modulus_tuple, sum_tuple_functor());
 
-    thrust::transform(exec, C.begin(), C.end(), C.begin(), initialize);
+    thrust::detail::temporary_array<ValueType, DerivedPolicy> vals(exec, A.num_rows);
 
     thrust::reduce_by_key(exec,
                           row_indices_begin, row_indices_begin + A.values.values.size(),
@@ -144,9 +146,11 @@ void multiply(thrust::execution_policy<DerivedPolicy> &exec,
                                       A.values.values.begin())),
                               combine_functor<BinaryFunction1>()),
                           thrust::make_discard_iterator(),
-                          C.begin(),
+                          vals.begin(),
                           thrust::equal_to<IndexType>(),
                           reduce);
+
+    thrust::transform(exec, vals.begin(), vals.end(), thrust::make_transform_iterator(C.begin(), initialize), C.begin(), reduce);
 }
 
 template <typename DerivedPolicy,
@@ -162,6 +166,7 @@ void multiply(thrust::execution_policy<DerivedPolicy> &exec,
               ell_format&, array1d_format&, array1d_format&)
 {
     typedef typename LinearOperator::index_type IndexType;
+    typedef typename LinearOperator::value_type ValueType;
 
     // define types used to programatically generate row_indices
     typedef typename thrust::counting_iterator<IndexType> IndexIterator;
@@ -169,7 +174,7 @@ void multiply(thrust::execution_policy<DerivedPolicy> &exec,
 
     RowIndexIterator row_indices_begin(IndexIterator(0), modulus_functor<IndexType>(A.values.pitch));
 
-    thrust::transform(exec, C.begin(), C.end(), C.begin(), initialize);
+    thrust::detail::temporary_array<ValueType, DerivedPolicy> vals(exec, A.num_rows);
 
     thrust::reduce_by_key(exec,
                           row_indices_begin, row_indices_begin + A.values.values.size(),
@@ -181,9 +186,11 @@ void multiply(thrust::execution_policy<DerivedPolicy> &exec,
                                       A.values.values.begin())),
                               combine_functor<BinaryFunction1>()),
                           thrust::make_discard_iterator(),
-                          C.begin(),
+                          vals.begin(),
                           thrust::equal_to<IndexType>(),
                           reduce);
+
+    thrust::transform(exec, vals.begin(), vals.end(), thrust::make_transform_iterator(C.begin(), initialize), C.begin(), reduce);
 }
 
 template <typename DerivedPolicy,
@@ -199,19 +206,16 @@ void multiply(thrust::execution_policy<DerivedPolicy> &exec,
               coo_format&, array1d_format&, array1d_format&)
 {
     typedef typename LinearOperator::index_type IndexType;
+    typedef typename LinearOperator::value_type ValueType;
     typedef typename LinearOperator::memory_space MemorySpace;
 
-    typedef cusp::array1d<IndexType,MemorySpace> IndexArray;
-    typedef typename IndexArray::iterator        IndexIterator;
-    typedef typename MatrixOrVector2::iterator   ValueIterator;
+    thrust::detail::temporary_array<IndexType, DerivedPolicy> rows(exec, A.num_rows);
+    thrust::detail::temporary_array<ValueType, DerivedPolicy> vals(exec, A.num_rows);
 
-    IndexIterator index_last;
-    ValueIterator value_last;
+    typename thrust::detail::temporary_array<IndexType, DerivedPolicy>::iterator rows_end;
+    typename thrust::detail::temporary_array<ValueType, DerivedPolicy>::iterator vals_end;
 
-    IndexArray rows(A.num_rows);
-    MatrixOrVector2 vals(A.num_rows);
-
-    thrust::tie(index_last, value_last) =
+    thrust::tie(rows_end, vals_end) =
         thrust::reduce_by_key(exec,
                               A.row_indices.begin(), A.row_indices.end(),
                               thrust::make_transform_iterator(
@@ -226,9 +230,9 @@ void multiply(thrust::execution_policy<DerivedPolicy> &exec,
                               thrust::equal_to<IndexType>(),
                               reduce);
 
-    thrust::transform(exec, C.begin(), C.end(), C.begin(), initialize);
+    thrust::transform(C.begin(), C.end(), C.begin(), initialize);
 
-    int num_entries = index_last - rows.begin();
+    int num_entries = rows_end - rows.begin();
     thrust::transform(exec,
                       thrust::make_permutation_iterator(C.begin(), rows.begin()),
                       thrust::make_permutation_iterator(C.begin(), rows.begin()) + num_entries,
@@ -247,23 +251,27 @@ void multiply(thrust::execution_policy<DerivedPolicy> &exec,
               UnaryFunction    initialize,
               BinaryFunction1  combine,
               BinaryFunction2  reduce,
-              csr_format&, array1d_format&, array1d_format&)
+              csr_format&,
+              array1d_format&,
+              array1d_format&)
 {
-    typedef typename LinearOperator::column_indices_array_type::container IndexArray;
-    typedef typename LinearOperator::values_array_type ValueArray;
+    typedef typename LinearOperator::index_type IndexType;
+    typedef typename thrust::detail::temporary_array<IndexType, DerivedPolicy>::iterator TempIterator;
 
-    typedef typename IndexArray::view            IndexView;
-    typedef typename ValueArray::view            ValueView;
+    typedef typename cusp::array1d_view<TempIterator>::view           RowView;
+    typedef typename LinearOperator::column_indices_array_type::view  ColView;
+    typedef typename LinearOperator::values_array_type::view          ValView;
 
-    IndexArray row_indices(A.num_entries);
+    thrust::detail::temporary_array<IndexType, DerivedPolicy> temp(exec, A.num_entries);
+    cusp::array1d_view<TempIterator> row_indices(temp.begin(), temp.end());
     cusp::detail::offsets_to_indices(A.row_offsets, row_indices);
 
-    cusp::coo_matrix_view<IndexView,IndexView,ValueView> A_coo_view(A.num_rows, A.num_cols, A.num_entries,
-                                                                    cusp::make_array1d_view(row_indices),
-                                                                    cusp::make_array1d_view(A.column_indices),
-                                                                    cusp::make_array1d_view(A.values));
+    cusp::coo_matrix_view<RowView,ColView,ValView> A_coo_view(A.num_rows, A.num_cols, A.num_entries,
+                                                              cusp::make_array1d_view(row_indices),
+                                                              cusp::make_array1d_view(A.column_indices),
+                                                              cusp::make_array1d_view(A.values));
 
-    multiply(exec, A_coo_view, B, C, initialize, combine, reduce, coo_format(), array1d_format(), array1d_format());
+    cusp::multiply(exec, A_coo_view, B, C, initialize, combine, reduce);
 }
 
 template <typename DerivedPolicy,
@@ -273,27 +281,35 @@ void multiply(thrust::execution_policy<DerivedPolicy> &exec,
               LinearOperator&  A,
               MatrixOrVector1& B,
               MatrixOrVector2& C,
-              UnaryFunction  initialize, BinaryFunction1 combine, BinaryFunction2 reduce,
-              cusp::permutation_format, cusp::array1d_format, cusp::array1d_format)
+              UnaryFunction   initialize,
+              BinaryFunction1 combine,
+              BinaryFunction2 reduce,
+              cusp::permutation_format,
+              cusp::array1d_format,
+              cusp::array1d_format)
 {
     // TODO : initialize, combine, and reduce are ignored
     thrust::gather(A.permutation.begin(), A.permutation.end(), B.begin(), C.begin());
 }
 
 template <typename DerivedPolicy,
-         typename LinearOperator, typename MatrixOrVector1, typename MatrixOrVector2,
-         typename UnaryFunction,  typename BinaryFunction1, typename BinaryFunction2>
+          typename LinearOperator, typename MatrixOrVector1, typename MatrixOrVector2,
+          typename UnaryFunction,  typename BinaryFunction1, typename BinaryFunction2>
 void multiply(thrust::execution_policy<DerivedPolicy> &exec,
               LinearOperator&  A,
               MatrixOrVector1& B,
               MatrixOrVector2& C,
-              UnaryFunction  initialize, BinaryFunction1 combine, BinaryFunction2 reduce,
-              hyb_format&, array1d_format&, array1d_format&)
+              UnaryFunction  initialize,
+              BinaryFunction1 combine,
+              BinaryFunction2 reduce,
+              hyb_format&,
+              array1d_format&,
+              array1d_format&)
 {
     typedef typename MatrixOrVector2::value_type ValueType;
 
-    multiply(exec, A.ell, B, C, initialize, combine, reduce, ell_format(), array1d_format(), array1d_format());
-    multiply(exec, A.coo, B, C, thrust::identity<ValueType>(), combine, reduce, coo_format(), array1d_format(), array1d_format());
+    cusp::multiply(exec, A.ell, B, C, initialize, combine, reduce);
+    cusp::multiply(exec, A.coo, B, C, thrust::identity<ValueType>(), combine, reduce);
 }
 
 } // end namespace generic
