@@ -44,7 +44,6 @@ void mis_to_aggregates(const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& 
                        const ArrayType& mis,
                        ArrayType& aggregates)
 {
-    CUSP_PROFILE_SCOPED();
     const IndexType N = C.num_rows;
 
     // (2,i) mis (0,i) non-mis
@@ -95,8 +94,6 @@ void standard_aggregation(const Matrix& C,
                           cusp::coo_format,
                           cusp::device_memory)
 {
-    CUSP_PROFILE_SCOPED();
-
     typedef typename Matrix::index_type IndexType;
 
     // compute MIS(2)
@@ -151,10 +148,7 @@ void standard_aggregation(const Matrix& C,
                           cusp::csr_format,
                           cusp::host_memory)
 {
-    CUSP_PROFILE_SCOPED();
-
     typedef typename Matrix::index_type IndexType;
-    CUSP_PROFILE_SCOPED();
 
     IndexType next_aggregate = 1; // number of aggregates + 1
 

@@ -52,8 +52,6 @@ void smooth_prolongator(const MatrixType& S,
                         cusp::coo_format,
                         cusp::device_memory)
 {
-    CUSP_PROFILE_SCOPED();
-
     typedef typename MatrixType::index_type IndexType;
 
     // TODO handle case with unaggregated nodes more gracefully
@@ -141,8 +139,6 @@ void smooth_prolongator(const MatrixType& S,
                         cusp::csr_format,
                         cusp::host_memory)
 {
-    CUSP_PROFILE_SCOPED();
-
     typedef typename MatrixType::index_type IndexType;
 
     cusp::array1d<ValueType, cusp::host_memory> D(S.num_rows);

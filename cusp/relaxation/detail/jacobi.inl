@@ -76,8 +76,6 @@ jacobi<ValueType,MemorySpace>
 ::jacobi(const MatrixType& A, ValueType omega)
     : default_omega(omega), temp(A.num_rows)
 {
-    CUSP_PROFILE_SCOPED();
-
     // extract the main diagonal
     cusp::detail::extract_diagonal(A, diagonal);
 }
@@ -88,8 +86,6 @@ jacobi<ValueType,MemorySpace>
 ::jacobi(const cusp::precond::aggregation::sa_level<MatrixType>& sa_level, ValueType weight)
     : temp(sa_level.A_.num_rows)
 {
-    CUSP_PROFILE_SCOPED();
-
     if(sa_level.rho_DinvA == ValueType(0))
     {
         default_omega = weight / cusp::precond::aggregation::detail::estimate_rho_Dinv_A(sa_level.A_);
@@ -118,8 +114,6 @@ template<typename MatrixType, typename VectorType1, typename VectorType2>
 void jacobi<ValueType,MemorySpace>
 ::operator()(const MatrixType& A, const VectorType1& b, VectorType2& x, ValueType omega)
 {
-    CUSP_PROFILE_SCOPED();
-
     // y <- A*x
     cusp::multiply(A, x, temp);
 
@@ -135,8 +129,6 @@ template<typename MatrixType, typename VectorType1, typename VectorType2>
 void jacobi<ValueType,MemorySpace>
 ::presmooth(const MatrixType&, const VectorType1& b, VectorType2& x)
 {
-    CUSP_PROFILE_SCOPED();
-
     // x <- omega * D^-1 * b
     thrust::transform(b.begin(), b.end(),
                       diagonal.begin(),
@@ -149,8 +141,6 @@ template<typename MatrixType, typename VectorType1, typename VectorType2>
 void jacobi<ValueType,MemorySpace>
 ::postsmooth(const MatrixType& A, const VectorType1& b, VectorType2& x)
 {
-    CUSP_PROFILE_SCOPED();
-
     // y <- A*x
     cusp::multiply(A, x, temp);
 

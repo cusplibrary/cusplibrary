@@ -65,8 +65,6 @@ namespace gallery
 template <typename MatrixType>
 void poisson5pt(      MatrixType& matrix, size_t m, size_t n)
 {
-    CUSP_PROFILE_SCOPED();
-
     typedef typename MatrixType::index_type IndexType;
     typedef typename MatrixType::value_type ValueType;
     typedef thrust::tuple<IndexType,IndexType>    StencilIndex;
@@ -85,8 +83,6 @@ void poisson5pt(      MatrixType& matrix, size_t m, size_t n)
 template <typename MatrixType>
 void poisson9pt(      MatrixType& matrix, size_t m, size_t n)
 {
-    CUSP_PROFILE_SCOPED();
-
     typedef typename MatrixType::index_type IndexType;
     typedef typename MatrixType::value_type ValueType;
     typedef thrust::tuple<IndexType,IndexType>    StencilIndex;
@@ -109,8 +105,6 @@ void poisson9pt(      MatrixType& matrix, size_t m, size_t n)
 template <typename MatrixType>
 void poisson7pt(      MatrixType& matrix, size_t m, size_t n, size_t k)
 {
-    CUSP_PROFILE_SCOPED();
-
     typedef typename MatrixType::index_type IndexType;
     typedef typename MatrixType::value_type ValueType;
     typedef thrust::tuple<IndexType,IndexType,IndexType>    StencilIndex;
@@ -131,8 +125,6 @@ void poisson7pt(      MatrixType& matrix, size_t m, size_t n, size_t k)
 template <typename MatrixType>
 void poisson27pt(      MatrixType& matrix, size_t m, size_t n, size_t l)
 {
-    CUSP_PROFILE_SCOPED();
-
     typedef typename MatrixType::index_type IndexType;
     typedef typename MatrixType::value_type ValueType;
     typedef thrust::tuple<IndexType,IndexType,IndexType>    StencilIndex;

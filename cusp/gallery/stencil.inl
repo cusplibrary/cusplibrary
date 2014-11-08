@@ -193,8 +193,6 @@ void generate_matrix_from_stencil(      MatrixType& matrix,
                                         const cusp::array1d<StencilPoint,cusp::host_memory>& stencil,
                                         const GridDimension& grid)
 {
-    CUSP_PROFILE_SCOPED();
-
     typedef typename MatrixType::index_type   IndexType;
     typedef typename MatrixType::value_type   ValueType;
     typedef typename MatrixType::memory_space MemorySpace;

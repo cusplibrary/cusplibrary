@@ -28,23 +28,10 @@
 #include <cusp/detail/config/host_blas_system.h>
 #include <cusp/detail/config/device_blas_system.h>
 
-// Cusp supports Thrust v1.3 and above
+// Cusp supports Thrust v1.5 and above
 #if THRUST_VERSION < 100500
 #error "Thrust v1.5.0 or newer is required"
 #endif
 
 // decorator for deprecated features
 #define CUSP_DEPRECATED THRUST_DEPRECATED
-
-// hooks for profiling
-#if defined(CUSP_PROFILE_ENABLED)
-// profiling enabled
-#define CUSP_PROFILE_SCOPED()  PROFILE_SCOPED()
-#define CUSP_PROFILE_DUMP()    cusp::detail::profiler::dump()
-#include <cusp/detail/profiler.h>
-#else
-// profiling disabled
-#define CUSP_PROFILE_SCOPED()
-#define CUSP_PROFILE_DUMP()
-#endif
-

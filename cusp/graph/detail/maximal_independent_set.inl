@@ -89,8 +89,6 @@ size_t maximal_independent_set(const Matrix& A, Array& stencil, size_t k,
 template <typename Matrix, typename Array>
 size_t maximal_independent_set(const Matrix& A, Array& stencil, size_t k)
 {
-    CUSP_PROFILE_SCOPED();
-
     if(A.num_rows != A.num_cols)
         throw cusp::invalid_input_exception("matrix must be square");
 

@@ -51,7 +51,6 @@ void fit_candidates(const Array1& aggregates,
     typedef typename MatrixType::value_type ValueType;
     typedef typename MatrixType::memory_space MemorySpace;
 
-    CUSP_PROFILE_SCOPED();
     IndexType num_unaggregated = thrust::count(aggregates.begin(), aggregates.end(), -1);
     IndexType num_aggregates = *thrust::max_element(aggregates.begin(), aggregates.end()) + 1;
 
@@ -109,8 +108,6 @@ void fit_candidates(const Array1& aggregates,
                     MatrixType& Q_,
                     Array3& R)
 {
-  CUSP_PROFILE_SCOPED();
-
   detail::fit_candidates(aggregates, B, Q_, R);
 }
 

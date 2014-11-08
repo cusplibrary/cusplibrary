@@ -59,8 +59,6 @@ size_t connected_components(const MatrixType& G, ArrayType& components, Format)
 template<typename MatrixType, typename ArrayType>
 size_t connected_components(const MatrixType& G, ArrayType& components)
 {
-    CUSP_PROFILE_SCOPED();
-
     if(G.num_rows != G.num_cols)
         throw cusp::invalid_input_exception("matrix must be square");
 

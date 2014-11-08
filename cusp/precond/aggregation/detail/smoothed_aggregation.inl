@@ -102,8 +102,6 @@ template <typename MatrixType, typename ArrayType>
 void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverType>
 ::sa_initialize(const MatrixType& A, const ArrayType& B)
 {
-    CUSP_PROFILE_SCOPED();
-
     Parent* ML = this;
     ML->levels.reserve(sa_options.max_levels); // avoid reallocations which force matrix copies
 
@@ -128,8 +126,6 @@ template <typename IndexType, typename ValueType, typename MemorySpace, typename
 void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverType>
 ::extend_hierarchy(void)
 {
-    CUSP_PROFILE_SCOPED();
-
     Parent* ML = this;
 
     cusp::array1d<IndexType,MemorySpace> aggregates;

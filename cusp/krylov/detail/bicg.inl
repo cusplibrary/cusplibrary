@@ -71,8 +71,6 @@ void bicg(LinearOperator& A,
           Preconditioner& M,
           Preconditioner& Mt)
 {
-    CUSP_PROFILE_SCOPED();
-
     typedef typename LinearOperator::value_type   ValueType;
     typedef typename LinearOperator::memory_space MemorySpace;
 

@@ -24,8 +24,6 @@ namespace graph
 template <class Array2d, class Array1d>
 void hilbert_curve(const Array2d& coord, const size_t num_parts, Array1d& parts)
 {
-    CUSP_PROFILE_SCOPED();
-
     return cusp::graph::detail::dispatch::hilbert_curve(coord, num_parts, parts,
 					 typename Array2d::memory_space());
 }

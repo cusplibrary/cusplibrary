@@ -57,8 +57,6 @@ void breadth_first_search(const MatrixType& G, const typename MatrixType::index_
 template<bool MARK_PREDECESSORS, typename MatrixType, typename ArrayType>
 void breadth_first_search(const MatrixType& G, const typename MatrixType::index_type src, ArrayType& labels)
 {
-    CUSP_PROFILE_SCOPED();
-
     if(G.num_rows != G.num_cols)
         throw cusp::invalid_input_exception("matrix must be square");
 

@@ -41,8 +41,6 @@ namespace detail
 template <typename Matrix>
 double estimate_spectral_radius(const Matrix& A, size_t k = 20)
 {
-    CUSP_PROFILE_SCOPED();
-
     typedef typename Matrix::index_type   IndexType;
     typedef typename Matrix::value_type   ValueType;
     typedef typename Matrix::memory_space MemorySpace;
@@ -71,8 +69,6 @@ double estimate_spectral_radius(const Matrix& A, size_t k = 20)
 template <typename Matrix>
 double ritz_spectral_radius(const Matrix& A, size_t k = 10)
 {
-    CUSP_PROFILE_SCOPED();
-
     typedef typename Matrix::value_type ValueType;
 
     cusp::array2d<ValueType,cusp::host_memory> H;
@@ -84,8 +80,6 @@ double ritz_spectral_radius(const Matrix& A, size_t k = 10)
 template <typename Matrix>
 double ritz_spectral_radius_symmetric(const Matrix& A, size_t k = 10)
 {
-    CUSP_PROFILE_SCOPED();
-
     typedef typename Matrix::value_type ValueType;
 
     cusp::array2d<ValueType,cusp::host_memory> H;
@@ -97,8 +91,6 @@ double ritz_spectral_radius_symmetric(const Matrix& A, size_t k = 10)
 template <typename IndexType, typename ValueType, typename MemorySpace>
 double disks_spectral_radius(const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& A)
 {
-    CUSP_PROFILE_SCOPED();
-
     const IndexType N = A.num_rows;
 
     // compute sum of absolute values for each row of A

@@ -111,23 +111,29 @@ void gmres(LinearOperator& A,
     typedef typename LinearOperator::value_type   ValueType;
     typedef typename LinearOperator::memory_space MemorySpace;
     typedef typename norm_type<ValueType>::type NormType;
+
     assert(A.num_rows == A.num_cols);        // sanity check
+
     const size_t N = A.num_rows;
     const int R = restart;
     int i, j, k;
     NormType beta = 0;
     cusp::array1d<NormType,cusp::host_memory> resid(1);
+
     //allocate workspace
     cusp::array1d<ValueType,MemorySpace> w(N);
     cusp::array1d<ValueType,MemorySpace> V0(N); //Arnoldi matrix pos 0
     cusp::array2d<ValueType,MemorySpace,cusp::column_major> V(N,R+1,ValueType(0.0)); //Arnoldi matrix
+
     //duplicate copy of s on GPU
     cusp::array1d<ValueType,MemorySpace> sDev(R+1);
+
     //HOST WORKSPACE
     cusp::array2d<ValueType,cusp::host_memory,cusp::column_major> H(R+1, R); //Hessenberg matrix
     cusp::array1d<ValueType,cusp::host_memory> s(R+1);
     cusp::array1d<ValueType,cusp::host_memory> cs(R);
     cusp::array1d<ValueType,cusp::host_memory> sn(R);
+
     do {
         // compute initial residual and its norm //
         cusp::multiply(A, x, w);                     // V(0) = A*x        //

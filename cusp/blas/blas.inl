@@ -41,8 +41,6 @@ void axpy(const blas_policy<typename Array2::value_type,typename Array2::memory_
     typedef typename Array2::memory_space MemorySpace;
     typedef typename blas_policy<ValueType,MemorySpace>::type DerivedPolicy;
 
-    CUSP_PROFILE_SCOPED();
-
     cusp::assert_same_dimensions(x, y);
     cusp::blas::axpy(DerivedPolicy(), x, y, alpha);
 }
@@ -71,8 +69,6 @@ void axpby(const Array1& x,
            ScalarType1 alpha,
            ScalarType2 beta)
 {
-    CUSP_PROFILE_SCOPED();
-
     cusp::assert_same_dimensions(x, y, z);
 
     size_t N = x.size();
@@ -96,8 +92,6 @@ void axpbypcz(const Array1& x,
               ScalarType2 beta,
               ScalarType3 gamma)
 {
-    CUSP_PROFILE_SCOPED();
-
     cusp::assert_same_dimensions(x, y, z, output);
 
     size_t N = x.size();
@@ -115,8 +109,6 @@ void xmy(const Array1& x,
 {
     typedef typename Array3::value_type ValueType;
 
-    CUSP_PROFILE_SCOPED();
-
     cusp::assert_same_dimensions(x, y, output);
     thrust::transform(x.begin(), x.end(), y.begin(), output.begin(), cusp::detail::XMY<ValueType>());
 }
@@ -126,8 +118,6 @@ template <typename Array1,
 void copy(const Array1& x,
           Array2& y)
 {
-    CUSP_PROFILE_SCOPED();
-
     cusp::assert_same_dimensions(x, y);
     thrust::copy(x.begin(), x.end(), y.begin());
 }
@@ -137,8 +127,6 @@ template <typename Array1,
 void copy(const Array1& x,
           cusp::array1d_view<RandomAccessIterator> y)
 {
-    CUSP_PROFILE_SCOPED();
-
     cusp::assert_same_dimensions(x, y);
     thrust::copy(x.begin(), x.end(), y.begin());
 }
@@ -153,8 +141,6 @@ dot(const blas_policy<typename Array1::value_type,typename Array1::memory_space>
     typedef typename Array1::value_type ValueType;
     typedef typename Array1::memory_space MemorySpace;
     typedef typename blas_policy<ValueType,MemorySpace>::type DerivedPolicy;
-
-    CUSP_PROFILE_SCOPED();
 
     return cusp::blas::dot(DerivedPolicy(), x, y);
 }
@@ -184,8 +170,6 @@ dotc(const blas_policy<typename Array1::value_type,typename Array1::memory_space
     typedef typename Array1::value_type ValueType;
     typedef typename Array1::memory_space MemorySpace;
     typedef typename blas_policy<ValueType,MemorySpace>::type DerivedPolicy;
-
-    CUSP_PROFILE_SCOPED();
 
     return cusp::blas::dotc(DerivedPolicy(), x, y);
 }
@@ -229,8 +213,6 @@ nrm1(const blas_policy<typename Array::value_type,typename Array::memory_space>&
     typedef typename Array::memory_space MemorySpace;
     typedef typename blas_policy<ValueType,MemorySpace>::type DerivedPolicy;
 
-    CUSP_PROFILE_SCOPED();
-
     return cusp::blas::nrm1(DerivedPolicy(), x);
 }
 
@@ -252,8 +234,6 @@ nrm2(const blas_policy<typename Array::value_type,typename Array::memory_space>&
     typedef typename Array::value_type ValueType;
     typedef typename Array::memory_space MemorySpace;
     typedef typename blas_policy<ValueType,MemorySpace>::type DerivedPolicy;
-
-    CUSP_PROFILE_SCOPED();
 
     return cusp::blas::nrm2(DerivedPolicy(), x);
 }
@@ -278,8 +258,6 @@ nrmmax(const blas_policy<typename Array::value_type,typename Array::memory_space
     typedef typename Array::memory_space MemorySpace;
     typedef typename blas_policy<ValueType,MemorySpace>::type DerivedPolicy;
 
-    CUSP_PROFILE_SCOPED();
-
     return cusp::blas::nrmmax(DerivedPolicy(), x);
 }
 
@@ -302,8 +280,6 @@ void scal(const blas_policy<typename Array::value_type,typename Array::memory_sp
     typedef typename Array::value_type ValueType;
     typedef typename Array::memory_space MemorySpace;
     typedef typename blas_policy<ValueType,MemorySpace>::type DerivedPolicy;
-
-    CUSP_PROFILE_SCOPED();
 
     cusp::blas::scal(DerivedPolicy(), x, alpha);
 }
@@ -339,8 +315,6 @@ void gemv(const blas_policy<typename Array2::value_type,typename Array2::memory_
     typedef typename Array2::memory_space MemorySpace;
     typedef typename blas_policy<ValueType,MemorySpace>::type DerivedPolicy;
 
-    CUSP_PROFILE_SCOPED();
-
     cusp::blas::gemv(DerivedPolicy(), A, x, y);
 }
 
@@ -368,8 +342,6 @@ void gemm(const blas_policy<typename Array2d3::value_type,typename Array2d3::mem
     typedef typename Array2d3::value_type ValueType;
     typedef typename Array2d3::memory_space MemorySpace;
     typedef typename blas_policy<ValueType,MemorySpace>::type DerivedPolicy;
-
-    CUSP_PROFILE_SCOPED();
 
     cusp::blas::gemm(DerivedPolicy(), A, B, C);
 }

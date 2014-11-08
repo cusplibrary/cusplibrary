@@ -78,8 +78,6 @@ void symmetric_rcm(const MatrixType& G, PermutationType& P, Format& format)
 template<typename MatrixType, typename PermutationType>
 void symmetric_rcm(const MatrixType& G, PermutationType& P)
 {
-    CUSP_PROFILE_SCOPED();
-
     if(G.num_rows != G.num_cols)
         throw cusp::invalid_input_exception("matrix must be square");
 

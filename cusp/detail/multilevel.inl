@@ -36,8 +36,6 @@ template <typename Array1, typename Array2>
 void multilevel<MatrixType,SmootherType,SolverType>
 ::operator()(const Array1& b, Array2& x)
 {
-    CUSP_PROFILE_SCOPED();
-
     // perform 1 V-cycle
     _solve(b, x, 0);
 }
@@ -47,8 +45,6 @@ template <typename Array1, typename Array2>
 void multilevel<MatrixType,SmootherType,SolverType>
 ::solve(const Array1& b, Array2& x)
 {
-    CUSP_PROFILE_SCOPED();
-
     cusp::monitor<ValueType> monitor(b);
 
     solve(b, x, monitor);
@@ -59,8 +55,6 @@ template <typename Array1, typename Array2, typename Monitor>
 void multilevel<MatrixType,SmootherType,SolverType>
 ::solve(const Array1& b, Array2& x, Monitor& monitor)
 {
-    CUSP_PROFILE_SCOPED();
-
     /* const MatrixType& A = levels[0].A; */
     /* const size_t n = A.num_rows; */
     const size_t n = levels[0].A.num_rows;
@@ -94,8 +88,6 @@ template <typename Array1, typename Array2>
 void multilevel<MatrixType,SmootherType,SolverType>
 ::_solve(const Array1& b, Array2& x, const size_t i)
 {
-    CUSP_PROFILE_SCOPED();
-
     if (i + 1 == levels.size())
     {
         // coarse grid solve

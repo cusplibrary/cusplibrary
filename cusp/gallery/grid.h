@@ -63,8 +63,6 @@ namespace gallery
 template <typename MatrixType>
 void grid2d(      MatrixType& matrix, size_t m, size_t n)
 {
-    CUSP_PROFILE_SCOPED();
-
     typedef typename MatrixType::index_type IndexType;
     typedef typename MatrixType::value_type ValueType;
     typedef thrust::tuple<IndexType,IndexType>    StencilIndex;
@@ -81,8 +79,6 @@ void grid2d(      MatrixType& matrix, size_t m, size_t n)
 template <typename MatrixType>
 void grid3d(      MatrixType& matrix, size_t m, size_t n, size_t l)
 {
-    CUSP_PROFILE_SCOPED();
-
     typedef typename MatrixType::index_type IndexType;
     typedef typename MatrixType::value_type ValueType;
     typedef thrust::tuple<IndexType,IndexType,IndexType>    StencilIndex;

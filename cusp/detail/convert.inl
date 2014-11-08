@@ -51,8 +51,6 @@ void convert(const SourceType& src, DestinationType& dst,
 template <typename SourceType, typename DestinationType>
 void convert(const SourceType& src, DestinationType& dst)
 {
-    CUSP_PROFILE_SCOPED();
-
     cusp::detail::convert(src, dst,
                           typename SourceType::format(),
                           typename DestinationType::format());

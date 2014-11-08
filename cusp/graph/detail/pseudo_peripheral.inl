@@ -110,8 +110,6 @@ typename MatrixType::index_type pseudo_peripheral_vertex(const MatrixType& G, Ar
 template<typename MatrixType, typename ArrayType>
 typename MatrixType::index_type pseudo_peripheral_vertex(const MatrixType& G, ArrayType& levels)
 {
-    CUSP_PROFILE_SCOPED();
-
     if(G.num_rows != G.num_cols)
         throw cusp::invalid_input_exception("matrix must be square");
 

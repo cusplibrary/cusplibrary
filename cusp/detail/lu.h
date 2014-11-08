@@ -132,8 +132,6 @@ public:
     lu_solver(const MatrixType& A)
         : linear_operator<ValueType,MemorySpace>(A.num_rows, A.num_cols, A.num_entries)
     {
-        CUSP_PROFILE_SCOPED();
-
         // TODO assert A is square
         lu = A;
         pivot.resize(A.num_rows);
@@ -144,8 +142,6 @@ public:
     template <typename VectorType1, typename VectorType2>
     void operator()(const VectorType1& x, VectorType2& y) const
     {
-        CUSP_PROFILE_SCOPED();
-
         lu_solve(lu, pivot, x, y);
     }
 };

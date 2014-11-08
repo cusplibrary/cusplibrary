@@ -91,8 +91,6 @@ template<typename MatrixType>
 polynomial<ValueType,MemorySpace>
 ::polynomial(const cusp::precond::aggregation::sa_level<MatrixType>& sa_level)
 {
-    CUSP_PROFILE_SCOPED();
-
     size_t N = sa_level.A_.num_rows;
 
     ValueType rho = cusp::detail::ritz_spectral_radius_symmetric(sa_level.A_, 8);
@@ -113,8 +111,6 @@ template<typename MatrixType, typename VectorType1, typename VectorType2>
 void polynomial<ValueType,MemorySpace>
 ::operator()(const MatrixType& A, const VectorType1& b, VectorType2& x) const
 {
-    CUSP_PROFILE_SCOPED();
-
     polynomial<ValueType,MemorySpace>::operator()(A,b,x,default_coefficients);
 }
 
@@ -123,8 +119,6 @@ template<typename MatrixType, typename VectorType1, typename VectorType2>
 void polynomial<ValueType,MemorySpace>
 ::presmooth(const MatrixType& A, const VectorType1& b, VectorType2& x)
 {
-    CUSP_PROFILE_SCOPED();
-
     // Ignore the initial x and use b as the residual
     ValueType scale_factor = default_coefficients[0];
     cusp::blas::axpby(b, x, x, scale_factor, ValueType(0));
@@ -143,8 +137,6 @@ template<typename MatrixType, typename VectorType1, typename VectorType2>
 void polynomial<ValueType,MemorySpace>
 ::postsmooth(const MatrixType& A, const VectorType1& b, VectorType2& x)
 {
-    CUSP_PROFILE_SCOPED();
-
     // compute residual <- b - A*x
     cusp::multiply(A, x, residual);
     cusp::blas::axpby(b, residual, residual, ValueType(1), ValueType(-1));

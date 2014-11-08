@@ -29,7 +29,7 @@ namespace krylov
 {
 
 template <class LinearOperator,
-          class Vector>
+         class Vector>
 void bicgstab(LinearOperator& A,
               Vector& x,
               Vector& b)
@@ -42,8 +42,8 @@ void bicgstab(LinearOperator& A,
 }
 
 template <class LinearOperator,
-          class Vector,
-          class Monitor>
+         class Vector,
+         class Monitor>
 void bicgstab(LinearOperator& A,
               Vector& x,
               Vector& b,
@@ -58,17 +58,15 @@ void bicgstab(LinearOperator& A,
 }
 
 template <class LinearOperator,
-          class Vector,
-          class Monitor,
-          class Preconditioner>
+         class Vector,
+         class Monitor,
+         class Preconditioner>
 void bicgstab(LinearOperator& A,
               Vector& x,
               Vector& b,
               Monitor& monitor,
               Preconditioner& M)
 {
-    CUSP_PROFILE_SCOPED();
-
     typedef typename LinearOperator::value_type   ValueType;
     typedef typename LinearOperator::memory_space MemorySpace;
 
@@ -110,25 +108,25 @@ void bicgstab(LinearOperator& A,
 
         // alpha = (r_j, r_star) / (A*M*p, r_star)
         ValueType alpha = r_r_star_old / blas::dotc(r_star, AMp);
-        
+
         // s_j = r_j - alpha * AMp
         blas::axpby(r, AMp, s, ValueType(1), ValueType(-alpha));
 
-	if (monitor.finished(s)){
-	  // x += alpha*M*p_j
-	  blas::axpby(x, Mp, x, ValueType(1), ValueType(alpha));
-	  break;
-	}
+        if (monitor.finished(s)) {
+            // x += alpha*M*p_j
+            blas::axpby(x, Mp, x, ValueType(1), ValueType(alpha));
+            break;
+        }
 
         // Ms = M*s_j
         cusp::multiply(M, s, Ms);
-        
+
         // AMs = A*Ms
         cusp::multiply(A, Ms, AMs);
 
         // omega = (AMs, s) / (AMs, AMs)
         ValueType omega = blas::dotc(AMs, s) / blas::dotc(AMs, AMs);
-        
+
         // x_{j+1} = x_j + alpha*M*p_j + omega*M*s_j
         blas::axpbypcz(x, Mp, Ms, x, ValueType(1), alpha, omega);
 
