@@ -29,7 +29,7 @@ bool array1d_equal(const Array1& lhs, const Array2& rhs)
 } // end namespace detail
 
 template<typename T, typename MemorySpace>
-array1d<T,MemorySpace>::view
+typename array1d<T,MemorySpace>::view
 array1d<T,MemorySpace>
 ::subarray(size_type start_index, size_type num_entries)
 {
@@ -37,7 +37,7 @@ array1d<T,MemorySpace>
 } // end array1d::subarray
 
 template<typename T, typename MemorySpace>
-array1d<T,MemorySpace>::const_view
+typename array1d<T,MemorySpace>::const_view
 array1d<T,MemorySpace>
 ::subarray(size_type start_index, size_type num_entries) const
 {
@@ -56,7 +56,7 @@ array1d_view<RandomAccessIterator>
 } // end array1d_view::operator=
 
 template<typename RandomAccessIterator>
-array1d_view<RandomAccessIterator>::reference
+typename array1d_view<RandomAccessIterator>::reference
 array1d_view<RandomAccessIterator>
 ::front(void) const
 {
@@ -64,7 +64,7 @@ array1d_view<RandomAccessIterator>
 } // end array1d_view::front
 
 template<typename RandomAccessIterator>
-array1d_view<RandomAccessIterator>::reference
+typename array1d_view<RandomAccessIterator>::reference
 array1d_view<RandomAccessIterator>
 ::back(void) const
 {
@@ -72,7 +72,7 @@ array1d_view<RandomAccessIterator>
 } // end array1d_view::back
 
 template<typename RandomAccessIterator>
-array1d_view<RandomAccessIterator>::reference
+typename array1d_view<RandomAccessIterator>::reference
 array1d_view<RandomAccessIterator>
 ::operator[](size_type n) const
 {
@@ -80,7 +80,7 @@ array1d_view<RandomAccessIterator>
 } // end array1d_view::operator[]
 
 template<typename RandomAccessIterator>
-array1d_view<RandomAccessIterator>::iterator
+typename array1d_view<RandomAccessIterator>::iterator
 array1d_view<RandomAccessIterator>
 ::begin(void) const
 {
@@ -88,7 +88,7 @@ array1d_view<RandomAccessIterator>
 } // end array1d_view::begin
 
 template<typename RandomAccessIterator>
-array1d_view<RandomAccessIterator>::iterator
+typename array1d_view<RandomAccessIterator>::iterator
 array1d_view<RandomAccessIterator>
 ::end(void) const
 {
@@ -96,7 +96,7 @@ array1d_view<RandomAccessIterator>
 } // end array1d_view::end
 
 template<typename RandomAccessIterator>
-array1d_view<RandomAccessIterator>::size_type
+typename array1d_view<RandomAccessIterator>::size_type
 array1d_view<RandomAccessIterator>
 ::size(void) const
 {
@@ -104,7 +104,7 @@ array1d_view<RandomAccessIterator>
 } // end array1d_view::size
 
 template<typename RandomAccessIterator>
-array1d_view<RandomAccessIterator>::size_type
+typename array1d_view<RandomAccessIterator>::size_type
 array1d_view<RandomAccessIterator>
 ::capacity(void) const
 {
@@ -123,7 +123,7 @@ array1d_view<RandomAccessIterator>
 } // end array1d_view::resize
 
 template<typename RandomAccessIterator>
-array1d_view<RandomAccessIterator>::view
+typename array1d_view<RandomAccessIterator>::view
 array1d_view<RandomAccessIterator>
 ::subarray(size_type start_index, size_type num_entries)
 {

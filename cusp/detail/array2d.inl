@@ -124,7 +124,7 @@ array2d<ValueType,MemorySpace,Orientation>
 }
 
 template <typename ValueType, class MemorySpace, class Orientation>
-array2d<ValueType,MemorySpace,Orientation>::row_view
+typename array2d<ValueType,MemorySpace,Orientation>::row_view
 array2d<ValueType,MemorySpace,Orientation>
 ::row(const size_t i)
 {
@@ -132,7 +132,7 @@ array2d<ValueType,MemorySpace,Orientation>
 }
 
 template <typename ValueType, class MemorySpace, class Orientation>
-array2d<ValueType,MemorySpace,Orientation>::column_view
+typename array2d<ValueType,MemorySpace,Orientation>::column_view
 array2d<ValueType,MemorySpace,Orientation>
 ::column(const size_t i)
 {
@@ -140,7 +140,7 @@ array2d<ValueType,MemorySpace,Orientation>
 }
 
 template <typename ValueType, class MemorySpace, class Orientation>
-array2d<ValueType,MemorySpace,Orientation>::const_row_view
+typename array2d<ValueType,MemorySpace,Orientation>::const_row_view
 array2d<ValueType,MemorySpace,Orientation>
 ::row(const size_t i) const
 {
@@ -148,7 +148,7 @@ array2d<ValueType,MemorySpace,Orientation>
 }
 
 template <typename ValueType, class MemorySpace, class Orientation>
-array2d<ValueType,MemorySpace,Orientation>::const_column_view
+typename array2d<ValueType,MemorySpace,Orientation>::const_column_view
 array2d<ValueType,MemorySpace,Orientation>
 ::column(const size_t i) const
 {
@@ -192,7 +192,7 @@ array2d_view<ArrayView,Orientation>
 }
 
 template<typename ArrayView, class Orientation>
-array2d_view<ArrayView,Orientation>::row_view
+typename array2d_view<ArrayView,Orientation>::row_view
 array2d_view<ArrayView,Orientation>
 ::row(const size_t i)
 {
@@ -200,7 +200,7 @@ array2d_view<ArrayView,Orientation>
 }
 
 template<typename ArrayView, class Orientation>
-array2d_view<ArrayView,Orientation>::column_view
+typename array2d_view<ArrayView,Orientation>::column_view
 array2d_view<ArrayView,Orientation>
 ::column(const size_t i)
 {
@@ -208,7 +208,7 @@ array2d_view<ArrayView,Orientation>
 }
 
 template<typename ArrayView, class Orientation>
-array2d_view<ArrayView,Orientation>::row_view
+typename array2d_view<ArrayView,Orientation>::row_view
 array2d_view<ArrayView,Orientation>
 ::row(const size_t i) const
 {
@@ -216,7 +216,7 @@ array2d_view<ArrayView,Orientation>
 }
 
 template<typename ArrayView, class Orientation>
-array2d_view<ArrayView,Orientation>::column_view
+typename array2d_view<ArrayView,Orientation>::column_view
 array2d_view<ArrayView,Orientation>
 ::column(const size_t i) const
 {
