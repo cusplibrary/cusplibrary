@@ -312,6 +312,39 @@ void multiply(thrust::execution_policy<DerivedPolicy> &exec,
     cusp::multiply(exec, A.coo, B, C, thrust::identity<ValueType>(), combine, reduce);
 }
 
+template <typename DerivedPolicy,
+         typename LinearOperator,
+         typename MatrixOrVector1,
+         typename MatrixOrVector2>
+typename thrust::detail::enable_if<!thrust::detail::is_convertible<typename LinearOperator::format,known_format>::value,void>::type
+multiply(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+         const LinearOperator&  A,
+         const MatrixOrVector1& B,
+         MatrixOrVector2& C)
+{
+    // user-defined LinearOperator
+    ((LinearOperator&)A)(B,C);
+}
+
+template <typename DerivedPolicy,
+         typename LinearOperator,
+         typename MatrixOrVector1,
+         typename MatrixOrVector2>
+typename thrust::detail::enable_if<thrust::detail::is_convertible<typename LinearOperator::format,known_format>::value,void>::type
+multiply(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+         const LinearOperator&  A,
+         const MatrixOrVector1& B,
+         MatrixOrVector2& C)
+{
+    typedef typename LinearOperator::value_type ValueType;
+
+    cusp::detail::zero_function<ValueType> initialize;
+    thrust::multiplies<ValueType> combine;
+    thrust::plus<ValueType> reduce;
+
+    cusp::multiply(exec, A, B, C, initialize, combine, reduce);
+}
+
 } // end namespace generic
 } // end namespace detail
 } // end namespace system

@@ -38,8 +38,32 @@ void multiply(thrust::execution_policy<DerivedPolicy>& exec,
               LinearOperator&  A,
               MatrixOrVector1& B,
               MatrixOrVector2& C,
-              UnaryFunction  initialize, BinaryFunction1 combine, BinaryFunction2 reduce,
-              Format1&, Format2&, Format3&);
+              UnaryFunction  initialize,
+              BinaryFunction1 combine,
+              BinaryFunction2 reduce,
+              Format1&,
+              Format2&,
+              Format3&);
+
+template <typename DerivedPolicy,
+         typename LinearOperator,
+         typename MatrixOrVector1,
+         typename MatrixOrVector2>
+typename thrust::detail::enable_if<!thrust::detail::is_convertible<typename LinearOperator::format,known_format>::value,void>::type
+multiply(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+         const LinearOperator&  A,
+         const MatrixOrVector1& B,
+         MatrixOrVector2& C);
+
+template <typename DerivedPolicy,
+         typename LinearOperator,
+         typename MatrixOrVector1,
+         typename MatrixOrVector2>
+typename thrust::detail::enable_if<thrust::detail::is_convertible<typename LinearOperator::format,known_format>::value,void>::type
+multiply(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+         const LinearOperator&  A,
+         const MatrixOrVector1& B,
+         MatrixOrVector2& C);
 
 } // end namespace generic
 } // end namespace detail

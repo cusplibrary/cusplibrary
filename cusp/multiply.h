@@ -101,6 +101,19 @@ void multiply(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
               const MatrixOrVector1& B,
                     MatrixOrVector2& C);
 
+template <typename LinearOperator,
+         typename MatrixOrVector1,
+         typename MatrixOrVector2,
+         typename UnaryFunction,
+         typename BinaryFunction1,
+         typename BinaryFunction2>
+void multiply(const LinearOperator&  A,
+              const MatrixOrVector1& B,
+              MatrixOrVector2& C,
+              UnaryFunction  initialize,
+              BinaryFunction1 combine,
+              BinaryFunction2 reduce);
+
 template <typename DerivedPolicy,
          typename LinearOperator,
          typename MatrixOrVector1,
