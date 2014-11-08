@@ -18,8 +18,9 @@
 #pragma once
 
 #include <cusp/array1d.h>
-#include <cusp/format.h>
 #include <cusp/coo_matrix.h>
+#include <cusp/format.h>
+#include <cusp/sort.h>
 
 #include <thrust/functional.h>
 #include <thrust/inner_product.h>
@@ -91,7 +92,7 @@ void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
       thrust::transform(B.values.begin(), B.values.end(), vals.begin() + A_nnz, thrust::negate<ValueType>());
 
     // sort by (I,J)
-    cusp::detail::sort_by_row_and_column(rows, cols, vals);
+    cusp::sort_by_row_and_column(rows, cols, vals);
 
     // compute unique number of nonzeros in the output
     IndexType C_nnz = thrust::inner_product(thrust::make_zip_iterator(thrust::make_tuple(rows.begin(), cols.begin())),

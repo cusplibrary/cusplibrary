@@ -15,6 +15,8 @@
  */
 
 #include <cusp/coo_matrix.h>
+#include <cusp/sort.h>
+
 #include <cusp/detail/format_utils.h>
 
 #include <thrust/gather.h>
@@ -56,7 +58,7 @@ void permutation_matrix<ValueType,MemorySpace,IndexType>
     thrust::gather(B.column_indices.begin(), B.column_indices.end(), permutation.begin(), B.column_indices.begin());
 
     // order COO matrix
-    cusp::detail::sort_by_row_and_column(B.row_indices, B.column_indices, B.values);
+    cusp::sort_by_row_and_column(B.row_indices, B.column_indices, B.values);
 
     // store permuted matrix
     A = B;
@@ -91,7 +93,7 @@ permutation_matrix_view<Array,ValueType,MemorySpace,IndexType>
     thrust::gather(B.column_indices.begin(), B.column_indices.end(), permutation.begin(), B.column_indices.begin());
 
     // order COO matrix
-    cusp::detail::sort_by_row_and_column(B.row_indices, B.column_indices, B.values);
+    cusp::sort_by_row_and_column(B.row_indices, B.column_indices, B.values);
 
     // store permuted matrix
     A = B;

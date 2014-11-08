@@ -14,25 +14,22 @@
  *  limitations under the License.
  */
 
+/*! \file sort.h
+ *  \brief Specialized sorting routines
+ */
 
 #pragma once
 
 namespace cusp
 {
-namespace detail
-{
 
-template <typename OffsetArray, typename IndexArray>
-void offsets_to_indices(const OffsetArray& offsets, IndexArray& indices);
+template <typename ArrayType1, typename ArrayType2, typename ArrayType3>
+void sort_by_row(ArrayType1& rows, ArrayType2& columns, ArrayType3& values);
 
-template <typename IndexArray, typename OffsetArray>
-void indices_to_offsets(const IndexArray& indices, OffsetArray& offsets);
+template <typename ArrayType1, typename ArrayType2, typename ArrayType3>
+void sort_by_row_and_column(ArrayType1& rows, ArrayType2& columns, ArrayType3& values);
 
-template <typename MatrixType, typename ArrayType>
-void extract_diagonal(const MatrixType& A, ArrayType& output);
-
-} // end namespace detail
 } // end namespace cusp
 
-#include <cusp/detail/format_utils.inl>
+#include <cusp/detail/sort.inl>
 

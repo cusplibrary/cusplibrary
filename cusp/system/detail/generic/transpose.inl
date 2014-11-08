@@ -27,6 +27,7 @@
 #include <cusp/convert.h>
 #include <cusp/coo_matrix.h>
 #include <cusp/csr_matrix.h>
+#include <cusp/sort.h>
 
 #include <cusp/detail/utils.h>
 #include <cusp/detail/array2d_format_utils.h>
@@ -93,7 +94,7 @@ void transpose(thrust::execution_policy<DerivedPolicy>& exec,
 
     cusp::copy(A.values, At.values);
 
-    cusp::detail::sort_by_row(At_row_indices, At.column_indices, At.values);
+    cusp::sort_by_row(At_row_indices, At.column_indices, At.values);
 
     cusp::detail::indices_to_offsets(At_row_indices, At.row_offsets);
 }

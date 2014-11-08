@@ -15,8 +15,7 @@
  */
 
 #include <cusp/convert.h>
-
-#include <cusp/detail/format_utils.h>
+#include <cusp/sort.h>
 
 #include <thrust/sort.h>
 #include <thrust/iterator/zip_iterator.h>
@@ -81,7 +80,7 @@ void
 coo_matrix<IndexType,ValueType,MemorySpace>
 ::sort_by_row(void)
 {
-    cusp::detail::sort_by_row(row_indices, column_indices, values);
+    cusp::sort_by_row(row_indices, column_indices, values);
 }
 
 // sort matrix elements by row index
@@ -90,7 +89,7 @@ void
 coo_matrix<IndexType,ValueType,MemorySpace>
 ::sort_by_row_and_column(void)
 {
-    cusp::detail::sort_by_row_and_column(row_indices, column_indices, values);
+    cusp::sort_by_row_and_column(row_indices, column_indices, values);
 }
 
 // determine whether matrix elements are sorted by row index
@@ -134,7 +133,7 @@ void
 coo_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>
 ::sort_by_row(void)
 {
-    cusp::detail::sort_by_row(row_indices, column_indices, values);
+    cusp::sort_by_row(row_indices, column_indices, values);
 }
 
 // sort matrix elements by row index
@@ -143,7 +142,7 @@ void
 coo_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>
 ::sort_by_row_and_column(void)
 {
-    cusp::detail::sort_by_row_and_column(row_indices, column_indices, values);
+    cusp::sort_by_row_and_column(row_indices, column_indices, values);
 }
 
 // determine whether matrix elements are sorted by row index

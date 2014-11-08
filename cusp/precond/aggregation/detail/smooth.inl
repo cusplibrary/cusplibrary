@@ -17,6 +17,7 @@
 #include <cusp/coo_matrix.h>
 #include <cusp/csr_matrix.h>
 #include <cusp/elementwise.h>
+#include <cusp/sort.h>
 
 #include <cusp/blas/blas.h>
 #include <cusp/detail/spectral_radius.h>
@@ -85,7 +86,7 @@ void smooth_prolongator(const MatrixType& S,
         thrust::copy(T.values.begin(),         T.values.end(),         temp.values.begin()         + S.num_entries);
 
         // sort by (I,J)
-        cusp::detail::sort_by_row_and_column(temp.row_indices, temp.column_indices, temp.values);
+        cusp::sort_by_row_and_column(temp.row_indices, temp.column_indices, temp.values);
 
         // compute unique number of nonzeros in the output
         // throws a warning at compile (warning: expression has no effect)

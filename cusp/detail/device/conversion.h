@@ -21,6 +21,7 @@
 #include <cusp/format.h>
 #include <cusp/coo_matrix.h>
 #include <cusp/csr_matrix.h>
+#include <cusp/sort.h>
 
 #include <cusp/blas/blas.h>
 #include <cusp/detail/format_utils.h>
@@ -382,7 +383,7 @@ void hyb_to_coo(const Matrix1& src, Matrix2& dst)
     thrust::copy(src.coo.values.begin(),         src.coo.values.end(),         dst.values.begin()         + temp.num_entries);
 
     if (temp.num_entries > 0 && src.coo.num_entries > 0)
-        cusp::detail::sort_by_row_and_column(dst.row_indices, dst.column_indices, dst.values);
+        cusp::sort_by_row_and_column(dst.row_indices, dst.column_indices, dst.values);
 }
 
 
