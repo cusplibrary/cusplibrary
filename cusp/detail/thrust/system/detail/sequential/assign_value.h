@@ -16,20 +16,11 @@
 
 #pragma once
 
-/*! \file cusp/system/detail/sequential/execution_policy.h
- *  \brief Execution policies for Cusp's standard sequential system.
- */
-
-#include <cusp/detail/config.h>
-
-#if THRUST_VERSION >= 100800
-// get the execution policies definitions first
+#include <thrust/detail/config.h>
 #include <thrust/system/detail/sequential/execution_policy.h>
-#else
-#include <cusp/detail/thrust/system/detail/sequential/execution_policy.h>
-#endif
+#include <thrust/detail/raw_pointer_cast.h>
 
-namespace cusp
+namespace thrust
 {
 namespace system
 {
@@ -37,16 +28,16 @@ namespace detail
 {
 namespace sequential
 {
-using namespace thrust::system::detail::sequential;
-} // end namespace sequential
-} // end namespace detail
-} // end namespace system
-} // end namespace cusp
 
-// now get all the algorithm definitions
+template<typename DerivedPolicy, typename Pointer1, typename Pointer2>
+__host__ __device__
+  void assign_value(sequential::execution_policy<DerivedPolicy> &, Pointer1 dst, Pointer2 src)
+{
+  *thrust::raw_pointer_cast(dst) = *thrust::raw_pointer_cast(src);
+} // end assign_value()
 
-#include <cusp/system/detail/sequential/elementwise.h>
-#include <cusp/system/detail/sequential/multiply.h>
-#include <cusp/system/detail/sequential/transpose.h>
-
+} // end sequential
+} // end detail
+} // end system
+} // end thrust
 

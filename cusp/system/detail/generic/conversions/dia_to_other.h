@@ -19,14 +19,11 @@
 
 #include <cusp/copy.h>
 #include <cusp/format.h>
-#include <cusp/coo_matrix.h>
-#include <cusp/csr_matrix.h>
 #include <cusp/sort.h>
+#include <cusp/print.h>
 
 #include <cusp/blas/blas.h>
 #include <cusp/detail/format_utils.h>
-#include <cusp/detail/device/conversion_utils.h>
-#include <cusp/detail/host/convert.h>
 #include <cusp/detail/functional.h>
 
 #include <thrust/count.h>
@@ -52,8 +49,6 @@ namespace detail
 {
 namespace generic
 {
-
-using namespace cusp::detail;
 
 template <typename IndexType>
 struct is_valid_ell_index
@@ -103,6 +98,8 @@ template <typename DerivedPolicy,
 void dia_to_coo(thrust::execution_policy<DerivedPolicy>& exec,
                 const SourceType& src, DestinationType& dst)
 {
+    std::cout << "Calling DIA -> COO conversion" << std::endl;
+
     typedef typename DestinationType::index_type IndexType;
     typedef typename DestinationType::value_type ValueType;
     typedef typename DestinationType::memory_space MemorySpace;
@@ -113,14 +110,15 @@ void dia_to_coo(thrust::execution_policy<DerivedPolicy>& exec,
     if( src.num_entries == 0 ) return;
 
     const IndexType pitch = src.values.pitch;
-    const size_t num_entries   = src.values.values.size();
-    const size_t num_diagonals = src.diagonal_offsets.size();
+    const size_t num_entries   = src.values.num_entries;
+    // const size_t num_diagonals = src.diagonal_offsets.size();
 
     // define types used to programatically generate row_indices
     typedef typename thrust::counting_iterator<IndexType> IndexIterator;
     typedef typename thrust::transform_iterator<modulus_value<IndexType>, IndexIterator> RowIndexIterator;
 
     RowIndexIterator row_indices_begin(IndexIterator(0), modulus_value<IndexType>(pitch));
+    thrust::copy(row_indices_begin, row_indices_begin + num_entries, std::ostream_iterator<IndexType>(std::cout, " "));
 
     // define types used to programatically generate column_indices
     typedef typename thrust::device_vector<IndexType>::const_iterator ConstElementIterator;
@@ -135,6 +133,9 @@ void dia_to_coo(thrust::execution_policy<DerivedPolicy>& exec,
     ZipIterator offset_modulus_tuple(thrust::make_tuple(offsets_begin, row_indices_begin));
     ColumnIndexIterator column_indices_begin(offset_modulus_tuple, sum_tuple_functor<IndexType>());
 
+    std::cout << std::endl << std::endl;
+    thrust::copy(column_indices_begin, column_indices_begin + num_entries, std::ostream_iterator<IndexType>(std::cout, " "));
+
     // copy valid entries to COO format
     //thrust::copy_if
     //  (thrust::make_permutation_iterator(thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, column_indices_begin, src.values.values.begin())), thrust::make_transform_iterator(thrust::counting_iterator<IndexType>(0), transpose_index_functor<IndexType>(pitch, num_diagonals))),
@@ -146,15 +147,17 @@ void dia_to_coo(thrust::execution_policy<DerivedPolicy>& exec,
         cusp::array1d<IndexType, MemorySpace> temp0(num_entries);
         cusp::array1d<IndexType, MemorySpace> temp1(num_entries);
         cusp::array1d<ValueType, MemorySpace> temp2(num_entries);
-        thrust::copy(thrust::make_permutation_iterator(thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, column_indices_begin, src.values.values.begin())), thrust::make_transform_iterator(thrust::counting_iterator<IndexType>(0), transpose_index_functor<IndexType>(pitch, num_diagonals))),
-                     thrust::make_permutation_iterator(thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, column_indices_begin, src.values.values.begin())), thrust::make_transform_iterator(thrust::counting_iterator<IndexType>(0), transpose_index_functor<IndexType>(pitch, num_diagonals))) + num_entries,
-                     thrust::make_zip_iterator(thrust::make_tuple(temp0.begin(), temp1.begin(), temp2.begin())));
+        thrust::copy(thrust::make_permutation_iterator(thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, column_indices_begin, src.values.values.begin())), thrust::make_transform_iterator(thrust::counting_iterator<IndexType>(0),  logical_to_other_physical_functor<IndexType,cusp::column_major,cusp::row_major>(src.values.num_rows, src.values.num_cols, src.values.pitch))),
+                      thrust::make_permutation_iterator(thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, column_indices_begin, src.values.values.begin())), thrust::make_transform_iterator(thrust::counting_iterator<IndexType>(0), logical_to_other_physical_functor<IndexType,cusp::column_major,cusp::row_major>(src.values.num_rows, src.values.num_cols, src.values.pitch))) + num_entries,
+                      thrust::make_zip_iterator(thrust::make_tuple(temp0.begin(), temp1.begin(), temp2.begin())));
         thrust::copy_if
         (thrust::make_zip_iterator(thrust::make_tuple(temp0.begin(), temp1.begin(), temp2.begin())),
          thrust::make_zip_iterator(thrust::make_tuple(temp0.begin(), temp1.begin(), temp2.begin())) + num_entries,
          thrust::make_zip_iterator(thrust::make_tuple(dst.row_indices.begin(), dst.column_indices.begin(), dst.values.begin())),
          is_valid_coo_index<IndexType,ValueType>(src.num_rows,src.num_cols));
     }
+
+    cusp::print(dst);
 }
 
 template <typename DerivedPolicy,

@@ -14,107 +14,27 @@
  *  limitations under the License.
  */
 
+#include <cusp/array1d.h>
 #include <cusp/copy.h>
 #include <cusp/format.h>
-#include <cusp/array1d.h>
+#include <cusp/detail/functional.h>
 
-#include <thrust/fill.h>
-#include <thrust/extrema.h>
+#include <thrust/adjacent_difference.h>
 #include <thrust/binary_search.h>
-#include <thrust/transform.h>
+#include <thrust/extrema.h>
+#include <thrust/fill.h>
 #include <thrust/gather.h>
+#include <thrust/inner_product.h>
+#include <thrust/scan.h>
 #include <thrust/scatter.h>
 #include <thrust/sequence.h>
-#include <thrust/scan.h>
 #include <thrust/sort.h>
+#include <thrust/transform.h>
 
 namespace cusp
 {
 namespace detail
 {
-
-template <typename IndexType>
-struct empty_row_functor
-{
-    typedef bool result_type;
-
-    template <typename Tuple>
-    __host__ __device__
-    bool operator()(const Tuple& t) const
-    {
-        const IndexType a = thrust::get<0>(t);
-        const IndexType b = thrust::get<1>(t);
-
-        return a != b;
-    }
-};
-
-template<typename IndexType>
-struct row_operator : public std::unary_function<size_t,IndexType>
-{
-    size_t pitch;
-
-    row_operator(size_t pitch)
-        : pitch(pitch) {}
-
-    __host__ __device__
-    IndexType operator()(const size_t & linear_index) const
-    {
-        return linear_index % pitch;
-    }
-};
-
-template <typename IndexType>
-struct occupied_diagonal_functor
-{
-    typedef IndexType result_type;
-
-    const   IndexType num_rows;
-
-    occupied_diagonal_functor(const IndexType num_rows)
-        : num_rows(num_rows) {}
-
-    template <typename Tuple>
-    __host__ __device__
-    IndexType operator()(const Tuple& t) const
-    {
-        const IndexType i = thrust::get<0>(t);
-        const IndexType j = thrust::get<1>(t);
-
-        return j-i+num_rows;
-    }
-};
-
-struct speed_threshold_functor
-{
-    size_t num_rows;
-    float  relative_speed;
-    size_t breakeven_threshold;
-
-    speed_threshold_functor(const size_t num_rows, const float relative_speed, const size_t breakeven_threshold)
-        : num_rows(num_rows),
-          relative_speed(relative_speed),
-          breakeven_threshold(breakeven_threshold)
-    {}
-
-    template <typename IndexType>
-    __host__ __device__
-    bool operator()(const IndexType rows) const
-    {
-        return relative_speed * (num_rows-rows) < num_rows || (size_t) (num_rows-rows) < breakeven_threshold;
-    }
-};
-
-
-template <typename IndexType>
-struct tuple_equal_to : public thrust::unary_function<thrust::tuple<IndexType,IndexType>,bool>
-{
-    __host__ __device__
-    bool operator()(const thrust::tuple<IndexType,IndexType>& t) const
-    {
-        return thrust::get<0>(t) == thrust::get<1>(t);
-    }
-};
 
 template <typename OffsetArray, typename IndexArray>
 void offsets_to_indices(const OffsetArray& offsets, IndexArray& indices)
@@ -297,11 +217,13 @@ size_t count_diagonals(const size_t num_rows,
 {
   using thrust::system::detail::generic::select_system;
 
-  typedef typename ArrayType::memory_space System;
+  typedef typename ArrayType1::memory_space System1;
+  typedef typename ArrayType2::memory_space System2;
 
-  System system;
+  System1 system1;
+  System2 system2;
 
-  return count_diagonals(select_system(system), num_rows, num_cols, num_entries, row_indices, column_indices);
+  return count_diagonals(select_system(system1,system2), num_rows, num_cols, num_entries, row_indices, column_indices);
 }
 
 template <typename DerivedPolicy, typename ArrayType>

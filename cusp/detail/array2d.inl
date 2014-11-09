@@ -14,10 +14,11 @@
  *  limitations under the License.
  */
 
-#include <cusp/convert.h>
-
 namespace cusp
 {
+
+// Forward definition
+template <typename T1, typename T2> void convert(const T1&, T2&);
 
 //////////////////
 // Constructors //
@@ -317,4 +318,6 @@ bool operator!=(const array2d_view<Array1,Orientation1>& lhs,
 }
 
 } // end namespace cusp
+
+#include <cusp/convert.h>
 

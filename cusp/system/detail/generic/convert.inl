@@ -45,8 +45,8 @@ template <typename DerivedPolicy, typename SourceType, typename DestinationType>
 void convert(thrust::execution_policy<DerivedPolicy>& exec,
              const SourceType& src,
              DestinationType& dst,
-             cusp::csr_format,
-             cusp::coo_format)
+             cusp::csr_format&,
+             cusp::coo_format&)
 {
     csr_to_coo(exec, src, dst);
 }
@@ -55,8 +55,8 @@ template <typename DerivedPolicy, typename SourceType, typename DestinationType>
 void convert(thrust::execution_policy<DerivedPolicy>& exec,
              const SourceType& src,
              DestinationType& dst,
-             cusp::ell_format,
-             cusp::coo_format)
+             cusp::ell_format&,
+             cusp::coo_format&)
 {
     ell_to_coo(exec, src, dst);
 }
@@ -65,8 +65,8 @@ template <typename DerivedPolicy, typename SourceType, typename DestinationType>
 void convert(thrust::execution_policy<DerivedPolicy>& exec,
              const SourceType& src,
              DestinationType& dst,
-             cusp::dia_format,
-             cusp::coo_format)
+             cusp::dia_format&,
+             cusp::coo_format&)
 {
     dia_to_coo(exec, src, dst);
 }
@@ -75,8 +75,8 @@ template <typename DerivedPolicy, typename SourceType, typename DestinationType>
 void convert(thrust::execution_policy<DerivedPolicy>& exec,
              const SourceType& src,
              DestinationType& dst,
-             cusp::hyb_format,
-             cusp::coo_format)
+             cusp::hyb_format&,
+             cusp::coo_format&)
 {
     hyb_to_coo(exec, src, dst);
 }
@@ -88,8 +88,8 @@ template <typename DerivedPolicy, typename SourceType, typename DestinationType>
 void convert(thrust::execution_policy<DerivedPolicy>& exec,
              const SourceType& src,
              DestinationType& dst,
-             cusp::coo_format,
-             cusp::csr_format)
+             cusp::coo_format&,
+             cusp::csr_format&)
 {
     coo_to_csr(exec, src, dst);
 }
@@ -98,8 +98,8 @@ template <typename DerivedPolicy, typename SourceType, typename DestinationType>
 void convert(thrust::execution_policy<DerivedPolicy>& exec,
              const SourceType& src,
              DestinationType& dst,
-             cusp::ell_format,
-             cusp::csr_format)
+             cusp::ell_format&,
+             cusp::csr_format&)
 {
     ell_to_csr(exec, src, dst);
 }
@@ -108,8 +108,8 @@ template <typename DerivedPolicy, typename SourceType, typename DestinationType>
 void convert(thrust::execution_policy<DerivedPolicy>& exec,
              const SourceType& src,
              DestinationType& dst,
-             cusp::dia_format,
-             cusp::csr_format)
+             cusp::dia_format&,
+             cusp::csr_format&)
 {
     dia_to_csr(exec, src, dst);
 }
@@ -122,12 +122,12 @@ template <typename DerivedPolicy, typename SourceType, typename DestinationType>
 void convert(thrust::execution_policy<DerivedPolicy>& exec,
              const SourceType& src,
              DestinationType& dst,
-             cusp::coo_format,
-             cusp::dia_format,
+             cusp::coo_format&,
+             cusp::dia_format&,
              const float  max_fill  = 3.0,
              const size_t alignment = 32)
 {
-    const size_t occupied_diagonals = cusp::count_diagonals(exec, src);
+    const size_t occupied_diagonals = cusp::detail::count_diagonals(exec, src.num_rows, src.num_cols, src.num_entries, src.row_indices, src.column_indices);
 
     const float threshold  = 1e6; // 1M entries
     const float size       = float(occupied_diagonals) * float(src.num_rows);
@@ -143,8 +143,8 @@ template <typename DerivedPolicy, typename SourceType, typename DestinationType>
 void convert(thrust::execution_policy<DerivedPolicy>& exec,
              const SourceType& src,
              DestinationType& dst,
-             cusp::csr_format,
-             cusp::dia_format,
+             cusp::csr_format&,
+             cusp::dia_format&,
              const float  max_fill  = 3.0,
              const size_t alignment = 32)
 {
@@ -170,12 +170,14 @@ template <typename DerivedPolicy, typename SourceType, typename DestinationType>
 void convert(thrust::execution_policy<DerivedPolicy>& exec,
              const SourceType& src,
              DestinationType& dst,
-             cusp::coo_format,
-             cusp::ell_format,
+             cusp::coo_format&,
+             cusp::ell_format&,
              const float  max_fill  = 3.0,
              const size_t alignment = 32)
 {
-    const size_t max_entries_per_row = cusp::detail::compute_max_entries_per_row(exec, src.row_offsets);
+    typename SourceType::column_indices_array_type row_offsets(src.num_rows + 1);
+    cusp::detail::indices_to_offsets(src.row_indices, row_offsets);
+    const size_t max_entries_per_row = cusp::detail::compute_max_entries_per_row(exec, row_offsets);
 
     const float threshold  = 1e6; // 1M entries
     const float size       = float(max_entries_per_row) * float(src.num_rows);
@@ -191,8 +193,8 @@ template <typename DerivedPolicy, typename SourceType, typename DestinationType>
 void convert(thrust::execution_policy<DerivedPolicy>& exec,
              const SourceType& src,
              DestinationType& dst,
-             cusp::csr_format,
-             cusp::ell_format,
+             cusp::csr_format&,
+             cusp::ell_format&,
              const float  max_fill  = 3.0,
              const size_t alignment = 32)
 {
@@ -217,8 +219,8 @@ template <typename DerivedPolicy, typename SourceType, typename DestinationType>
 void convert(thrust::execution_policy<DerivedPolicy>& exec,
              const SourceType& src,
              DestinationType& dst,
-             cusp::coo_format,
-             cusp::hyb_format,
+             cusp::coo_format&,
+             cusp::hyb_format&,
              const float  relative_speed      = 3.0,
              const size_t breakeven_threshold = 4096)
 {
@@ -230,8 +232,8 @@ template <typename DerivedPolicy, typename SourceType, typename DestinationType>
 void convert(thrust::execution_policy<DerivedPolicy>& exec,
              const SourceType& src,
              DestinationType& dst,
-             cusp::csr_format,
-             cusp::hyb_format,
+             cusp::csr_format&,
+             cusp::hyb_format&,
              const float  relative_speed      = 3.0,
              const size_t breakeven_threshold = 4096)
 {
@@ -243,8 +245,8 @@ template <typename DerivedPolicy, typename SourceType, typename DestinationType>
 void convert(thrust::execution_policy<DerivedPolicy>& exec,
              const SourceType& src,
              DestinationType& dst,
-             cusp::ell_format,
-             cusp::hyb_format)
+             cusp::ell_format&,
+             cusp::hyb_format&)
 {
     ell_to_hyb(exec, src, dst);
 }
@@ -253,8 +255,8 @@ template <typename DerivedPolicy, typename SourceType, typename DestinationType>
 void convert(thrust::execution_policy<DerivedPolicy>& exec,
              const SourceType& src,
              DestinationType& dst,
-             cusp::array2d_format,
-             cusp::array1d_format)
+             cusp::array2d_format&,
+             cusp::array1d_format&)
 {
     if (src.num_rows == 0 && src.num_cols == 0)
     {
@@ -265,7 +267,7 @@ void convert(thrust::execution_policy<DerivedPolicy>& exec,
         dst.resize(src.num_rows);
 
         // interpret dst as a Nx1 column matrix and copy from src
-        typedef cusp::array2d_view<typename Matrix2::view, cusp::column_major> View;
+        typedef cusp::array2d_view<typename DestinationType::view, cusp::column_major> View;
         View view(src.num_rows, 1, src.num_rows, cusp::make_array1d_view(dst));
 
         cusp::copy(src, view);
@@ -275,7 +277,7 @@ void convert(thrust::execution_policy<DerivedPolicy>& exec,
         dst.resize(src.num_cols);
 
         // interpret dst as a 1xN row matrix and copy from src
-        typedef cusp::array2d_view<typename Matrix2::view, cusp::row_major> View;
+        typedef cusp::array2d_view<typename DestinationType::view, cusp::row_major> View;
         View view(1, src.num_cols, src.num_cols, cusp::make_array1d_view(dst));
 
         cusp::copy(exec, src, view);
@@ -290,8 +292,8 @@ template <typename DerivedPolicy, typename SourceType, typename DestinationType>
 void convert(thrust::execution_policy<DerivedPolicy>& exec,
              const SourceType& src,
              DestinationType& dst,
-             cusp::array1d_format,
-             cusp::array2d_format)
+             cusp::array1d_format&,
+             cusp::array2d_format&)
 {
     // interpret src as a Nx1 column matrix and copy to dst
     cusp::copy(exec, cusp::make_array2d_view
@@ -305,7 +307,7 @@ template <typename DerivedPolicy, typename SourceType, typename DestinationType>
 void convert(thrust::execution_policy<DerivedPolicy>& exec,
              const SourceType& src,
              DestinationType& dst,
-             sparse_format, array2d_format)
+             sparse_format&, array2d_format&)
 {
     typedef typename SourceType::value_type ValueType;
     typedef typename SourceType::memory_space MemorySpace;
@@ -318,7 +320,7 @@ void convert(thrust::execution_policy<DerivedPolicy>& exec,
 template <typename DerivedPolicy, typename SourceType, typename DestinationType>
 void convert(thrust::execution_policy<DerivedPolicy>& exec,
              const SourceType& src, DestinationType& dst,
-             array2d_format, sparse_format)
+             array2d_format&, sparse_format&)
 {
     typedef typename SourceType::value_type ValueType;
     typedef typename SourceType::memory_space MemorySpace;
@@ -326,6 +328,20 @@ void convert(thrust::execution_policy<DerivedPolicy>& exec,
     cusp::array2d<ValueType,MemorySpace> tmp;
     cusp::convert(exec, src, tmp);
     cusp::convert(exec, tmp, dst);
+}
+
+template <typename DerivedPolicy, typename SourceType, typename DestinationType>
+void convert(thrust::execution_policy<DerivedPolicy>& exec,
+             const SourceType& src, DestinationType& dst,
+             cusp::sparse_format&,
+             cusp::sparse_format&)
+{
+   std::cout << "Converting " << typeid(SourceType).name() << ", " << typeid(DestinationType).name() << std::endl;
+   // convert src -> coo_matrix -> dst
+   typename cusp::detail::as_coo_type<SourceType>::type tmp;
+
+   cusp::convert(exec, src, tmp);
+   cusp::convert(exec, tmp, dst);
 }
 
 } // end namespace generic

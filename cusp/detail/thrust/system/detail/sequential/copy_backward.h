@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2014 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,32 +14,38 @@
  *  limitations under the License.
  */
 
-
 #pragma once
 
-#include <cusp/detail/config.h>
+#include <thrust/detail/config.h>
 
-#include <thrust/execution_policy.h>
-
-namespace cusp
+namespace thrust
 {
 namespace system
 {
 namespace detail
 {
-namespace generic
+namespace sequential
 {
 
-template <typename DerivedPolicy,
-          typename SourceType,
-          typename DestinationType>
-void convert(thrust::execution_policy<DerivedPolicy>& exec,
-             const SourceType& src, DestinationType& dst,
-             sparse_format&, sparse_format&);
+template<typename BidirectionalIterator1,
+         typename BidirectionalIterator2>
+__host__ __device__
+BidirectionalIterator2 copy_backward(BidirectionalIterator1 first, 
+                                     BidirectionalIterator1 last, 
+                                     BidirectionalIterator2 result)
+{
+  while (first != last)
+  {
+    --last;
+    --result;
+    *result = *last;
+  }
 
-} // end namespace generic
+  return result;
+}
+
+} // end namespace sequential
 } // end namespace detail
 } // end namespace system
-} // end namespace cusp
+} // end namespace thrust
 
-#include <cusp/system/detail/generic/convert.inl>

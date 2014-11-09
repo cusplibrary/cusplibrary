@@ -30,7 +30,6 @@
 
 namespace cusp
 {
-
 namespace detail
 {
 
@@ -82,9 +81,10 @@ struct base_functor : public thrust::unary_function<T,T>
 
     base_functor(const T value) : value(value) {}
 
+    __host__ __device__
     T operator()(const T x)
     {
-        return op(value,x);
+        return op(x, value);
     }
 };
 
@@ -102,19 +102,167 @@ struct divide_value : public base_functor< T, thrust::divides<T> >
     divide_value(const T value) : Parent(value) {}
 };
 
+template <typename T>
+struct greater_than_or_equal_to
+{
+    const T num;
+
+    greater_than_or_equal_to(const T num)
+        : num(num) {}
+
+    __host__ __device__ bool operator()(const T &x) const {
+        return x >= num;
+    }
+};
+
+template <typename T>
+struct less_than
+{
+    const T num;
+
+    less_than(const T num)
+        : num(num) {}
+
+    __host__ __device__ bool operator()(const T &x) const {
+        return x < num;
+    }
+};
+
+template <typename IndexType>
+struct is_positive
+{
+    __host__ __device__
+    bool operator()(const IndexType x)
+    {
+        return x > 0;
+    }
+};
+
+template <typename IndexType>
+struct empty_row_functor
+{
+    typedef bool result_type;
+
+    template <typename Tuple>
+    __host__ __device__
+    bool operator()(const Tuple& t) const
+    {
+        const IndexType a = thrust::get<0>(t);
+        const IndexType b = thrust::get<1>(t);
+
+        return a != b;
+    }
+};
+
+template <typename IndexType>
+struct diagonal_index_functor : public thrust::unary_function<IndexType,IndexType>
+{
+    const IndexType pitch;
+
+    diagonal_index_functor(const IndexType pitch)
+        : pitch(pitch) {}
+
+    template <typename Tuple>
+    __host__ __device__
+    IndexType operator()(const Tuple& t) const
+    {
+        const IndexType row  = thrust::get<0>(t);
+        const IndexType diag = thrust::get<1>(t);
+
+        return (diag * pitch) + row;
+    }
+};
+
 template <typename T, typename BinaryFunction>
-struct combine_tuple_base_functor : public thrust::unary_function< thrust::tuple<T,T>,T >
+struct combine_tuple_base_functor : public thrust::unary_function<T,T>
 {
     BinaryFunction op;
 
-    T operator()(const thrust::tuple<T,T>& t)
+    template<typename Tuple>
+    __host__ __device__
+    T operator()(const Tuple& t)
     {
         return op(thrust::get<0>(t),thrust::get<1>(t));
     }
 };
 
 template <typename T>
-struct sum_tuple_functor : public combine_tuple_base_functor< T,thrust::plus<T> > {};
+struct sum_tuple_functor : public thrust::unary_function<T,T>
+{
+    template<typename Tuple>
+    __host__ __device__
+    T operator()(const Tuple& t)
+    {
+        return thrust::get<0>(t) + thrust::get<1>(t);
+    }
+};
+
+template <typename IndexType>
+struct occupied_diagonal_functor
+{
+    typedef IndexType result_type;
+
+    const   IndexType num_rows;
+
+    occupied_diagonal_functor(const IndexType num_rows)
+        : num_rows(num_rows) {}
+
+    template <typename Tuple>
+    __host__ __device__
+    IndexType operator()(const Tuple& t) const
+    {
+        const IndexType i = thrust::get<0>(t);
+        const IndexType j = thrust::get<1>(t);
+
+        return j-i+num_rows;
+    }
+};
+
+struct speed_threshold_functor
+{
+    size_t num_rows;
+    float  relative_speed;
+    size_t breakeven_threshold;
+
+    speed_threshold_functor(const size_t num_rows, const float relative_speed, const size_t breakeven_threshold)
+        : num_rows(num_rows),
+          relative_speed(relative_speed),
+          breakeven_threshold(breakeven_threshold)
+    {}
+
+    template <typename IndexType>
+    __host__ __device__
+    bool operator()(const IndexType rows) const
+    {
+        return relative_speed * (num_rows-rows) < num_rows || (size_t) (num_rows-rows) < breakeven_threshold;
+    }
+};
+
+template<typename IndexType>
+struct row_operator : public std::unary_function<size_t,IndexType>
+{
+    size_t pitch;
+
+    row_operator(size_t pitch)
+        : pitch(pitch) {}
+
+    __host__ __device__
+    IndexType operator()(const size_t & linear_index) const
+    {
+        return linear_index % pitch;
+    }
+};
+
+template <typename IndexType>
+struct tuple_equal_to : public thrust::unary_function<thrust::tuple<IndexType,IndexType>,bool>
+{
+    __host__ __device__
+    bool operator()(const thrust::tuple<IndexType,IndexType>& t) const
+    {
+        return thrust::get<0>(t) == thrust::get<1>(t);
+    }
+};
+
 
 // maximum<T> returns the largest of two numbers
 template <typename T>

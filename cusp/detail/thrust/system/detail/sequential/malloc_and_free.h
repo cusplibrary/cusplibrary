@@ -16,20 +16,12 @@
 
 #pragma once
 
-/*! \file cusp/system/detail/sequential/execution_policy.h
- *  \brief Execution policies for Cusp's standard sequential system.
- */
-
-#include <cusp/detail/config.h>
-
-#if THRUST_VERSION >= 100800
-// get the execution policies definitions first
+#include <thrust/detail/config.h>
 #include <thrust/system/detail/sequential/execution_policy.h>
-#else
-#include <cusp/detail/thrust/system/detail/sequential/execution_policy.h>
-#endif
+#include <cstdlib> // for malloc & free
+#include <thrust/detail/raw_pointer_cast.h>
 
-namespace cusp
+namespace thrust
 {
 namespace system
 {
@@ -37,16 +29,32 @@ namespace detail
 {
 namespace sequential
 {
-using namespace thrust::system::detail::sequential;
-} // end namespace sequential
-} // end namespace detail
-} // end namespace system
-} // end namespace cusp
 
-// now get all the algorithm definitions
 
-#include <cusp/system/detail/sequential/elementwise.h>
-#include <cusp/system/detail/sequential/multiply.h>
-#include <cusp/system/detail/sequential/transpose.h>
+template<typename DerivedPolicy>
+inline __host__ __device__
+void *malloc(execution_policy<DerivedPolicy> &, std::size_t n)
+{
+#if !defined(__CUDA_ARCH__) || (__CUDA_ARCH__ >= 200)
+  return std::malloc(n);
+#else
+  return 0;
+#endif
+} // end mallc()
 
+
+template<typename DerivedPolicy, typename Pointer>
+inline __host__ __device__
+void free(sequential::execution_policy<DerivedPolicy> &, Pointer ptr)
+{
+#if !defined(__CUDA_ARCH__) || (__CUDA_ARCH__ >= 200)
+  std::free(thrust::raw_pointer_cast(ptr));
+#endif
+} // end mallc()
+
+
+} // end sequential
+} // end detail
+} // end system
+} // end thrust
 

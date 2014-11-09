@@ -56,22 +56,28 @@ template<typename MatrixType> struct is_hyb     : is_matrix_type<MatrixType,hyb_
 template<typename IndexType, typename ValueType, typename MemorySpace, typename FormatTag> struct matrix_type {};
 
 template<typename IndexType, typename ValueType, typename MemorySpace>
-struct matrix_type<IndexType,ValueType,MemorySpace,array2d_format>{ typedef cusp::array2d<ValueType,MemorySpace,cusp::row_major> type; };
+struct matrix_type<IndexType,ValueType,MemorySpace,array2d_format>
+{ typedef cusp::array2d<ValueType,MemorySpace,cusp::row_major> type; };
 
 template<typename IndexType, typename ValueType, typename MemorySpace>
-struct matrix_type<IndexType,ValueType,MemorySpace,dia_format>{ typedef cusp::dia_matrix<IndexType,ValueType,MemorySpace> type; };
+struct matrix_type<IndexType,ValueType,MemorySpace,dia_format>
+{ typedef cusp::dia_matrix<IndexType,ValueType,MemorySpace> type; };
 
 template<typename IndexType, typename ValueType, typename MemorySpace>
-struct matrix_type<IndexType,ValueType,MemorySpace,coo_format>{ typedef cusp::coo_matrix<IndexType,ValueType,MemorySpace> type; };
+struct matrix_type<IndexType,ValueType,MemorySpace,coo_format>
+{ typedef cusp::coo_matrix<IndexType,ValueType,MemorySpace> type; };
 
 template<typename IndexType, typename ValueType, typename MemorySpace>
-struct matrix_type<IndexType,ValueType,MemorySpace,csr_format>{ typedef cusp::csr_matrix<IndexType,ValueType,MemorySpace> type; };
+struct matrix_type<IndexType,ValueType,MemorySpace,csr_format>
+{ typedef cusp::csr_matrix<IndexType,ValueType,MemorySpace> type; };
 
 template<typename IndexType, typename ValueType, typename MemorySpace>
-struct matrix_type<IndexType,ValueType,MemorySpace,ell_format>{ typedef cusp::ell_matrix<IndexType,ValueType,MemorySpace> type; };
+struct matrix_type<IndexType,ValueType,MemorySpace,ell_format>
+{ typedef cusp::ell_matrix<IndexType,ValueType,MemorySpace> type; };
 
 template<typename IndexType, typename ValueType, typename MemorySpace>
-struct matrix_type<IndexType,ValueType,MemorySpace,hyb_format>{ typedef cusp::hyb_matrix<IndexType,ValueType,MemorySpace> type; };
+struct matrix_type<IndexType,ValueType,MemorySpace,hyb_format>
+{ typedef cusp::hyb_matrix<IndexType,ValueType,MemorySpace> type; };
 
 template<typename MatrixType, typename FormatTag>
 struct as_matrix_type

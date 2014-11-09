@@ -19,14 +19,10 @@
 
 #include <cusp/copy.h>
 #include <cusp/format.h>
-#include <cusp/coo_matrix.h>
-#include <cusp/csr_matrix.h>
 #include <cusp/sort.h>
 
 #include <cusp/blas/blas.h>
 #include <cusp/detail/format_utils.h>
-#include <cusp/detail/device/conversion_utils.h>
-#include <cusp/detail/host/convert.h>
 
 #include <thrust/count.h>
 #include <thrust/gather.h>
@@ -81,8 +77,8 @@ void ell_to_coo(thrust::execution_policy<DerivedPolicy>& exec,
 
     // copy valid entries to COO format
     thrust::copy_if
-    (thrust::make_permutation_iterator(thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, src.column_indices.values.begin(), src.values.values.begin())), thrust::make_transform_iterator(thrust::counting_iterator<IndexType>(0), transpose_index_functor<IndexType>(pitch, num_entries_per_row))),
-     thrust::make_permutation_iterator(thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, src.column_indices.values.begin(), src.values.values.begin())), thrust::make_transform_iterator(thrust::counting_iterator<IndexType>(0), transpose_index_functor<IndexType>(pitch, num_entries_per_row))) + src.column_indices.values.size(),
+    (thrust::make_permutation_iterator(thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, src.column_indices.values.begin(), src.values.values.begin())), thrust::make_transform_iterator(thrust::counting_iterator<IndexType>(0), transpose_index_functor<IndexType,cusp::column_major,cusp::row_major>(src.values.num_rows, src.values.num_cols, src.values.pitch))),
+     thrust::make_permutation_iterator(thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, src.column_indices.values.begin(), src.values.values.begin())), thrust::make_transform_iterator(thrust::counting_iterator<IndexType>(0), transpose_index_functor<IndexType,cusp::column_major,cusp::row_major>(src.values.num_rows, src.values.num_cols, src.values.pitch))) + src.column_indices.values.size(),
      thrust::make_zip_iterator(thrust::make_tuple(dst.row_indices.begin(), dst.column_indices.begin(), dst.values.begin())),
      is_valid_ell_index<IndexType>(src.num_rows));
 }
@@ -120,8 +116,8 @@ void ell_to_csr(thrust::execution_policy<DerivedPolicy>& exec,
 
     // copy valid entries to mixed COO/CSR format
     thrust::copy_if
-    (thrust::make_permutation_iterator(thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, src.column_indices.values.begin(), src.values.values.begin())), thrust::make_transform_iterator(thrust::counting_iterator<IndexType>(0), transpose_index_functor<IndexType>(pitch, num_entries_per_row))),
-     thrust::make_permutation_iterator(thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, src.column_indices.values.begin(), src.values.values.begin())), thrust::make_transform_iterator(thrust::counting_iterator<IndexType>(0), transpose_index_functor<IndexType>(pitch, num_entries_per_row))) + src.column_indices.values.size(),
+    (thrust::make_permutation_iterator(thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, src.column_indices.values.begin(), src.values.values.begin())), thrust::make_transform_iterator(thrust::counting_iterator<IndexType>(0), transpose_index_functor<IndexType,cusp::column_major,cusp::row_major>(src.values.num_rows, src.values.num_cols, src.values.pitch))),
+     thrust::make_permutation_iterator(thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, src.column_indices.values.begin(), src.values.values.begin())), thrust::make_transform_iterator(thrust::counting_iterator<IndexType>(0), transpose_index_functor<IndexType,cusp::column_major,cusp::row_major>(src.values.num_rows, src.values.num_cols, src.values.pitch))) + src.column_indices.values.size(),
      thrust::make_zip_iterator(thrust::make_tuple(row_indices.begin(), dst.column_indices.begin(), dst.values.begin())),
      is_valid_ell_index<IndexType>(src.num_rows));
 
@@ -140,7 +136,7 @@ void ell_to_hyb(thrust::execution_policy<DerivedPolicy>& exec,
                src.num_entries, 0,
                src.column_indices.num_cols);
 
-    cusp::copy(src, dst.ell);
+    cusp::copy(exec, src, dst.ell);
 }
 
 } // end namespace generic

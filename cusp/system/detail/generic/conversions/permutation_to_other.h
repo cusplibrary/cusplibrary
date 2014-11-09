@@ -19,14 +19,10 @@
 
 #include <cusp/copy.h>
 #include <cusp/format.h>
-#include <cusp/coo_matrix.h>
-#include <cusp/csr_matrix.h>
 #include <cusp/sort.h>
 
 #include <cusp/blas/blas.h>
 #include <cusp/detail/format_utils.h>
-#include <cusp/detail/device/conversion_utils.h>
-#include <cusp/detail/host/convert.h>
 
 #include <thrust/count.h>
 #include <thrust/gather.h>
