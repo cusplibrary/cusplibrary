@@ -22,6 +22,8 @@
 
 #include <cusp/detail/config.h>
 
+#include <cusp/execution_policy.h>
+
 namespace cusp
 {
 
@@ -48,6 +50,10 @@ namespace cusp
  */
 template <typename SourceType, typename DestinationType>
 void convert(const SourceType& src, DestinationType& dst);
+
+template <typename DerivedPolicy, typename SourceType, typename DestinationType>
+void convert(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+             const SourceType& src, DestinationType& dst);
 
 /*! \}
  */

@@ -74,6 +74,48 @@ struct absolute : public thrust::unary_function<T,T>
     }
 };
 
+template <typename T, typename BinaryFunction>
+struct base_functor : public thrust::unary_function<T,T>
+{
+    const T value;
+    BinaryFunction op;
+
+    base_functor(const T value) : value(value) {}
+
+    T operator()(const T x)
+    {
+        return op(value,x);
+    }
+};
+
+template <typename T>
+struct modulus_value : public base_functor< T, thrust::modulus<T> >
+{
+    typedef base_functor< T,thrust::modulus<T> > Parent;
+    modulus_value(const T value) : Parent(value) {}
+};
+
+template <typename T>
+struct divide_value : public base_functor< T, thrust::divides<T> >
+{
+    typedef base_functor< T,thrust::divides<T> > Parent;
+    divide_value(const T value) : Parent(value) {}
+};
+
+template <typename T, typename BinaryFunction>
+struct combine_tuple_base_functor : public thrust::unary_function< thrust::tuple<T,T>,T >
+{
+    BinaryFunction op;
+
+    T operator()(const thrust::tuple<T,T>& t)
+    {
+        return op(thrust::get<0>(t),thrust::get<1>(t));
+    }
+};
+
+template <typename T>
+struct sum_tuple_functor : public combine_tuple_base_functor< T,thrust::plus<T> > {};
+
 // maximum<T> returns the largest of two numbers
 template <typename T>
 struct maximum : public thrust::binary_function<T,T,T>

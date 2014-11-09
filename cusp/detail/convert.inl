@@ -14,46 +14,59 @@
  *  limitations under the License.
  */
 
-#include <cusp/detail/dispatch/convert.h>
 
-#include <cusp/copy.h>
+#include <thrust/detail/config.h>
+#include <thrust/system/detail/generic/select_system.h>
+
+#include <cusp/convert.h>
+
+#include <cusp/detail/type_traits.h>
+#include <cusp/system/detail/adl/convert.h>
+#include <cusp/system/detail/generic/convert.h>
 
 namespace cusp
 {
-namespace detail
-{
+// namespace detail
+// {
+//
+// // same format
+// template <typename SourceType, typename DestinationType, typename Format>
+// void convert(thrust::execution_policy<DerivedPolicy>& exec,
+//              const SourceType& src, DestinationType& dst,
+//              Format format1, Format format2)
+// {
+//     cusp::copy(exec, src, dst);
+// }
+//
+// } // end namespace detail
 
-// same format
-template <typename SourceType, typename DestinationType,
-         typename T1>
-void convert(const SourceType& src, DestinationType& dst,
-             T1, T1)
-{
-    cusp::copy(src, dst);
-}
-
-// different formats
-template <typename SourceType, typename DestinationType,
-         typename T1, typename T2>
-void convert(const SourceType& src, DestinationType& dst,
-             T1, T2)
-{
-    cusp::detail::dispatch::convert(src, dst,
-                                    typename SourceType::memory_space(),
-                                    typename DestinationType::memory_space());
-}
-
-} // end namespace detail
-
-/////////////////
-// Entry Point //
-/////////////////
 template <typename SourceType, typename DestinationType>
 void convert(const SourceType& src, DestinationType& dst)
 {
-    cusp::detail::convert(src, dst,
-                          typename SourceType::format(),
-                          typename DestinationType::format());
+    using thrust::system::detail::generic::select_system;
+
+    typedef typename SourceType::memory_space System1;
+    typedef typename DestinationType::memory_space System2;
+
+    System1 system1;
+    System2 system2;
+
+    cusp::convert(select_system(system1,system2), src, dst);
+}
+
+template <typename DerivedPolicy, typename SourceType, typename DestinationType>
+void convert(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+             const SourceType& src, DestinationType& dst)
+{
+    using cusp::system::detail::generic::convert;
+
+    typedef typename SourceType::format      Format1;
+    typedef typename DestinationType::format Format2;
+
+    Format1 format1;
+    Format2 format2;
+
+    convert(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), src, dst, format1, format2);
 }
 
 } // end namespace cusp

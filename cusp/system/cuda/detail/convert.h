@@ -16,21 +16,6 @@
 
 #pragma once
 
-/*! \file thrust/system/tbb/execution_policy.h
- *  \brief Execution policies for Thrust's OpenMP system.
- */
+#include <cusp/detail/config.h>
 
-#include <thrust/detail/config.h>
-
-// get the execution policies definitions first
-#include <thrust/system/omp/detail/execution_policy.h>
-
-// get the definition of par
-#include <thrust/system/omp/detail/par.h>
-
-// now get all the algorithm definitions
-
-#include <cusp/system/omp/detail/convert.h>
-#include <cusp/system/omp/detail/elementwise.h>
-#include <cusp/system/omp/detail/multiply.h>
-#include <cusp/system/omp/detail/transpose.h>
+// this system has no special version of this algorithm

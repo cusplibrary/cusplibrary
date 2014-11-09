@@ -65,6 +65,48 @@ struct row_operator : public std::unary_function<size_t,IndexType>
 };
 
 template <typename IndexType>
+struct occupied_diagonal_functor
+{
+    typedef IndexType result_type;
+
+    const   IndexType num_rows;
+
+    occupied_diagonal_functor(const IndexType num_rows)
+        : num_rows(num_rows) {}
+
+    template <typename Tuple>
+    __host__ __device__
+    IndexType operator()(const Tuple& t) const
+    {
+        const IndexType i = thrust::get<0>(t);
+        const IndexType j = thrust::get<1>(t);
+
+        return j-i+num_rows;
+    }
+};
+
+struct speed_threshold_functor
+{
+    size_t num_rows;
+    float  relative_speed;
+    size_t breakeven_threshold;
+
+    speed_threshold_functor(const size_t num_rows, const float relative_speed, const size_t breakeven_threshold)
+        : num_rows(num_rows),
+          relative_speed(relative_speed),
+          breakeven_threshold(breakeven_threshold)
+    {}
+
+    template <typename IndexType>
+    __host__ __device__
+    bool operator()(const IndexType rows) const
+    {
+        return relative_speed * (num_rows-rows) < num_rows || (size_t) (num_rows-rows) < breakeven_threshold;
+    }
+};
+
+
+template <typename IndexType>
 struct tuple_equal_to : public thrust::unary_function<thrust::tuple<IndexType,IndexType>,bool>
 {
     __host__ __device__
@@ -117,9 +159,9 @@ void extract_diagonal(const Matrix& A, Array& output, cusp::coo_format)
     thrust::scatter_if(A.values.begin(), A.values.end(),
                        A.row_indices.begin(),
                        thrust::make_transform_iterator(
-                         thrust::make_zip_iterator(
-                           thrust::make_tuple(A.row_indices.begin(), A.column_indices.begin())),
-                         tuple_equal_to<IndexType>()),
+                           thrust::make_zip_iterator(
+                               thrust::make_tuple(A.row_indices.begin(), A.column_indices.begin())),
+                           tuple_equal_to<IndexType>()),
                        output.begin());
 }
 
@@ -141,9 +183,9 @@ void extract_diagonal(const Matrix& A, Array& output, cusp::csr_format)
     thrust::scatter_if(A.values.begin(), A.values.end(),
                        row_indices.begin(),
                        thrust::make_transform_iterator(
-                         thrust::make_zip_iterator(
-                           thrust::make_tuple(row_indices.begin(), A.column_indices.begin())),
-                         tuple_equal_to<IndexType>()),
+                           thrust::make_zip_iterator(
+                               thrust::make_tuple(row_indices.begin(), A.column_indices.begin())),
+                           tuple_equal_to<IndexType>()),
                        output.begin());
 }
 
@@ -223,6 +265,140 @@ void extract_diagonal(const Matrix& A, Array& output)
     // dispatch on matrix format
     extract_diagonal(A, output, typename Matrix::format());
 }
+
+template <typename DerivedPolicy, typename ArrayType1, typename ArrayType2>
+size_t count_diagonals(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                       const size_t num_rows,
+                       const size_t num_cols,
+                       const size_t num_entries,
+                       const ArrayType1& row_indices,
+                       const ArrayType2& column_indices )
+{
+    typedef typename ArrayType1::value_type IndexType;
+
+    cusp::array1d<IndexType,cusp::device_memory> values(num_rows+num_cols,IndexType(0));
+
+    thrust::scatter(exec,
+                    thrust::constant_iterator<IndexType>(1),
+                    thrust::constant_iterator<IndexType>(1)+num_entries,
+                    thrust::make_transform_iterator(thrust::make_zip_iterator( thrust::make_tuple( row_indices.begin(), column_indices.begin() ) ),
+                            occupied_diagonal_functor<IndexType>(num_rows)),
+                    values.begin());
+
+    return thrust::reduce(exec, values.begin(), values.end());
+}
+
+template <typename ArrayType1, typename ArrayType2>
+size_t count_diagonals(const size_t num_rows,
+                       const size_t num_cols,
+                       const size_t num_entries,
+                       const ArrayType1& row_indices,
+                       const ArrayType2& column_indices )
+{
+  using thrust::system::detail::generic::select_system;
+
+  typedef typename ArrayType::memory_space System;
+
+  System system;
+
+  return count_diagonals(select_system(system), num_rows, num_cols, num_entries, row_indices, column_indices);
+}
+
+template <typename DerivedPolicy, typename ArrayType>
+size_t compute_max_entries_per_row(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                                   const ArrayType& row_offsets)
+{
+    typedef typename ArrayType::value_type IndexType;
+
+    size_t max_entries_per_row =
+        thrust::inner_product(exec, row_offsets.begin() + 1, row_offsets.end(),
+                              row_offsets.begin(),
+                              IndexType(0),
+                              thrust::maximum<IndexType>(),
+                              thrust::minus<IndexType>());
+
+    return max_entries_per_row;
+}
+
+template <typename DerivedPolicy, typename ArrayType>
+size_t compute_max_entries_per_row(const ArrayType& row_offsets )
+{
+  using thrust::system::detail::generic::select_system;
+
+  typedef typename ArrayType::memory_space System;
+
+  System system;
+
+  return compute_max_entries_per_row(select_system(system), row_offsets);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//! Compute Optimal Number of Columns per Row in the ELL part of the HYB format
+//! Examines the distribution of nonzeros per row of the input CSR matrix to find
+//! the optimal tradeoff between the ELL and COO portions of the hybrid (HYB)
+//! sparse matrix format under the assumption that ELL performance is a fixed
+//! multiple of COO performance.  Furthermore, since ELL performance is also
+//! sensitive to the absolute number of rows (and COO is not), a threshold is
+//! used to ensure that the ELL portion contains enough rows to be worthwhile.
+//! The default values were chosen empirically for a GTX280.
+//!
+//! @param csr                  CSR matrix
+//! @param relative_speed       Speed of ELL relative to COO (e.g. 2.0 -> ELL is twice as fast)
+//! @param breakeven_threshold  Minimum threshold at which ELL is faster than COO
+////////////////////////////////////////////////////////////////////////////////
+template <typename DerivedPolicy, typename ArrayType>
+size_t compute_optimal_entries_per_row(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                                       const ArrayType& row_offsets,
+                                       float relative_speed = 3.0f,
+                                       size_t breakeven_threshold = 4096)
+{
+    typedef typename ArrayType::value_type IndexType;
+
+    const size_t num_rows = row_offsets.size()-1;
+
+    // compute maximum row length
+    IndexType max_cols_per_row = compute_max_entries_per_row(row_offsets);
+
+    // allocate storage for the cumulative histogram and histogram
+    cusp::array1d<IndexType,cusp::device_memory> cumulative_histogram(max_cols_per_row + 1, IndexType(0));
+
+    // compute distribution of nnz per row
+    cusp::array1d<IndexType,cusp::device_memory> entries_per_row(num_rows);
+    thrust::adjacent_difference( row_offsets.begin()+1, row_offsets.end(), entries_per_row.begin() );
+
+    // sort data to bring equal elements together
+    thrust::sort(entries_per_row.begin(), entries_per_row.end());
+
+    // find the end of each bin of values
+    thrust::counting_iterator<IndexType> search_begin(0);
+    thrust::upper_bound(entries_per_row.begin(),
+                        entries_per_row.end(),
+                        search_begin,
+                        search_begin + max_cols_per_row + 1,
+                        cumulative_histogram.begin());
+
+    // compute optimal ELL column size
+    IndexType num_cols_per_row = thrust::find_if( cumulative_histogram.begin(), cumulative_histogram.end()-1,
+                                 speed_threshold_functor(num_rows, relative_speed, breakeven_threshold) )
+                                 - cumulative_histogram.begin();
+
+    return num_cols_per_row;
+}
+
+template <typename ArrayType>
+size_t compute_optimal_entries_per_row(const ArrayType& row_offsets,
+                                       float relative_speed = 3.0f,
+                                       size_t breakeven_threshold = 4096)
+{
+  using thrust::system::detail::generic::select_system;
+
+  typedef typename ArrayType::memory_space System;
+
+  System system;
+
+  return compute_optimal_entries_per_row(select_system(system), row_offsets, relative_speed, breakeven_threshold);
+}
+
 
 } // end namespace detail
 } // end namespace cusp

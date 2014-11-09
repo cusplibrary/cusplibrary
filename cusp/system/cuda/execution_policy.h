@@ -30,6 +30,7 @@
 
 // now get all the algorithm definitions
 
+#include <cusp/system/cuda/detail/convert.h>
 #include <cusp/system/cuda/detail/elementwise.h>
 #include <cusp/system/cuda/detail/multiply.h>
 #include <cusp/system/cuda/detail/transpose.h>

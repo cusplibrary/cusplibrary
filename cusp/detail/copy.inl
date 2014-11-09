@@ -38,71 +38,78 @@ void copy_matrix_dimensions(const T1& src, T2& dst)
     dst.num_entries = src.num_entries;
 }
 
-template <typename T1, typename T2>
-void copy(const T1& src, T2& dst,
+template <typename DerivedPolicy, typename T1, typename T2>
+void copy(thrust::execution_policy<DerivedPolicy>& exec,
+          const T1& src, T2& dst,
           cusp::coo_format,
           cusp::coo_format)
 {
     copy_matrix_dimensions(src, dst);
-    cusp::copy(src.row_indices,    dst.row_indices);
-    cusp::copy(src.column_indices, dst.column_indices);
-    cusp::copy(src.values,         dst.values);
+    cusp::copy(exec, src.row_indices,    dst.row_indices);
+    cusp::copy(exec, src.column_indices, dst.column_indices);
+    cusp::copy(exec, src.values,         dst.values);
 }
 
-template <typename T1, typename T2>
-void copy(const T1& src, T2& dst,
+template <typename DerivedPolicy, typename T1, typename T2>
+void copy(thrust::execution_policy<DerivedPolicy>& exec,
+          const T1& src, T2& dst,
           cusp::csr_format,
           cusp::csr_format)
 {
     copy_matrix_dimensions(src, dst);
-    cusp::copy(src.row_offsets,    dst.row_offsets);
-    cusp::copy(src.column_indices, dst.column_indices);
-    cusp::copy(src.values,         dst.values);
+    cusp::copy(exec, src.row_offsets,    dst.row_offsets);
+    cusp::copy(exec, src.column_indices, dst.column_indices);
+    cusp::copy(exec, src.values,         dst.values);
 }
 
-template <typename T1, typename T2>
-void copy(const T1& src, T2& dst,
+template <typename DerivedPolicy, typename T1, typename T2>
+void copy(thrust::execution_policy<DerivedPolicy>& exec,
+          const T1& src, T2& dst,
           cusp::dia_format,
           cusp::dia_format)
 {
     copy_matrix_dimensions(src, dst);
-    cusp::copy(src.diagonal_offsets, dst.diagonal_offsets);
-    cusp::copy(src.values,           dst.values);
+    cusp::copy(exec, src.diagonal_offsets, dst.diagonal_offsets);
+    cusp::copy(exec, src.values,           dst.values);
 }
 
-template <typename T1, typename T2>
-void copy(const T1& src, T2& dst,
+template <typename DerivedPolicy, typename T1, typename T2>
+void copy(thrust::execution_policy<DerivedPolicy>& exec,
+          const T1& src, T2& dst,
           cusp::ell_format,
           cusp::ell_format)
 {
     copy_matrix_dimensions(src, dst);
-    cusp::copy(src.column_indices, dst.column_indices);
-    cusp::copy(src.values,         dst.values);
+    cusp::copy(exec, src.column_indices, dst.column_indices);
+    cusp::copy(exec, src.values,         dst.values);
 }
 
-template <typename T1, typename T2>
-void copy(const T1& src, T2& dst,
+template <typename DerivedPolicy, typename T1, typename T2>
+void copy(thrust::execution_policy<DerivedPolicy>& exec,
+          const T1& src, T2& dst,
           cusp::hyb_format,
           cusp::hyb_format)
 {
     copy_matrix_dimensions(src, dst);
-    cusp::copy(src.ell, dst.ell);
-    cusp::copy(src.coo, dst.coo);
+    cusp::copy(exec, src.ell, dst.ell);
+    cusp::copy(exec, src.coo, dst.coo);
 }
 
-template <typename T1, typename T2>
-void copy(const T1& src, T2& dst,
+template <typename DerivedPolicy, typename T1, typename T2>
+void copy(thrust::execution_policy<DerivedPolicy>& exec,
+          const T1& src, T2& dst,
           cusp::array1d_format,
           cusp::array1d_format)
 {
     dst.resize(src.size());
-    thrust::copy(src.begin(), src.end(), dst.begin());
+    thrust::copy(exec, src.begin(), src.end(), dst.begin());
 }
 
 
 // same orientation
-template <typename T1, typename T2, typename Orientation>
-void copy_array2d(const T1& src, T2& dst, Orientation)
+template <typename DerivedPolicy, typename T1, typename T2, typename Orientation>
+void copy_array2d(thrust::execution_policy<DerivedPolicy>& exec,
+                  const T1& src, T2& dst, Orientation)
 {
     // will preserve destination pitch if possible
     dst.resize(src.num_rows, src.num_cols);
@@ -119,14 +126,17 @@ void copy_array2d(const T1& src, T2& dst, Orientation)
         cusp::detail::logical_to_physical_functor<size_t, Orientation> func1(src.num_rows, src.num_cols, src.pitch);
         cusp::detail::logical_to_physical_functor<size_t, Orientation> func2(dst.num_rows, dst.num_cols, dst.pitch);
 
-        thrust::copy(thrust::make_permutation_iterator(src.values.begin(), thrust::make_transform_iterator(begin, func1)),
+        thrust::copy(exec,
+                     thrust::make_permutation_iterator(src.values.begin(), thrust::make_transform_iterator(begin, func1)),
                      thrust::make_permutation_iterator(src.values.begin(), thrust::make_transform_iterator(end,   func1)),
                      thrust::make_permutation_iterator(dst.values.begin(), thrust::make_transform_iterator(begin, func2)));
     }
 }
 
-template <typename T1, typename T2, typename Orientation1, typename Orientation2>
-void copy_array2d(const T1& src, T2& dst, Orientation1, Orientation2)
+template <typename DerivedPolicy, typename T1, typename T2,
+          typename Orientation1, typename Orientation2>
+void copy_array2d(thrust::execution_policy<DerivedPolicy>& exec,
+                  const T1& src, T2& dst, Orientation1, Orientation2)
 {
     // note: pitch does not carry over when orientation differs
     dst.resize(src.num_rows, src.num_cols);
@@ -138,40 +148,58 @@ void copy_array2d(const T1& src, T2& dst, Orientation1, Orientation2)
     cusp::detail::logical_to_other_physical_functor<size_t, Orientation2, Orientation1> func1(src.num_rows, src.num_cols, src.pitch);
     cusp::detail::logical_to_physical_functor      <size_t, Orientation2>               func2(dst.num_rows, dst.num_cols, dst.pitch);
 
-    thrust::copy(thrust::make_permutation_iterator(src.values.begin(), thrust::make_transform_iterator(begin, func1)),
+    thrust::copy(exec,
+                 thrust::make_permutation_iterator(src.values.begin(), thrust::make_transform_iterator(begin, func1)),
                  thrust::make_permutation_iterator(src.values.begin(), thrust::make_transform_iterator(end,   func1)),
                  thrust::make_permutation_iterator(dst.values.begin(), thrust::make_transform_iterator(begin, func2)));
 }
 
-template <typename T1, typename T2>
-void copy(const T1& src, T2& dst,
+template <typename DerivedPolicy, typename T1, typename T2>
+void copy(thrust::execution_policy<DerivedPolicy>& exec,
+          const T1& src, T2& dst,
           cusp::array2d_format,
           cusp::array2d_format)
 {
     if (thrust::detail::is_same<typename T1::orientation, typename T2::orientation>::value)
     {
-        copy_array2d(src, dst,
-            typename T1::orientation());
+        copy_array2d(exec, src, dst, typename T1::orientation());
     }
     else
     {
-        copy_array2d(src, dst,
-            typename T1::orientation(),
-            typename T2::orientation());
+        copy_array2d(exec, src, dst, typename T1::orientation(), typename T2::orientation());
     }
 }
 
 } // end namespace detail
 
 
-/////////////////
-// Entry Point //
-/////////////////
-
-template <typename T1, typename T2>
-void copy(const T1& src, T2& dst)
+template <typename SourceType, typename DestinationType>
+void copy(const SourceType& src, DestinationType& dst)
 {
-    cusp::detail::copy(src, dst, typename T1::format(), typename T2::format());
+    using thrust::system::detail::generic::select_system;
+
+    typedef typename SourceType::memory_space System1;
+    typedef typename DestinationType::memory_space System2;
+
+    System1 system1;
+    System2 system2;
+
+    cusp::copy(select_system(system1,system2), src, dst);
+}
+
+template <typename DerivedPolicy, typename SourceType, typename DestinationType>
+void copy(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+             const SourceType& src, DestinationType& dst)
+{
+    using cusp::detail::copy;
+
+    typedef typename SourceType::format Format1;
+    typedef typename DestinationType::format Format2;
+
+    Format1 format1;
+    Format2 format2;
+
+    copy(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), src, dst, format1, format2);
 }
 
 } // end namespace cusp
