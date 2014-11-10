@@ -242,7 +242,7 @@ size_t compute_max_entries_per_row(const thrust::detail::execution_policy_base<D
     return max_entries_per_row;
 }
 
-template <typename DerivedPolicy, typename ArrayType>
+template <typename ArrayType>
 size_t compute_max_entries_per_row(const ArrayType& row_offsets )
 {
   using thrust::system::detail::generic::select_system;

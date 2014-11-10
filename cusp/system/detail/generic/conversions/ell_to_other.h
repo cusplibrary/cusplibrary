@@ -48,16 +48,17 @@ namespace detail
 namespace generic
 {
 
-template <typename DerivedPolicy,
-          typename SourceType,
-          typename DestinationType>
-void ell_to_coo(thrust::execution_policy<DerivedPolicy>& exec,
-                const SourceType& src, DestinationType& dst)
+template <typename DerivedPolicy, typename SourceType, typename DestinationType>
+typename enable_if_same_system<SourceType,DestinationType>::type
+convert(thrust::execution_policy<DerivedPolicy>& exec,
+             const SourceType& src,
+             DestinationType& dst,
+             cusp::ell_format&,
+             cusp::coo_format&)
 {
     typedef typename DestinationType::index_type IndexType;
 
-    const IndexType pitch               = src.column_indices.pitch;
-    const IndexType num_entries_per_row = src.column_indices.num_cols;
+    const IndexType pitch = src.column_indices.pitch;
 
     // define types used to programatically generate row_indices
     typedef typename thrust::counting_iterator<IndexType> IndexIterator;
@@ -83,11 +84,13 @@ void ell_to_coo(thrust::execution_policy<DerivedPolicy>& exec,
      is_valid_ell_index<IndexType>(src.num_rows));
 }
 
-template <typename DerivedPolicy,
-          typename SourceType,
-          typename DestinationType>
-void ell_to_csr(thrust::execution_policy<DerivedPolicy>& exec,
-                const SourceType& src, DestinationType& dst)
+template <typename DerivedPolicy, typename SourceType, typename DestinationType>
+typename enable_if_same_system<SourceType,DestinationType>::type
+convert(thrust::execution_policy<DerivedPolicy>& exec,
+        const SourceType& src,
+        DestinationType& dst,
+        cusp::ell_format&,
+        cusp::csr_format&)
 {
     typedef typename DestinationType::index_type IndexType;
     typedef typename DestinationType::memory_space MemorySpace;
@@ -124,12 +127,24 @@ void ell_to_csr(thrust::execution_policy<DerivedPolicy>& exec,
     // convert COO row_indices to CSR row_offsets
     cusp::detail::indices_to_offsets(row_indices, dst.row_offsets);
 }
+template <typename DerivedPolicy, typename SourceType, typename DestinationType>
+typename enable_if_same_system<SourceType,DestinationType>::type
+convert(thrust::execution_policy<DerivedPolicy>& exec,
+        const SourceType& src,
+        DestinationType& dst,
+        cusp::ell_format&,
+        cusp::dia_format&,
+        size_t alignment)
+{
+}
 
-template <typename DerivedPolicy,
-          typename SourceType,
-          typename DestinationType>
-void ell_to_hyb(thrust::execution_policy<DerivedPolicy>& exec,
-                const SourceType& src, DestinationType& dst)
+template <typename DerivedPolicy, typename SourceType, typename DestinationType>
+typename enable_if_same_system<SourceType,DestinationType>::type
+convert(thrust::execution_policy<DerivedPolicy>& exec,
+        const SourceType& src,
+        DestinationType& dst,
+        cusp::ell_format&,
+        cusp::hyb_format&)
 {
     // just copy into ell part of destination
     dst.resize(src.num_rows, src.num_cols,

@@ -96,6 +96,15 @@ template<typename MatrixType> struct as_csr_type : as_matrix_type<MatrixType,csr
 template<typename MatrixType> struct as_ell_type : as_matrix_type<MatrixType,ell_format>{};
 template<typename MatrixType> struct as_hyb_type : as_matrix_type<MatrixType,hyb_format>{};
 
+template<typename T1, typename T2, typename T = void>
+  struct enable_if_same_system
+      : thrust::detail::enable_if< thrust::detail::is_same<typename T1::memory_space,typename T2::memory_space>::value, T >
+{};
+template<typename T1, typename T2, typename T = void>
+  struct enable_if_different_system
+      : thrust::detail::enable_if< thrust::detail::is_different<typename T1::memory_space,typename T2::memory_space>::value, T >
+{};
+
 } // end detail
 } // end cusp
 

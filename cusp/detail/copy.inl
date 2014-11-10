@@ -16,8 +16,7 @@
 
 #include <cusp/format.h>
 
-// TODO replace with detail/array2d_utils.h or something
-#include <cusp/array2d.h>
+#include <cusp/detail/array2d_format_utils.h>
 
 #include <thrust/copy.h>
 #include <thrust/gather.h>
@@ -189,7 +188,7 @@ void copy(const SourceType& src, DestinationType& dst)
 
 template <typename DerivedPolicy, typename SourceType, typename DestinationType>
 void copy(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-             const SourceType& src, DestinationType& dst)
+          const SourceType& src, DestinationType& dst)
 {
     using cusp::detail::copy;
 

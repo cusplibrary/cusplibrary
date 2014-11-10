@@ -32,32 +32,47 @@ namespace detail
 namespace generic
 {
 
-template <typename DerivedPolicy,
-          typename SourceType, 
-          typename DestinationType>
-void hyb_to_coo(thrust::execution_policy<DerivedPolicy>& exec,
-                const SourceType& src, DestinationType& dst)
+template <typename DerivedPolicy, typename SourceType, typename DestinationType>
+typename enable_if_same_system<SourceType,DestinationType>::type
+convert(thrust::execution_policy<DerivedPolicy>& exec,
+        const SourceType& src,
+        DestinationType& dst,
+        cusp::hyb_format&,
+        cusp::coo_format&)
 {
     typedef typename SourceType::coo_matrix_type  CooMatrixType;
     typedef typename CooMatrixType::container  CooMatrix;
 
     // convert ell portion to coo
     CooMatrix temp;
-    ell_to_coo(src.ell, temp);
+    cusp::convert(exec, src.ell, temp);
 
     // resize output
     dst.resize(src.num_rows, src.num_cols, temp.num_entries + src.coo.num_entries);
 
     // merge coo matrices together
-    thrust::copy(temp.row_indices.begin(),    temp.row_indices.end(),    dst.row_indices.begin());
-    thrust::copy(temp.column_indices.begin(), temp.column_indices.end(), dst.column_indices.begin());
-    thrust::copy(temp.values.begin(),         temp.values.end(),         dst.values.begin());
-    thrust::copy(src.coo.row_indices.begin(),    src.coo.row_indices.end(),    dst.row_indices.begin()    + temp.num_entries);
-    thrust::copy(src.coo.column_indices.begin(), src.coo.column_indices.end(), dst.column_indices.begin() + temp.num_entries);
-    thrust::copy(src.coo.values.begin(),         src.coo.values.end(),         dst.values.begin()         + temp.num_entries);
+    thrust::copy(exec, temp.row_indices.begin(),       temp.row_indices.end(),       dst.row_indices.begin());
+    thrust::copy(exec, temp.column_indices.begin(),    temp.column_indices.end(),    dst.column_indices.begin());
+    thrust::copy(exec, temp.values.begin(),            temp.values.end(),            dst.values.begin());
+    thrust::copy(exec, src.coo.row_indices.begin(),    src.coo.row_indices.end(),    dst.row_indices.begin()    + temp.num_entries);
+    thrust::copy(exec, src.coo.column_indices.begin(), src.coo.column_indices.end(), dst.column_indices.begin() + temp.num_entries);
+    thrust::copy(exec, src.coo.values.begin(),         src.coo.values.end(),         dst.values.begin()         + temp.num_entries);
 
     if (temp.num_entries > 0 && src.coo.num_entries > 0)
         cusp::sort_by_row_and_column(dst.row_indices, dst.column_indices, dst.values);
+}
+
+template <typename DerivedPolicy, typename SourceType, typename DestinationType>
+typename enable_if_same_system<SourceType,DestinationType>::type
+convert(thrust::execution_policy<DerivedPolicy>& exec,
+        const SourceType& src,
+        DestinationType& dst,
+        cusp::hyb_format&,
+        cusp::dia_format&,
+        size_t alignment)
+{
+    typedef typename SourceType::coo_matrix_type  CooMatrixType;
+    typedef typename CooMatrixType::container  CooMatrix;
 }
 
 

@@ -14,10 +14,11 @@
  *  limitations under the License.
  */
 
-#include <cusp/convert.h>
-
 namespace cusp
 {
+
+// Forward definition
+template <typename T1, typename T2> void convert(const T1&, T2&);
 
 //////////////////
 // Constructors //
@@ -85,4 +86,6 @@ csr_matrix_view<ArrayType1,ArrayType2,ArrayType3,IndexType,ValueType,MemorySpace
 }
 
 } // end namespace cusp
+
+#include <cusp/convert.h>
 

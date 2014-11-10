@@ -18,6 +18,7 @@
 #pragma once
 
 #include <cusp/detail/config.h>
+#include <cusp/detail/type_traits.h>
 
 #include <thrust/execution_policy.h>
 
@@ -33,9 +34,10 @@ namespace generic
 template <typename DerivedPolicy,
           typename SourceType,
           typename DestinationType>
-void convert(thrust::execution_policy<DerivedPolicy>& exec,
-             const SourceType& src, DestinationType& dst,
-             sparse_format&, sparse_format&);
+typename cusp::detail::enable_if_same_system<SourceType,DestinationType>::type
+convert(thrust::execution_policy<DerivedPolicy>& exec,
+        const SourceType& src, DestinationType& dst,
+        known_format&, known_format&);
 
 } // end namespace generic
 } // end namespace detail

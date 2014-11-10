@@ -89,7 +89,7 @@ namespace cusp
  * }
  * \endcode
  */
-template<typename ValueType, class MemorySpace, class Orientation = cusp::row_major>
+template<typename ValueType, typename MemorySpace, typename Orientation = cusp::row_major>
 class array2d : public cusp::detail::matrix_base<int,ValueType,MemorySpace,cusp::array2d_format>
 {
 private:

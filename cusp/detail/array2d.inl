@@ -17,7 +17,7 @@
 namespace cusp
 {
 
-// Forward definition
+// Forward definitions
 template <typename T1, typename T2> void convert(const T1&, T2&);
 
 //////////////////

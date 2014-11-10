@@ -48,11 +48,13 @@ namespace detail
 namespace generic
 {
 
-template <typename DerivedPolicy,
-          typename SourceType,
-          typename DestinationType>
-void csr_to_coo(thrust::execution_policy<DerivedPolicy>& exec,
-                const SourceType& src, DestinationType& dst)
+template <typename DerivedPolicy, typename SourceType, typename DestinationType>
+typename enable_if_same_system<SourceType,DestinationType>::type
+convert(thrust::execution_policy<DerivedPolicy>& exec,
+        const SourceType& src,
+        DestinationType& dst,
+        cusp::csr_format&,
+        cusp::coo_format&)
 {
     dst.resize(src.num_rows, src.num_cols, src.num_entries);
 
@@ -62,12 +64,14 @@ void csr_to_coo(thrust::execution_policy<DerivedPolicy>& exec,
 }
 
 
-template <typename DerivedPolicy,
-          typename SourceType,
-          typename DestinationType>
-void csr_to_dia(thrust::execution_policy<DerivedPolicy>& exec,
-                const SourceType& src, DestinationType& dst,
-                const size_t alignment)
+template <typename DerivedPolicy, typename SourceType, typename DestinationType>
+typename enable_if_same_system<SourceType,DestinationType>::type
+convert(thrust::execution_policy<DerivedPolicy>& exec,
+        const SourceType& src,
+        DestinationType& dst,
+        cusp::csr_format&,
+        cusp::dia_format&,
+        size_t alignment)
 {
     typedef typename DestinationType::index_type IndexType;
     typedef typename DestinationType::value_type ValueType;
@@ -128,13 +132,15 @@ void csr_to_dia(thrust::execution_policy<DerivedPolicy>& exec,
 
 }
 
-template <typename DerivedPolicy,
-          typename SourceType,
-          typename DestinationType>
-void csr_to_ell(thrust::execution_policy<DerivedPolicy>& exec,
-                const SourceType& src, DestinationType& dst,
-                const size_t num_entries_per_row,
-                const size_t alignment)
+template <typename DerivedPolicy, typename SourceType, typename DestinationType>
+typename enable_if_same_system<SourceType,DestinationType>::type
+convert(thrust::execution_policy<DerivedPolicy>& exec,
+        const SourceType& src,
+        DestinationType& dst,
+        cusp::csr_format&,
+        cusp::ell_format&,
+        float  num_entries_per_row,
+        size_t alignment)
 {
     typedef typename DestinationType::index_type IndexType;
     typedef typename DestinationType::value_type ValueType;
@@ -174,13 +180,15 @@ void csr_to_ell(thrust::execution_policy<DerivedPolicy>& exec,
                     dst.values.values.begin());
 }
 
-template <typename DerivedPolicy,
-          typename SourceType,
-          typename DestinationType>
-void csr_to_hyb(thrust::execution_policy<DerivedPolicy>& exec,
-                const SourceType& src, DestinationType& dst,
-                const size_t num_entries_per_row,
-                const size_t alignment)
+template <typename DerivedPolicy, typename SourceType, typename DestinationType>
+typename enable_if_same_system<SourceType,DestinationType>::type
+convert(thrust::execution_policy<DerivedPolicy>& exec,
+        const SourceType& src,
+        DestinationType& dst,
+        cusp::csr_format&,
+        cusp::hyb_format&,
+        float  num_entries_per_row,
+        size_t alignment)
 {
     typedef typename DestinationType::index_type IndexType;
     typedef typename DestinationType::value_type ValueType;

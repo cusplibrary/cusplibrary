@@ -406,7 +406,10 @@ void TestConvertCsrToDiaMatrixHost(void)
     initialize_conversion_example(csr);
 
     // make dia with an alignment of 1
-    cusp::detail::host::convert(csr, dia, cusp::csr_format(), cusp::dia_format(), 3.0, 1);
+    thrust::execution_policy<thrust::system::cpp::detail::tag> policy;
+    cusp::csr_format format1;
+    cusp::dia_format format2;
+    cusp::system::detail::generic::convert(policy, csr, dia, format1, format2, 1);
 
     // compare csr and dia
     ASSERT_EQUAL(dia.num_rows,    csr.num_rows);
@@ -445,7 +448,10 @@ void TestConvertCsrToEllMatrixHost(void)
     initialize_conversion_example(csr);
 
     // make ell with an alignment of 1
-    cusp::detail::host::convert(csr, ell, cusp::csr_format(), cusp::ell_format(), 3.0, 1);
+    thrust::execution_policy<thrust::system::cpp::detail::tag> policy;
+    cusp::csr_format format1;
+    cusp::ell_format format2;
+    cusp::system::detail::generic::convert(policy, csr, ell, format1, format2, 3.0, 1);
 
     const int X = cusp::ell_matrix<int, float, cusp::host_memory>::invalid_index;
 
