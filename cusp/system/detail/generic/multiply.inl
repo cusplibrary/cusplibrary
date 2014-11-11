@@ -28,7 +28,6 @@
 #include <cusp/format.h>
 #include <cusp/coo_matrix.h>
 #include <cusp/csr_matrix.h>
-#include <cusp/print.h>
 
 #include <cusp/detail/utils.h>
 #include <cusp/detail/array2d_format_utils.h>

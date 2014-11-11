@@ -26,7 +26,7 @@
 
 namespace cusp
 {
-  template <typename P,  typename T1, typename T2> void copy(const P&, const T1&, T2&);
+  template <typename P,typename T1,typename T2> void copy(const P&, const T1&, T2&);
 }
 
 #include <cusp/system/detail/generic/conversions/array_to_other.h>
@@ -140,7 +140,13 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
         known_format&,
         known_format&)
 {
-    typename cusp::detail::as_coo_type<SourceType>::type tmp;
+    typedef typename SourceType::memory_space MemorySpace1;
+    typedef typename DestinationType::memory_space MemorySpace2;
+
+    typename DestinationType::rebind<MemorySpace1>::type tmp;
+
+    cusp::convert(exec, src, tmp);
+    cusp::copy(exec, tmp, dst);
 }
 
 } // end namespace generic
