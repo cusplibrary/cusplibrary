@@ -65,7 +65,7 @@ struct max_functor : public thrust::binary_function<T,T,T>
     __host__ __device__
     T operator()(const T col)
     {
-        return max(base, col);
+        return thrust::max(base, col);
     }
 };
 

@@ -127,6 +127,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     // convert COO row_indices to CSR row_offsets
     cusp::detail::indices_to_offsets(row_indices, dst.row_offsets);
 }
+
 template <typename DerivedPolicy, typename SourceType, typename DestinationType>
 typename enable_if_same_system<SourceType,DestinationType>::type
 convert(thrust::execution_policy<DerivedPolicy>& exec,

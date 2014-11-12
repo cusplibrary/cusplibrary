@@ -26,6 +26,7 @@
 
 namespace cusp
 {
+  template <typename T1,typename T2> void copy(const T1&, T2&);
   template <typename P,typename T1,typename T2> void copy(const P&, const T1&, T2&);
 }
 
@@ -51,7 +52,7 @@ typename enable_if_same_system<SourceType,DestinationType>::type
 convert(thrust::execution_policy<DerivedPolicy>& exec,
         const SourceType& src,
         DestinationType& dst,
-        cusp::sparse_format&,
+        cusp::known_format&,
         cusp::dia_format& format2)
 {
     const size_t occupied_diagonals = cusp::detail::count_diagonals(exec, src);
@@ -76,7 +77,7 @@ typename enable_if_same_system<SourceType,DestinationType>::type
 convert(thrust::execution_policy<DerivedPolicy>& exec,
         const SourceType& src,
         DestinationType& dst,
-        cusp::sparse_format&,
+        cusp::known_format&,
         cusp::ell_format& format2)
 {
     const size_t max_entries_per_row = cusp::detail::compute_max_entries_per_row(exec, src);
@@ -101,7 +102,7 @@ typename enable_if_same_system<SourceType,DestinationType>::type
 convert(thrust::execution_policy<DerivedPolicy>& exec,
         const SourceType& src,
         DestinationType& dst,
-        cusp::sparse_format&,
+        cusp::known_format&,
         cusp::hyb_format& format2)
 {
     const float  relative_speed      = 3.0;
@@ -122,14 +123,15 @@ typename enable_if_same_system<SourceType,DestinationType>::type
 convert(thrust::execution_policy<DerivedPolicy>& exec,
         const SourceType& src,
         DestinationType& dst,
-        known_format&,
-        known_format&)
+        known_format& format1,
+        known_format& format2)
 {
     // convert src -> coo_matrix -> dst
     typename cusp::detail::as_coo_type<SourceType>::type tmp;
 
     cusp::convert(exec, src, tmp);
     cusp::convert(exec, tmp, dst);
+
 }
 
 template <typename DerivedPolicy, typename SourceType, typename DestinationType>
@@ -140,13 +142,10 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
         known_format&,
         known_format&)
 {
-    typedef typename SourceType::memory_space MemorySpace1;
-    typedef typename DestinationType::memory_space MemorySpace2;
-
-    typename DestinationType::rebind<MemorySpace1>::type tmp;
+    typename cusp::detail::as_coo_type<SourceType>::type tmp;
 
     cusp::convert(exec, src, tmp);
-    cusp::copy(exec, tmp, dst);
+    cusp::convert(exec, tmp, dst);
 }
 
 } // end namespace generic

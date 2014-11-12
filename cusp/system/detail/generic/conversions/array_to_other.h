@@ -93,9 +93,8 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
         const SourceType& src,
         DestinationType& dst,
         cusp::array2d_format&,
-        cusp::array2d_format&)
+        dia_format&)
 {
-    cusp::copy(exec, src, dst);
 }
 
 template <typename DerivedPolicy, typename SourceType, typename DestinationType>
@@ -103,31 +102,9 @@ typename enable_if_same_system<SourceType,DestinationType>::type
 convert(thrust::execution_policy<DerivedPolicy>& exec,
         const SourceType& src,
         DestinationType& dst,
-        known_format&,
-        array2d_format&)
+        cusp::array2d_format&,
+        cusp::ell_format&)
 {
-    typedef typename SourceType::value_type ValueType;
-    typedef typename SourceType::memory_space MemorySpace;
-
-    cusp::array2d<ValueType,MemorySpace> tmp;
-    cusp::convert(exec, src, tmp);
-    cusp::convert(exec, tmp, dst);
-}
-
-template <typename DerivedPolicy, typename SourceType, typename DestinationType>
-typename enable_if_same_system<SourceType,DestinationType>::type
-convert(thrust::execution_policy<DerivedPolicy>& exec,
-        const SourceType& src,
-        DestinationType& dst,
-        array2d_format&,
-        known_format&)
-{
-    typedef typename SourceType::value_type ValueType;
-    typedef typename SourceType::memory_space MemorySpace;
-
-    cusp::array2d<ValueType,MemorySpace> tmp;
-    cusp::convert(exec, src, tmp);
-    cusp::convert(exec, tmp, dst);
 }
 
 } // end namespace generic
