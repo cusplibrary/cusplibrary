@@ -50,6 +50,21 @@ namespace detail
 namespace generic
 {
 
+template <typename T>
+struct valid_ell_functor : thrust::unary_function<T,T>
+{
+    const size_t num_cols;
+
+    valid_ell_functor(const size_t num_cols)
+        : num_cols(num_cols) {}
+
+    __host__ __device__
+    T operator()(const T col) const
+    {
+        return col >= 0 && col < num_cols ? col : -1;
+    }
+};
+
 template <typename IndexType>
 struct is_valid_ell_index
 {
@@ -219,6 +234,50 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     cusp::detail::indices_to_offsets( row_indices, dst.row_offsets );
 }
 
+template <typename DerivedPolicy, typename SourceType, typename DestinationType>
+typename enable_if_same_system<SourceType,DestinationType>::type
+convert(thrust::execution_policy<DerivedPolicy>& exec,
+        const SourceType& src,
+        DestinationType& dst,
+        cusp::dia_format&,
+        cusp::ell_format&)
+{
+    typedef typename DestinationType::index_type IndexType;
+    typedef typename DestinationType::value_type ValueType;
+    typedef typename DestinationType::memory_space MemorySpace;
+
+    // define types used to programatically generate row_indices
+    typedef typename thrust::counting_iterator<IndexType> IndexIterator;
+    typedef typename thrust::transform_iterator<modulus_value<IndexType>, IndexIterator> RowIndexIterator;
+
+    // define types used to programatically generate column_indices
+    typedef typename cusp::array1d<IndexType,MemorySpace>::const_iterator ConstElementIterator;
+    typedef typename thrust::transform_iterator<divide_value<IndexType>, IndexIterator> DivideIterator;
+    typedef typename thrust::permutation_iterator<ConstElementIterator,DivideIterator> OffsetsPermIterator;
+    typedef typename thrust::tuple<OffsetsPermIterator, RowIndexIterator> IteratorTuple;
+    typedef typename thrust::zip_iterator<IteratorTuple> ZipIterator;
+    typedef typename thrust::transform_iterator<sum_tuple_functor<IndexType>, ZipIterator> ColumnIndexIterator;
+
+    // allocate output storage
+    dst.resize(src.num_rows, src.num_cols, src.num_entries, src.diagonal_offsets.size(), src.values.pitch);
+
+    if( src.num_entries == 0 ) return;
+
+    const IndexType pitch = src.values.pitch;
+    const size_t num_entries   = src.values.num_entries;
+
+    RowIndexIterator row_indices_begin(IndexIterator(0), modulus_value<IndexType>(pitch));
+
+    DivideIterator gather_indices_begin(IndexIterator(0), divide_value<IndexType>(pitch));
+    OffsetsPermIterator offsets_begin(src.diagonal_offsets.begin(), gather_indices_begin);
+    ZipIterator offset_modulus_tuple(thrust::make_tuple(offsets_begin, row_indices_begin));
+    ColumnIndexIterator column_indices_begin(offset_modulus_tuple, sum_tuple_functor<IndexType>());
+
+    thrust::copy(thrust::make_transform_iterator(column_indices_begin, valid_ell_functor<IndexType>(src.num_cols)),
+                 thrust::make_transform_iterator(column_indices_begin, valid_ell_functor<IndexType>(src.num_cols)) + num_entries,
+                 dst.column_indices.values.begin());
+    thrust::copy(src.values.values.begin(), src.values.values.end(), dst.values.values.begin());
+}
 
 } // end namespace generic
 } // end namespace detail

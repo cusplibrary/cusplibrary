@@ -78,8 +78,8 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
 
     // copy valid entries to COO format
     thrust::copy_if
-    (thrust::make_permutation_iterator(thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, src.column_indices.values.begin(), src.values.values.begin())), thrust::make_transform_iterator(thrust::counting_iterator<IndexType>(0), transpose_index_functor<IndexType,cusp::column_major,cusp::row_major>(src.values.num_rows, src.values.num_cols, src.values.pitch))),
-     thrust::make_permutation_iterator(thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, src.column_indices.values.begin(), src.values.values.begin())), thrust::make_transform_iterator(thrust::counting_iterator<IndexType>(0), transpose_index_functor<IndexType,cusp::column_major,cusp::row_major>(src.values.num_rows, src.values.num_cols, src.values.pitch))) + src.column_indices.values.size(),
+    (thrust::make_permutation_iterator(thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, src.column_indices.values.begin(), src.values.values.begin())), thrust::make_transform_iterator(thrust::counting_iterator<IndexType>(0), logical_to_other_physical_functor<IndexType,cusp::row_major,cusp::column_major>(src.values.num_rows, src.values.num_cols, src.values.pitch))),
+     thrust::make_permutation_iterator(thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, src.column_indices.values.begin(), src.values.values.begin())), thrust::make_transform_iterator(thrust::counting_iterator<IndexType>(0), logical_to_other_physical_functor<IndexType,cusp::row_major,cusp::column_major>(src.values.num_rows, src.values.num_cols, src.values.pitch))) + src.column_indices.values.size(),
      thrust::make_zip_iterator(thrust::make_tuple(dst.row_indices.begin(), dst.column_indices.begin(), dst.values.begin())),
      is_valid_ell_index<IndexType>(src.num_rows));
 }
@@ -119,8 +119,8 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
 
     // copy valid entries to mixed COO/CSR format
     thrust::copy_if
-    (thrust::make_permutation_iterator(thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, src.column_indices.values.begin(), src.values.values.begin())), thrust::make_transform_iterator(thrust::counting_iterator<IndexType>(0), transpose_index_functor<IndexType,cusp::column_major,cusp::row_major>(src.values.num_rows, src.values.num_cols, src.values.pitch))),
-     thrust::make_permutation_iterator(thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, src.column_indices.values.begin(), src.values.values.begin())), thrust::make_transform_iterator(thrust::counting_iterator<IndexType>(0), transpose_index_functor<IndexType,cusp::column_major,cusp::row_major>(src.values.num_rows, src.values.num_cols, src.values.pitch))) + src.column_indices.values.size(),
+    (thrust::make_permutation_iterator(thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, src.column_indices.values.begin(), src.values.values.begin())), thrust::make_transform_iterator(thrust::counting_iterator<IndexType>(0), logical_to_other_physical_functor<IndexType,cusp::row_major,cusp::column_major>(src.values.num_rows, src.values.num_cols, src.values.pitch))),
+     thrust::make_permutation_iterator(thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, src.column_indices.values.begin(), src.values.values.begin())), thrust::make_transform_iterator(thrust::counting_iterator<IndexType>(0), logical_to_other_physical_functor<IndexType,cusp::row_major,cusp::column_major>(src.values.num_rows, src.values.num_cols, src.values.pitch))) + src.column_indices.values.size(),
      thrust::make_zip_iterator(thrust::make_tuple(row_indices.begin(), dst.column_indices.begin(), dst.values.begin())),
      is_valid_ell_index<IndexType>(src.num_rows));
 
