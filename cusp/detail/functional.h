@@ -34,7 +34,8 @@ namespace detail
 {
 
 template<typename T>
-struct zero_function : public thrust::unary_function<T,T>
+struct zero_function
+  : public thrust::unary_function<T,T>
 {
     __host__ __device__ T operator()(const T &x) const {
         return T(0);
@@ -43,7 +44,8 @@ struct zero_function : public thrust::unary_function<T,T>
 
 // square<T> computes the square of a number f(x) -> x*x
 template <typename T>
-struct square : public thrust::unary_function<T,T>
+struct square
+  : public thrust::unary_function<T,T>
 {
     __host__ __device__
     T operator()(T x)
@@ -53,7 +55,8 @@ struct square : public thrust::unary_function<T,T>
 };
 
 template <typename T>
-struct sqrt_functor : thrust::unary_function<T,T>
+struct sqrt_functor
+  : thrust::unary_function<T,T>
 {
     __host__ __device__
     T operator()(const T& x) {
@@ -61,10 +64,10 @@ struct sqrt_functor : thrust::unary_function<T,T>
     }
 };
 
-
 // absolute<T> computes the absolute value of a number f(x) -> |x|
 template <typename T>
-struct absolute : public thrust::unary_function<T,T>
+struct absolute
+  : public thrust::unary_function<T,T>
 {
     __host__ __device__
     T operator()(T x)
@@ -74,7 +77,8 @@ struct absolute : public thrust::unary_function<T,T>
 };
 
 template <typename T, typename BinaryFunction>
-struct base_functor : public thrust::unary_function<T,T>
+struct base_functor
+  : public BinaryFunction
 {
     const T value;
     BinaryFunction op;
@@ -82,99 +86,73 @@ struct base_functor : public thrust::unary_function<T,T>
     base_functor(const T value) : value(value) {}
 
     __host__ __device__
-    T operator()(const T x)
+    typename BinaryFunction::result_type
+    operator()(const T x)
     {
         return op(x, value);
     }
 };
 
 template <typename T>
-struct modulus_value : public base_functor< T, thrust::modulus<T> >
-{
-    typedef base_functor< T,thrust::modulus<T> > Parent;
-    modulus_value(const T value) : Parent(value) {}
-};
-
-template <typename T>
-struct divide_value : public base_functor< T, thrust::divides<T> >
+struct divide_value
+  : public base_functor< T, thrust::divides<T> >
 {
     typedef base_functor< T,thrust::divides<T> > Parent;
     divide_value(const T value) : Parent(value) {}
 };
 
 template <typename T>
-struct greater_than_or_equal_to
+struct modulus_value
+  : public base_functor< T, thrust::modulus<T> >
 {
-    const T num;
-
-    greater_than_or_equal_to(const T num)
-        : num(num) {}
-
-    __host__ __device__ bool operator()(const T &x) const {
-        return x >= num;
-    }
+    typedef base_functor< T,thrust::modulus<T> > Parent;
+    modulus_value(const T value) : Parent(value) {}
 };
 
 template <typename T>
-struct less_than
+struct multiplies_value
+  : public base_functor< T, thrust::multiplies<T> >
 {
-    const T num;
-
-    less_than(const T num)
-        : num(num) {}
-
-    __host__ __device__ bool operator()(const T &x) const {
-        return x < num;
-    }
+    typedef base_functor< T,thrust::multiplies<T> > Parent;
+    multiplies_value(const T value) : Parent(value) {}
 };
 
-template <typename IndexType>
-struct is_positive
+template <typename T>
+struct greater_value
+  : public base_functor< T, thrust::greater<T> >
 {
-    __host__ __device__
-    bool operator()(const IndexType x)
-    {
-        return x > 0;
-    }
+    typedef base_functor< T,thrust::greater<T> > Parent;
+    greater_value(const T value) : Parent(value) {}
 };
 
-template <typename IndexType>
-struct empty_row_functor
+template <typename T>
+struct greater_equal_value
+  : public base_functor< T, thrust::greater_equal<T> >
 {
-    typedef bool result_type;
-
-    template <typename Tuple>
-    __host__ __device__
-    bool operator()(const Tuple& t) const
-    {
-        const IndexType a = thrust::get<0>(t);
-        const IndexType b = thrust::get<1>(t);
-
-        return a != b;
-    }
+    typedef base_functor< T,thrust::greater_equal<T> > Parent;
+    greater_equal_value(const T value) : Parent(value) {}
 };
 
-template <typename IndexType>
-struct diagonal_index_functor : public thrust::unary_function<IndexType,IndexType>
+template <typename T>
+struct less_value
+  : public base_functor< T, thrust::less<T> >
 {
-    const IndexType pitch;
+    typedef base_functor< T,thrust::less<T> > Parent;
+    less_value(const T value) : Parent(value) {}
+};
 
-    diagonal_index_functor(const IndexType pitch)
-        : pitch(pitch) {}
-
-    template <typename Tuple>
-    __host__ __device__
-    IndexType operator()(const Tuple& t) const
-    {
-        const IndexType row  = thrust::get<0>(t);
-        const IndexType diag = thrust::get<1>(t);
-
-        return (diag * pitch) + row;
-    }
+template <typename T>
+struct less_equal_value
+  : public base_functor< T, thrust::less_equal<T> >
+{
+    typedef base_functor< T,thrust::less_equal<T> > Parent;
+    less_equal_value(const T value) : Parent(value) {}
 };
 
 template <typename T, typename BinaryFunction>
-struct combine_tuple_base_functor : public thrust::unary_function<T,T>
+// struct combine_tuple_base_functor : public thrust::unary_function<T,T>
+struct combine_tuple_base_functor
+    : public thrust::unary_function<thrust::tuple<T,T>,typename BinaryFunction::result_type>
 {
     BinaryFunction op;
 
@@ -187,15 +165,16 @@ struct combine_tuple_base_functor : public thrust::unary_function<T,T>
 };
 
 template <typename T>
-struct sum_tuple_functor : public thrust::unary_function<T,T>
-{
-    template<typename Tuple>
-    __host__ __device__
-    T operator()(const Tuple& t)
-    {
-        return thrust::get<0>(t) + thrust::get<1>(t);
-    }
-};
+struct sum_tuple_functor
+  : public combine_tuple_base_functor< T, thrust::plus<T> >{};
+
+template <typename T>
+struct equal_tuple_functor
+  : public combine_tuple_base_functor< T, thrust::equal_to<T> >{};
+
+template <typename T>
+struct not_equal_tuple_functor
+  : public combine_tuple_base_functor< T, thrust::not_equal_to<T> >{};
 
 template <typename IndexType>
 struct occupied_diagonal_functor
@@ -214,7 +193,7 @@ struct occupied_diagonal_functor
         const IndexType i = thrust::get<0>(t);
         const IndexType j = thrust::get<1>(t);
 
-        return j-i+num_rows;
+        return j - i + num_rows;
     }
 };
 
@@ -238,18 +217,23 @@ struct speed_threshold_functor
     }
 };
 
-template<typename IndexType>
-struct row_operator : public std::unary_function<size_t,IndexType>
+template <typename IndexType>
+struct diagonal_index_functor
+  : public thrust::unary_function<IndexType,IndexType>
 {
-    size_t pitch;
+    const IndexType pitch;
 
-    row_operator(size_t pitch)
+    diagonal_index_functor(const IndexType pitch)
         : pitch(pitch) {}
 
+    template <typename Tuple>
     __host__ __device__
-    IndexType operator()(const size_t & linear_index) const
+    IndexType operator()(const Tuple& t) const
     {
-        return linear_index % pitch;
+        const IndexType row  = thrust::get<0>(t);
+        const IndexType diag = thrust::get<1>(t);
+
+        return (diag * pitch) + row;
     }
 };
 
@@ -294,17 +278,6 @@ struct is_valid_coo_index
                ( value != ValueType(0) ) ;
     }
 };
-
-template <typename IndexType>
-struct tuple_equal_to : public thrust::unary_function<thrust::tuple<IndexType,IndexType>,bool>
-{
-    __host__ __device__
-    bool operator()(const thrust::tuple<IndexType,IndexType>& t) const
-    {
-        return thrust::get<0>(t) == thrust::get<1>(t);
-    }
-};
-
 
 // maximum<T> returns the largest of two numbers
 template <typename T>
@@ -360,6 +333,7 @@ struct norm_squared : public thrust::unary_function<T,T>
         return x * conjugate<T>()(x);
     }
 };
+
 template <typename T>
 struct SCAL
 {

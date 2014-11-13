@@ -48,7 +48,7 @@ void offsets_to_indices(const OffsetArray& offsets, IndexArray& indices)
                         offsets.begin(),
                         thrust::make_transform_iterator(
                             thrust::make_zip_iterator( thrust::make_tuple( offsets.begin(), offsets.begin()+1 ) ),
-                            empty_row_functor<OffsetType>()),
+                            not_equal_tuple_functor<OffsetType>()),
                         indices.begin());
     thrust::inclusive_scan(indices.begin(), indices.end(), indices.begin(), thrust::maximum<OffsetType>());
 }
@@ -81,7 +81,7 @@ void extract_diagonal(const Matrix& A, Array& output, cusp::coo_format)
                        thrust::make_transform_iterator(
                            thrust::make_zip_iterator(
                                thrust::make_tuple(A.row_indices.begin(), A.column_indices.begin())),
-                           tuple_equal_to<IndexType>()),
+                           equal_tuple_functor<IndexType>()),
                        output.begin());
 }
 
@@ -105,7 +105,7 @@ void extract_diagonal(const Matrix& A, Array& output, cusp::csr_format)
                        thrust::make_transform_iterator(
                            thrust::make_zip_iterator(
                                thrust::make_tuple(row_indices.begin(), A.column_indices.begin())),
-                           tuple_equal_to<IndexType>()),
+                           equal_tuple_functor<IndexType>()),
                        output.begin());
 }
 
@@ -145,12 +145,15 @@ void extract_diagonal(const Matrix& A, Array& output, cusp::ell_format)
 
     thrust::scatter_if
     (A.values.values.begin(), A.values.values.end(),
-     thrust::make_transform_iterator(thrust::counting_iterator<size_t>(0), row_operator<IndexType>(A.column_indices.pitch)),
+     thrust::make_transform_iterator(thrust::counting_iterator<size_t>(0),
+                                     modulus_value<size_t>(A.column_indices.pitch)),
      thrust::make_zip_iterator(thrust::make_tuple
-                               (thrust::make_transform_iterator(thrust::counting_iterator<size_t>(0), row_operator<IndexType>(A.column_indices.pitch)),
+                               (thrust::make_transform_iterator(
+                                     thrust::counting_iterator<size_t>(0),
+                                     modulus_value<size_t>(A.column_indices.pitch)),
                                 A.column_indices.values.begin())),
      output.begin(),
-     tuple_equal_to<IndexType>());
+     equal_tuple_functor<IndexType>());
 
     // TODO ignore padded values in column_indices
 }
@@ -167,12 +170,14 @@ void extract_diagonal(const Matrix& A, Array& output, cusp::hyb_format)
     // extract ELL diagonal
     thrust::scatter_if
     (A.ell.values.values.begin(), A.ell.values.values.end(),
-     thrust::make_transform_iterator(thrust::counting_iterator<size_t>(0), row_operator<IndexType>(A.ell.column_indices.pitch)),
-     thrust::make_zip_iterator(thrust::make_tuple
-                               (thrust::make_transform_iterator(thrust::counting_iterator<size_t>(0), row_operator<IndexType>(A.ell.column_indices.pitch)),
-                                A.ell.column_indices.values.begin())),
+     thrust::make_transform_iterator(
+       thrust::counting_iterator<size_t>(0), modulus_value<size_t>(A.ell.column_indices.pitch)),
+     thrust::make_zip_iterator(thrust::make_tuple(
+     thrust::make_transform_iterator(
+       thrust::counting_iterator<size_t>(0), modulus_value<size_t>(A.ell.column_indices.pitch)),
+     A.ell.column_indices.values.begin())),
      output.begin(),
-     tuple_equal_to<IndexType>());
+     equal_tuple_functor<IndexType>());
 
     // TODO ignore padded values in column_indices
 }
@@ -201,7 +206,9 @@ size_t count_diagonals(const thrust::detail::execution_policy_base<DerivedPolicy
     thrust::scatter(exec,
                     thrust::constant_iterator<IndexType>(1),
                     thrust::constant_iterator<IndexType>(1)+num_entries,
-                    thrust::make_transform_iterator(thrust::make_zip_iterator( thrust::make_tuple( row_indices.begin(), column_indices.begin() ) ),
+                    thrust::make_transform_iterator(
+                      thrust::make_zip_iterator(
+                        thrust::make_tuple( row_indices.begin(), column_indices.begin() ) ),
                             occupied_diagonal_functor<IndexType>(num_rows)),
                     values.begin());
 

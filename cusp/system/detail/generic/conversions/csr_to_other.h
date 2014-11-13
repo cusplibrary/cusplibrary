@@ -107,7 +107,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
                     thrust::counting_iterator<IndexType>(src.num_rows+src.num_cols),
                     diagonals.begin(),
                     dst.diagonal_offsets.begin(),
-                    is_positive<IndexType>());
+                    greater_value<IndexType>(0));
 
     // replace shifted diagonals with index of diagonal in offsets array
     cusp::array1d<IndexType,cusp::host_memory> diagonal_offsets( dst.diagonal_offsets );
@@ -122,14 +122,8 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
                     dst.values.values.begin());
 
     // shift diagonal_offsets by num_rows
-
-    typedef typename cusp::array1d_view< thrust::constant_iterator<IndexType> > ConstantView;
-    ConstantView constant_view(thrust::constant_iterator<IndexType>(dst.num_rows),
-                               thrust::constant_iterator<IndexType>(dst.num_rows)+num_diagonals);
-    cusp::blas::axpy(constant_view,
-                     dst.diagonal_offsets,
-                     IndexType(-1));
-
+    cusp::constant_array<IndexType> constant(num_diagonals, dst.num_rows);
+    cusp::blas::axpy(constant, dst.diagonal_offsets, IndexType(-1));
 }
 
 template <typename DerivedPolicy, typename SourceType, typename DestinationType>
@@ -206,7 +200,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
                                   indices.begin(),
                                   IndexType(0));
 
-    size_t num_coo_entries = thrust::count_if(indices.begin(), indices.end(), greater_than_or_equal_to<size_t>(num_entries_per_row));
+    size_t num_coo_entries = thrust::count_if(indices.begin(), indices.end(), greater_equal_value<size_t>(num_entries_per_row));
     size_t num_ell_entries = src.num_entries - num_coo_entries;
 
     // allocate output storage
@@ -220,7 +214,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
                     thrust::make_zip_iterator( thrust::make_tuple( row_indices.end()  , src.column_indices.end()  , src.values.end()   ) ),
                     indices.begin(),
                     thrust::make_zip_iterator( thrust::make_tuple( dst.coo.row_indices.begin(), dst.coo.column_indices.begin(), dst.coo.values.begin() ) ),
-                    greater_than_or_equal_to<size_t>(num_entries_per_row) );
+                    greater_equal_value<size_t>(num_entries_per_row) );
 
     // next, scale by pitch and add row index
     cusp::blas::axpby(indices, row_indices,
@@ -233,12 +227,12 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
                        indices.begin(),
                        indices.begin(),
                        dst.ell.column_indices.values.begin(),
-                       less_than<size_t>(dst.ell.column_indices.values.size()));
+                       less_value<size_t>(dst.ell.column_indices.values.size()));
     thrust::scatter_if(src.values.begin(), src.values.end(),
                        indices.begin(),
                        indices.begin(),
                        dst.ell.values.values.begin(),
-                       less_than<size_t>(dst.ell.values.values.size()));
+                       less_value<size_t>(dst.ell.values.values.size()));
 }
 
 } // end namespace generic

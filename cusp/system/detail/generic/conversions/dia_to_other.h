@@ -222,7 +222,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
                             column_indices_begin + src.values.num_entries,
                             src.values.values.begin(),
                             dst.column_indices.values.begin(),
-                            _1 == ValueType(0), dst.invalid_index);
+                            _1 == ValueType(0), -1);
 
     thrust::copy(src.values.values.begin(), src.values.values.end(), dst.values.values.begin());
 

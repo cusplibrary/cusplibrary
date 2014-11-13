@@ -317,11 +317,17 @@ public:
  */
 template<typename ArrayView, class Orientation = cusp::row_major>
 class array2d_view
-    : public  cusp::detail::matrix_base<int, typename ArrayView::value_type,typename ArrayView::memory_space, cusp::array2d_format>
+    : public cusp::detail::matrix_base<int,
+                                       typename ArrayView::value_type,
+                                       typename ArrayView::memory_space,
+                                       cusp::array2d_format>
 {
 private:
 
-    typedef cusp::detail::matrix_base<int, typename ArrayView::value_type,typename ArrayView::memory_space, cusp::array2d_format> Parent;
+    typedef cusp::detail::matrix_base<int,
+                                      typename ArrayView::value_type,
+                                      typename ArrayView::memory_space,
+                                      cusp::array2d_format> Parent;
 
 public:
 

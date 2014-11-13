@@ -21,23 +21,10 @@
 #include <thrust/iterator/transform_iterator.h>
 #include <thrust/functional.h>
 
+#include <cusp/detail/functional.h>
+
 namespace cusp
 {
-
-template<typename T>
-struct stride_functor : public thrust::unary_function<T,T>
-{
-    const T stride;
-
-    stride_functor(T stride)
-        : stride(stride) {}
-
-    __host__ __device__
-    T operator()(const T& i) const
-    {
-        return stride * i;
-    }
-};
 
 /*! \addtogroup iterators Iterators
  *  \ingroup iterators
@@ -50,6 +37,7 @@ class strided_iterator
 {
 public:
 
+    /*! \cond */
     typedef typename thrust::iterator_value<RandomAccessIterator>::type                       value_type;
     typedef typename thrust::iterator_system<RandomAccessIterator>::type                      memory_space;
     typedef typename thrust::iterator_pointer<RandomAccessIterator>::type                     pointer;
@@ -57,13 +45,14 @@ public:
     typedef typename thrust::iterator_difference<RandomAccessIterator>::type                  difference_type;
     typedef typename thrust::iterator_difference<RandomAccessIterator>::type                  size_type;
 
-    typedef stride_functor<difference_type>                                                   Functor;
+    typedef cusp::detail::modulus_value<difference_type>                                      StrideFunctor;
     typedef typename thrust::counting_iterator<difference_type>                               CountingIterator;
-    typedef typename thrust::transform_iterator<Functor, CountingIterator>                    TransformIterator;
+    typedef typename thrust::transform_iterator<StrideFunctor, CountingIterator>              TransformIterator;
     typedef typename thrust::permutation_iterator<RandomAccessIterator,TransformIterator>     PermutationIterator;
 
     // type of the strided_range iterator
     typedef PermutationIterator iterator;
+    /*! \endcond */
 
     // construct strided_range for the range [first,last)
     strided_iterator(RandomAccessIterator first, RandomAccessIterator last, difference_type stride)
@@ -71,7 +60,7 @@ public:
 
     iterator begin(void) const
     {
-        return PermutationIterator(first, TransformIterator(CountingIterator(0), Functor(stride)));
+        return PermutationIterator(first, TransformIterator(CountingIterator(0), StrideFunctor(stride)));
     }
 
     iterator end(void) const

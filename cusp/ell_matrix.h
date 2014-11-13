@@ -35,11 +35,9 @@ namespace cusp
 // Forward definitions
 struct column_major;
 
-template<typename ValueType, typename MemorySpace, typename Orientation> class array2d;
-
-template<typename Array, typename Orientation>                           class array2d_view;
-
-template <typename ArrayType1, typename ArrayType2, typename IndexType, typename ValueType, typename MemorySpace> class ell_matrix_view;
+template<typename,typename,typename>                   class array2d;
+template<typename,typename>                            class array2d_view;
+template<typename,typename,typename,typename,typename> class ell_matrix_view;
 
 template<typename T, class MemorySpace, class Orientation>
 array2d_view<typename cusp::array1d_view<typename cusp::array1d<T,MemorySpace>::iterator>, Orientation>
@@ -366,8 +364,8 @@ public:
      */
     ell_matrix_view(ell_matrix<IndexType,ValueType,MemorySpace>& matrix)
         : Parent(matrix),
-          column_indices(matrix.column_indices),
-          values(matrix.values) {}
+          column_indices(make_array2d_view(matrix.column_indices)),
+          values(make_array2d_view(matrix.values)) {}
 
     /*! Construct a \p ell_matrix_view from a existing const \p ell_matrix.
      *
@@ -375,8 +373,8 @@ public:
      */
     ell_matrix_view(const ell_matrix<IndexType,ValueType,MemorySpace>& matrix)
         : Parent(matrix),
-          column_indices(matrix.column_indices),
-          values(matrix.values) {}
+          column_indices(make_array2d_view(matrix.column_indices)),
+          values(make_array2d_view(matrix.values)) {}
 
     /*! Construct a \p ell_matrix_view from a existing \p ell_matrix_view.
      *
