@@ -254,6 +254,48 @@ struct row_operator : public std::unary_function<size_t,IndexType>
 };
 
 template <typename IndexType>
+struct is_valid_ell_index
+{
+    const IndexType num_rows;
+
+    is_valid_ell_index(const IndexType num_rows)
+        : num_rows(num_rows) {}
+
+    template <typename Tuple>
+    __host__ __device__
+    bool operator()(const Tuple& t) const
+    {
+        const IndexType i = thrust::get<0>(t);
+        const IndexType j = thrust::get<1>(t);
+
+        return i < num_rows && j != IndexType(-1);
+    }
+};
+
+template <typename IndexType, typename ValueType>
+struct is_valid_coo_index
+{
+    const IndexType num_rows;
+    const IndexType num_cols;
+
+    is_valid_coo_index(const IndexType num_rows, const IndexType num_cols)
+        : num_rows(num_rows), num_cols(num_cols) {}
+
+    template <typename Tuple>
+    __host__ __device__
+    bool operator()(const Tuple& t) const
+    {
+        const IndexType i = thrust::get<0>(t);
+        const IndexType j = thrust::get<1>(t);
+        const ValueType value = thrust::get<2>(t);
+
+        return ( i > IndexType(-1) && i < num_rows ) &&
+               ( j > IndexType(-1) && j < num_cols ) &&
+               ( value != ValueType(0) ) ;
+    }
+};
+
+template <typename IndexType>
 struct tuple_equal_to : public thrust::unary_function<thrust::tuple<IndexType,IndexType>,bool>
 {
     __host__ __device__

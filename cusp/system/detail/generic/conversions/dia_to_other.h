@@ -50,63 +50,6 @@ namespace detail
 namespace generic
 {
 
-template <typename T>
-struct valid_ell_functor : thrust::unary_function<T,T>
-{
-    const size_t num_cols;
-
-    valid_ell_functor(const size_t num_cols)
-        : num_cols(num_cols) {}
-
-    __host__ __device__
-    T operator()(const T col) const
-    {
-        return col >= 0 && col < num_cols ? col : -1;
-    }
-};
-
-template <typename IndexType>
-struct is_valid_ell_index
-{
-    const IndexType num_rows;
-
-    is_valid_ell_index(const IndexType num_rows)
-        : num_rows(num_rows) {}
-
-    template <typename Tuple>
-    __host__ __device__
-    bool operator()(const Tuple& t) const
-    {
-        const IndexType i = thrust::get<0>(t);
-        const IndexType j = thrust::get<1>(t);
-
-        return i < num_rows && j != IndexType(-1);
-    }
-};
-
-template <typename IndexType, typename ValueType>
-struct is_valid_coo_index
-{
-    const IndexType num_rows;
-    const IndexType num_cols;
-
-    is_valid_coo_index(const IndexType num_rows, const IndexType num_cols)
-        : num_rows(num_rows), num_cols(num_cols) {}
-
-    template <typename Tuple>
-    __host__ __device__
-    bool operator()(const Tuple& t) const
-    {
-        const IndexType i = thrust::get<0>(t);
-        const IndexType j = thrust::get<1>(t);
-        const ValueType value = thrust::get<2>(t);
-
-        return ( i > IndexType(-1) && i < num_rows ) &&
-               ( j > IndexType(-1) && j < num_cols ) &&
-               ( value != ValueType(0) ) ;
-    }
-};
-
 template <typename DerivedPolicy, typename SourceType, typename DestinationType>
 typename enable_if_same_system<SourceType,DestinationType>::type
 convert(thrust::execution_policy<DerivedPolicy>& exec,
@@ -242,6 +185,8 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
         cusp::dia_format&,
         cusp::ell_format&)
 {
+    using namespace thrust::placeholders;
+
     typedef typename DestinationType::index_type IndexType;
     typedef typename DestinationType::value_type ValueType;
     typedef typename DestinationType::memory_space MemorySpace;
@@ -258,13 +203,13 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     typedef typename thrust::zip_iterator<IteratorTuple> ZipIterator;
     typedef typename thrust::transform_iterator<sum_tuple_functor<IndexType>, ZipIterator> ColumnIndexIterator;
 
+    const IndexType pitch = src.values.pitch;
+    const size_t num_diagonals = src.diagonal_offsets.size();
+
     // allocate output storage
-    dst.resize(src.num_rows, src.num_cols, src.num_entries, src.diagonal_offsets.size(), src.values.pitch);
+    dst.resize(src.num_rows, src.num_cols, src.num_entries, num_diagonals, src.values.pitch);
 
     if( src.num_entries == 0 ) return;
-
-    const IndexType pitch = src.values.pitch;
-    const size_t num_entries   = src.values.num_entries;
 
     RowIndexIterator row_indices_begin(IndexIterator(0), modulus_value<IndexType>(pitch));
 
@@ -273,10 +218,14 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     ZipIterator offset_modulus_tuple(thrust::make_tuple(offsets_begin, row_indices_begin));
     ColumnIndexIterator column_indices_begin(offset_modulus_tuple, sum_tuple_functor<IndexType>());
 
-    thrust::copy(thrust::make_transform_iterator(column_indices_begin, valid_ell_functor<IndexType>(src.num_cols)),
-                 thrust::make_transform_iterator(column_indices_begin, valid_ell_functor<IndexType>(src.num_cols)) + num_entries,
-                 dst.column_indices.values.begin());
+    thrust::replace_copy_if(column_indices_begin,
+                            column_indices_begin + src.values.num_entries,
+                            src.values.values.begin(),
+                            dst.column_indices.values.begin(),
+                            _1 == ValueType(0), dst.invalid_index);
+
     thrust::copy(src.values.values.begin(), src.values.values.end(), dst.values.values.begin());
+
 }
 
 } // end namespace generic
