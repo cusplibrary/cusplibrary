@@ -62,20 +62,6 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
         cusp::sort_by_row_and_column(dst.row_indices, dst.column_indices, dst.values);
 }
 
-template <typename DerivedPolicy, typename SourceType, typename DestinationType>
-typename enable_if_same_system<SourceType,DestinationType>::type
-convert(thrust::execution_policy<DerivedPolicy>& exec,
-        const SourceType& src,
-        DestinationType& dst,
-        cusp::hyb_format&,
-        cusp::dia_format&,
-        size_t alignment)
-{
-    typedef typename SourceType::coo_matrix_type  CooMatrixType;
-    typedef typename CooMatrixType::container  CooMatrix;
-}
-
-
 } // end namespace generic
 } // end namespace detail
 } // end namespace system

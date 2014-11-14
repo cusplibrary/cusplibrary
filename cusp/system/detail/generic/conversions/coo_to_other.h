@@ -70,11 +70,21 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
         DestinationType& dst,
         cusp::coo_format&,
         cusp::dia_format&,
-        size_t alignment)
+        size_t alignment = 32)
 {
     typedef typename DestinationType::index_type IndexType;
     typedef typename DestinationType::value_type ValueType;
     typedef typename DestinationType::memory_space MemorySpace;
+
+    const size_t occupied_diagonals = cusp::detail::count_diagonals(exec, src.num_rows, src.num_cols, src.row_indices, src.column_indices);
+
+    const float max_fill   = 3.0;
+    const float threshold  = 1e6; // 1M entries
+    const float size       = float(occupied_diagonals) * float(src.num_rows);
+    const float fill_ratio = size / std::max(1.0f, float(src.num_entries));
+
+    if (max_fill < fill_ratio && size > threshold)
+        throw cusp::format_conversion_exception("dia_matrix fill-in would exceed maximum tolerance");
 
     // compute number of occupied diagonals and enumerate them
     cusp::array1d<IndexType,MemorySpace> diag_map(src.num_entries);
@@ -129,8 +139,8 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
         DestinationType& dst,
         cusp::coo_format&,
         cusp::ell_format&,
-        size_t num_entries_per_row,
-        size_t alignment)
+        size_t num_entries_per_row = 0,
+        size_t alignment = 32)
 {
     typedef typename DestinationType::index_type IndexType;
     typedef typename DestinationType::value_type ValueType;
@@ -140,6 +150,22 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     {
         dst.resize(src.num_rows, src.num_cols, src.num_entries, 0);
         return;
+    }
+
+    if(num_entries_per_row == 0)
+    {
+        cusp::array1d<IndexType,MemorySpace> row_offsets(src.num_rows + 1);
+        cusp::detail::indices_to_offsets(src.row_indices, row_offsets);
+
+        const size_t max_entries_per_row = cusp::detail::compute_max_entries_per_row(exec, row_offsets);
+
+        const float max_fill  = 3.0;
+        const float threshold  = 1e6; // 1M entries
+        const float size       = float(max_entries_per_row) * float(src.num_rows);
+        const float fill_ratio = size / std::max(1.0f, float(src.num_entries));
+
+        if (max_fill < fill_ratio && size > threshold)
+            throw cusp::format_conversion_exception("ell_matrix fill-in would exceed maximum tolerance");
     }
 
     // allocate output storage
@@ -180,12 +206,23 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
         DestinationType& dst,
         cusp::coo_format& format1,
         cusp::hyb_format& format2,
-        size_t num_entries_per_row,
-        size_t alignment)
+        size_t num_entries_per_row = 0,
+        size_t alignment = 32)
 {
     typedef typename DestinationType::index_type IndexType;
     typedef typename DestinationType::value_type ValueType;
     typedef typename DestinationType::memory_space MemorySpace;
+
+    if(num_entries_per_row == 0)
+    {
+        const float  relative_speed      = 3.0;
+        const size_t breakeven_threshold = 4096;
+
+        cusp::array1d<IndexType,MemorySpace> row_offsets(src.num_rows + 1);
+        cusp::detail::indices_to_offsets(src.row_indices, row_offsets);
+
+        num_entries_per_row = cusp::detail::compute_optimal_entries_per_row(exec, row_offsets, relative_speed, breakeven_threshold);
+    }
 
     cusp::array1d<IndexType,MemorySpace> indices(src.num_entries);
     thrust::exclusive_scan_by_key(src.row_indices.begin(), src.row_indices.end(),

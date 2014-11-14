@@ -17,6 +17,8 @@
 
 #pragma once
 
+#include <thrust/execution_policy.h>
+
 namespace cusp
 {
 namespace detail
@@ -31,6 +33,36 @@ void indices_to_offsets(const IndexArray& indices, OffsetArray& offsets);
 template <typename MatrixType, typename ArrayType>
 void extract_diagonal(const MatrixType& A, ArrayType& output);
 
+template <typename DerivedPolicy, typename ArrayType1, typename ArrayType2>
+size_t count_diagonals(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                       const size_t num_rows,
+                       const size_t num_cols,
+                       const ArrayType1& row_indices,
+                       const ArrayType2& column_indices );
+
+template <typename ArrayType1, typename ArrayType2>
+size_t count_diagonals(const size_t num_rows,
+                       const size_t num_cols,
+                       const ArrayType1& row_indices,
+                       const ArrayType2& column_indices);
+
+template <typename DerivedPolicy, typename ArrayType>
+size_t compute_max_entries_per_row(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                                   const ArrayType& row_offsets);
+
+template <typename ArrayType>
+size_t compute_max_entries_per_row(const ArrayType& row_offsets);
+
+template <typename DerivedPolicy, typename ArrayType>
+size_t compute_optimal_entries_per_row(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                                       const ArrayType& row_offsets,
+                                       float relative_speed = 3.0f,
+                                       size_t breakeven_threshold = 4096);
+
+template <typename ArrayType>
+size_t compute_optimal_entries_per_row(const ArrayType& row_offsets,
+                                       float relative_speed = 3.0f,
+                                       size_t breakeven_threshold = 4096);
 } // end namespace detail
 } // end namespace cusp
 

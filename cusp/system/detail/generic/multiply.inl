@@ -70,6 +70,7 @@ void multiply(thrust::execution_policy<DerivedPolicy> &exec,
 {
     typedef typename LinearOperator::index_type IndexType;
     typedef typename LinearOperator::value_type ValueType;
+    typedef typename LinearOperator::memory_space MemorySpace;
 
     // define types used to programatically generate row_indices
     typedef typename thrust::counting_iterator<IndexType> IndexIterator;
@@ -78,7 +79,7 @@ void multiply(thrust::execution_policy<DerivedPolicy> &exec,
 
     // define types used to programatically generate column_indices
     typedef combine_tuple_base_functor< IndexType, thrust::plus<IndexType> > sum_tuple_functor;
-    typedef typename thrust::device_vector<IndexType>::const_iterator ConstElementIterator;
+    typedef typename cusp::array1d<IndexType,MemorySpace>::const_iterator ConstElementIterator;
     typedef typename thrust::transform_iterator<divide_value<IndexType>, IndexIterator> DivideIterator;
     typedef typename thrust::permutation_iterator<ConstElementIterator,DivideIterator> OffsetsPermIterator;
     typedef typename thrust::tuple<OffsetsPermIterator, RowIndexIterator> IteratorTuple;
@@ -86,7 +87,6 @@ void multiply(thrust::execution_policy<DerivedPolicy> &exec,
     typedef typename thrust::transform_iterator<sum_tuple_functor, ZipIterator> ColumnIndexIterator;
     typedef typename thrust::transform_iterator<LogicalFunctor, IndexIterator> StrideIndexIterator;
 
-    size_t num_entries_per_row = A.column_indices.num_cols;
     LogicalFunctor logical_functor(A.values.num_rows, A.values.num_cols, A.values.pitch);
 
     RowIndexIterator row_indices_begin(IndexIterator(0), modulus_value<IndexType>(A.values.pitch));

@@ -195,13 +195,15 @@ template <typename DerivedPolicy, typename ArrayType1, typename ArrayType2>
 size_t count_diagonals(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
                        const size_t num_rows,
                        const size_t num_cols,
-                       const size_t num_entries,
                        const ArrayType1& row_indices,
                        const ArrayType2& column_indices )
 {
     typedef typename ArrayType1::value_type IndexType;
+    typedef typename ArrayType1::memory_space MemorySpace;
 
-    cusp::array1d<IndexType,cusp::device_memory> values(num_rows+num_cols,IndexType(0));
+    size_t num_entries = row_indices.size();
+
+    cusp::array1d<IndexType,MemorySpace> values(num_rows+num_cols,IndexType(0));
 
     thrust::scatter(exec,
                     thrust::constant_iterator<IndexType>(1),
@@ -218,9 +220,8 @@ size_t count_diagonals(const thrust::detail::execution_policy_base<DerivedPolicy
 template <typename ArrayType1, typename ArrayType2>
 size_t count_diagonals(const size_t num_rows,
                        const size_t num_cols,
-                       const size_t num_entries,
                        const ArrayType1& row_indices,
-                       const ArrayType2& column_indices )
+                       const ArrayType2& column_indices)
 {
   using thrust::system::detail::generic::select_system;
 
@@ -230,7 +231,7 @@ size_t count_diagonals(const size_t num_rows,
   System1 system1;
   System2 system2;
 
-  return count_diagonals(select_system(system1,system2), num_rows, num_cols, num_entries, row_indices, column_indices);
+  return count_diagonals(select_system(system1,system2), num_rows, num_cols, row_indices, column_indices);
 }
 
 template <typename DerivedPolicy, typename ArrayType>
@@ -250,7 +251,7 @@ size_t compute_max_entries_per_row(const thrust::detail::execution_policy_base<D
 }
 
 template <typename ArrayType>
-size_t compute_max_entries_per_row(const ArrayType& row_offsets )
+size_t compute_max_entries_per_row(const ArrayType& row_offsets)
 {
   using thrust::system::detail::generic::select_system;
 
@@ -278,10 +279,11 @@ size_t compute_max_entries_per_row(const ArrayType& row_offsets )
 template <typename DerivedPolicy, typename ArrayType>
 size_t compute_optimal_entries_per_row(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
                                        const ArrayType& row_offsets,
-                                       float relative_speed = 3.0f,
-                                       size_t breakeven_threshold = 4096)
+                                       float relative_speed,
+                                       size_t breakeven_threshold)
 {
     typedef typename ArrayType::value_type IndexType;
+    typedef typename ArrayType::memory_space MemorySpace;
 
     const size_t num_rows = row_offsets.size()-1;
 
@@ -289,10 +291,10 @@ size_t compute_optimal_entries_per_row(const thrust::detail::execution_policy_ba
     IndexType max_cols_per_row = compute_max_entries_per_row(row_offsets);
 
     // allocate storage for the cumulative histogram and histogram
-    cusp::array1d<IndexType,cusp::device_memory> cumulative_histogram(max_cols_per_row + 1, IndexType(0));
+    cusp::array1d<IndexType,MemorySpace> cumulative_histogram(max_cols_per_row + 1, IndexType(0));
 
     // compute distribution of nnz per row
-    cusp::array1d<IndexType,cusp::device_memory> entries_per_row(num_rows);
+    cusp::array1d<IndexType,MemorySpace> entries_per_row(num_rows);
     thrust::adjacent_difference( row_offsets.begin()+1, row_offsets.end(), entries_per_row.begin() );
 
     // sort data to bring equal elements together
@@ -316,8 +318,8 @@ size_t compute_optimal_entries_per_row(const thrust::detail::execution_policy_ba
 
 template <typename ArrayType>
 size_t compute_optimal_entries_per_row(const ArrayType& row_offsets,
-                                       float relative_speed = 3.0f,
-                                       size_t breakeven_threshold = 4096)
+                                       float relative_speed,
+                                       size_t breakeven_threshold)
 {
   using thrust::system::detail::generic::select_system;
 

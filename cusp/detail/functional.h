@@ -150,7 +150,6 @@ struct less_equal_value
 };
 
 template <typename T, typename BinaryFunction>
-// struct combine_tuple_base_functor : public thrust::unary_function<T,T>
 struct combine_tuple_base_functor
     : public thrust::unary_function<thrust::tuple<T,T>,typename BinaryFunction::result_type>
 {

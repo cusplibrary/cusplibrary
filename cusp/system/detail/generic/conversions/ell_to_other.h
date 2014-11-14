@@ -96,7 +96,6 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     typedef typename DestinationType::memory_space MemorySpace;
 
     const IndexType pitch               = src.column_indices.pitch;
-    const IndexType num_entries_per_row = src.column_indices.num_cols;
 
     // define types used to programatically generate row_indices
     typedef typename thrust::counting_iterator<IndexType> IndexIterator;
@@ -126,17 +125,6 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
 
     // convert COO row_indices to CSR row_offsets
     cusp::detail::indices_to_offsets(row_indices, dst.row_offsets);
-}
-
-template <typename DerivedPolicy, typename SourceType, typename DestinationType>
-typename enable_if_same_system<SourceType,DestinationType>::type
-convert(thrust::execution_policy<DerivedPolicy>& exec,
-        const SourceType& src,
-        DestinationType& dst,
-        cusp::ell_format&,
-        cusp::dia_format&,
-        size_t alignment)
-{
 }
 
 template <typename DerivedPolicy, typename SourceType, typename DestinationType>

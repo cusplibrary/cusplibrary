@@ -58,9 +58,9 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
         cusp::dia_format&,
         cusp::coo_format&)
 {
-    typedef typename DestinationType::index_type IndexType;
-    typedef typename DestinationType::value_type ValueType;
-    typedef typename DestinationType::memory_space MemorySpace;
+    typedef typename SourceType::index_type IndexType;
+    typedef typename SourceType::value_type ValueType;
+    typedef typename SourceType::memory_space MemorySpace;
 
     // define types used to programatically generate row_indices
     typedef typename thrust::counting_iterator<IndexType> IndexIterator;
@@ -120,9 +120,9 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
         cusp::dia_format&,
         cusp::csr_format&)
 {
-    typedef typename DestinationType::index_type IndexType;
-    typedef typename DestinationType::value_type ValueType;
-    typedef typename DestinationType::memory_space MemorySpace;
+    typedef typename SourceType::index_type IndexType;
+    typedef typename SourceType::value_type ValueType;
+    typedef typename SourceType::memory_space MemorySpace;
 
     // define types used to programatically generate row_indices
     typedef typename thrust::counting_iterator<IndexType> IndexIterator;
@@ -187,9 +187,9 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
 {
     using namespace thrust::placeholders;
 
-    typedef typename DestinationType::index_type IndexType;
-    typedef typename DestinationType::value_type ValueType;
-    typedef typename DestinationType::memory_space MemorySpace;
+    typedef typename SourceType::index_type IndexType;
+    typedef typename SourceType::value_type ValueType;
+    typedef typename SourceType::memory_space MemorySpace;
 
     // define types used to programatically generate row_indices
     typedef typename thrust::counting_iterator<IndexType> IndexIterator;
@@ -226,6 +226,22 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
 
     thrust::copy(src.values.values.begin(), src.values.values.end(), dst.values.values.begin());
 
+}
+
+template <typename DerivedPolicy, typename SourceType, typename DestinationType>
+typename enable_if_same_system<SourceType,DestinationType>::type
+convert(thrust::execution_policy<DerivedPolicy>& exec,
+        const SourceType& src,
+        DestinationType& dst,
+        cusp::dia_format&,
+        cusp::hyb_format& format2)
+{
+    // just copy into ell part of destination
+    dst.resize(src.num_rows, src.num_cols,
+               src.num_entries, 0,
+               src.values.num_cols);
+
+    cusp::convert(exec, src, dst.ell);
 }
 
 } // end namespace generic
