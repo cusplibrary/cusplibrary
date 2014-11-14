@@ -17,8 +17,6 @@
 
 #pragma once
 
-#include <cusp/array1d.h>
-#include <cusp/array2d.h>
 #include <cusp/copy.h>
 #include <cusp/format.h>
 
@@ -26,8 +24,8 @@
 
 namespace cusp
 {
-  template <typename T1,typename T2> void copy(const T1&, T2&);
-  template <typename P,typename T1,typename T2> void copy(const P&, const T1&, T2&);
+template <typename T1,typename T2> void copy(const T1&, T2&);
+template <typename P,typename T1,typename T2> void copy(const P&, const T1&, T2&);
 }
 
 #include <cusp/system/detail/generic/conversions/array_to_other.h>
@@ -55,6 +53,10 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
         cusp::known_format&,
         cusp::dia_format& format2)
 {
+    typedef typename SourceType::format Format1;
+
+    Format1 format1;
+
     const size_t occupied_diagonals = cusp::detail::count_diagonals(exec, src);
 
     const size_t alignment = 32;
@@ -62,9 +64,6 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     const float threshold  = 1e6; // 1M entries
     const float size       = float(occupied_diagonals) * float(src.num_rows);
     const float fill_ratio = size / std::max(1.0f, float(src.num_entries));
-
-    typedef typename SourceType::format Format1;
-    Format1 format1;
 
     if (max_fill < fill_ratio && size > threshold)
         throw cusp::format_conversion_exception("dia_matrix fill-in would exceed maximum tolerance");
@@ -80,6 +79,10 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
         cusp::known_format&,
         cusp::ell_format& format2)
 {
+    typedef typename SourceType::format Format1;
+
+    Format1 format1;
+
     const size_t max_entries_per_row = cusp::detail::compute_max_entries_per_row(exec, src);
 
     const size_t alignment = 32;
@@ -90,9 +93,6 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
 
     if (max_fill < fill_ratio && size > threshold)
         throw cusp::format_conversion_exception("ell_matrix fill-in would exceed maximum tolerance");
-
-    typedef typename SourceType::format Format1;
-    Format1 format1;
 
     cusp::system::detail::generic::convert(exec, src, dst, format1, format2, max_entries_per_row, alignment);
 }
@@ -105,15 +105,16 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
         cusp::known_format&,
         cusp::hyb_format& format2)
 {
+    typedef typename SourceType::format Format1;
+
+    Format1 format1;
+
     const float  relative_speed      = 3.0;
     const size_t breakeven_threshold = 4096;
-    const size_t alignment = 32;
+    const size_t alignment           = 32;
 
     const size_t num_entries_per_row
-      = cusp::detail::compute_optimal_entries_per_row(exec, src.row_offsets, relative_speed, breakeven_threshold);
-
-    typedef typename SourceType::format Format1;
-    Format1 format1;
+        = cusp::detail::compute_optimal_entries_per_row(exec, src.row_offsets, relative_speed, breakeven_threshold);
 
     cusp::system::detail::generic::convert(exec, src, dst, format1, format2, num_entries_per_row, alignment);
 }
@@ -123,15 +124,21 @@ typename enable_if_same_system<SourceType,DestinationType>::type
 convert(thrust::execution_policy<DerivedPolicy>& exec,
         const SourceType& src,
         DestinationType& dst,
-        known_format& format1,
-        known_format& format2)
+        known_format&,
+        known_format&)
 {
     // convert src -> coo_matrix -> dst
     typename cusp::detail::as_coo_type<SourceType>::type tmp;
 
-    cusp::convert(exec, src, tmp);
-    cusp::convert(exec, tmp, dst);
-
+    if(thrust::detail::is_same<typename SourceType::format, typename DestinationType::format>::value)
+    {
+        cusp::copy(exec, src, dst);
+    }
+    else
+    {
+        cusp::convert(exec, src, tmp);
+        cusp::convert(exec, tmp, dst);
+    }
 }
 
 template <typename DerivedPolicy, typename SourceType, typename DestinationType>
@@ -142,10 +149,12 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
         known_format&,
         known_format&)
 {
-    typename cusp::detail::as_coo_type<SourceType>::type tmp;
+    typename cusp::detail::as_coo_type<SourceType>::type      src_tmp;
+    typename cusp::detail::as_coo_type<DestinationType>::type dst_tmp;
 
-    cusp::convert(exec, src, tmp);
-    cusp::convert(exec, tmp, dst);
+    cusp::convert(src, src_tmp);
+    cusp::copy(src_tmp, dst_tmp);
+    cusp::convert(dst_tmp, dst);
 }
 
 } // end namespace generic
