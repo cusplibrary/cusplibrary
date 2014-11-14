@@ -83,10 +83,18 @@ template<typename IndexType, typename ValueType, typename MemorySpace>
 struct matrix_type<IndexType,ValueType,MemorySpace,hyb_format>
 { typedef cusp::hyb_matrix<IndexType,ValueType,MemorySpace> type; };
 
+template<typename MatrixType, typename Format = typename MatrixType::format>
+struct get_index_type
+{ typedef typename MatrixType::index_type type; };
+
+template<typename MatrixType>
+struct get_index_type<MatrixType,array1d_format>
+{ typedef int type; };
+
 template<typename MatrixType, typename FormatTag>
 struct as_matrix_type
 {
-  typedef typename MatrixType::index_type IndexType;
+  typedef typename get_index_type<MatrixType>::type IndexType;
   typedef typename MatrixType::value_type ValueType;
   typedef typename MatrixType::memory_space MemorySpace;
 

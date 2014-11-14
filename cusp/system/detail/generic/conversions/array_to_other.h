@@ -109,15 +109,18 @@ typename enable_if_same_system<SourceType,DestinationType>::type
 convert(thrust::execution_policy<DerivedPolicy>& exec,
         const SourceType& src,
         DestinationType& dst,
-        cusp::array1d_format&,
-        cusp::sparse_format&)
+        cusp::array2d_format&,
+        cusp::coo_format&)
 {
-    typedef typename SourceType::value_type ValueType;
-    typedef typename SourceType::memory_space MemorySpace;
+    using namespace thrust::placeholders;
 
-    cusp::coo_matrix<int, ValueType, MemorySpace> tmp;    
-    cusp::convert(exec, src, tmp);
-    cusp::convert(exec, tmp, dst);
+    typedef typename DestinationType::index_type IndexType;
+    typedef typename DestinationType::value_type ValueType;
+    typedef typename DestinationType::memory_space MemorySpace;
+
+    size_t num_coo_entries = thrust::count_if(dst.values.begin(), dst.values.end(), _1 != ValueType(0));
+
+    dst.resize(src.num_rows, src.num_cols, num_coo_entries);
 }
 
 } // end namespace generic

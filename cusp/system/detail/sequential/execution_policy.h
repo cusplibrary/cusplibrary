@@ -45,6 +45,7 @@ using namespace thrust::system::detail::sequential;
 
 // now get all the algorithm definitions
 
+#include <cusp/system/detail/sequential/convert.h>
 #include <cusp/system/detail/sequential/elementwise.h>
 #include <cusp/system/detail/sequential/multiply.h>
 #include <cusp/system/detail/sequential/transpose.h>

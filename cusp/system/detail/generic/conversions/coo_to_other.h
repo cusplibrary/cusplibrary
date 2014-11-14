@@ -54,13 +54,43 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
         const SourceType& src,
         DestinationType& dst,
         cusp::coo_format&,
+        cusp::array1d_format&)
+{
+    typedef typename DestinationType::value_type ValueType;
+
+    dst.resize(src.num_cols);
+
+    thrust::fill(exec, dst.begin(), dst.end(), ValueType(0));
+}
+
+template <typename DerivedPolicy, typename SourceType, typename DestinationType>
+typename enable_if_same_system<SourceType,DestinationType>::type
+convert(thrust::execution_policy<DerivedPolicy>& exec,
+        const SourceType& src,
+        DestinationType& dst,
+        cusp::coo_format&,
+        cusp::array2d_format&)
+{
+    typedef typename DestinationType::value_type ValueType;
+
+    dst.resize(src.num_rows, src.num_cols);
+
+    thrust::fill(exec, dst.values.begin(), dst.values.end(), ValueType(0));
+}
+
+template <typename DerivedPolicy, typename SourceType, typename DestinationType>
+typename enable_if_same_system<SourceType,DestinationType>::type
+convert(thrust::execution_policy<DerivedPolicy>& exec,
+        const SourceType& src,
+        DestinationType& dst,
+        cusp::coo_format&,
         cusp::csr_format&)
 {
     dst.resize(src.num_rows, src.num_cols, src.num_entries);
 
     cusp::detail::indices_to_offsets(src.row_indices, dst.row_offsets);
-    cusp::copy(src.column_indices, dst.column_indices);
-    cusp::copy(src.values,         dst.values);
+    cusp::copy(exec, src.column_indices, dst.column_indices);
+    cusp::copy(exec, src.values,         dst.values);
 }
 
 template <typename DerivedPolicy, typename SourceType, typename DestinationType>
@@ -76,7 +106,8 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     typedef typename DestinationType::value_type ValueType;
     typedef typename DestinationType::memory_space MemorySpace;
 
-    const size_t occupied_diagonals = cusp::detail::count_diagonals(exec, src.num_rows, src.num_cols, src.row_indices, src.column_indices);
+    const size_t occupied_diagonals =
+      cusp::detail::count_diagonals(exec, src.num_rows, src.num_cols, src.row_indices, src.column_indices);
 
     const float max_fill   = 3.0;
     const float threshold  = 1e6; // 1M entries
@@ -88,28 +119,31 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
 
     // compute number of occupied diagonals and enumerate them
     cusp::array1d<IndexType,MemorySpace> diag_map(src.num_entries);
-    thrust::transform(thrust::make_zip_iterator( thrust::make_tuple( src.row_indices.begin(), src.column_indices.begin() ) ),
+    thrust::transform(exec,
+                      thrust::make_zip_iterator( thrust::make_tuple( src.row_indices.begin(), src.column_indices.begin() ) ),
                       thrust::make_zip_iterator( thrust::make_tuple( src.row_indices.end()  , src.column_indices.end() ) )  ,
                       diag_map.begin(),
                       occupied_diagonal_functor<IndexType>(src.num_rows));
 
     // place ones in diagonals array locations with occupied diagonals
     cusp::array1d<IndexType,MemorySpace> diagonals(src.num_rows+src.num_cols,IndexType(0));
-    thrust::scatter(thrust::constant_iterator<IndexType>(1),
+    thrust::scatter(exec,
+                    thrust::constant_iterator<IndexType>(1),
                     thrust::constant_iterator<IndexType>(1)+src.num_entries,
                     diag_map.begin(),
                     diagonals.begin());
 
-    const IndexType num_diagonals = thrust::reduce(diagonals.begin(), diagonals.end());
+    const IndexType num_diagonals = thrust::reduce(exec, diagonals.begin(), diagonals.end());
 
     // allocate DIA structure
     dst.resize(src.num_rows, src.num_cols, src.num_entries, num_diagonals, alignment);
 
     // fill in values array
-    thrust::fill(dst.values.values.begin(), dst.values.values.end(), ValueType(0));
+    thrust::fill(exec, dst.values.values.begin(), dst.values.values.end(), ValueType(0));
 
     // fill in diagonal_offsets array
-    thrust::copy_if(thrust::counting_iterator<IndexType>(0),
+    thrust::copy_if(exec,
+                    thrust::counting_iterator<IndexType>(0),
                     thrust::counting_iterator<IndexType>(src.num_rows+src.num_cols),
                     diagonals.begin(),
                     dst.diagonal_offsets.begin(),
@@ -121,13 +155,15 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
         thrust::replace(diag_map.begin(), diag_map.end(), diagonal_offsets[num_diag], num_diag);
 
     // copy values to dst
-    thrust::scatter(src.values.begin(), src.values.end(),
+    thrust::scatter(exec,
+                    src.values.begin(), src.values.end(),
                     thrust::make_transform_iterator(
                         thrust::make_zip_iterator( thrust::make_tuple( src.row_indices.begin(), diag_map.begin() ) ),
                         diagonal_index_functor<IndexType>(dst.values.pitch)),
                     dst.values.values.begin());
 
-    thrust::transform(dst.diagonal_offsets.begin(), dst.diagonal_offsets.end(),
+    thrust::transform(exec,
+                      dst.diagonal_offsets.begin(), dst.diagonal_offsets.end(),
                       thrust::constant_iterator<IndexType>(dst.num_rows),
                       dst.diagonal_offsets.begin(), thrust::minus<IndexType>());
 }
@@ -166,6 +202,8 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
 
         if (max_fill < fill_ratio && size > threshold)
             throw cusp::format_conversion_exception("ell_matrix fill-in would exceed maximum tolerance");
+
+        num_entries_per_row = max_entries_per_row;
     }
 
     // allocate output storage
@@ -221,7 +259,8 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
         cusp::array1d<IndexType,MemorySpace> row_offsets(src.num_rows + 1);
         cusp::detail::indices_to_offsets(src.row_indices, row_offsets);
 
-        num_entries_per_row = cusp::detail::compute_optimal_entries_per_row(exec, row_offsets, relative_speed, breakeven_threshold);
+        num_entries_per_row =
+          cusp::detail::compute_optimal_entries_per_row(exec, row_offsets, relative_speed, breakeven_threshold);
     }
 
     cusp::array1d<IndexType,MemorySpace> indices(src.num_entries);

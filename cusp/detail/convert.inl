@@ -26,19 +26,6 @@
 
 namespace cusp
 {
-// namespace detail
-// {
-//
-// // same format
-// template <typename SourceType, typename DestinationType, typename Format>
-// void convert(thrust::execution_policy<DerivedPolicy>& exec,
-//              const SourceType& src, DestinationType& dst,
-//              Format format1, Format format2)
-// {
-//     cusp::copy(exec, src, dst);
-// }
-//
-// } // end namespace detail
 
 template <typename SourceType, typename DestinationType>
 void convert(const SourceType& src, DestinationType& dst)

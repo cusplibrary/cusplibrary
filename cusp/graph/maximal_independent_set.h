@@ -80,10 +80,10 @@ namespace graph
  *
  *    cusp::array1d<int,cusp::device_memory> stencil(G.num_rows);
  *
- *    // Compute connected components on the device
+ *    // Compute MIS on the device
  *    size_t num_mis = cusp::graph::maximal_independent_set(G, stencil);
  *
- *    // Print the number of components and the per vertex membership
+ *    // Print the number of MIS vertices and membership stencil
  *    std::cout << "Computed " << num_mis << " MIS(1) vertices in the graph." <<
  *    std::endl;
  *    cusp::print(stencil);

@@ -15,18 +15,10 @@
  */
 
 
-#pragma once
-
 #include <cusp/copy.h>
 #include <cusp/format.h>
 
 #include <cusp/detail/format_utils.h>
-
-namespace cusp
-{
-template <typename T1,typename T2> void copy(const T1&, T2&);
-template <typename P,typename T1,typename T2> void copy(const P&, const T1&, T2&);
-}
 
 #include <cusp/system/detail/generic/conversions/array_to_other.h>
 #include <cusp/system/detail/generic/conversions/coo_to_other.h>
@@ -44,43 +36,76 @@ namespace detail
 {
 namespace generic
 {
+namespace detail
+{
 
-template <typename DerivedPolicy, typename SourceType, typename DestinationType>
+template <typename DerivedPolicy,
+         typename SourceType,
+         typename DestinationType,
+         typename Format>
+void convert(thrust::execution_policy<DerivedPolicy>& exec,
+             const SourceType& src,
+             DestinationType& dst,
+             Format&,
+             Format&)
+{
+    cusp::copy(src, dst);
+}
+
+template <typename DerivedPolicy,
+         typename SourceType,
+         typename DestinationType,
+         typename Format1,
+         typename Format2>
 typename enable_if_same_system<SourceType,DestinationType>::type
 convert(thrust::execution_policy<DerivedPolicy>& exec,
         const SourceType& src,
         DestinationType& dst,
-        known_format&,
-        known_format&)
+        Format1&,
+        Format2&)
 {
-    if(thrust::detail::is_same<typename SourceType::format, typename DestinationType::format>::value)
-    {
-        cusp::copy(exec, src, dst);
-    }
-    else
-    {
-        // convert src -> coo_matrix -> dst
-        typename cusp::detail::as_coo_type<SourceType>::type tmp;
+    // convert src -> coo_matrix -> dst
+    typename cusp::detail::as_coo_type<SourceType>::type tmp;
 
-        cusp::convert(exec, src, tmp);
-        cusp::convert(exec, tmp, dst);
-    }
+    cusp::convert(exec, src, tmp);
+    cusp::convert(exec, tmp, dst);
 }
 
-template <typename DerivedPolicy, typename SourceType, typename DestinationType>
+template <typename DerivedPolicy,
+         typename SourceType,
+         typename DestinationType,
+         typename Format1,
+         typename Format2>
 typename enable_if_different_system<SourceType,DestinationType>::type
 convert(thrust::execution_policy<DerivedPolicy>& exec,
         const SourceType& src,
         DestinationType& dst,
-        known_format&,
-        known_format&)
+        Format1&,
+        Format2&)
 {
-    typedef typename cusp::detail::as_matrix_type<SourceType,typename DestinationType::format>::type SrcDestType;
+    typedef typename DestinationType::format DestFormat;
+    typedef typename cusp::detail::as_matrix_type<SourceType,DestFormat>::type SrcDestType;
 
     SrcDestType tmp;
 
     cusp::convert(src, tmp);
     cusp::copy(tmp, dst);
+}
+
+} // end namespace detail
+
+template <typename DerivedPolicy,
+         typename SourceType,
+         typename DestinationType,
+         typename Format1,
+         typename Format2>
+void convert(thrust::execution_policy<DerivedPolicy>& exec,
+             const SourceType& src,
+             DestinationType& dst,
+             Format1& format1,
+             Format2& format2)
+{
+    detail::convert(exec, src, dst, format1, format2);
 }
 
 } // end namespace generic

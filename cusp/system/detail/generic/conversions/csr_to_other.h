@@ -161,6 +161,8 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
 
         if (max_fill < fill_ratio && size > threshold)
             throw cusp::format_conversion_exception("ell_matrix fill-in would exceed maximum tolerance");
+
+        num_entries_per_row = max_entries_per_row;
     }
 
     // allocate output storage
