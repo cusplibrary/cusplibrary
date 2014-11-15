@@ -65,7 +65,8 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
         Format2&)
 {
     // convert src -> coo_matrix -> dst
-    typename cusp::detail::as_coo_type<SourceType>::type tmp;
+    typedef typename SourceType::container ContainerType;
+    typename cusp::detail::as_coo_type<ContainerType>::type tmp;
 
     cusp::convert(exec, src, tmp);
     cusp::convert(exec, tmp, dst);
@@ -83,8 +84,9 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
         Format1&,
         Format2&)
 {
+    typedef typename SourceType::container ContainerType;
     typedef typename DestinationType::format DestFormat;
-    typedef typename cusp::detail::as_matrix_type<SourceType,DestFormat>::type SrcDestType;
+    typedef typename cusp::detail::as_matrix_type<ContainerType,DestFormat>::type SrcDestType;
 
     SrcDestType tmp;
 

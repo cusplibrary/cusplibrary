@@ -383,6 +383,8 @@ public :
 
     // TODO: Fixed view types, view == const_view???
     typedef typename cusp::array1d_view<RandomAccessIterator>                   view;
+
+    typedef RandomAccessIterator                                                const_iterator;
     typedef typename cusp::array1d_view<RandomAccessIterator>                   const_view;
     /*! \endcond */
 

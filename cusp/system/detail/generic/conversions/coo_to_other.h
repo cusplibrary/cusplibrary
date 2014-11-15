@@ -48,6 +48,26 @@ namespace detail
 namespace generic
 {
 
+// functors
+template <typename IndexType, typename Orientation>
+struct array2d_map_functor : public thrust::unary_function<IndexType,IndexType>
+{
+    IndexType pitch;
+
+    array2d_map_functor(IndexType pitch)
+        : pitch(pitch) {}
+
+    template<typename Tuple>
+    __host__ __device__
+    IndexType operator()(const Tuple& t) const
+    {
+        IndexType row = thrust::get<0>(t);
+        IndexType col = thrust::get<1>(t);
+
+        return cusp::detail::index_of(row, col, pitch, Orientation());
+    }
+};
+
 template <typename DerivedPolicy, typename SourceType, typename DestinationType>
 typename enable_if_same_system<SourceType,DestinationType>::type
 convert(thrust::execution_policy<DerivedPolicy>& exec,
@@ -56,11 +76,11 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
         cusp::coo_format&,
         cusp::array1d_format&)
 {
-    typedef typename DestinationType::value_type ValueType;
+    // convert src -> coo_matrix -> dst
+    typename cusp::detail::as_array2d_type<SourceType>::type tmp;
 
-    dst.resize(src.num_cols);
-
-    thrust::fill(exec, dst.begin(), dst.end(), ValueType(0));
+    cusp::convert(exec, src, tmp);
+    cusp::convert(exec, tmp, dst);
 }
 
 template <typename DerivedPolicy, typename SourceType, typename DestinationType>
@@ -71,11 +91,21 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
         cusp::coo_format&,
         cusp::array2d_format&)
 {
+    typedef typename DestinationType::index_type IndexType;
     typedef typename DestinationType::value_type ValueType;
+    typedef typename DestinationType::orientation Orientation;
 
     dst.resize(src.num_rows, src.num_cols);
 
     thrust::fill(exec, dst.values.begin(), dst.values.end(), ValueType(0));
+
+    thrust::scatter(exec,
+                    src.values.begin(), src.values.end(),
+                    thrust::make_transform_iterator(
+                        thrust::make_zip_iterator(
+                            thrust::make_tuple(src.row_indices.begin(), src.column_indices.begin())),
+                        array2d_map_functor<IndexType,Orientation>(dst.pitch)),
+                    dst.values.begin());
 }
 
 template <typename DerivedPolicy, typename SourceType, typename DestinationType>
@@ -107,7 +137,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     typedef typename DestinationType::memory_space MemorySpace;
 
     const size_t occupied_diagonals =
-      cusp::detail::count_diagonals(exec, src.num_rows, src.num_cols, src.row_indices, src.column_indices);
+        cusp::detail::count_diagonals(exec, src.num_rows, src.num_cols, src.row_indices, src.column_indices);
 
     const float max_fill   = 3.0;
     const float threshold  = 1e6; // 1M entries
@@ -162,10 +192,10 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
                         diagonal_index_functor<IndexType>(dst.values.pitch)),
                     dst.values.values.begin());
 
-    thrust::transform(exec,
-                      dst.diagonal_offsets.begin(), dst.diagonal_offsets.end(),
-                      thrust::constant_iterator<IndexType>(dst.num_rows),
-                      dst.diagonal_offsets.begin(), thrust::minus<IndexType>());
+    cusp::constant_array<IndexType> constant_view(num_diagonals, dst.num_rows);
+    cusp::blas::axpy(constant_view,
+                     dst.diagonal_offsets,
+                     IndexType(-1));
 }
 
 template <typename DerivedPolicy, typename SourceType, typename DestinationType>
@@ -260,7 +290,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
         cusp::detail::indices_to_offsets(src.row_indices, row_offsets);
 
         num_entries_per_row =
-          cusp::detail::compute_optimal_entries_per_row(exec, row_offsets, relative_speed, breakeven_threshold);
+            cusp::detail::compute_optimal_entries_per_row(exec, row_offsets, relative_speed, breakeven_threshold);
     }
 
     cusp::array1d<IndexType,MemorySpace> indices(src.num_entries);
@@ -270,7 +300,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
                                   IndexType(0));
 
     size_t num_coo_entries = thrust::count_if(indices.begin(), indices.end(),
-                              greater_equal_value<size_t>(num_entries_per_row));
+                             greater_equal_value<size_t>(num_entries_per_row));
     size_t num_ell_entries = src.num_entries - num_coo_entries;
 
     // allocate output storage

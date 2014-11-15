@@ -22,6 +22,8 @@
 #include <cusp/copy.h>
 #include <cusp/format.h>
 
+#include <thrust/iterator/permutation_iterator.h>
+
 namespace cusp
 {
 namespace system
@@ -79,9 +81,11 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
         cusp::array1d_format&,
         cusp::array2d_format&)
 {
+    size_t N = src.size();
+
     // interpret src as a Nx1 column matrix and copy to dst
     cusp::copy(exec, cusp::make_array2d_view
-               (src.size(), 1, src.size(),
+               (N, 1, N,
                 cusp::make_array1d_view(src),
                 cusp::column_major()),
                dst);
@@ -97,11 +101,11 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
 {
     size_t N = src.size();
 
-    dst.resize(N,N,N);
+    dst.resize(N, 1, N);
 
-    thrust::sequence(dst.row_indices.begin(), dst.row_indices.end());
-    thrust::sequence(dst.column_indices.begin(), dst.column_indices.end());
-    cusp::copy(src, dst.values);
+    thrust::sequence(exec, dst.row_indices.begin(), dst.row_indices.end());
+    thrust::fill(exec, dst.column_indices.begin(), dst.column_indices.end(), 0);
+    cusp::copy(exec, src, dst.values);
 }
 
 template <typename DerivedPolicy, typename SourceType, typename DestinationType>
@@ -118,9 +122,30 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     typedef typename DestinationType::value_type ValueType;
     typedef typename DestinationType::memory_space MemorySpace;
 
-    size_t num_coo_entries = thrust::count_if(dst.values.begin(), dst.values.end(), _1 != ValueType(0));
+    // define types used to programatically generate row_indices
+    typedef typename SourceType::orientation                                              Orientation;
+    typedef logical_to_other_physical_functor<IndexType, cusp::row_major, Orientation>    PermFunctor;
+    typedef typename SourceType::values_array_type::const_iterator                        ValueIterator;
+    typedef typename thrust::counting_iterator<IndexType>                                 IndexIterator;
+    typedef typename thrust::transform_iterator<divide_value<IndexType>,  IndexIterator>  RowIndexIterator;
+    typedef typename thrust::transform_iterator<modulus_value<IndexType>, IndexIterator>  ColumnIndexIterator;
+    typedef typename thrust::transform_iterator<PermFunctor, IndexIterator>               PermIndexIterator;
+    typedef typename thrust::permutation_iterator<ValueIterator, PermIndexIterator>       PermValueIterator;
 
+    RowIndexIterator    row_indices_begin(IndexIterator(0),    divide_value<IndexType>(src.pitch));
+    ColumnIndexIterator column_indices_begin(IndexIterator(0), modulus_value<IndexType>(src.pitch));
+    PermIndexIterator   perm_indices_begin(IndexIterator(0),   PermFunctor(src.num_rows, src.num_cols, src.pitch));
+    PermValueIterator   perm_values_begin(src.values.begin(),  perm_indices_begin);
+
+    size_t num_coo_entries = thrust::count_if(exec, src.values.begin(), src.values.end(), _1 != ValueType(0));
     dst.resize(src.num_rows, src.num_cols, num_coo_entries);
+
+    thrust::copy_if(exec,
+                    thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, column_indices_begin, perm_values_begin)),
+                    thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, column_indices_begin, perm_values_begin)) + src.num_entries,
+                    perm_values_begin,
+                    thrust::make_zip_iterator(thrust::make_tuple(dst.row_indices.begin(), dst.column_indices.begin(), dst.values.begin())),
+                    _1 != ValueType(0));
 }
 
 } // end namespace generic

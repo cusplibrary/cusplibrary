@@ -29,14 +29,21 @@ namespace cusp
 namespace detail
 {
 
+template <typename T1, typename T2>
+void copy_matrix_dimensions(const T1& src, T2& dst)
+{
+  dst.num_rows    = src.num_rows;
+  dst.num_cols    = src.num_cols;
+  dst.num_entries = src.num_entries;
+}
+
 template <typename DerivedPolicy, typename T1, typename T2>
 void copy(thrust::execution_policy<DerivedPolicy>& exec,
           const T1& src, T2& dst,
           cusp::coo_format,
           cusp::coo_format)
 {
-    dst.resize(src.num_rows, src.num_cols, src.num_entries);
-
+    copy_matrix_dimensions(src, dst);
     cusp::copy(exec, src.row_indices,    dst.row_indices);
     cusp::copy(exec, src.column_indices, dst.column_indices);
     cusp::copy(exec, src.values,         dst.values);
@@ -48,8 +55,7 @@ void copy(thrust::execution_policy<DerivedPolicy>& exec,
           cusp::csr_format,
           cusp::csr_format)
 {
-    dst.resize(src.num_rows, src.num_cols, src.num_entries);
-
+    copy_matrix_dimensions(src, dst);
     cusp::copy(exec, src.row_offsets,    dst.row_offsets);
     cusp::copy(exec, src.column_indices, dst.column_indices);
     cusp::copy(exec, src.values,         dst.values);
@@ -61,8 +67,7 @@ void copy(thrust::execution_policy<DerivedPolicy>& exec,
           cusp::dia_format,
           cusp::dia_format)
 {
-    dst.resize(src.num_rows, src.num_cols, src.num_entries, src.values.num_cols, src.values.pitch);
-
+    copy_matrix_dimensions(src, dst);
     cusp::copy(exec, src.diagonal_offsets, dst.diagonal_offsets);
     cusp::copy(exec, src.values,           dst.values);
 }
@@ -73,8 +78,7 @@ void copy(thrust::execution_policy<DerivedPolicy>& exec,
           cusp::ell_format,
           cusp::ell_format)
 {
-    dst.resize(src.num_rows, src.num_cols, src.num_entries, src.column_indices.num_cols, src.column_indices.pitch);
-
+    copy_matrix_dimensions(src, dst);
     cusp::copy(exec, src.column_indices, dst.column_indices);
     cusp::copy(exec, src.values,         dst.values);
 }
@@ -85,11 +89,7 @@ void copy(thrust::execution_policy<DerivedPolicy>& exec,
           cusp::hyb_format,
           cusp::hyb_format)
 {
-    dst.resize(src.num_rows, src.num_cols,
-               src.ell.num_entries, src.coo.num_entries,
-               src.ell.column_indices.num_cols,
-               src.ell.column_indices.pitch);
-
+    copy_matrix_dimensions(src, dst);
     cusp::copy(exec, src.ell, dst.ell);
     cusp::copy(exec, src.coo, dst.coo);
 }
