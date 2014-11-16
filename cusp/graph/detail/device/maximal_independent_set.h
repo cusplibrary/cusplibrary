@@ -14,12 +14,12 @@
  *  limitations under the License.
  */
 
-#include <cusp/detail/device/generalized_spmv/csr_scalar.h>
-
-#include <cusp/copy.h>
 #include <cusp/array1d.h>
-#include <cusp/exception.h>
 #include <cusp/coo_matrix.h>
+#include <cusp/copy.h>
+#include <cusp/exception.h>
+#include <cusp/multiply.h>
+
 #include <cusp/detail/random.h>
 #include <cusp/detail/format_utils.h>
 
@@ -67,27 +67,6 @@ struct process_non_mis_nodes
     }
 };
 
-struct is_subgraph_edge
-{
-    template <typename Tuple>
-    __host__ __device__
-    bool operator()(const Tuple& t) const
-    {
-        return thrust::get<0>(t) && thrust::get<1>(t);
-    }
-};
-
-template <typename NodeStateType>
-struct is_active_node
-{
-    __host__ __device__
-    bool operator()(const NodeStateType& s) const
-    {
-        return s == 1;
-    }
-};
-
-
 template <typename Array1,
          typename Array2,
          typename Array3,
@@ -95,7 +74,7 @@ template <typename Array1,
 void compute_mis_states(const size_t k,
                         const Array1& row_indices,
                         const Array2& column_indices,
-                        const Array3& random_values,
+                        Array3& random_values,
                         Array4& states)
 {
     typedef typename Array1::value_type   IndexType;
@@ -103,16 +82,28 @@ void compute_mis_states(const size_t k,
     typedef typename Array4::value_type   NodeStateType;
     typedef typename Array1::memory_space MemorySpace;
 
-    typedef typename thrust::tuple<NodeStateType,RandomType,IndexType> Tuple;
+    typedef typename thrust::counting_iterator<IndexType>                     CountingIterator;
+    typedef typename cusp::array1d<NodeStateType,MemorySpace>::iterator       StatesIterator;
+    typedef typename cusp::array1d<RandomType,MemorySpace>::iterator          RandomIterator;
+    typedef typename cusp::array1d<IndexType,MemorySpace>::iterator           IndexIterator;
+
+    typedef typename thrust::tuple<NodeStateType,RandomType,IndexType>        Tuple1;
+    typedef thrust::tuple<StatesIterator,RandomIterator,CountingIterator>     IteratorTuple1;
+    typedef typename thrust::zip_iterator<IteratorTuple1>                     ZipIterator1;
+    typedef typename cusp::array1d_view<ZipIterator1>                         ArrayType1;
+
+    typedef typename thrust::tuple<NodeStateType,RandomType,IndexType>        Tuple2;
+    typedef thrust::tuple<StatesIterator,RandomIterator,IndexIterator>        IteratorTuple2;
+    typedef typename thrust::zip_iterator<IteratorTuple2>                     ZipIterator2;
+    typedef typename cusp::array1d_view<ZipIterator2>                         ArrayType2;
+
+    typedef typename Array1::const_view                                       RowView;
+    typedef typename Array2::const_view                                       ColumnView;
+    typedef typename cusp::constant_array<Tuple1>                             ValueView;
+    typedef typename cusp::coo_matrix_view<RowView,ColumnView,ValueView>      CooView;
 
     const size_t N = states.size();
-
-    const IndexType num_rows    = states.size();
-    //const IndexType num_entries = row_indices.size();
-
-    // TODO remove this WAR when generalize COO SpMV problem is resolved
-    cusp::array1d<IndexType,MemorySpace> row_offsets(num_rows + 1);
-    cusp::detail::indices_to_offsets(row_indices, row_offsets);
+    const size_t M = row_indices.size();
 
     cusp::array1d<NodeStateType,MemorySpace> maximal_states(N);
     cusp::array1d<RandomType,MemorySpace>    maximal_values(N);
@@ -120,31 +111,26 @@ void compute_mis_states(const size_t k,
 
     cusp::array1d<NodeStateType,MemorySpace> last_states;
     cusp::array1d<RandomType,MemorySpace>    last_values;
-    cusp::array1d<IndexType,MemorySpace>     last_indices;;
+    cusp::array1d<IndexType,MemorySpace>     last_indices;
 
-    // TODO choose threshold in a more principled manner
-//    size_t compaction_threshold = (N < 10000) ? 0 : N / 10;
+    cusp::constant_array<Tuple1> values(M, Tuple1(0,0,0));
+    CooView A(N, N, M, make_array1d_view(row_indices), make_array1d_view(column_indices), values);
+
+    CountingIterator count_begin(0);
+    ZipIterator1 x_iter(thrust::make_tuple(states.begin(), random_values.begin(), count_begin));
+    ZipIterator2 y_iter(thrust::make_tuple(last_states.begin(), last_values.begin(), last_indices.begin()));
+    ZipIterator2 z_iter(thrust::make_tuple(maximal_states.begin(), maximal_values.begin(), maximal_indices.begin()));
+
+    ArrayType1 x(x_iter, x_iter + N);
+    ArrayType2 y(y_iter, y_iter + N);
+    ArrayType2 z(z_iter, z_iter + N);
+
     size_t active_nodes = N;
-
-//    size_t num_iters = 0;
 
     do
     {
         // find the largest (state,value,index) 1-ring neighbor for each node
-        cusp::detail::device::cuda::spmv_csr_scalar
-        (num_rows,
-         row_offsets.begin(), column_indices.begin(), thrust::constant_iterator<Tuple>(Tuple(0,0)),  // XXX should we mask explicit zeros? (e.g. DIA, array2d)
-         thrust::make_zip_iterator(thrust::make_tuple(states.begin(), random_values.begin(), thrust::counting_iterator<IndexType>(0))),
-         thrust::make_zip_iterator(thrust::make_tuple(states.begin(), random_values.begin(), thrust::counting_iterator<IndexType>(0))),
-         thrust::make_zip_iterator(thrust::make_tuple(maximal_states.begin(), maximal_values.begin(), maximal_indices.begin())),
-         thrust::project2nd<Tuple,Tuple>(), thrust::maximum<Tuple>());
-        //cusp::detail::device::cuda::spmv_coo
-        //    (num_rows, num_entries,
-        //     row_indices.begin(), column_indices.begin(), thrust::constant_iterator<Tuple>(Tuple(0,0)),  // XXX should we mask explicit zeros? (e.g. DIA, array2d)
-        //     thrust::make_zip_iterator(thrust::make_tuple(states.begin(), random_values.begin(), thrust::counting_iterator<IndexType>(0))),
-        //     thrust::make_zip_iterator(thrust::make_tuple(states.begin(), random_values.begin(), thrust::counting_iterator<IndexType>(0))),
-        //     thrust::make_zip_iterator(thrust::make_tuple(maximal_states.begin(), maximal_values.begin(), maximal_indices.begin())),
-        //     thrust::project2nd<Tuple,Tuple>(), thrust::maximum<Tuple>());
+        cusp::generalized_spmv(A, x, x, z, thrust::project2nd<Tuple1,Tuple2>(), thrust::maximum<Tuple2>());
 
         // find the largest (state,value,index) k-ring neighbor for each node (if k > 1)
         for(size_t ring = 1; ring < k; ring++)
@@ -156,14 +142,7 @@ void compute_mis_states(const size_t k,
             last_indices.resize(N);
             last_indices.swap(maximal_indices);
 
-            // TODO replace with call to generalized method
-            cusp::detail::device::cuda::spmv_csr_scalar
-            (num_rows,
-             row_offsets.begin(), column_indices.begin(), thrust::constant_iterator<Tuple>(Tuple(0,0)),  // XXX should we mask explicit zeros? (e.g. DIA, array2d)
-             thrust::make_zip_iterator(thrust::make_tuple(last_states.begin(), last_values.begin(), last_indices.begin())),
-             thrust::make_zip_iterator(thrust::make_tuple(last_states.begin(), last_values.begin(), last_indices.begin())),
-             thrust::make_zip_iterator(thrust::make_tuple(maximal_states.begin(), maximal_values.begin(), maximal_indices.begin())),
-             thrust::project2nd<Tuple,Tuple>(), thrust::maximum<Tuple>());
+            cusp::generalized_spmv(A, y, y, z, thrust::project2nd<Tuple1,Tuple2>(), thrust::maximum<Tuple2>());
         }
 
         // label local maxima as MIS nodes
@@ -178,89 +157,6 @@ void compute_mis_states(const size_t k,
 
         active_nodes = thrust::count(states.begin(), states.end(), 1);
 
-//        num_iters++;
-//        std::cout << "(iter " <<  num_iters << "," << (double(active_nodes) / double(N)) << ")" << std::endl;
-//        std::cout << "N= " << N << " iteration=" << num_iters << " active_nodes=" << active_nodes << " compaction_threshold=" << compaction_threshold << "\n";
-//        std::cout << "states\n";
-//        cusp::print(states);
-//
-//        if (active_nodes < compaction_threshold)
-//        {
-//            cusp::array1d<bool,MemorySpace> retained_nodes(N);
-//            cusp::array1d<bool,MemorySpace> last_retained_nodes(N);
-//
-//            thrust::transform(maximal_states.begin(), maximal_states.end(), thrust::constant_iterator<NodeStateType>(1), retained_nodes.begin(), thrust::equal_to<NodeStateType>());
-//
-//            // propagate retained region outward
-//            for(size_t ring = 1; 2*ring <= k; ring++)
-//            {
-//                retained_nodes.swap(last_retained_nodes);
-//
-//                // TODO replace with call to generalized method
-//                cusp::detail::device::cuda::spmv_coo
-//                    (num_rows, num_entries,
-//                     row_indices.begin(), column_indices.begin(), thrust::constant_iterator<bool>(false),
-//                     last_retained_nodes.begin(),
-//                     last_retained_nodes.begin(),
-//                     retained_nodes.begin(),
-//                     thrust::project2nd<bool,bool>(), thrust::logical_or<bool>());
-//            }
-//
-//            std::cout << "retained nodes\n";
-//            cusp::print(retained_nodes);
-//
-//            size_t num_subgraph_nodes = thrust::count(retained_nodes.begin(), retained_nodes.end(), true);
-//            size_t num_subgraph_edges = thrust::count
-//                (thrust::make_zip_iterator(thrust::make_tuple(thrust::make_permutation_iterator(retained_nodes.begin(), row_indices.begin()),
-//                                                              thrust::make_permutation_iterator(retained_nodes.begin(), column_indices.begin()))),
-//                 thrust::make_zip_iterator(thrust::make_tuple(thrust::make_permutation_iterator(retained_nodes.begin(), row_indices.end()),
-//                                                              thrust::make_permutation_iterator(retained_nodes.begin(), column_indices.end()))),
-//                 thrust::make_tuple(true,true));
-//
-//
-//            std::cout << "subgraph nodes: " << double(100*num_subgraph_nodes)/N << "% edges " << double(100*num_subgraph_edges)/num_entries << "%" << std::endl;
-//
-//            // map old indices into subgraph indices
-//            cusp::array1d<IndexType, MemorySpace> index_map(N);
-//            thrust::transform_exclusive_scan(retained_nodes.begin(), retained_nodes.end(), index_map.begin(), thrust::identity<IndexType>(), IndexType(0), thrust::plus<IndexType>());
-//
-//            std::cout << "index map\n";
-//            cusp::print(index_map);
-//
-//            // storage for subgraph
-//            cusp::array1d<IndexType,     MemorySpace> subgraph_row_indices(num_subgraph_edges);
-//            cusp::array1d<IndexType,     MemorySpace> subgraph_column_indices(num_subgraph_edges);
-//            cusp::array1d<NodeStateType, MemorySpace> subgraph_states(num_subgraph_nodes);
-//            cusp::array1d<RandomType,    MemorySpace> subgraph_random_values(num_subgraph_nodes);
-//
-//            thrust::copy_if
-//                (thrust::make_zip_iterator(thrust::make_tuple(thrust::make_permutation_iterator(index_map.begin(), row_indices.begin()),
-//                                                              thrust::make_permutation_iterator(index_map.begin(), column_indices.begin()))),
-//                 thrust::make_zip_iterator(thrust::make_tuple(thrust::make_permutation_iterator(index_map.begin(), row_indices.end()),
-//                                                              thrust::make_permutation_iterator(index_map.begin(), column_indices.end()))),
-//                 thrust::make_zip_iterator(thrust::make_tuple(thrust::make_permutation_iterator(retained_nodes.begin(), row_indices.begin()),
-//                                                              thrust::make_permutation_iterator(retained_nodes.begin(), column_indices.begin()))),
-//                 thrust::make_zip_iterator(thrust::make_tuple(subgraph_row_indices.begin(),
-//                                                              subgraph_column_indices.begin())),
-//                 is_subgraph_edge());
-//
-//            thrust::scatter_if
-//                (thrust::make_zip_iterator(thrust::make_tuple(states.begin(), random_values.begin())),
-//                 thrust::make_zip_iterator(thrust::make_tuple(states.end(),   random_values.end())),
-//                 index_map.begin(),
-//                 retained_nodes.begin(),
-//                 thrust::make_zip_iterator(thrust::make_tuple(subgraph_states.begin(), subgraph_random_values.begin())));
-//
-//
-//            compute_mis_states(k, subgraph_row_indices, subgraph_column_indices, subgraph_random_values, subgraph_states);
-//
-//            // update active node states from subgraph
-//            thrust::gather_if(index_map.begin(), index_map.end(),
-//                              retained_nodes.begin(),
-//                              subgraph_states.begin(),
-//                              states.begin());
-//            return;
-//        }
     } while (active_nodes > 0);
 }
 

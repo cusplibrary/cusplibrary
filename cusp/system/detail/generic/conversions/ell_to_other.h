@@ -56,32 +56,38 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
              cusp::ell_format&,
              cusp::coo_format&)
 {
-    typedef typename DestinationType::index_type IndexType;
+    using namespace thrust::placeholders;
 
-    const IndexType pitch = src.column_indices.pitch;
+    typedef typename DestinationType::index_type IndexType;
+    typedef typename DestinationType::value_type ValueType;
+    typedef typename DestinationType::memory_space MemorySpace;
 
     // define types used to programatically generate row_indices
     typedef typename thrust::counting_iterator<IndexType> IndexIterator;
-    typedef typename thrust::transform_iterator<modulus_value<IndexType>, IndexIterator> RowIndexIterator;
+    typedef typename thrust::transform_iterator<divide_value<IndexType>, IndexIterator> RowIndexIterator;
 
-    RowIndexIterator row_indices_begin(IndexIterator(0), modulus_value<IndexType>(pitch));
+    typedef logical_to_other_physical_functor<IndexType, cusp::row_major, cusp::column_major>    PermFunctor;
+    typedef typename thrust::transform_iterator<PermFunctor, IndexIterator>                      PermIndexIterator;
+    typedef typename SourceType::column_indices_array_type::values_array_type::const_iterator    IndicesIterator;
+    typedef typename SourceType::values_array_type::values_array_type::const_iterator            ValueIterator;
+    typedef typename thrust::permutation_iterator<IndicesIterator, PermIndexIterator>            PermColumnIndicesIterator;
+    typedef typename thrust::permutation_iterator<ValueIterator, PermIndexIterator>              PermValueIterator;
 
-    // compute true number of nonzeros in ELL
-    const IndexType num_entries =
-        thrust::count_if
-        (thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, src.column_indices.values.begin())),
-         thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, src.column_indices.values.begin())) + src.column_indices.values.size(),
-         is_valid_ell_index<IndexType>(src.num_rows));
+    RowIndexIterator    row_indices_begin(IndexIterator(0),    divide_value<IndexType>(src.values.num_cols));
+    PermIndexIterator   perm_indices_begin(IndexIterator(0),   PermFunctor(src.values.num_rows, src.values.num_cols, src.values.pitch));
+    PermColumnIndicesIterator   perm_column_indices_begin(src.column_indices.values.begin(),  perm_indices_begin);
+    PermValueIterator   perm_values_begin(src.values.values.begin(),  perm_indices_begin);
 
     // allocate output storage
-    dst.resize(src.num_rows, src.num_cols, num_entries);
+    dst.resize(src.num_rows, src.num_cols, src.num_entries);
 
-    // copy valid entries to COO format
+    // copy valid entries to mixed COO/CSR format
     thrust::copy_if
-    (thrust::make_permutation_iterator(thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, src.column_indices.values.begin(), src.values.values.begin())), thrust::make_transform_iterator(thrust::counting_iterator<IndexType>(0), logical_to_other_physical_functor<IndexType,cusp::row_major,cusp::column_major>(src.values.num_rows, src.values.num_cols, src.values.pitch))),
-     thrust::make_permutation_iterator(thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, src.column_indices.values.begin(), src.values.values.begin())), thrust::make_transform_iterator(thrust::counting_iterator<IndexType>(0), logical_to_other_physical_functor<IndexType,cusp::row_major,cusp::column_major>(src.values.num_rows, src.values.num_cols, src.values.pitch))) + src.column_indices.values.size(),
-     thrust::make_zip_iterator(thrust::make_tuple(dst.row_indices.begin(), dst.column_indices.begin(), dst.values.begin())),
-     is_valid_ell_index<IndexType>(src.num_rows));
+     (thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, perm_column_indices_begin, perm_values_begin)),
+      thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, perm_column_indices_begin, perm_values_begin)) + src.values.num_entries,
+      perm_values_begin,
+      thrust::make_zip_iterator(thrust::make_tuple(dst.row_indices.begin(), dst.column_indices.begin(), dst.values.begin())),
+      _1 != ValueType(0));
 }
 
 template <typename DerivedPolicy, typename SourceType, typename DestinationType>
@@ -92,36 +98,41 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
         cusp::ell_format&,
         cusp::csr_format&)
 {
-    typedef typename DestinationType::index_type IndexType;
-    typedef typename DestinationType::memory_space MemorySpace;
+    using namespace thrust::placeholders;
 
-    const IndexType pitch               = src.column_indices.pitch;
+    typedef typename DestinationType::index_type IndexType;
+    typedef typename DestinationType::value_type ValueType;
+    typedef typename DestinationType::memory_space MemorySpace;
 
     // define types used to programatically generate row_indices
     typedef typename thrust::counting_iterator<IndexType> IndexIterator;
-    typedef typename thrust::transform_iterator<modulus_value<IndexType>, IndexIterator> RowIndexIterator;
+    typedef typename thrust::transform_iterator<divide_value<IndexType>, IndexIterator> RowIndexIterator;
 
-    RowIndexIterator row_indices_begin(IndexIterator(0), modulus_value<IndexType>(pitch));
+    typedef logical_to_other_physical_functor<IndexType, cusp::row_major, cusp::column_major>    PermFunctor;
+    typedef typename thrust::transform_iterator<PermFunctor, IndexIterator>                      PermIndexIterator;
+    typedef typename SourceType::column_indices_array_type::values_array_type::const_iterator    IndicesIterator;
+    typedef typename SourceType::values_array_type::values_array_type::const_iterator            ValueIterator;
+    typedef typename thrust::permutation_iterator<IndicesIterator, PermIndexIterator>            PermColumnIndicesIterator;
+    typedef typename thrust::permutation_iterator<ValueIterator, PermIndexIterator>              PermValueIterator;
 
-    // compute true number of nonzeros in ELL
-    const IndexType num_entries =
-        thrust::count_if
-        (thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, src.column_indices.values.begin())),
-         thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, src.column_indices.values.begin())) + src.column_indices.values.size(),
-         is_valid_ell_index<IndexType>(src.num_rows));
+    RowIndexIterator    row_indices_begin(IndexIterator(0),    divide_value<IndexType>(src.values.num_cols));
+    PermIndexIterator   perm_indices_begin(IndexIterator(0),   PermFunctor(src.values.num_rows, src.values.num_cols, src.values.pitch));
+    PermColumnIndicesIterator   perm_column_indices_begin(src.column_indices.values.begin(),  perm_indices_begin);
+    PermValueIterator   perm_values_begin(src.values.values.begin(),  perm_indices_begin);
 
     // allocate output storage
-    dst.resize(src.num_rows, src.num_cols, num_entries);
+    dst.resize(src.num_rows, src.num_cols, src.num_entries);
 
     // create temporary row_indices array to capture valid ELL row indices
-    cusp::array1d<IndexType, MemorySpace> row_indices(num_entries);
+    cusp::array1d<IndexType, MemorySpace> row_indices(src.num_entries);
 
     // copy valid entries to mixed COO/CSR format
     thrust::copy_if
-    (thrust::make_permutation_iterator(thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, src.column_indices.values.begin(), src.values.values.begin())), thrust::make_transform_iterator(thrust::counting_iterator<IndexType>(0), logical_to_other_physical_functor<IndexType,cusp::row_major,cusp::column_major>(src.values.num_rows, src.values.num_cols, src.values.pitch))),
-     thrust::make_permutation_iterator(thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, src.column_indices.values.begin(), src.values.values.begin())), thrust::make_transform_iterator(thrust::counting_iterator<IndexType>(0), logical_to_other_physical_functor<IndexType,cusp::row_major,cusp::column_major>(src.values.num_rows, src.values.num_cols, src.values.pitch))) + src.column_indices.values.size(),
-     thrust::make_zip_iterator(thrust::make_tuple(row_indices.begin(), dst.column_indices.begin(), dst.values.begin())),
-     is_valid_ell_index<IndexType>(src.num_rows));
+     (thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, perm_column_indices_begin, perm_values_begin)),
+      thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, perm_column_indices_begin, perm_values_begin)) + src.values.num_entries,
+      perm_values_begin,
+      thrust::make_zip_iterator(thrust::make_tuple(row_indices.begin(), dst.column_indices.begin(), dst.values.begin())),
+      _1 != ValueType(0));
 
     // convert COO row_indices to CSR row_offsets
     cusp::detail::indices_to_offsets(row_indices, dst.row_offsets);

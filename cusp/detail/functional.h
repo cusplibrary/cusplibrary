@@ -149,15 +149,19 @@ struct less_equal_value
     less_equal_value(const T value) : Parent(value) {}
 };
 
-template <typename T, typename BinaryFunction>
+template <typename BinaryFunction>
 struct combine_tuple_base_functor
-    : public thrust::unary_function<thrust::tuple<T,T>,typename BinaryFunction::result_type>
+    : public thrust::unary_function<
+      thrust::tuple<typename BinaryFunction::first_argument_type,
+                    typename BinaryFunction::second_argument_type>,
+                    typename BinaryFunction::result_type>
 {
     BinaryFunction op;
 
     template<typename Tuple>
     __host__ __device__
-    T operator()(const Tuple& t)
+    typename BinaryFunction::result_type
+    operator()(const Tuple& t)
     {
         return op(thrust::get<0>(t),thrust::get<1>(t));
     }
@@ -165,15 +169,15 @@ struct combine_tuple_base_functor
 
 template <typename T>
 struct sum_tuple_functor
-  : public combine_tuple_base_functor< T, thrust::plus<T> >{};
+  : public combine_tuple_base_functor< thrust::plus<T> >{};
 
 template <typename T>
 struct equal_tuple_functor
-  : public combine_tuple_base_functor< T, thrust::equal_to<T> >{};
+  : public combine_tuple_base_functor< thrust::equal_to<T> >{};
 
 template <typename T>
 struct not_equal_tuple_functor
-  : public combine_tuple_base_functor< T, thrust::not_equal_to<T> >{};
+  : public combine_tuple_base_functor< thrust::not_equal_to<T> >{};
 
 template <typename IndexType>
 struct occupied_diagonal_functor

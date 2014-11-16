@@ -55,8 +55,9 @@ namespace cusp
  *  compute a matrix-vector product.
  *
  *  \code
- *  #include <cusp/multiply.h>
+ *  #include <cusp/array1d.h>
  *  #include <cusp/array2d.h>
+ *  #include <cusp/multiply.h>
  *  #include <cusp/print.h>
  *
  *  int main(void)
@@ -85,11 +86,11 @@ namespace cusp
  *  \endcode
  */
 template <typename LinearOperator,
-          typename MatrixOrVector1,
-          typename MatrixOrVector2>
+         typename MatrixOrVector1,
+         typename MatrixOrVector2>
 void multiply(const LinearOperator&  A,
               const MatrixOrVector1& B,
-                    MatrixOrVector2& C);
+              MatrixOrVector2& C);
 
 template <typename DerivedPolicy,
          typename LinearOperator,
@@ -98,7 +99,7 @@ template <typename DerivedPolicy,
 void multiply(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
               const LinearOperator&  A,
               const MatrixOrVector1& B,
-                    MatrixOrVector2& C);
+              MatrixOrVector2& C);
 
 template <typename LinearOperator,
          typename MatrixOrVector1,
@@ -127,6 +128,93 @@ void multiply(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
               UnaryFunction  initialize,
               BinaryFunction1 combine,
               BinaryFunction2 reduce);
+
+/**
+ * \brief Implements generalized matrix-vector multiplication
+ *
+ * \par Overview
+ *
+ * \p generalized multiply can be used with dense and sparse matrices, and user-defined
+ * \p linear_operator objects.
+ *
+ * \tparam LinearOperator Type of first matrix
+ * \tparam Vector1 Type of second input vector
+ * \tparam Vector2 Type of third  input vector
+ * \tparam Vector3 Type of output vector
+ *
+ * \param A input matrix
+ * \param x input vector
+ * \param y input vector
+ * \param z output vector
+ *
+ * \par Example
+ *
+ *  The following code snippet demonstrates how to use \p multiply to
+ *  compute a matrix-vector product.
+ *
+ *  \code
+ *  #include <cusp/array1d.h>
+ *  #include <cusp/array2d.h>
+ *  #include <cusp/multiply.h>
+ *  #include <cusp/print.h>
+ *
+ *  int main(void)
+ *  {
+ *      // initialize matrix
+ *      cusp::array2d<float, cusp::host_memory> A(2,2);
+ *      A(0,0) = 10;  A(0,1) = 20;
+ *      A(1,0) = 40;  A(1,1) = 50;
+ *
+ *      // initialize input vector
+ *      cusp::array1d<float, cusp::host_memory> x(2);
+ *      x[0] = 1;
+ *      x[1] = 2;
+ *
+ *      // initial RHS filled with 2's
+ *      cusp::constant_array<float> y(2, 2);
+ *
+ *      // allocate output vector
+ *      cusp::array1d<float, cusp::host_memory> z(2);
+ *
+ *      // compute z = y + (A * x)
+ *      cusp::generalized_multiply(A, x, y, z,
+ *      thrust::multiplies<float>(),
+ *      thrust::plus<float>());
+ *
+ *      // print z
+ *      cusp::print(z);
+ *
+ *      return 0;
+ *  }
+ *  \endcode
+ */
+template <typename LinearOperator,
+         typename Vector1,
+         typename Vector2,
+         typename Vector3,
+         typename BinaryFunction1,
+         typename BinaryFunction2>
+void generalized_spmv(const LinearOperator&  A,
+                      const Vector1& x,
+                      const Vector2& y,
+                            Vector3& z,
+                      BinaryFunction1 combine,
+                      BinaryFunction2 reduce);
+
+template <typename DerivedPolicy,
+         typename LinearOperator,
+         typename Vector1,
+         typename Vector2,
+         typename Vector3,
+         typename BinaryFunction1,
+         typename BinaryFunction2>
+void generalized_spmv(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                      const LinearOperator&  A,
+                      const Vector1& x,
+                      const Vector2& y,
+                            Vector3& z,
+                      BinaryFunction1 combine,
+                      BinaryFunction2 reduce);
 /*! \}
  */
 

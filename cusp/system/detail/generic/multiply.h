@@ -65,9 +65,29 @@ multiply(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
          const MatrixOrVector1& B,
          MatrixOrVector2& C);
 
+template <typename DerivedPolicy,
+          typename LinearOperator,
+          typename Vector1,
+          typename Vector2,
+          typename Vector3,
+          typename BinaryFunction1,
+          typename BinaryFunction2>
+void generalized_spmv(thrust::execution_policy<DerivedPolicy>& exec,
+              LinearOperator&  A,
+              Vector1& x,
+              Vector2& y,
+              Vector3& z,
+              BinaryFunction1 combine,
+              BinaryFunction2 reduce,
+              sparse_format&,
+              array1d_format&,
+              array1d_format&,
+              array1d_format&);
+
 } // end namespace generic
 } // end namespace detail
 } // end namespace system
 } // end namespace cusp
 
+#include <cusp/system/detail/generic/generalized_spmv.inl>
 #include <cusp/system/detail/generic/multiply.inl>

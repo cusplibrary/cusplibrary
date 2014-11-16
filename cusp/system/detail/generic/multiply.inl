@@ -41,21 +41,6 @@ namespace detail
 namespace generic
 {
 
-template<typename T>
-struct max_functor : public thrust::binary_function<T,T,T>
-{
-    const T base;
-
-    max_functor(const T base)
-      : base(base) {}
-
-    __host__ __device__
-    T operator()(const T col)
-    {
-        return thrust::max(base, col);
-    }
-};
-
 template <typename DerivedPolicy,
          typename LinearOperator, typename MatrixOrVector1, typename MatrixOrVector2,
          typename UnaryFunction,  typename BinaryFunction1, typename BinaryFunction2>
@@ -78,7 +63,7 @@ void multiply(thrust::execution_policy<DerivedPolicy> &exec,
     typedef logical_to_other_physical_functor<IndexType,cusp::row_major,cusp::column_major> LogicalFunctor;
 
     // define types used to programatically generate column_indices
-    typedef combine_tuple_base_functor< IndexType, thrust::plus<IndexType> > sum_tuple_functor;
+    typedef combine_tuple_base_functor< thrust::plus<IndexType> > sum_tuple_functor;
     typedef typename cusp::array1d<IndexType,MemorySpace>::const_iterator ConstElementIterator;
     typedef typename thrust::transform_iterator<divide_value<IndexType>, IndexIterator> DivideIterator;
     typedef typename thrust::permutation_iterator<ConstElementIterator,DivideIterator> OffsetsPermIterator;
@@ -107,7 +92,7 @@ void multiply(thrust::execution_policy<DerivedPolicy> &exec,
                                     thrust::make_permutation_iterator(B.begin(),
                                       thrust::make_transform_iterator(column_indices_begin, max_functor<IndexType>(0))),
                                       A.values.values.begin())),
-                              combine_tuple_base_functor<ValueType,BinaryFunction1>()),
+                              combine_tuple_base_functor<BinaryFunction1>()),
                           stride_indices_begin),
                           thrust::make_discard_iterator(),
                           vals.begin(),
@@ -163,7 +148,7 @@ void multiply(thrust::execution_policy<DerivedPolicy> &exec,
                                       thrust::make_transform_iterator(
                                         A.column_indices.values.begin(), max_functor<IndexType>(0))),
                                       A.values.values.begin())),
-                              combine_tuple_base_functor<ValueType,BinaryFunction1>()),
+                              combine_tuple_base_functor<BinaryFunction1>()),
                           stride_indices_begin),
                           thrust::make_discard_iterator(),
                           vals.begin(),
@@ -207,7 +192,7 @@ void multiply(thrust::execution_policy<DerivedPolicy> &exec,
                                           thrust::make_transform_iterator(A.column_indices.begin(),
                                                                           max_functor<IndexType>(0))),
                                           A.values.begin())),
-                              combine_tuple_base_functor<ValueType,BinaryFunction1>()),
+                              combine_tuple_base_functor<BinaryFunction1>()),
                               rows.begin(),
                               vals.begin(),
                               thrust::equal_to<IndexType>(),

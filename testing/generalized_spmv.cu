@@ -1,75 +1,17 @@
 #include <unittest/unittest.h>
 
-#include <cusp/detail/device/generalized_spmv/coo_flat.h>
-#include <cusp/detail/device/generalized_spmv/csr_scalar.h>
-
 #include <cusp/array1d.h>
 #include <cusp/coo_matrix.h>
 #include <cusp/csr_matrix.h>
+#include <cusp/dia_matrix.h>
+#include <cusp/ell_matrix.h>
+#include <cusp/hyb_matrix.h>
 #include <cusp/multiply.h>
 #include <cusp/gallery/poisson.h>
 #include <cusp/gallery/random.h>
 
-template <typename Matrix,
-         typename Array1,
-         typename Array2,
-         typename Array3,
-         typename BinaryFunction1,
-         typename BinaryFunction2>
-void generalized_spmv(const Matrix& A,
-                      const Array1& x,
-                      const Array2& y,
-                      Array3& z,
-                      BinaryFunction1 combine,
-                      BinaryFunction2 reduce,
-                      cusp::csr_format)
-{
-    cusp::detail::device::cuda::spmv_csr_scalar
-    (A.num_rows,
-     A.row_offsets.begin(), A.column_indices.begin(), A.values.begin(),
-     x.begin(), y.begin(), z.begin(),
-     combine, reduce);
-}
-
-template <typename Matrix,
-         typename Array1,
-         typename Array2,
-         typename Array3,
-         typename BinaryFunction1,
-         typename BinaryFunction2>
-void generalized_spmv(const Matrix& A,
-                      const Array1& x,
-                      const Array2& y,
-                      Array3& z,
-                      BinaryFunction1 combine,
-                      BinaryFunction2 reduce,
-                      cusp::coo_format)
-{
-    cusp::detail::device::cuda::spmv_coo
-    (A.num_rows, A.num_entries,
-     A.row_indices.begin(), A.column_indices.begin(), A.values.begin(),
-     x.begin(), y.begin(), z.begin(),
-     combine, reduce);
-}
-
-template <typename Matrix,
-         typename Array1,
-         typename Array2,
-         typename Array3,
-         typename BinaryFunction1,
-         typename BinaryFunction2>
-void generalized_spmv(const Matrix& A,
-                      const Array1& x,
-                      const Array2& y,
-                      Array3& z,
-                      BinaryFunction1 combine,
-                      BinaryFunction2 reduce)
-{
-    generalized_spmv(A, x, y, z, combine, reduce, typename Matrix::format());
-}
-
 template <typename TestMatrix>
-void _TestGeneralizedSpMV(void)
+void TestGeneralizedSpMV()
 {
     typedef typename TestMatrix::index_type   IndexType;
     typedef typename TestMatrix::value_type   ValueType;
@@ -191,7 +133,7 @@ void _TestGeneralizedSpMV(void)
         cusp::array1d<ValueType, MemorySpace> y(M.num_rows,0);
         cusp::array1d<ValueType, MemorySpace> z = unittest::random_integers<char>(M.num_rows);
 
-        generalized_spmv(M, x, y, z, thrust::multiplies<ValueType>(), thrust::plus<ValueType>());
+        cusp::generalized_spmv(M, x, y, z, thrust::multiplies<ValueType>(), thrust::plus<ValueType>());
 
         // compute reference
         cusp::array1d<ValueType, MemorySpace> reference(M.num_rows,0);
@@ -200,22 +142,5 @@ void _TestGeneralizedSpMV(void)
         ASSERT_EQUAL(z, reference);
     }
 }
-
-
-void TestCsrGeneralizedSpMV(void)
-{
-    KNOWN_FAILURE;
-    //typedef cusp::csr_matrix<int,float,cusp::device_memory> TestMatrix;
-    //_TestGeneralizedSpMV<TestMatrix>();
-}
-DECLARE_UNITTEST(TestCsrGeneralizedSpMV);
-
-void TestCooGeneralizedSpMV(void)
-{
-    KNOWN_FAILURE;
-    //typedef cusp::coo_matrix<int,float,cusp::device_memory> TestMatrix;
-    //_TestGeneralizedSpMV<TestMatrix>();
-}
-DECLARE_UNITTEST(TestCooGeneralizedSpMV);
-
+DECLARE_SPARSE_MATRIX_UNITTEST(TestGeneralizedSpMV);
 

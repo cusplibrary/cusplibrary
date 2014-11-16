@@ -98,6 +98,8 @@ void multiply(const LinearOperator&  A,
               BinaryFunction1 combine,
               BinaryFunction2 reduce)
 {
+    using thrust::system::detail::generic::select_system;
+
     typedef typename LinearOperator::memory_space  System1;
     typedef typename MatrixOrVector1::memory_space System2;
     typedef typename MatrixOrVector2::memory_space System3;
@@ -108,6 +110,62 @@ void multiply(const LinearOperator&  A,
 
     cusp::multiply(select_system(system1,system2,system3), A, B, C,
                    initialize, combine, reduce);
+}
+
+template <typename DerivedPolicy,
+         typename LinearOperator,
+         typename Vector1,
+         typename Vector2,
+         typename Vector3,
+         typename BinaryFunction1,
+         typename BinaryFunction2>
+void generalized_spmv(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                      const LinearOperator&  A,
+                      const Vector1& x,
+                      const Vector2& y,
+                      Vector3& z,
+                      BinaryFunction1 combine,
+                      BinaryFunction2 reduce)
+{
+    typename LinearOperator::format format1;
+    typename Vector1::format format2;
+    typename Vector2::format format3;
+    typename Vector3::format format4;
+
+    using cusp::system::detail::generic::generalized_spmv;
+
+    generalized_spmv(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
+                     (LinearOperator&) A, (Vector1&) x, (Vector2&)y, (Vector3&)z,
+                     combine, reduce,
+                     format1, format2, format3, format4);
+}
+
+template <typename LinearOperator,
+         typename Vector1,
+         typename Vector2,
+         typename Vector3,
+         typename BinaryFunction1,
+         typename BinaryFunction2>
+void generalized_spmv(const LinearOperator&  A,
+                      const Vector1& x,
+                      const Vector2& y,
+                      Vector3& z,
+                      BinaryFunction1 combine,
+                      BinaryFunction2 reduce)
+{
+    using thrust::system::detail::generic::select_system;
+
+    typedef typename LinearOperator::memory_space  System1;
+    typedef typename Vector1::memory_space System2;
+    typedef typename Vector2::memory_space System3;
+    typedef typename Vector3::memory_space System4;
+
+    System1 system1;
+    System2 system2;
+    System3 system3;
+    System3 system4;
+
+    cusp::generalized_spmv(select_system(system1,system2,system3,system4), A, x, y, z, combine, reduce);
 }
 
 } // end namespace cusp
