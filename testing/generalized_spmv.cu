@@ -130,13 +130,13 @@ void TestGeneralizedSpMV()
 
         // allocate vectors
         cusp::array1d<ValueType, MemorySpace> x = unittest::random_integers<bool>(M.num_cols);
-        cusp::array1d<ValueType, MemorySpace> y(M.num_rows,0);
+        cusp::array1d<ValueType, MemorySpace> y(M.num_rows,ValueType(0));
         cusp::array1d<ValueType, MemorySpace> z = unittest::random_integers<char>(M.num_rows);
 
         cusp::generalized_spmv(M, x, y, z, thrust::multiplies<ValueType>(), thrust::plus<ValueType>());
 
         // compute reference
-        cusp::array1d<ValueType, MemorySpace> reference(M.num_rows,0);
+        cusp::array1d<ValueType, MemorySpace> reference(M.num_rows,ValueType(0));
         cusp::multiply(M, x, reference);
 
         ASSERT_EQUAL(z, reference);

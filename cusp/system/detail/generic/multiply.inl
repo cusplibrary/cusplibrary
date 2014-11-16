@@ -58,42 +58,44 @@ void multiply(thrust::execution_policy<DerivedPolicy> &exec,
     typedef typename LinearOperator::memory_space MemorySpace;
 
     // define types used to programatically generate row_indices
-    typedef typename thrust::counting_iterator<IndexType> IndexIterator;
-    typedef typename thrust::transform_iterator<modulus_value<IndexType>, IndexIterator> RowIndexIterator;
-    typedef logical_to_other_physical_functor<IndexType,cusp::row_major,cusp::column_major> LogicalFunctor;
+    typedef typename thrust::counting_iterator<IndexType>                                        IndexIterator;
+    typedef typename thrust::transform_iterator<divide_value<IndexType>, IndexIterator>          RowIndexIterator;
 
     // define types used to programatically generate column_indices
-    typedef combine_tuple_base_functor< thrust::plus<IndexType> > sum_tuple_functor;
-    typedef typename cusp::array1d<IndexType,MemorySpace>::const_iterator ConstElementIterator;
-    typedef typename thrust::transform_iterator<divide_value<IndexType>, IndexIterator> DivideIterator;
-    typedef typename thrust::permutation_iterator<ConstElementIterator,DivideIterator> OffsetsPermIterator;
-    typedef typename thrust::tuple<OffsetsPermIterator, RowIndexIterator> IteratorTuple;
-    typedef typename thrust::zip_iterator<IteratorTuple> ZipIterator;
-    typedef typename thrust::transform_iterator<sum_tuple_functor, ZipIterator> ColumnIndexIterator;
-    typedef typename thrust::transform_iterator<LogicalFunctor, IndexIterator> StrideIndexIterator;
+    typedef typename cusp::array1d<IndexType,MemorySpace>::const_iterator                        ConstElementIterator;
+    typedef typename thrust::transform_iterator<modulus_value<IndexType>, IndexIterator>         ModulusIterator;
+    typedef typename thrust::permutation_iterator<ConstElementIterator,ModulusIterator>          OffsetsPermIterator;
+    typedef typename thrust::tuple<OffsetsPermIterator, RowIndexIterator>                        IteratorTuple;
+    typedef typename thrust::zip_iterator<IteratorTuple>                                         ZipIterator;
+    typedef typename thrust::transform_iterator<sum_tuple_functor<IndexType>, ZipIterator>       ColumnIndexIterator;
 
-    LogicalFunctor logical_functor(A.values.num_rows, A.values.num_cols, A.values.pitch);
+    typedef logical_to_other_physical_functor<IndexType, cusp::row_major, cusp::column_major>    PermFunctor;
+    typedef typename LinearOperator::values_array_type::values_array_type::const_iterator        ValueIterator;
+    typedef typename thrust::transform_iterator<PermFunctor, IndexIterator>                      PermIndexIterator;
+    typedef typename thrust::permutation_iterator<ValueIterator, PermIndexIterator>              PermValueIterator;
 
-    RowIndexIterator row_indices_begin(IndexIterator(0), modulus_value<IndexType>(A.values.pitch));
-    DivideIterator gather_indices_begin(IndexIterator(0), divide_value<IndexType>(A.values.pitch));
+    RowIndexIterator row_indices_begin(IndexIterator(0), divide_value<IndexType>(A.values.num_cols));
+
+    ModulusIterator gather_indices_begin(IndexIterator(0), modulus_value<IndexType>(A.values.num_cols));
     OffsetsPermIterator offsets_begin(A.diagonal_offsets.begin(), gather_indices_begin);
     ZipIterator offset_modulus_tuple(thrust::make_tuple(offsets_begin, row_indices_begin));
-    ColumnIndexIterator column_indices_begin(offset_modulus_tuple, sum_tuple_functor());
+    ColumnIndexIterator column_indices_begin(offset_modulus_tuple, sum_tuple_functor<IndexType>());
 
-    StrideIndexIterator stride_indices_begin(IndexIterator(0), logical_functor);
+    PermIndexIterator   perm_indices_begin(IndexIterator(0),   PermFunctor(A.values.num_rows, A.values.num_cols, A.values.pitch));
+    PermValueIterator   perm_values_begin(A.values.values.begin(),  perm_indices_begin);
+
     thrust::detail::temporary_array<ValueType, DerivedPolicy> vals(exec, A.num_rows);
 
     thrust::reduce_by_key(exec,
                           row_indices_begin, row_indices_begin + A.values.values.size(),
-                          thrust::make_permutation_iterator(
                           thrust::make_transform_iterator(
                               thrust::make_zip_iterator(
                                   thrust::make_tuple(
                                     thrust::make_permutation_iterator(B.begin(),
-                                      thrust::make_transform_iterator(column_indices_begin, max_functor<IndexType>(0))),
-                                      A.values.values.begin())),
+                                      thrust::make_transform_iterator(column_indices_begin,
+                                        valid_index_functor<IndexType>(A.num_cols))),
+                                      perm_values_begin)),
                               combine_tuple_base_functor<BinaryFunction1>()),
-                          stride_indices_begin),
                           thrust::make_discard_iterator(),
                           vals.begin(),
                           thrust::equal_to<IndexType>(),
@@ -130,6 +132,12 @@ void multiply(thrust::execution_policy<DerivedPolicy> &exec,
     typedef typename thrust::transform_iterator<divide_value<IndexType>, IndexIterator> RowIndexIterator;
     typedef typename thrust::transform_iterator<LogicalFunctor, IndexIterator> StrideIndexIterator;
 
+    if(A.num_entries == 0)
+    {
+        thrust::transform(exec, C.begin(), C.end(), C.begin(), initialize);
+        return;
+    }
+
     size_t num_entries = A.values.num_entries;
     size_t num_entries_per_row = A.column_indices.num_cols;
     LogicalFunctor logical_functor(A.values.num_rows, A.values.num_cols, A.values.pitch);
@@ -146,7 +154,8 @@ void multiply(thrust::execution_policy<DerivedPolicy> &exec,
                                   thrust::make_tuple(
                                     thrust::make_permutation_iterator(B.begin(),
                                       thrust::make_transform_iterator(
-                                        A.column_indices.values.begin(), max_functor<IndexType>(0))),
+                                        A.column_indices.values.begin(),
+                                        valid_index_functor<IndexType>(A.num_cols))),
                                       A.values.values.begin())),
                               combine_tuple_base_functor<BinaryFunction1>()),
                           stride_indices_begin),
@@ -189,8 +198,7 @@ void multiply(thrust::execution_policy<DerivedPolicy> &exec,
                                   thrust::make_zip_iterator(
                                       thrust::make_tuple(
                                         thrust::make_permutation_iterator(B.begin(),
-                                          thrust::make_transform_iterator(A.column_indices.begin(),
-                                                                          max_functor<IndexType>(0))),
+                                          A.column_indices.begin()),
                                           A.values.begin())),
                               combine_tuple_base_functor<BinaryFunction1>()),
                               rows.begin(),
@@ -198,7 +206,7 @@ void multiply(thrust::execution_policy<DerivedPolicy> &exec,
                               thrust::equal_to<IndexType>(),
                               reduce);
 
-    thrust::transform(C.begin(), C.end(), C.begin(), initialize);
+    thrust::transform(exec, C.begin(), C.end(), C.begin(), initialize);
 
     int num_entries = rows_end - rows.begin();
     thrust::transform(exec,
