@@ -58,6 +58,8 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
 {
     dst.resize(src.num_rows, src.num_cols, src.num_entries);
 
+    if(src.num_entries == 0) return;
+
     cusp::detail::offsets_to_indices(src.row_offsets, dst.row_indices);
     cusp::copy(exec, src.column_indices, dst.column_indices);
     cusp::copy(exec, src.values,         dst.values);
@@ -76,6 +78,12 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     typedef typename DestinationType::index_type IndexType;
     typedef typename DestinationType::value_type ValueType;
     typedef typename DestinationType::memory_space MemorySpace;
+
+    if(src.num_entries == 0)
+    {
+        dst.resize(src.num_rows, src.num_cols, src.num_entries, 0, alignment);
+        return;
+    }
 
     // compute number of occupied diagonals and enumerate them
     cusp::array1d<IndexType,MemorySpace> row_indices(src.num_entries);
@@ -154,6 +162,12 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     typedef typename DestinationType::value_type ValueType;
     typedef typename DestinationType::memory_space MemorySpace;
 
+    if(src.num_entries == 0)
+    {
+        dst.resize(src.num_rows, src.num_cols, src.num_entries, num_entries_per_row, alignment);
+        return;
+    }
+
     if(num_entries_per_row == 0)
     {
         const size_t max_entries_per_row = cusp::detail::compute_max_entries_per_row(exec, src.row_offsets);
@@ -219,6 +233,12 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     typedef typename DestinationType::index_type IndexType;
     typedef typename DestinationType::value_type ValueType;
     typedef typename DestinationType::memory_space MemorySpace;
+
+    if(src.num_entries == 0)
+    {
+        dst.resize(src.num_rows, src.num_cols, 0, 0, num_entries_per_row, alignment);
+        return;
+    }
 
     if(num_entries_per_row == 0)
     {

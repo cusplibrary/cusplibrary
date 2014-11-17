@@ -99,6 +99,8 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
 
     thrust::fill(exec, dst.values.begin(), dst.values.end(), ValueType(0));
 
+    if(src.num_entries == 0) return;
+
     thrust::scatter(exec,
                     src.values.begin(), src.values.end(),
                     thrust::make_transform_iterator(
@@ -118,6 +120,8 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
 {
     dst.resize(src.num_rows, src.num_cols, src.num_entries);
 
+    if(src.num_entries == 0) return;
+
     cusp::detail::indices_to_offsets(src.row_indices, dst.row_offsets);
     cusp::copy(exec, src.column_indices, dst.column_indices);
     cusp::copy(exec, src.values,         dst.values);
@@ -135,6 +139,12 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     typedef typename DestinationType::index_type IndexType;
     typedef typename DestinationType::value_type ValueType;
     typedef typename DestinationType::memory_space MemorySpace;
+
+    if(src.num_entries == 0)
+    {
+        dst.resize(src.num_rows, src.num_cols, src.num_entries, 0, alignment);
+        return;
+    }
 
     const size_t occupied_diagonals =
         cusp::detail::count_diagonals(exec, src.num_rows, src.num_cols, src.row_indices, src.column_indices);
@@ -212,9 +222,9 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     typedef typename DestinationType::value_type ValueType;
     typedef typename DestinationType::memory_space MemorySpace;
 
-    if (src.num_entries == 0)
+    if(src.num_entries == 0)
     {
-        dst.resize(src.num_rows, src.num_cols, src.num_entries, 0);
+        dst.resize(src.num_rows, src.num_cols, src.num_entries, num_entries_per_row, alignment);
         return;
     }
 
@@ -283,6 +293,12 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     typedef typename DestinationType::index_type IndexType;
     typedef typename DestinationType::value_type ValueType;
     typedef typename DestinationType::memory_space MemorySpace;
+
+    if(src.num_entries == 0)
+    {
+        dst.resize(src.num_rows, src.num_cols, 0, 0, num_entries_per_row, alignment);
+        return;
+    }
 
     if(num_entries_per_row == 0)
     {

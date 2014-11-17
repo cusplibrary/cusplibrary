@@ -50,6 +50,8 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     // resize output
     dst.resize(src.num_rows, src.num_cols, temp.num_entries + src.coo.num_entries);
 
+    if(src.num_entries == 0) return;
+
     // merge coo matrices together
     thrust::copy(exec, temp.row_indices.begin(),       temp.row_indices.end(),       dst.row_indices.begin());
     thrust::copy(exec, temp.column_indices.begin(),    temp.column_indices.end(),    dst.column_indices.begin());

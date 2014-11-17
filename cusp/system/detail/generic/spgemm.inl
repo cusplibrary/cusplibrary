@@ -351,6 +351,7 @@ void multiply(thrust::execution_policy<DerivedPolicy>& exec,
               array2d_format&,
               array2d_format&)
 {
+    C.resize(A.num_rows, B.num_cols, 0);
 }
 
 } // end namespace generic

@@ -80,6 +80,8 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     // allocate output storage
     dst.resize(src.num_rows, src.num_cols, src.num_entries);
 
+    if(src.num_entries == 0) return;
+
     // copy valid entries to mixed COO/CSR format
     thrust::copy_if
      (exec,
@@ -123,6 +125,8 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     // allocate output storage
     dst.resize(src.num_rows, src.num_cols, src.num_entries);
 
+    if(src.num_entries == 0) return;
+
     // create temporary row_indices array to capture valid ELL row indices
     cusp::array1d<IndexType, MemorySpace> row_indices(src.num_entries);
 
@@ -151,6 +155,8 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     dst.resize(src.num_rows, src.num_cols,
                src.num_entries, 0,
                src.column_indices.num_cols);
+
+    if(src.num_entries == 0) return;
 
     cusp::copy(exec, src, dst.ell);
 }
