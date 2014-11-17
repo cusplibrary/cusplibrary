@@ -17,8 +17,8 @@
 #include <cusp/coo_matrix.h>
 #include <cusp/csr_matrix.h>
 
+#include <cusp/multiply.h>
 #include <cusp/graph/maximal_independent_set.h>
-#include <cusp/detail/device/generalized_spmv/coo_flat.h>
 
 #include <thrust/count.h>
 #include <thrust/fill.h>
@@ -44,47 +44,63 @@ void mis_to_aggregates(const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& 
                        const ArrayType& mis,
                        ArrayType& aggregates)
 {
-    const IndexType N = C.num_rows;
+    typedef typename ArrayType::value_type                                    T;
+    typedef typename ArrayType::iterator                                      ArrayIterator;
+    typedef typename ArrayType::const_iterator                                ConstArrayIterator;
 
-    // (2,i) mis (0,i) non-mis
+    typedef thrust::tuple<T,T>                                                Tuple;
+    typedef typename thrust::counting_iterator<IndexType>                     CountingIterator;
+
+    typedef cusp::coo_matrix<IndexType,ValueType,MemorySpace>                 MatrixType;
+    typedef typename MatrixType::row_indices_array_type::const_view           RowView;
+    typedef typename MatrixType::column_indices_array_type::const_view        ColumnView;
+    typedef typename cusp::constant_array<Tuple>                              ValueView;
+    typedef typename cusp::coo_matrix_view<RowView,ColumnView,ValueView>      CooView;
+
+    typedef thrust::tuple<ConstArrayIterator,CountingIterator>                IteratorTuple1;
+    typedef typename thrust::zip_iterator<IteratorTuple1>                     ZipIterator1;
+    typedef typename cusp::array1d_view<ZipIterator1>                         ArrayViewType1;
+
+    typedef thrust::tuple<ArrayIterator,ArrayIterator>                        IteratorTuple2;
+    typedef typename thrust::zip_iterator<IteratorTuple2>                     ZipIterator2;
+    typedef typename cusp::array1d_view<ZipIterator2>                         ArrayViewType2;
+
+    const IndexType N = C.num_rows;
+    const IndexType M = C.num_entries;
+    cusp::constant_array<Tuple> values(M, Tuple(1,1));
+    CooView A(N, N, M, make_array1d_view(C.row_indices), make_array1d_view(C.column_indices), values);
 
     // current (ring,index)
     ArrayType mis1(N);
-    ArrayType idx1(N);
     ArrayType mis2(N);
+
+    ArrayType idx1(N);
     ArrayType idx2(N);
 
-    typedef typename ArrayType::value_type T;
-    typedef thrust::tuple<T,T> Tuple;
+    CountingIterator count_begin(0);
+    ZipIterator1 x_iter(thrust::make_tuple(mis.begin(),  count_begin));
+    ZipIterator2 y_iter(thrust::make_tuple(mis1.begin(), idx1.begin()));
+    ZipIterator2 z_iter(thrust::make_tuple(mis2.begin(), idx2.begin()));
 
+    ArrayViewType1 x(x_iter, x_iter + N);
+    ArrayViewType2 y(y_iter, y_iter + N);
+    ArrayViewType2 z(z_iter, z_iter + N);
+
+    // (2,i) mis (0,i) non-mis
     // find the largest (mis[j],j) 1-ring neighbor for each node
-    cusp::detail::device::cuda::spmv_coo
-    (C.num_rows, C.num_entries,
-     C.row_indices.begin(), C.column_indices.begin(), thrust::constant_iterator<int>(1),  // XXX should we mask explicit zeros? (e.g. DIA, array2d)
-     thrust::make_zip_iterator(thrust::make_tuple(mis.begin(), thrust::counting_iterator<IndexType>(0))),
-     thrust::make_zip_iterator(thrust::make_tuple(mis.begin(), thrust::counting_iterator<IndexType>(0))),
-     thrust::make_zip_iterator(thrust::make_tuple(mis1.begin(), idx1.begin())),
-     thrust::project2nd<Tuple,Tuple>(), thrust::maximum<Tuple>());
+    cusp::generalized_spmv(A, x, x, y, thrust::project2nd<Tuple,Tuple>(), thrust::maximum<Tuple>());
 
     // boost mis0 values so they win in second round
-    thrust::transform(mis.begin(), mis.end(), mis1.begin(), mis1.begin(), thrust::plus<typename ArrayType::value_type>());
+    thrust::transform(mis.begin(), mis.end(), mis1.begin(), mis1.begin(), thrust::plus<T>());
 
     // find the largest (mis[j],j) 2-ring neighbor for each node
-    cusp::detail::device::cuda::spmv_coo
-    (C.num_rows, C.num_entries,
-     C.row_indices.begin(), C.column_indices.begin(), thrust::constant_iterator<int>(1),  // XXX should we mask explicit zeros? (e.g. DIA, array2d)
-     thrust::make_zip_iterator(thrust::make_tuple(mis1.begin(), idx1.begin())),
-     thrust::make_zip_iterator(thrust::make_tuple(mis1.begin(), idx1.begin())),
-     thrust::make_zip_iterator(thrust::make_tuple(mis2.begin(), idx2.begin())),
-     thrust::project2nd<Tuple,Tuple>(), thrust::maximum<Tuple>());
+    cusp::generalized_spmv(A, y, y, z, thrust::project2nd<Tuple,Tuple>(), thrust::maximum<Tuple>());
 
     // enumerate the MIS nodes
     cusp::array1d<IndexType,MemorySpace> mis_enum(N);
     thrust::exclusive_scan(mis.begin(), mis.end(), mis_enum.begin());
 
-    thrust::gather(idx2.begin(), idx2.end(),
-                   mis_enum.begin(),
-                   aggregates.begin());
+    thrust::gather(idx2.begin(), idx2.end(), mis_enum.begin(), aggregates.begin());
 } // mis_to_aggregates()
 
 template <typename Matrix, typename Array>

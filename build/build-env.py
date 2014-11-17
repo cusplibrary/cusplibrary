@@ -105,7 +105,7 @@ gLinkerOptions = {
   }
 
 
-def getCFLAGS(mode, backend, warn, warnings_as_errors, hostspblas, b40c, CC):
+def getCFLAGS(mode, backend, warn, warnings_as_errors, hostspblas, CC):
   result = []
   if mode == 'release':
     # turn on optimization
@@ -117,9 +117,6 @@ def getCFLAGS(mode, backend, warn, warnings_as_errors, hostspblas, b40c, CC):
   # force 32b code on darwin
   # if platform.platform()[:6] == 'Darwin':
   #   result.append('-m32')
-  # build with B40C enabled 
-  if b40c == True :
-    result.append('-D__CUSP_USE_B40C__') 
 
   if CC == 'cl':
     result.append('/bigobj')
@@ -143,7 +140,7 @@ def getCFLAGS(mode, backend, warn, warnings_as_errors, hostspblas, b40c, CC):
   return result
 
 
-def getCXXFLAGS(mode, backend, warn, warnings_as_errors, hostspblas, b40c, CXX):
+def getCXXFLAGS(mode, backend, warn, warnings_as_errors, hostspblas, CXX):
   result = []
   if mode == 'release':
     # turn on optimization
@@ -157,10 +154,6 @@ def getCXXFLAGS(mode, backend, warn, warnings_as_errors, hostspblas, b40c, CXX):
   # force 32b code on darwin
   # if platform.platform()[:6] == 'Darwin':
   #   result.append('-m32')
-
-  # build with B40C enabled 
-  if b40c is not None :
-    result.append('-D__CUSP_USE_B40C__') 
 
   # generate omp code
   if backend == 'omp':
@@ -260,9 +253,6 @@ def Environment():
                                   allowed_values = ('thrust', 'cublas'))
   vars.Add(deviceblas_variable)
 
-  # add a variable to enable B40C support
-  vars.Add(BoolVariable('b40c', 'Enable support for B40C', 0))
-
   # create an Environment
   env = OldEnvironment(tools = getTools(), variables = vars)
 
@@ -290,10 +280,10 @@ def Environment():
   env.Append(CXXFLAGS = ['-DCUSP_HOST_BLAS_SYSTEM=%s' % host_blas_backend_define])
 
   # get C compiler switches
-  env.Append(CFLAGS = getCFLAGS(env['mode'], env['backend'], env['Wall'], env['Werror'], env['hostspblas'], env['b40c'], env.subst('$CC')))
+  env.Append(CFLAGS = getCFLAGS(env['mode'], env['backend'], env['Wall'], env['Werror'], env['hostspblas'], env.subst('$CC')))
 
   # get CXX compiler switches
-  env.Append(CXXFLAGS = getCXXFLAGS(env['mode'], env['backend'], env['Wall'], env['Werror'], env['hostspblas'], env['b40c'], env.subst('$CXX')))
+  env.Append(CXXFLAGS = getCXXFLAGS(env['mode'], env['backend'], env['Wall'], env['Werror'], env['hostspblas'], env.subst('$CXX')))
 
   # get NVCC compiler switches
   env.Append(NVCCFLAGS = getNVCCFLAGS(env['mode'], env['backend'], env['arch']))

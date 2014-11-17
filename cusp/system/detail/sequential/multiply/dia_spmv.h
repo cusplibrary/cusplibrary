@@ -71,9 +71,9 @@ void multiply(sequential::execution_policy<DerivedPolicy>& exec,
             const ValueType Aij = A.values(i_start + n, i);
 
             const ValueType  xj = x[j_start + n];
-            ValueType& yi = y[i_start + n];
+                  ValueType  yi = y[i_start + n];
 
-            yi = reduce(yi, combine(Aij, xj));
+            y[i_start + n] = reduce(yi, combine(Aij, xj));
         }
     }
 }
