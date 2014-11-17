@@ -75,16 +75,17 @@ void generalized_spmv(
               Vector3& z,
               BinaryFunction1 combine,
               BinaryFunction2 reduce,
-              sparse_format&,
-              array1d_format&,
-              array1d_format&,
-              array1d_format&);
+              sparse_format,
+              array1d_format,
+              array1d_format,
+              array1d_format);
 
 } // end namespace generic
 } // end namespace detail
 } // end namespace system
 } // end namespace cusp
 
-#include <cusp/system/detail/generic/generalized_spmv.inl>
-#include <cusp/system/detail/generic/multiply.inl>
-#include <cusp/system/detail/generic/spgemm.inl>
+#include <cusp/system/detail/generic/multiply/gemm.h>
+#include <cusp/system/detail/generic/multiply/generalized_spmv.h>
+#include <cusp/system/detail/generic/multiply/multiply.h>
+#include <cusp/system/detail/generic/multiply/spgemm.h>

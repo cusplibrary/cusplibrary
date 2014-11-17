@@ -110,22 +110,32 @@ struct get_index_type<MatrixType,array1d_format>
     typedef int type;
 };
 
-template<typename MatrixType, typename FormatTag>
+template<typename MatrixType, typename MemorySpace, typename FormatTag>
 struct as_matrix_type
 {
     typedef typename get_index_type<MatrixType>::type IndexType;
     typedef typename MatrixType::value_type ValueType;
-    typedef typename MatrixType::memory_space MemorySpace;
 
     typedef typename matrix_type<IndexType,ValueType,MemorySpace,FormatTag>::type type;
 };
 
-template<typename MatrixType> struct as_array2d_type : as_matrix_type<MatrixType,array2d_format> {};
-template<typename MatrixType> struct as_dia_type : as_matrix_type<MatrixType,dia_format> {};
-template<typename MatrixType> struct as_coo_type : as_matrix_type<MatrixType,coo_format> {};
-template<typename MatrixType> struct as_csr_type : as_matrix_type<MatrixType,csr_format> {};
-template<typename MatrixType> struct as_ell_type : as_matrix_type<MatrixType,ell_format> {};
-template<typename MatrixType> struct as_hyb_type : as_matrix_type<MatrixType,hyb_format> {};
+template<typename MatrixType,typename MemorySpace=typename MatrixType::memory_space>
+struct as_array2d_type : as_matrix_type<MatrixType,MemorySpace,array2d_format> {};
+
+template<typename MatrixType,typename MemorySpace=typename MatrixType::memory_space>
+struct as_dia_type : as_matrix_type<MatrixType,MemorySpace,dia_format> {};
+
+template<typename MatrixType,typename MemorySpace=typename MatrixType::memory_space>
+struct as_coo_type : as_matrix_type<MatrixType,MemorySpace,coo_format> {};
+
+template<typename MatrixType,typename MemorySpace=typename MatrixType::memory_space>
+struct as_csr_type : as_matrix_type<MatrixType,MemorySpace,csr_format> {};
+
+template<typename MatrixType,typename MemorySpace=typename MatrixType::memory_space>
+struct as_ell_type : as_matrix_type<MatrixType,MemorySpace,ell_format> {};
+
+template<typename MatrixType,typename MemorySpace=typename MatrixType::memory_space>
+struct as_hyb_type : as_matrix_type<MatrixType,MemorySpace,hyb_format> {};
 
 template<typename T1, typename T2, typename T = void>
 struct enable_if_same_system

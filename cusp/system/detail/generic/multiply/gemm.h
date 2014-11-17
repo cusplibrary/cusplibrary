@@ -14,13 +14,13 @@
  *  limitations under the License.
  */
 
-#pragma once
 
-#include <cusp/detail/config.h>
+#include <cusp/convert.h>
+#include <cusp/multiply.h>
 
-#include <cusp/format.h>
+#include <cusp/detail/type_traits.h>
 
-#include <cusp/system/detail/sequential/execution_policy.h>
+#include <thrust/execution_policy.h>
 
 namespace cusp
 {
@@ -28,14 +28,14 @@ namespace system
 {
 namespace detail
 {
-namespace sequential
+namespace generic
 {
 
 template <typename DerivedPolicy,
          typename Matrix1,
          typename Matrix2,
          typename Matrix3>
-void multiply_(sequential::execution_policy<DerivedPolicy>& exec,
+void multiply_(thrust::execution_policy<DerivedPolicy>& exec,
               Matrix1& A,
               Matrix2& B,
               Matrix3& C,
@@ -43,25 +43,20 @@ void multiply_(sequential::execution_policy<DerivedPolicy>& exec,
               array2d_format,
               array2d_format)
 {
-    typedef typename Matrix3::value_type ValueType;
+    typedef typename cusp::detail::as_array2d_type<Matrix1,cusp::host_memory>::type Array2dMatrix1;
+    typedef typename cusp::detail::as_array2d_type<Matrix2,cusp::host_memory>::type Array2dMatrix2;
+    typedef typename cusp::detail::as_array2d_type<Matrix3,cusp::host_memory>::type Array2dMatrix3;
 
-    C.resize(A.num_rows, B.num_cols);
+    Array2dMatrix1 A_(A);
+    Array2dMatrix2 B_(B);
+    Array2dMatrix3 C_;
 
-    for(size_t i = 0; i < C.num_rows; i++)
-    {
-        for(size_t j = 0; j < C.num_cols; j++)
-        {
-            ValueType v = 0;
+    cusp::multiply(A_,B_,C_);
 
-            for(size_t k = 0; k < A.num_cols; k++)
-                v += A(i,k) * B(k,j);
-
-            C(i,j) = v;
-        }
-    }
+    cusp::convert(C_, C);
 }
 
-} // end namespace sequential
+} // end namespace generic
 } // end namespace detail
 } // end namespace system
 } // end namespace cusp

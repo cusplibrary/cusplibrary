@@ -189,13 +189,17 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     typedef typename thrust::zip_iterator<IteratorTuple> ZipIterator;
     typedef typename thrust::transform_iterator<sum_tuple_functor<IndexType>, ZipIterator> ColumnIndexIterator;
 
+    if( src.num_entries == 0 )
+    {
+      dst.resize(src.num_rows, src.num_cols, src.num_entries, 0);
+      return;
+    }
+
     const IndexType pitch = src.values.pitch;
     const size_t num_diagonals = src.diagonal_offsets.size();
 
     // allocate output storage
     dst.resize(src.num_rows, src.num_cols, src.num_entries, num_diagonals, src.values.pitch);
-
-    if( src.num_entries == 0 ) return;
 
     RowIndexIterator row_indices_begin(IndexIterator(0), modulus_value<IndexType>(pitch));
 

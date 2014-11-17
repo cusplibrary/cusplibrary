@@ -90,7 +90,6 @@ void coo_spmm_helper(size_t workspace_size,
     thrust::scatter_if(thrust::make_permutation_iterator(B_row_offsets.begin(), A.column_indices.begin()) + begin_segment,
                        thrust::make_permutation_iterator(B_row_offsets.begin(), A.column_indices.begin()) + end_segment,
                        output_ptr.begin() + begin_segment,
-//                       thrust::make_transform_iterator(output_ptr.begin(), subtract_constant<IndexType>(begin + begin_segment,
                        segment_lengths.begin() + begin_segment,
                        B_gather_locations.begin() - output_ptr[begin_segment]);
     thrust::inclusive_scan_by_key(A_gather_locations.begin(), A_gather_locations.end(),
@@ -140,13 +139,13 @@ template <typename DerivedPolicy,
          typename Matrix1,
          typename Matrix2,
          typename Matrix3>
-void multiply(thrust::execution_policy<DerivedPolicy>& exec,
+void multiply_(thrust::execution_policy<DerivedPolicy>& exec,
               Matrix1& A,
               Matrix2& B,
               Matrix3& C,
-              coo_format&,
-              coo_format&,
-              coo_format&)
+              coo_format,
+              coo_format,
+              coo_format)
 {
     typedef typename Matrix3::index_type   IndexType;
     typedef typename Matrix3::value_type   ValueType;
@@ -317,18 +316,22 @@ template <typename DerivedPolicy,
          typename Matrix1,
          typename Matrix2,
          typename Matrix3>
-void multiply(thrust::execution_policy<DerivedPolicy>& exec,
+void multiply_(thrust::execution_policy<DerivedPolicy>& exec,
               Matrix1& A,
               Matrix2& B,
               Matrix3& C,
-              sparse_format&,
-              sparse_format&,
-              sparse_format&)
+              sparse_format,
+              sparse_format,
+              sparse_format)
 {
+    using namespace thrust::placeholders;
+
     // other formats use COO * COO
     typedef typename cusp::detail::as_coo_type<Matrix1>::type CooMatrix1;
     typedef typename cusp::detail::as_coo_type<Matrix2>::type CooMatrix2;
     typedef typename cusp::detail::as_coo_type<Matrix3>::type CooMatrix3;
+
+    typedef typename Matrix3::value_type ValueType;
 
     CooMatrix1 A_(A);
     CooMatrix2 B_(B);
@@ -336,22 +339,27 @@ void multiply(thrust::execution_policy<DerivedPolicy>& exec,
 
     cusp::multiply(exec, A_,B_,C_);
 
-    cusp::convert(C_, C);
-}
+    int num_zeros = thrust::count(C_.values.begin(), C_.values.end(), ValueType(0));
 
-template <typename DerivedPolicy,
-         typename Matrix1,
-         typename Matrix2,
-         typename Matrix3>
-void multiply(thrust::execution_policy<DerivedPolicy>& exec,
-              Matrix1& A,
-              Matrix2& B,
-              Matrix3& C,
-              array2d_format&,
-              array2d_format&,
-              array2d_format&)
-{
-    C.resize(A.num_rows, B.num_cols, 0);
+    // The result of the elementwise operation contains zero entries so we need
+    // to contract the result to produce a strictly valid COO matrix
+    if(num_zeros != 0)
+    {
+        int num_reduced_entries =
+            thrust::remove_if(
+                thrust::make_zip_iterator(
+                  thrust::make_tuple(C_.row_indices.begin(), C_.column_indices.begin(), C_.values.begin())),
+                thrust::make_zip_iterator(
+                  thrust::make_tuple(C_.row_indices.end(),   C_.column_indices.end(), C_.values.end())),
+                C_.values.begin(),
+                _1 == ValueType(0)) -
+            thrust::make_zip_iterator(
+                thrust::make_tuple(C_.row_indices.begin(), C_.column_indices.begin(), C_.values.begin()));
+
+        C_.resize(C_.num_rows, C_.num_cols, num_reduced_entries);
+    }
+
+    cusp::convert(C_, C);
 }
 
 } // end namespace generic

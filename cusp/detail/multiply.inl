@@ -39,10 +39,11 @@ void multiply(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
     typename MatrixOrVector1::format format2;
     typename MatrixOrVector2::format format3;
 
-    cusp::system::detail::generic::multiply(
-        thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
-        (LinearOperator&)A, (MatrixOrVector1&)B, C,
-        format1, format2, format3);
+    using cusp::system::detail::generic::multiply_;
+
+    multiply_(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
+             (LinearOperator&)A, (MatrixOrVector1&)B, C,
+             format1, format2, format3);
 }
 
 template <typename LinearOperator,

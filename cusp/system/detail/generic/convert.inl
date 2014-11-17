@@ -84,9 +84,9 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
         Format1&,
         Format2&)
 {
-    typedef typename SourceType::container ContainerType;
-    typedef typename DestinationType::format DestFormat;
-    typedef typename cusp::detail::as_matrix_type<ContainerType,DestFormat>::type SrcDestType;
+    typedef typename SourceType::memory_space MemorySpace;
+    typedef typename DestinationType::format  DestFormat;
+    typedef typename cusp::detail::as_matrix_type<SourceType,MemorySpace,DestFormat>::type SrcDestType;
 
     SrcDestType tmp;
 

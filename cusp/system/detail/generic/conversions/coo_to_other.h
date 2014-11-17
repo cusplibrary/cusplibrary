@@ -142,7 +142,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
 
     if(src.num_entries == 0)
     {
-        dst.resize(src.num_rows, src.num_cols, src.num_entries, 0, alignment);
+        dst.resize(src.num_rows, src.num_cols, src.num_entries, 0);
         return;
     }
 
@@ -224,7 +224,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
 
     if(src.num_entries == 0)
     {
-        dst.resize(src.num_rows, src.num_cols, src.num_entries, num_entries_per_row, alignment);
+        dst.resize(src.num_rows, src.num_cols, src.num_entries, num_entries_per_row);
         return;
     }
 
