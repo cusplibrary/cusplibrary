@@ -38,8 +38,9 @@ namespace sequential
 // COO format
 template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
 void transpose(sequential::execution_policy<DerivedPolicy>& exec,
-               const MatrixType1& A, MatrixType2& At,
-               coo_format&)
+               const MatrixType1& A,
+               MatrixType2& At,
+               coo_format)
 {
     typedef typename MatrixType2::index_type IndexType;
 
@@ -75,8 +76,9 @@ void transpose(sequential::execution_policy<DerivedPolicy>& exec,
 // CSR format
 template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
 void transpose(sequential::execution_policy<DerivedPolicy>& exec,
-               const MatrixType1& A, MatrixType2& At,
-               csr_format&)
+               const MatrixType1& A,
+               MatrixType2& At,
+               csr_format)
 {
     typedef typename MatrixType2::index_type IndexType;
 

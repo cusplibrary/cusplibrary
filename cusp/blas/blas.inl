@@ -205,7 +205,7 @@ void fill(cusp::array1d_view<RandomAccessIterator> x,
 }
 
 template <typename Array>
-typename norm_type<typename Array::value_type>::type
+typename cusp::detail::norm_type<typename Array::value_type>::type
 nrm1(const blas_policy<typename Array::value_type,typename Array::memory_space>& policy,
      const Array& x)
 {
@@ -217,7 +217,7 @@ nrm1(const blas_policy<typename Array::value_type,typename Array::memory_space>&
 }
 
 template <typename Array>
-typename norm_type<typename Array::value_type>::type
+typename cusp::detail::norm_type<typename Array::value_type>::type
 nrm1(const Array& x)
 {
     typedef typename Array::value_type ValueType;
@@ -227,7 +227,7 @@ nrm1(const Array& x)
 }
 
 template <typename Array>
-typename norm_type<typename Array::value_type>::type
+typename cusp::detail::norm_type<typename Array::value_type>::type
 nrm2(const blas_policy<typename Array::value_type,typename Array::memory_space>& policy,
      const Array& x)
 {
@@ -239,7 +239,7 @@ nrm2(const blas_policy<typename Array::value_type,typename Array::memory_space>&
 }
 
 template <typename Array>
-typename norm_type<typename Array::value_type>::type
+typename cusp::detail::norm_type<typename Array::value_type>::type
 nrm2(const Array& x)
 {
     typedef typename Array::value_type ValueType;

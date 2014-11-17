@@ -80,7 +80,7 @@ dotc(const thrustblas::detail::blas_policy<typename Array1::memory_space>& polic
 }
 
 template <typename Array>
-typename norm_type<typename Array::value_type>::type
+typename cusp::detail::norm_type<typename Array::value_type>::type
 nrm1(const thrustblas::detail::blas_policy<typename Array::memory_space>& policy, Array& x)
 {
     typedef typename Array::value_type ValueType;
@@ -94,7 +94,7 @@ nrm1(const thrustblas::detail::blas_policy<typename Array::memory_space>& policy
 }
 
 template <typename Array>
-typename norm_type<typename Array::value_type>::type
+typename cusp::detail::norm_type<typename Array::value_type>::type
 nrm2(const thrustblas::detail::blas_policy<typename Array::memory_space>& policy, Array& x)
 {
     typedef typename Array::value_type ValueType;

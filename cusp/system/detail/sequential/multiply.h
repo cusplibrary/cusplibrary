@@ -20,8 +20,13 @@
 #include <cusp/system/detail/sequential/multiply/csr_spmv.h>
 #include <cusp/system/detail/sequential/multiply/dia_spmv.h>
 #include <cusp/system/detail/sequential/multiply/ell_spmv.h>
+#include <cusp/system/detail/sequential/multiply/hyb_spmv.h>
 
-#include <cusp/system/detail/sequential/multiply/dense_mv.h>
+#include <cusp/system/detail/sequential/multiply/array2d_mv.h>
+#include <cusp/system/detail/sequential/multiply/array2d_mm.h>
+
+#include <cusp/system/detail/sequential/multiply/csr_spgemm.h>
+#include <cusp/system/detail/sequential/multiply/coo_spgemm.h>
 
 namespace cusp
 {

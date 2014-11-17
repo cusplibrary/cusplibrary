@@ -35,7 +35,14 @@ void multiply(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
               const MatrixOrVector1& B,
               MatrixOrVector2& C)
 {
-    cusp::system::detail::generic::multiply(exec, A, B, C);
+    typename LinearOperator::format  format1;
+    typename MatrixOrVector1::format format2;
+    typename MatrixOrVector2::format format3;
+
+    cusp::system::detail::generic::multiply(
+        thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
+        (LinearOperator&)A, (MatrixOrVector1&)B, C,
+        format1, format2, format3);
 }
 
 template <typename LinearOperator,
@@ -135,7 +142,7 @@ void generalized_spmv(const thrust::detail::execution_policy_base<DerivedPolicy>
     using cusp::system::detail::generic::generalized_spmv;
 
     generalized_spmv(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
-                     (LinearOperator&) A, (Vector1&) x, (Vector2&)y, (Vector3&)z,
+                     (LinearOperator&) A, (Vector1&) x, (Vector2&)y, z,
                      combine, reduce,
                      format1, format2, format3, format4);
 }

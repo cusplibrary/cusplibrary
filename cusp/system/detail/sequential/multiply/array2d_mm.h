@@ -17,7 +17,6 @@
 #pragma once
 
 #include <cusp/detail/config.h>
-#include <cusp/detail/functional.h>
 
 #include <cusp/format.h>
 
@@ -33,31 +32,32 @@ namespace sequential
 {
 
 template <typename DerivedPolicy,
-         typename MatrixType,
-         typename VectorType1,
-         typename VectorType2,
-         typename UnaryFunction,
-         typename BinaryFunction1,
-         typename BinaryFunction2>
+         typename Matrix1,
+         typename Matrix2,
+         typename Matrix3>
 void multiply(sequential::execution_policy<DerivedPolicy>& exec,
-              MatrixType& A,
-              VectorType1& x,
-              VectorType2& y,
-              UnaryFunction   initialize,
-              BinaryFunction1 combine,
-              BinaryFunction2 reduce,
-              array2d_format, array1d_format, array1d_format)
+              Matrix1& A,
+              Matrix2& B,
+              Matrix3& C,
+              array2d_format,
+              array2d_format,
+              array2d_format)
 {
-    typedef typename VectorType2::value_type ValueType;
+    typedef typename Matrix3::value_type ValueType;
 
-    for(size_t i = 0; i < A.num_rows; i++)
+    C.resize(A.num_rows, B.num_cols);
+
+    for(size_t i = 0; i < C.num_rows; i++)
     {
-        ValueType accumulator = initialize(y[i]);
-        for(size_t j = 0; j < A.num_cols; j++)
+        for(size_t j = 0; j < C.num_cols; j++)
         {
-            accumulator = reduce(accumulator, combine(A(i,j), x[j]));
+            ValueType v = 0;
+
+            for(size_t k = 0; k < A.num_cols; k++)
+                v += A(i,k) * B(k,j);
+
+            C(i,j) = v;
         }
-        y[i] = accumulator;
     }
 }
 

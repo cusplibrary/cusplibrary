@@ -101,7 +101,7 @@ template <typename ValueType>
 class monitor
 {
 public:
-    typedef typename cusp::norm_type<ValueType>::type Real;
+    typedef typename cusp::detail::norm_type<ValueType>::type Real;
 
     /**
      *  \brief Constructs a \p monitor for a given right-hand-side \p b

@@ -110,7 +110,7 @@ void gmres(LinearOperator& A,
 {
     typedef typename LinearOperator::value_type   ValueType;
     typedef typename LinearOperator::memory_space MemorySpace;
-    typedef typename norm_type<ValueType>::type NormType;
+    typedef typename cusp::detail::norm_type<ValueType>::type NormType;
 
     assert(A.num_rows == A.num_cols);        // sanity check
 

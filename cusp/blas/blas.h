@@ -23,6 +23,7 @@
 
 #include <cusp/detail/config.h>
 #include <cusp/complex.h>
+#include <cusp/detail/type_traits.h>
 
 namespace cusp
 {
@@ -118,13 +119,13 @@ void fill(Array& array,
 /*! \p nrm1 : vector 1-norm (sum abs(x[i]))
  */
 template <typename Array>
-typename norm_type<typename Array::value_type>::type
+typename cusp::detail::norm_type<typename Array::value_type>::type
     nrm1(const Array& array);
 
 /*! \p nrm2 : vector 2-norm (sqrt(sum x[i] * x[i] )
  */
 template <typename Array>
-typename norm_type<typename Array::value_type>::type
+typename cusp::detail::norm_type<typename Array::value_type>::type
     nrm2(const Array& array);
 
 /*! \p nrmmax : vector infinity norm

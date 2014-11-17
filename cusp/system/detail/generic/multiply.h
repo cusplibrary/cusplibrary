@@ -45,25 +45,20 @@ void multiply(thrust::execution_policy<DerivedPolicy>& exec,
               Format2&,
               Format3&);
 
-template <typename DerivedPolicy,
-         typename LinearOperator,
-         typename MatrixOrVector1,
-         typename MatrixOrVector2>
-typename thrust::detail::enable_if<!thrust::detail::is_convertible<typename LinearOperator::format,known_format>::value,void>::type
-multiply(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-         const LinearOperator&  A,
-         const MatrixOrVector1& B,
-         MatrixOrVector2& C);
-
-template <typename DerivedPolicy,
-         typename LinearOperator,
-         typename MatrixOrVector1,
-         typename MatrixOrVector2>
-typename thrust::detail::enable_if<thrust::detail::is_convertible<typename LinearOperator::format,known_format>::value,void>::type
-multiply(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-         const LinearOperator&  A,
-         const MatrixOrVector1& B,
-         MatrixOrVector2& C);
+// template <typename DerivedPolicy,
+//          typename LinearOperator,
+//          typename MatrixOrVector1,
+//          typename MatrixOrVector2,
+//          typename Format1,
+//          typename Format2,
+//          typename Format3>
+// void multiply(thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+//          LinearOperator&  A,
+//          MatrixOrVector1& B,
+//          MatrixOrVector2& C,
+//          Format1&,
+//          Format2&,
+//          Format3&);
 
 template <typename DerivedPolicy,
           typename LinearOperator,
@@ -91,3 +86,4 @@ void generalized_spmv(thrust::execution_policy<DerivedPolicy>& exec,
 
 #include <cusp/system/detail/generic/generalized_spmv.inl>
 #include <cusp/system/detail/generic/multiply.inl>
+#include <cusp/system/detail/generic/spgemm.inl>

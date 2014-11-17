@@ -46,41 +46,16 @@ void multiply(sequential::execution_policy<DerivedPolicy>& exec,
               UnaryFunction   initialize,
               BinaryFunction1 combine,
               BinaryFunction2 reduce,
-              dia_format,
+              hyb_format,
               array1d_format,
               array1d_format)
 {
-    typedef typename MatrixType::index_type  IndexType;
-    typedef typename VectorType2::value_type ValueType;
-
-    const size_t num_diagonals = A.values.num_cols;
-
-    for(size_t i = 0; i < A.num_rows; i++)
-        y[i] = initialize(y[i]);
-
-    for(size_t i = 0; i < num_diagonals; i++)
-    {
-        const IndexType k = A.diagonal_offsets[i];
-
-        const size_t i_start = std::max<IndexType>(0, -k);
-        const size_t j_start = std::max<IndexType>(0,  k);
-
-        // number of elements to process in this diagonal
-        const size_t N = std::min(A.num_rows - i_start, A.num_cols - j_start);
-
-        for(size_t n = 0; n < N; n++)
-        {
-            const ValueType Aij = A.values(i_start + n, i);
-
-            const ValueType  xj = x[j_start + n];
-                  ValueType  yi = y[i_start + n];
-
-            y[i_start + n] = reduce(yi, combine(Aij, xj));
-        }
-    }
+    multiply(exec, A.ell, x, y, initialize, combine, reduce, ell_format(), array1d_format(), array1d_format());
+    multiply(exec, A.coo, x, y, initialize, combine, reduce, coo_format(), array1d_format(), array1d_format());
 }
 
 } // end namespace sequential
 } // end namespace detail
 } // end namespace system
 } // end namespace cusp
+

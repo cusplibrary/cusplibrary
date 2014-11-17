@@ -45,9 +45,9 @@ void multiply(sequential::execution_policy<DerivedPolicy>& exec,
               UnaryFunction   initialize,
               BinaryFunction1 combine,
               BinaryFunction2 reduce,
-              csr_format&,
-              array1d_format&,
-              array1d_format&)
+              csr_format,
+              array1d_format,
+              array1d_format)
 {
     typedef typename MatrixType::index_type  IndexType;
     typedef typename VectorType2::value_type ValueType;

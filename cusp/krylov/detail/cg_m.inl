@@ -74,7 +74,7 @@ struct KERNEL_ZB
     __host__ __device__
     void operator()(Tuple t)
     {
-        typedef typename norm_type<ScalarType>::type NormType;
+        typedef typename cusp::detail::norm_type<ScalarType>::type NormType;
         // compute \zeta_1^\sigma
         ScalarType z1, b0, z0=thrust::get<2>(t), zm1 = thrust::get<3>(t),
                            sigma = thrust::get<4>(t);

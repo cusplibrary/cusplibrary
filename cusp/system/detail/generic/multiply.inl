@@ -292,11 +292,12 @@ template <typename DerivedPolicy,
          typename LinearOperator,
          typename MatrixOrVector1,
          typename MatrixOrVector2>
-typename thrust::detail::enable_if<!thrust::detail::is_convertible<typename LinearOperator::format,known_format>::value,void>::type
-multiply(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-         const LinearOperator&  A,
-         const MatrixOrVector1& B,
-         MatrixOrVector2& C)
+// typename thrust::detail::enable_if<!thrust::detail::is_convertible<typename LinearOperator::format,known_format>::value,void>::type
+void multiply(thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+         LinearOperator&  A,
+         MatrixOrVector1& B,
+         MatrixOrVector2& C,
+         unknown_format&, array1d_format&, array1d_format&)
 {
     // user-defined LinearOperator
     ((LinearOperator&)A)(B,C);
@@ -306,11 +307,12 @@ template <typename DerivedPolicy,
          typename LinearOperator,
          typename MatrixOrVector1,
          typename MatrixOrVector2>
-typename thrust::detail::enable_if<thrust::detail::is_convertible<typename LinearOperator::format,known_format>::value,void>::type
-multiply(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-         const LinearOperator&  A,
-         const MatrixOrVector1& B,
-         MatrixOrVector2& C)
+// typename thrust::detail::enable_if<thrust::detail::is_convertible<typename LinearOperator::format,known_format>::value,void>::type
+void multiply(thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+         LinearOperator&  A,
+         MatrixOrVector1& B,
+         MatrixOrVector2& C,
+         known_format&, array1d_format&, array1d_format&)
 {
     typedef typename LinearOperator::value_type ValueType;
 
