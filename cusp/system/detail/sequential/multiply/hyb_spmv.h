@@ -50,8 +50,10 @@ void multiply(sequential::execution_policy<DerivedPolicy>& exec,
               array1d_format,
               array1d_format)
 {
+    typedef typename VectorType2::value_type ValueType;
+
     multiply(exec, A.ell, x, y, initialize, combine, reduce, ell_format(), array1d_format(), array1d_format());
-    multiply(exec, A.coo, x, y, initialize, combine, reduce, coo_format(), array1d_format(), array1d_format());
+    multiply(exec, A.coo, x, y, thrust::identity<ValueType>(), combine, reduce, coo_format(), array1d_format(), array1d_format());
 }
 
 } // end namespace sequential

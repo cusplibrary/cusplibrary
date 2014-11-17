@@ -30,20 +30,20 @@ namespace detail
 namespace generic
 {
 
-template <typename DerivedPolicy,
-          typename LinearOperator, typename MatrixOrVector1, typename MatrixOrVector2,
-          typename UnaryFunction,  typename BinaryFunction1, typename BinaryFunction2,
-          typename Format1, typename Format2, typename Format3>
-void multiply(thrust::execution_policy<DerivedPolicy>& exec,
-              LinearOperator&  A,
-              MatrixOrVector1& B,
-              MatrixOrVector2& C,
-              UnaryFunction  initialize,
-              BinaryFunction1 combine,
-              BinaryFunction2 reduce,
-              Format1&,
-              Format2&,
-              Format3&);
+// template <typename DerivedPolicy,
+//           typename LinearOperator, typename MatrixOrVector1, typename MatrixOrVector2,
+//           typename UnaryFunction,  typename BinaryFunction1, typename BinaryFunction2,
+//           typename Format1, typename Format2, typename Format3>
+// void multiply(thrust::execution_policy<DerivedPolicy>& exec,
+//               LinearOperator&  A,
+//               MatrixOrVector1& B,
+//               MatrixOrVector2& C,
+//               UnaryFunction  initialize,
+//               BinaryFunction1 combine,
+//               BinaryFunction2 reduce,
+//               Format1&,
+//               Format2&,
+//               Format3&);
 
 // template <typename DerivedPolicy,
 //          typename LinearOperator,
@@ -67,7 +67,8 @@ template <typename DerivedPolicy,
           typename Vector3,
           typename BinaryFunction1,
           typename BinaryFunction2>
-void generalized_spmv(thrust::execution_policy<DerivedPolicy>& exec,
+void generalized_spmv(
+              thrust::execution_policy<DerivedPolicy>& exec,
               LinearOperator&  A,
               Vector1& x,
               Vector2& y,

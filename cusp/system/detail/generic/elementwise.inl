@@ -21,6 +21,7 @@
 #include <cusp/coo_matrix.h>
 #include <cusp/format.h>
 #include <cusp/sort.h>
+#include <cusp/verify.h>
 
 #include <thrust/functional.h>
 #include <thrust/inner_product.h>
@@ -39,8 +40,8 @@ namespace generic
 {
 
 template <typename DerivedPolicy,
-          typename MatrixType1, typename MatrixType2, typename MatrixType3,
-          typename BinaryFunction>
+         typename MatrixType1, typename MatrixType2, typename MatrixType3,
+         typename BinaryFunction>
 void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
                  const MatrixType1& A, const MatrixType2& B, MatrixType3& C,
                  BinaryFunction op,
@@ -55,13 +56,15 @@ void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
 }
 
 template <typename DerivedPolicy,
-          typename MatrixType1, typename MatrixType2, typename MatrixType3,
-          typename BinaryFunction>
+         typename MatrixType1, typename MatrixType2, typename MatrixType3,
+         typename BinaryFunction>
 void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
                  const MatrixType1& A, const MatrixType2& B, MatrixType3& C,
                  BinaryFunction op,
                  cusp::coo_format&)
 {
+    using namespace thrust::placeholders;
+
     typedef typename MatrixType3::index_type   IndexType;
     typedef typename MatrixType3::value_type   ValueType;
     typedef typename MatrixType3::memory_space MemorySpace;
@@ -87,9 +90,9 @@ void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
 
     // apply transformation to B's values
     if(thrust::detail::is_same< BinaryFunction, thrust::plus<ValueType> >::value)
-      thrust::transform(B.values.begin(), B.values.end(), vals.begin() + A_nnz, thrust::identity<ValueType>());
+        thrust::transform(B.values.begin(), B.values.end(), vals.begin() + A_nnz, thrust::identity<ValueType>());
     else
-      thrust::transform(B.values.begin(), B.values.end(), vals.begin() + A_nnz, thrust::negate<ValueType>());
+        thrust::transform(B.values.begin(), B.values.end(), vals.begin() + A_nnz, thrust::negate<ValueType>());
 
     // sort by (I,J)
     cusp::sort_by_row_and_column(rows, cols, vals);
@@ -113,11 +116,31 @@ void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
                           C.values.begin(),
                           thrust::equal_to< thrust::tuple<IndexType,IndexType> >(),
                           thrust::plus<ValueType>());
+
+    int num_zeros = thrust::count(C.values.begin(), C.values.end(), ValueType(0));
+
+    // The result of the elementwise operation contains zero entries so we need
+    // to contract the result to produce a strictly valid COO matrix
+    if(num_zeros != 0)
+    {
+        int num_reduced_entries =
+            thrust::remove_if(
+                thrust::make_zip_iterator(
+                  thrust::make_tuple(C.row_indices.begin(), C.column_indices.begin(), C.values.begin())),
+                thrust::make_zip_iterator(
+                  thrust::make_tuple(C.row_indices.end(),   C.column_indices.end(), C.values.end())),
+                C.values.begin(),
+                _1 == ValueType(0)) -
+            thrust::make_zip_iterator(
+                thrust::make_tuple(C.row_indices.begin(), C.column_indices.begin(), C.values.begin()));
+
+        C.resize(C.num_rows, C.num_cols, num_reduced_entries);
+    }
 }
 
 template <typename DerivedPolicy,
-          typename MatrixType1, typename MatrixType2, typename MatrixType3,
-          typename BinaryFunction>
+         typename MatrixType1, typename MatrixType2, typename MatrixType3,
+         typename BinaryFunction>
 void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
                  const MatrixType1& A, const MatrixType2& B, MatrixType3& C,
                  BinaryFunction op,
@@ -126,11 +149,11 @@ void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
     typedef typename MatrixType1::memory_space MemorySpace;
 
     typedef coo_matrix_view<typename MatrixType1::row_offsets_array_type::view,
-                            typename MatrixType1::column_indices_array_type::const_view,
-                            typename MatrixType1::values_array_type::const_view> View1;
+            typename MatrixType1::column_indices_array_type::const_view,
+            typename MatrixType1::values_array_type::const_view> View1;
     typedef coo_matrix_view<typename MatrixType2::row_offsets_array_type::view,
-                            typename MatrixType2::column_indices_array_type::const_view,
-                            typename MatrixType2::values_array_type::const_view> View2;
+            typename MatrixType2::column_indices_array_type::const_view,
+            typename MatrixType2::values_array_type::const_view> View2;
 
     typename MatrixType1::row_offsets_array_type::container A_row_indices(A.num_entries);
     typename MatrixType2::row_offsets_array_type::container B_row_indices(B.num_entries);

@@ -292,7 +292,6 @@ template <typename DerivedPolicy,
          typename LinearOperator,
          typename MatrixOrVector1,
          typename MatrixOrVector2>
-// typename thrust::detail::enable_if<!thrust::detail::is_convertible<typename LinearOperator::format,known_format>::value,void>::type
 void multiply(thrust::detail::execution_policy_base<DerivedPolicy> &exec,
          LinearOperator&  A,
          MatrixOrVector1& B,
@@ -307,7 +306,6 @@ template <typename DerivedPolicy,
          typename LinearOperator,
          typename MatrixOrVector1,
          typename MatrixOrVector2>
-// typename thrust::detail::enable_if<thrust::detail::is_convertible<typename LinearOperator::format,known_format>::value,void>::type
 void multiply(thrust::detail::execution_policy_base<DerivedPolicy> &exec,
          LinearOperator&  A,
          MatrixOrVector1& B,

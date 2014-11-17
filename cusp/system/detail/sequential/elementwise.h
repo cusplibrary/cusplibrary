@@ -127,7 +127,7 @@ void elementwise(sequential::execution_policy<DerivedPolicy>& exec,
     // TODO replace with destructive assignment?
 
     temp.resize(A.num_rows, A.num_cols, nnz);
-    cusp::copy(temp, C);
+    cusp::copy(exec, temp, C);
 }
 
 } // end namespace sequential
