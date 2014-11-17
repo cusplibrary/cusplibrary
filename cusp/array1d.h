@@ -508,6 +508,14 @@ public :
      */
     view subarray(size_type start_index, size_type num_entries);
 
+
+    void swap(array1d_view &v)
+    {
+      thrust::swap(this->base_reference(), v.base_reference());
+      thrust::swap(m_size,     v.m_size);
+      thrust::swap(m_capacity, v.m_capacity);
+    }
+
 protected:
     /*!
      * The size of this array1d_view, in number of elements.

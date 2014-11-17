@@ -113,6 +113,13 @@ void compute_mis_states(const size_t k,
     cusp::array1d<RandomType,MemorySpace>    last_values;
     cusp::array1d<IndexType,MemorySpace>     last_indices;
 
+    if(k >= 1)
+    {
+        last_states.resize (N);
+        last_values.resize (N);
+        last_indices.resize(N);
+    }
+
     cusp::constant_array<Tuple1> values(M, Tuple1(0,0,0));
     CooView A(N, N, M, make_array1d_view(row_indices), make_array1d_view(column_indices), values);
 
@@ -135,12 +142,10 @@ void compute_mis_states(const size_t k,
         // find the largest (state,value,index) k-ring neighbor for each node (if k > 1)
         for(size_t ring = 1; ring < k; ring++)
         {
-            last_states.resize (N);
             last_states.swap (maximal_states);
-            last_values.resize (N);
-            last_values.swap (maximal_values);
-            last_indices.resize(N);
             last_indices.swap(maximal_indices);
+            last_values.swap (maximal_values);
+            y.swap(z);
 
             cusp::generalized_spmv(A, y, y, z, thrust::project2nd<Tuple1,Tuple2>(), thrust::maximum<Tuple2>());
         }
