@@ -162,7 +162,6 @@ template <typename Matrix, typename Array>
 void extract_diagonal(const Matrix& A, Array& output, cusp::hyb_format)
 {
     typedef typename Matrix::index_type  IndexType;
-    typedef typename Array::value_type   ValueType;
 
     // extract COO diagonal
     cusp::detail::extract_diagonal(A.coo, output);

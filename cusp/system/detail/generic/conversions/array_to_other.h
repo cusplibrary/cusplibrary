@@ -120,7 +120,6 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
 
     typedef typename DestinationType::index_type IndexType;
     typedef typename DestinationType::value_type ValueType;
-    typedef typename DestinationType::memory_space MemorySpace;
 
     // define types used to programatically generate row_indices
     typedef typename SourceType::orientation                                              Orientation;

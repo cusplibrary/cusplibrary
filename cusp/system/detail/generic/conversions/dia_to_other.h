@@ -153,7 +153,8 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     cusp::array1d<IndexType, MemorySpace> row_indices(src.num_entries);
 
     thrust::copy_if
-     (thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, column_indices_begin, perm_values_begin)),
+     (exec,
+      thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, column_indices_begin, perm_values_begin)),
       thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, column_indices_begin, perm_values_begin)) + src.values.num_entries,
       perm_values_begin,
       thrust::make_zip_iterator(thrust::make_tuple(row_indices.begin(), dst.column_indices.begin(), dst.values.begin())),
@@ -203,13 +204,14 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     ZipIterator offset_modulus_tuple(thrust::make_tuple(offsets_begin, row_indices_begin));
     ColumnIndexIterator column_indices_begin(offset_modulus_tuple, sum_tuple_functor<IndexType>());
 
-    thrust::replace_copy_if(column_indices_begin,
+    thrust::replace_copy_if(exec,
+                            column_indices_begin,
                             column_indices_begin + src.values.num_entries,
                             src.values.values.begin(),
                             dst.column_indices.values.begin(),
                             _1 == ValueType(0), -1);
 
-    thrust::copy(src.values.values.begin(), src.values.values.end(), dst.values.values.begin());
+    thrust::copy(exec, src.values.values.begin(), src.values.values.end(), dst.values.values.begin());
 
 }
 

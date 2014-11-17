@@ -136,13 +136,13 @@ public:
     typedef typename const_column_view_type::ArrayType const_column_view;
     /*! \endcond */
 
-    /*! 1D array of values
-     */
-    values_array_type values;
-
     /*! The stride between consecutive elements along the major dimension
      */
     size_t pitch;
+
+    /*! 1D array of values
+     */
+    values_array_type values;
 
     /*! This constructor creates an empty \p array2d vector.
      */
@@ -349,24 +349,24 @@ public:
     typedef typename column_view_type::ArrayType column_view;
     /*! \endcond */
 
-    /*! 1D array of values.
-     */
-    values_array_type values;
-
     /*! The stride between consecutive elements along the major dimension.
      */
     size_t pitch;
 
+    /*! 1D array of values.
+     */
+    values_array_type values;
+
     /*! This constructor creates an empty \p array2d vector.
      */
     array2d_view(void)
-        : Parent(), values(0), pitch(0) {}
+        : Parent(), pitch(0), values(0) {}
 
     /*! This constructor creates a array2d_view from another array2d_view.
      *  \param a array2d_view used to create this array2d_view.
      */
     array2d_view(const array2d_view& a)
-        : Parent(a), values(a.values), pitch(a.pitch) {}
+        : Parent(a), pitch(a.pitch), values(a.values) {}
 
     // TODO handle different Orientation (pitch = major)
     //template <typename Array2, typename Orientation2>
@@ -376,7 +376,7 @@ public:
      *  \param a array2d used to construct this array2d_view.
      */
     array2d_view(array2d<typename Parent::value_type, typename Parent::memory_space, orientation>& a)
-        : Parent(a), values(a.values), pitch(a.pitch) {}
+        : Parent(a), pitch(a.pitch), values(a.values) {}
 
     /*! This constructor creates a array2d vector with the given
      *  shape, fills the entries with a given value and sets the pitch.

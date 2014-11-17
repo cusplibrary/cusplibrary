@@ -59,8 +59,8 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     dst.resize(src.num_rows, src.num_cols, src.num_entries);
 
     cusp::detail::offsets_to_indices(src.row_offsets, dst.row_indices);
-    cusp::copy(src.column_indices, dst.column_indices);
-    cusp::copy(src.values,         dst.values);
+    cusp::copy(exec, src.column_indices, dst.column_indices);
+    cusp::copy(exec, src.values,         dst.values);
 }
 
 
@@ -92,28 +92,31 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
         throw cusp::format_conversion_exception("dia_matrix fill-in would exceed maximum tolerance");
 
     cusp::array1d<IndexType,MemorySpace> diag_map(src.num_entries);
-    thrust::transform(thrust::make_zip_iterator( thrust::make_tuple( row_indices.begin(), src.column_indices.begin() ) ),
+    thrust::transform(exec,
+                      thrust::make_zip_iterator( thrust::make_tuple( row_indices.begin(), src.column_indices.begin() ) ),
                       thrust::make_zip_iterator( thrust::make_tuple( row_indices.end()  , src.column_indices.end() ) )  ,
                       diag_map.begin(),
                       occupied_diagonal_functor<IndexType>(src.num_rows));
 
     // place ones in diagonals array locations with occupied diagonals
     cusp::array1d<IndexType,MemorySpace> diagonals(src.num_rows+src.num_cols,IndexType(0));
-    thrust::scatter(thrust::constant_iterator<IndexType>(1),
+    thrust::scatter(exec,
+                    thrust::constant_iterator<IndexType>(1),
                     thrust::constant_iterator<IndexType>(1)+src.num_entries,
                     diag_map.begin(),
                     diagonals.begin());
 
-    const IndexType num_diagonals = thrust::reduce(diagonals.begin(), diagonals.end());
+    const IndexType num_diagonals = thrust::reduce(exec, diagonals.begin(), diagonals.end());
 
     // allocate DIA structure
     dst.resize(src.num_rows, src.num_cols, src.num_entries, num_diagonals, alignment);
 
     // fill in values array
-    thrust::fill(dst.values.values.begin(), dst.values.values.end(), ValueType(0));
+    thrust::fill(exec, dst.values.values.begin(), dst.values.values.end(), ValueType(0));
 
     // fill in diagonal_offsets array
-    thrust::copy_if(thrust::counting_iterator<IndexType>(0),
+    thrust::copy_if(exec,
+                    thrust::counting_iterator<IndexType>(0),
                     thrust::counting_iterator<IndexType>(src.num_rows+src.num_cols),
                     diagonals.begin(),
                     dst.diagonal_offsets.begin(),
@@ -125,7 +128,8 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
         thrust::replace(diag_map.begin(), diag_map.end(), diagonal_offsets[num_diag], num_diag);
 
     // copy values to dst
-    thrust::scatter(src.values.begin(), src.values.end(),
+    thrust::scatter(exec,
+                    src.values.begin(), src.values.end(),
                     thrust::make_transform_iterator(
                         thrust::make_zip_iterator( thrust::make_tuple( row_indices.begin(), diag_map.begin() ) ),
                         diagonal_index_functor<IndexType>(dst.values.pitch)),
@@ -175,7 +179,8 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     // compute permutation from CSR index to ELL index
     // first enumerate the entries within each row, e.g. [0, 1, 2, 0, 1, 2, 3, ...]
     cusp::array1d<IndexType, MemorySpace> permutation(src.num_entries);
-    thrust::exclusive_scan_by_key(row_indices.begin(), row_indices.end(),
+    thrust::exclusive_scan_by_key(exec,
+                                  row_indices.begin(), row_indices.end(),
                                   thrust::constant_iterator<IndexType>(1),
                                   permutation.begin(),
                                   IndexType(0));
@@ -187,14 +192,16 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
                       IndexType(1));
 
     // fill output with padding
-    thrust::fill(dst.column_indices.values.begin(), dst.column_indices.values.end(), IndexType(-1));
-    thrust::fill(dst.values.values.begin(),         dst.values.values.end(),         ValueType(0));
+    thrust::fill(exec, dst.column_indices.values.begin(), dst.column_indices.values.end(), IndexType(-1));
+    thrust::fill(exec, dst.values.values.begin(),         dst.values.values.end(),         ValueType(0));
 
     // scatter CSR entries to ELL
-    thrust::scatter(src.column_indices.begin(), src.column_indices.end(),
+    thrust::scatter(exec,
+                    src.column_indices.begin(), src.column_indices.end(),
                     permutation.begin(),
                     dst.column_indices.values.begin());
-    thrust::scatter(src.values.begin(), src.values.end(),
+    thrust::scatter(exec,
+                    src.values.begin(), src.values.end(),
                     permutation.begin(),
                     dst.values.values.begin());
 }
@@ -228,7 +235,8 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     // TODO call coo_to_hyb with a coo_matrix_view
 
     cusp::array1d<IndexType, MemorySpace> indices(src.num_entries);
-    thrust::exclusive_scan_by_key(row_indices.begin(), row_indices.end(),
+    thrust::exclusive_scan_by_key(exec,
+                                  row_indices.begin(), row_indices.end(),
                                   thrust::constant_iterator<IndexType>(1),
                                   indices.begin(),
                                   IndexType(0));
@@ -240,10 +248,11 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     dst.resize(src.num_rows, src.num_cols, num_ell_entries, num_coo_entries, num_entries_per_row, alignment);
 
     // fill output with padding
-    thrust::fill(dst.ell.column_indices.values.begin(), dst.ell.column_indices.values.end(), IndexType(-1));
-    thrust::fill(dst.ell.values.values.begin(),         dst.ell.values.values.end(),         ValueType(0));
+    thrust::fill(exec, dst.ell.column_indices.values.begin(), dst.ell.column_indices.values.end(), IndexType(-1));
+    thrust::fill(exec, dst.ell.values.values.begin(),         dst.ell.values.values.end(),         ValueType(0));
 
-    thrust::copy_if(thrust::make_zip_iterator( thrust::make_tuple( row_indices.begin(), src.column_indices.begin(), src.values.begin() ) ),
+    thrust::copy_if(exec,
+                    thrust::make_zip_iterator( thrust::make_tuple( row_indices.begin(), src.column_indices.begin(), src.values.begin() ) ),
                     thrust::make_zip_iterator( thrust::make_tuple( row_indices.end()  , src.column_indices.end()  , src.values.end()   ) ),
                     indices.begin(),
                     thrust::make_zip_iterator( thrust::make_tuple( dst.coo.row_indices.begin(), dst.coo.column_indices.begin(), dst.coo.values.begin() ) ),
@@ -256,12 +265,14 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
                       IndexType(1));
 
     // scatter CSR entries to ELL
-    thrust::scatter_if(src.column_indices.begin(), src.column_indices.end(),
+    thrust::scatter_if(exec,
+                       src.column_indices.begin(), src.column_indices.end(),
                        indices.begin(),
                        indices.begin(),
                        dst.ell.column_indices.values.begin(),
                        less_value<size_t>(dst.ell.column_indices.values.size()));
-    thrust::scatter_if(src.values.begin(), src.values.end(),
+    thrust::scatter_if(exec,
+                       src.values.begin(), src.values.end(),
                        indices.begin(),
                        indices.begin(),
                        dst.ell.values.values.begin(),

@@ -376,8 +376,8 @@ public:
      */
     dia_matrix_view(dia_matrix<IndexType,ValueType,MemorySpace>& matrix)
         : Parent(matrix),
-          diagonal_offsets(matrix.diagonal_offsets),
-          values(matrix.values) {}
+          diagonal_offsets(make_array1d_view(matrix.diagonal_offsets)),
+          values(make_array2d_view(matrix.values)) {}
 
     /*! Construct a \p dia_matrix_view from a existing const \p dia_matrix.
      *
@@ -385,8 +385,8 @@ public:
      */
     dia_matrix_view(const dia_matrix<IndexType,ValueType,MemorySpace>& matrix)
         : Parent(matrix),
-          diagonal_offsets(matrix.diagonal_offsets),
-          values(matrix.values) {}
+          diagonal_offsets(make_array1d_view(matrix.diagonal_offsets)),
+          values(make_array2d_view(matrix.values)) {}
 
     /*! Construct a \p dia_matrix_view from a existing \p dia_matrix_view.
      *

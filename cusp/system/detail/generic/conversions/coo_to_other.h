@@ -243,7 +243,8 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     // first enumerate the entries within each row, e.g. [0, 1, 2, 0, 1, 2, 3, ...]
     cusp::array1d<IndexType, MemorySpace> permutation(src.num_entries);
 
-    thrust::exclusive_scan_by_key(src.row_indices.begin(), src.row_indices.end(),
+    thrust::exclusive_scan_by_key(exec,
+                                  src.row_indices.begin(), src.row_indices.end(),
                                   thrust::constant_iterator<IndexType>(1),
                                   permutation.begin(),
                                   IndexType(0));
@@ -255,14 +256,16 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
                       IndexType(1));
 
     // fill output with padding
-    thrust::fill(dst.column_indices.values.begin(), dst.column_indices.values.end(), IndexType(-1));
-    thrust::fill(dst.values.values.begin(),         dst.values.values.end(),         ValueType(0));
+    thrust::fill(exec, dst.column_indices.values.begin(), dst.column_indices.values.end(), IndexType(-1));
+    thrust::fill(exec, dst.values.values.begin(),         dst.values.values.end(),         ValueType(0));
 
     // scatter COO entries to ELL
-    thrust::scatter(src.column_indices.begin(), src.column_indices.end(),
+    thrust::scatter(exec,
+                    src.column_indices.begin(), src.column_indices.end(),
                     permutation.begin(),
                     dst.column_indices.values.begin());
-    thrust::scatter(src.values.begin(), src.values.end(),
+    thrust::scatter(exec,
+                    src.values.begin(), src.values.end(),
                     permutation.begin(),
                     dst.values.values.begin());
 }
@@ -294,7 +297,8 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     }
 
     cusp::array1d<IndexType,MemorySpace> indices(src.num_entries);
-    thrust::exclusive_scan_by_key(src.row_indices.begin(), src.row_indices.end(),
+    thrust::exclusive_scan_by_key(exec,
+                                  src.row_indices.begin(), src.row_indices.end(),
                                   thrust::constant_iterator<IndexType>(1),
                                   indices.begin(),
                                   IndexType(0));
@@ -307,12 +311,13 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     dst.resize(src.num_rows, src.num_cols, num_ell_entries, num_coo_entries, num_entries_per_row, alignment);
 
     // fill output with padding
-    thrust::fill(dst.ell.column_indices.values.begin(), dst.ell.column_indices.values.end(), IndexType(-1));
-    thrust::fill(dst.ell.values.values.begin(),         dst.ell.values.values.end(),         ValueType(0));
+    thrust::fill(exec, dst.ell.column_indices.values.begin(), dst.ell.column_indices.values.end(), IndexType(-1));
+    thrust::fill(exec, dst.ell.values.values.begin(),         dst.ell.values.values.end(),         ValueType(0));
 
     // write tail of each row to COO portion
     thrust::copy_if
-    (thrust::make_zip_iterator( thrust::make_tuple( src.row_indices.begin(), src.column_indices.begin(), src.values.begin() ) ),
+    (exec,
+     thrust::make_zip_iterator( thrust::make_tuple( src.row_indices.begin(), src.column_indices.begin(), src.values.begin() ) ),
      thrust::make_zip_iterator( thrust::make_tuple( src.row_indices.end()  , src.column_indices.end()  , src.values.end()   ) ),
      indices.begin(),
      thrust::make_zip_iterator( thrust::make_tuple( dst.coo.row_indices.begin(), dst.coo.column_indices.begin(), dst.coo.values.begin() ) ),
@@ -329,12 +334,14 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
                       IndexType(1));
 
     // scatter COO entries to ELL
-    thrust::scatter_if(src.column_indices.begin(), src.column_indices.end(),
+    thrust::scatter_if(exec,
+                       src.column_indices.begin(), src.column_indices.end(),
                        indices.begin(),
                        indices.begin(),
                        dst.ell.column_indices.values.begin(),
                        less_value<size_t>(dst.ell.column_indices.values.size()));
-    thrust::scatter_if(src.values.begin(), src.values.end(),
+    thrust::scatter_if(exec,
+                       src.values.begin(), src.values.end(),
                        indices.begin(),
                        indices.begin(),
                        dst.ell.values.values.begin(),
