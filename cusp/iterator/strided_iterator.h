@@ -45,7 +45,7 @@ public:
     typedef typename thrust::iterator_difference<RandomAccessIterator>::type                  difference_type;
     typedef typename thrust::iterator_difference<RandomAccessIterator>::type                  size_type;
 
-    typedef cusp::detail::modulus_value<difference_type>                                      StrideFunctor;
+    typedef cusp::detail::multiplies_value<difference_type>                                   StrideFunctor;
     typedef typename thrust::counting_iterator<difference_type>                               CountingIterator;
     typedef typename thrust::transform_iterator<StrideFunctor, CountingIterator>              TransformIterator;
     typedef typename thrust::permutation_iterator<RandomAccessIterator,TransformIterator>     PermutationIterator;

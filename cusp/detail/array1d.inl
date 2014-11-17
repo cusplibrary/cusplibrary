@@ -120,7 +120,6 @@ array1d_view<RandomAccessIterator>
         m_size = new_size;
     else
     {
-        std::cout << "View capacity : " << m_capacity << ", new size : " << new_size << std::endl;
         throw cusp::not_implemented_exception("array1d_view cannot resize() larger than capacity()");
     }
 } // end array1d_view::resize
