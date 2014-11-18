@@ -25,7 +25,7 @@
 #include <cusp/detail/config.h>
 
 #include <cusp/memory.h>
-#include <cusp/format.h>
+#include <cusp/detail/format.h>
 #include <cusp/exception.h>
 
 #include <cusp/iterator/random_iterator.h>

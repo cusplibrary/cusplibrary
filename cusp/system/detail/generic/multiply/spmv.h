@@ -25,7 +25,7 @@
 #include <thrust/iterator/permutation_iterator.h>
 #include <thrust/iterator/transform_iterator.h>
 
-#include <cusp/format.h>
+#include <cusp/detail/format.h>
 #include <cusp/coo_matrix.h>
 #include <cusp/csr_matrix.h>
 
@@ -252,7 +252,7 @@ void multiply(thrust::execution_policy<DerivedPolicy> &exec,
 
     thrust::detail::temporary_array<IndexType, DerivedPolicy> temp(exec, A.num_entries);
     cusp::array1d_view<TempIterator> row_indices(temp.begin(), temp.end());
-    cusp::detail::offsets_to_indices(A.row_offsets, row_indices);
+    cusp::offsets_to_indices(A.row_offsets, row_indices);
 
     cusp::coo_matrix_view<RowView,ColView,ValView> A_coo_view(A.num_rows, A.num_cols, A.num_entries,
                                                               cusp::make_array1d_view(row_indices),

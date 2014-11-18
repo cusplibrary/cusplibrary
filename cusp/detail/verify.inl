@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-#include <cusp/format.h>
+#include <cusp/detail/format.h>
 #include <cusp/exception.h>
 
 #include <thrust/sort.h>

@@ -25,7 +25,7 @@
 #include <thrust/iterator/permutation_iterator.h>
 #include <thrust/iterator/transform_iterator.h>
 
-#include <cusp/format.h>
+#include <cusp/detail/format.h>
 #include <cusp/coo_matrix.h>
 #include <cusp/csr_matrix.h>
 

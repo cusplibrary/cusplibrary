@@ -18,11 +18,11 @@
 #pragma once
 
 #include <cusp/copy.h>
-#include <cusp/format.h>
+#include <cusp/detail/format.h>
 #include <cusp/sort.h>
 
 #include <cusp/blas/blas.h>
-#include <cusp/detail/format_utils.h>
+#include <cusp/format_utils.h>
 
 #include <thrust/count.h>
 #include <thrust/gather.h>
@@ -60,7 +60,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
 
     if(src.num_entries == 0) return;
 
-    cusp::detail::offsets_to_indices(src.row_offsets, dst.row_indices);
+    cusp::offsets_to_indices(exec, src.row_offsets, dst.row_indices);
     cusp::copy(exec, src.column_indices, dst.column_indices);
     cusp::copy(exec, src.values,         dst.values);
 }
@@ -87,9 +87,9 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
 
     // compute number of occupied diagonals and enumerate them
     cusp::array1d<IndexType,MemorySpace> row_indices(src.num_entries);
-    cusp::detail::offsets_to_indices(src.row_offsets, row_indices);
+    cusp::offsets_to_indices(exec, src.row_offsets, row_indices);
 
-    const size_t occupied_diagonals = cusp::detail::count_diagonals(exec, src.num_rows, src.num_cols, row_indices, src.column_indices);
+    const size_t occupied_diagonals = cusp::count_diagonals(exec, src.num_rows, src.num_cols, row_indices, src.column_indices);
 
     const float max_fill   = 3.0;
     const float threshold  = 1e6; // 1M entries
@@ -170,7 +170,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
 
     if(num_entries_per_row == 0)
     {
-        const size_t max_entries_per_row = cusp::detail::compute_max_entries_per_row(exec, src.row_offsets);
+        const size_t max_entries_per_row = cusp::compute_max_entries_per_row(exec, src.row_offsets);
 
         const float max_fill  = 3.0;
         const float threshold  = 1e6; // 1M entries
@@ -188,7 +188,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
 
     // expand row offsets into row indices
     cusp::array1d<IndexType, MemorySpace> row_indices(src.num_entries);
-    cusp::detail::offsets_to_indices(src.row_offsets, row_indices);
+    cusp::offsets_to_indices(exec, src.row_offsets, row_indices);
 
     // compute permutation from CSR index to ELL index
     // first enumerate the entries within each row, e.g. [0, 1, 2, 0, 1, 2, 3, ...]
@@ -245,12 +245,12 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
         const float  relative_speed      = 3.0;
         const size_t breakeven_threshold = 4096;
 
-        num_entries_per_row = cusp::detail::compute_optimal_entries_per_row(exec, src.row_offsets, relative_speed, breakeven_threshold);
+        num_entries_per_row = cusp::compute_optimal_entries_per_row(exec, src.row_offsets, relative_speed, breakeven_threshold);
     }
 
     // expand row offsets into row indices
     cusp::array1d<IndexType, MemorySpace> row_indices(src.num_entries);
-    cusp::detail::offsets_to_indices(src.row_offsets, row_indices);
+    cusp::offsets_to_indices(src.row_offsets, row_indices);
 
     // TODO call coo_to_hyb with a coo_matrix_view
 
@@ -261,7 +261,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
                                   indices.begin(),
                                   IndexType(0));
 
-    size_t num_coo_entries = thrust::count_if(indices.begin(), indices.end(), greater_equal_value<size_t>(num_entries_per_row));
+    size_t num_coo_entries = thrust::count_if(exec, indices.begin(), indices.end(), greater_equal_value<size_t>(num_entries_per_row));
     size_t num_ell_entries = src.num_entries - num_coo_entries;
 
     // allocate output storage

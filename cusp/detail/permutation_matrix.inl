@@ -17,7 +17,7 @@
 #include <cusp/coo_matrix.h>
 #include <cusp/sort.h>
 
-#include <cusp/detail/format_utils.h>
+#include <cusp/format_utils.h>
 
 #include <thrust/gather.h>
 #include <thrust/sort.h>

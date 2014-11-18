@@ -21,14 +21,29 @@
 
 namespace cusp
 {
-namespace detail
-{
+
+template <typename DerivedPolicy, typename OffsetArray, typename IndexArray>
+void offsets_to_indices(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                        const OffsetArray& offsets,
+                        IndexArray& indices);
 
 template <typename OffsetArray, typename IndexArray>
-void offsets_to_indices(const OffsetArray& offsets, IndexArray& indices);
+void offsets_to_indices(const OffsetArray& offsets,
+                        IndexArray& indices);
+
+template <typename DerivedPolicy, typename IndexArray, typename OffsetArray>
+void indices_to_offsets(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                        const IndexArray& indices,
+                        OffsetArray& offsets);
 
 template <typename IndexArray, typename OffsetArray>
-void indices_to_offsets(const IndexArray& indices, OffsetArray& offsets);
+void indices_to_offsets(const IndexArray& indices,
+                        OffsetArray& offsets);
+
+template <typename DerivedPolicy, typename MatrixType, typename ArrayType>
+void extract_diagonal(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                      const MatrixType& A,
+                      ArrayType& output);
 
 template <typename MatrixType, typename ArrayType>
 void extract_diagonal(const MatrixType& A, ArrayType& output);
@@ -63,7 +78,6 @@ template <typename ArrayType>
 size_t compute_optimal_entries_per_row(const ArrayType& row_offsets,
                                        float relative_speed = 3.0f,
                                        size_t breakeven_threshold = 4096);
-} // end namespace detail
 } // end namespace cusp
 
 #include <cusp/detail/format_utils.inl>

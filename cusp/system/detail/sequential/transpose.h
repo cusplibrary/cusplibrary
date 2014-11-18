@@ -21,7 +21,7 @@
 #pragma once
 
 #include <cusp/detail/config.h>
-#include <cusp/format.h>
+#include <cusp/detail/format.h>
 #include <cusp/array1d.h>
 
 #include <cusp/system/detail/sequential/execution_policy.h>

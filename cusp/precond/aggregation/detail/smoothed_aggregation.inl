@@ -18,7 +18,7 @@
 #include <cusp/multiply.h>
 
 #include <cusp/blas/blas.h>
-#include <cusp/detail/format_utils.h>
+#include <cusp/format_utils.h>
 
 namespace cusp
 {

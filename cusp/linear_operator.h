@@ -22,7 +22,7 @@
 
 #include <cusp/detail/config.h>
 
-#include <cusp/format.h>
+#include <cusp/detail/format.h>
 #include <cusp/exception.h>
 #include <cusp/blas/blas.h>
 #include <cusp/detail/matrix_base.h>

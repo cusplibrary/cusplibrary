@@ -19,7 +19,7 @@
  */
 
 #include <cusp/multiply.h>
-#include <cusp/detail/format_utils.h>
+#include <cusp/format_utils.h>
 #include <cusp/precond/aggregation/smoothed_aggregation_options.h>
 
 #include <thrust/functional.h>
@@ -77,7 +77,7 @@ jacobi<ValueType,MemorySpace>
     : default_omega(omega), temp(A.num_rows)
 {
     // extract the main diagonal
-    cusp::detail::extract_diagonal(A, diagonal);
+    cusp::extract_diagonal(A, diagonal);
 }
 
 template <typename ValueType, typename MemorySpace>
@@ -96,7 +96,7 @@ jacobi<ValueType,MemorySpace>
     }
 
     // extract the main diagonal
-    cusp::detail::extract_diagonal(sa_level.A_, diagonal);
+    cusp::extract_diagonal(sa_level.A_, diagonal);
 }
 
 // linear_operator

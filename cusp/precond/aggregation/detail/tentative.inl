@@ -19,7 +19,7 @@
 #include <cusp/array1d.h>
 #include <cusp/convert.h>
 #include <cusp/csr_matrix.h>
-#include <cusp/detail/format_utils.h>
+#include <cusp/format_utils.h>
 #include <cusp/detail/functional.h>
 
 #include <thrust/count.h>

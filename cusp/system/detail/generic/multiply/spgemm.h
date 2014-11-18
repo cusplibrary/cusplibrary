@@ -17,7 +17,7 @@
 #include <cusp/array1d.h>
 #include <cusp/sort.h>
 
-#include <cusp/detail/format_utils.h>
+#include <cusp/format_utils.h>
 
 #include <thrust/gather.h>
 #include <thrust/scan.h>
@@ -160,7 +160,7 @@ void multiply_(thrust::execution_policy<DerivedPolicy>& exec,
 
     // compute row offsets for B
     cusp::array1d<IndexType,MemorySpace> B_row_offsets(B.num_rows + 1);
-    cusp::detail::indices_to_offsets(B.row_indices, B_row_offsets);
+    cusp::indices_to_offsets(B.row_indices, B_row_offsets);
 
     // compute row lengths for B
     cusp::array1d<IndexType,MemorySpace> B_row_lengths(B.num_rows);
@@ -231,7 +231,7 @@ void multiply_(thrust::execution_policy<DerivedPolicy>& exec,
 
         // compute row offsets for A
         cusp::array1d<IndexType,MemorySpace> A_row_offsets(A.num_rows + 1);
-        cusp::detail::indices_to_offsets(A.row_indices, A_row_offsets);
+        cusp::indices_to_offsets(A.row_indices, A_row_offsets);
 
         // compute worspace requirements for each row
         cusp::array1d<IndexType,MemorySpace> cummulative_row_workspace(A.num_rows);

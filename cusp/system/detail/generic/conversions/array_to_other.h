@@ -20,7 +20,7 @@
 #include <cusp/array1d.h>
 #include <cusp/array2d.h>
 #include <cusp/copy.h>
-#include <cusp/format.h>
+#include <cusp/detail/format.h>
 
 #include <thrust/iterator/permutation_iterator.h>
 

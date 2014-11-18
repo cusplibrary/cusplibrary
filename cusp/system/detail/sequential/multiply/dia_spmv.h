@@ -19,7 +19,7 @@
 #include <cusp/detail/config.h>
 #include <cusp/detail/functional.h>
 
-#include <cusp/format.h>
+#include <cusp/detail/format.h>
 
 #include <cusp/system/detail/sequential/execution_policy.h>
 

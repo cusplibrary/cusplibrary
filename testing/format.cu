@@ -1,6 +1,6 @@
 #include <unittest/unittest.h>
 
-#include <cusp/format.h>
+#include <cusp/detail/format.h>
 
 #include <cusp/coo_matrix.h>
 #include <cusp/csr_matrix.h>

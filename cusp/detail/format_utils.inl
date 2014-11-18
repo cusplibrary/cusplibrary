@@ -16,7 +16,7 @@
 
 #include <cusp/array1d.h>
 #include <cusp/copy.h>
-#include <cusp/format.h>
+#include <cusp/detail/format.h>
 #include <cusp/detail/functional.h>
 
 #include <thrust/adjacent_difference.h>
@@ -33,60 +33,35 @@
 
 namespace cusp
 {
-namespace detail
-{
 
-template <typename OffsetArray, typename IndexArray>
-void offsets_to_indices(const OffsetArray& offsets, IndexArray& indices)
-{
-    typedef typename OffsetArray::value_type OffsetType;
-
-    // convert compressed row offsets into uncompressed row indices
-    thrust::fill(indices.begin(), indices.end(), OffsetType(0));
-    thrust::scatter_if( thrust::counting_iterator<OffsetType>(0),
-                        thrust::counting_iterator<OffsetType>(offsets.size()-1),
-                        offsets.begin(),
-                        thrust::make_transform_iterator(
-                            thrust::make_zip_iterator( thrust::make_tuple( offsets.begin(), offsets.begin()+1 ) ),
-                            not_equal_tuple_functor<OffsetType>()),
-                        indices.begin());
-    thrust::inclusive_scan(indices.begin(), indices.end(), indices.begin(), thrust::maximum<OffsetType>());
-}
-
-template <typename IndexArray, typename OffsetArray>
-void indices_to_offsets(const IndexArray& indices, OffsetArray& offsets)
-{
-    typedef typename OffsetArray::value_type OffsetType;
-
-    // convert uncompressed row indices into compressed row offsets
-    thrust::lower_bound(indices.begin(),
-                        indices.end(),
-                        thrust::counting_iterator<OffsetType>(0),
-                        thrust::counting_iterator<OffsetType>(offsets.size()),
-                        offsets.begin());
-}
-
-template <typename Matrix, typename Array>
-void extract_diagonal(const Matrix& A, Array& output, cusp::coo_format)
+template <typename DerivedPolicy, typename Matrix, typename Array>
+void extract_diagonal(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                      const Matrix& A,
+                      Array& output,
+                      cusp::coo_format)
 {
     typedef typename Matrix::index_type  IndexType;
     typedef typename Array::value_type   ValueType;
 
     // initialize output to zero
-    thrust::fill(output.begin(), output.end(), ValueType(0));
+    thrust::fill(exec, output.begin(), output.end(), ValueType(0));
 
     // scatter the diagonal values to output
-    thrust::scatter_if(A.values.begin(), A.values.end(),
+    thrust::scatter_if(exec,
+                       A.values.begin(), A.values.end(),
                        A.row_indices.begin(),
                        thrust::make_transform_iterator(
                            thrust::make_zip_iterator(
                                thrust::make_tuple(A.row_indices.begin(), A.column_indices.begin())),
-                           equal_tuple_functor<IndexType>()),
+                           cusp::detail::equal_tuple_functor<IndexType>()),
                        output.begin());
 }
 
-template <typename Matrix, typename Array>
-void extract_diagonal(const Matrix& A, Array& output, cusp::csr_format)
+template <typename DerivedPolicy, typename Matrix, typename Array>
+void extract_diagonal(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                      const Matrix& A,
+                      Array& output,
+                      cusp::csr_format)
 {
     typedef typename Matrix::index_type  IndexType;
     typedef typename Array::value_type   ValueType;
@@ -94,23 +69,27 @@ void extract_diagonal(const Matrix& A, Array& output, cusp::csr_format)
 
     // first expand the compressed row offsets into row indices
     cusp::array1d<IndexType,MemorySpace> row_indices(A.num_entries);
-    offsets_to_indices(A.row_offsets, row_indices);
+    offsets_to_indices(exec, A.row_offsets, row_indices);
 
     // initialize output to zero
-    thrust::fill(output.begin(), output.end(), ValueType(0));
+    thrust::fill(exec, output.begin(), output.end(), ValueType(0));
 
     // scatter the diagonal values to output
-    thrust::scatter_if(A.values.begin(), A.values.end(),
+    thrust::scatter_if(exec,
+                       A.values.begin(), A.values.end(),
                        row_indices.begin(),
                        thrust::make_transform_iterator(
                            thrust::make_zip_iterator(
                                thrust::make_tuple(row_indices.begin(), A.column_indices.begin())),
-                           equal_tuple_functor<IndexType>()),
+                           cusp::detail::equal_tuple_functor<IndexType>()),
                        output.begin());
 }
 
-template <typename Matrix, typename Array>
-void extract_diagonal(const Matrix& A, Array& output, cusp::dia_format)
+template <typename DerivedPolicy, typename Matrix, typename Array>
+void extract_diagonal(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                      const Matrix& A,
+                      Array& output,
+                      cusp::dia_format)
 {
     typedef typename Matrix::index_type  IndexType;
     typedef typename Array::value_type   ValueType;
@@ -123,7 +102,8 @@ void extract_diagonal(const Matrix& A, Array& output, cusp::dia_format)
         if(diagonal_offsets[i] == 0)
         {
             // diagonal found, copy to output and return
-            thrust::copy(A.values.values.begin() + A.values.pitch * i,
+            thrust::copy(exec,
+                         A.values.values.begin() + A.values.pitch * i,
                          A.values.values.begin() + A.values.pitch * i + output.size(),
                          output.begin());
             return;
@@ -131,63 +111,147 @@ void extract_diagonal(const Matrix& A, Array& output, cusp::dia_format)
     }
 
     // no diagonal found
-    thrust::fill(output.begin(), output.end(), ValueType(0));
+    thrust::fill(exec, output.begin(), output.end(), ValueType(0));
 }
 
-template <typename Matrix, typename Array>
-void extract_diagonal(const Matrix& A, Array& output, cusp::ell_format)
+template <typename DerivedPolicy, typename Matrix, typename Array>
+void extract_diagonal(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                      const Matrix& A,
+                      Array& output,
+                      cusp::ell_format)
 {
     typedef typename Matrix::index_type  IndexType;
     typedef typename Array::value_type   ValueType;
 
     // initialize output to zero
-    thrust::fill(output.begin(), output.end(), ValueType(0));
+    thrust::fill(exec, output.begin(), output.end(), ValueType(0));
 
     thrust::scatter_if
-    (A.values.values.begin(), A.values.values.end(),
+    (exec,
+     A.values.values.begin(), A.values.values.end(),
      thrust::make_transform_iterator(thrust::counting_iterator<size_t>(0),
-                                     modulus_value<size_t>(A.column_indices.pitch)),
+                                     cusp::detail::modulus_value<size_t>(A.column_indices.pitch)),
      thrust::make_zip_iterator(thrust::make_tuple
                                (thrust::make_transform_iterator(
                                      thrust::counting_iterator<size_t>(0),
-                                     modulus_value<size_t>(A.column_indices.pitch)),
+                                     cusp::detail::modulus_value<size_t>(A.column_indices.pitch)),
                                 A.column_indices.values.begin())),
      output.begin(),
-     equal_tuple_functor<IndexType>());
-
-    // TODO ignore padded values in column_indices
+     cusp::detail::equal_tuple_functor<IndexType>());
 }
 
-template <typename Matrix, typename Array>
-void extract_diagonal(const Matrix& A, Array& output, cusp::hyb_format)
+template <typename DerivedPolicy, typename Matrix, typename Array>
+void extract_diagonal(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                      const Matrix& A,
+                      Array& output,
+                      cusp::hyb_format)
 {
     typedef typename Matrix::index_type  IndexType;
 
     // extract COO diagonal
-    cusp::detail::extract_diagonal(A.coo, output);
+    cusp::extract_diagonal(exec, A.coo, output);
 
     // extract ELL diagonal
     thrust::scatter_if
-    (A.ell.values.values.begin(), A.ell.values.values.end(),
+    (exec,
+     A.ell.values.values.begin(), A.ell.values.values.end(),
      thrust::make_transform_iterator(
-       thrust::counting_iterator<size_t>(0), modulus_value<size_t>(A.ell.column_indices.pitch)),
+       thrust::counting_iterator<size_t>(0), cusp::detail::modulus_value<size_t>(A.ell.column_indices.pitch)),
      thrust::make_zip_iterator(thrust::make_tuple(
      thrust::make_transform_iterator(
-       thrust::counting_iterator<size_t>(0), modulus_value<size_t>(A.ell.column_indices.pitch)),
+       thrust::counting_iterator<size_t>(0), cusp::detail::modulus_value<size_t>(A.ell.column_indices.pitch)),
      A.ell.column_indices.values.begin())),
      output.begin(),
-     equal_tuple_functor<IndexType>());
+     cusp::detail::equal_tuple_functor<IndexType>());
+}
 
-    // TODO ignore padded values in column_indices
+template <typename DerivedPolicy, typename Matrix, typename Array>
+void extract_diagonal(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                      const Matrix& A,
+                      Array& output)
+{
+    output.resize(thrust::min(A.num_rows, A.num_cols));
+
+    // dispatch on matrix format
+    extract_diagonal(exec, A, output, typename Matrix::format());
 }
 
 template <typename Matrix, typename Array>
 void extract_diagonal(const Matrix& A, Array& output)
 {
-    output.resize(thrust::min(A.num_rows, A.num_cols));
+  using thrust::system::detail::generic::select_system;
 
-    // dispatch on matrix format
-    extract_diagonal(A, output, typename Matrix::format());
+  typedef typename Matrix::memory_space System1;
+  typedef typename Array::memory_space  System2;
+
+  System1 system1;
+  System2 system2;
+
+  return extract_diagonal(select_system(system1,system2), A, output);
+}
+
+template <typename DerivedPolicy, typename OffsetArray, typename IndexArray>
+void offsets_to_indices(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                        const OffsetArray& offsets,
+                        IndexArray& indices)
+{
+    typedef typename OffsetArray::value_type OffsetType;
+
+    // convert compressed row offsets into uncompressed row indices
+    thrust::fill(exec, indices.begin(), indices.end(), OffsetType(0));
+    thrust::scatter_if( exec,
+                        thrust::counting_iterator<OffsetType>(0),
+                        thrust::counting_iterator<OffsetType>(offsets.size()-1),
+                        offsets.begin(),
+                        thrust::make_transform_iterator(
+                            thrust::make_zip_iterator( thrust::make_tuple( offsets.begin(), offsets.begin()+1 ) ),
+                            cusp::detail::not_equal_tuple_functor<OffsetType>()),
+                        indices.begin());
+    thrust::inclusive_scan(exec, indices.begin(), indices.end(), indices.begin(), thrust::maximum<OffsetType>());
+}
+
+template <typename OffsetArray, typename IndexArray>
+void offsets_to_indices(const OffsetArray& offsets, IndexArray& indices)
+{
+  using thrust::system::detail::generic::select_system;
+
+  typedef typename IndexArray::memory_space  System1;
+  typedef typename OffsetArray::memory_space System2;
+
+  System1 system1;
+  System2 system2;
+
+  return offsets_to_indices(select_system(system1,system2), offsets, indices);
+}
+
+template <typename DerivedPolicy, typename IndexArray, typename OffsetArray>
+void indices_to_offsets(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                        const IndexArray& indices,
+                        OffsetArray& offsets)
+{
+    typedef typename OffsetArray::value_type OffsetType;
+
+    // convert uncompressed row indices into compressed row offsets
+    thrust::lower_bound(exec,
+                        indices.begin(),
+                        indices.end(),
+                        thrust::counting_iterator<OffsetType>(0),
+                        thrust::counting_iterator<OffsetType>(offsets.size()),
+                        offsets.begin());
+}
+
+template <typename IndexArray, typename OffsetArray>
+void indices_to_offsets(const IndexArray& indices, OffsetArray& offsets)
+{
+  using thrust::system::detail::generic::select_system;
+
+  typedef typename IndexArray::memory_space  System1;
+  typedef typename OffsetArray::memory_space System2;
+
+  System1 system1;
+  System2 system2;
+
+  return indices_to_offsets(select_system(system1,system2), indices, offsets);
 }
 
 template <typename DerivedPolicy, typename ArrayType1, typename ArrayType2>
@@ -210,7 +274,7 @@ size_t count_diagonals(const thrust::detail::execution_policy_base<DerivedPolicy
                     thrust::make_transform_iterator(
                       thrust::make_zip_iterator(
                         thrust::make_tuple( row_indices.begin(), column_indices.begin() ) ),
-                            occupied_diagonal_functor<IndexType>(num_rows)),
+                            cusp::detail::occupied_diagonal_functor<IndexType>(num_rows)),
                     values.begin());
 
     return thrust::reduce(exec, values.begin(), values.end());
@@ -240,7 +304,8 @@ size_t compute_max_entries_per_row(const thrust::detail::execution_policy_base<D
     typedef typename ArrayType::value_type IndexType;
 
     size_t max_entries_per_row =
-        thrust::inner_product(exec, row_offsets.begin() + 1, row_offsets.end(),
+        thrust::inner_product(exec,
+                              row_offsets.begin() + 1, row_offsets.end(),
                               row_offsets.begin(),
                               IndexType(0),
                               thrust::maximum<IndexType>(),
@@ -287,29 +352,31 @@ size_t compute_optimal_entries_per_row(const thrust::detail::execution_policy_ba
     const size_t num_rows = row_offsets.size()-1;
 
     // compute maximum row length
-    IndexType max_cols_per_row = compute_max_entries_per_row(row_offsets);
+    IndexType max_cols_per_row = compute_max_entries_per_row(exec, row_offsets);
 
     // allocate storage for the cumulative histogram and histogram
     cusp::array1d<IndexType,MemorySpace> cumulative_histogram(max_cols_per_row + 1, IndexType(0));
 
     // compute distribution of nnz per row
     cusp::array1d<IndexType,MemorySpace> entries_per_row(num_rows);
-    thrust::adjacent_difference( row_offsets.begin()+1, row_offsets.end(), entries_per_row.begin() );
+    thrust::adjacent_difference(exec, row_offsets.begin()+1, row_offsets.end(), entries_per_row.begin() );
 
     // sort data to bring equal elements together
-    thrust::sort(entries_per_row.begin(), entries_per_row.end());
+    thrust::sort(exec, entries_per_row.begin(), entries_per_row.end());
 
     // find the end of each bin of values
     thrust::counting_iterator<IndexType> search_begin(0);
-    thrust::upper_bound(entries_per_row.begin(),
+    thrust::upper_bound(exec,
+                        entries_per_row.begin(),
                         entries_per_row.end(),
                         search_begin,
                         search_begin + max_cols_per_row + 1,
                         cumulative_histogram.begin());
 
     // compute optimal ELL column size
-    IndexType num_cols_per_row = thrust::find_if( cumulative_histogram.begin(), cumulative_histogram.end()-1,
-                                 speed_threshold_functor(num_rows, relative_speed, breakeven_threshold) )
+    IndexType num_cols_per_row = thrust::find_if(exec,
+                                 cumulative_histogram.begin(), cumulative_histogram.end()-1,
+                                 cusp::detail::speed_threshold_functor(num_rows, relative_speed, breakeven_threshold))
                                  - cumulative_histogram.begin();
 
     return num_cols_per_row;
@@ -329,6 +396,4 @@ size_t compute_optimal_entries_per_row(const ArrayType& row_offsets,
   return compute_optimal_entries_per_row(select_system(system), row_offsets, relative_speed, breakeven_threshold);
 }
 
-
-} // end namespace detail
 } // end namespace cusp

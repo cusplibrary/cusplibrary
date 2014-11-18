@@ -18,12 +18,12 @@
 #pragma once
 
 #include <cusp/copy.h>
-#include <cusp/format.h>
+#include <cusp/detail/format.h>
 #include <cusp/sort.h>
 #include <cusp/print.h>
 
 #include <cusp/blas/blas.h>
-#include <cusp/detail/format_utils.h>
+#include <cusp/format_utils.h>
 #include <cusp/detail/functional.h>
 
 #include <thrust/count.h>
@@ -97,7 +97,8 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     PermValueIterator   perm_values_begin(src.values.values.begin(),  perm_indices_begin);
 
     thrust::copy_if
-     (thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, column_indices_begin, perm_values_begin)),
+     (exec,
+      thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, column_indices_begin, perm_values_begin)),
       thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, column_indices_begin, perm_values_begin)) + src.values.num_entries,
       perm_values_begin,
       thrust::make_zip_iterator(thrust::make_tuple(dst.row_indices.begin(), dst.column_indices.begin(), dst.values.begin())),
@@ -160,7 +161,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
       thrust::make_zip_iterator(thrust::make_tuple(row_indices.begin(), dst.column_indices.begin(), dst.values.begin())),
       _1 != ValueType(0));
 
-    cusp::detail::indices_to_offsets( row_indices, dst.row_offsets );
+    cusp::indices_to_offsets(exec, row_indices, dst.row_offsets);
 }
 
 template <typename DerivedPolicy, typename SourceType, typename DestinationType>

@@ -24,7 +24,7 @@
 #include <cusp/blas/blas.h>
 #include <cusp/krylov/arnoldi.h>
 #include <cusp/detail/random.h>
-#include <cusp/detail/format_utils.h>
+#include <cusp/format_utils.h>
 
 #include <thrust/extrema.h>
 #include <thrust/transform.h>

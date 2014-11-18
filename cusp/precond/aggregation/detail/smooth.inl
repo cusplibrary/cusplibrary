@@ -71,7 +71,7 @@ void smooth_prolongator(const MatrixType& S,
         // temp <- D^-1
         {
             cusp::array1d<ValueType, cusp::device_memory> D(S.num_rows);
-            cusp::detail::extract_diagonal(S, D);
+            cusp::extract_diagonal(S, D);
             thrust::transform(temp.values.begin(), temp.values.begin() + S.num_entries,
                               thrust::make_permutation_iterator(D.begin(), S.row_indices.begin()),
                               temp.values.begin(),
@@ -110,7 +110,7 @@ void smooth_prolongator(const MatrixType& S,
     } else {
 
         cusp::array1d<ValueType, cusp::device_memory> D(S.num_rows);
-        cusp::detail::extract_diagonal(S, D);
+        cusp::extract_diagonal(S, D);
 
         // create D_inv_S by copying S then scaling
         MatrixType D_inv_S(S);
@@ -142,7 +142,7 @@ void smooth_prolongator(const MatrixType& S,
     typedef typename MatrixType::index_type IndexType;
 
     cusp::array1d<ValueType, cusp::host_memory> D(S.num_rows);
-    cusp::detail::extract_diagonal(S, D);
+    cusp::extract_diagonal(S, D);
 
     // create D_inv_S by copying S then scaling
     MatrixType D_inv_S(S);

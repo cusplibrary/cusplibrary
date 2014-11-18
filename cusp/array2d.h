@@ -23,7 +23,7 @@
 #include <cusp/detail/config.h>
 
 #include <cusp/memory.h>
-#include <cusp/format.h>
+#include <cusp/detail/format.h>
 #include <cusp/array1d.h>
 
 #include <cusp/detail/array2d_format_utils.h>

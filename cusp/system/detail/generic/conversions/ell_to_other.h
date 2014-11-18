@@ -18,11 +18,11 @@
 #pragma once
 
 #include <cusp/copy.h>
-#include <cusp/format.h>
+#include <cusp/detail/format.h>
 #include <cusp/sort.h>
 
 #include <cusp/blas/blas.h>
-#include <cusp/detail/format_utils.h>
+#include <cusp/format_utils.h>
 
 #include <thrust/count.h>
 #include <thrust/gather.h>
@@ -140,7 +140,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
       _1 != ValueType(0));
 
     // convert COO row_indices to CSR row_offsets
-    cusp::detail::indices_to_offsets(row_indices, dst.row_offsets);
+    cusp::indices_to_offsets(row_indices, dst.row_offsets);
 }
 
 template <typename DerivedPolicy, typename SourceType, typename DestinationType>

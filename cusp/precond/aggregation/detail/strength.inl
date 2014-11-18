@@ -19,7 +19,7 @@
 #include <cusp/array1d.h>
 #include <cusp/convert.h>
 #include <cusp/csr_matrix.h>
-#include <cusp/detail/format_utils.h>
+#include <cusp/format_utils.h>
 
 #include <thrust/count.h>
 #include <thrust/functional.h>
@@ -56,7 +56,7 @@ void symmetric_strength_of_connection(const Matrix1& A, Matrix2& S, const double
 
     // extract matrix diagonal
     cusp::array1d<ValueType,cusp::host_memory> diagonal;
-    cusp::detail::extract_diagonal(A, diagonal);
+    cusp::extract_diagonal(A, diagonal);
 
     IndexType num_entries = 0;
 
@@ -148,7 +148,7 @@ void symmetric_strength_of_connection(const Matrix1& A, Matrix2& S, const double
     typedef typename Matrix1::value_type ValueType;
 
     cusp::array1d<ValueType,MemorySpace> diagonal;
-    cusp::detail::extract_diagonal(A, diagonal);
+    cusp::extract_diagonal(A, diagonal);
 
     is_strong_connection<ValueType> pred(theta);
 

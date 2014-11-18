@@ -18,8 +18,8 @@
 
 #include <cusp/detail/config.h>
 
-#include <cusp/format.h>
-#include <cusp/detail/format_utils.h>
+#include <cusp/detail/format.h>
+#include <cusp/format_utils.h>
 
 #include <cusp/system/detail/sequential/execution_policy.h>
 
@@ -51,8 +51,8 @@ void multiply_(sequential::execution_policy<DerivedPolicy>& exec,
     cusp::array1d<typename Matrix3::index_type,cusp::host_memory> C_row_offsets(A.num_rows + 1);
 
     // compute row offsets for A and B
-    cusp::detail::indices_to_offsets(A.row_indices, A_row_offsets);
-    cusp::detail::indices_to_offsets(B.row_indices, B_row_offsets);
+    cusp::indices_to_offsets(A.row_indices, A_row_offsets);
+    cusp::indices_to_offsets(B.row_indices, B_row_offsets);
 
     typedef typename Matrix3::index_type IndexType;
 
@@ -73,7 +73,7 @@ void multiply_(sequential::execution_policy<DerivedPolicy>& exec,
     // true_nonzeros may be less than estimated_nonzeros
     C.resize(A.num_rows, B.num_cols, true_nonzeros);
 
-    cusp::detail::offsets_to_indices(C_row_offsets, C.row_indices);
+    cusp::offsets_to_indices(C_row_offsets, C.row_indices);
 }
 
 } // end namespace sequential

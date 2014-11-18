@@ -7,7 +7,7 @@
 #include <cusp/ell_matrix.h>
 #include <cusp/hyb_matrix.h>
 
-#include <cusp/detail/format_utils.h>
+#include <cusp/format_utils.h>
 
 template <class Space>
 void TestOffsetsToIndices(void)
@@ -35,7 +35,7 @@ void TestOffsetsToIndices(void)
     expected[9] = 6;
 
     cusp::array1d<int, Space> indices(10);
-    cusp::detail::offsets_to_indices(offsets, indices);
+    cusp::offsets_to_indices(offsets, indices);
 
     ASSERT_EQUAL(indices, expected);
 }
@@ -68,7 +68,7 @@ void TestIndicesToOffsets(void)
     expected[7] = 10;
 
     cusp::array1d<int, Space> offsets(8);
-    cusp::detail::indices_to_offsets(indices, offsets);
+    cusp::indices_to_offsets(indices, offsets);
 
     ASSERT_EQUAL(offsets, expected);
 }
@@ -94,7 +94,7 @@ void TestExtractDiagonal(void)
 
         cusp::array1d<float, Space> output;
 
-        cusp::detail::extract_diagonal(Matrix(A), output);
+        cusp::extract_diagonal(Matrix(A), output);
 
         ASSERT_EQUAL(output, expected);
     }
@@ -121,7 +121,7 @@ void TestExtractDiagonal(void)
 
         cusp::array1d<float, Space> output;
 
-        cusp::detail::extract_diagonal(Matrix(A), output);
+        cusp::extract_diagonal(Matrix(A), output);
 
         ASSERT_EQUAL(output, expected);
     }
@@ -163,7 +163,7 @@ void TestExtractDiagonal(void)
 
         cusp::array1d<float, Space> output;
 
-        cusp::detail::extract_diagonal(Matrix(A), output);
+        cusp::extract_diagonal(Matrix(A), output);
 
         ASSERT_EQUAL(output, expected);
     }

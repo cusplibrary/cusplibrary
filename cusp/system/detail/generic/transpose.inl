@@ -22,7 +22,7 @@
 #include <thrust/iterator/permutation_iterator.h>
 #include <thrust/iterator/transform_iterator.h>
 
-#include <cusp/format.h>
+#include <cusp/detail/format.h>
 #include <cusp/copy.h>
 #include <cusp/convert.h>
 #include <cusp/coo_matrix.h>
@@ -90,13 +90,13 @@ void transpose(thrust::execution_policy<DerivedPolicy>& exec,
 
     At.resize(A.num_cols, A.num_rows, A.num_entries);
 
-    cusp::detail::offsets_to_indices(A.row_offsets, At.column_indices);
+    cusp::offsets_to_indices(A.row_offsets, At.column_indices);
 
     cusp::copy(A.values, At.values);
 
     cusp::sort_by_row(At_row_indices, At.column_indices, At.values);
 
-    cusp::detail::indices_to_offsets(At_row_indices, At.row_offsets);
+    cusp::indices_to_offsets(At_row_indices, At.row_offsets);
 }
 
 } // end namespace generic

@@ -19,7 +19,7 @@
  */
 
 #include <cusp/blas/blas.h>
-#include <cusp/detail/format_utils.h>
+#include <cusp/format_utils.h>
 #include <cusp/transpose.h>
 #include <cusp/multiply.h>
 #include <cusp/csr_matrix.h>

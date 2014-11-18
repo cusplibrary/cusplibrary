@@ -20,7 +20,7 @@
 
 #include <cusp/multiply.h>
 
-#include <cusp/detail/format_utils.h>
+#include <cusp/format_utils.h>
 #include <cusp/detail/spectral_radius.h>
 
 #include <math.h>

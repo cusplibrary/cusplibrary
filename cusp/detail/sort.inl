@@ -15,7 +15,7 @@
  */
 
 #include <cusp/copy.h>
-#include <cusp/format.h>
+#include <cusp/detail/format.h>
 #include <cusp/array1d.h>
 
 #include <thrust/fill.h>

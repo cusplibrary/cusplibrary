@@ -19,7 +19,7 @@
  */
 
 #include <cusp/blas/blas.h>
-#include <cusp/detail/format_utils.h>
+#include <cusp/format_utils.h>
 
 #include <thrust/functional.h>
 #include <thrust/transform.h>
@@ -51,7 +51,7 @@ template <typename ValueType, typename MemorySpace>
         : linear_operator<ValueType,MemorySpace>(A.num_rows, A.num_cols, A.num_rows)
     {
         // extract the main diagonal
-        cusp::detail::extract_diagonal(A, diagonal_reciprocals);
+        cusp::extract_diagonal(A, diagonal_reciprocals);
     
         // invert the entries
         thrust::transform(diagonal_reciprocals.begin(), diagonal_reciprocals.end(),

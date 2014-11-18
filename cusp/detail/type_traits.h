@@ -23,7 +23,7 @@
 #pragma once
 
 #include <cusp/detail/config.h>
-#include <cusp/format.h>
+#include <cusp/detail/format.h>
 #include <cusp/complex.h>
 
 namespace cusp

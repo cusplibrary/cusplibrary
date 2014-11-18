@@ -19,7 +19,7 @@
 
 #include <cusp/array1d.h>
 #include <cusp/coo_matrix.h>
-#include <cusp/format.h>
+#include <cusp/detail/format.h>
 #include <cusp/sort.h>
 #include <cusp/verify.h>
 
@@ -158,8 +158,8 @@ void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
     typename MatrixType1::row_offsets_array_type::container A_row_indices(A.num_entries);
     typename MatrixType2::row_offsets_array_type::container B_row_indices(B.num_entries);
 
-    cusp::detail::offsets_to_indices(A.row_offsets, A_row_indices);
-    cusp::detail::offsets_to_indices(B.row_offsets, B_row_indices);
+    cusp::offsets_to_indices(A.row_offsets, A_row_indices);
+    cusp::offsets_to_indices(B.row_offsets, B_row_indices);
 
     View1 A_coo_view(A.num_rows, A.num_cols, A.num_entries,
                      cusp::make_array1d_view(A_row_indices),

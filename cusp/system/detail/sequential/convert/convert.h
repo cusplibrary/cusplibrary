@@ -17,7 +17,7 @@
 
 #pragma once
 
-#include <cusp/format.h>
+#include <cusp/detail/format.h>
 #include <cusp/csr_matrix.h>
 #include <cusp/exception.h>
 

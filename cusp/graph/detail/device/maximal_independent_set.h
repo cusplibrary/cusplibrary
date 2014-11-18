@@ -21,7 +21,7 @@
 #include <cusp/multiply.h>
 
 #include <cusp/detail/random.h>
-#include <cusp/detail/format_utils.h>
+#include <cusp/format_utils.h>
 
 #include <thrust/count.h>
 #include <thrust/transform.h>

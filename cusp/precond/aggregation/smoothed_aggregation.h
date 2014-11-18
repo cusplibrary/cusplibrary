@@ -25,7 +25,7 @@
 #include <cusp/detail/spectral_radius.h>
 
 #include <cusp/linear_operator.h>
-#include <cusp/multilevel.h>
+#include <cusp/detail/multilevel.h>
 
 #include <cusp/precond/aggregation/smoothed_aggregation_options.h>
 

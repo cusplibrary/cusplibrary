@@ -101,6 +101,7 @@ void _TestMaximalIndependentSet(const ExampleMatrix& example_matrix)
         ASSERT_EQUAL(thrust::count(stencil.begin(), stencil.end(), 1), num_nodes);
     }
 }
+
 template <typename TestMatrix>
 void TestMaximalIndependentSet(void)
 {

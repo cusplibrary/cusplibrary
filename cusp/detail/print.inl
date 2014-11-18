@@ -15,7 +15,7 @@
  */
 
 
-#include <cusp/format.h>
+#include <cusp/detail/format.h>
 #include <cusp/complex.h>
 #include <cusp/coo_matrix.h>
 
