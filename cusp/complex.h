@@ -33,13 +33,19 @@ namespace cusp
 
 using thrust::complex;
 
-// define execution_policy for the purpose of Doxygenating it
-// it is actually defined elsewhere
+// define complex type for the purpose of Doxygenating it
+// it is actually defined in Thrust
 #if 0
+/**
+ *  \addtogroup numerics Numerics
+ *  \par Overview
+ *  Basic numeric types
+ */
+
 /**
  *  \brief Complex number type imported from thrust
  *
- *  \tparam T The type used to hold the real and imaginary parts. Should be <tt>float</tt> 
+ *  \tparam T The type used to hold the real and imaginary parts. Should be <tt>float</tt>
  *  or <tt>double</tt>. Others types are not supported.
  *
  *  \par Overview
@@ -57,142 +63,160 @@ struct complex
 {
 public:
 
-  /*! \p value_type is the type of \p complex's real and imaginary parts.
-   */
-  typedef T value_type;
+    /*! \p value_type is the type of \p complex's real and imaginary parts.
+     */
+    typedef T value_type;
 
-  /* --- Constructors --- */
+    /* --- Constructors --- */
 
-  /*! Construct a complex number from its real and imaginary parts.
-   *
-   *  \param re The real part of the number.
-   *  \param im The imaginary part of the number.
-   */
-  inline __host__ __device__      
-  complex(const T & re = T(), const T& im = T());
+    /*! Construct a complex number from its real and imaginary parts.
+     *
+     *  \param re The real part of the number.
+     *  \param im The imaginary part of the number.
+     */
+    inline __host__ __device__
+    complex(const T & re = T(), const T& im = T());
 
-  /*! This copy constructor copies from a \p complex with a type that
-   *  is convertible to this \p complex \c value_type.
-   *
-   *  \param z The \p complex to copy from.
-   *
-   *  \tparam X is convertible to \c value_type.
-   */
-  template <typename X> 
-  inline __host__ __device__
-  complex(const complex<X> & z);
-  
-  /*! This copy constructor copies from a <tt>std::complex</tt> with a type that
-   *  is convertible to this \p complex \c value_type.
-   *
-   *  \param z The \p complex to copy from.
-   *
-   *  \tparam X is convertible to \c value_type.
-   */
-  template <typename X> 
+    /*! This copy constructor copies from a \p complex with a type that
+     *  is convertible to this \p complex \c value_type.
+     *
+     *  \param z The \p complex to copy from.
+     *
+     *  \tparam X is convertible to \c value_type.
+     */
+    template <typename X>
+    inline __host__ __device__
+    complex(const complex<X> & z);
+
+    /*! This copy constructor copies from a <tt>std::complex</tt> with a type that
+     *  is convertible to this \p complex \c value_type.
+     *
+     *  \param z The \p complex to copy from.
+     *
+     *  \tparam X is convertible to \c value_type.
+     */
+    template <typename X>
     inline __host__
-  complex(const std::complex<X> & z);
+    complex(const std::complex<X> & z);
 
 
 
-  /* --- Compound Assignment Operators --- */
+    /* --- Compound Assignment Operators --- */
 
-  /*! Adds a \p complex to this \p complex and 
-   *  assigns the result to this \p complex.
-   *
-   *  \param z The \p complex to be Added.
-   */
-  __host__ __device__
-  inline complex<T>& operator+=(const complex<T> z);
+    /*! Adds a \p complex to this \p complex and
+     *  assigns the result to this \p complex.
+     *
+     *  \param z The \p complex to be Added.
+     */
+    __host__ __device__
+    inline complex<T>& operator+=(const complex<T> z);
 
-  /*! Subtracts a \p complex from this \p complex and 
-   *  assigns the result to this \p complex.
-   *
-   *  \param z The \p complex to be subtracted.
-   */
-  __host__ __device__
-  inline complex<T>& operator-=(const complex<T> z);
+    /*! Subtracts a \p complex from this \p complex and
+     *  assigns the result to this \p complex.
+     *
+     *  \param z The \p complex to be subtracted.
+     */
+    __host__ __device__
+    inline complex<T>& operator-=(const complex<T> z);
 
-  /*! Multiplies this \p complex by another \p complex and 
-   *  assigns the result to this \p complex.
-   *
-   *  \param z The \p complex to be multiplied.
-   */
-  __host__ __device__
-  inline complex<T>& operator*=(const complex<T> z);
+    /*! Multiplies this \p complex by another \p complex and
+     *  assigns the result to this \p complex.
+     *
+     *  \param z The \p complex to be multiplied.
+     */
+    __host__ __device__
+    inline complex<T>& operator*=(const complex<T> z);
 
-  /*! Divides this \p complex by another \p complex and 
-   *  assigns the result to this \p complex.
-   *
-   *  \param z The \p complex to be divided.
-   */
-  __host__ __device__
-  inline complex<T>& operator/=(const complex<T> z);
-
-
-
-  /* --- Getter functions --- 
-   * The volatile ones are there to help for example
-   * with certain reductions optimizations
-   */
-
-  /*! Returns the real part of this \p complex.
-   */
-  __host__ __device__ inline T real() const volatile{ return m_data[0]; }
-
-  /*! Returns the imaginary part of this \p complex.
-   */
-  __host__ __device__ inline T imag() const volatile{ return m_data[1]; }
-
-  /*! Returns the real part of this \p complex.
-   */
-  __host__ __device__ inline T real() const{ return m_data[0]; }
-
-  /*! Returns the imaginary part of this \p complex.
-   */
-  __host__ __device__ inline T imag() const{ return m_data[1]; }
+    /*! Divides this \p complex by another \p complex and
+     *  assigns the result to this \p complex.
+     *
+     *  \param z The \p complex to be divided.
+     */
+    __host__ __device__
+    inline complex<T>& operator/=(const complex<T> z);
 
 
 
-  /* --- Setter functions --- 
-   * The volatile ones are there to help for example
-   * with certain reductions optimizations
-   */
+    /* --- Getter functions ---
+     * The volatile ones are there to help for example
+     * with certain reductions optimizations
+     */
 
-  /*! Sets the real part of this \p complex.
-   *
-   *  \param re The new real part of this \p complex.
-   */
-  __host__ __device__ inline void real(T re)volatile{ m_data[0] = re; }
+    /*! Returns the real part of this \p complex.
+     */
+    __host__ __device__ inline T real() const volatile {
+        return m_data[0];
+    }
 
-  /*! Sets the imaginary part of this \p complex.
-   *
-   *  \param im The new imaginary part of this \p complex.e
-   */
-  __host__ __device__ inline void imag(T im)volatile{ m_data[1] = im; }
+    /*! Returns the imaginary part of this \p complex.
+     */
+    __host__ __device__ inline T imag() const volatile {
+        return m_data[1];
+    }
 
-  /*! Sets the real part of this \p complex.
-   *
-   *  \param re The new real part of this \p complex.
-   */
-  __host__ __device__ inline void real(T re){ m_data[0] = re; }
+    /*! Returns the real part of this \p complex.
+     */
+    __host__ __device__ inline T real() const {
+        return m_data[0];
+    }
 
-  /*! Sets the imaginary part of this \p complex.
-   *
-   *  \param im The new imaginary part of this \p complex.
-   */
-  __host__ __device__ inline void imag(T im){ m_data[1] = im; }
+    /*! Returns the imaginary part of this \p complex.
+     */
+    __host__ __device__ inline T imag() const {
+        return m_data[1];
+    }
 
 
 
-  /* --- Casting functions --- */
+    /* --- Setter functions ---
+     * The volatile ones are there to help for example
+     * with certain reductions optimizations
+     */
 
-  /*! Casts this \p complex to a <tt>std::complex</tt> of the same type.
-   */
-  inline operator std::complex<T>() const { return std::complex<T>(real(),imag()); }
+    /*! Sets the real part of this \p complex.
+     *
+     *  \param re The new real part of this \p complex.
+     */
+    __host__ __device__ inline void real(T re)volatile {
+        m_data[0] = re;
+    }
+
+    /*! Sets the imaginary part of this \p complex.
+     *
+     *  \param im The new imaginary part of this \p complex.e
+     */
+    __host__ __device__ inline void imag(T im)volatile {
+        m_data[1] = im;
+    }
+
+    /*! Sets the real part of this \p complex.
+     *
+     *  \param re The new real part of this \p complex.
+     */
+    __host__ __device__ inline void real(T re) {
+        m_data[0] = re;
+    }
+
+    /*! Sets the imaginary part of this \p complex.
+     *
+     *  \param im The new imaginary part of this \p complex.
+     */
+    __host__ __device__ inline void imag(T im) {
+        m_data[1] = im;
+    }
+
+
+
+    /* --- Casting functions --- */
+
+    /*! Casts this \p complex to a <tt>std::complex</tt> of the same type.
+     */
+    inline operator std::complex<T>() const {
+        return std::complex<T>(real(),imag());
+    }
 
 private:
-  T m_data[2];
+    T m_data[2];
 };
 
 
@@ -230,8 +254,8 @@ template<typename T> __host__ __device__ inline complex<T> conj(const complex<T>
 template<typename T> __host__ __device__ inline complex<T> polar(const T& m, const T& theta = 0);
 
 /*! Returns the projection of a \p complex on the Riemann sphere.
- *  For all finite \p complex it returns the argument. For \p complexs 
- *  with a non finite part returns (INFINITY,+/-0) where the sign of 
+ *  For all finite \p complex it returns the argument. For \p complexs
+ *  with a non finite part returns (INFINITY,+/-0) where the sign of
  *  the zero matches the sign of the imaginary part of the argument.
  *
  *  \param z The \p complex argument.
@@ -472,7 +496,7 @@ template <typename T> __host__ __device__ complex<T> tanh(const complex<T>&z);
 
 /*! Returns the complex arc cosine of a \p complex number.
  *
- *  The range of the real part of the result is [0, Pi] and 
+ *  The range of the real part of the result is [0, Pi] and
  *  the range of the imaginary part is [-inf, +inf]
  *
  *  \param z The \p complex argument.
@@ -481,7 +505,7 @@ template <typename T> __host__ __device__ complex<T> acos(const complex<T>& z);
 
 /*! Returns the complex arc sine of a \p complex number.
  *
- *  The range of the real part of the result is [-Pi/2, Pi/2] and 
+ *  The range of the real part of the result is [-Pi/2, Pi/2] and
  *  the range of the imaginary part is [-inf, +inf]
  *
  *  \param z The \p complex argument.
@@ -490,7 +514,7 @@ template <typename T> __host__ __device__ complex<T> asin(const complex<T>& z);
 
 /*! Returns the complex arc tangent of a \p complex number.
  *
- *  The range of the real part of the result is [-Pi/2, Pi/2] and 
+ *  The range of the real part of the result is [-Pi/2, Pi/2] and
  *  the range of the imaginary part is [-inf, +inf]
  *
  *  \param z The \p complex argument.
@@ -503,7 +527,7 @@ template <typename T> __host__ __device__ complex<T> atan(const complex<T>& z);
 
 /*! Returns the complex inverse hyperbolic cosine of a \p complex number.
  *
- *  The range of the real part of the result is [0, +inf] and 
+ *  The range of the real part of the result is [0, +inf] and
  *  the range of the imaginary part is [-Pi, Pi]
  *
  *  \param z The \p complex argument.
@@ -512,7 +536,7 @@ template <typename T> __host__ __device__ complex<T> acosh(const complex<T>& z);
 
 /*! Returns the complex inverse hyperbolic sine of a \p complex number.
  *
- *  The range of the real part of the result is [-inf, +inf] and 
+ *  The range of the real part of the result is [-inf, +inf] and
  *  the range of the imaginary part is [-Pi/2, Pi/2]
  *
  *  \param z The \p complex argument.
@@ -521,7 +545,7 @@ template <typename T> __host__ __device__ complex<T> asinh(const complex<T>& z);
 
 /*! Returns the complex inverse hyperbolic tangent of a \p complex number.
  *
- *  The range of the real part of the result is [-inf, +inf] and 
+ *  The range of the real part of the result is [-inf, +inf] and
  *  the range of the imaginary part is [-Pi/2, Pi/2]
  *
  *  \param z The \p complex argument.
@@ -546,7 +570,7 @@ std::basic_ostream<charT, traits>& operator<<(std::basic_ostream<charT, traits>&
  * - (real)
  * - (real, imaginary)
  *
- * The values read must be convertible to the \p complex's \c value_type 
+ * The values read must be convertible to the \p complex's \c value_type
  *
  *  \param is The input stream.
  *  \param z The \p complex number to set.
@@ -604,5 +628,8 @@ template <typename T> __host__ __device__ inline bool operator!=(const complex<T
 #include <thrust/detail/complex/complex.inl>
 
 #endif
+
+/*! \}
+ */
 
 } // end namespace cusp

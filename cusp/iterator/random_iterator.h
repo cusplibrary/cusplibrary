@@ -39,12 +39,14 @@ namespace detail
  */
 
 /**
- *  \brief
+ *  \brief RandomAccessIterator for generating random values.
+ *
+ *  \tparam T The type used to encapsulate the underlying data.
  *
  *  \par Overview
  *  \p random_iterator is an iterator which represents a pointer into a range
- *  of constant values. This iterator is useful for creating a range filled with the same
- *  value without explicitly storing it in memory. Using \p random_iterator saves both
+ *  of random values. This iterator is useful for creating a range filled with random
+ *  values without explicitly storing it in memory. Using \p random_iterator saves both
  *  memory capacity and bandwidth.
  *
  *  \par Example
@@ -52,9 +54,12 @@ namespace detail
  *  \c value_type is \c int and whose seed is \c 5.
  *
  *  \code
+ *  #include <cusp/array1d.h>
  *  #include <cusp/iterator/random_iterator.h>
  *
- *  int main()
+ *  #include <iostream>
+ *
+ *  int main(void)
  *  {
  *    cusp::random_iterator<int> iter(5);
  *
@@ -88,12 +93,35 @@ public:
 
     IndexFunctor index_func;
 
+    /*! \brief Null constructor initializes this \p strided_iterator's stride to zero.
+     */
+    random_iterator(void)
+        : index_func(0) {}
+
+    /*! \brief This constructor builds a \p random_iterator using a specified seed.
+     *  \param seed The seed initial value used to generate the random sequence.
+     */
     random_iterator(size_t seed)
         : index_func(seed) {}
 
+    /*! \brief This method returns an iterator pointing to the beginning of
+     *  this random sequence of entries.
+     *  \return mStart
+     */
     iterator begin(void) const
     {
-        return RandomTransformIterator(RandomTransformIterator(RandomCountingIterator(0), index_func), index_func);
+        return RandomCountingIterator(0);//RandomTransformIterator(RandomTransformIterator(RandomCountingIterator(0), index_func), index_func);
+    }
+
+    /*! \brief Subscript access to the data contained in this iterator.
+     *  \param n The index of the element for which data should be accessed.
+     *  \return Read reference to data.
+     *
+     *  This operator allows for easy, array-style, data access.
+     */
+    reference operator[](size_type n) const
+    {
+        return *(begin() + n);
     }
 }; // end random_iterator
 

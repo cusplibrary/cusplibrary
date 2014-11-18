@@ -30,11 +30,8 @@
 namespace cusp
 {
 
-/**
- * \addtogroup iterative_solvers Iterative Solvers
- *  \addtogroup multilevel_methods Multilevel Methods
- *  \brief Multilevel methods to precondition and solve hermitian linear
- *  systems
+/*! \addtogroup iterative_solvers Iterative Solvers
+ *  \addtogroup preconditioners Preconditioners
  *  \ingroup iterative_solvers
  *  \{
  */
@@ -45,8 +42,8 @@ namespace cusp
  *  TODO
  */
 template <typename MatrixType, typename SmootherType, typename SolverType>
-class multilevel : public cusp::linear_operator<typename MatrixType::value_type,
-    typename MatrixType::memory_space>
+class multilevel
+: public cusp::linear_operator<typename MatrixType::value_type, typename MatrixType::memory_space>
 {
 public:
 
@@ -69,7 +66,9 @@ public:
         level() {}
 
         template<typename Level_Type>
-        level(const Level_Type& level) : R(level.R), A(level.A), P(level.P), x(level.x), b(level.b), residual(level.residual), smoother(level.smoother) {}
+        level(const Level_Type& level)
+          : R(level.R), A(level.A), P(level.P), x(level.x), b(level.b),
+            residual(level.residual), smoother(level.smoother) {}
     };
     /* \endcond */
 

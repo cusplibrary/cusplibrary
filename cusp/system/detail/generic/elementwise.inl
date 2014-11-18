@@ -82,23 +82,24 @@ void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
     cusp::array1d<IndexType,MemorySpace> cols(A_nnz + B_nnz);
     cusp::array1d<ValueType,MemorySpace> vals(A_nnz + B_nnz);
 
-    thrust::copy(A.row_indices.begin(),    A.row_indices.end(),    rows.begin());
-    thrust::copy(B.row_indices.begin(),    B.row_indices.end(),    rows.begin() + A_nnz);
-    thrust::copy(A.column_indices.begin(), A.column_indices.end(), cols.begin());
-    thrust::copy(B.column_indices.begin(), B.column_indices.end(), cols.begin() + A_nnz);
-    thrust::copy(A.values.begin(),         A.values.end(),         vals.begin());
+    thrust::copy(exec, A.row_indices.begin(),    A.row_indices.end(),    rows.begin());
+    thrust::copy(exec, B.row_indices.begin(),    B.row_indices.end(),    rows.begin() + A_nnz);
+    thrust::copy(exec, A.column_indices.begin(), A.column_indices.end(), cols.begin());
+    thrust::copy(exec, B.column_indices.begin(), B.column_indices.end(), cols.begin() + A_nnz);
+    thrust::copy(exec, A.values.begin(),         A.values.end(),         vals.begin());
 
     // apply transformation to B's values
     if(thrust::detail::is_same< BinaryFunction, thrust::plus<ValueType> >::value)
-        thrust::transform(B.values.begin(), B.values.end(), vals.begin() + A_nnz, thrust::identity<ValueType>());
+        thrust::transform(exec, B.values.begin(), B.values.end(), vals.begin() + A_nnz, thrust::identity<ValueType>());
     else
-        thrust::transform(B.values.begin(), B.values.end(), vals.begin() + A_nnz, thrust::negate<ValueType>());
+        thrust::transform(exec, B.values.begin(), B.values.end(), vals.begin() + A_nnz, thrust::negate<ValueType>());
 
     // sort by (I,J)
-    cusp::sort_by_row_and_column(rows, cols, vals);
+    cusp::sort_by_row_and_column(exec, rows, cols, vals);
 
     // compute unique number of nonzeros in the output
-    IndexType C_nnz = thrust::inner_product(thrust::make_zip_iterator(thrust::make_tuple(rows.begin(), cols.begin())),
+    IndexType C_nnz = thrust::inner_product(exec,
+                                            thrust::make_zip_iterator(thrust::make_tuple(rows.begin(), cols.begin())),
                                             thrust::make_zip_iterator(thrust::make_tuple(rows.end (),  cols.end()))   - 1,
                                             thrust::make_zip_iterator(thrust::make_tuple(rows.begin(), cols.begin())) + 1,
                                             IndexType(1),
@@ -109,7 +110,8 @@ void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
     C.resize(A.num_rows, A.num_cols, C_nnz);
 
     // sum values with the same (i,j)
-    thrust::reduce_by_key(thrust::make_zip_iterator(thrust::make_tuple(rows.begin(), cols.begin())),
+    thrust::reduce_by_key(exec,
+                          thrust::make_zip_iterator(thrust::make_tuple(rows.begin(), cols.begin())),
                           thrust::make_zip_iterator(thrust::make_tuple(rows.end(),   cols.end())),
                           vals.begin(),
                           thrust::make_zip_iterator(thrust::make_tuple(C.row_indices.begin(), C.column_indices.begin())),
@@ -117,7 +119,7 @@ void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
                           thrust::equal_to< thrust::tuple<IndexType,IndexType> >(),
                           thrust::plus<ValueType>());
 
-    int num_zeros = thrust::count(C.values.begin(), C.values.end(), ValueType(0));
+    int num_zeros = thrust::count(exec, C.values.begin(), C.values.end(), ValueType(0));
 
     // The result of the elementwise operation contains zero entries so we need
     // to contract the result to produce a strictly valid COO matrix
@@ -125,6 +127,7 @@ void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
     {
         int num_reduced_entries =
             thrust::remove_if(
+                exec,
                 thrust::make_zip_iterator(
                   thrust::make_tuple(C.row_indices.begin(), C.column_indices.begin(), C.values.begin())),
                 thrust::make_zip_iterator(
@@ -158,8 +161,8 @@ void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
     typename MatrixType1::row_offsets_array_type::container A_row_indices(A.num_entries);
     typename MatrixType2::row_offsets_array_type::container B_row_indices(B.num_entries);
 
-    cusp::offsets_to_indices(A.row_offsets, A_row_indices);
-    cusp::offsets_to_indices(B.row_offsets, B_row_indices);
+    cusp::offsets_to_indices(exec, A.row_offsets, A_row_indices);
+    cusp::offsets_to_indices(exec, B.row_offsets, B_row_indices);
 
     View1 A_coo_view(A.num_rows, A.num_cols, A.num_entries,
                      cusp::make_array1d_view(A_row_indices),
@@ -173,7 +176,7 @@ void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
 
     cusp::elementwise(exec, A_coo_view, B_coo_view, C_coo, op);
 
-    cusp::convert(C_coo, C);
+    cusp::convert(exec, C_coo, C);
 }
 
 } // end namespace generic

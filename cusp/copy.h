@@ -50,9 +50,11 @@ namespace cusp
 template <typename SourceType, typename DestinationType>
 void copy(const SourceType& src, DestinationType& dst);
 
+/*! \cond */
 template <typename DerivedPolicy, typename SourceType, typename DestinationType>
 void copy(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
           const SourceType& src, DestinationType& dst);
+/*! \endcond */
 
 /*! \}
  */

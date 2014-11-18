@@ -16,8 +16,8 @@
 
 /*! \file diagonal.h
  *  \brief Diagonal preconditioner.
- *  
- *  Contributed by Andrew Trachenko and Nikita Styopin 
+ *
+ *  Contributed by Andrew Trachenko and Nikita Styopin
  *  at SALD Laboratory ( http://www.saldlab.com )
  */
 
@@ -32,13 +32,19 @@ namespace cusp
 namespace precond
 {
 
-/*! \addtogroup preconditioners Preconditioners
- *  \ingroup preconditioners
+/*! \addtogroup iterative_solvers Iterative Solvers
+ *  \addtogroup preconditioners Preconditioners
+ *  \brief Several preconditioners for iterative solvers
+ *  \ingroup iterative_solvers
  *  \{
  */
 
-/*! \p diagonal : diagonal preconditoner (aka Jacobi preconditioner)
+/** \brief Diagonal preconditoner (aka Jacobi preconditioner)
  *
+ *  \tparam ValueType Type used for matrix values (e.g. \c float or \c double).
+ *  \tparam MemorySpace A memory space (e.g. \c cusp::host_memory or \c cusp::device_memory)
+ *
+ *  \par Overview
  *  Given a matrix \c A to precondition, the diagonal preconditioner
  *  simply extracts the main diagonal \c D of a \c A and implements
  *  <tt>y = D^-1 x</tt> when applied to a vector \p x.
@@ -49,34 +55,34 @@ namespace precond
  *  reduce the number of solver iterations required to reach
  *  convergence.
  *
- *  \tparam ValueType Type used for matrix values (e.g. \c float or \c double).
- *  \tparam MemorySpace A memory space (e.g. \c cusp::host_memory or cusp::device_memory)
- *
- *  The following code snippet demonstrates how to use a 
+ *  \par Example
+ *  The following code snippet demonstrates how to use a
  *  \p diagonal preconditioner to solve a linear system.
  *
  *  \code
  *  #include <cusp/precond/diagonal.h>
- *  ...
  *
- *  // allocate storage for solution (x) and right hand side (b)
- *  cusp::array1d<float, cusp::device_memory> x(A.num_rows, 0);
- *  cusp::array1d<float, cusp::device_memory> b(A.num_rows, 1);
- *  
- *  cusp::default_monitor<float> monitor(b, 100, 1e-6);
- *  
- *  // setup preconditioner
- *  cusp::precond::diagonal<float, cusp::device_memory> M(A);
- *  
- *  // solve
- *  cusp::krylov::bicgstab(A, x, b, monitor, M);
- *  
+ *  int main(void)
+ *  {
+ *    // allocate storage for solution (x) and right hand side (b)
+ *    cusp::array1d<float, cusp::device_memory> x(A.num_rows, 0);
+ *    cusp::array1d<float, cusp::device_memory> b(A.num_rows, 1);
+ *
+ *    cusp::default_monitor<float> monitor(b, 100, 1e-6);
+ *
+ *    // setup preconditioner
+ *    cusp::precond::diagonal<float, cusp::device_memory> M(A);
+ *
+ *    // solve
+ *    cusp::krylov::bicgstab(A, x, b, monitor, M);
+ *
+ *    return 0;
+ *  }
  *  \endcode
- *
  */
 template <typename ValueType, typename MemorySpace>
 class diagonal : public linear_operator<ValueType, MemorySpace>
-{       
+{
     typedef linear_operator<ValueType, MemorySpace> Parent;
     cusp::array1d<ValueType, MemorySpace> diagonal_reciprocals;
 
@@ -88,7 +94,7 @@ public:
      */
     template<typename MatrixType>
     diagonal(const MatrixType& A);
-        
+
     /*! apply the preconditioner to vector \p x and store the result in \p y
      *
      * \param x input vector

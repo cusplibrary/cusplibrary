@@ -71,9 +71,9 @@ void transpose(thrust::execution_policy<DerivedPolicy>& exec,
 {
     At.resize(A.num_cols, A.num_rows, A.num_entries);
 
-    cusp::copy(A.row_indices,    At.column_indices);
-    cusp::copy(A.column_indices, At.row_indices);
-    cusp::copy(A.values,         At.values);
+    cusp::copy(exec, A.row_indices,    At.column_indices);
+    cusp::copy(exec, A.column_indices, At.row_indices);
+    cusp::copy(exec, A.values,         At.values);
 
     At.sort_by_row();
 }
@@ -90,13 +90,13 @@ void transpose(thrust::execution_policy<DerivedPolicy>& exec,
 
     At.resize(A.num_cols, A.num_rows, A.num_entries);
 
-    cusp::offsets_to_indices(A.row_offsets, At.column_indices);
+    cusp::offsets_to_indices(exec, A.row_offsets, At.column_indices);
 
-    cusp::copy(A.values, At.values);
+    cusp::copy(exec, A.values, At.values);
 
-    cusp::sort_by_row(At_row_indices, At.column_indices, At.values);
+    cusp::sort_by_row(exec, At_row_indices, At.column_indices, At.values);
 
-    cusp::indices_to_offsets(At_row_indices, At.row_offsets);
+    cusp::indices_to_offsets(exec, At_row_indices, At.row_offsets);
 }
 
 } // end namespace generic

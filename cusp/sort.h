@@ -26,8 +26,16 @@ namespace cusp
 template <typename ArrayType1, typename ArrayType2, typename ArrayType3>
 void sort_by_row(ArrayType1& rows, ArrayType2& columns, ArrayType3& values);
 
+template <typename DerivedPolicy, typename ArrayType1, typename ArrayType2, typename ArrayType3>
+void sort_by_row(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                 ArrayType1& row_indices, ArrayType2& column_indices, ArrayType3& values);
+
 template <typename ArrayType1, typename ArrayType2, typename ArrayType3>
 void sort_by_row_and_column(ArrayType1& rows, ArrayType2& columns, ArrayType3& values);
+
+template <typename DerivedPolicy, typename ArrayType1, typename ArrayType2, typename ArrayType3>
+void sort_by_row_and_column(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                            ArrayType1& row_indices, ArrayType2& column_indices, ArrayType3& values);
 
 } // end namespace cusp
 

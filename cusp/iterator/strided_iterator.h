@@ -32,6 +32,40 @@ namespace cusp
  *  \{
  */
 
+/*! \brief RandomAccessIterator for strided access to array entries.
+ *
+ * \tparam RandomAccessIterator The iterator type used to encapsulate the underlying data.
+ *
+ * \par Overview
+ * \p strided_iterator is an iterator which represents a pointer into
+ *  a strided range entries in a underlying array. This iterator is useful
+ *  for creating a strided sublist of entries from a larger iterator.
+ *
+ * \par Example
+ *  The following code snippet demonstrates how to create a \p strided_iterator whose
+ *  \c value_type is \c int and whose values are gather from a \p counting_array.
+ *
+ *  \code
+ *  #include <cusp/array1d.h>
+ *  #include <cusp/iterator/strided_iterator.h>
+ *
+ *  #include <iostream>
+ *
+ *  int main(void)
+ *  {
+ *    typedef cusp::counting_array<int>::iterator Iterator;
+ *
+ *    cusp::counting_array<int> a(30);
+ *    cusp::strided_iterator<Iterator> iter(a.begin(), a.end(), 5);
+ *
+ *    std::cout << iter[0] << std::endl;   // returns 0
+ *    std::cout << iter[1] << std::endl;   // returns 5
+ *    std::cout << iter[3] << std::endl;   // returns 15
+ *
+ *    return 0;
+ *  }
+ *  \endcode
+ */
 template <typename RandomAccessIterator>
 class strided_iterator
 {
@@ -54,18 +88,48 @@ public:
     typedef PermutationIterator iterator;
     /*! \endcond */
 
-    // construct strided_range for the range [first,last)
+    /*! \brief Null constructor initializes this \p strided_iterator's stride to zero.
+     */
+    strided_iterator(void)
+        : stride(0) {}
+
+    /*! \brief This constructor builds a \p strided_iterator from a range.
+     *  \param begin The beginning of the range.
+     *  \param end The end of the range.
+     *  \param stride The stride between consecutive entries in the iterator.
+     */
     strided_iterator(RandomAccessIterator first, RandomAccessIterator last, difference_type stride)
         : first(first), last(last), stride(stride) {}
 
+    /*! \brief This method returns an iterator pointing to the beginning of
+     *  this strided sequence of entries.
+     *  \return mStart
+     */
     iterator begin(void) const
     {
         return PermutationIterator(first, TransformIterator(CountingIterator(0), StrideFunctor(stride)));
     }
 
+    /*! \brief This method returns an iterator pointing to one element past
+     *  the last of this strided sequence of entries.
+     *  \return mEnd
+     */
     iterator end(void) const
     {
         return begin() + ((last - first) + (stride - 1)) / stride;
+    }
+
+    /*! \brief Subscript access to the data contained in this iterator.
+     *  \param n The index of the element for which data should be accessed.
+     *  \return Read/write reference to data.
+     *
+     *  This operator allows for easy, array-style, data access.
+     *  Note that data access with this operator is unchecked and
+     *  out_of_range lookups are not defined.
+     */
+    reference operator[](size_type n) const
+    {
+        return *(begin() + n);
     }
 
 protected:

@@ -322,7 +322,7 @@ public:
  * \brief The array1d_view class is a 1D vector container that wraps data from
  * various iterators in a array1d datatype
  *
- * \tparam Iterator The iterator type used to encapsulate the underlying data.
+ * \tparam RandomAccessIterator The iterator type used to encapsulate the underlying data.
  *
  * \par Overview
  * array1d_view vector is a container that wraps existing iterators in array1d
