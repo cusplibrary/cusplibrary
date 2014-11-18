@@ -89,3 +89,4 @@ void generalized_spmv(
 #include <cusp/system/detail/generic/multiply/generalized_spmv.h>
 #include <cusp/system/detail/generic/multiply/multiply.h>
 #include <cusp/system/detail/generic/multiply/spgemm.h>
+#include <cusp/system/detail/generic/multiply/spmv.h>
