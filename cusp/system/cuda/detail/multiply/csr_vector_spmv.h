@@ -17,18 +17,18 @@
 
 #pragma once
 
-#include <cusp/detail/device/arch.h>
-#include <cusp/detail/device/common.h>
-#include <cusp/detail/device/utils.h>
-#include <cusp/detail/device/texture.h>
+#include <thrust/extrema.h>
+
+#include <cusp/system/cuda/arch.h>
+#include <cusp/system/cuda/utils.h>
 
 #include <thrust/device_ptr.h>
 
 namespace cusp
 {
-namespace detail
+namespace system
 {
-namespace device
+namespace cuda
 {
 
 //////////////////////////////////////////////////////////////////////////////
@@ -54,7 +54,7 @@ namespace device
 //  Note: THREADS_PER_VECTOR must be one of [2,4,8,16,32]
 
 
-template <typename IndexType, typename ValueType, unsigned int VECTORS_PER_BLOCK, unsigned int THREADS_PER_VECTOR, bool UseCache>
+template <typename IndexType, typename ValueType, unsigned int VECTORS_PER_BLOCK, unsigned int THREADS_PER_VECTOR>
 __launch_bounds__(VECTORS_PER_BLOCK * THREADS_PER_VECTOR,1)
 __global__ void
 spmv_csr_vector_kernel(const IndexType num_rows,
@@ -96,17 +96,17 @@ spmv_csr_vector_kernel(const IndexType num_rows,
 
             // accumulate local sums
             if(jj >= row_start && jj < row_end)
-                sum += Ax[jj] * fetch_x<UseCache>(Aj[jj], x);
+                sum += Ax[jj] * x[ Aj[jj] ];
 
             // accumulate local sums
             for(jj += THREADS_PER_VECTOR; jj < row_end; jj += THREADS_PER_VECTOR)
-                sum += Ax[jj] * fetch_x<UseCache>(Aj[jj], x);
+                sum += Ax[jj] * x[ Aj[jj] ];
         }
         else
         {
             // accumulate local sums
             for(IndexType jj = row_start + thread_lane; jj < row_end; jj += THREADS_PER_VECTOR)
-                sum += Ax[jj] * fetch_x<UseCache>(Aj[jj], x);
+                sum += Ax[jj] * x[ Aj[jj] ];
         }
 
         // store local sum in shared memory
@@ -125,99 +125,84 @@ spmv_csr_vector_kernel(const IndexType num_rows,
     }
 }
 
-template <bool UseCache, unsigned int THREADS_PER_VECTOR, typename Matrix, typename Array1, typename Array2>
-void __spmv_csr_vector(const Matrix& A,
-                       const Array1& x,
-                             Array2& y)
+template <unsigned int THREADS_PER_VECTOR,
+         typename DerivedPolicy,
+         typename MatrixType,
+         typename VectorType1,
+         typename VectorType2,
+         typename UnaryFunction,
+         typename BinaryFunction1,
+         typename BinaryFunction2>
+void __spmv_csr_vector(cuda::execution_policy<DerivedPolicy>& exec,
+                       MatrixType& A,
+                       VectorType1& x,
+                       VectorType2& y,
+                       UnaryFunction   initialize,
+                       BinaryFunction1 combine,
+                       BinaryFunction2 reduce)
 {
-    typedef typename Matrix::index_type IndexType;
-    typedef typename Matrix::value_type ValueType;
+    typedef typename MatrixType::index_type IndexType;
+    typedef typename MatrixType::value_type ValueType;
 
     const size_t THREADS_PER_BLOCK  = 128;
     const size_t VECTORS_PER_BLOCK  = THREADS_PER_BLOCK / THREADS_PER_VECTOR;
 
-    const size_t MAX_BLOCKS = cusp::detail::device::arch::max_active_blocks(spmv_csr_vector_kernel<IndexType, ValueType, VECTORS_PER_BLOCK, THREADS_PER_VECTOR, UseCache>, THREADS_PER_BLOCK, (size_t) 0);
+    const size_t MAX_BLOCKS = cusp::system::cuda::detail::max_active_blocks(spmv_csr_vector_kernel<IndexType, ValueType, VECTORS_PER_BLOCK, THREADS_PER_VECTOR>, THREADS_PER_BLOCK, (size_t) 0);
     const size_t NUM_BLOCKS = std::min<size_t>(MAX_BLOCKS, DIVIDE_INTO(A.num_rows, VECTORS_PER_BLOCK));
 
     const IndexType * R = thrust::raw_pointer_cast(&A.row_offsets[0]);
     const IndexType * J = thrust::raw_pointer_cast(&A.column_indices[0]);
     const ValueType * V = thrust::raw_pointer_cast(&A.values[0]);
     const ValueType * x_ptr = thrust::raw_pointer_cast(&x[0]);
-    ValueType * y_ptr = thrust::raw_pointer_cast(&y[0]);
+          ValueType * y_ptr = thrust::raw_pointer_cast(&y[0]);
 
-    if (UseCache)
-        bind_x(x_ptr);
-
-    spmv_csr_vector_kernel<IndexType, ValueType, VECTORS_PER_BLOCK, THREADS_PER_VECTOR, UseCache> <<<NUM_BLOCKS, THREADS_PER_BLOCK>>>
+    spmv_csr_vector_kernel<IndexType, ValueType, VECTORS_PER_BLOCK, THREADS_PER_VECTOR> <<<NUM_BLOCKS, THREADS_PER_BLOCK>>>
     (A.num_rows, R, J, V, x_ptr, y_ptr);
-
-    if (UseCache)
-        unbind_x(x_ptr);
 }
 
-template <typename Matrix,
-          typename Array1,
-          typename Array2>
-void spmv_csr_vector(const Matrix& A,
-                     const Array1&  x,
-                           Array2& y)
+template <typename DerivedPolicy,
+         typename MatrixType,
+         typename VectorType1,
+         typename VectorType2,
+         typename UnaryFunction,
+         typename BinaryFunction1,
+         typename BinaryFunction2>
+void multiply(cuda::execution_policy<DerivedPolicy>& exec,
+              MatrixType& A,
+              VectorType1& x,
+              VectorType2& y,
+              UnaryFunction   initialize,
+              BinaryFunction1 combine,
+              BinaryFunction2 reduce,
+              csr_format,
+              array1d_format,
+              array1d_format)
 {
-    typedef typename Matrix::index_type IndexType;
+    typedef typename MatrixType::index_type IndexType;
 
     const IndexType nnz_per_row = A.num_entries / A.num_rows;
 
     if (nnz_per_row <=  2) {
-        __spmv_csr_vector<false, 2>(A, x, y);
+        __spmv_csr_vector<2>(exec, A, x, y, initialize, combine, reduce);
         return;
     }
     if (nnz_per_row <=  4) {
-        __spmv_csr_vector<false, 4>(A, x, y);
+        __spmv_csr_vector<4>(exec, A, x, y, initialize, combine, reduce);
         return;
     }
     if (nnz_per_row <=  8) {
-        __spmv_csr_vector<false, 8>(A, x, y);
+        __spmv_csr_vector<8>(exec, A, x, y, initialize, combine, reduce);
         return;
     }
     if (nnz_per_row <= 16) {
-        __spmv_csr_vector<false,16>(A, x, y);
+        __spmv_csr_vector<16>(exec, A, x, y, initialize, combine, reduce);
         return;
     }
 
-    __spmv_csr_vector<false,32>(A, x, y);
+    __spmv_csr_vector<32>(exec, A, x, y, initialize, combine, reduce);
 }
 
-template <typename Matrix,
-          typename Array1,
-          typename Array2>
-void spmv_csr_vector_tex(const Matrix& A,
-                         const Array1&  x,
-                               Array2& y)
-{
-    typedef typename Matrix::index_type IndexType;
-
-    const IndexType nnz_per_row = A.num_entries / A.num_rows;
-
-    if (nnz_per_row <=  2) {
-        __spmv_csr_vector<true, 2>(A, x, y);
-        return;
-    }
-    if (nnz_per_row <=  4) {
-        __spmv_csr_vector<true, 4>(A, x, y);
-        return;
-    }
-    if (nnz_per_row <=  8) {
-        __spmv_csr_vector<true, 8>(A, x, y);
-        return;
-    }
-    if (nnz_per_row <= 16) {
-        __spmv_csr_vector<true,16>(A, x, y);
-        return;
-    }
-
-    __spmv_csr_vector<true,32>(A, x, y);
-}
-
-} // end namespace device
-} // end namespace detail
+} // end namespace cuda
+} // end namespace system
 } // end namespace cusp
 

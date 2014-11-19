@@ -30,11 +30,11 @@
 
 namespace cusp
 {
+namespace system
+{
+namespace cuda
+{
 namespace detail
-{
-namespace device
-{
-namespace arch
 {
 
 template <typename KernelFunction>
@@ -52,8 +52,8 @@ size_t max_active_blocks(KernelFunction kernel, const size_t CTA_SIZE, const siz
 #endif
 }
 
-} // end namespace arch
-} // end namespace device
 } // end namespace detail
+} // end namespace cuda
+} // end namespace system
 } // end namespace cusp
 

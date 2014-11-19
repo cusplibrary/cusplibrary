@@ -17,23 +17,21 @@
 
 #pragma once
 
-#include <cusp/detail/device/arch.h>
-#include <cusp/detail/device/common.h>
-#include <cusp/detail/device/utils.h>
-#include <cusp/detail/device/texture.h>
+#include <thrust/extrema.h>
+
+#include <cusp/system/cuda/arch.h>
+#include <cusp/system/cuda/utils.h>
 
 #include <thrust/device_ptr.h>
 
-// SpMV kernel for the ELLPACK/ITPACK matrix format.
-
 namespace cusp
 {
-namespace detail
+namespace system
 {
-namespace device
+namespace cuda
 {
 
-template <typename IndexType, typename ValueType, size_t BLOCK_SIZE, bool UseCache>
+template <typename IndexType, typename ValueType, size_t BLOCK_SIZE>
 __launch_bounds__(BLOCK_SIZE,1)
 __global__ void
 spmv_ell_kernel(const IndexType num_rows,
@@ -63,7 +61,7 @@ spmv_ell_kernel(const IndexType num_rows,
             if (col != invalid_index)
             {
                 const ValueType A_ij = Ax[offset];
-                sum += A_ij * fetch_x<UseCache>(col, x);
+                sum += A_ij * x[col];
             }
 
             offset += pitch;
@@ -74,19 +72,29 @@ spmv_ell_kernel(const IndexType num_rows,
 }
 
 
-template <bool UseCache,
-         typename Matrix,
-         typename Array1,
-         typename Array2>
-void __spmv_ell(const Matrix& A,
-                const Array1& x,
-                      Array2& y)
+template <typename DerivedPolicy,
+         typename MatrixType,
+         typename VectorType1,
+         typename VectorType2,
+         typename UnaryFunction,
+         typename BinaryFunction1,
+         typename BinaryFunction2>
+void multiply(cuda::execution_policy<DerivedPolicy>& exec,
+              MatrixType& A,
+              VectorType1& x,
+              VectorType2& y,
+              UnaryFunction   initialize,
+              BinaryFunction1 combine,
+              BinaryFunction2 reduce,
+              ell_format,
+              array1d_format,
+              array1d_format)
 {
-    typedef typename Matrix::index_type IndexType;
-    typedef typename Matrix::value_type ValueType;
+    typedef typename MatrixType::index_type IndexType;
+    typedef typename MatrixType::value_type ValueType;
 
     const size_t BLOCK_SIZE = 256;
-    const size_t MAX_BLOCKS = cusp::detail::device::arch::max_active_blocks(spmv_ell_kernel<IndexType,ValueType,BLOCK_SIZE,UseCache>, BLOCK_SIZE, (size_t) 0);
+    const size_t MAX_BLOCKS = cusp::system::cuda::detail::max_active_blocks(spmv_ell_kernel<IndexType,ValueType,BLOCK_SIZE>, BLOCK_SIZE, (size_t) 0);
     const size_t NUM_BLOCKS = std::min<size_t>(MAX_BLOCKS, DIVIDE_INTO(A.num_rows, BLOCK_SIZE));
 
     const IndexType pitch               = A.column_indices.pitch;
@@ -101,37 +109,12 @@ void __spmv_ell(const Matrix& A,
     // TODO generalize this
     assert(A.column_indices.pitch == A.values.pitch);
 
-    if (UseCache)
-        bind_x(x_ptr);
-
     spmv_ell_kernel<IndexType,ValueType,BLOCK_SIZE,UseCache> <<<NUM_BLOCKS, BLOCK_SIZE>>>
     (A.num_rows, A.num_cols, num_entries_per_row, pitch, J, V, x_ptr, y_ptr);
-
-    if (UseCache)
-        unbind_x(x_ptr);
 }
 
-template <typename Matrix,
-         typename Array1,
-         typename Array2>
-void spmv_ell(const Matrix& A,
-              const Array1& x,
-                    Array2& y)
-{
-    __spmv_ell<false>(A, x, y);
-}
-
-template <typename Matrix,
-         typename Array1,
-         typename Array2>
-void spmv_ell_tex(const Matrix& A,
-                  const Array1& x,
-                        Array2& y)
-{
-    __spmv_ell<true>(A, x, y);
-}
-
-} // end namespace device
-} // end namespace detail
+} // end namespace cuda
+} // end namespace system
 } // end namespace cusp
+
 

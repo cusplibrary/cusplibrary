@@ -18,4 +18,23 @@
 
 #include <cusp/detail/config.h>
 
-// this system has no special version of this algorithm
+// #include <cusp/system/cuda/detail/multiply/coo_spmv.h>
+// #include <cusp/system/cuda/detail/multiply/csr_spmv.h>
+#include <cusp/system/cuda/detail/multiply/dia_spmv.h>
+// #include <cusp/system/cuda/detail/multiply/ell_spmv.h>
+// #include <cusp/system/cuda/detail/multiply/hyb_spmv.h>
+
+namespace cusp
+{
+namespace system
+{
+namespace cuda
+{
+
+} // end namespace cuda
+} // end namespace system
+
+// hack until ADL is operational
+using cusp::system::cuda::multiply;
+
+} // end namespace cusp

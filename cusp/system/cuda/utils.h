@@ -19,29 +19,11 @@
 
 #include <thrust/pair.h>
 
-#define CUDA_SAFE_CALL_NO_SYNC( call) do {                                \
- cudaError err = call;                                                    \
- if( cudaSuccess != err) {                                                \
-     fprintf(stderr, "Cuda error in file '%s' in line %i : %s.\n",        \
-             __FILE__, __LINE__, cudaGetErrorString( err) );              \
-     exit(EXIT_FAILURE);                                                  \
- } } while (0)
-
-#define CUDA_SAFE_CALL( call) do {                                        \
- CUDA_SAFE_CALL_NO_SYNC(call);                                            \
- cudaError err = cudaThreadSynchronize();                                 \
- if( cudaSuccess != err) {                                                \
-     fprintf(stderr, "Cuda error in file '%s' in line %i : %s.\n",        \
-             __FILE__, __LINE__, cudaGetErrorString( err) );              \
-     exit(EXIT_FAILURE);                                                  \
- } } while (0)
-
-
 namespace cusp
 {
-namespace detail
+namespace system
 {
-namespace device
+namespace cuda
 {
 
 template <typename Size1, typename Size2>
@@ -71,7 +53,7 @@ thrust::pair<T,T> uniform_splitting(const T N, const T granularity, const T max_
     return thrust::make_pair(interval_size, num_intervals);
 }
 
-} // end namespace device
-} // end namespace detail
+} // end namespace cuda
+} // end namespace system
 } // end namespace cusp
 
