@@ -14,6 +14,10 @@
  *  limitations under the License.
  */
 
+/*! \file cusp/iterator/random_iterator.h
+ *  \brief An iterator which generates random entries
+ */
+
 #pragma once
 
 #include <thrust/iterator/counting_iterator.h>
@@ -39,7 +43,7 @@ namespace detail
  */
 
 /**
- *  \brief RandomAccessIterator for generating random values.
+ *  \brief Iterator for generating random values.
  *
  *  \tparam T The type used to encapsulate the underlying data.
  *

@@ -14,6 +14,10 @@
  *  limitations under the License.
  */
 
+/*! \file cusp/iterator/strided_iterator.h
+ *  \brief An iterator which returns strided access to array entries
+ */
+
 #pragma once
 
 #include <thrust/iterator/counting_iterator.h>
