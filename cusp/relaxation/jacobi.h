@@ -54,27 +54,47 @@ namespace relaxation
  * #include <cusp/csr_matrix.h>
  * #include <cusp/monitor.h>
  *
- * #incldue <cusp/gallery/poisson.h>
- * #incldue <cusp/monitor/cg.h>
+ * #include <cusp/blas/blas.h>
+ * #include <cusp/linear_operator.h>
+ * #include <cusp/gallery/poisson.h>
  *
- * // include cusp jacobi header file
+ * // include cusp Jacobi header file
  * #include <cusp/relaxation/jacobi.h>
  *
  * int main()
  * {
+ *    // Construct 5-pt Poisson example
  *    cusp::csr_matrix<int, float, cusp::device_memory> A;
- *
  *    cusp::gallery::poisson5pt(A, 5, 5);
  *
- *    cusp::relaxation::jacobi<float, cusp::device_memory> M(A, 4.0/3.0);
- *
+ *    // Initialize data
  *    cusp::array1d<float, cusp::device_memory> x(A.num_rows, 0);
  *    cusp::array1d<float, cusp::device_memory> b(A.num_rows, 1);
  *
- *    cusp::monitor<float> M(b, 20, 1e-4, 0, true);
+ *    // Allocate temporaries
+ *    cusp::array1d<float, cusp::device_memory> r(A.num_rows);
+ *    cusp::array1d<float, cusp::host_memory> coefficients;
  *
- *    cusp::krylov::cg(A, x, b, monitor, M);
- * }
+ *    // Construct Jacobi relaxation class
+ *    cusp::relaxation::jacobi<float, cusp::device_memory> M(A);
+ *
+ *    // Compute initial residual
+ *    cusp::multiply(A, x, r);
+ *    cusp::blas::axpy(b, r, float(-1));
+ *
+ *    // Construct monitor with stopping criteria of 100 iterations or 1e-4 residual error
+ *    cusp::monitor<float> monitor(b, 100, 1e-4, 0, true);
+ *
+ *    // Iteratively solve system
+ *    while (!monitor.finished(r))
+ *    {
+ *        M(A, b, x);
+ *        cusp::multiply(A, x, r);
+ *        cusp::blas::axpy(b, r, float(-1));
+ *        ++monitor;
+ *    }
+ *  }
+ * \endcode
  */
 template <typename ValueType, typename MemorySpace>
 class jacobi : public cusp::linear_operator<ValueType, MemorySpace>

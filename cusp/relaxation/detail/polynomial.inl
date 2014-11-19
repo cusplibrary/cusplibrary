@@ -109,7 +109,7 @@ polynomial<ValueType,MemorySpace>
 template <typename ValueType, typename MemorySpace>
 template<typename MatrixType, typename VectorType1, typename VectorType2>
 void polynomial<ValueType,MemorySpace>
-::operator()(const MatrixType& A, const VectorType1& b, VectorType2& x) const
+::operator()(const MatrixType& A, const VectorType1& b, VectorType2& x)
 {
     polynomial<ValueType,MemorySpace>::operator()(A,b,x,default_coefficients);
 }
@@ -159,7 +159,7 @@ void polynomial<ValueType,MemorySpace>
 template <typename ValueType, typename MemorySpace>
 template<typename MatrixType, typename VectorType1, typename VectorType2, typename VectorType3>
 void polynomial<ValueType,MemorySpace>
-::operator()(const MatrixType& A, const VectorType1& b, VectorType2& x, VectorType3& coefficients)
+::operator()(const MatrixType& A, const VectorType1& b, VectorType2& x, const VectorType3& coefficients)
 {
     if( cusp::blas::nrm2(x) == 0.0 )
     {

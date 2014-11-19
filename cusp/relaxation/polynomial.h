@@ -37,6 +37,9 @@ template<typename MatrixType> struct sa_level;
 } // end namespace precond
 /*! \endcond */
 
+namespace relaxation
+{
+
 /**
  * \brief Represents a Polynomial relaxation scheme
  *
@@ -52,31 +55,52 @@ template<typename MatrixType> struct sa_level;
  * #include <cusp/csr_matrix.h>
  * #include <cusp/monitor.h>
  *
- * #incldue <cusp/gallery/poisson.h>
- * #incldue <cusp/monitor/cg.h>
+ * #include <cusp/blas/blas.h>
+ * #include <cusp/linear_operator.h>
+ * #include <cusp/gallery/poisson.h>
  *
  * // include cusp polynomial header file
  * #include <cusp/relaxation/polynomial.h>
  *
  * int main()
  * {
+ *    // Construct 5-pt Poisson example
  *    cusp::csr_matrix<int, float, cusp::device_memory> A;
- *
  *    cusp::gallery::poisson5pt(A, 5, 5);
  *
- *    cusp::relaxation::polynomial<float, cusp::device_memory> MA);
- *
+ *    // Initialize data
  *    cusp::array1d<float, cusp::device_memory> x(A.num_rows, 0);
  *    cusp::array1d<float, cusp::device_memory> b(A.num_rows, 1);
  *
- *    cusp::monitor<float> M(b, 20, 1e-4, 0, true);
+ *    // Allocate temporaries
+ *    cusp::array1d<float, cusp::device_memory> r(A.num_rows);
+ *    cusp::array1d<float, cusp::host_memory> coefficients;
  *
- *    cusp::krylov::cg(A, x, b, monitor, M);
- * }
+ *    // Compute spectral radius of A
+ *    float rho = cusp::detail::ritz_spectral_radius_symmetric(A, 8);
+ *    // Compute 3rd degree Chebyshev polynomial
+ *    cusp::relaxation::detail::chebyshev_polynomial_coefficients(rho, coefficients);
+ *    // Construct polynomial relaxation class
+ *    cusp::relaxation::polynomial<float, cusp::device_memory> M(A, coefficients);
+ *
+ *    // Compute initial residual
+ *    cusp::multiply(A, x, r);
+ *    cusp::blas::axpy(b, r, float(-1));
+ *
+ *    // Construct monitor with stopping criteria of 100 iterations or 1e-4 residual error
+ *    cusp::monitor<float> monitor(b, 100, 1e-4, 0, true);
+ *
+ *    // Iteratively solve system
+ *    while (!monitor.finished(r))
+ *    {
+ *        M(A, b, x);
+ *        cusp::multiply(A, x, r);
+ *        cusp::blas::axpy(b, r, float(-1));
+ *        ++monitor;
+ *    }
+ *  }
+ * \endcode
  */
-namespace relaxation
-{
-
 template <typename ValueType, typename MemorySpace>
 class polynomial : public cusp::linear_operator<ValueType, MemorySpace>
 {
@@ -110,10 +134,10 @@ public:
     void postsmooth(const MatrixType& A, const VectorType1& b, VectorType2& x);
 
     template <typename MatrixType, typename VectorType1, typename VectorType2>
-    void operator()(const MatrixType& A, const VectorType1& b, VectorType2& x) const;
+    void operator()(const MatrixType& A, const VectorType1& b, VectorType2& x);
 
     template <typename MatrixType, typename VectorType1, typename VectorType2, typename VectorType3>
-    void operator()(const MatrixType& A, const VectorType1& b, VectorType2& x, VectorType3& coeffients);
+    void operator()(const MatrixType& A, const VectorType1& b, VectorType2& x, const VectorType3& coeffients);
 };
 
 } // end namespace relaxation
