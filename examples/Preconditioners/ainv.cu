@@ -27,7 +27,7 @@ int main(void)
     {
         std::cout << "\nSolving with no preconditioner" << std::endl;
 
-        // allocate storage for solution (x) and right hand side (b)
+        // allocate storage for solution (x)
         cusp::array1d<ValueType, MemorySpace> x(x0);
 
         // solve
@@ -41,7 +41,7 @@ int main(void)
     {
         std::cout << "\nSolving with scaled bridson preconditioner (drop tolerance .1)" << std::endl;
 
-        // allocate storage for solution (x) and right hand side (b)
+        // allocate storage for solution (x)
         cusp::array1d<ValueType, MemorySpace> x(x0);
 
         // reset the monitor
@@ -62,7 +62,7 @@ int main(void)
     {
         std::cout << "\nSolving with scaled bridson preconditioner (10 nonzeroes per row)" << std::endl;
 
-        // allocate storage for solution (x) and right hand side (b)
+        // allocate storage for solution (x)
         cusp::array1d<ValueType, MemorySpace> x(x0);
 
         // reset the monitor
@@ -83,7 +83,7 @@ int main(void)
     {
         std::cout << "\nSolving with AINV preconditioner (Lin strategy, p=2)" << std::endl;
 
-        // allocate storage for solution (x) and right hand side (b)
+        // allocate storage for solution (x)
         cusp::array1d<ValueType, MemorySpace> x(x0);
 
         // reset the monitor

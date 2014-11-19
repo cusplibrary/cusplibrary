@@ -5,14 +5,14 @@
 
 #include <iostream>
 
-// where to perform the computation
-typedef cusp::device_memory MemorySpace;
-
-// which floating point type to use
-typedef float ValueType;
-
 int main(void)
 {
+    // where to perform the computation
+    typedef cusp::device_memory MemorySpace;
+
+    // which floating point type to use
+    typedef float ValueType;
+
     // create an empty sparse matrix structure (HYB format)
     cusp::csr_matrix<int, ValueType, MemorySpace> A;
 
@@ -29,7 +29,7 @@ int main(void)
     {
         std::cout << "\nSolving with no preconditioner" << std::endl;
 
-        // allocate storage for solution (x) and right hand side (b)
+        // allocate storage for solution (x)
         cusp::array1d<ValueType, MemorySpace> x(x0);
 
         // solve
@@ -40,7 +40,7 @@ int main(void)
     {
         std::cout << "\nSolving with diagonal preconditioner (M = D^-1)" << std::endl;
 
-        // allocate storage for solution (x) and right hand side (b)
+        // allocate storage for solution (x)
         cusp::array1d<ValueType, MemorySpace> x(x0);
 
         // reset the monitor

@@ -24,6 +24,8 @@ int main(void)
     // set stopping criteria:
     //  iteration_limit    = 100
     //  relative_tolerance = 1e-3
+    //  absolute_tolerance = 0
+    //  verbose            = true
     cusp::monitor<ValueType> monitor(b, 100, 1e-3, 0, true);
 
     // set preconditioner (identity)
