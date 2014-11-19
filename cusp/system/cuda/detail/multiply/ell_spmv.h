@@ -19,6 +19,7 @@
 
 #include <thrust/extrema.h>
 
+#include <cusp/ell_matrix.h>
 #include <cusp/system/cuda/arch.h>
 #include <cusp/system/cuda/utils.h>
 
@@ -109,7 +110,7 @@ void multiply(cuda::execution_policy<DerivedPolicy>& exec,
     // TODO generalize this
     assert(A.column_indices.pitch == A.values.pitch);
 
-    spmv_ell_kernel<IndexType,ValueType,BLOCK_SIZE,UseCache> <<<NUM_BLOCKS, BLOCK_SIZE>>>
+    spmv_ell_kernel<IndexType,ValueType,BLOCK_SIZE> <<<NUM_BLOCKS, BLOCK_SIZE>>>
     (A.num_rows, A.num_cols, num_entries_per_row, pitch, J, V, x_ptr, y_ptr);
 }
 
