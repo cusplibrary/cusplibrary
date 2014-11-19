@@ -37,6 +37,43 @@ template<typename MatrixType> struct sa_level;
 } // end namespace precond
 /*! \endcond */
 
+/**
+ * \brief Represents a Polynomial relaxation scheme
+ *
+ * \tparam ValueType value_type of the array
+ * \tparam MemorySpace memory space of the array (\c cusp::host_memory or \c cusp::device_memory)
+ *
+ * \par Overview
+ * Performs 3rd degree Polynomial relaxation
+ *
+ * \par Example
+ * \code
+ * #include <cusp/array1d.h>
+ * #include <cusp/csr_matrix.h>
+ * #include <cusp/monitor.h>
+ *
+ * #incldue <cusp/gallery/poisson.h>
+ * #incldue <cusp/monitor/cg.h>
+ *
+ * // include cusp polynomial header file
+ * #include <cusp/relaxation/polynomial.h>
+ *
+ * int main()
+ * {
+ *    cusp::csr_matrix<int, float, cusp::device_memory> A;
+ *
+ *    cusp::gallery::poisson5pt(A, 5, 5);
+ *
+ *    cusp::relaxation::polynomial<float, cusp::device_memory> MA);
+ *
+ *    cusp::array1d<float, cusp::device_memory> x(A.num_rows, 0);
+ *    cusp::array1d<float, cusp::device_memory> b(A.num_rows, 1);
+ *
+ *    cusp::monitor<float> M(b, 20, 1e-4, 0, true);
+ *
+ *    cusp::krylov::cg(A, x, b, monitor, M);
+ * }
+ */
 namespace relaxation
 {
 

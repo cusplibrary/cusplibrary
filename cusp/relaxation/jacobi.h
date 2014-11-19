@@ -39,6 +39,43 @@ template<typename MatrixType> struct sa_level;
 namespace relaxation
 {
 
+/**
+ * \brief Represents a Jacobi relaxation scheme
+ *
+ * \tparam ValueType value_type of the array
+ * \tparam MemorySpace memory space of the array (\c cusp::host_memory or \c cusp::device_memory)
+ *
+ * \par Overview
+ * Extracts the matrix diagonal and performs weighted Jacobi relaxation
+ *
+ * \par Example
+ * \code
+ * #include <cusp/array1d.h>
+ * #include <cusp/csr_matrix.h>
+ * #include <cusp/monitor.h>
+ *
+ * #incldue <cusp/gallery/poisson.h>
+ * #incldue <cusp/monitor/cg.h>
+ *
+ * // include cusp jacobi header file
+ * #include <cusp/relaxation/jacobi.h>
+ *
+ * int main()
+ * {
+ *    cusp::csr_matrix<int, float, cusp::device_memory> A;
+ *
+ *    cusp::gallery::poisson5pt(A, 5, 5);
+ *
+ *    cusp::relaxation::jacobi<float, cusp::device_memory> M(A, 4.0/3.0);
+ *
+ *    cusp::array1d<float, cusp::device_memory> x(A.num_rows, 0);
+ *    cusp::array1d<float, cusp::device_memory> b(A.num_rows, 1);
+ *
+ *    cusp::monitor<float> M(b, 20, 1e-4, 0, true);
+ *
+ *    cusp::krylov::cg(A, x, b, monitor, M);
+ * }
+ */
 template <typename ValueType, typename MemorySpace>
 class jacobi : public cusp::linear_operator<ValueType, MemorySpace>
 {
@@ -48,7 +85,7 @@ public:
     cusp::array1d<ValueType,MemorySpace> temp;
 
     // constructor
-    jacobi() : default_omega(0.0) {}
+    jacobi(void) : default_omega(0.0) {}
 
     template <typename MatrixType>
     jacobi(const MatrixType& A, ValueType omega=1.0);
