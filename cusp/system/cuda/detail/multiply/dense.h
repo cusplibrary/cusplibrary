@@ -26,16 +26,41 @@ namespace cusp
 {
 namespace system
 {
-namespace detail
+namespace cuda
 {
-namespace generic
+
+template <typename DerivedPolicy,
+         typename MatrixType,
+         typename ArrayType1,
+         typename ArrayType2>
+void multiply_(cuda::execution_policy<DerivedPolicy>& exec,
+              MatrixType& A,
+              ArrayType1& x,
+              ArrayType2& y,
+              array2d_format,
+              array1d_format,
+              array1d_format)
 {
+    std::cout << "Calling device GEMV" << std::endl;
+
+    typedef typename cusp::detail::as_array2d_type<Matrix1,cusp::host_memory>::type Array2d;
+    typedef typename ArrayType1::value_type ValueType1;
+    typedef typename ArrayType2::value_type ValueType2;
+
+    Array2d A_(A);
+    cusp::array1d<ValueType1,cusp::host_memory> x_(x);
+    cusp::array1d<ValueType2,cusp::host_memory> y_;
+
+    cusp::multiply(A_,x_,y_);
+
+    cusp::copy(y_, y);
+}
 
 template <typename DerivedPolicy,
          typename Matrix1,
          typename Matrix2,
          typename Matrix3>
-void multiply_(thrust::execution_policy<DerivedPolicy>& exec,
+void multiply_(cuda::execution_policy<DerivedPolicy>& exec,
               Matrix1& A,
               Matrix2& B,
               Matrix3& C,
@@ -56,7 +81,6 @@ void multiply_(thrust::execution_policy<DerivedPolicy>& exec,
     cusp::convert(C_, C);
 }
 
-} // end namespace generic
-} // end namespace detail
+} // end namespace cuda
 } // end namespace system
 } // end namespace cusp

@@ -28,50 +28,8 @@ namespace detail
 namespace sequential
 {
 
-
-// this awkward sequence of definitions arises
-// from the desire both for tag to derive
-// from execution_policy and for execution_policy
-// to convert to tag (when execution_policy is not
-// an ancestor of tag)
-
-// forward declaration of tag
-struct tag;
-
-// forward declaration of execution_policy
-template<typename> struct execution_policy;
-
-// specialize execution_policy for tag
-template<>
-  struct execution_policy<tag>
-    : thrust::execution_policy<tag>
-{};
-
-// tag's definition comes before the generic definition of execution_policy
-struct tag : execution_policy<tag>
-{
-  __host__ __device__ tag() {}
-};
-
-// allow conversion to tag when it is not a successor
-template<typename Derived>
-  struct execution_policy
-    : thrust::execution_policy<Derived>
-{
-  // allow conversion to tag
-  inline operator tag () const
-  {
-    return tag();
-  }
-};
-
-
-#ifdef __CUDA_ARCH__
-static const __device__ tag seq;
-#else
-static const tag seq;
-#endif
-
+using thrust::system::cpp::tag;
+using thrust::system::cpp::execution_policy;
 
 } // end sequential
 } // end detail

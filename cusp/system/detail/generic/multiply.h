@@ -30,36 +30,6 @@ namespace detail
 namespace generic
 {
 
-// template <typename DerivedPolicy,
-//           typename LinearOperator, typename MatrixOrVector1, typename MatrixOrVector2,
-//           typename UnaryFunction,  typename BinaryFunction1, typename BinaryFunction2,
-//           typename Format1, typename Format2, typename Format3>
-// void multiply(thrust::execution_policy<DerivedPolicy>& exec,
-//               LinearOperator&  A,
-//               MatrixOrVector1& B,
-//               MatrixOrVector2& C,
-//               UnaryFunction  initialize,
-//               BinaryFunction1 combine,
-//               BinaryFunction2 reduce,
-//               Format1&,
-//               Format2&,
-//               Format3&);
-
-// template <typename DerivedPolicy,
-//          typename LinearOperator,
-//          typename MatrixOrVector1,
-//          typename MatrixOrVector2,
-//          typename Format1,
-//          typename Format2,
-//          typename Format3>
-// void multiply(thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-//          LinearOperator&  A,
-//          MatrixOrVector1& B,
-//          MatrixOrVector2& C,
-//          Format1&,
-//          Format2&,
-//          Format3&);
-
 template <typename DerivedPolicy,
           typename LinearOperator,
           typename Vector1,
@@ -85,8 +55,4 @@ void generalized_spmv(
 } // end namespace system
 } // end namespace cusp
 
-#include <cusp/system/detail/generic/multiply/gemm.h>
-#include <cusp/system/detail/generic/multiply/generalized_spmv.h>
-#include <cusp/system/detail/generic/multiply/multiply.h>
-#include <cusp/system/detail/generic/multiply/spgemm.h>
-#include <cusp/system/detail/generic/multiply/spmv.h>
+#include <cusp/system/detail/generic/multiply.inl>

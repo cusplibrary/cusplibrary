@@ -32,6 +32,10 @@
 #include <cusp/detail/utils.h>
 #include <cusp/detail/array2d_format_utils.h>
 
+#include <cusp/system/detail/generic/multiply/generalized_spmv.h>
+#include <cusp/system/detail/generic/multiply/spgemm.h>
+#include <cusp/system/detail/generic/multiply/spmv.h>
+
 namespace cusp
 {
 namespace system
@@ -82,3 +86,4 @@ void multiply_(thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 } // end namespace detail
 } // end namespace system
 } // end namespace cusp
+
