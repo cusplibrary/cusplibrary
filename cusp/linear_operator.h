@@ -86,21 +86,21 @@ namespace cusp
  *
  *   CsrMatrix A;
  *
- *   // construct Poisson example matrix
- *   cusp::gallery::poisson5pt(A, N, N);
- *
  *   // number of entries
  *   const int N = 4;
  *
+ *   // construct Poisson example matrix
+ *   cusp::gallery::poisson5pt(A, N, N);
+ *
  *   // construct instance of custom operator perform D^{-1}A
- *   Dinv_A<CsrMatrix> custom_op(A);
+ *   Dinv_A<CsrMatrix> M(A);
  *
  *   // initialize x and y vectors
  *   cusp::array1d<float, cusp::device_memory> x(A.num_rows, 1);
  *   cusp::array1d<float, cusp::device_memory> y(A.num_rows, 0);
  *
  *   // call operator()(x,y) through multiply interface
- *   custom_op(x,y);
+ *   cusp::multiply(M,x,y);
  *
  *   // print the transformed vector
  *   cusp::print(y);

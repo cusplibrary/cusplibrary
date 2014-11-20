@@ -28,6 +28,17 @@
 // get the definition of par
 #include <thrust/system/cpp/detail/par.h>
 
+namespace cusp
+{
+namespace system
+{
+namespace cpp
+{
+using namespace thrust::system::cpp;
+} // end namespace cpp
+} // end namespace system
+} // end namespace cusp
+
 // now get all the algorithm definitions
 
 #include <cusp/system/cpp/detail/convert.h>

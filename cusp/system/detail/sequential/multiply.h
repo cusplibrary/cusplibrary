@@ -16,6 +16,10 @@
 
 #pragma once
 
+#include <cusp/detail/config.h>
+#include <cusp/detail/format.h>
+#include <cusp/system/detail/sequential/execution_policy.h>
+
 #include <cusp/system/detail/sequential/multiply/coo_spmv.h>
 #include <cusp/system/detail/sequential/multiply/csr_spmv.h>
 #include <cusp/system/detail/sequential/multiply/dia_spmv.h>
