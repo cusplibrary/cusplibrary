@@ -71,7 +71,7 @@ namespace graph
  *     cusp::array1d<int,cusp::device_memory> labels(G.num_rows);
  *
  *     // Execute a BFS traversal on the device
- *     cusp::graph::breadth_first_search<false>(G, 0, labels);
+ *     cusp::graph::breadth_first_search(G, 0, labels);
  *
  *     // Print the level set constructed from the source vertex
  *     cusp::print(labels);

@@ -14,59 +14,66 @@
  *  limitations under the License.
  */
 #include <cusp/detail/config.h>
+#include <thrust/system/detail/generic/select_system.h>
 
-#include <cusp/array1d.h>
 #include <cusp/exception.h>
-#include <cusp/graph/breadth_first_search.h>
+#include <cusp/graph/pseudo_peripheral_vertex.h>
 
-#include <thrust/copy.h>
-#include <thrust/gather.h>
-#include <thrust/iterator/counting_iterator.h>
+#include <cusp/system/detail/adl/graph/pseudo_peripheral_vertex.h>
+#include <cusp/system/detail/generic/graph/pseudo_peripheral_vertex.h>
 
 namespace cusp
 {
 namespace graph
 {
-namespace detail
-{
 
-template<typename MatrixType, typename ArrayType>
-typename MatrixType::index_type pseudo_peripheral_vertex(const MatrixType& G, ArrayType& levels, cusp::csr_format)
+template<typename DerivedPolicy, typename MatrixType, typename ArrayType>
+typename MatrixType::index_type
+pseudo_peripheral_vertex(thrust::execution_policy<DerivedPolicy>& exec,
+                         const MatrixType& G,
+                         ArrayType& levels,
+                         cusp::csr_format)
 {
     using namespace thrust::placeholders;
 
     typedef typename MatrixType::index_type IndexType;
-    typedef typename MatrixType::memory_space MemorySpace;
 
     IndexType delta = 0;
     IndexType x = rand() % G.num_rows;
     IndexType y;
 
     ArrayType row_lengths(G.num_rows);
-    thrust::transform(G.row_offsets.begin() + 1, G.row_offsets.end(), G.row_offsets.begin(), row_lengths.begin(), thrust::minus<IndexType>());
+    thrust::transform(exec,
+                      G.row_offsets.begin() + 1, G.row_offsets.end(),
+                      G.row_offsets.begin(), row_lengths.begin(),
+                      thrust::minus<IndexType>());
 
-    while(1) {
-        cusp::graph::breadth_first_search<false>(G, x, levels);
+    while(1)
+    {
+        cusp::graph::breadth_first_search(exec, G, x, levels);
 
-        typename ArrayType::iterator max_level_iter = thrust::max_element(levels.begin(), levels.end());
+        typename ArrayType::iterator max_level_iter = thrust::max_element(exec, levels.begin(), levels.end());
         int max_level = *max_level_iter;
-        int max_count = thrust::count(levels.begin(), levels.end(), max_level);
+        int max_count = thrust::count(exec, levels.begin(), levels.end(), max_level);
 
-        if( max_count > 1 ) {
+        if( max_count > 1 )
+        {
             ArrayType max_level_vertices(max_count);
             ArrayType max_level_valence(max_count);
 
-            thrust::copy_if(thrust::counting_iterator<IndexType>(0),
+            thrust::copy_if(exec,
+                            thrust::counting_iterator<IndexType>(0),
                             thrust::counting_iterator<IndexType>(G.num_rows),
                             levels.begin(),
                             max_level_vertices.begin(),
                             _1 == max_level);
 
-            thrust::gather(thrust::counting_iterator<IndexType>(0),
+            thrust::gather(exec,
+                           thrust::counting_iterator<IndexType>(0),
                            thrust::counting_iterator<IndexType>(max_count),
                            row_lengths.begin(),
                            max_level_valence.begin());
-            int min_valence_pos = thrust::min_element(max_level_valence.begin(), max_level_valence.end()) - max_level_valence.begin();
+            int min_valence_pos = thrust::min_element(exec, max_level_valence.begin(), max_level_valence.end()) - max_level_valence.begin();
 
             y = max_level_vertices[min_valence_pos];
         }
@@ -84,40 +91,42 @@ typename MatrixType::index_type pseudo_peripheral_vertex(const MatrixType& G, Ar
     return y;
 }
 
-//////////////////
-// General Path //
-//////////////////
-
-template<typename MatrixType, typename ArrayType, typename Format>
-typename MatrixType::index_type pseudo_peripheral_vertex(const MatrixType& G, ArrayType& levels, Format)
+template <typename DerivedPolicy,
+          typename MatrixType,
+          typename ArrayType>
+typename MatrixType::index_type
+pseudo_peripheral_vertex(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
+                         const MatrixType& G,
+                         ArrayType& levels)
 {
-    typedef typename MatrixType::index_type   IndexType;
-    typedef typename MatrixType::value_type   ValueType;
-    typedef typename MatrixType::memory_space MemorySpace;
+    using cusp::system::detail::generic::pseudo_peripheral_vertex;
 
-    // convert matrix to CSR format and compute on the host
-    cusp::csr_matrix<IndexType,ValueType,MemorySpace> G_csr(G);
+    typename MatrixType::format format;
 
-    return cusp::graph::pseudo_peripheral_vertex(G_csr, levels);
-}
-
-} // end namespace detail
-
-/////////////////
-// Entry Point //
-/////////////////
-
-template<typename MatrixType, typename ArrayType>
-typename MatrixType::index_type pseudo_peripheral_vertex(const MatrixType& G, ArrayType& levels)
-{
     if(G.num_rows != G.num_cols)
         throw cusp::invalid_input_exception("matrix must be square");
 
-    return cusp::graph::detail::pseudo_peripheral_vertex(G, levels, typename MatrixType::format());
+    return pseudo_peripheral_vertex(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), G, levels, format);
+}
+
+template<typename MatrixType, typename ArrayType>
+typename MatrixType::index_type
+pseudo_peripheral_vertex(const MatrixType& G, ArrayType& levels)
+{
+    using thrust::system::detail::generic::select_system;
+
+    typedef typename MatrixType::memory_space System1;
+    typedef typename ArrayType::memory_space  System2;
+
+    System1 system1;
+    System2 system2;
+
+    return cusp::graph::pseudo_peripheral_vertex(select_system(system1,system2), G, levels);
 }
 
 template<typename MatrixType>
-typename MatrixType::index_type pseudo_peripheral_vertex(const MatrixType& G)
+typename MatrixType::index_type
+pseudo_peripheral_vertex(const MatrixType& G)
 {
     typedef typename MatrixType::index_type   IndexType;
     typedef typename MatrixType::memory_space MemorySpace;

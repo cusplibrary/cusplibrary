@@ -14,18 +14,48 @@
  *  limitations under the License.
  */
 
-#include <cusp/graph/detail/dispatch/hilbert_curve.h>
+#include <thrust/detail/config.h>
+#include <thrust/system/detail/generic/select_system.h>
+
+#include <cusp/exception.h>
+#include <cusp/graph/hilbert_curve.h>
+
+#include <cusp/system/detail/adl/graph/hilbert_curve.h>
+#include <cusp/system/detail/generic/graph/hilbert_curve.h>
 
 namespace cusp
 {
 namespace graph
 {
 
-template <class Array2d, class Array1d>
-void hilbert_curve(const Array2d& coord, const size_t num_parts, Array1d& parts)
+template <typename DerivedPolicy,
+          typename Array2dType,
+          typename ArrayType>
+void hilbert_curve(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
+                   const Array2dType& G,
+                   const size_t num_parts,
+                   ArrayType& parts)
 {
-    return cusp::graph::detail::dispatch::hilbert_curve(coord, num_parts, parts,
-					 typename Array2d::memory_space());
+    using cusp::system::detail::generic::hilbert_curve;
+
+    hilbert_curve(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), G, num_parts, parts);
+}
+
+template<typename Array2dType,
+         typename ArrayType>
+void hilbert_curve(const Array2dType& G,
+                   const size_t num_parts,
+                   ArrayType& parts)
+{
+    using thrust::system::detail::generic::select_system;
+
+    typedef typename Array2dType::memory_space System1;
+    typedef typename ArrayType::memory_space   System2;
+
+    System1 system1;
+    System2 system2;
+
+    cusp::graph::hilbert_curve(select_system(system1,system2), G, num_parts, parts);
 }
 
 } // end namespace graph

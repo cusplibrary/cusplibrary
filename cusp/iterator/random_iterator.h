@@ -114,7 +114,7 @@ public:
      */
     iterator begin(void) const
     {
-        return RandomCountingIterator(0);//RandomTransformIterator(RandomTransformIterator(RandomCountingIterator(0), index_func), index_func);
+        return RandomTransformIterator(RandomTransformIterator(RandomCountingIterator(0), index_func), index_func);
     }
 
     /*! \brief Subscript access to the data contained in this iterator.

@@ -92,6 +92,12 @@ namespace graph
 template<typename MatrixType, typename ArrayType>
 size_t connected_components(const MatrixType& G, ArrayType& components);
 
+template <typename DerivedPolicy,
+          typename MatrixType,
+          typename ArrayType>
+size_t connected_components(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
+                            const MatrixType& G, ArrayType& components);
+
 /*! \}
  */
 

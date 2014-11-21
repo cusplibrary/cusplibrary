@@ -14,94 +14,57 @@
  *  limitations under the License.
  */
 
+#include <thrust/detail/config.h>
+#include <thrust/system/detail/generic/select_system.h>
+
 #include <cusp/exception.h>
-#include <cusp/coo_matrix.h>
-#include <cusp/csr_matrix.h>
+#include <cusp/graph/maximal_independent_set.h>
 
-#include <cusp/graph/detail/dispatch/maximal_independent_set.h>
-
-#include <thrust/fill.h>
+#include <cusp/system/detail/adl/graph/maximal_independent_set.h>
+#include <cusp/system/detail/generic/graph/maximal_independent_set.h>
 
 namespace cusp
 {
 namespace graph
 {
-namespace detail
+
+template <typename DerivedPolicy, typename MatrixType, typename ArrayType>
+size_t maximal_independent_set(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
+                               const MatrixType& G,
+                               ArrayType& stencil,
+                               const size_t k)
 {
+    using cusp::system::detail::generic::maximal_independent_set;
 
-//////////////////
-// General Path //
-//////////////////
-template <typename Matrix, typename Array>
-size_t maximal_independent_set(const Matrix& A, Array& stencil, size_t k,
-                               cusp::coo_format, cusp::device_memory)
-{
-  typedef typename Matrix::index_type   IndexType;
-  typedef typename Matrix::value_type   ValueType;
+    typename MatrixType::format format;
 
-  return cusp::graph::detail::dispatch::maximal_independent_set(A, stencil, k, typename Matrix::memory_space());
-}
-
-template <typename Matrix, typename Array,
-          typename Format>
-size_t maximal_independent_set(const Matrix& A, Array& stencil, size_t k,
-                               Format, cusp::device_memory)
-{
-  typedef typename Matrix::index_type   IndexType;
-  typedef typename Matrix::value_type   ValueType;
-
-  // convert matrix to COO format and compute on the device
-  cusp::coo_matrix<IndexType,ValueType,cusp::device_memory> A_coo(A);
-
-  return cusp::graph::detail::dispatch::maximal_independent_set(A_coo, stencil, k, typename Matrix::memory_space());
-}
-
-template <typename Matrix, typename Array>
-size_t maximal_independent_set(const Matrix& A, Array& stencil, size_t k,
-                               cusp::csr_format, cusp::host_memory)
-{
-  typedef typename Matrix::index_type   IndexType;
-  typedef typename Matrix::value_type   ValueType;
-
-  return cusp::graph::detail::dispatch::maximal_independent_set(A, stencil, k, typename Matrix::memory_space());
-}
-
-template <typename Matrix, typename Array,
-          typename Format>
-size_t maximal_independent_set(const Matrix& A, Array& stencil, size_t k,
-                               Format, cusp::host_memory)
-{
-  typedef typename Matrix::index_type   IndexType;
-  typedef typename Matrix::value_type   ValueType;
-
-  // convert matrix to CSR format and compute on the host
-  cusp::csr_matrix<IndexType,ValueType,cusp::host_memory> A_csr(A);
-
-  return cusp::graph::detail::dispatch::maximal_independent_set(A_csr, stencil, k, typename Matrix::memory_space());
-}
-
-} // end namespace detail
-
-/////////////////
-// Entry Point //
-/////////////////
-
-template <typename Matrix, typename Array>
-size_t maximal_independent_set(const Matrix& A, Array& stencil, size_t k)
-{
-    if(A.num_rows != A.num_cols)
+    if(G.num_rows != G.num_cols)
         throw cusp::invalid_input_exception("matrix must be square");
 
     if (k == 0)
     {
-        stencil.resize(A.num_rows);
-        thrust::fill(stencil.begin(), stencil.end(), typename Array::value_type(1));
+        stencil.resize(G.num_rows);
+        thrust::fill(exec, stencil.begin(), stencil.end(), typename ArrayType::value_type(1));
         return stencil.size();
     }
     else
     {
-        return cusp::graph::detail::maximal_independent_set(A, stencil, k, typename Matrix::format(), typename Matrix::memory_space());
+        return maximal_independent_set(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), G, stencil, k, format);
     }
+}
+
+template <typename MatrixType, typename ArrayType>
+size_t maximal_independent_set(const MatrixType& G, ArrayType& stencil, const size_t k)
+{
+    using thrust::system::detail::generic::select_system;
+
+    typedef typename MatrixType::memory_space System1;
+    typedef typename ArrayType::memory_space  System2;
+
+    System1 system1;
+    System2 system2;
+
+    return cusp::graph::connected_components(select_system(system1,system2), G, stencil, k);
 }
 
 } // end namespace graph

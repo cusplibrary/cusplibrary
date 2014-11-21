@@ -14,56 +14,46 @@
  *  limitations under the License.
  */
 
-#include <cusp/exception.h>
-#include <cusp/csr_matrix.h>
+#include <thrust/detail/config.h>
+#include <thrust/system/detail/generic/select_system.h>
 
-#include <cusp/graph/detail/dispatch/connected_components.h>
+#include <cusp/exception.h>
+#include <cusp/graph/connected_components.h>
+
+#include <cusp/system/detail/adl/graph/connected_components.h>
+#include <cusp/system/detail/generic/graph/connected_components.h>
 
 namespace cusp
 {
 namespace graph
 {
-namespace detail
-{
 
-template<typename MatrixType, typename ArrayType>
-size_t connected_components(const MatrixType& G, ArrayType& components, cusp::csr_format)
+template <typename DerivedPolicy,
+          typename MatrixType,
+          typename ArrayType>
+size_t connected_components(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
+                            const MatrixType& G,
+                            ArrayType& components)
 {
-    return cusp::graph::detail::dispatch::connected_components(G, components,
-            typename MatrixType::memory_space());
+    using cusp::system::detail::generic::connected_components;
+
+    typename MatrixType::format format;
+
+    return connected_components(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), G, components, format);
 }
-
-//////////////////
-// General Path //
-//////////////////
-
-template<typename MatrixType, typename ArrayType, typename Format>
-size_t connected_components(const MatrixType& G, ArrayType& components, Format)
-{
-  typedef typename MatrixType::index_type   IndexType;
-  typedef typename MatrixType::value_type   ValueType;
-  typedef typename MatrixType::memory_space MemorySpace;
-
-  // convert matrix to CSR format and compute on the host
-  cusp::csr_matrix<IndexType,ValueType,MemorySpace> G_csr(G);
-
-  return cusp::graph::connected_components(G_csr, components);
-}
-
-} // end namespace detail
-
-/////////////////
-// Entry Point //
-/////////////////
 
 template<typename MatrixType, typename ArrayType>
 size_t connected_components(const MatrixType& G, ArrayType& components)
 {
-    if(G.num_rows != G.num_cols)
-        throw cusp::invalid_input_exception("matrix must be square");
+    using thrust::system::detail::generic::select_system;
 
-    return cusp::graph::detail::connected_components(G, components,
-					 	typename MatrixType::format());
+    typedef typename MatrixType::memory_space System1;
+    typedef typename ArrayType::memory_space  System2;
+
+    System1 system1;
+    System2 system2;
+
+    return cusp::graph::connected_components(select_system(system1,system2), G, components);
 }
 
 } // end namespace graph
