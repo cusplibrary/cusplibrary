@@ -36,9 +36,11 @@ void breadth_first_search(const MatrixType& G, const typename MatrixType::index_
     if(MARK_PREDECESSORS) predecessors.resize(G.num_rows);
 
     // initialize distances
-    for (size_t i = 0; i < G.num_rows; i++) {
+    for (size_t i = 0; i < G.num_rows; i++)
+    {
         labels[i] = -1;
     }
+
     labels[src] = 0;
     VertexId search_depth = 0;
 
@@ -64,13 +66,18 @@ void breadth_first_search(const MatrixType& G, const typename MatrixType::index_
 
             // Lookup neighbor and enqueue if undiscovered
             VertexId neighbor = G.column_indices[edge];
-	    if (neighbor == -1) continue;
-            if (labels[neighbor] == -1) {
+            if (neighbor == -1) continue;
+
+            if (labels[neighbor] == -1)
+            {
                 labels[neighbor] = neighbor_dist;
-                if (search_depth < neighbor_dist) {
+
+                if (search_depth < neighbor_dist)
+                {
                     search_depth = neighbor_dist;
                 }
-		if(MARK_PREDECESSORS) predecessors[neighbor] = dequeued_node;
+
+                if(MARK_PREDECESSORS) predecessors[neighbor] = dequeued_node;
                 frontier.push_back(neighbor);
             }
         }

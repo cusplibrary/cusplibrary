@@ -16,23 +16,7 @@
 
 #pragma once
 
-/*! \file thrust/system/tbb/execution_policy.h
- *  \brief Execution policies for Thrust's TBB system.
- */
+#include <cusp/detail/config.h>
 
-#include <thrust/detail/config.h>
-
-// get the execution policies definitions first
-#include <thrust/system/tbb/detail/execution_policy.h>
-
-// get the definition of par
-#include <thrust/system/tbb/detail/par.h>
-
-// now get all the algorithm definitions
-
-#include <cusp/system/tbb/detail/convert.h>
-#include <cusp/system/tbb/detail/elementwise.h>
-#include <cusp/system/tbb/detail/multiply.h>
-#include <cusp/system/tbb/detail/transpose.h>
-
-#include <cusp/system/tbb/detail/graph/breadth_first_search.h>
+// this system inherits elementwise
+#include <cusp/system/detail/sequential/graph/breadth_first_search.h>

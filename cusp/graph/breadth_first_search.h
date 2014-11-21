@@ -22,6 +22,8 @@
 
 #include <cusp/detail/config.h>
 
+#include <thrust/execution_policy.h>
+
 namespace cusp
 {
 namespace graph
@@ -78,8 +80,20 @@ namespace graph
  *  }
  *  \endcode
  */
-template<bool MARK_PREDECESSORS, typename MatrixType, typename ArrayType>
-void breadth_first_search(const MatrixType& G, const typename MatrixType::index_type src, ArrayType& labels);
+template<typename MatrixType, typename ArrayType>
+void breadth_first_search(const MatrixType& G,
+                          const typename MatrixType::index_type src,
+                          ArrayType& labels,
+                          bool mark_levels = true);
+
+template <typename DerivedPolicy,
+          typename MatrixType,
+          typename ArrayType>
+void breadth_first_search(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
+                          const MatrixType& G,
+                          const typename MatrixType::index_type src,
+                          ArrayType& labels,
+                          const bool mark_levels = true);
 
 /*! \}
  */

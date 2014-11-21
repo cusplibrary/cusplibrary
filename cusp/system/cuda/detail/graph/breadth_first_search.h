@@ -21,16 +21,18 @@
 
 namespace cusp
 {
+namespace system
+{
+namespace cuda
+{
 namespace graph
 {
-namespace detail
-{
-namespace device
-{
 
-template<bool MARK_PREDECESSORS, typename MatrixType, typename ArrayType>
-void breadth_first_search(const MatrixType& G, const typename MatrixType::index_type src,
-                          ArrayType& labels)
+template<typename DerivedPolicy, typename MatrixType, typename ArrayType>
+void breadth_first_search(const MatrixType& G,
+                          const typename MatrixType::index_type src,
+                          ArrayType& labels,
+                          const mark_levels)
 {
     typedef typename MatrixType::index_type VertexId;
 
@@ -77,7 +79,7 @@ void breadth_first_search(const MatrixType& G, const typename MatrixType::index_
     csr_problem.graph_slices[0]->d_labels = (VertexId *) NULL;
 }
 
-} // end namespace device
-} // end namespace detail
 } // end namespace graph
+} // end namespace cuda
+} // end namespace system
 } // end namespace cusp

@@ -34,3 +34,5 @@
 #include <cusp/system/omp/detail/elementwise.h>
 #include <cusp/system/omp/detail/multiply.h>
 #include <cusp/system/omp/detail/transpose.h>
+
+#include <cusp/system/omp/detail/graph/breadth_first_search.h>

@@ -14,54 +14,53 @@
  *  limitations under the License.
  */
 
-#include <cusp/exception.h>
-#include <cusp/csr_matrix.h>
+#include <thrust/detail/config.h>
+#include <thrust/system/detail/generic/select_system.h>
 
-#include <cusp/graph/detail/dispatch/breadth_first_search.h>
+#include <cusp/exception.h>
+
+#include <cusp/system/detail/adl/graph/breadth_first_search.h>
+#include <cusp/system/detail/generic/graph/breadth_first_search.h>
 
 namespace cusp
 {
 namespace graph
 {
-namespace detail
-{
 
-template<bool MARK_PREDECESSORS, typename MatrixType, typename ArrayType>
-void breadth_first_search(const MatrixType& G, const typename MatrixType::index_type src, ArrayType& labels, cusp::csr_format)
-{
-    cusp::graph::detail::dispatch::breadth_first_search<MARK_PREDECESSORS>(G, src, labels,
-            typename MatrixType::memory_space());
-}
-
-//////////////////
-// General Path //
-//////////////////
-
-template<bool MARK_PREDECESSORS, typename MatrixType, typename ArrayType, typename Format>
-void breadth_first_search(const MatrixType& G, const typename MatrixType::index_type src, ArrayType& labels, Format)
-{
-  // convert matrix to CSR format and compute on the host
-  cusp::csr_matrix<typename MatrixType::index_type,
-                   typename MatrixType::value_type,
-                   typename MatrixType::memory_space> G_csr(G);
-
-  cusp::graph::breadth_first_search(G_csr, src, labels);
-}
-
-} // end namespace detail
-
-/////////////////
-// Entry Point //
-/////////////////
-
-template<bool MARK_PREDECESSORS, typename MatrixType, typename ArrayType>
-void breadth_first_search(const MatrixType& G, const typename MatrixType::index_type src, ArrayType& labels)
+template <typename DerivedPolicy,
+          typename MatrixType,
+          typename ArrayType>
+void breadth_first_search(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
+                          const typename MatrixType::index_type src,
+                          ArrayType& labels,
+                          const bool mark_levels)
 {
     if(G.num_rows != G.num_cols)
         throw cusp::invalid_input_exception("matrix must be square");
 
-    cusp::graph::detail::breadth_first_search<MARK_PREDECESSORS>(G, src, labels,
-            typename MatrixType::format());
+    using cusp::system::detail::generic::graph::breadth_first_search;
+
+    typename MatrixType::format format;
+
+    breadth_first_search(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), G, src, levels, mark_levels, format);
+}
+
+template<typename MatrixType,
+         typename ArrayType>
+void breadth_first_search(const MatrixType& G,
+                          const typename MatrixType::index_type src,
+                          ArrayType& labels,
+                          const bool mark_levels)
+{
+    using thrust::system::detail::generic::select_system;
+
+    typedef typename MatrixType::memory_space System1;
+    typedef typename ArrayType::memory_space  System2;
+
+    System1 system1;
+    System2 system2;
+
+    cusp::graph::breadth_first_search(select_system(system1,system2), G, src, labels, mark_levels);
 }
 
 } // end namespace graph
