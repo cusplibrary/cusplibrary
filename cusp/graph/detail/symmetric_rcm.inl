@@ -15,73 +15,71 @@
  */
 
 #include <cusp/detail/config.h>
+#include <thrust/system/detail/generic/select_system.h>
 
-#include <cusp/array1d.h>
 #include <cusp/exception.h>
-#include <cusp/permutation_matrix.h>
-#include <cusp/graph/pseudo_peripheral.h>
+#include <cusp/graph/symmetric_rcm.h>
 
-#include <thrust/copy.h>
-#include <thrust/gather.h>
-#include <thrust/iterator/counting_iterator.h>
+#include <cusp/system/detail/adl/graph/symmetric_rcm.h>
+#include <cusp/system/detail/generic/graph/symmetric_rcm.h>
 
 namespace cusp
 {
 namespace graph
 {
-namespace detail
-{
 
-template<typename MatrixType, typename PermutationType>
-void symmetric_rcm(const MatrixType& G, PermutationType& P, cusp::csr_format)
+template<typename DerivedPolicy, typename MatrixType, typename PermutationType>
+void symmetric_rcm(const thrust::execution_policy<DerivedPolicy>& exec,
+                   const MatrixType& G,
+                   PermutationType& P,
+                   cusp::csr_format)
 {
     typedef typename MatrixType::index_type IndexType;
     typedef typename MatrixType::value_type ValueType;
     typedef typename MatrixType::memory_space MemorySpace;
 
     // find peripheral vertex and return BFS levels from vertex
-    cusp::graph::pseudo_peripheral_vertex(G, P.permutation);
+    cusp::graph::pseudo_peripheral_vertex(exec, G, P.permutation);
 
     // sort vertices by level in BFS traversal
     cusp::array1d<IndexType,MemorySpace> levels(G.num_rows);
-    thrust::sequence(levels.begin(), levels.end());
-    thrust::sort_by_key(P.permutation.begin(), P.permutation.end(), levels.begin());
+    thrust::sequence(exec, levels.begin(), levels.end());
+    thrust::sort_by_key(exec, P.permutation.begin(), P.permutation.end(), levels.begin());
+
     // form RCM permutation matrix
-    thrust::scatter(thrust::counting_iterator<IndexType>(0),
+    thrust::scatter(exec,
+                    thrust::counting_iterator<IndexType>(0),
                     thrust::counting_iterator<IndexType>(G.num_rows),
                     levels.begin(), P.permutation.begin());
 }
 
-//////////////////
-// General Path //
-//////////////////
-
-template<typename MatrixType, typename PermutationType, typename Format>
-void symmetric_rcm(const MatrixType& G, PermutationType& P, Format& format)
+template <typename DerivedPolicy, typename MatrixType, typename PermutationType>
+void symmetric_rcm(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
+                   const MatrixType& G,
+                   PermutationType& P)
 {
-    typedef typename MatrixType::index_type   IndexType;
-    typedef typename MatrixType::value_type   ValueType;
-    typedef typename MatrixType::memory_space MemorySpace;
+    using cusp::system::detail::generic::symmetric_rcm;
 
-    // convert matrix to CSR format and compute on the host
-    cusp::csr_matrix<IndexType,ValueType,MemorySpace> G_csr(G);
+    typename MatrixType::format format;
 
-    cusp::graph::symmetric_rcm(G_csr, P);
+    if(G.num_rows != G.num_cols)
+        throw cusp::invalid_input_exception("matrix must be square");
+
+    symmetric_rcm(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), G, P, format);
 }
-
-} // end namespace detail
-
-/////////////////
-// Entry Point //
-/////////////////
 
 template<typename MatrixType, typename PermutationType>
 void symmetric_rcm(const MatrixType& G, PermutationType& P)
 {
-    if(G.num_rows != G.num_cols)
-        throw cusp::invalid_input_exception("matrix must be square");
+    using thrust::system::detail::generic::select_system;
 
-    cusp::graph::detail::symmetric_rcm(G, P, typename MatrixType::format());
+    typedef typename MatrixType::memory_space System1;
+    typedef typename PermutationType::memory_space  System2;
+
+    System1 system1;
+    System2 system2;
+
+    cusp::graph::symmetric_rcm(select_system(system1,system2), G, P);
 }
 
 } // end namespace graph

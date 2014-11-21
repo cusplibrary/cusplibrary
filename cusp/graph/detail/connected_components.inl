@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-#include <thrust/detail/config.h>
+#include <cusp/detail/config.h>
 #include <thrust/system/detail/generic/select_system.h>
 
 #include <cusp/exception.h>
