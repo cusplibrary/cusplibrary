@@ -18,6 +18,7 @@
 #include <thrust/system/detail/generic/select_system.h>
 
 #include <cusp/exception.h>
+#include <cusp/graph/breadth_first_search.h>
 
 #include <cusp/system/detail/adl/graph/breadth_first_search.h>
 #include <cusp/system/detail/generic/graph/breadth_first_search.h>
@@ -31,18 +32,19 @@ template <typename DerivedPolicy,
           typename MatrixType,
           typename ArrayType>
 void breadth_first_search(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
+                          const MatrixType& G,
                           const typename MatrixType::index_type src,
                           ArrayType& labels,
                           const bool mark_levels)
 {
-    if(G.num_rows != G.num_cols)
-        throw cusp::invalid_input_exception("matrix must be square");
-
-    using cusp::system::detail::generic::graph::breadth_first_search;
+    using cusp::system::detail::generic::breadth_first_search;
 
     typename MatrixType::format format;
 
-    breadth_first_search(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), G, src, levels, mark_levels, format);
+    if(G.num_rows != G.num_cols)
+        throw cusp::invalid_input_exception("matrix must be square");
+
+    breadth_first_search(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), G, src, labels, mark_levels, format);
 }
 
 template<typename MatrixType,

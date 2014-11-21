@@ -14,26 +14,34 @@
  *  limitations under the License.
  */
 
+#pragma once
+
 #include <deque>
 #include <cusp/exception.h>
 
 namespace cusp
 {
-namespace graph
+namespace system
 {
 namespace detail
 {
-namespace host
+namespace sequential
 {
 
-template<bool MARK_PREDECESSORS, typename MatrixType, typename ArrayType>
-void breadth_first_search(const MatrixType& G, const typename MatrixType::index_type src, ArrayType& labels)
+template<typename DerivedPolicy, typename MatrixType, typename ArrayType>
+void breadth_first_search(sequential::execution_policy<DerivedPolicy>& exec,
+                          const MatrixType& G,
+                          const typename MatrixType::index_type src,
+                          ArrayType& labels,
+                          const bool mark_levels,
+                          csr_format)
 {
     typedef typename MatrixType::index_type VertexId;
+
     ArrayType predecessors;
 
     // initialize predecessor array
-    if(MARK_PREDECESSORS) predecessors.resize(G.num_rows);
+    if(!mark_levels) predecessors.resize(G.num_rows);
 
     // initialize distances
     for (size_t i = 0; i < G.num_rows; i++)
@@ -77,7 +85,7 @@ void breadth_first_search(const MatrixType& G, const typename MatrixType::index_
                     search_depth = neighbor_dist;
                 }
 
-                if(MARK_PREDECESSORS) predecessors[neighbor] = dequeued_node;
+                if(!mark_levels) predecessors[neighbor] = dequeued_node;
                 frontier.push_back(neighbor);
             }
         }
@@ -85,10 +93,17 @@ void breadth_first_search(const MatrixType& G, const typename MatrixType::index_
     search_depth++;
 
     // if predecessors are needed then copy into outgoing array
-    if(MARK_PREDECESSORS) labels = predecessors;
+    if(!mark_levels) labels = predecessors;
 }
 
-} // end namespace host
+} // end namespace sequential
 } // end namespace detail
+} // end namespace system
+
+namespace graph
+{
+// hack until ADL is operational
+using cusp::system::detail::sequential::breadth_first_search;
 } // end namespace graph
+
 } // end namespace cusp

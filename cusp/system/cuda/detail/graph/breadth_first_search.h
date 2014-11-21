@@ -17,7 +17,7 @@
 
 #include <cusp/exception.h>
 
-#include <cusp/graph/detail/device/b40c.h>
+#include <cusp/system/cuda/detail/graph/b40c.h>
 
 namespace cusp
 {
@@ -25,14 +25,14 @@ namespace system
 {
 namespace cuda
 {
-namespace graph
+namespace detail
 {
 
-template<typename DerivedPolicy, typename MatrixType, typename ArrayType>
-void breadth_first_search(const MatrixType& G,
+template<bool MARK_PREDECESSORS, typename DerivedPolicy, typename MatrixType, typename ArrayType>
+void breadth_first_search(cuda::execution_policy<DerivedPolicy>& exec,
+                          const MatrixType& G,
                           const typename MatrixType::index_type src,
-                          ArrayType& labels,
-                          const mark_levels)
+                          ArrayType& labels)
 {
     typedef typename MatrixType::index_type VertexId;
 
@@ -79,7 +79,29 @@ void breadth_first_search(const MatrixType& G,
     csr_problem.graph_slices[0]->d_labels = (VertexId *) NULL;
 }
 
-} // end namespace graph
+} // end namespace detail
+
+template<typename DerivedPolicy, typename MatrixType, typename ArrayType>
+void breadth_first_search(cuda::execution_policy<DerivedPolicy>& exec,
+                          const MatrixType& G,
+                          const typename MatrixType::index_type src,
+                          ArrayType& labels,
+                          const bool mark_levels,
+                          csr_format)
+{
+    if(mark_levels)
+        detail::breadth_first_search<false>(exec, G, src, labels);
+    else
+        detail::breadth_first_search<true>(exec, G, src, labels);
+}
+
 } // end namespace cuda
 } // end namespace system
+
+namespace graph
+{
+// hack until ADL is operational
+using cusp::system::cuda::breadth_first_search;
+} // end namespace graph
+
 } // end namespace cusp

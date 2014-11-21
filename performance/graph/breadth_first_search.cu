@@ -16,9 +16,9 @@ void BFS(const MatrixType& G)
     GraphType G_bfs(G);
     IndexType source = 0;
     cusp::array1d<IndexType,MemorySpace> labels(G.num_rows);
-    
+
     timer t;
-    cusp::graph::breadth_first_search<false>(G_bfs, source, labels);
+    cusp::graph::breadth_first_search(G_bfs, source, labels);
     std::cout << "BFS time : " << t.milliseconds_elapsed() << " (ms)." << std::endl;
 }
 

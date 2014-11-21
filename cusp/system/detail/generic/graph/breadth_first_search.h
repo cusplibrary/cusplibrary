@@ -14,36 +14,33 @@
  *  limitations under the License.
  */
 
+
 #pragma once
 
-/*! \file thrust/system/cpp/execution_policy.h
- *  \brief Execution policies for Thrust's CUDA system.
- */
+#include <cusp/detail/config.h>
 
-#include <thrust/detail/config.h>
-
-// get the execution policies definitions first
-#include <thrust/system/cuda/detail/execution_policy.h>
-
-// get the definition of par
-#include <thrust/system/cuda/detail/par.h>
+#include <thrust/execution_policy.h>
 
 namespace cusp
 {
 namespace system
 {
-namespace cuda
+namespace detail
 {
-using namespace thrust::system::cuda;
-} // end namespace cuda
+namespace generic
+{
+
+template<typename DerivedPolicy, typename MatrixType, typename ArrayType>
+void breadth_first_search(thrust::execution_policy<DerivedPolicy>& exec,
+                          const MatrixType& G,
+                          const typename MatrixType::index_type src,
+                          ArrayType& labels,
+                          const bool mark_levels,
+                          csr_format);
+
+} // end namespace generic
+} // end namespace detail
 } // end namespace system
 } // end namespace cusp
 
-// now get all the algorithm definitions
-
-#include <cusp/system/cuda/detail/convert.h>
-#include <cusp/system/cuda/detail/elementwise.h>
-#include <cusp/system/cuda/detail/multiply.h>
-#include <cusp/system/cuda/detail/transpose.h>
-
-#include <cusp/system/cuda/detail/graph/breadth_first_search.h>
+#include <cusp/system/detail/generic/graph/breadth_first_search.inl>
