@@ -47,3 +47,8 @@ using namespace thrust::system::cpp;
 #include <cusp/system/cpp/detail/transpose.h>
 
 #include <cusp/system/cpp/detail/graph/breadth_first_search.h>
+#include <cusp/system/cpp/detail/graph/connected_components.h>
+#include <cusp/system/cpp/detail/graph/hilbert_curve.h>
+#include <cusp/system/cpp/detail/graph/maximal_independent_set.h>
+#include <cusp/system/cpp/detail/graph/pseudo_peripheral.h>
+#include <cusp/system/cpp/detail/graph/symmetric_rcm.h>

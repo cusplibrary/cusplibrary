@@ -16,7 +16,7 @@
 
 #pragma once
 
-/*! \file thrust/system/cpp/execution_policy.h
+/*! \file thrust/system/cuda/execution_policy.h
  *  \brief Execution policies for Thrust's CUDA system.
  */
 
@@ -47,3 +47,8 @@ using namespace thrust::system::cuda;
 #include <cusp/system/cuda/detail/transpose.h>
 
 #include <cusp/system/cuda/detail/graph/breadth_first_search.h>
+#include <cusp/system/cuda/detail/graph/connected_components.h>
+#include <cusp/system/cuda/detail/graph/hilbert_curve.h>
+#include <cusp/system/cuda/detail/graph/maximal_independent_set.h>
+#include <cusp/system/cuda/detail/graph/pseudo_peripheral.h>
+#include <cusp/system/cuda/detail/graph/symmetric_rcm.h>

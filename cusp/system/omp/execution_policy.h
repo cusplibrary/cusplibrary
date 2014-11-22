@@ -36,3 +36,8 @@
 #include <cusp/system/omp/detail/transpose.h>
 
 #include <cusp/system/omp/detail/graph/breadth_first_search.h>
+#include <cusp/system/omp/detail/graph/connected_components.h>
+#include <cusp/system/omp/detail/graph/hilbert_curve.h>
+#include <cusp/system/omp/detail/graph/maximal_independent_set.h>
+#include <cusp/system/omp/detail/graph/pseudo_peripheral.h>
+#include <cusp/system/omp/detail/graph/symmetric_rcm.h>

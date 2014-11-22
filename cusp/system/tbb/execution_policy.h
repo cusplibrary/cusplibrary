@@ -36,3 +36,9 @@
 #include <cusp/system/tbb/detail/transpose.h>
 
 #include <cusp/system/tbb/detail/graph/breadth_first_search.h>
+#include <cusp/system/tbb/detail/graph/breadth_first_search.h>
+#include <cusp/system/tbb/detail/graph/connected_components.h>
+#include <cusp/system/tbb/detail/graph/hilbert_curve.h>
+#include <cusp/system/tbb/detail/graph/maximal_independent_set.h>
+#include <cusp/system/tbb/detail/graph/pseudo_peripheral.h>
+#include <cusp/system/tbb/detail/graph/symmetric_rcm.h>
