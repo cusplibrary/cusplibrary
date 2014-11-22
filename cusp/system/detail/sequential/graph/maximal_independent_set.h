@@ -19,11 +19,13 @@
 
 namespace cusp
 {
-namespace graph
+namespace system
 {
 namespace detail
 {
-namespace host
+namespace sequential
+{
+namespace detail
 {
 
 template <typename Matrix, typename IndexType>
@@ -33,61 +35,69 @@ void propagate_distances(const Matrix& A,
                          const size_t k,
                          cusp::array1d<size_t,cusp::host_memory>& distance)
 {
-  distance[i] = d;
+    distance[i] = d;
 
-  if (d < k)
-  {
-    for(IndexType jj = A.row_offsets[i]; jj < A.row_offsets[i + 1]; jj++)
+    if (d < k)
     {
-      IndexType j = A.column_indices[jj];
+        for(IndexType jj = A.row_offsets[i]; jj < A.row_offsets[i + 1]; jj++)
+        {
+            IndexType j = A.column_indices[jj];
 
-      // update only if necessary
-      if (d + 1 < distance[j])
-        propagate_distances(A, j, d + 1, k, distance);
+            // update only if necessary
+            if (d + 1 < distance[j])
+                propagate_distances(A, j, d + 1, k, distance);
+        }
     }
-  }
 }
 
-////////////////
-// Host Paths //
-////////////////
-      
-template <typename Matrix, typename Array>
-size_t maximal_independent_set(const Matrix& A, Array& stencil, size_t k)
-{
-  typedef typename Matrix::index_type   IndexType;
-  
-  const IndexType N = A.num_rows;
-
-  // distance to nearest MIS node
-  cusp::array1d<size_t,cusp::host_memory> distance(N, k + 1);
-
-  // count number of MIS nodes
-  size_t set_nodes = 0;
-  
-  // pick MIS-k nodes greedily and deactivate all their k-neighbors
-  for(IndexType i = 0; i < N; i++)
-  {
-    if (distance[i] > k)
-    {
-      set_nodes++;
-
-      // reset distances on all k-ring neighbors 
-      propagate_distances(A, i, 0, k, distance);
-    }
-  }
-  
-  // write output
-  stencil.resize(N);
-
-  for (IndexType i = 0; i < N; i++)
-      stencil[i] = distance[i] == 0;
-
-  return set_nodes;
-}
-
-} // end namespace host
 } // end namespace detail
-} // end namespace graph
-} // end namespace cusp
 
+template <typename DerivedPolicy, typename MatrixType, typename ArrayType>
+size_t maximal_independent_set(sequential::execution_policy<DerivedPolicy>& exec,
+                               const MatrixType& G,
+                               ArrayType& stencil,
+                               const size_t k,
+                               csr_format)
+{
+    typedef typename MatrixType::index_type IndexType;
+
+    const IndexType N = G.num_rows;
+
+    // distance to nearest MIS node
+    cusp::array1d<size_t,cusp::host_memory> distance(N, k + 1);
+
+    // count number of MIS nodes
+    size_t set_nodes = 0;
+
+    // pick MIS-k nodes greedily and deactivate all their k-neighbors
+    for(IndexType i = 0; i < N; i++)
+    {
+        if (distance[i] > k)
+        {
+            set_nodes++;
+
+            // reset distances on all k-ring neighbors
+            detail::propagate_distances(G, i, 0, k, distance);
+        }
+    }
+
+    // write output
+    stencil.resize(N);
+
+    for (IndexType i = 0; i < N; i++)
+        stencil[i] = distance[i] == 0;
+
+    return set_nodes;
+}
+
+} // end namespace sequential
+} // end namespace detail
+} // end namespace system
+
+namespace graph
+{
+// hack until ADL is operational
+using cusp::system::detail::sequential::maximal_independent_set;
+} // end namespace graph
+
+} // end namespace cusp

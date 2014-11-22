@@ -64,7 +64,7 @@ size_t maximal_independent_set(const MatrixType& G, ArrayType& stencil, const si
     System1 system1;
     System2 system2;
 
-    return cusp::graph::connected_components(select_system(system1,system2), G, stencil, k);
+    return cusp::graph::maximal_independent_set(select_system(system1,system2), G, stencil, k);
 }
 
 } // end namespace graph

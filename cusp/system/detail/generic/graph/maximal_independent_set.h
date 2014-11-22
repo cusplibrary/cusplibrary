@@ -30,17 +30,30 @@ namespace detail
 namespace generic
 {
 
-template<typename DerivedPolicy, typename MatrixType, typename ArrayType>
-void breadth_first_search(thrust::execution_policy<DerivedPolicy>& exec,
-                          const MatrixType& G,
-                          const typename MatrixType::index_type src,
-                          ArrayType& labels,
-                          const bool mark_levels,
-                          csr_format);
+template <typename DerivedPolicy, typename MatrixType, typename ArrayType>
+size_t maximal_independent_set(thrust::execution_policy<DerivedPolicy>& exec,
+                               const MatrixType& G,
+                               ArrayType& stencil,
+                               const size_t k,
+                               csr_format);
+
+template <typename DerivedPolicy, typename MatrixType, typename ArrayType>
+size_t maximal_independent_set(thrust::execution_policy<DerivedPolicy>& exec,
+                               const MatrixType& G,
+                               ArrayType& stencil,
+                               const size_t k,
+                               coo_format);
+
+template <typename DerivedPolicy, typename MatrixType, typename ArrayType>
+size_t maximal_independent_set(thrust::execution_policy<DerivedPolicy>& exec,
+                               const MatrixType& G,
+                               ArrayType& stencil,
+                               const size_t k,
+                               known_format);
 
 } // end namespace generic
 } // end namespace detail
 } // end namespace system
 } // end namespace cusp
 
-#include <cusp/system/detail/generic/graph/breadth_first_search.inl>
+#include <cusp/system/detail/generic/graph/maximal_independent_set.inl>

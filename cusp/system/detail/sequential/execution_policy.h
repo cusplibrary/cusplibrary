@@ -51,3 +51,8 @@ using namespace thrust::system::detail::sequential;
 #include <cusp/system/detail/sequential/transpose.h>
 
 #include <cusp/system/detail/sequential/graph/breadth_first_search.h>
+#include <cusp/system/detail/sequential/graph/connected_components.h>
+#include <cusp/system/detail/sequential/graph/hilbert_curve.h>
+#include <cusp/system/detail/sequential/graph/maximal_independent_set.h>
+#include <cusp/system/detail/sequential/graph/pseudo_peripheral.h>
+#include <cusp/system/detail/sequential/graph/symmetric_rcm.h>
