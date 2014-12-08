@@ -509,12 +509,11 @@ public :
     view subarray(size_type start_index, size_type num_entries);
 
 
-    void swap(array1d_view &v)
-    {
-      thrust::swap(this->base_reference(), v.base_reference());
-      thrust::swap(m_size,     v.m_size);
-      thrust::swap(m_capacity, v.m_capacity);
-    }
+    /*!
+     *  This method swaps the contents of this array1d_view with another array1d_view.
+     *  \param v The array1d_view with which to swap.
+     */
+    void swap(array1d_view &v);
 
 protected:
     /*!

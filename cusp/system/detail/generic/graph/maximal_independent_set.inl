@@ -148,13 +148,17 @@ void compute_mis_states(const size_t k,
         }
 
         // label local maxima as MIS nodes
-        thrust::for_each(thrust::make_zip_iterator(thrust::make_tuple(thrust::counting_iterator<IndexType>(0), states.begin(), maximal_states.begin(), maximal_indices.begin())),
-                         thrust::make_zip_iterator(thrust::make_tuple(thrust::counting_iterator<IndexType>(0), states.begin(), maximal_states.begin(), maximal_indices.begin())) + N,
+        thrust::for_each(thrust::make_zip_iterator(
+              thrust::make_tuple(thrust::counting_iterator<IndexType>(0), states.begin(), maximal_states.begin(), maximal_indices.begin())),
+                         thrust::make_zip_iterator(
+              thrust::make_tuple(thrust::counting_iterator<IndexType>(0), states.begin(), maximal_states.begin(), maximal_indices.begin())) + N,
                          process_mis_nodes());
 
         // label k-ring neighbors of MIS nodes as non-MIS nodes
-        thrust::for_each(thrust::make_zip_iterator(thrust::make_tuple(states.begin(), thrust::make_permutation_iterator(states.begin(), maximal_indices.begin()))),
-                         thrust::make_zip_iterator(thrust::make_tuple(states.begin(), thrust::make_permutation_iterator(states.begin(), maximal_indices.begin()))) + N,
+        thrust::for_each(thrust::make_zip_iterator(
+              thrust::make_tuple(states.begin(), thrust::make_permutation_iterator(states.begin(), maximal_indices.begin()))),
+                         thrust::make_zip_iterator(
+              thrust::make_tuple(states.begin(), thrust::make_permutation_iterator(states.begin(), maximal_indices.begin()))) + N,
                          process_non_mis_nodes());
 
         active_nodes = thrust::count(states.begin(), states.end(), 1);
@@ -226,7 +230,7 @@ size_t maximal_independent_set(thrust::execution_policy<DerivedPolicy>& exec,
                                const size_t k,
                                known_format)
 {
-    return 0;
+  throw cusp::not_implemented_exception("MIS for arbitrary format not implemented.");
 }
 
 } // end namespace generic

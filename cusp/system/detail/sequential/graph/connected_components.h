@@ -23,15 +23,18 @@
 
 namespace cusp
 {
-namespace graph
+namespace system
 {
 namespace detail
 {
-namespace host
+namespace sequential
 {
 
-template<typename MatrixType, typename ArrayType>
-size_t connected_components(const MatrixType& G, ArrayType& components)
+template<typename DerivedPolicy, typename MatrixType, typename ArrayType>
+size_t connected_components(sequential::execution_policy<DerivedPolicy>& exec,
+                            const MatrixType& G,
+                            ArrayType& components,
+                            csr_format)
 {
     typedef typename MatrixType::index_type VertexId;
 
@@ -52,10 +55,10 @@ size_t connected_components(const MatrixType& G, ArrayType& components)
             {
                 VertexId top = DFS.top();
                 DFS.pop();
-   
-                for(VertexId jj = G.row_offsets[top]; jj < G.row_offsets[top + 1]; jj++){
+
+                for(VertexId jj = G.row_offsets[top]; jj < G.row_offsets[top + 1]; jj++) {
                     const VertexId j = G.column_indices[jj];
-                    if(components[j] == -1){
+                    if(components[j] == -1) {
                         DFS.push(j);
                         components[j] = component;
                     }
@@ -69,7 +72,14 @@ size_t connected_components(const MatrixType& G, ArrayType& components)
     return component;
 }
 
-} // end namespace host
+} // end namespace sequential
 } // end namespace detail
+} // end namespace system
+
+namespace graph
+{
+// hack until ADL is operational
+using cusp::system::detail::sequential::connected_components;
 } // end namespace graph
+
 } // end namespace cusp

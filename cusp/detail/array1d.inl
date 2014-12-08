@@ -125,6 +125,16 @@ array1d_view<RandomAccessIterator>
 } // end array1d_view::resize
 
 template<typename RandomAccessIterator>
+void
+array1d_view<RandomAccessIterator>
+::swap(array1d_view &v)
+{
+  thrust::swap(this->base_reference(), v.base_reference());
+  thrust::swap(m_size,     v.m_size);
+  thrust::swap(m_capacity, v.m_capacity);
+} // end array1d_view::swap
+
+template<typename RandomAccessIterator>
 typename array1d_view<RandomAccessIterator>::view
 array1d_view<RandomAccessIterator>
 ::subarray(size_type start_index, size_type num_entries)

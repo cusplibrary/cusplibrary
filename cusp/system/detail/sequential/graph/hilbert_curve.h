@@ -17,17 +17,20 @@
 
 #include <cusp/exception.h>
 
+#include <thrust/extrema.h>
 #include <thrust/gather.h>
 #include <thrust/sort.h>
 #include <thrust/transform.h>
 
 namespace cusp
 {
-namespace graph
+namespace system
 {
 namespace detail
 {
-namespace host
+namespace sequential
+{
+namespace detail
 {
 
 // Tables and Hilbert transform codes adapted from HSFC implementation in Zoltan v3.601
@@ -197,10 +200,13 @@ struct hilbert_transform_3d : public thrust::unary_function<double,double>
     }
 };
 
-template <class Array2d, class Array1d>
-void hilbert_curve(const Array2d& coord,
-            size_t num_parts,
-            Array1d& parts)
+} // end namespace detail
+
+template <typename DerivedPolicy, typename Array2d, typename Array1d>
+void hilbert_curve(sequential::execution_policy<DerivedPolicy>& exec,
+                   const Array2d& coord,
+                   size_t num_parts,
+                   Array1d& parts)
 {
     typedef typename Array1d::value_type PartType;
     typedef typename Array2d::const_column_view::iterator Iterator;
@@ -213,8 +219,8 @@ void hilbert_curve(const Array2d& coord,
     if( (dims != 2) && (dims != 3) )
         throw cusp::invalid_input_exception("Hilbert curve partitioning only implemented for 2D or 3D data.");
 
-    thrust::pair<Iterator,Iterator> x_iter = thrust::minmax_element(coord.column(0).begin(), coord.column(0).end());
-    thrust::pair<Iterator,Iterator> y_iter = thrust::minmax_element(coord.column(1).begin(), coord.column(1).end());
+    thrust::pair<Iterator,Iterator> x_iter = thrust::minmax_element(exec, coord.column(0).begin(), coord.column(0).end());
+    thrust::pair<Iterator,Iterator> y_iter = thrust::minmax_element(exec, coord.column(1).begin(), coord.column(1).end());
 
     ValueType xmin = *x_iter.first;
     ValueType xmax = *x_iter.second;
@@ -226,35 +232,47 @@ void hilbert_curve(const Array2d& coord,
 
     cusp::array1d<double, MemorySpace> hilbert_keys(coord.num_rows);
 
-    if( dims == 2 ) {
-        thrust::transform(thrust::make_zip_iterator(thrust::make_tuple(coord.column(0).begin(), coord.column(1).begin())),
+    if( dims == 2 )
+    {
+        thrust::transform(exec,
+                          thrust::make_zip_iterator(thrust::make_tuple(coord.column(0).begin(), coord.column(1).begin())),
                           thrust::make_zip_iterator(thrust::make_tuple(coord.column(0).end(), coord.column(1).end())),
-                          hilbert_keys.begin(), hilbert_transform_2d());
-    } else {
-        thrust::pair<Iterator,Iterator> z_iter = thrust::minmax_element(coord.column(2).begin(), coord.column(2).end());
+                          hilbert_keys.begin(), detail::hilbert_transform_2d());
+    }
+    else
+    {
+        thrust::pair<Iterator,Iterator> z_iter = thrust::minmax_element(exec, coord.column(2).begin(), coord.column(2).end());
         ValueType zmin = *z_iter.first;
         ValueType zmax = *z_iter.second;
 
         if( zmin < ValueType(0) || zmax > ValueType(1) )
             throw cusp::invalid_input_exception("Hilbert coordinates should be in the range [0,1]");
 
-        thrust::transform(thrust::make_zip_iterator(thrust::make_tuple(coord.column(0).begin(), coord.column(1).begin(), coord.column(2).begin())),
+        thrust::transform(exec,
+                          thrust::make_zip_iterator(thrust::make_tuple(coord.column(0).begin(), coord.column(1).begin(), coord.column(2).begin())),
                           thrust::make_zip_iterator(thrust::make_tuple(coord.column(0).end(), coord.column(1).end(), coord.column(2).end())),
-                          hilbert_keys.begin(), hilbert_transform_3d());
+                          hilbert_keys.begin(), detail::hilbert_transform_3d());
     }
 
     cusp::array1d<PartType, MemorySpace> perm(num_points);
-    thrust::sequence(perm.begin(), perm.end());
-    thrust::sort_by_key(hilbert_keys.begin(), hilbert_keys.end(), perm.begin());
+    thrust::sequence(exec, perm.begin(), perm.end());
+    thrust::sort_by_key(exec, hilbert_keys.begin(), hilbert_keys.end(), perm.begin());
 
     cusp::array1d<PartType, MemorySpace> uniform_parts(num_points);
-    thrust::transform(thrust::counting_iterator<PartType>(0), thrust::counting_iterator<PartType>(num_points),
+    thrust::transform(exec,
+                      thrust::counting_iterator<PartType>(0), thrust::counting_iterator<PartType>(num_points),
                       thrust::constant_iterator<PartType>(num_points/num_parts), uniform_parts.begin(), thrust::divides<PartType>());
-    thrust::gather(perm.begin(), perm.end(), uniform_parts.begin(), parts.begin());
+    thrust::gather(exec, perm.begin(), perm.end(), uniform_parts.begin(), parts.begin());
 }
 
-} // end namespace host
+} // end namespace sequential
 } // end namespace detail
-} // end namespace graph
-} // end namespace cusp
+} // end namespace system
 
+namespace graph
+{
+// hack until ADL is operational
+using cusp::system::detail::sequential::hilbert_curve;
+} // end namespace graph
+
+} // end namespace cusp

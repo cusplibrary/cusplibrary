@@ -30,17 +30,17 @@ namespace detail
 namespace generic
 {
 
-template<typename DerivedPolicy, typename MatrixType, typename ArrayType>
-void breadth_first_search(thrust::execution_policy<DerivedPolicy>& exec,
-                          const MatrixType& G,
-                          const typename MatrixType::index_type src,
-                          ArrayType& labels,
-                          const bool mark_levels,
-                          csr_format);
+template <typename DerivedPolicy,
+          typename MatrixType,
+          typename ArrayType>
+size_t connected_components(thrust::execution_policy<DerivedPolicy>& exec,
+                            const MatrixType& G,
+                            ArrayType& components,
+                            csr_format);
 
 } // end namespace generic
 } // end namespace detail
 } // end namespace system
 } // end namespace cusp
 
-#include <cusp/system/detail/generic/graph/breadth_first_search.inl>
+#include <cusp/system/detail/generic/graph/connected_components.inl>

@@ -30,15 +30,18 @@ namespace detail
 namespace generic
 {
 
-template <typename DerivedPolicy, typename Array2d, typename Array1d>
-void hilbert_curve(thrust::execution_policy<DerivedPolicy>& exec,
-                   const Array2d& coord,
-                   size_t num_parts,
-                   Array1d& parts);
+template <typename DerivedPolicy,
+         typename MatrixType,
+         typename ArrayType>
+size_t connected_components(thrust::execution_policy<DerivedPolicy>& exec,
+                            const MatrixType& G,
+                            ArrayType& components,
+                            csr_format)
+{
+    return 0;
+}
 
 } // end namespace generic
 } // end namespace detail
 } // end namespace system
 } // end namespace cusp
-
-#include <cusp/system/detail/generic/graph/hilbert_curve.inl>
