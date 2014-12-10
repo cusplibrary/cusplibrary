@@ -99,10 +99,7 @@ size_t maximal_independent_set(sequential::execution_policy<DerivedPolicy>& exec
 } // end namespace detail
 } // end namespace system
 
-namespace graph
-{
 // hack until ADL is operational
 using cusp::system::detail::sequential::maximal_independent_set;
-} // end namespace graph
 
 } // end namespace cusp

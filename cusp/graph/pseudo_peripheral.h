@@ -35,6 +35,14 @@ namespace graph
 /*! \cond */
 template<typename MatrixType>
 typename MatrixType::index_type pseudo_peripheral_vertex(const MatrixType& G);
+
+template <typename DerivedPolicy,
+          typename MatrixType,
+          typename ArrayType>
+typename MatrixType::index_type
+pseudo_peripheral_vertex(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
+                         const MatrixType& G,
+                         ArrayType& levels);
 /*! \endcond */
 
 /**

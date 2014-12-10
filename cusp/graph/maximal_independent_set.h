@@ -32,6 +32,14 @@ namespace graph
  *  \{
  */
 
+/*! \cond */
+template <typename DerivedPolicy, typename MatrixType, typename ArrayType>
+size_t maximal_independent_set(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
+                               const MatrixType& G,
+                               ArrayType& stencil,
+                               const size_t k = 1);
+/*! \endcond */
+
 /**
  * \brief Compute maximal independent set of a graph
  *
@@ -94,15 +102,8 @@ namespace graph
  */
 template <typename MatrixType, typename ArrayType>
 size_t maximal_independent_set(const MatrixType& G, ArrayType& stencil, size_t k = 1);
-
-template <typename DerivedPolicy, typename MatrixType, typename ArrayType>
-size_t maximal_independent_set(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
-                               const MatrixType& G,
-                               ArrayType& stencil,
-                               const size_t k = 1);
 /*! \}
  */
-
 
 } // end namespace graph
 } // end namespace cusp

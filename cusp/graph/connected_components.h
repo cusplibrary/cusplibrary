@@ -32,6 +32,15 @@ namespace graph
  *  \{
  */
 
+/*! \cond */
+template <typename DerivedPolicy,
+          typename MatrixType,
+          typename ArrayType>
+size_t connected_components(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
+                            const MatrixType& G,
+                            ArrayType& components);
+/*! \endcond */
+
 /**
  * \brief Computes the connected components of a graph
  *
@@ -91,13 +100,6 @@ namespace graph
  */
 template<typename MatrixType, typename ArrayType>
 size_t connected_components(const MatrixType& G, ArrayType& components);
-
-template <typename DerivedPolicy,
-          typename MatrixType,
-          typename ArrayType>
-size_t connected_components(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
-                            const MatrixType& G, ArrayType& components);
-
 /*! \}
  */
 

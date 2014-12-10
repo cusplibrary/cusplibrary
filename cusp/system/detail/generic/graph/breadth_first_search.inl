@@ -18,6 +18,7 @@
 #pragma once
 
 #include <cusp/detail/config.h>
+#include <cusp/detail/type_traits.h>
 
 #include <thrust/execution_policy.h>
 
@@ -36,9 +37,13 @@ void breadth_first_search(thrust::execution_policy<DerivedPolicy>& exec,
                           const typename MatrixType::index_type src,
                           ArrayType& labels,
                           const bool mark_levels,
-                          csr_format)
+                          known_format)
 {
-  throw cusp::runtime_exception("No generic BFS implementation exists.");
+    typedef typename cusp::detail::as_csr_type<MatrixType>::type CsrMatrix;
+
+    CsrMatrix G_csr(G);
+
+    cusp::graph::breadth_first_search(exec, G_csr, src, labels, mark_levels);
 }
 
 } // end namespace generic

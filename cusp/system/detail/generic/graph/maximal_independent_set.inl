@@ -149,16 +149,20 @@ void compute_mis_states(const size_t k,
 
         // label local maxima as MIS nodes
         thrust::for_each(thrust::make_zip_iterator(
-              thrust::make_tuple(thrust::counting_iterator<IndexType>(0), states.begin(), maximal_states.begin(), maximal_indices.begin())),
+                             thrust::make_tuple(
+                               thrust::counting_iterator<IndexType>(0), states.begin(),
+                               maximal_states.begin(), maximal_indices.begin())),
                          thrust::make_zip_iterator(
-              thrust::make_tuple(thrust::counting_iterator<IndexType>(0), states.begin(), maximal_states.begin(), maximal_indices.begin())) + N,
+                             thrust::make_tuple(
+                               thrust::counting_iterator<IndexType>(0), states.begin(),
+                               maximal_states.begin(), maximal_indices.begin())) + N,
                          process_mis_nodes());
 
         // label k-ring neighbors of MIS nodes as non-MIS nodes
         thrust::for_each(thrust::make_zip_iterator(
-              thrust::make_tuple(states.begin(), thrust::make_permutation_iterator(states.begin(), maximal_indices.begin()))),
+                             thrust::make_tuple(states.begin(), thrust::make_permutation_iterator(states.begin(), maximal_indices.begin()))),
                          thrust::make_zip_iterator(
-              thrust::make_tuple(states.begin(), thrust::make_permutation_iterator(states.begin(), maximal_indices.begin()))) + N,
+                             thrust::make_tuple(states.begin(), thrust::make_permutation_iterator(states.begin(), maximal_indices.begin()))) + N,
                          process_non_mis_nodes());
 
         active_nodes = thrust::count(states.begin(), states.end(), 1);
@@ -215,10 +219,11 @@ size_t maximal_independent_set(thrust::execution_policy<DerivedPolicy>& exec,
     IndicesType row_indices(G.num_entries);
     cusp::offsets_to_indices(G.row_offsets, row_indices);
 
-    cusp::coo_matrix_view<IndicesView,ConstIndicesView,ConstValuesView> G_coo(G.num_rows, G.num_cols, G.num_entries,
-            cusp::make_array1d_view(row_indices),
-            cusp::make_array1d_view(G.column_indices),
-            cusp::make_array1d_view(G.values));
+    cusp::coo_matrix_view<IndicesView,ConstIndicesView,ConstValuesView> G_coo(
+        G.num_rows, G.num_cols, G.num_entries,
+        cusp::make_array1d_view(row_indices),
+        cusp::make_array1d_view(G.column_indices),
+        cusp::make_array1d_view(G.values));
 
     return cusp::graph::maximal_independent_set(exec, G_coo, stencil, k);
 }
@@ -230,7 +235,11 @@ size_t maximal_independent_set(thrust::execution_policy<DerivedPolicy>& exec,
                                const size_t k,
                                known_format)
 {
-  throw cusp::not_implemented_exception("MIS for arbitrary format not implemented.");
+    typedef typename cusp::detail::as_csr_type<MatrixType>::type CsrMatrix;
+
+    CsrMatrix G_csr(G);
+
+    return cusp::graph::maximal_independent_set(exec, G_csr, stencil, k);
 }
 
 } // end namespace generic

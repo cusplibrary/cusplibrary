@@ -82,10 +82,7 @@ size_t connected_components(sequential::execution_policy<DerivedPolicy>& exec,
 } // end namespace detail
 } // end namespace system
 
-namespace graph
-{
 // hack until ADL is operational
 using cusp::system::detail::sequential::connected_components;
-} // end namespace graph
 
 } // end namespace cusp

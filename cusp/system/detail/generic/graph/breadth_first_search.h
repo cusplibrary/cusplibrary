@@ -36,7 +36,7 @@ void breadth_first_search(thrust::execution_policy<DerivedPolicy>& exec,
                           const typename MatrixType::index_type src,
                           ArrayType& labels,
                           const bool mark_levels,
-                          csr_format);
+                          known_format);
 
 } // end namespace generic
 } // end namespace detail

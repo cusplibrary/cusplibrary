@@ -18,5 +18,4 @@
 
 #include <cusp/detail/config.h>
 
-// this system inherits elementwise
-#include <cusp/system/detail/sequential/graph/hilbert_curve.h>
+// this system has no special version of this algorithm

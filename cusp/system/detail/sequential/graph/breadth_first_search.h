@@ -107,10 +107,7 @@ void breadth_first_search(sequential::execution_policy<DerivedPolicy>& exec,
 } // end namespace detail
 } // end namespace system
 
-namespace graph
-{
 // hack until ADL is operational
 using cusp::system::detail::sequential::breadth_first_search;
-} // end namespace graph
 
 } // end namespace cusp

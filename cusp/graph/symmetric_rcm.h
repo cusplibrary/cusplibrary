@@ -33,14 +33,14 @@ namespace graph
  *  \{
  */
 
-/* cond */
+/* \cond */
 template <typename DerivedPolicy,
           typename MatrixType,
           typename PermutationType>
 void symmetric_rcm(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
                    const MatrixType& G,
                    PermutationType& P);
-/* endcond */
+/* \endcond */
 
 /**
  * \brief Compute Reverse Cuthill-McKee reordering

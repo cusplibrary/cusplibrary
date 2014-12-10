@@ -15,7 +15,13 @@
  */
 #pragma once
 
+#include <cusp/detail/config.h>
+#include <cusp/detail/format.h>
+
+#include <cusp/array1d.h>
 #include <cusp/exception.h>
+
+#include <cusp/system/cuda/execution_policy.h>
 
 #include <cusp/system/cuda/detail/graph/b40c.h>
 
@@ -98,10 +104,7 @@ void breadth_first_search(cuda::execution_policy<DerivedPolicy>& exec,
 } // end namespace cuda
 } // end namespace system
 
-namespace graph
-{
 // hack until ADL is operational
 using cusp::system::cuda::breadth_first_search;
-} // end namespace graph
 
 } // end namespace cusp

@@ -32,6 +32,17 @@ namespace graph
  *  \{
  */
 
+
+/*! \cond */
+template <typename DerivedPolicy,
+          typename Array2dType,
+          typename ArrayType>
+void hilbert_curve(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
+                   const Array2dType& coord,
+                   const size_t num_parts,
+                   ArrayType& parts);
+/*! \endcond */
+
 /**
  * \brief Partition a graph using Hilbert curve
  *
@@ -91,13 +102,6 @@ namespace graph
  */
 template <class Array2dType, class ArrayType>
 void hilbert_curve(const Array2dType& coord, const size_t num_parts, ArrayType& parts);
-
-template <typename DerivedPolicy,
-          typename Array2dType,
-          typename ArrayType>
-void hilbert_curve(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
-                   const Array2dType& coord, const size_t num_parts, ArrayType& parts);
-
 /*! \}
  */
 

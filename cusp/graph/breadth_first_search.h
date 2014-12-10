@@ -35,6 +35,17 @@ namespace graph
  *  \{
  */
 
+/*! \cond */
+template <typename DerivedPolicy,
+          typename MatrixType,
+          typename ArrayType>
+void breadth_first_search(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
+                          const MatrixType& G,
+                          const typename MatrixType::index_type src,
+                          ArrayType& labels,
+                          const bool mark_levels = true);
+/*! \endcond */
+
 /**
  * \brief Performs a Breadth-first traversal of a graph starting from a given source vertex.
  *
@@ -85,19 +96,8 @@ void breadth_first_search(const MatrixType& G,
                           const typename MatrixType::index_type src,
                           ArrayType& labels,
                           bool mark_levels = true);
-
-template <typename DerivedPolicy,
-          typename MatrixType,
-          typename ArrayType>
-void breadth_first_search(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
-                          const MatrixType& G,
-                          const typename MatrixType::index_type src,
-                          ArrayType& labels,
-                          const bool mark_levels = true);
-
 /*! \}
  */
-
 
 } // end namespace graph
 } // end namespace cusp
