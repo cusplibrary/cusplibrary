@@ -17,79 +17,15 @@
 #include <thrust/system/detail/generic/select_system.h>
 
 #include <cusp/exception.h>
-#include <cusp/graph/pseudo_peripheral_vertex.h>
+#include <cusp/graph/pseudo_peripheral.h>
 
-#include <cusp/system/detail/adl/graph/pseudo_peripheral_vertex.h>
-#include <cusp/system/detail/generic/graph/pseudo_peripheral_vertex.h>
+#include <cusp/system/detail/adl/graph/pseudo_peripheral.h>
+#include <cusp/system/detail/generic/graph/pseudo_peripheral.h>
 
 namespace cusp
 {
 namespace graph
 {
-
-template<typename DerivedPolicy, typename MatrixType, typename ArrayType>
-typename MatrixType::index_type
-pseudo_peripheral_vertex(thrust::execution_policy<DerivedPolicy>& exec,
-                         const MatrixType& G,
-                         ArrayType& levels,
-                         cusp::csr_format)
-{
-    using namespace thrust::placeholders;
-
-    typedef typename MatrixType::index_type IndexType;
-
-    IndexType delta = 0;
-    IndexType x = rand() % G.num_rows;
-    IndexType y;
-
-    ArrayType row_lengths(G.num_rows);
-    thrust::transform(exec,
-                      G.row_offsets.begin() + 1, G.row_offsets.end(),
-                      G.row_offsets.begin(), row_lengths.begin(),
-                      thrust::minus<IndexType>());
-
-    while(1)
-    {
-        cusp::graph::breadth_first_search(exec, G, x, levels);
-
-        typename ArrayType::iterator max_level_iter = thrust::max_element(exec, levels.begin(), levels.end());
-        int max_level = *max_level_iter;
-        int max_count = thrust::count(exec, levels.begin(), levels.end(), max_level);
-
-        if( max_count > 1 )
-        {
-            ArrayType max_level_vertices(max_count);
-            ArrayType max_level_valence(max_count);
-
-            thrust::copy_if(exec,
-                            thrust::counting_iterator<IndexType>(0),
-                            thrust::counting_iterator<IndexType>(G.num_rows),
-                            levels.begin(),
-                            max_level_vertices.begin(),
-                            _1 == max_level);
-
-            thrust::gather(exec,
-                           thrust::counting_iterator<IndexType>(0),
-                           thrust::counting_iterator<IndexType>(max_count),
-                           row_lengths.begin(),
-                           max_level_valence.begin());
-            int min_valence_pos = thrust::min_element(exec, max_level_valence.begin(), max_level_valence.end()) - max_level_valence.begin();
-
-            y = max_level_vertices[min_valence_pos];
-        }
-        else
-        {
-            y = max_level_iter - levels.begin();
-        }
-
-        if( levels[y] <= delta ) break;
-
-        x = y;
-        delta = levels[y];
-    }
-
-    return y;
-}
 
 template <typename DerivedPolicy,
           typename MatrixType,

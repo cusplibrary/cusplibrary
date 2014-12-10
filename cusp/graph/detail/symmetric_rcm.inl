@@ -28,31 +28,6 @@ namespace cusp
 namespace graph
 {
 
-template<typename DerivedPolicy, typename MatrixType, typename PermutationType>
-void symmetric_rcm(const thrust::execution_policy<DerivedPolicy>& exec,
-                   const MatrixType& G,
-                   PermutationType& P,
-                   cusp::csr_format)
-{
-    typedef typename MatrixType::index_type IndexType;
-    typedef typename MatrixType::value_type ValueType;
-    typedef typename MatrixType::memory_space MemorySpace;
-
-    // find peripheral vertex and return BFS levels from vertex
-    cusp::graph::pseudo_peripheral_vertex(exec, G, P.permutation);
-
-    // sort vertices by level in BFS traversal
-    cusp::array1d<IndexType,MemorySpace> levels(G.num_rows);
-    thrust::sequence(exec, levels.begin(), levels.end());
-    thrust::sort_by_key(exec, P.permutation.begin(), P.permutation.end(), levels.begin());
-
-    // form RCM permutation matrix
-    thrust::scatter(exec,
-                    thrust::counting_iterator<IndexType>(0),
-                    thrust::counting_iterator<IndexType>(G.num_rows),
-                    levels.begin(), P.permutation.begin());
-}
-
 template <typename DerivedPolicy, typename MatrixType, typename PermutationType>
 void symmetric_rcm(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
                    const MatrixType& G,

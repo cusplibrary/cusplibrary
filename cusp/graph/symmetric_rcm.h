@@ -33,6 +33,15 @@ namespace graph
  *  \{
  */
 
+/* cond */
+template <typename DerivedPolicy,
+          typename MatrixType,
+          typename PermutationType>
+void symmetric_rcm(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
+                   const MatrixType& G,
+                   PermutationType& P);
+/* endcond */
+
 /**
  * \brief Compute Reverse Cuthill-McKee reordering
  *
@@ -88,16 +97,8 @@ namespace graph
  */
 template<typename MatrixType, typename PermutationType>
 void symmetric_rcm(const MatrixType& G, PermutationType& P);
-
-template <typename DerivedPolicy,
-          typename MatrixType,
-          typename ArrayType>
-void symmetric_rcm(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
-                   const MatrixType& G, PermutationType& P);
-
 /*! \}
  */
-
 
 } // end namespace graph
 } // end namespace cusp
