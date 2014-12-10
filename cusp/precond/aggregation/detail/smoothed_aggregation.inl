@@ -45,13 +45,9 @@ template <typename IndexType, typename ValueType, typename MemorySpace, typename
 template <typename MatrixType>
 smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverType>
 ::smoothed_aggregation(const MatrixType& A)
-  : sa_options(default_sa_options)
+    : sa_options(default_sa_options)
 {
-    typedef typename cusp::array1d_view< thrust::constant_iterator<ValueType> > ConstantView;
-
-    ConstantView B(thrust::constant_iterator<ValueType>(1),
-                   thrust::constant_iterator<ValueType>(1) + A.num_rows);
-    sa_initialize(A, B);
+    sa_initialize(A);
 }
 
 template <typename IndexType, typename ValueType, typename MemorySpace, typename SmootherType, typename SolverType>
@@ -59,22 +55,18 @@ template <typename MatrixType, typename Options>
 smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverType>
 ::smoothed_aggregation(const MatrixType& A,
                        const Options& sa_options)
-  : sa_options(sa_options)
+    : sa_options(sa_options)
 {
-    typedef typename cusp::array1d_view< thrust::constant_iterator<ValueType> > ConstantView;
-
-    ConstantView B(thrust::constant_iterator<ValueType>(1),
-                   thrust::constant_iterator<ValueType>(1) + A.num_rows);
-    sa_initialize(A, B);
+    sa_initialize(A);
 }
 
 template <typename IndexType, typename ValueType, typename MemorySpace, typename SmootherType, typename SolverType>
 template <typename MatrixType>
 smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverType>
 ::smoothed_aggregation(const MatrixType& A, const cusp::array1d<ValueType,MemorySpace>& B)
-  : sa_options(default_sa_options)
+    : sa_options(default_sa_options)
 {
-    sa_initialize(A, B);
+    sa_initialize(A,B);
 }
 
 template <typename IndexType, typename ValueType, typename MemorySpace, typename SmootherType, typename SolverType>
@@ -82,7 +74,7 @@ template <typename MatrixType, typename Options>
 smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverType>
 ::smoothed_aggregation(const MatrixType& A, const cusp::array1d<ValueType,MemorySpace>& B,
                        const Options& sa_options)
-  : sa_options(sa_options)
+    : sa_options(sa_options)
 {
     sa_initialize(A, B);
 }
@@ -93,8 +85,17 @@ smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverType>
 ::smoothed_aggregation(const smoothed_aggregation<IndexType,ValueType,MemorySpace2,SmootherType2,SolverType2>& M)
     : sa_options(M.sa_options), Parent(M)
 {
-   for( size_t lvl = 0; lvl < M.sa_levels.size(); lvl++ )
-      sa_levels.push_back(M.sa_levels[lvl]);
+    for( size_t lvl = 0; lvl < M.sa_levels.size(); lvl++ )
+        sa_levels.push_back(M.sa_levels[lvl]);
+}
+
+template <typename IndexType, typename ValueType, typename MemorySpace, typename SmootherType, typename SolverType>
+template <typename MatrixType>
+void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverType>
+::sa_initialize(const MatrixType& A)
+{
+    cusp::constant_array<ValueType> B(A.num_rows, 1);
+    sa_initialize(A,B);
 }
 
 template <typename IndexType, typename ValueType, typename MemorySpace, typename SmootherType, typename SolverType>
@@ -103,6 +104,8 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverTyp
 ::sa_initialize(const MatrixType& A, const ArrayType& B)
 {
     Parent* ML = this;
+
+    ML->resize(A.num_rows, A.num_cols, A.num_entries);
     ML->levels.reserve(sa_options.max_levels); // avoid reallocations which force matrix copies
 
     sa_levels.push_back(sa_level<SetupMatrixType>());
@@ -112,7 +115,7 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverTyp
     sa_levels.back().A_ = A; // copy
 
     while ((sa_levels.back().A_.num_rows > sa_options.min_level_size) &&
-           (sa_levels.size() < sa_options.max_levels))
+            (sa_levels.size() < sa_options.max_levels))
         extend_hierarchy();
 
     ML->solver = SolverType(sa_levels.back().A_);

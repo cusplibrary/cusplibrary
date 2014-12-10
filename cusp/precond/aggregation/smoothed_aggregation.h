@@ -78,16 +78,19 @@ template <typename IndexType, typename ValueType, typename MemorySpace,
 class smoothed_aggregation :
   public cusp::multilevel< typename amg_container<IndexType,ValueType,MemorySpace>::solve_type, SmootherType, SolverType>
 {
-
+  private:
     typedef typename amg_container<IndexType,ValueType,MemorySpace>::setup_type SetupMatrixType;
     typedef typename amg_container<IndexType,ValueType,MemorySpace>::solve_type SolveMatrixType;
     typedef typename cusp::multilevel<SolveMatrixType,SmootherType,SolverType> Parent;
+    const smoothed_aggregation_options<IndexType,ValueType,MemorySpace> default_sa_options;
 
-public:
+  public:
 
     const smoothed_aggregation_options<IndexType,ValueType,MemorySpace> & sa_options;
-    const smoothed_aggregation_options<IndexType,ValueType,MemorySpace> default_sa_options;
     std::vector< sa_level<SetupMatrixType> > sa_levels;
+
+    smoothed_aggregation(void)
+      : sa_options(default_sa_options) {}
 
     template <typename MatrixType>
     smoothed_aggregation(const MatrixType& A);
@@ -106,10 +109,13 @@ public:
     template <typename MemorySpace2,typename SmootherType2,typename SolverType2>
     smoothed_aggregation(const smoothed_aggregation<IndexType,ValueType,MemorySpace2,SmootherType2,SolverType2>& M);
 
-protected:
+    template <typename MatrixType>
+    void sa_initialize(const MatrixType& A);
 
     template <typename MatrixType, typename ArrayType>
     void sa_initialize(const MatrixType& A, const ArrayType& B);
+
+protected:
 
     void extend_hierarchy(void);
 };
