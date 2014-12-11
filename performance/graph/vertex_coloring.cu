@@ -14,21 +14,24 @@ void coloring(const MatrixType& G)
     typedef cusp::csr_matrix<IndexType,IndexType,MemorySpace> GraphType;
 
     GraphType G_csr(G);
-    cusp::array1d<IndexType,MemorySpace> colors(G.num_rows);
+    cusp::array1d<IndexType,MemorySpace> colors(G.num_rows, 0);
 
     timer t;
     size_t max_color = cusp::graph::vertex_coloring(G_csr, colors);
-    std::cout << "Coloring time     : " << t.milliseconds_elapsed() << " (ms)." << std::endl;
+    std::cout << "Coloring time    : " << t.milliseconds_elapsed() << " (ms)." << std::endl;
+    std::cout << "Number of colors : " << max_color << std::endl;
 
-    cusp::array1d<IndexType,cusp::host_memory> color_counts(max_color);
-    thrust::sort(colors.begin(), colors.end());
-    thrust::reduce_by_key(colors.begin(),
+    if(max_color > 0)
+    {
+      cusp::array1d<IndexType,MemorySpace> color_counts(max_color);
+      thrust::sort(colors.begin(), colors.end());
+      thrust::reduce_by_key(colors.begin(),
                           colors.end(),
                           thrust::constant_iterator<int>(1),
                           thrust::make_discard_iterator(),
                           color_counts.begin());
-    std::cout << "Number of colors : " << max_color << std::endl;
-    cusp::print(color_counts);
+      cusp::print(color_counts);
+    }
 }
 
 int main(int argc, char*argv[])
@@ -57,6 +60,9 @@ int main(int argc, char*argv[])
 
     std::cout << "with shape ("  << A.num_rows << "," << A.num_cols << ") and "
               << A.num_entries << " entries" << "\n\n";
+
+    std::cout << " Device ";
+    coloring<cusp::device_memory>(A);
 
     std::cout << " Host ";
     coloring<cusp::host_memory>(A);

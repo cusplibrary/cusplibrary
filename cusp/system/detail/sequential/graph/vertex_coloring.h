@@ -48,7 +48,10 @@ size_t vertex_coloring(sequential::execution_policy<DerivedPolicy>& exec,
 
     for(size_t vertex = 0; vertex < N; vertex++)
     {
-        for(IndexType offset = G.row_offsets[vertex]; offset < G.row_offsets[vertex+1]; offset++)
+        IndexType row_begin = G.row_offsets[vertex];
+        IndexType row_end   = G.row_offsets[vertex + 1];
+
+        for(IndexType offset = row_begin; offset < row_end; offset++)
         {
             IndexType neighbor = G.column_indices[offset];
             mark[colors[neighbor]] = vertex;

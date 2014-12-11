@@ -33,7 +33,8 @@ namespace cuda
 template<typename DerivedPolicy, typename MatrixType, typename ArrayType>
 size_t vertex_coloring(cuda::execution_policy<DerivedPolicy>& exec,
                        const MatrixType& G,
-                       ArrayType& colors)
+                       ArrayType& colors,
+                       csr_format)
 {
   return 0;
 }
