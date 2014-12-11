@@ -56,3 +56,4 @@ using namespace thrust::system::detail::sequential;
 #include <cusp/system/detail/sequential/graph/maximal_independent_set.h>
 #include <cusp/system/detail/sequential/graph/pseudo_peripheral.h>
 #include <cusp/system/detail/sequential/graph/symmetric_rcm.h>
+#include <cusp/system/detail/sequential/graph/vertex_coloring.h>

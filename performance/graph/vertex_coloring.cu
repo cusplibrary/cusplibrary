@@ -2,7 +2,7 @@
 #include <cusp/print.h>
 
 #include <cusp/gallery/poisson.h>
-#include <cusp/graph/connected_components.h>
+#include <cusp/graph/vertex_coloring.h>
 #include <cusp/io/matrix_market.h>
 
 #include "../timer.h"
@@ -14,46 +14,20 @@ void coloring(const MatrixType& G)
     typedef cusp::csr_matrix<IndexType,IndexType,MemorySpace> GraphType;
 
     GraphType G_csr(G);
+    cusp::array1d<IndexType,MemorySpace> colors(G.num_rows);
 
     timer t;
-
-    size_t max_color = 0;
-    size_t N = G.num_rows;
-    cusp::array1d<IndexType,MemorySpace> colors(N, N-1);
-    cusp::array1d<IndexType,MemorySpace> mark(N, std::numeric_limits<IndexType>::max());
-
-    for(size_t vertex = 0; vertex < N; vertex++)
-    {
-        for(IndexType offset = G_csr.row_offsets[vertex]; offset < G_csr.row_offsets[vertex+1]; offset++)
-        {
-            IndexType neighbor = G_csr.column_indices[offset];
-            mark[colors[neighbor]] = vertex;
-        }
-
-        size_t vertex_color = 0;
-        while(vertex_color < max_color && mark[vertex_color] == vertex)
-            vertex_color++;
-
-        if(vertex_color == max_color)
-            max_color++;
-
-        colors[vertex] = vertex_color;
-    }
-
+    size_t max_color = cusp::graph::vertex_coloring(G_csr, colors);
     std::cout << "Coloring time     : " << t.milliseconds_elapsed() << " (ms)." << std::endl;
 
     cusp::array1d<IndexType,cusp::host_memory> color_counts(max_color);
-
     thrust::sort(colors.begin(), colors.end());
-
     thrust::reduce_by_key(colors.begin(),
                           colors.end(),
                           thrust::constant_iterator<int>(1),
                           thrust::make_discard_iterator(),
                           color_counts.begin());
-
     std::cout << "Number of colors : " << max_color << std::endl;
-
     cusp::print(color_counts);
 }
 

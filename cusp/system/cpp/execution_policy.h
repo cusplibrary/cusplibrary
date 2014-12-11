@@ -52,3 +52,4 @@ using namespace thrust::system::cpp;
 #include <cusp/system/cpp/detail/graph/maximal_independent_set.h>
 #include <cusp/system/cpp/detail/graph/pseudo_peripheral.h>
 #include <cusp/system/cpp/detail/graph/symmetric_rcm.h>
+#include <cusp/system/cpp/detail/graph/vertex_coloring.h>

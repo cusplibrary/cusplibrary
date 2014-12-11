@@ -52,3 +52,4 @@ using namespace thrust::system::cuda;
 #include <cusp/system/cuda/detail/graph/maximal_independent_set.h>
 #include <cusp/system/cuda/detail/graph/pseudo_peripheral.h>
 #include <cusp/system/cuda/detail/graph/symmetric_rcm.h>
+#include <cusp/system/cuda/detail/graph/vertex_coloring.h>
