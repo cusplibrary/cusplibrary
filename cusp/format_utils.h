@@ -22,38 +22,46 @@
 namespace cusp
 {
 
+/* \cond */
 template <typename DerivedPolicy, typename OffsetArray, typename IndexArray>
 void offsets_to_indices(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
                         const OffsetArray& offsets,
                         IndexArray& indices);
+/* \endcond */
 
 template <typename OffsetArray, typename IndexArray>
 void offsets_to_indices(const OffsetArray& offsets,
                         IndexArray& indices);
 
+/* \cond */
 template <typename DerivedPolicy, typename IndexArray, typename OffsetArray>
 void indices_to_offsets(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
                         const IndexArray& indices,
                         OffsetArray& offsets);
+/* \endcond */
 
 template <typename IndexArray, typename OffsetArray>
 void indices_to_offsets(const IndexArray& indices,
                         OffsetArray& offsets);
 
+/* \cond */
 template <typename DerivedPolicy, typename MatrixType, typename ArrayType>
 void extract_diagonal(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
                       const MatrixType& A,
                       ArrayType& output);
+/* \endcond */
 
 template <typename MatrixType, typename ArrayType>
 void extract_diagonal(const MatrixType& A, ArrayType& output);
 
+/* \cond */
 template <typename DerivedPolicy, typename ArrayType1, typename ArrayType2>
 size_t count_diagonals(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
                        const size_t num_rows,
                        const size_t num_cols,
                        const ArrayType1& row_indices,
                        const ArrayType2& column_indices );
+/* \endcond */
 
 template <typename ArrayType1, typename ArrayType2>
 size_t count_diagonals(const size_t num_rows,
@@ -61,18 +69,22 @@ size_t count_diagonals(const size_t num_rows,
                        const ArrayType1& row_indices,
                        const ArrayType2& column_indices);
 
+/* \cond */
 template <typename DerivedPolicy, typename ArrayType>
 size_t compute_max_entries_per_row(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
                                    const ArrayType& row_offsets);
+/* \endcond */
 
 template <typename ArrayType>
 size_t compute_max_entries_per_row(const ArrayType& row_offsets);
 
+/* \cond */
 template <typename DerivedPolicy, typename ArrayType>
 size_t compute_optimal_entries_per_row(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
                                        const ArrayType& row_offsets,
                                        float relative_speed = 3.0f,
                                        size_t breakeven_threshold = 4096);
+/* \endcond */
 
 template <typename ArrayType>
 size_t compute_optimal_entries_per_row(const ArrayType& row_offsets,

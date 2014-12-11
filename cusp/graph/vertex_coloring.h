@@ -45,21 +45,16 @@ size_t vertex_coloring(const thrust::detail::execution_policy_base<DerivedPolicy
 /*! \endcond */
 
 /**
- * \brief Performs a Breadth-first traversal of a graph starting from a given source vertex.
+ * \brief Performs a vertex coloring a graph.
  *
- * \tparam MARK_PREDECESSORS Boolean value indicating whether to return level sets, \c false, or
- * predecessor, \c true, markers
  * \tparam MatrixType Type of input matrix
- * \tparam ArrayType Type of labels array
+ * \tparam ArrayType Type of colors array
  *
  * \param G A symmetric matrix that represents the graph
- * \param src The source vertex to begin the BFS traversal
- * \param labels If MARK_PREDECESSORS is \c false then labels will contain the
- * level set of all the vertices starting from the source vertex otherwise
- * labels will contain the immediate ancestor of each vertex forming a ancestor
- * tree.
+ * \param colors Contains to the color associated with each vertex
+ * computed during the coloring routine
  *
- *  \see http://en.wikipedia.org/wiki/Breadth-first_search
+ *  \see http://en.wikipedia.org/wiki/Graph_coloring
  *
  *  \par Example
  *
@@ -68,7 +63,7 @@ size_t vertex_coloring(const thrust::detail::execution_policy_base<DerivedPolicy
  *  #include <cusp/print.h>
  *  #include <cusp/gallery/grid.h>
  *
- *  //include bfs header file
+ *  //include coloring header file
  *  #include <cusp/graph/vertex_coloring.h>
  *
  *  int main()
@@ -77,13 +72,13 @@ size_t vertex_coloring(const thrust::detail::execution_policy_base<DerivedPolicy
  *     cusp::csr_matrix<int,float,cusp::device_memory> G;
  *     cusp::gallery::grid2d(G, 4, 4);
  *
- *     cusp::array1d<int,cusp::device_memory> labels(G.num_rows);
+ *     cusp::array1d<int,cusp::device_memory> colors(G.num_rows);
  *
  *     // Execute a BFS traversal on the device
- *     cusp::graph::vertex_coloring(G, 0, labels);
+ *     cusp::graph::vertex_coloring(G, colors);
  *
- *     // Print the level set constructed from the source vertex
- *     cusp::print(labels);
+ *     // Print the vertex colors
+ *     cusp::print(colors);
  *
  *     return 0;
  *  }
