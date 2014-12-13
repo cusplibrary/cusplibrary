@@ -14,8 +14,8 @@
  *  limitations under the License.
  */
 
-/*! \file jacobi.h
- *  \brief Jacobi relaxation.
+/*! \file gauss_seidel.h
+ *  \brief Gauss-Seidel relaxation.
  */
 
 #pragma once
@@ -40,13 +40,13 @@ namespace relaxation
 {
 
 /**
- * \brief Represents a Jacobi relaxation scheme
+ * \brief Represents a Gauss-Seidel relaxation scheme
  *
  * \tparam ValueType value_type of the array
  * \tparam MemorySpace memory space of the array (\c cusp::host_memory or \c cusp::device_memory)
  *
  * \par Overview
- * Extracts the matrix diagonal and performs weighted Jacobi relaxation
+ * Computes vertex coloring and performs indexed Gauss-Seidel relaxation
  *
  * \par Example
  * \code
@@ -58,8 +58,8 @@ namespace relaxation
  * #include <cusp/linear_operator.h>
  * #include <cusp/gallery/poisson.h>
  *
- * // include cusp Jacobi header file
- * #include <cusp/relaxation/jacobi.h>
+ * // include cusp gauss_seidel header file
+ * #include <cusp/relaxation/gauss_seidel.h>
  *
  * int main()
  * {
@@ -74,8 +74,8 @@ namespace relaxation
  *    // Allocate temporaries
  *    cusp::array1d<float, cusp::device_memory> r(A.num_rows);
  *
- *    // Construct Jacobi relaxation class
- *    cusp::relaxation::jacobi<float, cusp::device_memory> M(A);
+ *    // Construct gauss_seidel relaxation class
+ *    cusp::relaxation::gauss_seidel<float, cusp::device_memory> M(A);
  *
  *    // Compute initial residual
  *    cusp::multiply(A, x, r);
@@ -96,25 +96,33 @@ namespace relaxation
  * \endcode
  */
 template <typename ValueType, typename MemorySpace>
-class jacobi : public cusp::linear_operator<ValueType, MemorySpace>
+class gauss_seidel : public cusp::linear_operator<ValueType, MemorySpace>
 {
 public:
-    ValueType default_omega;
-    cusp::array1d<ValueType,MemorySpace> diagonal;
-    cusp::array1d<ValueType,MemorySpace> temp;
+
+    typedef enum
+    {
+      FORWARD,
+      BACKWARD,
+      SYMMETRIC
+    } sweep;
+
+    cusp::array1d<int,MemorySpace> ordering;
+    cusp::array1d<int,MemorySpace> color_offsets;
+    sweep default_direction;
 
     // constructor
-    jacobi(void) : default_omega(0.0) {}
+    gauss_seidel(void) {}
 
     template <typename MatrixType>
-    jacobi(const MatrixType& A, ValueType omega=1.0);
+    gauss_seidel(const MatrixType& A, sweep default_direction=SYMMETRIC);
 
     template<typename MemorySpace2>
-    jacobi(const jacobi<ValueType,MemorySpace2>& A)
-        : default_omega(A.default_omega), temp(A.temp), diagonal(A.diagonal){}
+    gauss_seidel(const gauss_seidel<ValueType,MemorySpace2>& A)
+        : ordering(A.ordering), color_offsets(A.color_offsets), default_direction(A.default_direction) {}
 
     template <typename MatrixType>
-    jacobi(const cusp::precond::aggregation::sa_level<MatrixType>& sa_level, ValueType weight=4.0/3.0);
+    gauss_seidel(const cusp::precond::aggregation::sa_level<MatrixType>& sa_level);
 
     // ignores initial x
     template<typename MatrixType, typename VectorType1, typename VectorType2>
@@ -128,11 +136,11 @@ public:
     void operator()(const MatrixType& A, const VectorType1& b, VectorType2& x);
 
     template <typename MatrixType, typename VectorType1, typename VectorType2>
-    void operator()(const MatrixType& A, const VectorType1& b, VectorType2& x, ValueType omega);
+    void operator()(const MatrixType& A, const VectorType1& b, VectorType2& x, sweep direction);
 };
 
 } // end namespace relaxation
 } // end namespace cusp
 
-#include <cusp/relaxation/detail/jacobi.inl>
+#include <cusp/relaxation/detail/gauss_seidel.inl>
 
