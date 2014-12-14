@@ -25,19 +25,17 @@
 
 namespace cusp
 {
-/*! \cond */
-namespace precond
-{
-namespace aggregation
-{
-// forward definitions
-template<typename MatrixType> struct sa_level;
-} // end namespace aggregation
-} // end namespace precond
-/*! \endcond */
-
 namespace relaxation
 {
+
+/* \cond */
+typedef enum
+{
+    FORWARD,
+    BACKWARD,
+    SYMMETRIC
+} sweep;
+/* \endcond */
 
 /**
  * \brief Represents a Gauss-Seidel relaxation scheme
@@ -100,15 +98,8 @@ class gauss_seidel : public cusp::linear_operator<ValueType, MemorySpace>
 {
 public:
 
-    typedef enum
-    {
-      FORWARD,
-      BACKWARD,
-      SYMMETRIC
-    } sweep;
-
     cusp::array1d<int,MemorySpace> ordering;
-    cusp::array1d<int,MemorySpace> color_offsets;
+    cusp::array1d<int,cusp::host_memory> color_offsets;
     sweep default_direction;
 
     // constructor
@@ -120,17 +111,6 @@ public:
     template<typename MemorySpace2>
     gauss_seidel(const gauss_seidel<ValueType,MemorySpace2>& A)
         : ordering(A.ordering), color_offsets(A.color_offsets), default_direction(A.default_direction) {}
-
-    template <typename MatrixType>
-    gauss_seidel(const cusp::precond::aggregation::sa_level<MatrixType>& sa_level);
-
-    // ignores initial x
-    template<typename MatrixType, typename VectorType1, typename VectorType2>
-    void presmooth(const MatrixType& A, const VectorType1& b, VectorType2& x);
-
-    // smooths initial x
-    template<typename MatrixType, typename VectorType1, typename VectorType2>
-    void postsmooth(const MatrixType& A, const VectorType1& b, VectorType2& x);
 
     template <typename MatrixType, typename VectorType1, typename VectorType2>
     void operator()(const MatrixType& A, const VectorType1& b, VectorType2& x);

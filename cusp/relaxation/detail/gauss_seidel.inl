@@ -21,7 +21,6 @@
 #include <cusp/multiply.h>
 #include <cusp/format_utils.h>
 #include <cusp/graph/vertex_coloring.h>
-#include <cusp/precond/aggregation/smoothed_aggregation_options.h>
 
 #include <thrust/reduce.h>
 #include <thrust/sequence.h>
@@ -44,21 +43,14 @@ gauss_seidel<ValueType,MemorySpace>
     thrust::sequence(ordering.begin(), ordering.end());
     thrust::sort_by_key(colors.begin(), colors.end(), ordering.begin());
 
-    color_offsets.resize(max_colors + 1);
+    cusp::array1d<int,MemorySpace> temp(max_colors + 1);
     thrust::reduce_by_key(colors.begin(),
                           colors.end(),
                           thrust::constant_iterator<int>(1),
                           thrust::make_discard_iterator(),
-                          color_offsets.begin());
-    thrust::exclusive_scan(color_offsets.begin(), color_offsets.end(), color_offsets.begin(), 0);
-}
-
-template <typename ValueType, typename MemorySpace>
-template<typename MatrixType>
-gauss_seidel<ValueType,MemorySpace>
-::gauss_seidel(const cusp::precond::aggregation::sa_level<MatrixType>& sa_level)
-    : ordering(sa_level.A.num_rows)
-{
+                          temp.begin());
+    thrust::exclusive_scan(temp.begin(), temp.end(), temp.begin(), 0);
+    color_offsets = temp;
 }
 
 // linear_operator
@@ -70,7 +62,7 @@ void gauss_seidel<ValueType,MemorySpace>
     gauss_seidel<ValueType,MemorySpace>::operator()(A,b,x,default_direction);
 }
 
-// override default omega
+// override default sweep direction
 template <typename ValueType, typename MemorySpace>
 template<typename MatrixType, typename VectorType1, typename VectorType2>
 void gauss_seidel<ValueType,MemorySpace>
@@ -103,20 +95,6 @@ void gauss_seidel<ValueType,MemorySpace>
     {
         throw cusp::runtime_exception("Unknown Gauss-Seidel sweep direction specified.");
     }
-}
-
-template <typename ValueType, typename MemorySpace>
-template<typename MatrixType, typename VectorType1, typename VectorType2>
-void gauss_seidel<ValueType,MemorySpace>
-::presmooth(const MatrixType&, const VectorType1& b, VectorType2& x)
-{
-}
-
-template <typename ValueType, typename MemorySpace>
-template<typename MatrixType, typename VectorType1, typename VectorType2>
-void gauss_seidel<ValueType,MemorySpace>
-::postsmooth(const MatrixType& A, const VectorType1& b, VectorType2& x)
-{
 }
 
 } // end namespace relaxation
