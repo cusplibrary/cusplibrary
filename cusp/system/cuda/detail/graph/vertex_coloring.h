@@ -20,7 +20,9 @@
 
 #include <cusp/array1d.h>
 #include <cusp/exception.h>
+#include <cusp/detail/type_traits.h>
 
+#include <cusp/graph/vertex_coloring.h>
 #include <cusp/system/cuda/execution_policy.h>
 
 namespace cusp
@@ -36,7 +38,16 @@ size_t vertex_coloring(cuda::execution_policy<DerivedPolicy>& exec,
                        ArrayType& colors,
                        csr_format)
 {
-  return 0;
+  typedef typename ArrayType::value_type IndexType;
+  typedef typename cusp::detail::as_csr_type<MatrixType,cusp::host_memory>::type CsrHost;
+
+  CsrHost G_host(G);
+  cusp::array1d<IndexType,cusp::host_memory> colors_host(colors.size());
+
+  size_t max_colors = cusp::graph::vertex_coloring(G_host, colors_host);
+  colors = colors_host;
+
+  return max_colors;
 }
 
 } // end namespace cuda

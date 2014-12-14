@@ -34,6 +34,11 @@ namespace system
 {
 namespace cuda
 {
+
+//maximum number of co-resident threads
+const int MAX_THREADS = (30 * 1024);
+const int WARP_SIZE = 32; 
+
 namespace detail
 {
 

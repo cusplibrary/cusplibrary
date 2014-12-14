@@ -19,20 +19,18 @@
 #pragma once
 
 #include <cusp/coo_matrix.h>
-#include <cusp/detail/device/arch.h>
-#include <cusp/detail/device/common.h>
-#include <cusp/detail/device/utils.h>
-#include <cusp/detail/device/texture.h>
-#include <cusp/detail/device/spmv/coo_serial.h>
-#include <cusp/detail/device/spmv/coo_flat.h>
+#include <cusp/system/cuda/arch.h>
+#include <cusp/system/cuda/utils.h>
+#include <cusp/system/cuda/detail/multiply/coo_serial.h>
+#include <cusp/system/cuda/detail/multiply/coo_flat.h>
 
 // Note: Unlike the other kernels this kernel implements y += A*x
 
 namespace cusp
 {
-namespace detail
+namespace system
 {
-namespace device
+namespace cuda
 {
 
 template<unsigned int CTA_SIZE,
@@ -132,7 +130,6 @@ void scan_by_key(KeyIterator keys, ValueIterator vals)
 
 template <unsigned int CTA_SIZE,
          unsigned int K,
-         bool UseCache,
          typename IndexType,
          typename ValueType>
 __global__ void
@@ -175,7 +172,7 @@ spmv_coo_flat_k_kernel(const IndexType N,
             const unsigned int offset = k*CTA_SIZE + threadIdx.x;
             const unsigned int n = base + offset;
             rows[offset % K][offset / K] = I[n];                               // i
-            vals[offset % K][offset / K] = V[n] * fetch_x<UseCache>(J[n], x);  // A(i,j) * x(j)
+            vals[offset % K][offset / K] = V[n] * x[J[n]];  // A(i,j) * x(j)
         }
 
         __syncthreads();
@@ -259,7 +256,7 @@ spmv_coo_flat_k_kernel(const IndexType N,
             for(IndexType n = base; n < interval_end; n++)
             {
                 IndexType row = I[n];
-                ValueType val = V[n] * fetch_x<UseCache>(J[n], x);  // A(i,j) * x(j)
+                ValueType val = V[n] * x[ J[n] ];  // A(i,j) * x(j)
 
                 if(row == prev_row)
                     val += prev_val;
@@ -285,8 +282,7 @@ spmv_coo_flat_k_kernel(const IndexType N,
     }
 }
 
-
-template <typename IndexType, typename ValueType, typename Array1, typename Array2, bool UseCache, bool InitializeY>
+template <typename IndexType, typename ValueType, typename Array1, typename Array2, bool InitializeY>
 void __spmv_coo_flat_k(const coo_matrix<IndexType,ValueType,cusp::device_memory>& coo,
                        const Array1& d_x,
                              Array2& d_y)
@@ -325,24 +321,15 @@ void __spmv_coo_flat_k(const coo_matrix<IndexType,ValueType,cusp::device_memory>
 
     const unsigned int interval_size = unit_size * num_iters;
 
-    if (UseCache)
-        bind_x(d_x.raw_data());
-
     cusp::array1d<IndexType,cusp::device_memory> temp_rows(num_blocks);
     cusp::array1d<ValueType,cusp::device_memory> temp_vals(num_blocks);
 
-    spmv_coo_flat_k_kernel<CTA_SIZE,K,UseCache,IndexType,ValueType> <<<num_blocks,CTA_SIZE>>>
+    spmv_coo_flat_k_kernel<CTA_SIZE,K,IndexType,ValueType> <<<num_blocks,CTA_SIZE>>>
     (N, interval_size, I, J, V, d_x.raw_data(), d_y.raw_data(),
      temp_rows.raw_data(), temp_vals.raw_data());
 
-//    spmv_coo_serial_kernel<IndexType,ValueType> <<<1,1>>>
-//        (coo.num_entries - tail, I + tail, J + tail, V + tail, d_x, d_y);
-
     spmv_coo_reduce_update_kernel<IndexType, ValueType, 512> <<<1, 512>>>
     (num_blocks, temp_rows.raw_data(), temp_vals.raw_data(), d_y);
-
-    if (UseCache)
-        unbind_x(d_x.raw_data());
 }
 
 template <typename IndexType, typename ValueType, typename Array1, typename Array2>
@@ -350,20 +337,11 @@ void spmv_coo_flat_k(const coo_matrix<IndexType,ValueType,cusp::device_memory>& 
                      const Array1& d_x,
                            Array2& d_y)
 {
-    __spmv_coo_flat_k<IndexType, ValueType, false, true>(coo, d_x, d_y);
+    __spmv_coo_flat_k<IndexType, ValueType, true>(coo, d_x, d_y);
 }
 
 
-template <typename IndexType, typename ValueType, typename Array1, typename Array2>
-void spmv_coo_flat_k_tex(const coo_matrix<IndexType,ValueType,cusp::device_memory>& coo,
-                         const Array1& d_x,
-                               Array2& d_y)
-{
-    __spmv_coo_flat_k<IndexType, ValueType, true, true>(coo, d_x, d_y);
-}
-
-
-} // end namespace device
-} // end namespace detail
+} // end namespace cuda
+} // end namespace system
 } // end namespace cusp
 

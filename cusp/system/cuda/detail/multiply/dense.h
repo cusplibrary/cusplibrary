@@ -41,8 +41,6 @@ void multiply_(cuda::execution_policy<DerivedPolicy>& exec,
               array1d_format,
               array1d_format)
 {
-    std::cout << "Calling device GEMV" << std::endl;
-
     typedef typename cusp::detail::as_array2d_type<Matrix1,cusp::host_memory>::type Array2d;
     typedef typename ArrayType1::value_type ValueType1;
     typedef typename ArrayType2::value_type ValueType2;

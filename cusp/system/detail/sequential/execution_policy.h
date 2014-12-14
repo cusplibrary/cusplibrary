@@ -57,3 +57,5 @@ using namespace thrust::system::detail::sequential;
 #include <cusp/system/detail/sequential/graph/pseudo_peripheral.h>
 #include <cusp/system/detail/sequential/graph/symmetric_rcm.h>
 #include <cusp/system/detail/sequential/graph/vertex_coloring.h>
+
+#include <cusp/system/detail/sequential/relaxation/gauss_seidel.h>

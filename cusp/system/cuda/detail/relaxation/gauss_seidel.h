@@ -17,6 +17,8 @@
 
 #pragma once
 
+#include <cusp/detail/config.h>
+
 #include <cusp/system/cuda/arch.h>
 #include <cusp/system/cuda/utils.h>
 
@@ -29,39 +31,18 @@ namespace system
 namespace cuda
 {
 
-//////////////////////////////////////////////////////////////////////////////
-// CSR SpMV kernels based on a vector model (one warp per row)
-//////////////////////////////////////////////////////////////////////////////
-//
-// spmv_csr_vector_device
-//   Each row of the CSR matrix is assigned to a warp.  The warp computes
-//   y[i] = A[i,:] * x, i.e. the dot product of the i-th row of A with
-//   the x vector, in parallel.  This division of work implies that
-//   the CSR index and data arrays (Aj and Ax) are accessed in a contiguous
-//   manner (but generally not aligned).  On GT200 these accesses are
-//   coalesced, unlike kernels based on the one-row-per-thread division of
-//   work.  Since an entire 32-thread warp is assigned to each row, many
-//   threads will remain idle when their row contains a small number
-//   of elements.  This code relies on implicit synchronization among
-//   threads in a warp.
-//
-// spmv_csr_vector_tex_device
-//   Same as spmv_csr_vector_tex_device, except that the texture cache is
-//   used for accessing the x vector.
-//
-//  Note: THREADS_PER_VECTOR must be one of [2,4,8,16,32]
-
-
 template <typename IndexType, typename ValueType, unsigned int VECTORS_PER_BLOCK, unsigned int THREADS_PER_VECTOR>
 __launch_bounds__(VECTORS_PER_BLOCK * THREADS_PER_VECTOR,1)
 __global__ void
-spmv_csr_vector_kernel(const IndexType num_rows,
-                       const IndexType * Ap,
-                       const IndexType * Aj,
-                       const ValueType * Ax,
-                       const ValueType * x,
-                       ValueType * y)
+gauss_seidel_kernel(const IndexType num_rows,
+                    const IndexType * Ap,
+                    const IndexType * Aj,
+                    const ValueType * Ax,
+                    ValueType * x,
+                    const ValueType * b,
+                    const IndexType * indices)
 {
+    __shared__ volatile ValueType sdiags[VECTORS_PER_BLOCK];
     __shared__ volatile ValueType sdata[VECTORS_PER_BLOCK * THREADS_PER_VECTOR + THREADS_PER_VECTOR / 2];  // padded to avoid reduction conditionals
     __shared__ volatile IndexType ptrs[VECTORS_PER_BLOCK][2];
 
@@ -73,8 +54,10 @@ spmv_csr_vector_kernel(const IndexType num_rows,
     const IndexType vector_lane = threadIdx.x /  THREADS_PER_VECTOR;               // vector index within the block
     const IndexType num_vectors = VECTORS_PER_BLOCK * gridDim.x;                   // total number of active vectors
 
-    for(IndexType row = vector_id; row < num_rows; row += num_vectors)
+    for(IndexType index = vector_id; index < num_rows; index += num_vectors)
     {
+        IndexType row = indices[index];
+
         // use two threads to fetch Ap[row] and Ap[row+1]
         // this is considerably faster than the straightforward version
         if(thread_lane < 2)
@@ -89,22 +72,36 @@ spmv_csr_vector_kernel(const IndexType num_rows,
         if (THREADS_PER_VECTOR == 32 && row_end - row_start > 32)
         {
             // ensure aligned memory access to Aj and Ax
-
             IndexType jj = row_start - (row_start & (THREADS_PER_VECTOR - 1)) + thread_lane;
 
             // accumulate local sums
             if(jj >= row_start && jj < row_end)
-                sum += Ax[jj] * x[ Aj[jj] ];
+            {
+                IndexType col = Aj[jj];
+                bool diag = row == col;
+                sum += diag ? 0 : Ax[jj] * x[col];
+                if(diag) sdiags[vector_lane] = Ax[jj];
+            }
 
             // accumulate local sums
             for(jj += THREADS_PER_VECTOR; jj < row_end; jj += THREADS_PER_VECTOR)
-                sum += Ax[jj] * x[ Aj[jj] ];
+            {
+                IndexType col = Aj[jj];
+                bool diag = row == col;
+                sum += diag ? 0 : Ax[jj] * x[col];
+                if(diag) sdiags[vector_lane] = Ax[jj];
+            }
         }
         else
         {
             // accumulate local sums
             for(IndexType jj = row_start + thread_lane; jj < row_end; jj += THREADS_PER_VECTOR)
-                sum += Ax[jj] * x[ Aj[jj] ];
+            {
+                IndexType col = Aj[jj];
+                bool diag = row == col;
+                sum += diag ? 0 : Ax[jj] * x[col];
+                if(diag) sdiags[vector_lane] = Ax[jj];
+            }
         }
 
         // store local sum in shared memory
@@ -119,88 +116,86 @@ spmv_csr_vector_kernel(const IndexType num_rows,
 
         // first thread writes the result
         if (thread_lane == 0)
-            y[row] = sdata[threadIdx.x];
+            x[row] = (b[row] - sdata[threadIdx.x]) / sdiags[vector_lane];
     }
 }
 
 template <unsigned int THREADS_PER_VECTOR,
          typename DerivedPolicy,
          typename MatrixType,
-         typename VectorType1,
-         typename VectorType2,
-         typename UnaryFunction,
-         typename BinaryFunction1,
-         typename BinaryFunction2>
-void __spmv_csr_vector(cuda::execution_policy<DerivedPolicy>& exec,
-                       MatrixType& A,
-                       VectorType1& x,
-                       VectorType2& y,
-                       UnaryFunction   initialize,
-                       BinaryFunction1 combine,
-                       BinaryFunction2 reduce)
+         typename ArrayType1,
+         typename ArrayType2>
+void gauss_seidel_spmv(cuda::execution_policy<DerivedPolicy>& exec,
+                       const MatrixType& A,
+                       ArrayType1&  x,
+                       const ArrayType1&  b,
+                       const ArrayType2& indices,
+                       const int row_start,
+                       const int row_stop,
+                       const int row_step)
 {
     typedef typename MatrixType::index_type IndexType;
     typedef typename MatrixType::value_type ValueType;
 
+    const size_t num_rows = row_stop - row_start;
     const size_t THREADS_PER_BLOCK  = 128;
     const size_t VECTORS_PER_BLOCK  = THREADS_PER_BLOCK / THREADS_PER_VECTOR;
 
-    const size_t MAX_BLOCKS = cusp::system::cuda::detail::max_active_blocks(spmv_csr_vector_kernel<IndexType, ValueType, VECTORS_PER_BLOCK, THREADS_PER_VECTOR>, THREADS_PER_BLOCK, (size_t) 0);
-    const size_t NUM_BLOCKS = std::min<size_t>(MAX_BLOCKS, DIVIDE_INTO(A.num_rows, VECTORS_PER_BLOCK));
+    const size_t MAX_BLOCKS = cusp::system::cuda::detail::max_active_blocks(gauss_seidel_kernel<IndexType, ValueType, VECTORS_PER_BLOCK, THREADS_PER_VECTOR>, THREADS_PER_BLOCK, (size_t) 0);
+    const size_t NUM_BLOCKS = std::min<size_t>(MAX_BLOCKS, DIVIDE_INTO(num_rows, VECTORS_PER_BLOCK));
 
     const IndexType * R = thrust::raw_pointer_cast(&A.row_offsets[0]);
     const IndexType * J = thrust::raw_pointer_cast(&A.column_indices[0]);
     const ValueType * V = thrust::raw_pointer_cast(&A.values[0]);
-    const ValueType * x_ptr = thrust::raw_pointer_cast(&x[0]);
-          ValueType * y_ptr = thrust::raw_pointer_cast(&y[0]);
+    ValueType * x_ptr = thrust::raw_pointer_cast(&x[0]);
+    const ValueType * b_ptr = thrust::raw_pointer_cast(&b[0]);
+    const IndexType * i_ptr = thrust::raw_pointer_cast(&indices[row_start]);
 
-    spmv_csr_vector_kernel<IndexType, ValueType, VECTORS_PER_BLOCK, THREADS_PER_VECTOR> <<<NUM_BLOCKS, THREADS_PER_BLOCK>>>
-    (A.num_rows, R, J, V, x_ptr, y_ptr);
+    gauss_seidel_kernel<IndexType, ValueType, VECTORS_PER_BLOCK, THREADS_PER_VECTOR> <<<NUM_BLOCKS, THREADS_PER_BLOCK>>>
+    (num_rows, R, J, V, x_ptr, b_ptr, i_ptr);
 }
 
-template <typename DerivedPolicy,
+template<typename DerivedPolicy,
          typename MatrixType,
-         typename VectorType1,
-         typename VectorType2,
-         typename UnaryFunction,
-         typename BinaryFunction1,
-         typename BinaryFunction2>
-void multiply(cuda::execution_policy<DerivedPolicy>& exec,
-              MatrixType& A,
-              VectorType1& x,
-              VectorType2& y,
-              UnaryFunction   initialize,
-              BinaryFunction1 combine,
-              BinaryFunction2 reduce,
-              csr_format,
-              array1d_format,
-              array1d_format)
+         typename ArrayType1,
+         typename ArrayType2>
+void gauss_seidel_indexed(cuda::execution_policy<DerivedPolicy>& exec,
+                          const MatrixType& A,
+                          ArrayType1&  x,
+                          const ArrayType1&  b,
+                          const ArrayType2& indices,
+                          const int row_start,
+                          const int row_stop,
+                          const int row_step)
 {
     typedef typename MatrixType::index_type IndexType;
 
     const IndexType nnz_per_row = A.num_entries / A.num_rows;
 
     if (nnz_per_row <=  2) {
-        __spmv_csr_vector<2>(exec, A, x, y, initialize, combine, reduce);
+        gauss_seidel_spmv<2>(exec, A, x, b, indices, row_start, row_stop, row_step);
         return;
     }
     if (nnz_per_row <=  4) {
-        __spmv_csr_vector<4>(exec, A, x, y, initialize, combine, reduce);
+        gauss_seidel_spmv<4>(exec, A, x, b, indices, row_start, row_stop, row_step);
         return;
     }
     if (nnz_per_row <=  8) {
-        __spmv_csr_vector<8>(exec, A, x, y, initialize, combine, reduce);
+        gauss_seidel_spmv<8>(exec, A, x, b, indices, row_start, row_stop, row_step);
         return;
     }
     if (nnz_per_row <= 16) {
-        __spmv_csr_vector<16>(exec, A, x, y, initialize, combine, reduce);
+        gauss_seidel_spmv<16>(exec, A, x, b, indices, row_start, row_stop, row_step);
         return;
     }
 
-    __spmv_csr_vector<32>(exec, A, x, y, initialize, combine, reduce);
+    gauss_seidel_spmv<32>(exec, A, x, b, indices, row_start, row_stop, row_step);
 }
 
 } // end namespace cuda
 } // end namespace system
+
+using cusp::system::cuda::gauss_seidel_indexed;
+
 } // end namespace cusp
 

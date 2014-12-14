@@ -7,7 +7,7 @@
 #include "bytes_per_spmv.h"
 
 #include "../timer.h"
-#include <cusp/detail/device/spmv/coo_flat_k.h>
+#include <cusp/system/cuda/detail/multiply/coo_flat_k.h>
 
 const char * BENCHMARK_OUTPUT_FILE_NAME = "benchmark_output.log";
 

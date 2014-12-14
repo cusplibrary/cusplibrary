@@ -31,48 +31,6 @@ namespace cusp
 {
 namespace relaxation
 {
-namespace detail
-{
-template<typename MatrixType, typename ArrayType1, typename ArrayType2>
-void gauss_seidel_indexed(const MatrixType& A,
-                          ArrayType1&  x,
-                          const ArrayType1&  b,
-                          const ArrayType2& indices,
-                          const int row_start,
-                          const int row_stop,
-                          const int row_step)
-{
-    typedef typename ArrayType1::value_type V;
-    typedef typename ArrayType2::value_type I;
-
-    for(int i = row_start; i != row_stop; i += row_step)
-    {
-        I inew  = indices[i];
-        I start = A.row_offsets[inew];
-        I end   = A.row_offsets[inew + 1];
-        V rsum  = 0;
-        V diag  = 0;
-
-        for(I jj = start; jj < end; ++jj)
-        {
-            I j = A.column_indices[jj];
-            if (inew == j)
-            {
-                diag = A.values[jj];
-            }
-            else
-            {
-                rsum += A.values[jj]*x[j];
-            }
-        }
-
-        if (diag != 0)
-        {
-            x[inew] = (b[inew] - rsum)/diag;
-        }
-    }
-}
-} // end namespace detail
 
 template <typename ValueType, typename MemorySpace>
 template<typename MatrixType>
@@ -83,10 +41,10 @@ gauss_seidel<ValueType,MemorySpace>
     cusp::array1d<int,MemorySpace> colors(A.num_rows);
     int max_colors = cusp::graph::vertex_coloring(A, colors);
 
-    color_offsets.resize(max_colors + 1);
     thrust::sequence(ordering.begin(), ordering.end());
-
     thrust::sort_by_key(colors.begin(), colors.end(), ordering.begin());
+
+    color_offsets.resize(max_colors + 1);
     thrust::reduce_by_key(colors.begin(),
                           colors.end(),
                           thrust::constant_iterator<int>(1),
@@ -118,15 +76,23 @@ template<typename MatrixType, typename VectorType1, typename VectorType2>
 void gauss_seidel<ValueType,MemorySpace>
 ::operator()(const MatrixType& A, const VectorType1& b, VectorType2& x, sweep direction)
 {
+    using thrust::system::detail::generic::select_system;
+
+    MemorySpace system;
+
     if(direction == FORWARD)
     {
         for(int i = 0; i < color_offsets.size()-1; i++)
-            detail::gauss_seidel_indexed(A, x, b, ordering, color_offsets[i], color_offsets[i+1], 1);
+            gauss_seidel_indexed(
+                thrust::detail::derived_cast(select_system(system)),
+                A, x, b, ordering, color_offsets[i], color_offsets[i+1], 1);
     }
     else if(direction == BACKWARD)
     {
         for(int i = color_offsets.size()-1; i > 0; i--)
-            detail::gauss_seidel_indexed(A, x, b, ordering, color_offsets[i-1], color_offsets[i], 1);
+            gauss_seidel_indexed(
+                thrust::detail::derived_cast(select_system(system)),
+                A, x, b, ordering, color_offsets[i-1], color_offsets[i], 1);
     }
     else if(direction == SYMMETRIC)
     {

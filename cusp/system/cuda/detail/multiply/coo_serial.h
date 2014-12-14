@@ -20,9 +20,9 @@
 
 namespace cusp
 {
-namespace detail
+namespace system
 {
-namespace device
+namespace cuda
 {
 
 // COO format SpMV kernel that uses only one thread
@@ -64,7 +64,7 @@ void spmv_coo_serial_device(const Matrix& A,
     (A.num_entries, I, J, V, x.raw_data(), y.raw_data());
 }
 
-} // end namespace device
-} // end namespace detail
+} // end namespace cuda
+} // end namespace system
 } // end namespace cusp
 

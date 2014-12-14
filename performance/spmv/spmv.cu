@@ -11,7 +11,7 @@
 #include <limits>
 
 #include <cusp/multiply.h>
-#include <cusp/detail/device/spmv/csr_scalar.h>
+#include <cusp/system/cuda/detail/multiply/csr_scalar.h>
 
 #include "bytes_per_spmv.h"
 #include "utility.h"

@@ -18,11 +18,9 @@
 
 #include <thrust/extrema.h>
 
-#include <cusp/detail/device/arch.h>
-#include <cusp/detail/device/common.h>
-#include <cusp/detail/device/utils.h>
-#include <cusp/detail/device/texture.h>
-#include <cusp/detail/device/spmv/coo_serial.h>
+#include <cusp/system/cuda/arch.h>
+#include <cusp/system/cuda/utils.h>
+#include <cusp/system/cuda/detail/multiply/coo_serial.h>
 
 #include <thrust/device_ptr.h>
 
@@ -30,9 +28,9 @@
 
 namespace cusp
 {
-namespace detail
+namespace system
 {
-namespace device
+namespace cuda
 {
 
 // segmented reduction in shared memory
@@ -222,7 +220,7 @@ __device__ void segreduce_block(const IndexType * idx, ValueType * val)
 //  The carry values at the end of each interval are written to arrays
 //  temp_rows and temp_vals, which are processed by a second kernel.
 //
-template <typename IndexType, typename ValueType, unsigned int BLOCK_SIZE, bool UseCache>
+template <typename IndexType, typename ValueType, unsigned int BLOCK_SIZE>
 __launch_bounds__(BLOCK_SIZE,1)
 __global__ void
 spmv_coo_flat_kernel(const IndexType num_nonzeros,
@@ -262,7 +260,7 @@ spmv_coo_flat_kernel(const IndexType num_nonzeros,
     for(IndexType n = interval_begin + thread_lane; n < interval_end; n += WARP_SIZE)
     {
         IndexType row = I[n];                                         // row index (i)
-        ValueType val = V[n] * fetch_x<UseCache>(J[n], x);            // A(i,j) * x(j)
+        ValueType val = V[n] * x[ J[n] ];            // A(i,j) * x(j)
 
         if (thread_lane == 0)
         {
@@ -365,11 +363,10 @@ spmv_coo_reduce_update_kernel(const IndexType num_warps,
     }
 }
 
-template <bool UseCache,
-         bool InitializeY,
-         typename Matrix,
-         typename Array1,
-         typename Array2>
+template <bool InitializeY,
+          typename Matrix,
+          typename Array1,
+          typename Array2>
 void __spmv_coo_flat(const Matrix& A,
                      const Array1&  x,
                      Array2& y)
@@ -401,7 +398,7 @@ void __spmv_coo_flat(const Matrix& A,
     }
 
     const unsigned int BLOCK_SIZE = 256;
-    const unsigned int MAX_BLOCKS = cusp::detail::device::arch::max_active_blocks(spmv_coo_flat_kernel<IndexType, ValueType, BLOCK_SIZE, UseCache>, BLOCK_SIZE, (size_t) 0);
+    const unsigned int MAX_BLOCKS = cusp::system::cuda::detail::max_active_blocks(spmv_coo_flat_kernel<IndexType, ValueType, BLOCK_SIZE>, BLOCK_SIZE, (size_t) 0);
     const unsigned int WARPS_PER_BLOCK = BLOCK_SIZE / WARP_SIZE;
 
     const unsigned int num_units  = A.num_entries / WARP_SIZE;
@@ -415,16 +412,13 @@ void __spmv_coo_flat(const Matrix& A,
 
     const unsigned int active_warps = (interval_size == 0) ? 0 : DIVIDE_INTO(tail, interval_size);
 
-    if (UseCache)
-        bind_x(x_ptr);
-
     cusp::array1d<IndexType,cusp::device_memory> temp_rows(active_warps);
     cusp::array1d<ValueType,cusp::device_memory> temp_vals(active_warps);
 
     IndexType * temp_rows_ptr = thrust::raw_pointer_cast(temp_rows.data());
     ValueType * temp_vals_ptr = thrust::raw_pointer_cast(temp_vals.data());
 
-    spmv_coo_flat_kernel<IndexType, ValueType, BLOCK_SIZE, UseCache> <<<num_blocks, BLOCK_SIZE>>>
+    spmv_coo_flat_kernel<IndexType, ValueType, BLOCK_SIZE> <<<num_blocks, BLOCK_SIZE>>>
     (tail, interval_size, I, J, V, x_ptr, y_ptr, temp_rows_ptr, temp_vals_ptr);
 
     spmv_coo_reduce_update_kernel<IndexType, ValueType, BLOCK_SIZE> <<<1, BLOCK_SIZE>>>
@@ -432,9 +426,6 @@ void __spmv_coo_flat(const Matrix& A,
 
     spmv_coo_serial_kernel<IndexType,ValueType> <<<1,1>>>
     (A.num_entries - tail, I + tail, J + tail, V + tail, x_ptr, y_ptr);
-
-    if (UseCache)
-        unbind_x(x_ptr);
 }
 
 template <typename Matrix,
@@ -444,21 +435,10 @@ void spmv_coo_flat(const Matrix& A,
                    const Array1& x,
                          Array2& y)
 {
-    __spmv_coo_flat<false, true>(A, x, y);
+    __spmv_coo_flat<false>(A, x, y);
 }
 
-
-template <typename Matrix,
-          typename Array1,
-          typename Array2>
-void spmv_coo_flat_tex(const Matrix& A,
-                       const Array1& x,
-                             Array2& y)
-{
-    __spmv_coo_flat<true, true>(A, x, y);
-}
-
-} // end namespace device
-} // end namespace detail
+} // end namespace cuda
+} // end namespace system
 } // end namespace cusp
 
