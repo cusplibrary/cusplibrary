@@ -105,6 +105,14 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverTyp
 {
     Parent* ML = this;
 
+    if(ML->levels.size() > 0)
+      ML->levels.resize(0);
+    if(sa_levels.size() > 0)
+      sa_levels.resize(0);
+
+    ML->resize(A.num_rows, A.num_cols, A.num_entries);
+    ML->levels.reserve(sa_options.max_levels); // avoid reallocations which force matrix copies
+
     ML->resize(A.num_rows, A.num_cols, A.num_entries);
     ML->levels.reserve(sa_options.max_levels); // avoid reallocations which force matrix copies
 
