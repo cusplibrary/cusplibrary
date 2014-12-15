@@ -56,12 +56,15 @@ void spmv_coo_serial_device(const Matrix& A,
     typedef typename Matrix::index_type IndexType;
     typedef typename Matrix::value_type ValueType;
 
-    const IndexType * I = A.row_indices.raw_data();
-    const IndexType * J = A.column_indices.raw_data();
-    const ValueType * V = A.values.raw_data();
+    const IndexType * I = thrust::raw_pointer_cast(&A.row_indices[0]);
+    const IndexType * J = thrust::raw_pointer_cast(&A.column_indices[0]);
+    const ValueType * V = thrust::raw_pointer_cast(&A.values[0]);
+
+    const ValueType * x_ptr = thrust::raw_pointer_cast(&x[0]);
+    ValueType * y_ptr = thrust::raw_pointer_cast(&y[0]);
 
     spmv_coo_serial_kernel<IndexType,ValueType> <<<1,1>>>
-    (A.num_entries, I, J, V, x.raw_data(), y.raw_data());
+    (A.num_entries, I, J, V, x_ptr, y_ptr);
 }
 
 } // end namespace cuda

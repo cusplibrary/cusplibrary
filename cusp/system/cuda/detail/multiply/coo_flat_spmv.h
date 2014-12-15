@@ -423,8 +423,8 @@ void __spmv_coo_flat(cuda::execution_policy<DerivedPolicy>& exec,
     cusp::array1d<IndexType,cusp::device_memory> temp_rows(active_warps);
     cusp::array1d<ValueType,cusp::device_memory> temp_vals(active_warps);
 
-    IndexType * temp_rows_ptr = thrust::raw_pointer_cast(temp_rows.data());
-    ValueType * temp_vals_ptr = thrust::raw_pointer_cast(temp_vals.data());
+    IndexType * temp_rows_ptr = thrust::raw_pointer_cast(&temp_rows[0]);
+    ValueType * temp_vals_ptr = thrust::raw_pointer_cast(&temp_vals[0]);
 
     spmv_coo_flat_kernel<IndexType, ValueType, BLOCK_SIZE> <<<num_blocks, BLOCK_SIZE>>>
     (tail, interval_size, I, J, V, x_ptr, y_ptr, temp_rows_ptr, temp_vals_ptr);
@@ -454,7 +454,12 @@ void multiply(cuda::execution_policy<DerivedPolicy>& exec,
               array1d_format,
               array1d_format)
 {
-    __spmv_coo_flat<true>(exec, A, x, y, initialize, combine, reduce);
+    typedef typename MatrixType::value_type ValueType;
+
+    if(thrust::detail::is_same< UnaryFunction, thrust::identity<ValueType> >::value)
+      __spmv_coo_flat<false>(exec, A, x, y, initialize, combine, reduce);
+    else
+      __spmv_coo_flat<true>(exec, A, x, y, initialize, combine, reduce);
 }
 
 } // end namespace cuda
