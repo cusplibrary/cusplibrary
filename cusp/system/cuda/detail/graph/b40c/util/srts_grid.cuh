@@ -36,6 +36,8 @@
 #include "basic_utils.cuh"
 #include "numeric_traits.cuh"
 
+B40C_NS_PREFIX
+
 namespace b40c {
 namespace util {
 
@@ -291,4 +293,6 @@ struct RakingGrid
 
 } // namespace util
 } // namespace b40c
+
+B40C_NS_POSTFIX
 

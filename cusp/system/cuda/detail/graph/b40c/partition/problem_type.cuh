@@ -34,6 +34,8 @@
 
 #include "../util/basic_utils.cuh"
 
+B40C_NS_PREFIX
+
 namespace b40c {
 namespace partition {
 
@@ -63,3 +65,4 @@ struct ProblemType
 }// namespace partition
 }// namespace b40c
 
+B40C_NS_POSTFIX

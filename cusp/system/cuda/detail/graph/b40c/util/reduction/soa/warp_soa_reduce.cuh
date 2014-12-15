@@ -37,6 +37,8 @@
 
 #include "../../soa_tuple.cuh"
 
+B40C_NS_PREFIX
+
 namespace b40c {
 namespace util {
 namespace reduction {
@@ -176,4 +178,6 @@ struct WarpSoaReduce
 } // namespace reduction
 } // namespace util
 } // namespace b40c
+
+B40C_NS_POSTFIX
 

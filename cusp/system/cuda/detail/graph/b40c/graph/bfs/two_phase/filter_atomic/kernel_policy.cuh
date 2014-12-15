@@ -40,6 +40,8 @@
 #include "../../../../util/io/modified_load.cuh"
 #include "../../../../util/io/modified_store.cuh"
 
+B40C_NS_PREFIX
+
 namespace b40c {
 namespace graph {
 namespace bfs {
@@ -179,4 +181,6 @@ struct KernelPolicy : _ProblemType
 } // namespace bfs
 } // namespace graph
 } // namespace b40c
+
+B40C_NS_POSTFIX
 

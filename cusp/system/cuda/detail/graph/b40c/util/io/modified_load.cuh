@@ -36,6 +36,8 @@
 #include "../cuda_properties.cuh"
 #include "../vector_types.cuh"
 
+B40C_NS_PREFIX
+
 namespace b40c {
 namespace util {
 namespace io {
@@ -259,4 +261,6 @@ struct ModifiedLoad
 } // namespace io
 } // namespace util
 } // namespace b40c
+
+B40C_NS_POSTFIX
 

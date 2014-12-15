@@ -63,7 +63,7 @@ void breadth_first_search(cuda::execution_policy<DerivedPolicy>& exec,
 
     // Create a single GPU slice for the currently-set gpu
     int gpu;
-    if (b40c::util::B40CPerror(cudaGetDevice(&gpu), "CsrProblem cudaGetDevice failed", __FILE__, __LINE__))
+    if (b40c::util::B40CPerror<0>(cudaGetDevice(&gpu), "CsrProblem cudaGetDevice failed", __FILE__, __LINE__))
     {
         throw cusp::runtime_exception("B40C cudaGetDevice failed.");
     }

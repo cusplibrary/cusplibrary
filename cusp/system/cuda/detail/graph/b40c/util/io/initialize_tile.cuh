@@ -32,6 +32,8 @@
 
 #pragma once
 
+B40C_NS_PREFIX
+
 namespace b40c {
 namespace util {
 namespace io {
@@ -297,4 +299,6 @@ struct InitializeTile
 } // namespace io
 } // namespace util
 } // namespace b40c
+
+B40C_NS_POSTFIX
 

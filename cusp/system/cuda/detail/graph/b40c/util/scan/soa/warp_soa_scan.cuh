@@ -34,6 +34,8 @@
 
 #include "../../soa_tuple.cuh"
 
+B40C_NS_PREFIX
+
 namespace b40c {
 namespace util {
 namespace scan {
@@ -205,4 +207,6 @@ struct WarpSoaScan
 } // namespace scan
 } // namespace util
 } // namespace b40c
+
+B40C_NS_POSTFIX
 

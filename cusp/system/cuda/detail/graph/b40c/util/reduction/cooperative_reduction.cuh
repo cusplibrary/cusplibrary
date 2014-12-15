@@ -36,6 +36,8 @@
 #include "../reduction/serial_reduce.cuh"
 #include "../reduction/warp_reduce.cuh"
 
+B40C_NS_PREFIX
+
 namespace b40c {
 namespace util {
 namespace reduction {
@@ -284,4 +286,6 @@ struct CooperativeGridReduction
 } // namespace reduction
 } // namespace util
 } // namespace b40c
+
+B40C_NS_POSTFIX
 

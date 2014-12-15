@@ -32,6 +32,8 @@
 
 #pragma once
 
+B40C_NS_PREFIX
+
 namespace b40c {
 namespace util {
 
@@ -121,4 +123,6 @@ B40C_DEFINE_VECTOR_TYPE(double,             double)
 
 } // namespace util
 } // namespace b40c
+
+B40C_NS_POSTFIX
 

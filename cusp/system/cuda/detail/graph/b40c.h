@@ -49,8 +49,16 @@
 #  endif
 #endif // __GNUC__
 
-#include "b40c/graph/bfs/csr_problem.cuh"
-#include "b40c/graph/bfs/enactor_hybrid.cuh"
+// define the macros while we #include our version of cub
+#define B40C_NS_PREFIX namespace cusp { namespace system { namespace cuda { namespace detail {
+#define B40C_NS_POSTFIX               }                  }                }                  }
+
+#include <cusp/system/cuda/detail/graph/b40c/graph/bfs/csr_problem.cuh>
+#include <cusp/system/cuda/detail/graph/b40c/graph/bfs/enactor_hybrid.cuh>
+
+// undef the macros
+#undef B40C_NS_PREFIX
+#undef B40C_NS_POSTFIX
 
 // redefine the macros if they were defined previously
 
@@ -80,4 +88,3 @@
 #    undef FastMul_NEEDS_RESTORE
 #  endif
 #endif // __GNUC__
-

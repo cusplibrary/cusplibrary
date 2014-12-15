@@ -37,6 +37,8 @@
 #include "../../../../util/kernel_runtime_stats.cuh"
 #include "cta.cuh"
 
+B40C_NS_PREFIX
+
 namespace b40c {
 namespace graph {
 namespace bfs {
@@ -355,4 +357,6 @@ void Kernel(
 } // namespace bfs
 } // namespace graph
 } // namespace b40c
+
+B40C_NS_POSTFIX
 

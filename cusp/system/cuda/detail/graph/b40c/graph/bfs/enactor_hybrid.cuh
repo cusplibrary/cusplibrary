@@ -46,6 +46,8 @@
 #include "two_phase/contract_atomic/kernel.cuh"
 #include "two_phase/contract_atomic/kernel_policy.cuh"
 
+B40C_NS_PREFIX
+
 namespace b40c {
 namespace graph {
 namespace bfs {
@@ -132,19 +134,19 @@ protected:
                 int flags = cudaHostAllocMapped;
 
                 // Allocate pinned memory for done
-                if (retval = util::B40CPerror(cudaHostAlloc((void **)&done, sizeof(int) * 1, flags),
+                if (retval = util::B40CPerror<0>(cudaHostAlloc((void **)&done, sizeof(int) * 1, flags),
                                               "EnactorHybrid cudaHostAlloc done failed", __FILE__, __LINE__)) break;
 
                 // Map done into GPU space
-                if (retval = util::B40CPerror(cudaHostGetDevicePointer((void **)&d_done, (void *) done, 0),
+                if (retval = util::B40CPerror<0>(cudaHostGetDevicePointer((void **)&d_done, (void *) done, 0),
                                               "EnactorHybrid cudaHostGetDevicePointer done failed", __FILE__, __LINE__)) break;
 
                 // Create throttle event
-                if (retval = util::B40CPerror(cudaEventCreateWithFlags(&throttle_event, cudaEventDisableTiming),
+                if (retval = util::B40CPerror<0>(cudaEventCreateWithFlags(&throttle_event, cudaEventDisableTiming),
                                               "EnactorHybrid cudaEventCreateWithFlags throttle_event failed", __FILE__, __LINE__)) break;
 
                 // Allocate gpu memory for d_iteration
-                if (retval = util::B40CPerror(cudaMalloc((void**) &d_iteration, sizeof(long long)),
+                if (retval = util::B40CPerror<0>(cudaMalloc((void**) &d_iteration, sizeof(long long)),
                                               "EnactorHybrid cudaMalloc d_iteration failed", __FILE__, __LINE__)) break;
             }
 
@@ -169,7 +171,7 @@ protected:
             // Bind bitmask texture
             int bytes = (graph_slice->nodes + 8 - 1) / 8;
             cudaChannelFormatDesc bitmask_desc = cudaCreateChannelDesc<unsigned char>();
-            if (retval = util::B40CPerror(cudaBindTexture(
+            if (retval = util::B40CPerror<0>(cudaBindTexture(
                                               0,
                                               two_phase::contract_atomic::BitmaskTex<VisitedMask>::ref,
                                               graph_slice->d_visited_mask,
@@ -179,7 +181,7 @@ protected:
 
             // Bind row-offsets texture
             cudaChannelFormatDesc row_offsets_desc = cudaCreateChannelDesc<SizeT>();
-            if (retval = util::B40CPerror(cudaBindTexture(
+            if (retval = util::B40CPerror<0>(cudaBindTexture(
                                               0,
                                               two_phase::expand_atomic::RowOffsetTex<SizeT>::ref,
                                               graph_slice->d_row_offsets,
@@ -188,7 +190,7 @@ protected:
                                           "EnactorHybrid cudaBindTexture row_offset_tex_ref failed", __FILE__, __LINE__)) break;
 
             // Bind bitmask texture
-            if (retval = util::B40CPerror(cudaBindTexture(
+            if (retval = util::B40CPerror<0>(cudaBindTexture(
                                               0,
                                               contract_expand_atomic::BitmaskTex<VisitedMask>::ref,
                                               graph_slice->d_visited_mask,
@@ -197,7 +199,7 @@ protected:
                                           "EnactorHybrid cudaBindTexture bitmask_tex_ref failed", __FILE__, __LINE__)) break;
 
             // Bind row-offsets texture
-            if (retval = util::B40CPerror(cudaBindTexture(
+            if (retval = util::B40CPerror<0>(cudaBindTexture(
                                               0,
                                               contract_expand_atomic::RowOffsetTex<SizeT>::ref,
                                               graph_slice->d_row_offsets,
@@ -232,11 +234,11 @@ public:
     virtual ~EnactorHybrid()
     {
         if (done) {
-            util::B40CPerror(cudaFreeHost((void *) done), "EnactorHybrid cudaFreeHost done failed", __FILE__, __LINE__);
-            util::B40CPerror(cudaEventDestroy(throttle_event), "EnactorHybrid cudaEventDestroy throttle_event failed", __FILE__, __LINE__);
+            util::B40CPerror<0>(cudaFreeHost((void *) done), "EnactorHybrid cudaFreeHost done failed", __FILE__, __LINE__);
+            util::B40CPerror<0>(cudaEventDestroy(throttle_event), "EnactorHybrid cudaEventDestroy throttle_event failed", __FILE__, __LINE__);
         }
         if (d_iteration) {
-            util::B40CPerror(cudaFree((void *) d_iteration), "EnactorHybrid cudaFree d_iteration failed", __FILE__, __LINE__);
+            util::B40CPerror<0>(cudaFree((void *) d_iteration), "EnactorHybrid cudaFree d_iteration failed", __FILE__, __LINE__);
         }
     }
 
@@ -353,11 +355,11 @@ public:
                     fused_kernel_stats,
                     (VertexId *) d_iteration);
 
-                if (DEBUG && (retval = util::B40CPerror(cudaThreadSynchronize(), "contract_expand_atomic::KernelGlobalBarrier failed ", __FILE__, __LINE__))) break;
+                if (DEBUG && (retval = util::B40CPerror<0>(cudaThreadSynchronize(), "contract_expand_atomic::KernelGlobalBarrier failed ", __FILE__, __LINE__))) break;
                 cudaEventQuery(throttle_event);	// give host memory mapped visibility to GPU updates
 
                 // Retrieve output iteration
-                if (retval = util::B40CPerror(cudaMemcpy(
+                if (retval = util::B40CPerror<0>(cudaMemcpy(
                                                   &iteration,
                                                   (VertexId *) d_iteration,
                                                   sizeof(VertexId),
@@ -416,7 +418,7 @@ public:
                         graph_slice->frontier_elements[selector ^ 1],			// max vertex frontier vertices
                         this->filter_kernel_stats);
 
-                    if (DEBUG && (retval = util::B40CPerror(cudaThreadSynchronize(), "filter_atomic::Kernel failed ", __FILE__, __LINE__))) break;
+                    if (DEBUG && (retval = util::B40CPerror<0>(cudaThreadSynchronize(), "filter_atomic::Kernel failed ", __FILE__, __LINE__))) break;
                     cudaEventQuery(throttle_event);	// give host memory mapped visibility to GPU updates
 
                     queue_index++;
@@ -459,7 +461,7 @@ public:
                         graph_slice->frontier_elements[selector ^ 1],			// max out vertices
                         contract_kernel_stats);
 
-                    if (DEBUG && (retval = util::B40CPerror(cudaThreadSynchronize(), "contract_atomic::Kernel failed ", __FILE__, __LINE__))) break;
+                    if (DEBUG && (retval = util::B40CPerror<0>(cudaThreadSynchronize(), "contract_atomic::Kernel failed ", __FILE__, __LINE__))) break;
                     cudaEventQuery(throttle_event);	// give host memory mapped visibility to GPU updates
 
                     queue_index++;
@@ -478,10 +480,10 @@ public:
 
                     // Throttle
                     if ((iteration - two_phase_iteration) & 1) {
-                        if (util::B40CPerror(cudaEventSynchronize(throttle_event),
+                        if (util::B40CPerror<0>(cudaEventSynchronize(throttle_event),
                                              "LevelGridBfsEnactor cudaEventSynchronize throttle_event failed", __FILE__, __LINE__)) break;
                     } else {
-                        if (util::B40CPerror(cudaEventRecord(throttle_event),
+                        if (util::B40CPerror<0>(cudaEventRecord(throttle_event),
                                              "LevelGridBfsEnactor cudaEventRecord throttle_event failed", __FILE__, __LINE__)) break;
                     }
                     // Check if done
@@ -507,7 +509,7 @@ public:
                         graph_slice->frontier_elements[selector ^ 1],		// max out vertices
                         expand_kernel_stats);
 
-                    if (DEBUG && (retval = util::B40CPerror(cudaThreadSynchronize(), "expand_atomic::Kernel failed ", __FILE__, __LINE__))) break;
+                    if (DEBUG && (retval = util::B40CPerror<0>(cudaThreadSynchronize(), "expand_atomic::Kernel failed ", __FILE__, __LINE__))) break;
                     cudaEventQuery(throttle_event);	// give host memory mapped visibility to GPU updates
 
                     queue_index++;
@@ -533,7 +535,7 @@ public:
             bool overflowed = false;
             if (retval = work_progress.CheckOverflow<SizeT>(overflowed)) break;
             if (overflowed) {
-                retval = util::B40CPerror(cudaErrorInvalidConfiguration, "Frontier queue overflow.  Please increase queue-sizing factor. ", __FILE__, __LINE__);
+                retval = util::B40CPerror<0>(cudaErrorInvalidConfiguration, "Frontier queue overflow.  Please increase queue-sizing factor. ", __FILE__, __LINE__);
                 break;
             }
 
@@ -752,3 +754,5 @@ public:
 } // namespace bfs
 } // namespace graph
 } // namespace b40c
+
+B40C_NS_POSTFIX

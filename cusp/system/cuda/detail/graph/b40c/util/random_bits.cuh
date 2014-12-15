@@ -34,6 +34,8 @@
 
 #include <stdlib.h>
 
+B40C_NS_PREFIX
+
 namespace b40c {
 namespace util {
 
@@ -89,3 +91,5 @@ void RandomBits(K &key, int entropy_reduction = 0, int lower_key_bits = sizeof(K
 
 } // namespace util
 } // namespace b40c
+
+B40C_NS_POSTFIX

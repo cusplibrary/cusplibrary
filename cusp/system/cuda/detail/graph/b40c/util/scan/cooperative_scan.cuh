@@ -38,6 +38,8 @@
 #include "../scan/serial_scan.cuh"
 #include "../scan/warp_scan.cuh"
 
+B40C_NS_PREFIX
+
 namespace b40c {
 namespace util {
 namespace scan {
@@ -507,4 +509,6 @@ struct CooperativeGridScan
 } // namespace scan
 } // namespace util
 } // namespace b40c
+
+B40C_NS_POSTFIX
 

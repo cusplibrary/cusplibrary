@@ -39,6 +39,8 @@
 #include "io/modified_load.cuh"
 #include "io/modified_store.cuh"
 
+B40C_NS_PREFIX
+
 namespace b40c {
 namespace util {
 
@@ -258,20 +260,20 @@ public:
 
 				// Save current gpu
 				int current_gpu;
-				if (retval = util::B40CPerror(cudaGetDevice(&current_gpu),
+				if (retval = util::B40CPerror<0>(cudaGetDevice(&current_gpu),
 					"CtaWorkProgress cudaGetDevice failed: ", __FILE__, __LINE__)) break;
 
 				// Deallocate
-				if (retval = util::B40CPerror(cudaSetDevice(gpu),
+				if (retval = util::B40CPerror<0>(cudaSetDevice(gpu),
 					"CtaWorkProgress cudaSetDevice failed: ", __FILE__, __LINE__)) break;
-				if (retval = util::B40CPerror(cudaFree(d_counters),
+				if (retval = util::B40CPerror<0>(cudaFree(d_counters),
 					"CtaWorkProgress cudaFree d_counters failed: ", __FILE__, __LINE__)) break;
 
 				d_counters = NULL;
 				gpu = B40C_INVALID_DEVICE;
 
 				// Restore current gpu
-				if (retval = util::B40CPerror(cudaSetDevice(current_gpu),
+				if (retval = util::B40CPerror<0>(cudaSetDevice(current_gpu),
 					"CtaWorkProgress cudaSetDevice failed: ", __FILE__, __LINE__)) break;
 			}
 
@@ -310,11 +312,11 @@ public:
 				}
 
 				// Allocate and initialize
-				if (retval = util::B40CPerror(cudaGetDevice(&gpu),
+				if (retval = util::B40CPerror<0>(cudaGetDevice(&gpu),
 					"CtaWorkProgress cudaGetDevice failed: ", __FILE__, __LINE__)) break;
-				if (retval = util::B40CPerror(cudaMalloc((void**) &d_counters, sizeof(h_counters)),
+				if (retval = util::B40CPerror<0>(cudaMalloc((void**) &d_counters, sizeof(h_counters)),
 					"CtaWorkProgress cudaMalloc d_counters failed", __FILE__, __LINE__)) break;
-				if (retval = util::B40CPerror(cudaMemcpy(d_counters, h_counters, sizeof(h_counters), cudaMemcpyHostToDevice),
+				if (retval = util::B40CPerror<0>(cudaMemcpy(d_counters, h_counters, sizeof(h_counters), cudaMemcpyHostToDevice),
 					"CtaWorkProgress cudaMemcpy d_counters failed", __FILE__, __LINE__)) break;
 			}
 
@@ -338,7 +340,7 @@ public:
 		do {
 			SizeT counter;
 
-			if (retval = util::B40CPerror(cudaMemcpy(
+			if (retval = util::B40CPerror<0>(cudaMemcpy(
 					&counter,
 					((SizeT*) d_counters) + QUEUE_COUNTERS + STEAL_COUNTERS,
 					1 * sizeof(SizeT),
@@ -366,7 +368,7 @@ public:
 		do {
 			int queue_length_idx = iteration & 0x3;
 
-			if (retval = util::B40CPerror(cudaMemcpy(
+			if (retval = util::B40CPerror<0>(cudaMemcpy(
 					&queue_length,
 					((SizeT*) d_counters) + queue_length_idx,
 					1 * sizeof(SizeT),
@@ -392,7 +394,7 @@ public:
 		do {
 			int queue_length_idx = iteration & 0x3;
 
-			if (retval = util::B40CPerror(cudaMemcpy(
+			if (retval = util::B40CPerror<0>(cudaMemcpy(
 					((SizeT*) d_counters) + queue_length_idx,
 					&queue_length,
 					1 * sizeof(SizeT),
@@ -407,4 +409,6 @@ public:
 
 } // namespace util
 } // namespace b40c
+
+B40C_NS_POSTFIX
 

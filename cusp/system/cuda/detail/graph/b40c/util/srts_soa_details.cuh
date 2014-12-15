@@ -36,6 +36,8 @@
 #include "cuda_properties.cuh"
 #include "basic_utils.cuh"
 
+B40C_NS_PREFIX
+
 namespace b40c {
 namespace util {
 
@@ -305,4 +307,6 @@ struct RakingSoaDetails<
 
 } // namespace util
 } // namespace b40c
+
+B40C_NS_POSTFIX
 

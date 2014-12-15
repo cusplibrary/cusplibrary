@@ -35,6 +35,8 @@
 #include "modified_store.cuh"
 #include "../operators.cuh"
 
+B40C_NS_PREFIX
+
 namespace b40c {
 namespace util {
 namespace io {
@@ -337,4 +339,6 @@ struct ScatterTile
 } // namespace io
 } // namespace util
 } // namespace b40c
+
+B40C_NS_POSTFIX
 

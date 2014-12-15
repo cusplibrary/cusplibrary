@@ -43,6 +43,8 @@
 #include "../../../../util/soa_tuple.cuh"
 #include "../../../../util/scan/soa/cooperative_soa_scan.cuh"
 
+B40C_NS_PREFIX
+
 namespace b40c {
 namespace graph {
 namespace bfs {
@@ -726,4 +728,6 @@ struct Cta
 } // namespace bfs
 } // namespace graph
 } // namespace b40c
+
+B40C_NS_POSTFIX
 

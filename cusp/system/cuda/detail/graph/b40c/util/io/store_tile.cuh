@@ -37,6 +37,8 @@
 #include "../vector_types.cuh"
 #include "modified_store.cuh"
 
+B40C_NS_PREFIX
+
 namespace b40c {
 namespace util {
 namespace io {
@@ -226,4 +228,6 @@ struct StoreTile
 } // namespace io
 } // namespace util
 } // namespace b40c
+
+B40C_NS_POSTFIX
 

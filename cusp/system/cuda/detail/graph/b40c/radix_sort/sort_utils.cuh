@@ -33,6 +33,8 @@
 
 #pragma once
 
+B40C_NS_PREFIX
+
 namespace b40c {
 namespace radix_sort {
 
@@ -187,4 +189,6 @@ template <> struct KeyTraits<double> : FloatingPointKeyConversion<unsigned long 
 
 } // namespace radix_sort
 } // namespace b40c
+
+B40C_NS_POSTFIX
 

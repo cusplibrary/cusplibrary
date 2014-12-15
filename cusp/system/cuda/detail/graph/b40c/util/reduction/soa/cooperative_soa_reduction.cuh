@@ -36,6 +36,8 @@
 #include "warp_soa_reduce.cuh"
 #include "../../scan/soa/warp_soa_scan.cuh"
 
+B40C_NS_PREFIX
+
 namespace b40c {
 namespace util {
 namespace reduction {
@@ -253,4 +255,6 @@ struct CooperativeSoaGridReduction<RakingSoaDetails, NullType>
 } // namespace reduction
 } // namespace util
 } // namespace b40c
+
+B40C_NS_POSTFIX
 
