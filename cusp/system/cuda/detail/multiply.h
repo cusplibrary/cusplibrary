@@ -18,7 +18,7 @@
 
 #include <cusp/detail/config.h>
 
-// #include <cusp/system/cuda/detail/multiply/coo_spmv.h>
+#include <cusp/system/cuda/detail/multiply/coo_flat_spmv.h>
 #include <cusp/system/cuda/detail/multiply/csr_vector_spmv.h>
 #include <cusp/system/cuda/detail/multiply/dia_spmv.h>
 #include <cusp/system/cuda/detail/multiply/ell_spmv.h>

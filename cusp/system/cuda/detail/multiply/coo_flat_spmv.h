@@ -364,15 +364,23 @@ spmv_coo_reduce_update_kernel(const IndexType num_warps,
 }
 
 template <bool InitializeY,
-          typename Matrix,
-          typename Array1,
-          typename Array2>
-void __spmv_coo_flat(const Matrix& A,
-                     const Array1&  x,
-                     Array2& y)
+          typename DerivedPolicy,
+          typename MatrixType,
+          typename VectorType1,
+          typename VectorType2,
+          typename UnaryFunction,
+          typename BinaryFunction1,
+          typename BinaryFunction2>
+void __spmv_coo_flat(cuda::execution_policy<DerivedPolicy>& exec,
+                     MatrixType& A,
+                     VectorType1& x,
+                     VectorType2& y,
+                     UnaryFunction   initialize,
+                     BinaryFunction1 combine,
+                     BinaryFunction2 reduce)
 {
-    typedef typename Matrix::index_type IndexType;
-    typedef typename Matrix::value_type ValueType;
+    typedef typename MatrixType::index_type IndexType;
+    typedef typename MatrixType::value_type ValueType;
 
     const IndexType * I = thrust::raw_pointer_cast(&A.row_indices[0]);
     const IndexType * J = thrust::raw_pointer_cast(&A.column_indices[0]);
@@ -428,14 +436,25 @@ void __spmv_coo_flat(const Matrix& A,
     (A.num_entries - tail, I + tail, J + tail, V + tail, x_ptr, y_ptr);
 }
 
-template <typename Matrix,
-          typename Array1,
-          typename Array2>
-void spmv_coo_flat(const Matrix& A,
-                   const Array1& x,
-                         Array2& y)
+template <typename DerivedPolicy,
+         typename MatrixType,
+         typename VectorType1,
+         typename VectorType2,
+         typename UnaryFunction,
+         typename BinaryFunction1,
+         typename BinaryFunction2>
+void multiply(cuda::execution_policy<DerivedPolicy>& exec,
+              MatrixType& A,
+              VectorType1& x,
+              VectorType2& y,
+              UnaryFunction   initialize,
+              BinaryFunction1 combine,
+              BinaryFunction2 reduce,
+              coo_format,
+              array1d_format,
+              array1d_format)
 {
-    __spmv_coo_flat<false>(A, x, y);
+    __spmv_coo_flat<false>(exec, A, x, y, initialize, combine, reduce);
 }
 
 } // end namespace cuda
