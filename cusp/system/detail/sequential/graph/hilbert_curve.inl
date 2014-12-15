@@ -32,7 +32,9 @@ namespace cusp
 {
 namespace system
 {
-namespace cuda
+namespace detail
+{
+namespace sequential
 {
 namespace detail
 {
@@ -42,21 +44,21 @@ static unsigned const int IMAX = ~(0U);
 static const int MAXLEVEL_2d = 28; // 56 bits of significance, 28 per dimension
 static const int MAXLEVEL_3d = 19; // 56 bits of significance, 18+ per dimension
 
-__constant__ static unsigned const int idata2d[] =  // 2 dimension to nkey conversion
+static unsigned const int idata2d[] =  // 2 dimension to nkey conversion
 {   0, 3, 1, 2,
     0, 1, 3, 2,
     2, 3, 1, 0,
     2, 1, 3, 0
 };
 
-__constant__ static unsigned const int istate2d[] = // 2 dimension to nkey state transitions
+static unsigned const int istate2d[] = // 2 dimension to nkey state transitions
 {   1, 2, 0, 0,
     0, 1, 3, 1,
     2, 0, 2, 3,
     3, 3, 1, 2
 };
 
-__constant__ static unsigned const idata3d [] = {   // 3 dimension to nkey conversion
+static unsigned const idata3d [] = {   // 3 dimension to nkey conversion
     0,  7,  3,  4,  1,  6,  2,  5,
     0,  1,  3,  2,  7,  6,  4,  5,
     0,  3,  7,  4,  1,  2,  6,  5,
@@ -83,7 +85,7 @@ __constant__ static unsigned const idata3d [] = {   // 3 dimension to nkey conve
     6,  5,  7,  4,  1,  2,  0,  3
 };
 
-__constant__ static unsigned const istate3d [] = { // 3 dimension to nkey state transitions
+static unsigned const istate3d [] = { // 3 dimension to nkey state transitions
     1,  6,  3,  4,  2,  5,  0,  0,
     0,  7,  8,  1,  9,  4,  5,  1,
     15, 22, 23, 20,  0,  2, 19,  2,
@@ -110,10 +112,10 @@ __constant__ static unsigned const istate3d [] = { // 3 dimension to nkey state 
     14, 23,  2,  9, 22, 23, 21,  0
 };
 
-__constant__ static const unsigned *d2d[]= {idata2d,  idata2d  +4, idata2d  +8, idata2d  +12};
-__constant__ static const unsigned *s2d[]= {istate2d, istate2d +4, istate2d +8, istate2d +12};
+static const unsigned *d2d[]= {idata2d,  idata2d  +4, idata2d  +8, idata2d  +12};
+static const unsigned *s2d[]= {istate2d, istate2d +4, istate2d +8, istate2d +12};
 
-__constant__ static const unsigned int *d3d[] =
+static const unsigned int *d3d[] =
 {   idata3d,      idata3d +8,   idata3d +16,  idata3d +24,
     idata3d +32,  idata3d +40,  idata3d +48,  idata3d +56,
     idata3d +64,  idata3d +72,  idata3d +80,  idata3d +88,
@@ -122,7 +124,7 @@ __constant__ static const unsigned int *d3d[] =
     idata3d +160, idata3d +168, idata3d +176, idata3d +184
 };
 
-__constant__ static const unsigned int *s3d[] =
+static const unsigned int *s3d[] =
 {   istate3d,      istate3d +8,   istate3d +16,  istate3d +24,
     istate3d +32,  istate3d +40,  istate3d +48,  istate3d +56,
     istate3d +64,  istate3d +72,  istate3d +80,  istate3d +88,
@@ -134,7 +136,7 @@ __constant__ static const unsigned int *s3d[] =
 struct hilbert_transform_2d : public thrust::unary_function<double,double>
 {
     template<typename Tuple>
-    __device__
+    __host__ __device__
     double operator()(const Tuple& t) const
     {
         const double x = thrust::get<0>(t);
@@ -169,7 +171,7 @@ struct hilbert_transform_2d : public thrust::unary_function<double,double>
 struct hilbert_transform_3d : public thrust::unary_function<double,double>
 {
     template<typename Tuple>
-    __device__
+    __host__ __device__
     double operator()(const Tuple& t) const
     {
         const double x = thrust::get<0>(t);
@@ -207,7 +209,7 @@ struct hilbert_transform_3d : public thrust::unary_function<double,double>
 } // end namespace detail
 
 template <typename DerivedPolicy, typename Array2d, typename Array1d>
-void hilbert_curve(cuda::execution_policy<DerivedPolicy>& exec,
+void hilbert_curve(sequential::execution_policy<DerivedPolicy>& exec,
                    const Array2d& coord,
                    size_t num_parts,
                    Array1d& parts)
@@ -269,10 +271,11 @@ void hilbert_curve(cuda::execution_policy<DerivedPolicy>& exec,
     thrust::gather(exec, perm.begin(), perm.end(), uniform_parts.begin(), parts.begin());
 }
 
-} // end namespace cuda
+} // end namespace sequential
+} // end namespace detail
 } // end namespace system
 
 // hack until ADL is operational
-using cusp::system::cuda::hilbert_curve;
+using cusp::system::detail::sequential::hilbert_curve;
 
 } // end namespace cusp
