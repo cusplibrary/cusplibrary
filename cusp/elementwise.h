@@ -32,6 +32,17 @@ namespace cusp
  *  \{
  */
 
+/*! \cond */
+template <typename DerivedPolicy,
+          typename MatrixType1, typename MatrixType2, typename MatrixType3,
+          typename BinaryFunction>
+void elementwise(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
+                 const MatrixType1& A,
+                 const MatrixType2& B,
+                 MatrixType3& C,
+                 BinaryFunction op);
+/*! \endcond */
+
 /**
  * \brief Perform transform operation on two matrices
  *
@@ -88,17 +99,6 @@ void elementwise(const MatrixType1& A,
                  const MatrixType2& B,
                  MatrixType3& C,
                  BinaryFunction op);
-
-/*! \cond */
-template <typename DerivedPolicy,
-          typename MatrixType1, typename MatrixType2, typename MatrixType3,
-          typename BinaryFunction>
-void elementwise(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
-                 const MatrixType1& A,
-                 const MatrixType2& B,
-                 MatrixType3& C,
-                 BinaryFunction op);
-/*! \endcond */
 
 /**
  * \brief Compute the sum of two matrices

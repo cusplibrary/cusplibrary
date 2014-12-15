@@ -33,6 +33,12 @@ namespace cusp
  *  \{
  */
 
+/*! \cond */
+template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
+void transpose(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+               const MatrixType1& A, MatrixType2& At);
+/*! \endcond */
+
 /**
  * \brief Transpose a matrix
  *
@@ -73,13 +79,6 @@ namespace cusp
  */
 template <typename MatrixType1, typename MatrixType2>
 void transpose(const MatrixType1& A, MatrixType2& At);
-
-/*! \cond */
-template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
-void transpose(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-               const MatrixType1& A, MatrixType2& At);
-/*! \endcond */
-
 /*! \}
  */
 

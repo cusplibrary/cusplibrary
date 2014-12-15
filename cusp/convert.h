@@ -27,6 +27,12 @@
 namespace cusp
 {
 
+/*! \cond */
+template <typename DerivedPolicy, typename SourceType, typename DestinationType>
+void convert(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+             const SourceType& src, DestinationType& dst);
+/*! \endcond */
+
 /*! \addtogroup algorithms Algorithms
  *  \addtogroup matrix_algorithms Matrix Algorithms
  *  \ingroup algorithms
@@ -50,13 +56,6 @@ namespace cusp
  */
 template <typename SourceType, typename DestinationType>
 void convert(const SourceType& src, DestinationType& dst);
-
-/*! \cond */
-template <typename DerivedPolicy, typename SourceType, typename DestinationType>
-void convert(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-             const SourceType& src, DestinationType& dst);
-/*! \endcond */
-
 /*! \}
  */
 
