@@ -454,7 +454,7 @@ void multiply(cuda::execution_policy<DerivedPolicy>& exec,
               array1d_format,
               array1d_format)
 {
-    __spmv_coo_flat<false>(exec, A, x, y, initialize, combine, reduce);
+    __spmv_coo_flat<true>(exec, A, x, y, initialize, combine, reduce);
 }
 
 } // end namespace cuda
