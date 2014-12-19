@@ -81,7 +81,7 @@ dotc(const cblas::detail::blas_policy<typename Array1::memory_space>& policy,
 }
 
 template <typename Array>
-typename norm_type<typename Array::value_type>::type
+typename cusp::detail::norm_type<typename Array::value_type>::type
 nrm1(const cblas::detail::blas_policy<typename Array::memory_space>& policy,
      const Array& x)
 {
@@ -95,7 +95,7 @@ nrm1(const cblas::detail::blas_policy<typename Array::memory_space>& policy,
 }
 
 template <typename Array>
-typename norm_type<typename Array::value_type>::type
+typename cusp::detail::norm_type<typename Array::value_type>::type
 nrm2(const cblas::detail::blas_policy<typename Array::memory_space>& policy,
      const Array& x)
 {
@@ -114,7 +114,7 @@ nrmmax(const cblas::detail::blas_policy<typename Array::memory_space>& policy,
        const Array& x)
 {
     typedef typename Array::value_type ValueType;
-    typedef typename norm_type<ValueType>::type ResultType;
+    typedef typename cusp::detail::norm_type<ValueType>::type ResultType;
 
     int n = x.size();
 

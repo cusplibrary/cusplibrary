@@ -43,13 +43,13 @@ static cublasStatus_t axpy( cublasHandle_t handle, int n, cusp::complex<float>* 
                      const cusp::complex<float>* x, int incx,
                      cusp::complex<float>* y, int incy )
 {
-  return cublasCaxpy(handle, n, alpha, x, incx, y, incy);
+  return cublasCaxpy(handle, n, (cuComplex*) alpha, (const cuComplex*) x, incx, (cuComplex*) y, incy);
 }
 static cublasStatus_t axpy( cublasHandle_t handle, int n, cusp::complex<double>* alpha,
                      const cusp::complex<double>* x, int incx,
                      cusp::complex<double>* y, int incy )
 {
-  return cublasZaxpy(handle, n, alpha, x, incx, y, incy);
+  return cublasZaxpy(handle, n, (cuDoubleComplex*) alpha, (const cuDoubleComplex*) x, incx, (cuDoubleComplex*) y, incy);
 }
 
 static cublasStatus_t dot( cublasHandle_t handle, int n, const float* x, int incx, const float* y, int incy, float* result )
@@ -73,12 +73,12 @@ static cublasStatus_t dotc( cublasHandle_t handle, int n, const double* x, int i
 static cublasStatus_t dotc( cublasHandle_t handle, int n, const cusp::complex<float>* x, int incx,
                      const cusp::complex<float>* y, int incy, cusp::complex<float>* result )
 {
-  return cublasCdotu(handle, n, x, incx, y, incy, result);
+  return cublasCdotu(handle, n, (const cuComplex*) x, incx, (const cuComplex*) y, incy, (cuComplex*) result);
 }
 static cublasStatus_t dotc( cublasHandle_t handle, int n, const cusp::complex<double>* x, int incx,
                      const cusp::complex<double>* y, int incy, cusp::complex<double>* result )
 {
-  return cublasZdotu(handle, n, x, incx, y, incy, result);
+  return cublasZdotu(handle, n, (const cuDoubleComplex*) x, incx, (const cuDoubleComplex*) y, incy, (cuDoubleComplex*) result);
 }
 
 static cublasStatus_t asum( cublasHandle_t handle, int n, const float* x, int incx, float* result )
@@ -91,11 +91,11 @@ static cublasStatus_t asum( cublasHandle_t handle, int n, const double* x, int i
 }
 static cublasStatus_t asum( cublasHandle_t handle, int n, const cusp::complex<float>* x, int incx, float* result )
 {
-  return cublasScasum(handle, n, x, incx, result);
+  return cublasScasum(handle, n, (const cuComplex*) x, incx, result);
 }
 static cublasStatus_t asum( cublasHandle_t handle, int n, const cusp::complex<double>* x, int incx, double* result )
 {
-  return cublasDzasum(handle, n, x, incx, result);
+  return cublasDzasum(handle, n, (const cuDoubleComplex*) x, incx, result);
 }
 
 static cublasStatus_t amax( cublasHandle_t handle, int n, const float* x, int incx, int* index )
@@ -108,11 +108,11 @@ static cublasStatus_t amax( cublasHandle_t handle, int n, const double* x, int i
 }
 static cublasStatus_t amax( cublasHandle_t handle, int n, const cusp::complex<float>* x, int incx, int* index )
 {
-  return cublasIcamax(handle, n, x, incx, index);
+  return cublasIcamax(handle, n, (const cuComplex*) x, incx, index);
 }
 static cublasStatus_t amax( cublasHandle_t handle, int n, const cusp::complex<double>* x, int incx, int* index )
 {
-  return cublasIzamax(handle, n, x, incx, index);
+  return cublasIzamax(handle, n, (const cuDoubleComplex*) x, incx, index);
 }
 
 static cublasStatus_t nrm2( cublasHandle_t handle, int n, const float* x, int incx, float* result )
@@ -125,11 +125,11 @@ static cublasStatus_t nrm2( cublasHandle_t handle, int n, const double* x, int i
 }
 static cublasStatus_t nrm2( cublasHandle_t handle, int n, const cusp::complex<float>* x, int incx, float* result )
 {
-  return cublasScnrm2(handle, n, x, incx, result);
+  return cublasScnrm2(handle, n, (const cuComplex*) x, incx, result);
 }
 static cublasStatus_t nrm2( cublasHandle_t handle, int n, const cusp::complex<double>* x, int incx, double* result )
 {
-  return cublasDznrm2(handle, n, x, incx, result);
+  return cublasDznrm2(handle, n, (const cuDoubleComplex*) x, incx, result);
 }
 
 static cublasStatus_t scal( cublasHandle_t handle, int n, float* alpha, float* x, int incx )
