@@ -36,8 +36,8 @@ void axpy(const cblas::detail::blas_policy<typename Array1::memory_space>& polic
 
     int n = y.size();
 
-    const ValueType* x_p = x.raw_data();
-    ValueType* y_p = y.raw_data();
+    const ValueType* x_p = thrust::raw_pointer_cast(&x[0]);
+    ValueType* y_p = thrust::raw_pointer_cast(&y[0]);
 
     cblas::detail::axpy(n, &alpha, x_p, 1, y_p, 1);
 }
@@ -53,8 +53,8 @@ dot(const cblas::detail::blas_policy<typename Array1::memory_space>& policy,
 
     int n = y.size();
 
-    const ValueType* x_p = x.raw_data();
-    const ValueType* y_p = y.raw_data();
+    const ValueType* x_p = thrust::raw_pointer_cast(&x[0]);
+    const ValueType* y_p = thrust::raw_pointer_cast(&y[0]);
 
     return cblas::detail::dot(n, x_p, 1, y_p, 1);
 }
@@ -70,8 +70,8 @@ dotc(const cblas::detail::blas_policy<typename Array1::memory_space>& policy,
 
     int n = y.size();
 
-    const ValueType* x_p = x.raw_data();
-    const ValueType* y_p = y.raw_data();
+    const ValueType* x_p = thrust::raw_pointer_cast(&x[0]);
+    const ValueType* y_p = thrust::raw_pointer_cast(&y[0]);
 
     ValueType result;
 
@@ -89,7 +89,7 @@ nrm1(const cblas::detail::blas_policy<typename Array::memory_space>& policy,
 
     int n = x.size();
 
-    const ValueType* x_p = x.raw_data();
+    const ValueType* x_p = thrust::raw_pointer_cast(&x[0]);
 
     return cblas::detail::asum(n, x_p, 1);
 }
@@ -103,7 +103,7 @@ nrm2(const cblas::detail::blas_policy<typename Array::memory_space>& policy,
 
     int n = x.size();
 
-    const ValueType* x_p = x.raw_data();
+    const ValueType* x_p = thrust::raw_pointer_cast(&x[0]);
 
     return cblas::detail::nrm2(n, x_p, 1);
 }
@@ -118,7 +118,7 @@ nrmmax(const cblas::detail::blas_policy<typename Array::memory_space>& policy,
 
     int n = x.size();
 
-    const ValueType* x_p = x.raw_data();
+    const ValueType* x_p = thrust::raw_pointer_cast(&x[0]);
 
     int index = cblas::detail::amax(n, x_p, 1);
 
@@ -134,7 +134,7 @@ void scal(const cblas::detail::blas_policy<typename Array::memory_space>& policy
 
     int n = x.size();
 
-    ValueType* x_p = x.raw_data();
+    ValueType* x_p = thrust::raw_pointer_cast(&x[0]);
 
     cblas::detail::scal(n, &alpha, x_p, 1);
 }
@@ -157,8 +157,8 @@ void gemv(const cblas::detail::blas_policy<typename Array1d2::memory_space>& pol
     ValueType beta = 0.0;
 
     ValueType *A_p = A.raw_data();
-    ValueType *x_p = x.raw_data();
-    ValueType *y_p = y.raw_data();
+    ValueType *x_p = thrust::raw_pointer_cast(&x[0]);
+    ValueType *y_p = thrust::raw_pointer_cast(&y[0]);
 
     cblas::detail::gemv(order, trans, m, n, alpha,
                  A_p, m, x_p, 1, beta, y_p, 1);

@@ -250,7 +250,7 @@ def Environment():
 
   # add a variable to handle the device BLSA backend
   deviceblas_variable = EnumVariable('deviceblas', 'Device BLAS library', 'thrust',
-                                  allowed_values = ('thrust', 'cublas'))
+                                  allowed_values = ('thrust', 'cblas', 'cublas'))
   vars.Add(deviceblas_variable)
 
   # create an Environment
@@ -270,7 +270,7 @@ def Environment():
   env.Append(CXXFLAGS = ['-DTHRUST_DEVICE_SYSTEM=%s' % backend_define])
 
   # get the preprocessor define to use for the device BLAS backend
-  device_blas_backend_define = { 'thrust' : 'CUSP_DEVICE_BLAS_THRUST', 'cublas' : 'CUSP_DEVICE_BLAS_CUBLAS' }[env['deviceblas']]
+  device_blas_backend_define = { 'thrust' : 'CUSP_DEVICE_BLAS_THRUST', 'cblas' : 'CUSP_DEVICE_BLAS_CBLAS', 'cublas' : 'CUSP_DEVICE_BLAS_CUBLAS' }[env['deviceblas']]
   env.Append(CFLAGS = ['-DCUSP_DEVICE_BLAS_SYSTEM=%s' % device_blas_backend_define])
   env.Append(CXXFLAGS = ['-DCUSP_DEVICE_BLAS_SYSTEM=%s' % device_blas_backend_define])
 
