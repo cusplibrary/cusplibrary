@@ -29,6 +29,15 @@ void offsets_to_indices(const thrust::detail::execution_policy_base<DerivedPolic
                         IndexArray& indices);
 /* \endcond */
 
+/**
+ * \brief Expand CSR row offsets to COO row indices
+ *
+ * \tparam OffsetType Type of input row offsets
+ * \tparam IndexArray Type of input row indices
+ *
+ * \param offsets The input row offsets
+ * \param indices The output row indices
+ */
 template <typename OffsetArray, typename IndexArray>
 void offsets_to_indices(const OffsetArray& offsets,
                         IndexArray& indices);
@@ -40,6 +49,15 @@ void indices_to_offsets(const thrust::detail::execution_policy_base<DerivedPolic
                         OffsetArray& offsets);
 /* \endcond */
 
+/**
+ * \brief Compress COO row indices to CSR row offsets
+ *
+ * \tparam IndexArray Type of input row indices
+ * \tparam OffsetType Type of input row offsets
+ *
+ * \param indices The input row indices
+ * \param offsets The output row offsets
+ */
 template <typename IndexArray, typename OffsetArray>
 void indices_to_offsets(const IndexArray& indices,
                         OffsetArray& offsets);
@@ -51,6 +69,16 @@ void extract_diagonal(const thrust::detail::execution_policy_base<DerivedPolicy>
                       ArrayType& output);
 /* \endcond */
 
+/**
+ * \brief Extract the main diagonal of a matrix
+ *
+ * \tparam MatrixType Type of input matrix
+ * \tparam ArrayType Type of input diagonal array
+ *
+ * \param A The input matrix
+ * \param output On return contains the main diagonal of A with zeros inserted
+ * for missing entries.
+ */
 template <typename MatrixType, typename ArrayType>
 void extract_diagonal(const MatrixType& A, ArrayType& output);
 
@@ -63,6 +91,16 @@ size_t count_diagonals(const thrust::detail::execution_policy_base<DerivedPolicy
                        const ArrayType2& column_indices );
 /* \endcond */
 
+/**
+ * \brief Count the number of occupied diagonals in the input matrix
+ *
+ * \tparam ArrayType1 Type of input row indices
+ * \tparam ArrayType2 Type of input column indices
+ *
+ * \param row_indices row indices of input matrix
+ * \param column_indices column indices of input matrix
+ * \return number of occupied diagonals
+ */
 template <typename ArrayType1, typename ArrayType2>
 size_t count_diagonals(const size_t num_rows,
                        const size_t num_cols,
@@ -75,6 +113,14 @@ size_t compute_max_entries_per_row(const thrust::detail::execution_policy_base<D
                                    const ArrayType& row_offsets);
 /* \endcond */
 
+/**
+ * \brief Compute the maximum row length of a matrix
+ *
+ * \tparam ArrayType Type of input row offsets
+ *
+ * \param row_offsets row offsets of input matrix
+ * \return maximum row length
+ */
 template <typename ArrayType>
 size_t compute_max_entries_per_row(const ArrayType& row_offsets);
 
@@ -86,6 +132,18 @@ size_t compute_optimal_entries_per_row(const thrust::detail::execution_policy_ba
                                        size_t breakeven_threshold = 4096);
 /* \endcond */
 
+/**
+ * \brief Compute the optimal number of entries per row of HYB matrix
+ *
+ * \tparam ArrayType Type of input row offsets
+ *
+ * \param row_offsets row offsets of input matrix
+ * \param relative_speed Estimated performance difference between ELL and COO
+ * row storage schemes
+ * \param breakeven_threshold Threshold value separating ELL and COO row
+ * classification
+ * \return optimal number of columns to store in ELL matrix
+ */
 template <typename ArrayType>
 size_t compute_optimal_entries_per_row(const ArrayType& row_offsets,
                                        float relative_speed = 3.0f,

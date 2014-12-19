@@ -49,16 +49,16 @@ void breadth_first_search(const thrust::detail::execution_policy_base<DerivedPol
 /**
  * \brief Performs a Breadth-first traversal of a graph starting from a given source vertex.
  *
- * \tparam MARK_PREDECESSORS Boolean value indicating whether to return level sets, \c false, or
- * predecessor, \c true, markers
  * \tparam MatrixType Type of input matrix
  * \tparam ArrayType Type of labels array
  *
  * \param G A symmetric matrix that represents the graph
  * \param src The source vertex to begin the BFS traversal
- * \param labels If MARK_PREDECESSORS is \c false then labels will contain the
+ * \param labels If mark_levels is \c false then labels will contain the
  * level set of all the vertices starting from the source vertex otherwise
  * labels will contain the immediate ancestor of each vertex forming a ancestor
+ * \param mark_levels Boolean value indicating whether to return level sets, \c false, or
+ * predecessor, \c true, markers
  * tree.
  *
  *  \see http://en.wikipedia.org/wiki/Breadth-first_search
