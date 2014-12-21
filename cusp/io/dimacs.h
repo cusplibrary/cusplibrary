@@ -21,6 +21,7 @@
 #pragma once
 
 #include <cusp/detail/config.h>
+#include <thrust/tuple.h>
 
 #include <string>
 
@@ -138,7 +139,9 @@ read_dimacs_stream(Matrix& mtx, Stream& input);
  * \see \p read_dimacs_stream
  */
 template <typename Matrix>
-void write_dimacs_file(const Matrix& mtx, const std::string& filename);
+void write_dimacs_file(const Matrix& mtx,
+                       const thrust::tuple<typename Matrix::index_type,typename Matrix::index_type>& t,
+                       const std::string& filename);
 
 /**
  * \brief Write Dimacs data to a stream.
@@ -173,7 +176,9 @@ void write_dimacs_file(const Matrix& mtx, const std::string& filename);
  * \see read_dimacs_stream
  */
 template <typename Matrix, typename Stream>
-void write_dimacs_stream(const Matrix& mtx, Stream& output);
+void write_dimacs_stream(const Matrix& mtx,
+                         const thrust::tuple<typename Matrix::index_type,typename Matrix::index_type>& t,
+                         Stream& output);
 
 /*! \}
  */
