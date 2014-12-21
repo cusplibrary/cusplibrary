@@ -157,7 +157,7 @@ void write_dimacs_stream(const cusp::coo_matrix<IndexType,ValueType,cusp::host_m
                          const thrust::tuple<IndexType,IndexType>& t,
                          Stream& output)
 {
-    output << "p max" << coo.num_rows << "\t" << coo.num_entries << std::endl;
+    output << "p max" << coo.num_rows << " " << coo.num_entries << std::endl;
     output << "n " << thrust::get<0>(t) << " s" << std::endl;
     output << "n " << thrust::get<1>(t) << " t" << std::endl;
 
@@ -168,8 +168,7 @@ void write_dimacs_stream(const cusp::coo_matrix<IndexType,ValueType,cusp::host_m
         output << (coo.column_indices[i] + 1) << " ";
 
         int val = coo.values[i];
-        output << val;
-        output << "\n";
+        output << val << std::endl;
     }
 }
 
