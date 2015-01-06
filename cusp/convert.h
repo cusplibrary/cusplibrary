@@ -27,12 +27,6 @@
 namespace cusp
 {
 
-/*! \cond */
-template <typename DerivedPolicy, typename SourceType, typename DestinationType>
-void convert(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-             const SourceType& src, DestinationType& dst);
-/*! \endcond */
-
 /*! \addtogroup algorithms Algorithms
  *  \addtogroup matrix_algorithms Matrix Algorithms
  *  \ingroup algorithms
@@ -40,6 +34,12 @@ void convert(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
  *  formats
  *  \{
  */
+
+/*! \cond */
+template <typename DerivedPolicy, typename SourceType, typename DestinationType>
+void convert(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+             const SourceType& src, DestinationType& dst);
+/*! \endcond */
 
 /**
  * \brief Convert between matrix formats

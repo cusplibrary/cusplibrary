@@ -27,17 +27,17 @@
 namespace cusp
 {
 
-/*! \cond */
-template <typename DerivedPolicy, typename SourceType, typename DestinationType>
-void copy(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-          const SourceType& src, DestinationType& dst);
-/*! \endcond */
-
 /*! \addtogroup algorithms Algorithms
  *  \addtogroup matrix_algorithms Matrix Algorithms
  *  \ingroup algorithms
  *  \{
  */
+
+/*! \cond */
+template <typename DerivedPolicy, typename SourceType, typename DestinationType>
+void copy(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+          const SourceType& src, DestinationType& dst);
+/*! \endcond */
 
 /**
  * \brief Copy one array or matrix to another

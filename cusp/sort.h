@@ -23,6 +23,12 @@
 namespace cusp
 {
 
+/*! \addtogroup algorithms Algorithms
+ *  \addtogroup matrix_algorithms Matrix Algorithms
+ *  \ingroup algorithms
+ *  \{
+ */
+
 /* \cond */
 template <typename DerivedPolicy, typename ArrayType1, typename ArrayType2, typename ArrayType3>
 void sort_by_row(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
@@ -119,6 +125,8 @@ void sort_by_row_and_column(const thrust::detail::execution_policy_base<DerivedP
  */
 template <typename ArrayType1, typename ArrayType2, typename ArrayType3>
 void sort_by_row_and_column(ArrayType1& rows, ArrayType2& columns, ArrayType3& values);
+/*! \}
+ */
 
 } // end namespace cusp
 

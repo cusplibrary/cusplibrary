@@ -22,6 +22,12 @@
 namespace cusp
 {
 
+/*! \addtogroup algorithms Algorithms
+ *  \addtogroup matrix_algorithms Matrix Algorithms
+ *  \ingroup algorithms
+ *  \{
+ */
+
 /* \cond */
 template <typename DerivedPolicy, typename OffsetArray, typename IndexArray>
 void offsets_to_indices(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
@@ -148,6 +154,9 @@ template <typename ArrayType>
 size_t compute_optimal_entries_per_row(const ArrayType& row_offsets,
                                        float relative_speed = 3.0f,
                                        size_t breakeven_threshold = 4096);
+/*! \}
+ */
+
 } // end namespace cusp
 
 #include <cusp/detail/format_utils.inl>
