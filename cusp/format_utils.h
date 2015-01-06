@@ -14,10 +14,15 @@
  *  limitations under the License.
  */
 
+/*! \file format_utils.h
+ *  \brief Various matrix utility functions
+ */
 
 #pragma once
 
-#include <thrust/execution_policy.h>
+#include <cusp/detail/config.h>
+
+#include <cusp/execution_policy.h>
 
 namespace cusp
 {
