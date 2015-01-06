@@ -142,11 +142,13 @@ static cublasStatus_t scal( cublasHandle_t handle, int n, double* alpha, double*
 }
 static cublasStatus_t scal( cublasHandle_t handle, int n, float* alpha, cusp::complex<float>* x, int incx )
 {
-  return CUBLAS_STATUS_SUCCESS; //cublasCscal(handle, n, alpha, x, incx);
+  return CUBLAS_STATUS_EXECUTION_FAILED;
+  // return cublasCscal(handle, n, alpha, x, incx);
 }
 static cublasStatus_t scal( cublasHandle_t handle, int n, double* alpha, cusp::complex<double>* x, int incx )
 {
-  return CUBLAS_STATUS_SUCCESS; //cublasZscal(handle, n, alpha, x, incx);
+  return CUBLAS_STATUS_EXECUTION_FAILED;
+  // return cublasZscal(handle, n, alpha, x, incx);
 }
 
 static cublasStatus_t gemv( cublasHandle_t handle, cublasOperation_t trans,

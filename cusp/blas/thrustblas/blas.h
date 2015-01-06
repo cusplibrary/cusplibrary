@@ -139,6 +139,7 @@ void gemv(const thrustblas::detail::blas_policy<typename Array2::memory_space>& 
           const Array1& x,
           Array2& y)
 {
+  throw cusp::not_implemented_exception("CUSP GEMV not implemented");
 }
 
 template<typename Array2d1,
@@ -149,6 +150,7 @@ void gemm(const thrustblas::detail::blas_policy<typename Array2d3::memory_space>
           const Array2d2& B,
           Array2d3& C)
 {
+  throw cusp::not_implemented_exception("CUSP GEMM not implemented");
 }
 
 } // end namespace blas
