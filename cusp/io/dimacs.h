@@ -57,7 +57,7 @@ namespace io
  *     // read matrix stored in A.mtx into a coo_matrix
  *     thrust::tuple<int,int> nodes;
  *     cusp::coo_matrix<int, float, cusp::device_memory> A;
- *     nodes = cusp::io::read_dimacs_file(A, "A.mtx");
+ *     nodes = cusp::io::read_dimacs_file(A, "A.dimacs");
  *
  *     return 0;
  * }
