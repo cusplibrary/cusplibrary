@@ -55,8 +55,9 @@ namespace io
  * int main(void)
  * {
  *     // read matrix stored in A.mtx into a coo_matrix
+ *     thrust::tuple<int,int> nodes;
  *     cusp::coo_matrix<int, float, cusp::device_memory> A;
- *     cusp::io::read_dimacs_file(A, "A.mtx");
+ *     nodes = cusp::io::read_dimacs_file(A, "A.mtx");
  *
  *     return 0;
  * }
@@ -90,7 +91,7 @@ read_dimacs_file(Matrix& mtx, const std::string& filename);
  * {
  *     // read matrix stored in A.mtx into a coo_matrix
  *     cusp::coo_matrix<int, float, cusp::device_memory> A;
- *     cusp::io::read_dimacs_stream(A, std::cin);
+ *     nodes = cusp::io::read_dimacs_stream(A, std::cin);
  *
  *     return 0;
  * }
@@ -123,13 +124,15 @@ read_dimacs_stream(Matrix& mtx, Stream& input);
  * int main(void)
  * {
  *     // create a simple example
- *     cusp::array2d<float, cusp::host_memory> A(3,4);
+ *     cusp::array2d<float, cusp::host_memory> A(4,4);
  *     A(0,0) = 10;  A(0,1) =  0;  A(0,2) = 20;  A(0,3) =  0;
  *     A(1,0) =  0;  A(1,1) = 30;  A(1,2) =  0;  A(1,3) = 40;
  *     A(2,0) = 50;  A(2,1) = 60;  A(2,2) = 70;  A(2,3) = 80;
+ *     A(3,0) =  0;  A(3,1) =  0;  A(3,2) =  0;  A(3,3) =  0;
  *
  *     // save A into Dimacs file
- *     cusp::io::write_dimacs_file(A, "A.mtx");
+ *     thrust::tuple<int,int> nodes(0,3);
+ *     cusp::io::write_dimacs_file(A, nodes, "A.dimacs");
  *
  *     return 0;
  * }
@@ -160,13 +163,15 @@ void write_dimacs_file(const Matrix& mtx,
  * int main(void)
  * {
  *     // create a simple example
- *     cusp::array2d<float, cusp::host_memory> A(3,4);
+ *     cusp::array2d<float, cusp::host_memory> A(4,4);
  *     A(0,0) = 10;  A(0,1) =  0;  A(0,2) = 20;  A(0,3) =  0;
  *     A(1,0) =  0;  A(1,1) = 30;  A(1,2) =  0;  A(1,3) = 40;
  *     A(2,0) = 50;  A(2,1) = 60;  A(2,2) = 70;  A(2,3) = 80;
+ *     A(3,0) =  0;  A(3,1) =  0;  A(3,2) =  0;  A(3,3) =  0;
  *
  *     // save A into Dimacs file
- *     cusp::io::write_dimacs_stream(A, std::cout);
+ *     thrust::tuple<int,int> nodes(0,3);
+ *     cusp::io::write_dimacs_stream(A, nodes, std::cout);
  *
  *     return 0;
  * }

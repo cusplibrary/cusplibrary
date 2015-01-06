@@ -157,9 +157,9 @@ void write_dimacs_stream(const cusp::coo_matrix<IndexType,ValueType,cusp::host_m
                          const thrust::tuple<IndexType,IndexType>& t,
                          Stream& output)
 {
-    output << "p max" << coo.num_rows << " " << coo.num_entries << std::endl;
-    output << "n " << thrust::get<0>(t) << " s" << std::endl;
-    output << "n " << thrust::get<1>(t) << " t" << std::endl;
+    output << "p max " << coo.num_rows << " " << coo.num_entries << std::endl;
+    output << "n " << (thrust::get<0>(t) + 1) << " s" << std::endl;
+    output << "n " << (thrust::get<1>(t) + 1) << " t" << std::endl;
 
     for(size_t i = 0; i < coo.num_entries; i++)
     {
@@ -221,7 +221,9 @@ read_dimacs_stream(Matrix& mtx, Stream& input)
 }
 
 template <typename Matrix>
-void write_dimacs_file(const Matrix& mtx, const std::string& filename)
+void write_dimacs_file(const Matrix& mtx,
+                       const thrust::tuple<typename Matrix::index_type,typename Matrix::index_type>& t,
+                       const std::string& filename)
 {
     std::ofstream file(filename.c_str());
 
@@ -236,7 +238,7 @@ void write_dimacs_file(const Matrix& mtx, const std::string& filename)
 
     file.rdbuf()->sputn(file_string.str().c_str(), file_string.str().size());
 #else
-    cusp::io::write_dimacs_stream(mtx, file);
+    cusp::io::write_dimacs_stream(mtx, t, file);
 #endif
 }
 
