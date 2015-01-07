@@ -31,6 +31,13 @@ namespace cusp
 namespace relaxation
 {
 
+/*! \addtogroup iterative_solvers Iterative Solvers
+ *  \addtogroup relaxation Relaxation Methods
+ *  \brief Several relaxation methods
+ *  \ingroup iterative_solvers
+ *  \{
+ */
+
 /**
  * \brief Represents a Successive Over-Relaxation relaxation scheme
  *
@@ -92,29 +99,73 @@ class sor : public cusp::linear_operator<ValueType, MemorySpace>
 {
 public:
 
+    /* \cond */
     ValueType default_omega;
-
     cusp::array1d<ValueType,MemorySpace> temp;
-
     gauss_seidel<ValueType,MemorySpace> gs;
+    /* \endcond */
 
-    // constructor
+    /*! This constructor creates an empty \p sor smoother.
+     */
     sor(void) {}
 
+    /*! This constructor creates a \p sor smoother using a given
+     *  matrix and sweeping strategy (FORWARD, BACKWARD, SYMMETRIC).
+     *
+     *  \tparam MatrixType Type of input matrix used to create this \p
+     *  sor smoother.
+     *
+     *  \param A Input matrix used to create smoother.
+     *  \param omega Damping factor used in SOR smoother.
+     *  \param default_direction Sweep strategy used to perform Gauss-Seidel
+     *  smoothing.
+     */
     template <typename MatrixType>
     sor(const MatrixType& A, const ValueType omega, sweep default_direction=SYMMETRIC)
       : default_omega(omega), temp(A.num_cols), gs(A, default_direction) {}
 
+    /*! Copy constructor for \p sor smoother.
+     *
+     *  \tparam MemorySpace2 Memory space of input \p sor smoother.
+     *
+     *  \param A Input \p sor smoother.
+     */
     template<typename MemorySpace2>
     sor(const sor<ValueType,MemorySpace2>& A)
         : default_omega(A.default_omega), temp(A.temp), gs(A.gs) {}
 
+    /*! Perform SOR relaxation using default omega damping factor specified during
+     * construction of this \p sor smoother
+     *
+     * \tparam MatrixType  Type of input matrix.
+     * \tparam VectorType1 Type of input right-hand side vector.
+     * \tparam VectorType2 Type of input approximate solution vector.
+     *
+     * \param A matrix of the linear system
+     * \param x approximate solution of the linear system
+     * \param b right-hand side of the linear system
+     */
     template <typename MatrixType, typename VectorType1, typename VectorType2>
     void operator()(const MatrixType& A, const VectorType1& b, VectorType2& x);
 
+    /*! Perform SOR relaxation using specified omega damping factor.
+     *
+     * \tparam MatrixType  Type of input matrix.
+     * \tparam VectorType1 Type of input right-hand side vector.
+     * \tparam VectorType2 Type of input approximate solution vector.
+     *
+     * \param A matrix of the linear system
+     * \param x approximate solution of the linear system
+     * \param b right-hand side of the linear system
+     * \param omega Damping factor used in SOR smoother.
+     * \param direction sweeping strategy for this \p gauss_seidel smoother
+     * (FORWARD, BACKWARD, SYMMETRIC).
+     */
     template <typename MatrixType, typename VectorType1, typename VectorType2>
     void operator()(const MatrixType& A, const VectorType1& b, VectorType2& x, const ValueType omega, sweep direction);
 };
+/*! \}
+ */
 
 } // end namespace relaxation
 } // end namespace cusp

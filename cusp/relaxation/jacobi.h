@@ -39,6 +39,13 @@ template<typename MatrixType> struct sa_level;
 namespace relaxation
 {
 
+/*! \addtogroup iterative_solvers Iterative Solvers
+ *  \addtogroup relaxation Relaxation Methods
+ *  \brief Several relaxation methods
+ *  \ingroup iterative_solvers
+ *  \{
+ */
+
 /**
  * \brief Represents a Jacobi relaxation scheme
  *
@@ -99,16 +106,35 @@ template <typename ValueType, typename MemorySpace>
 class jacobi : public cusp::linear_operator<ValueType, MemorySpace>
 {
 public:
+
+    /* \cond */
     ValueType default_omega;
     cusp::array1d<ValueType,MemorySpace> diagonal;
     cusp::array1d<ValueType,MemorySpace> temp;
+    /* \endcond */
 
-    // constructor
+    /*! This constructor creates an empty \p jacobi smoother.
+     */
     jacobi(void) : default_omega(0.0) {}
 
+    /*! This constructor creates a \p jacobi smoother using a given
+     *  matrix and sweeping strategy (FORWARD, BACKWARD, SYMMETRIC).
+     *
+     *  \tparam MatrixType Type of input matrix used to create this \p
+     *  jacobi smoother.
+     *
+     *  \param A Input matrix used to create smoother.
+     *  \param omega Damping factor used in Jacobi smoother.
+     */
     template <typename MatrixType>
     jacobi(const MatrixType& A, ValueType omega=1.0);
 
+    /*! Copy constructor for \p jacobi smoother.
+     *
+     *  \tparam MemorySpace2 Memory space of input \p jacobi smoother.
+     *
+     *  \param A Input \p jacobi smoother.
+     */
     template<typename MemorySpace2>
     jacobi(const jacobi<ValueType,MemorySpace2>& A)
         : default_omega(A.default_omega), temp(A.temp), diagonal(A.diagonal){}
@@ -124,12 +150,36 @@ public:
     template<typename MatrixType, typename VectorType1, typename VectorType2>
     void postsmooth(const MatrixType& A, const VectorType1& b, VectorType2& x);
 
+    /*! Perform Jacobi relaxation using default omega damping factor specified during
+     * construction of this \p jacobi smoother
+     *
+     * \tparam MatrixType  Type of input matrix.
+     * \tparam VectorType1 Type of input right-hand side vector.
+     * \tparam VectorType2 Type of input approximate solution vector.
+     *
+     * \param A matrix of the linear system
+     * \param x approximate solution of the linear system
+     * \param b right-hand side of the linear system
+     */
     template <typename MatrixType, typename VectorType1, typename VectorType2>
     void operator()(const MatrixType& A, const VectorType1& b, VectorType2& x);
 
+    /*! Perform Jacobi relaxation using specified omega damping factor.
+     *
+     * \tparam MatrixType  Type of input matrix.
+     * \tparam VectorType1 Type of input right-hand side vector.
+     * \tparam VectorType2 Type of input approximate solution vector.
+     *
+     * \param A matrix of the linear system
+     * \param x approximate solution of the linear system
+     * \param b right-hand side of the linear system
+     * \param omega Damping factor used in Jacobi smoother.
+     */
     template <typename MatrixType, typename VectorType1, typename VectorType2>
-    void operator()(const MatrixType& A, const VectorType1& b, VectorType2& x, ValueType omega);
+    void operator()(const MatrixType& A, const VectorType1& b, VectorType2& x, const ValueType omega);
 };
+/*! \}
+ */
 
 } // end namespace relaxation
 } // end namespace cusp

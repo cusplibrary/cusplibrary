@@ -40,6 +40,13 @@ template<typename MatrixType> struct sa_level;
 namespace relaxation
 {
 
+/*! \addtogroup iterative_solvers Iterative Solvers
+ *  \addtogroup relaxation Relaxation Methods
+ *  \brief Several relaxation methods
+ *  \ingroup iterative_solvers
+ *  \{
+ */
+
 /**
  * \brief Represents a Polynomial relaxation scheme
  *
@@ -106,17 +113,36 @@ class polynomial : public cusp::linear_operator<ValueType, MemorySpace>
 {
 public:
 
+    /* \cond */
     // note: default_coefficients lives on the host
     cusp::array1d<ValueType, cusp::host_memory> default_coefficients;
     cusp::array1d<ValueType, MemorySpace> residual;
     cusp::array1d<ValueType, MemorySpace> h;
     cusp::array1d<ValueType, MemorySpace> y;
+    /* \endcond */
 
+    /*! This constructor creates an empty \p polynomial smoother.
+     */
     polynomial(void){}
 
+    /*! This constructor creates a \p polynomial smoother using a given
+     *  matrix and coefficients.
+     *
+     *  \tparam MatrixType Type of input matrix used to create this \p
+     *  polynomial smoother.
+     *
+     *  \param A Input matrix used to create smoother.
+     *  \param coefficients Used in polynomial smoother.
+     */
     template <typename MatrixType, typename VectorType>
     polynomial(const MatrixType& A, const VectorType& coefficients);
 
+    /*! Copy constructor for \p polynomial smoother.
+     *
+     *  \tparam MemorySpace2 Memory space of input \p polynomial smoother.
+     *
+     *  \param A Input \p polynomial smoother.
+     */
     template<typename MemorySpace2>
     polynomial(const polynomial<ValueType,MemorySpace2>& A)
     : default_coefficients(A.default_coefficients),
@@ -133,12 +159,37 @@ public:
     template<typename MatrixType, typename VectorType1, typename VectorType2>
     void postsmooth(const MatrixType& A, const VectorType1& b, VectorType2& x);
 
+    /*! Perform polynomial relaxation using default coefficients specified during
+     * construction of this \p polynomial smoother
+     *
+     * \tparam MatrixType  Type of input matrix.
+     * \tparam VectorType1 Type of input right-hand side vector.
+     * \tparam VectorType2 Type of input approximate solution vector.
+     *
+     * \param A matrix of the linear system
+     * \param x approximate solution of the linear system
+     * \param b right-hand side of the linear system
+     */
     template <typename MatrixType, typename VectorType1, typename VectorType2>
     void operator()(const MatrixType& A, const VectorType1& b, VectorType2& x);
 
+    /*! Perform polynomial relaxation using specified coefficients
+     *
+     * \tparam MatrixType  Type of input matrix.
+     * \tparam VectorType1 Type of input right-hand side vector.
+     * \tparam VectorType2 Type of input approximate solution vector.
+     * \tparam VectorType3 Type of input coefficients vector.
+     *
+     * \param A matrix of the linear system
+     * \param x approximate solution of the linear system
+     * \param b right-hand side of the linear system
+     * \param coefficients Used in polynomial smoother.
+     */
     template <typename MatrixType, typename VectorType1, typename VectorType2, typename VectorType3>
-    void operator()(const MatrixType& A, const VectorType1& b, VectorType2& x, const VectorType3& coeffients);
+    void operator()(const MatrixType& A, const VectorType1& b, VectorType2& x, const VectorType3& coefficients);
 };
+/*! \}
+ */
 
 } // end namespace relaxation
 } // end namespace cusp

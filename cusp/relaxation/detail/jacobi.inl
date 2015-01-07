@@ -112,7 +112,7 @@ void jacobi<ValueType,MemorySpace>
 template <typename ValueType, typename MemorySpace>
 template<typename MatrixType, typename VectorType1, typename VectorType2>
 void jacobi<ValueType,MemorySpace>
-::operator()(const MatrixType& A, const VectorType1& b, VectorType2& x, ValueType omega)
+::operator()(const MatrixType& A, const VectorType1& b, VectorType2& x, const ValueType omega)
 {
     // y <- A*x
     cusp::multiply(A, x, temp);
