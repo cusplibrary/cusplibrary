@@ -22,8 +22,6 @@
 
 #include <cusp/detail/config.h>
 
-#include <cusp/execution_policy.h>
-
 namespace cusp
 {
 

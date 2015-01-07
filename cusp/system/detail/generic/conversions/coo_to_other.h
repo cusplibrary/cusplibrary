@@ -18,11 +18,11 @@
 #pragma once
 
 #include <cusp/copy.h>
-#include <cusp/detail/format.h>
-#include <cusp/sort.h>
-#include <cusp/blas/blas.h>
-
 #include <cusp/format_utils.h>
+#include <cusp/sort.h>
+
+#include <cusp/detail/format.h>
+#include <cusp/blas/blas.h>
 
 #include <thrust/count.h>
 #include <thrust/gather.h>

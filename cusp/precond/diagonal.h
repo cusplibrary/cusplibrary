@@ -25,6 +25,7 @@
 
 #include <cusp/detail/config.h>
 
+#include <cusp/array1d.h>
 #include <cusp/linear_operator.h>
 
 namespace cusp

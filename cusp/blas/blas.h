@@ -22,6 +22,7 @@
 #pragma once
 
 #include <cusp/detail/config.h>
+
 #include <cusp/complex.h>
 #include <cusp/detail/type_traits.h>
 

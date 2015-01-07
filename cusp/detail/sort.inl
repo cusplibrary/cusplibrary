@@ -14,19 +14,19 @@
  *  limitations under the License.
  */
 
-#include <cusp/copy.h>
 #include <cusp/detail/format.h>
 #include <cusp/array1d.h>
 
-#include <thrust/fill.h>
-#include <thrust/extrema.h>
 #include <thrust/binary_search.h>
-#include <thrust/transform.h>
+#include <thrust/copy.h>
+#include <thrust/extrema.h>
 #include <thrust/gather.h>
+#include <thrust/fill.h>
+#include <thrust/scan.h>
 #include <thrust/scatter.h>
 #include <thrust/sequence.h>
-#include <thrust/scan.h>
 #include <thrust/sort.h>
+#include <thrust/transform.h>
 
 namespace cusp
 {
@@ -92,11 +92,11 @@ void sort_by_row_and_column(const thrust::detail::execution_policy_base<DerivedP
         cusp::array1d<IndexType,MemorySpace> temp(column_indices);
         thrust::stable_sort_by_key(exec, temp.begin(), temp.end(), permutation.begin());
 
-        cusp::copy(exec, row_indices, temp);
+        thrust::copy(exec, row_indices.begin(), row_indices.end(), temp.begin());
         thrust::gather(exec, permutation.begin(), permutation.end(), temp.begin(), row_indices.begin());
         thrust::stable_sort_by_key(exec, row_indices.begin(), row_indices.end(), permutation.begin());
 
-        cusp::copy(exec, column_indices, temp);
+        thrust::copy(exec, column_indices.begin(), column_indices.end(), temp.begin());
         thrust::gather(exec, permutation.begin(), permutation.end(), temp.begin(), column_indices.begin());
     }
 

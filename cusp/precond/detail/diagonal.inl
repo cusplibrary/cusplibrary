@@ -18,30 +18,17 @@
  *  \brief Inline file for diagonal.h
  */
 
-#include <cusp/blas/blas.h>
 #include <cusp/format_utils.h>
 
-#include <thrust/functional.h>
+#include <cusp/blas/blas.h>
+#include <cusp/detail/functional.h>
+
 #include <thrust/transform.h>
 
 namespace cusp
 {
 namespace precond
 {
-namespace detail
-{
-template <typename T>
-struct reciprocal : public thrust::unary_function<T,T>
-{
-    __host__ __device__
-    T operator()(const T& v)
-    {
-        return T(1.0) / v;
-    }
-};
-
-} // end namespace detail
-
 
 // constructor
 template <typename ValueType, typename MemorySpace>
@@ -55,7 +42,7 @@ diagonal<ValueType,MemorySpace>
 
     // invert the entries
     thrust::transform(diagonal_reciprocals.begin(), diagonal_reciprocals.end(),
-                      diagonal_reciprocals.begin(), detail::reciprocal<ValueType>());
+                      diagonal_reciprocals.begin(), cusp::detail::reciprocal<ValueType>());
 }
 
 // linear operator
