@@ -26,13 +26,49 @@ namespace cusp
 {
 namespace detail
 {
+
+template<typename T>
+struct random_iterator_type
+{
+    typedef typename thrust::detail::eval_if<
+    sizeof(T) <= 4,
+           thrust::detail::identity_< unsigned int >,
+           thrust::detail::identity_< unsigned long long >
+           >::type type;
+};
+
+template <typename Real>
+struct integer_to_real : public thrust::unary_function<typename random_iterator_type<Real>::type,Real>
+{
+    typedef typename random_iterator_type<Real>::type UnsignedInteger;
+
+    __host__ __device__
+    Real operator()(const UnsignedInteger i) const
+    {
+        const Real integer_bound = Real(UnsignedInteger(1) << (4 * sizeof(UnsignedInteger))) * Real(UnsignedInteger(1) << (4 * sizeof(UnsignedInteger)));
+        return Real(i) / integer_bound;
+    }
+};
+
+template<typename T>
+struct random_functor_type
+{
+    typedef typename thrust::detail::eval_if<
+    thrust::detail::is_floating_point<T>::value,
+           thrust::detail::identity_< integer_to_real<T> >,
+           thrust::detail::identity_< thrust::identity<T> >
+           >::type type;
+};
+
 // Integer hash functions
-template <typename IndexType, typename T>
-struct random_integer_functor : public thrust::unary_function<IndexType,T>
+template <typename IndexType, typename BaseType>
+struct random_integer_functor : public thrust::unary_function<IndexType,typename random_iterator_type<BaseType>::type>
 {
     size_t seed;
 
-    random_integer_functor(const size_t seed)
+    typedef typename random_iterator_type<BaseType>::type T;
+
+    random_integer_functor(const size_t seed = 0)
         : seed(seed) {}
 
     // source: http://www.concentric.net/~ttwang/tech/inthash.htm

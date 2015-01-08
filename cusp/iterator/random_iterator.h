@@ -20,10 +20,11 @@
 
 #pragma once
 
+#include <thrust/functional.h>
+
 #include <thrust/iterator/counting_iterator.h>
 #include <thrust/iterator/permutation_iterator.h>
 #include <thrust/iterator/transform_iterator.h>
-#include <thrust/functional.h>
 
 namespace cusp
 {
@@ -31,8 +32,9 @@ namespace cusp
 /*! \cond */
 namespace detail
 {
-  // Forward definition
-  template<typename,typename> struct random_integer_functor;
+// Forward definition
+template<typename> struct random_functor_type;
+template<typename,typename> struct random_integer_functor;
 } // end detail
 /*! \endcond */
 
@@ -88,25 +90,25 @@ public:
 
     typedef std::ptrdiff_t                                                               IndexType;
     typedef detail::random_integer_functor<IndexType,T>                                  IndexFunctor;
-    typedef typename thrust::counting_iterator<IndexType>                                RandomCountingIterator;
-    typedef typename thrust::transform_iterator<IndexFunctor, RandomCountingIterator, T> RandomTransformIterator;
+    typedef typename thrust::counting_iterator<IndexType>                                CountingIterator;
+    typedef typename thrust::transform_iterator<IndexFunctor, CountingIterator,  T>      RandomCountingIterator;
 
     // type of the random_range iterator
+    typedef typename detail::random_functor_type<T>::type                                Functor;
+    typedef typename thrust::transform_iterator<Functor, RandomCountingIterator, T>      RandomTransformIterator;
     typedef RandomTransformIterator                                                      iterator;
     /*! \endcond */
-
-    IndexFunctor index_func;
 
     /*! \brief Null constructor initializes this \p strided_iterator's stride to zero.
      */
     random_iterator(void)
-        : index_func(0) {}
+        : random_counting_iterator(CountingIterator(0), IndexFunctor(0)) {}
 
     /*! \brief This constructor builds a \p random_iterator using a specified seed.
      *  \param seed The seed initial value used to generate the random sequence.
      */
-    random_iterator(size_t seed)
-        : index_func(seed) {}
+    random_iterator(const size_t seed)
+        : random_counting_iterator(CountingIterator(0), IndexFunctor(seed)) {}
 
     /*! \brief This method returns an iterator pointing to the beginning of
      *  this random sequence of entries.
@@ -114,7 +116,7 @@ public:
      */
     iterator begin(void) const
     {
-        return RandomTransformIterator(RandomTransformIterator(RandomCountingIterator(0), index_func), index_func);
+        return RandomTransformIterator(random_counting_iterator, Functor());
     }
 
     /*! \brief Subscript access to the data contained in this iterator.
@@ -123,10 +125,13 @@ public:
      *
      *  This operator allows for easy, array-style, data access.
      */
-    reference operator[](size_type n) const
+    value_type operator[](size_type n) const
     {
         return *(begin() + n);
     }
+
+protected:
+    RandomCountingIterator random_counting_iterator;
 }; // end random_iterator
 
 /*! \} // end iterators
@@ -134,3 +139,4 @@ public:
 
 } // end namespace cusp
 
+#include <cusp/iterator/detail/random_iterator.inl>
