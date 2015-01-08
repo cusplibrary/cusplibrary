@@ -659,16 +659,16 @@ public:
  */
 template <typename ValueType>
 class random_array :
-  public cusp::array1d_view< typename cusp::random_iterator<ValueType> >
+  public cusp::array1d_view< typename cusp::random_iterator<ValueType>::iterator >
 {
 private:
 
-    typedef cusp::array1d_view< cusp::random_iterator<ValueType> > Parent;
+    typedef cusp::array1d_view< typename cusp::random_iterator<ValueType>::iterator > Parent;
 
 public:
 
     /*! \cond */
-    typedef typename Parent::iterator iterator;
+    typedef typename cusp::random_iterator<ValueType> rand;
     typedef typename Parent::size_type size_type;
     /*! \endcond */
 
@@ -678,7 +678,7 @@ public:
      *  \param seed The initial value to seed the random number generator.
      */
     random_array(size_type size, size_type seed = 0)
-        : Parent(iterator(seed), iterator(seed) + size) {}
+        : Parent(rand(seed).begin(), rand(seed).begin() + size) {}
 };
 
 
