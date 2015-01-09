@@ -1,0 +1,221 @@
+/*
+ *  Copyright 2008-2009 NVIDIA Corporation
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
+#include <cusp/array1d.h>
+#include <cusp/array2d.h>
+#include <cusp/monitor.h>
+#include <cusp/linear_operator.h>
+#include <cusp/multiply.h>
+
+#include <cusp/lapack/lapack.h>
+
+namespace cusp
+{
+namespace eigen
+{
+
+template <class LinearOperator,
+         class Vector>
+void lobpcg(LinearOperator& A,
+            Vector& X)
+{
+    typedef typename LinearOperator::value_type   ValueType;
+
+    cusp::constant_array<ValueType> b(M.num_rows);
+    cusp::monitor<ValueType> monitor(b);
+
+    cusp::eigen::lobpcg(A, X, monitor);
+}
+
+template <class LinearOperator,
+         class Vector,
+         class Monitor>
+void lobpcg(LinearOperator& A,
+            Vector& X,
+            Monitor& monitor)
+{
+    typedef typename LinearOperator::value_type   ValueType;
+    typedef typename LinearOperator::memory_space MemorySpace;
+
+    cusp::identity_operator<ValueType,MemorySpace> M(A.num_rows, A.num_cols);
+
+    cusp::eigen::lobpcg(A, X, monitor, M);
+}
+
+template <class LinearOperator,
+         class Vector,
+         class Monitor,
+         class Preconditioner>
+void lobpcg(LinearOperator& A,
+            Vector& X,
+            Monitor& monitor,
+            Preconditioner& M)
+{
+    using namespace thrust::placeholders;
+
+    typedef typename LinearOperator::index_type   IndexType;
+    typedef typename LinearOperator::value_type   ValueType;
+    typedef typename LinearOperator::memory_space MemorySpace;
+
+    typedef typename cusp::array1d<double,cusp::host_memory> VectorHost;
+    typedef typename cusp::array2d<double,cusp::host_memory,cusp::column_major> Array2d;
+
+    const size_t m = A.num_rows;
+
+    Vector& blockVectorX = X;
+    //cusp::constant_array<ValueType> e(1.0/sqrt(ValueType(m)), m);
+    cusp::array1d<ValueType,MemorySpace> e(m, 1.0/sqrt(ValueType(m)));
+
+    // Orthogonalize against the constant vector
+    ValueType inner = cusp::blas::dot(X, e);
+    cusp::blas::axpy(e, X, -inner);
+
+    // Normalize
+    ValueType norm = cusp::blas::nrm2(blockVectorX);
+    cusp::blas::scal(blockVectorX, ValueType(1.0/norm));
+
+    Vector blockVectorAX(m);
+
+    Vector blockVectorR(m);
+    Vector blockVectorP(m, ValueType(0));
+    Vector blockVectorAP(m, ValueType(0));
+
+    Vector activeBlockVectorR(m);
+    Vector activeBlockVectorAR(m);
+    Vector temp(m);
+
+    maxiter = std::min(m, maxiter);
+
+    cusp::multiply(A, blockVectorX, blockVectorAX);
+    ValueType _lambda = cusp::blas::dot(blockVectorX, blockVectorAX);
+
+    std::vector< ValueType > residualNormsHost;
+    residualNormsHost.reserve(monitor.iteration_limit());
+
+    while (monitor.iteration_count() < monitor.iteration_limit())
+    {
+        cusp::blas::axpby(blockVectorX, blockVectorAX, blockVectorR, -_lambda, ValueType(1));
+
+        residualNormsHost.push_back(cusp::blas::nrm2(blockVectorR));
+
+        if(monitor.is_verbose())
+        {
+            std::cout << "Eigenvalue : " << _lambda << std::endl;
+            std::cout << "Residual norms : " << residualNormsHost.back() << std::endl;
+        }
+
+        if( residualNormsHost.back() < monitor.absolute_tolerance() )
+            break; // All eigenpairs converged
+
+        // Apply preconditioner, M, to the active residuals
+        cusp::multiply(M, blockVectorR, activeBlockVectorR);
+
+        // Normalize
+        ValueType norm = cusp::blas::nrm2(activeBlockVectorR);
+        cusp::blas::scal(activeBlockVectorR, ValueType(1.0/norm));
+
+        cusp::multiply(A, activeBlockVectorR, activeBlockVectorAR);
+
+        if( monitor.iteration_count() > 0 )
+        {
+            ValueType norm = cusp::blas::nrm2(blockVectorP);
+            cusp::blas::scal(blockVectorP, 1.0/norm);
+            cusp::blas::scal(blockVectorAP, 1.0/norm);
+        }
+
+        // Perform the Rayleigh-Ritz procedure :
+        // Compute symmetric Gram matrices
+        size_t gram_size = monitor.iteration_count() > 0 ? 3 : 2;
+
+        Array2d gramA(gram_size, gram_size, ValueType(0));
+        Array2d gramB(gram_size, gram_size, ValueType(0));
+
+        ValueType xaw = cusp::blas::dot( blockVectorX, 		activeBlockVectorAR );
+        ValueType waw = cusp::blas::dot( activeBlockVectorR, 	activeBlockVectorAR );
+        ValueType xbw = cusp::blas::dot( blockVectorX, 	 	activeBlockVectorR );
+
+        if( monitor.iteration_count() > 0 )
+        {
+            ValueType xap = cusp::blas::dot( blockVectorX,       blockVectorAP );
+            ValueType wap = cusp::blas::dot( activeBlockVectorR, blockVectorAP );
+            ValueType pap = cusp::blas::dot( blockVectorP, 	     blockVectorAP );
+            ValueType xbp = cusp::blas::dot( blockVectorX,       blockVectorP );
+            ValueType wbp = cusp::blas::dot( activeBlockVectorR, blockVectorP );
+
+            gramA(0,0) = _lambda;
+            gramA(0,1) = xaw;
+            gramA(0,2) = xap;
+            gramA(1,0) = xaw;
+            gramA(1,1) = waw;
+            gramA(1,2) = wap;
+            gramA(2,0) = xap;
+            gramA(2,1) = wap;
+            gramA(2,2) = pap;
+
+            gramB(0,0) = 1.0;
+            gramB(0,1) = xbw;
+            gramB(0,2) = xbp;
+            gramB(1,0) = xbw;
+            gramB(1,1) = 1.0;
+            gramB(1,2) = wbp;
+            gramB(2,0) = xbp;
+            gramB(2,1) = wbp;
+            gramB(2,2) = 1.0;
+        }
+        else
+        {
+            gramA(0,0) = _lambda;
+            gramA(0,1) = xaw;
+            gramA(1,0) = xaw;
+            gramA(1,1) = waw;
+
+            gramB(0,0) = 1.0;
+            gramB(0,1) = xbw;
+            gramB(1,0) = xbw;
+            gramB(1,1) = 1.0;
+        }
+
+        // Solve the generalized eigenvalue problem.
+        VectorHost _lambda_h(gramA.num_rows, ValueType(0));
+        Array2d eigBlockVector_h(gramA.num_rows, gramA.num_cols, ValueType(0));
+
+        cusp::lapack::sygv(gramA, gramB, _lambda_h, eigBlockVector_h);
+
+        _lambda = _lambda_h[0];
+        ValueType eigBlockVectorX = eigBlockVector_h(0,0);
+        ValueType eigBlockVectorR = eigBlockVector_h(1,0);
+
+        // Compute Ritz vectors
+        if( monitor.iteration_count() > 0 )
+        {
+            ValueType eigBlockVectorP = eigBlockVector_h(2,0);
+
+            cusp::blas::axpby( activeBlockVectorR,  blockVectorP,  blockVectorP, eigBlockVectorR, eigBlockVectorP );
+            cusp::blas::axpby( activeBlockVectorAR, blockVectorAP, blockVectorAP, eigBlockVectorR, eigBlockVectorP );
+        }
+        else
+        {
+            cusp::blas::axpy( activeBlockVectorR,  blockVectorP,  eigBlockVectorR );
+            cusp::blas::axpy( activeBlockVectorAR, blockVectorAP, eigBlockVectorR );
+        }
+
+        cusp::blas::axpby( blockVectorX,  blockVectorP,  blockVectorX, eigBlockVectorX, ValueType(1) );
+        cusp::blas::axpby( blockVectorAX, blockVectorAP, blockVectorAX, eigBlockVectorX, ValueType(1) );
+    }
+}
+
+} // end namespace eigen
+} // end namespace cusp
