@@ -193,6 +193,13 @@ public:
     void set_verbose(bool verbose_ = true);
 
     /**
+     *  \brief Gets the verbosity level of the monitor
+     *
+     *  \return verbosity of this monitor.
+     */
+    bool is_verbose(void);
+
+    /**
      *  \brief Resets the monitor using same convergence criteria
      *
      *  \tparam Vector vector

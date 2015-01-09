@@ -119,6 +119,14 @@ monitor<ValueType>
 }
 
 template <typename ValueType>
+bool
+monitor<ValueType>
+::is_verbose(void)
+{
+    return verbose;
+}
+
+template <typename ValueType>
 template <typename Vector>
 void
 monitor<ValueType>
