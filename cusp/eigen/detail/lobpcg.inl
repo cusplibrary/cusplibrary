@@ -206,7 +206,7 @@ void lobpcg(LinearOperator& A,
         {
             ValueType eigBlockVectorP = eigBlockVector_h(2,start_index);
 
-            cusp::blas::axpby( activeBlockVectorR,  blockVectorP,  blockVectorP, eigBlockVectorR, eigBlockVectorP );
+            cusp::blas::axpby( activeBlockVectorR,  blockVectorP,  blockVectorP,  eigBlockVectorR, eigBlockVectorP );
             cusp::blas::axpby( activeBlockVectorAR, blockVectorAP, blockVectorAP, eigBlockVectorR, eigBlockVectorP );
         }
         else
@@ -215,7 +215,7 @@ void lobpcg(LinearOperator& A,
             cusp::blas::axpy( activeBlockVectorAR, blockVectorAP, eigBlockVectorR );
         }
 
-        cusp::blas::axpby( blockVectorX,  blockVectorP,  blockVectorX, eigBlockVectorX, ValueType(1) );
+        cusp::blas::axpby( blockVectorX,  blockVectorP,  blockVectorX,  eigBlockVectorX, ValueType(1) );
         cusp::blas::axpby( blockVectorAX, blockVectorAP, blockVectorAX, eigBlockVectorX, ValueType(1) );
 
         ++monitor;

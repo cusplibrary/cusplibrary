@@ -14,6 +14,10 @@
  *  limitations under the License.
  */
 
+/*! \file lobpcg.h
+ *  \brief LOBPCG method
+ */
+
 #pragma once
 
 #include <cusp/detail/config.h>
