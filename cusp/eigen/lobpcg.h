@@ -34,7 +34,8 @@ template <class LinearOperator,
          class Vector>
 void lobpcg(LinearOperator& A,
             Vector& S,
-            Vector& X);
+            Vector& X,
+            bool largest = true);
 
 template <class LinearOperator,
          class Vector,
@@ -42,7 +43,8 @@ template <class LinearOperator,
 void lobpcg(LinearOperator& A,
             Vector& S,
             Vector& X,
-            Monitor& monitor);
+            Monitor& monitor,
+            bool largest = true);
 /* \endcond */
 
 template <class LinearOperator,
@@ -53,7 +55,8 @@ void lobpcg(LinearOperator& A,
             Vector& S,
             Vector& X,
             Monitor& monitor,
-            Preconditioner& M);
+            Preconditioner& M,
+            bool largest = true);
 
 /*! \}
  */

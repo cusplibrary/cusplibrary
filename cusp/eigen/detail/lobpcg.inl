@@ -31,14 +31,15 @@ template <class LinearOperator,
          class Vector>
 void lobpcg(LinearOperator& A,
             Vector& S,
-            Vector& X)
+            Vector& X,
+            bool largest)
 {
     typedef typename LinearOperator::value_type   ValueType;
 
     cusp::constant_array<ValueType> b(A.num_rows, ValueType(1));
     cusp::monitor<ValueType> monitor(b);
 
-    cusp::eigen::lobpcg(A, S, X, monitor);
+    cusp::eigen::lobpcg(A, S, X, monitor, largest);
 }
 
 template <class LinearOperator,
@@ -47,14 +48,15 @@ template <class LinearOperator,
 void lobpcg(LinearOperator& A,
             Vector& S,
             Vector& X,
-            Monitor& monitor)
+            Monitor& monitor,
+            bool largest)
 {
     typedef typename LinearOperator::value_type   ValueType;
     typedef typename LinearOperator::memory_space MemorySpace;
 
     cusp::identity_operator<ValueType,MemorySpace> M(A.num_rows, A.num_cols);
 
-    cusp::eigen::lobpcg(A, S, X, monitor, M);
+    cusp::eigen::lobpcg(A, S, X, monitor, M, largest);
 }
 
 template <class LinearOperator,
@@ -65,7 +67,8 @@ void lobpcg(LinearOperator& A,
             Vector& S,
             Vector& X,
             Monitor& monitor,
-            Preconditioner& M)
+            Preconditioner& M,
+            bool largest)
 {
     using namespace thrust::placeholders;
 
@@ -106,6 +109,8 @@ void lobpcg(LinearOperator& A,
         cusp::blas::axpby(blockVectorX, blockVectorAX, blockVectorR, -_lambda, ValueType(1));
 
         residualNormsHost.push_back(cusp::blas::nrm2(blockVectorR));
+
+        monitor.residuals.push_back(residualNormsHost.back());
 
         if(monitor.is_verbose())
         {
@@ -190,14 +195,16 @@ void lobpcg(LinearOperator& A,
 
         cusp::lapack::sygv(gramA, gramB, _lambda_h, eigBlockVector_h);
 
-        _lambda = _lambda_h[0];
-        ValueType eigBlockVectorX = eigBlockVector_h(0,0);
-        ValueType eigBlockVectorR = eigBlockVector_h(1,0);
+        int start_index = largest ? gramA.num_rows-1 : 0;
+
+        _lambda = _lambda_h[start_index];
+        ValueType& eigBlockVectorX = eigBlockVector_h(0,start_index);
+        ValueType& eigBlockVectorR = eigBlockVector_h(1,start_index);
 
         // Compute Ritz vectors
         if( monitor.iteration_count() > 0 )
         {
-            ValueType eigBlockVectorP = eigBlockVector_h(2,0);
+            ValueType& eigBlockVectorP = eigBlockVector_h(2,start_index);
 
             cusp::blas::axpby( activeBlockVectorR,  blockVectorP,  blockVectorP, eigBlockVectorR, eigBlockVectorP );
             cusp::blas::axpby( activeBlockVectorAR, blockVectorAP, blockVectorAP, eigBlockVectorR, eigBlockVectorP );
