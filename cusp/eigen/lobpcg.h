@@ -47,6 +47,69 @@ void lobpcg(LinearOperator& A,
             bool largest = true);
 /* \endcond */
 
+/**
+ * \brief LOBPCG method
+ *
+ * \tparam LinearOperator is a matrix or subclass of \p linear_operator
+ * \tparam Vector vector
+ * \tparam Monitor is a \p monitor
+ * \tparam Preconditioner is a matrix or subclass of \p linear_operator
+ *
+ * \param A matrix of the linear system
+ * \param S eigenvalues
+ * \param X eigenvectors
+ * \param monitor monitors iteration and determines stopping conditions
+ * \param M preconditioner for A
+ *
+ * \par Overview
+ * Computes the extreme eigenpairs of hermitian linear systems A x = s x
+ * with preconditioner \p M.
+ *
+ * \note \p A and \p M must be symmetric.
+ *
+ * \par Example
+ *  The following code snippet demonstrates how to use \p lobpcg to
+ *  solve a 10x10 Poisson problem.
+ *
+ *  \code
+ *  #include <cusp/csr_matrix.h>
+ *  #include <cusp/monitor.h>
+ *  #include <cusp/eigen/lobpcg.h>
+ *  #include <cusp/gallery/poisson.h>
+ *
+ *  int main(void)
+ *  {
+ *      // create an empty sparse matrix structure (CSR format)
+ *      cusp::csr_matrix<int, double, cusp::device_memory> A;
+ *
+ *      // initialize matrix
+ *      cusp::gallery::poisson5pt(A, 10, 10);
+ *
+ *      // allocate storage and initialize eigenpairs
+ *      cusp::random_array<double> randx(A.num_rows);
+ *      cusp::array1d<double, cusp::device_memory> X(randx);
+ *      cusp::array1d<double, cusp::device_memory> S(1,0);
+ *
+ *      // set stopping criteria:
+ *      //  iteration_limit    = 100
+ *      //  relative_tolerance = 1e-6
+ *      //  absolute_tolerance = 0
+ *      //  verbose            = true
+ *      cusp::monitor<double> monitor(X, 100, 1e-6, 0, true);
+ *
+ *      // set preconditioner (identity)
+ *      cusp::identity_operator<double, cusp::device_memory> M(A.num_rows, A.num_rows);
+ *
+ *      // Compute the largest eigenpair of A
+ *      cusp::eigen::lobpcg(A, S, X, monitor, M, true);
+ *
+ *      return 0;
+ *  }
+ *  \endcode
+ *
+ *  \see \p monitor
+ *
+ */
 template <class LinearOperator,
          class Vector,
          class Monitor,

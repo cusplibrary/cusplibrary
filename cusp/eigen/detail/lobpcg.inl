@@ -98,13 +98,12 @@ void lobpcg(LinearOperator& A,
 
     cusp::multiply(A, blockVectorX, blockVectorAX);
 
-    ValueType& _lambda = S[0];
-    _lambda = cusp::blas::dot(blockVectorX, blockVectorAX);
+    ValueType _lambda = cusp::blas::dot(blockVectorX, blockVectorAX);
 
     std::vector<ValueType> residualNormsHost;
     residualNormsHost.reserve(monitor.iteration_limit());
 
-    while (monitor.iteration_count() < monitor.iteration_limit())
+    while (std::min(A.num_rows,monitor.iteration_count()) < monitor.iteration_limit())
     {
         cusp::blas::axpby(blockVectorX, blockVectorAX, blockVectorR, -_lambda, ValueType(1));
 
@@ -114,8 +113,9 @@ void lobpcg(LinearOperator& A,
 
         if(monitor.is_verbose())
         {
-            std::cout << "Eigenvalue : " << _lambda << std::endl;
-            std::cout << "Residual norms : " << residualNormsHost.back() << std::endl;
+            std::cout << "Iteration      : " << monitor.iteration_count() << std::endl;
+            std::cout << "Eigenvalue     : " << _lambda << std::endl;
+            std::cout << "Residual norms : " << residualNormsHost.back() << std::endl << std::endl;
         }
 
         if( residualNormsHost.back() < monitor.relative_tolerance() )
@@ -198,13 +198,13 @@ void lobpcg(LinearOperator& A,
         int start_index = largest ? gramA.num_rows-1 : 0;
 
         _lambda = _lambda_h[start_index];
-        ValueType& eigBlockVectorX = eigBlockVector_h(0,start_index);
-        ValueType& eigBlockVectorR = eigBlockVector_h(1,start_index);
+        ValueType eigBlockVectorX = eigBlockVector_h(0,start_index);
+        ValueType eigBlockVectorR = eigBlockVector_h(1,start_index);
 
         // Compute Ritz vectors
         if( monitor.iteration_count() > 0 )
         {
-            ValueType& eigBlockVectorP = eigBlockVector_h(2,start_index);
+            ValueType eigBlockVectorP = eigBlockVector_h(2,start_index);
 
             cusp::blas::axpby( activeBlockVectorR,  blockVectorP,  blockVectorP, eigBlockVectorR, eigBlockVectorP );
             cusp::blas::axpby( activeBlockVectorAR, blockVectorAP, blockVectorAP, eigBlockVectorR, eigBlockVectorP );
@@ -220,6 +220,8 @@ void lobpcg(LinearOperator& A,
 
         ++monitor;
     }
+
+    S[0] = _lambda;
 }
 
 } // end namespace eigen
