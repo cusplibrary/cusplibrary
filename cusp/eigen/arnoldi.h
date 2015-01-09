@@ -14,6 +14,9 @@
  *  limitations under the License.
  */
 
+/*! \file arnoldi.h
+ *  \brief Arnoldi method
+ */
 
 #pragma once
 
@@ -26,6 +29,8 @@ namespace eigen
 
 /*! \addtogroup iterative_solvers Iterative Solvers
  *  \addtogroup eigensolvers EigenSolvers
+ *  \brief Iterative methods for computing eigenpairs of hermitian and
+ *  non-hermitian linear systems
  *  \ingroup iterative_solvers
  *  \{
  */

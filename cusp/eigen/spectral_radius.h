@@ -14,6 +14,9 @@
  *  limitations under the License.
  */
 
+/*! \file spectral_radius.h
+ *  \brief Various methods to compute spectral radius
+ */
 
 #pragma once
 
