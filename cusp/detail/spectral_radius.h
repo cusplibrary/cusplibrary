@@ -19,12 +19,11 @@
 
 #include <cusp/array1d.h>
 #include <cusp/array2d.h>
+#include <cusp/format_utils.h>
 #include <cusp/multiply.h>
 
 #include <cusp/blas/blas.h>
 #include <cusp/krylov/arnoldi.h>
-#include <cusp/detail/random.h>
-#include <cusp/format_utils.h>
 
 #include <thrust/extrema.h>
 #include <thrust/transform.h>
@@ -51,7 +50,7 @@ double estimate_spectral_radius(const Matrix& A, size_t k = 20)
     cusp::array1d<ValueType, MemorySpace> y(N);
 
     // initialize x to random values in [0,1)
-    cusp::copy(cusp::detail::random_reals<ValueType>(N), x);
+    cusp::copy(cusp::random_array<ValueType>(N), x);
 
     for(size_t i = 0; i < k; i++)
     {

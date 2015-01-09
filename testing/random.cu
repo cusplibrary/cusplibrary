@@ -1,7 +1,5 @@
 #include <unittest/unittest.h>
 
-#include <cusp/detail/random.h>
-
 #include <cusp/array1d.h>
 #include <cusp/array2d.h>
 #include <thrust/sort.h>
@@ -18,7 +16,7 @@ struct TestRandomIntegersDistribution
     void operator()(void)
     {
         size_t n = 123456;
-        cusp::detail::random_integers<T> random(n);
+        cusp::random_array<T> random(n);
 
         cusp::array2d<size_t, cusp::host_memory> counts(2 * sizeof(T), 16, 0);
 
@@ -52,7 +50,7 @@ struct TestRandomRealsDistribution
     void operator()(void)
     {
         size_t n = 123456;
-        cusp::detail::random_reals<T> random(n);
+        cusp::random_array<T> random(n);
 
         cusp::array1d<size_t, cusp::host_memory> buckets(32, 0);
 
@@ -86,7 +84,7 @@ struct TestRandomIntegers
     void operator()(void)
     {
         size_t n = 123456;
-        cusp::detail::random_integers<T> random(n);
+        cusp::random_array<T> random(n);
 
         cusp::array1d<T, cusp::host_memory>   h(random);
         cusp::array1d<T, cusp::device_memory> d(random);
@@ -97,14 +95,13 @@ struct TestRandomIntegers
 SimpleUnitTest<TestRandomIntegers, IntegralTypes> TestRandomIntegersInstance;
 
 
-// TODO test double on supported devices
 template <typename T>
 struct TestRandomReals
 {
     void operator()(void)
     {
         size_t n = 123456;
-        cusp::detail::random_reals<T> random(n);
+        cusp::random_array<T> random(n);
 
         cusp::array1d<T, cusp::host_memory>   h(random);
         cusp::array1d<T, cusp::device_memory> d(random);
@@ -112,5 +109,8 @@ struct TestRandomReals
         ASSERT_ALMOST_EQUAL(h, d);
     }
 };
-SimpleUnitTest<TestRandomReals, unittest::type_list<float> > TestRandomRealsInstance;
+SimpleUnitTest<TestRandomReals, unittest::type_list<float> > TestRandomFloatRealsInstance;
+#if __CUDA_ARCH__ >= 200
+SimpleUnitTest<TestRandomReals, unittest::type_list<double> > TestRandomDoubleRealsInstance;
+#endif
 

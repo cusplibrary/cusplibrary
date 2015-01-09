@@ -63,10 +63,10 @@ void hilbert_curve(const thrust::detail::execution_policy_base<DerivedPolicy>& e
  *
  * \par Example
  * \code
+ * #include <cusp/array1d.h>
  * #include <cusp/array2d.h>
  * #include <cusp/csr_matrix.h>
  * #include <cusp/print.h>
- * #include <cusp/detail/random.h>
  * #include <cusp/gallery/grid.h>
  *
  * //include Hilbert curve header file
@@ -90,7 +90,7 @@ void hilbert_curve(const thrust::detail::execution_policy_base<DerivedPolicy>& e
  *    cusp::array2d<float,cusp::device_memory> coords(G.num_rows, 2);
  *
  *    // Generate random coordinates
- *    cusp::copy(cusp::detail::random_reals<float>(coords.num_entries, rand()), coords.values);
+ *    cusp::copy(cusp::random_array<float>(coords.num_entries, rand()), coords.values);
  *
  *    // Compute the hilbert space filling curve partitioning the points
  *    cusp::graph::hilbert_curve(coords, num_parts, parts);

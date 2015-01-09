@@ -19,9 +19,8 @@
 
 #include <cusp/detail/config.h>
 
-#include <cusp/multiply.h>
 #include <cusp/array1d.h>
-#include <cusp/detail/random.h>
+#include <cusp/multiply.h>
 
 namespace cusp
 {
@@ -43,7 +42,7 @@ void lanczos(const Matrix& A, Array2d& H, size_t k = 10)
     cusp::array1d<ValueType,MemorySpace> w(N);
 
     // initialize starting vector to random values in [0,1)
-    cusp::copy(cusp::detail::random_reals<ValueType>(N), v1);
+    cusp::copy(cusp::random_array<ValueType>(N), v1);
 
     cusp::blas::scal(v1, ValueType(1) / cusp::blas::nrm2(v1));
 
@@ -104,7 +103,7 @@ void arnoldi(const Matrix& A, Array2d& H, size_t k = 10)
         V[i].resize(N);
 
     // initialize starting vector to random values in [0,1)
-    cusp::copy(cusp::detail::random_reals<ValueType>(N), V[0]);
+    cusp::copy(cusp::random_array<ValueType>(N), V[0]);
 
     // normalize v0
     cusp::blas::scal(V[0], ValueType(1) / cusp::blas::nrm2(V[0]));

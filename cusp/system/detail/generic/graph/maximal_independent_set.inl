@@ -21,8 +21,6 @@
 #include <cusp/exception.h>
 #include <cusp/multiply.h>
 
-#include <cusp/detail/random.h>
-
 #include <thrust/execution_policy.h>
 
 namespace cusp
@@ -188,7 +186,7 @@ size_t maximal_independent_set(thrust::execution_policy<DerivedPolicy>& exec,
     const IndexType N = G.num_rows;
 
     cusp::array1d<RandomType,MemorySpace> random_values(N);
-    cusp::copy(cusp::detail::random_integers<RandomType>(N), random_values);
+    cusp::copy(cusp::random_array<RandomType>(N), random_values);
 
     cusp::array1d<NodeStateType,MemorySpace> states(N, 1);
 
