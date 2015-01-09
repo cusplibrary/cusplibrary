@@ -17,7 +17,7 @@
 #pragma once
 
 #include <cusp/system/cuda/arch.h>
-#include <cusp/system/cuda//utils.h>
+#include <cusp/system/cuda/utils.h>
 
 #include <thrust/device_ptr.h>
 
