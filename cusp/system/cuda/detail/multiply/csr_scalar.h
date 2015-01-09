@@ -68,13 +68,12 @@ spmv_csr_scalar_kernel(const IndexType num_rows,
     }
 }
 
-
 template <typename Matrix,
           typename Array1,
           typename Array2>
-void __spmv_csr_scalar(const Matrix&    A,
-                       const Array1& x,
-                             Array2& y)
+void spmv_csr_scalar(const Matrix&    A,
+                     const Array1& x,
+                           Array2& y)
 {
     typedef typename Matrix::index_type IndexType;
     typedef typename Matrix::value_type ValueType;
@@ -85,20 +84,11 @@ void __spmv_csr_scalar(const Matrix&    A,
 
     spmv_csr_scalar_kernel<IndexType,ValueType> <<<NUM_BLOCKS, BLOCK_SIZE>>>
     (A.num_rows,
-     A.row_offsets.raw_data(),
-     A.column_indices.raw_data(),
-     A.values.raw_data(),
-     x.raw_data(), y.raw_data());
-}
-
-template <typename Matrix,
-         typename Array1,
-         typename Array2>
-void spmv_csr_scalar(const Matrix&    A,
-                     const Array1& x,
-                           Array2& y)
-{
-    __spmv_csr_scalar(A, x, y);
+     thrust::raw_pointer_cast(&A.row_offsets[0]),
+     thrust::raw_pointer_cast(&A.column_indices[0]),
+     thrust::raw_pointer_cast(&A.values[0]),
+     thrust::raw_pointer_cast(&x[0]),
+     thrust::raw_pointer_cast(&y[0]));
 }
 
 } // end namespace cuda

@@ -8,6 +8,7 @@
 
 #include "../timer.h"
 #include <cusp/system/cuda/detail/multiply/coo_flat_k.h>
+#include <cusp/system/cuda/detail/multiply/csr_scalar.h>
 
 const char * BENCHMARK_OUTPUT_FILE_NAME = "benchmark_output.log";
 
@@ -143,10 +144,6 @@ void test_coo(HostMatrix& host_matrix)
     DeviceMatrix test_matrix_on_device(test_matrix_on_host);
 
     test_spmv("coo",     host_matrix, test_matrix_on_host, test_matrix_on_device, cusp::multiply<DeviceMatrix,DeviceArray,DeviceArray>);
-    // test_spmv("coo_flat",     host_matrix, test_matrix_on_host, test_matrix_on_device,
-    //           cusp::detail::device::spmv_coo_flat    <DeviceMatrix,DeviceArray,DeviceArray>);
-    // test_spmv("coo_flat_tex", host_matrix, test_matrix_on_host, test_matrix_on_device,
-    //           cusp::detail::device::spmv_coo_flat_tex<DeviceMatrix,DeviceArray,DeviceArray>);
 
 //    test_spmv("coo_flat_k",     host_matrix, test_matrix_on_host, test_matrix_on_device, cusp::detail::device::spmv_coo_flat_k    <DeviceMatrix,ValueType>);
 //    test_spmv("coo_flat_k_tex", host_matrix, test_matrix_on_host, test_matrix_on_device, cusp::detail::device::spmv_coo_flat_k_tex<DeviceMatrix,ValueType>);
@@ -166,15 +163,9 @@ void test_csr(HostMatrix& host_matrix)
     typedef typename cusp::array1d<ValueType,cusp::device_memory>                DeviceArray;
     DeviceMatrix test_matrix_on_device(test_matrix_on_host);
 
-    test_spmv("csr",     host_matrix, test_matrix_on_host, test_matrix_on_device, cusp::multiply<DeviceMatrix,DeviceArray,DeviceArray>);
-    // test_spmv("csr_scalar",     host_matrix, test_matrix_on_host, test_matrix_on_device,
-    //           cusp::detail::device::spmv_csr_scalar    <DeviceMatrix,DeviceArray,DeviceArray>);
-    // test_spmv("csr_scalar_tex", host_matrix, test_matrix_on_host, test_matrix_on_device,
-    //           cusp::detail::device::spmv_csr_scalar_tex<DeviceMatrix,DeviceArray,DeviceArray>);
-    // test_spmv("csr_vector",     host_matrix, test_matrix_on_host, test_matrix_on_device,
-    //           cusp::detail::device::spmv_csr_vector    <DeviceMatrix,DeviceArray,DeviceArray>);
-    // test_spmv("csr_vector_tex", host_matrix, test_matrix_on_host, test_matrix_on_device,
-    //           cusp::detail::device::spmv_csr_vector_tex<DeviceMatrix,DeviceArray,DeviceArray>);
+    test_spmv("csr_vector", host_matrix, test_matrix_on_host, test_matrix_on_device, cusp::multiply<DeviceMatrix,DeviceArray,DeviceArray>);
+    test_spmv("csr_scalar", host_matrix, test_matrix_on_host, test_matrix_on_device,
+              cusp::system::cuda::spmv_csr_scalar<DeviceMatrix,DeviceArray,DeviceArray>);
 }
 
 template <typename HostMatrix>
@@ -202,8 +193,6 @@ void test_dia(HostMatrix& host_matrix)
     DeviceMatrix test_matrix_on_device(test_matrix_on_host);
 
     test_spmv("dia",     host_matrix, test_matrix_on_host, test_matrix_on_device, cusp::multiply<DeviceMatrix,DeviceArray,DeviceArray>);
-    // test_spmv("dia",     host_matrix, test_matrix_on_host, test_matrix_on_device, cusp::detail::device::spmv_dia    <DeviceMatrix,DeviceArray,DeviceArray>);
-    // test_spmv("dia_tex", host_matrix, test_matrix_on_host, test_matrix_on_device, cusp::detail::device::spmv_dia_tex<DeviceMatrix,DeviceArray,DeviceArray>);
 }
 
 template <typename HostMatrix>
@@ -231,8 +220,6 @@ void test_ell(HostMatrix& host_matrix)
     DeviceMatrix test_matrix_on_device(test_matrix_on_host);
 
     test_spmv("ell",     host_matrix, test_matrix_on_host, test_matrix_on_device, cusp::multiply<DeviceMatrix,DeviceArray,DeviceArray>);
-    // test_spmv("ell",     host_matrix, test_matrix_on_host, test_matrix_on_device, cusp::detail::device::spmv_ell    <DeviceMatrix,DeviceArray,DeviceArray>);
-    // test_spmv("ell_tex", host_matrix, test_matrix_on_host, test_matrix_on_device, cusp::detail::device::spmv_ell_tex<DeviceMatrix,DeviceArray,DeviceArray>);
 }
 
 template <typename HostMatrix>
@@ -250,7 +237,5 @@ void test_hyb(HostMatrix& host_matrix)
     DeviceMatrix test_matrix_on_device(test_matrix_on_host);
 
     test_spmv("hyb",     host_matrix, test_matrix_on_host, test_matrix_on_device, cusp::multiply<DeviceMatrix,DeviceArray,DeviceArray>);
-    // test_spmv("hyb",     host_matrix, test_matrix_on_host, test_matrix_on_device, cusp::detail::device::spmv_hyb    <DeviceMatrix,DeviceArray,DeviceArray>);
-    // test_spmv("hyb_tex", host_matrix, test_matrix_on_host, test_matrix_on_device, cusp::detail::device::spmv_hyb_tex<DeviceMatrix,DeviceArray,DeviceArray>);
 }
 
