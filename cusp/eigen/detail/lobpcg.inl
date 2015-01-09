@@ -30,20 +30,22 @@ namespace eigen
 template <class LinearOperator,
          class Vector>
 void lobpcg(LinearOperator& A,
+            Vector& S,
             Vector& X)
 {
     typedef typename LinearOperator::value_type   ValueType;
 
-    cusp::constant_array<ValueType> b(M.num_rows);
+    cusp::constant_array<ValueType> b(A.num_rows, ValueType(1));
     cusp::monitor<ValueType> monitor(b);
 
-    cusp::eigen::lobpcg(A, X, monitor);
+    cusp::eigen::lobpcg(A, S, X, monitor);
 }
 
 template <class LinearOperator,
          class Vector,
          class Monitor>
 void lobpcg(LinearOperator& A,
+            Vector& S,
             Vector& X,
             Monitor& monitor)
 {
@@ -52,7 +54,7 @@ void lobpcg(LinearOperator& A,
 
     cusp::identity_operator<ValueType,MemorySpace> M(A.num_rows, A.num_cols);
 
-    cusp::eigen::lobpcg(A, X, monitor, M);
+    cusp::eigen::lobpcg(A, S, X, monitor, M);
 }
 
 template <class LinearOperator,
@@ -60,6 +62,7 @@ template <class LinearOperator,
          class Monitor,
          class Preconditioner>
 void lobpcg(LinearOperator& A,
+            Vector& S,
             Vector& X,
             Monitor& monitor,
             Preconditioner& M)
@@ -75,15 +78,8 @@ void lobpcg(LinearOperator& A,
 
     const size_t m = A.num_rows;
 
-    Vector& blockVectorX = X;
-    //cusp::constant_array<ValueType> e(1.0/sqrt(ValueType(m)), m);
-    cusp::array1d<ValueType,MemorySpace> e(m, 1.0/sqrt(ValueType(m)));
-
-    // Orthogonalize against the constant vector
-    ValueType inner = cusp::blas::dot(X, e);
-    cusp::blas::axpy(e, X, -inner);
-
     // Normalize
+    Vector& blockVectorX(X);
     ValueType norm = cusp::blas::nrm2(blockVectorX);
     cusp::blas::scal(blockVectorX, ValueType(1.0/norm));
 
@@ -97,12 +93,12 @@ void lobpcg(LinearOperator& A,
     Vector activeBlockVectorAR(m);
     Vector temp(m);
 
-    maxiter = std::min(m, maxiter);
-
     cusp::multiply(A, blockVectorX, blockVectorAX);
-    ValueType _lambda = cusp::blas::dot(blockVectorX, blockVectorAX);
 
-    std::vector< ValueType > residualNormsHost;
+    ValueType& _lambda = S[0];
+    _lambda = cusp::blas::dot(blockVectorX, blockVectorAX);
+
+    std::vector<ValueType> residualNormsHost;
     residualNormsHost.reserve(monitor.iteration_limit());
 
     while (monitor.iteration_count() < monitor.iteration_limit())
@@ -117,7 +113,7 @@ void lobpcg(LinearOperator& A,
             std::cout << "Residual norms : " << residualNormsHost.back() << std::endl;
         }
 
-        if( residualNormsHost.back() < monitor.absolute_tolerance() )
+        if( residualNormsHost.back() < monitor.relative_tolerance() )
             break; // All eigenpairs converged
 
         // Apply preconditioner, M, to the active residuals
@@ -214,6 +210,8 @@ void lobpcg(LinearOperator& A,
 
         cusp::blas::axpby( blockVectorX,  blockVectorP,  blockVectorX, eigBlockVectorX, ValueType(1) );
         cusp::blas::axpby( blockVectorAX, blockVectorAP, blockVectorAX, eigBlockVectorX, ValueType(1) );
+
+        ++monitor;
     }
 }
 

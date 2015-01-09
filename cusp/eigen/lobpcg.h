@@ -33,16 +33,16 @@ namespace eigen
 template <class LinearOperator,
          class Vector>
 void lobpcg(LinearOperator& A,
-        Vector& x,
-        Vector& b);
+            Vector& S,
+            Vector& X);
 
 template <class LinearOperator,
          class Vector,
          class Monitor>
 void lobpcg(LinearOperator& A,
-        Vector& x,
-        Vector& b,
-        Monitor& monitor);
+            Vector& S,
+            Vector& X,
+            Monitor& monitor);
 /* \endcond */
 
 template <class LinearOperator,
@@ -50,8 +50,8 @@ template <class LinearOperator,
          class Monitor,
          class Preconditioner>
 void lobpcg(LinearOperator& A,
-            Vector& x,
-            Vector& b,
+            Vector& S,
+            Vector& X,
             Monitor& monitor,
             Preconditioner& M);
 
@@ -61,4 +61,4 @@ void lobpcg(LinearOperator& A,
 } // end namespace eigen
 } // end namespace cusp
 
-#include <cusp/eigen/detail/lanczos.inl>
+#include <cusp/eigen/detail/lobpcg.inl>
