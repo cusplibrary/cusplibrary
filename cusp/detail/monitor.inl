@@ -119,7 +119,7 @@ monitor<ValueType>
 }
 
 template <typename ValueType>
-void
+bool
 monitor<ValueType>
 ::is_verbose(void)
 {
