@@ -154,7 +154,9 @@ void __spmv_csr_vector(cuda::execution_policy<DerivedPolicy>& exec,
     const ValueType * x_ptr = thrust::raw_pointer_cast(&x[0]);
           ValueType * y_ptr = thrust::raw_pointer_cast(&y[0]);
 
-    spmv_csr_vector_kernel<IndexType, ValueType, VECTORS_PER_BLOCK, THREADS_PER_VECTOR> <<<NUM_BLOCKS, THREADS_PER_BLOCK>>>
+    cudaStream_t s = stream(thrust::detail::derived_cast(exec));
+
+    spmv_csr_vector_kernel<IndexType, ValueType, VECTORS_PER_BLOCK, THREADS_PER_VECTOR> <<<NUM_BLOCKS, THREADS_PER_BLOCK, 0, s>>>
     (A.num_rows, R, J, V, x_ptr, y_ptr);
 }
 

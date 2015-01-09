@@ -426,13 +426,15 @@ void __spmv_coo_flat(cuda::execution_policy<DerivedPolicy>& exec,
     IndexType * temp_rows_ptr = thrust::raw_pointer_cast(&temp_rows[0]);
     ValueType * temp_vals_ptr = thrust::raw_pointer_cast(&temp_vals[0]);
 
-    spmv_coo_flat_kernel<IndexType, ValueType, BLOCK_SIZE> <<<num_blocks, BLOCK_SIZE>>>
+    cudaStream_t s = stream(thrust::detail::derived_cast(exec));
+
+    spmv_coo_flat_kernel<IndexType, ValueType, BLOCK_SIZE> <<<num_blocks, BLOCK_SIZE, 0, s>>>
     (tail, interval_size, I, J, V, x_ptr, y_ptr, temp_rows_ptr, temp_vals_ptr);
 
-    spmv_coo_reduce_update_kernel<IndexType, ValueType, BLOCK_SIZE> <<<1, BLOCK_SIZE>>>
+    spmv_coo_reduce_update_kernel<IndexType, ValueType, BLOCK_SIZE> <<<1, BLOCK_SIZE, 0, s>>>
     (active_warps, temp_rows_ptr, temp_vals_ptr, y_ptr);
 
-    spmv_coo_serial_kernel<IndexType,ValueType> <<<1,1>>>
+    spmv_coo_serial_kernel<IndexType,ValueType> <<<1,1,0,s>>>
     (A.num_entries - tail, I + tail, J + tail, V + tail, x_ptr, y_ptr);
 }
 

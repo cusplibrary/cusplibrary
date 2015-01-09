@@ -68,27 +68,70 @@ spmv_csr_scalar_kernel(const IndexType num_rows,
     }
 }
 
-template <typename Matrix,
-          typename Array1,
-          typename Array2>
-void spmv_csr_scalar(const Matrix&    A,
-                     const Array1& x,
-                           Array2& y)
+template <typename DerivedPolicy,
+         typename MatrixType,
+         typename VectorType1,
+         typename VectorType2,
+         typename UnaryFunction,
+         typename BinaryFunction1,
+         typename BinaryFunction2>
+void spmv_csr_scalar(cuda::execution_policy<DerivedPolicy>& exec,
+                     MatrixType& A,
+                     VectorType1& x,
+                     VectorType2& y,
+                     UnaryFunction   initialize,
+                     BinaryFunction1 combine,
+                     BinaryFunction2 reduce,
+                     csr_format,
+                     array1d_format,
+                     array1d_format)
 {
-    typedef typename Matrix::index_type IndexType;
-    typedef typename Matrix::value_type ValueType;
+    typedef typename MatrixType::index_type IndexType;
+    typedef typename MatrixType::value_type ValueType;
 
     const size_t BLOCK_SIZE = 256;
     const size_t MAX_BLOCKS = cusp::system::cuda::detail::max_active_blocks(spmv_csr_scalar_kernel<IndexType, ValueType>, BLOCK_SIZE, (size_t) 0);
     const size_t NUM_BLOCKS = std::min(MAX_BLOCKS, DIVIDE_INTO(A.num_rows, BLOCK_SIZE));
 
-    spmv_csr_scalar_kernel<IndexType,ValueType> <<<NUM_BLOCKS, BLOCK_SIZE>>>
+    cudaStream_t s = stream(thrust::detail::derived_cast(exec));
+
+    spmv_csr_scalar_kernel<IndexType,ValueType> <<<NUM_BLOCKS, BLOCK_SIZE, 0, s>>>
     (A.num_rows,
      thrust::raw_pointer_cast(&A.row_offsets[0]),
      thrust::raw_pointer_cast(&A.column_indices[0]),
      thrust::raw_pointer_cast(&A.values[0]),
      thrust::raw_pointer_cast(&x[0]),
      thrust::raw_pointer_cast(&y[0]));
+}
+
+template <typename MatrixType,
+          typename VectorType1,
+          typename VectorType2>
+void spmv_csr_scalar(const MatrixType&  A,
+                     const VectorType1& x,
+                           VectorType2& y)
+{
+    using thrust::system::detail::generic::select_system;
+
+    typedef typename MatrixType::memory_space  System1;
+    typedef typename VectorType1::memory_space System2;
+    typedef typename VectorType2::memory_space System3;
+    typedef typename MatrixType::value_type ValueType;
+
+    System1 system1;
+    System2 system2;
+    System3 system3;
+
+    cusp::detail::zero_function<ValueType> initialize;
+    thrust::multiplies<ValueType> combine;
+    thrust::plus<ValueType> reduce;
+
+    spmv_csr_scalar(thrust::detail::derived_cast(
+                      thrust::detail::strip_const(
+                        select_system(system1,system2,system3))),
+                    A, x, y,
+                    initialize, combine, reduce,
+                    csr_format(), array1d_format(), array1d_format());
 }
 
 } // end namespace cuda

@@ -150,7 +150,9 @@ void multiply(cuda::execution_policy<DerivedPolicy>& exec,
     const ValueType * x_ptr = thrust::raw_pointer_cast(&x[0]);
     ValueType * y_ptr = thrust::raw_pointer_cast(&y[0]);
 
-    spmv_dia_kernel<IndexType, ValueType, BLOCK_SIZE> <<<NUM_BLOCKS, BLOCK_SIZE>>>
+    cudaStream_t s = stream(thrust::detail::derived_cast(exec));
+
+    spmv_dia_kernel<IndexType, ValueType, BLOCK_SIZE> <<<NUM_BLOCKS, BLOCK_SIZE, 0, s>>>
     (A.num_rows, A.num_cols, num_diagonals, pitch, D, V, x_ptr, y_ptr);
 }
 
