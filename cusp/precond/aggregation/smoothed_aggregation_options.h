@@ -22,7 +22,7 @@
 #include <cusp/transpose.h>
 #include <cusp/multiply.h>
 
-#include <cusp/krylov/arnoldi.h>
+#include <cusp/eigen/arnoldi.h>
 
 #include <cusp/precond/diagonal.h>
 #include <cusp/precond/aggregation/aggregate.h>
@@ -62,7 +62,7 @@ double estimate_rho_Dinv_A(const MatrixType& A)
 {
     detail::Dinv_A<MatrixType> Dinv_A(A);
 
-    return cusp::detail::ritz_spectral_radius(Dinv_A, 8);
+    return cusp::eigen::ritz_spectral_radius(Dinv_A, 8);
 }
 
 

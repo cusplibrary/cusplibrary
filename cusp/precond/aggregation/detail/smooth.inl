@@ -20,7 +20,7 @@
 #include <cusp/sort.h>
 
 #include <cusp/blas/blas.h>
-#include <cusp/detail/spectral_radius.h>
+#include <cusp/eigen/spectral_radius.h>
 
 #include <thrust/extrema.h>
 #include <thrust/fill.h>

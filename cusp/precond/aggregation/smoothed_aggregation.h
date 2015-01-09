@@ -22,14 +22,13 @@
 #pragma once
 
 #include <cusp/detail/config.h>
-#include <cusp/detail/spectral_radius.h>
-
-#include <cusp/linear_operator.h>
 #include <cusp/detail/multilevel.h>
 
-#include <cusp/precond/aggregation/smoothed_aggregation_options.h>
+#include <cusp/linear_operator.h>
 
+#include <cusp/eigen/spectral_radius.h>
 #include <cusp/relaxation/jacobi.h>
+#include <cusp/precond/aggregation/smoothed_aggregation_options.h>
 
 #include <vector> // TODO replace with host_vector
 

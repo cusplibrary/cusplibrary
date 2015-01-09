@@ -1,7 +1,7 @@
 #include <unittest/unittest.h>
 
-#include <cusp/detail/spectral_radius.h>
-#include <cusp/krylov/arnoldi.h>
+#include <cusp/eigen/spectral_radius.h>
+#include <cusp/eigen/arnoldi.h>
 
 #include <cusp/gallery/poisson.h>
 #include <cusp/csr_matrix.h>
@@ -21,10 +21,10 @@ void TestEstimateSpectralRadius(void)
         A.values[0] = -5;
         A.values[1] =  2;
         float rho = 5.0;
-        ASSERT_EQUAL((std::abs(cusp::detail::estimate_spectral_radius(A) - rho) / rho) < 0.1f, true);
-        ASSERT_EQUAL((std::abs(cusp::detail::ritz_spectral_radius(A) - rho) / rho) < 0.1f, true);
-        ASSERT_EQUAL((std::abs(cusp::detail::ritz_spectral_radius_symmetric(A) - rho) / rho) < 0.1f, true);
-        ASSERT_EQUAL((std::abs(cusp::detail::disks_spectral_radius(A) - rho) / rho) < 0.1f, true);
+        ASSERT_EQUAL((std::abs(cusp::eigen::estimate_spectral_radius(A) - rho) / rho) < 0.1f, true);
+        ASSERT_EQUAL((std::abs(cusp::eigen::ritz_spectral_radius(A) - rho) / rho) < 0.1f, true);
+        ASSERT_EQUAL((std::abs(cusp::eigen::ritz_spectral_radius_symmetric(A) - rho) / rho) < 0.1f, true);
+        ASSERT_EQUAL((std::abs(cusp::eigen::disks_spectral_radius(A) - rho) / rho) < 0.1f, true);
     }
 
     // 2x2 Poisson problem
@@ -32,10 +32,10 @@ void TestEstimateSpectralRadius(void)
         cusp::csr_matrix<int, float, MemorySpace> A;
         cusp::gallery::poisson5pt(A, 2, 2);
         float rho = 6.0;
-        ASSERT_EQUAL((std::abs(cusp::detail::estimate_spectral_radius(A) - rho) / rho) < 0.1f, true);
-        ASSERT_EQUAL((std::abs(cusp::detail::ritz_spectral_radius(A) - rho) / rho) < 0.1f, true);
-        ASSERT_EQUAL((std::abs(cusp::detail::ritz_spectral_radius_symmetric(A) - rho) / rho) < 0.1f, true);
-        ASSERT_EQUAL((std::abs(cusp::detail::disks_spectral_radius(A) - rho) / rho) < 0.1f, true);
+        ASSERT_EQUAL((std::abs(cusp::eigen::estimate_spectral_radius(A) - rho) / rho) < 0.1f, true);
+        ASSERT_EQUAL((std::abs(cusp::eigen::ritz_spectral_radius(A) - rho) / rho) < 0.1f, true);
+        ASSERT_EQUAL((std::abs(cusp::eigen::ritz_spectral_radius_symmetric(A) - rho) / rho) < 0.1f, true);
+        ASSERT_EQUAL((std::abs(cusp::eigen::disks_spectral_radius(A) - rho) / rho) < 0.1f, true);
     }
 
     // 4x4 Poisson problem
@@ -43,10 +43,10 @@ void TestEstimateSpectralRadius(void)
         cusp::csr_matrix<int, float, MemorySpace> A;
         cusp::gallery::poisson5pt(A, 4, 4);
         float rho = 7.2360679774997871;
-        ASSERT_EQUAL((std::abs(cusp::detail::estimate_spectral_radius(A) - rho) / rho) < 0.1f, true);
-        ASSERT_EQUAL((std::abs(cusp::detail::ritz_spectral_radius(A) - rho) / rho) < 0.1f, true);
-        ASSERT_EQUAL((std::abs(cusp::detail::ritz_spectral_radius_symmetric(A) - rho) / rho) < 0.1f, true);
-        ASSERT_EQUAL((std::abs(cusp::detail::disks_spectral_radius(A) - rho) / rho) < 0.11f, true);
+        ASSERT_EQUAL((std::abs(cusp::eigen::estimate_spectral_radius(A) - rho) / rho) < 0.1f, true);
+        ASSERT_EQUAL((std::abs(cusp::eigen::ritz_spectral_radius(A) - rho) / rho) < 0.1f, true);
+        ASSERT_EQUAL((std::abs(cusp::eigen::ritz_spectral_radius_symmetric(A) - rho) / rho) < 0.1f, true);
+        ASSERT_EQUAL((std::abs(cusp::eigen::disks_spectral_radius(A) - rho) / rho) < 0.11f, true);
     }
 
     // TODO test larger sizes and non-symmetric matrices

@@ -1,7 +1,6 @@
 #include <unittest/unittest.h>
 
 #include <cusp/relaxation/polynomial.h>
-#include <cusp/detail/spectral_radius.h>
 
 #include <cusp/array2d.h>
 #include <cusp/coo_matrix.h>

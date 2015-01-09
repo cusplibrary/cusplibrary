@@ -23,7 +23,8 @@
 #include <cusp/multiply.h>
 
 #include <cusp/blas/blas.h>
-#include <cusp/krylov/arnoldi.h>
+#include <cusp/eigen/arnoldi.h>
+#include <cusp/eigen/lanczos.h>
 
 #include <thrust/extrema.h>
 #include <thrust/transform.h>
@@ -34,11 +35,11 @@
 
 namespace cusp
 {
-namespace detail
+namespace eigen
 {
 
 template <typename Matrix>
-double estimate_spectral_radius(const Matrix& A, size_t k = 20)
+double estimate_spectral_radius(const Matrix& A, size_t k)
 {
     typedef typename Matrix::index_type   IndexType;
     typedef typename Matrix::value_type   ValueType;
@@ -66,23 +67,23 @@ double estimate_spectral_radius(const Matrix& A, size_t k = 20)
 }
 
 template <typename Matrix>
-double ritz_spectral_radius(const Matrix& A, size_t k = 10)
+double ritz_spectral_radius(const Matrix& A, size_t k)
 {
     typedef typename Matrix::value_type ValueType;
 
     cusp::array2d<ValueType,cusp::host_memory> H;
-    cusp::krylov::arnoldi(A, H, k);
+    cusp::eigen::arnoldi(A, H, k);
 
     return estimate_spectral_radius(H);
 }
 
 template <typename Matrix>
-double ritz_spectral_radius_symmetric(const Matrix& A, size_t k = 10)
+double ritz_spectral_radius_symmetric(const Matrix& A, size_t k)
 {
     typedef typename Matrix::value_type ValueType;
 
     cusp::array2d<ValueType,cusp::host_memory> H;
-    cusp::krylov::lanczos(A, H, k);
+    cusp::eigen::lanczos(A, H, k);
 
     return estimate_spectral_radius(H);
 }
@@ -95,14 +96,12 @@ double disks_spectral_radius(const cusp::coo_matrix<IndexType,ValueType,MemorySp
     // compute sum of absolute values for each row of A
     cusp::array1d<IndexType, MemorySpace> row_sums(N);
 
-    {
-        cusp::array1d<IndexType, MemorySpace> temp(N);
-        thrust::reduce_by_key
-        (A.row_indices.begin(), A.row_indices.end(),
-         thrust::make_transform_iterator(A.values.begin(), absolute<ValueType>()),
-         temp.begin(),
-         row_sums.begin());
-    }
+    cusp::array1d<IndexType, MemorySpace> temp(N);
+    thrust::reduce_by_key
+    (A.row_indices.begin(), A.row_indices.end(),
+     thrust::make_transform_iterator(A.values.begin(), cusp::detail::absolute<ValueType>()),
+     temp.begin(),
+     row_sums.begin());
 
     return *thrust::max_element(row_sums.begin(), row_sums.end());
 }
@@ -119,6 +118,6 @@ double disks_spectral_radius(const Matrix& A)
     return disks_spectral_radius(C);
 }
 
-} // end namespace detail
+} // end namespace eigen
 } // end namespace cusp
 
