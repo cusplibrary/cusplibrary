@@ -60,6 +60,8 @@ void lobpcg(LinearOperator& A,
  * \param X eigenvectors
  * \param monitor monitors iteration and determines stopping conditions
  * \param M preconditioner for A
+ * \param largest If true compute the eigenpair corresponding to the largest
+ * eigenvalue otherwise compute the smallest.
  *
  * \par Overview
  * Computes the extreme eigenpairs of hermitian linear systems A x = s x
@@ -102,6 +104,8 @@ void lobpcg(LinearOperator& A,
  *
  *      // Compute the largest eigenpair of A
  *      cusp::eigen::lobpcg(A, S, X, monitor, M, true);
+ *
+ *      std::cout << "Largest eigenvalue : " << S[0] << std::endl;
  *
  *      return 0;
  *  }
