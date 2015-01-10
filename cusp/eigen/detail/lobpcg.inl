@@ -79,22 +79,21 @@ void lobpcg(LinearOperator& A,
     typedef typename cusp::array1d<double,cusp::host_memory> VectorHost;
     typedef typename cusp::array2d<double,cusp::host_memory,cusp::column_major> Array2d;
 
-    const size_t m = A.num_rows;
+    const size_t N = A.num_rows;
 
     // Normalize
     Vector& blockVectorX(X);
     ValueType norm = cusp::blas::nrm2(blockVectorX);
     cusp::blas::scal(blockVectorX, ValueType(1.0/norm));
 
-    Vector blockVectorAX(m);
+    Vector blockVectorAX(N);
 
-    Vector blockVectorR(m);
-    Vector blockVectorP(m, ValueType(0));
-    Vector blockVectorAP(m, ValueType(0));
+    Vector blockVectorR(N);
+    Vector blockVectorP(N, ValueType(0));
+    Vector blockVectorAP(N, ValueType(0));
 
-    Vector activeBlockVectorR(m);
-    Vector activeBlockVectorAR(m);
-    Vector temp(m);
+    Vector activeBlockVectorR(N);
+    Vector activeBlockVectorAR(N);
 
     cusp::multiply(A, blockVectorX, blockVectorAX);
 
@@ -118,8 +117,7 @@ void lobpcg(LinearOperator& A,
             std::cout << "Residual norms : " << residualNormsHost.back() << std::endl << std::endl;
         }
 
-        if( residualNormsHost.back() < monitor.relative_tolerance() )
-            break; // All eigenpairs converged
+        if( residualNormsHost.back() < monitor.relative_tolerance() ) break; // All eigenpairs converged
 
         // Apply preconditioner, M, to the active residuals
         cusp::multiply(M, blockVectorR, activeBlockVectorR);
@@ -144,9 +142,9 @@ void lobpcg(LinearOperator& A,
         Array2d gramA(gram_size, gram_size, ValueType(0));
         Array2d gramB(gram_size, gram_size, ValueType(0));
 
-        ValueType xaw = cusp::blas::dot( blockVectorX, 		activeBlockVectorAR );
+        ValueType xaw = cusp::blas::dot( blockVectorX,        activeBlockVectorAR );
         ValueType waw = cusp::blas::dot( activeBlockVectorR, 	activeBlockVectorAR );
-        ValueType xbw = cusp::blas::dot( blockVectorX, 	 	activeBlockVectorR );
+        ValueType xbw = cusp::blas::dot( blockVectorX, 	 	    activeBlockVectorR );
 
         if( monitor.iteration_count() > 0 )
         {
