@@ -97,7 +97,7 @@ void lobpcg(LinearOperator& A,
 
     ValueType _lambda = cusp::blas::dot(blockVectorX, blockVectorAX);
 
-    while (std::min(A.num_rows,monitor.iteration_count()) < monitor.iteration_limit())
+    while (monitor.iteration_count() < std::min(N,monitor.iteration_limit()))
     {
         cusp::blas::axpby(blockVectorX, blockVectorAX, blockVectorR, -_lambda, ValueType(1));
 
