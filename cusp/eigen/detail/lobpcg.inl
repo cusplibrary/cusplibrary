@@ -70,8 +70,6 @@ void lobpcg(LinearOperator& A,
             Preconditioner& M,
             bool largest)
 {
-    using namespace thrust::placeholders;
-
     typedef typename LinearOperator::index_type   IndexType;
     typedef typename LinearOperator::value_type   ValueType;
     typedef typename LinearOperator::memory_space MemorySpace;
@@ -99,25 +97,20 @@ void lobpcg(LinearOperator& A,
 
     ValueType _lambda = cusp::blas::dot(blockVectorX, blockVectorAX);
 
-    std::vector<ValueType> residualNormsHost;
-    residualNormsHost.reserve(monitor.iteration_limit());
-
     while (std::min(A.num_rows,monitor.iteration_count()) < monitor.iteration_limit())
     {
         cusp::blas::axpby(blockVectorX, blockVectorAX, blockVectorR, -_lambda, ValueType(1));
 
-        residualNormsHost.push_back(cusp::blas::nrm2(blockVectorR));
-
-        monitor.residuals.push_back(residualNormsHost.back());
+        monitor.residuals.push_back(cusp::blas::nrm2(blockVectorR));
 
         if(monitor.is_verbose())
         {
             std::cout << "Iteration      : " << monitor.iteration_count() << std::endl;
             std::cout << "Eigenvalue     : " << _lambda << std::endl;
-            std::cout << "Residual norms : " << residualNormsHost.back() << std::endl << std::endl;
+            std::cout << "Residual norms : " << monitor.residuals.back() << std::endl << std::endl;
         }
 
-        if( residualNormsHost.back() < monitor.relative_tolerance() ) break; // All eigenpairs converged
+        if( monitor.residuals.back() < monitor.relative_tolerance() ) break; // All eigenpairs converged
 
         // Apply preconditioner, M, to the active residuals
         cusp::multiply(M, blockVectorR, activeBlockVectorR);
@@ -192,6 +185,7 @@ void lobpcg(LinearOperator& A,
         Array2d eigBlockVector_h(gramA.num_rows, gramA.num_cols, ValueType(0));
 
         cusp::lapack::sygv(gramA, gramB, _lambda_h, eigBlockVector_h);
+        cusp::print(_lambda_h);
 
         int start_index = largest ? gramA.num_rows-1 : 0;
 
