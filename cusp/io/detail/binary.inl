@@ -41,91 +41,37 @@ namespace detail
 {
 
 template <typename IndexType, typename ValueType, typename Stream>
-void read_dimacs_stream(cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& coo, Stream& input)
+void read_binary_stream(cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& coo, Stream& input)
 {
-    // read file contents line by line
-    std::string line;
+    size_t num_rows, num_cols, num_entries;
+    IndexType ientry;
+    ValueType ventry;
 
-    // skip over banner and comments
-    do
+    input.read(reinterpret_cast<char *>(&num_rows), sizeof(size_t));
+    input.read(reinterpret_cast<char *>(&num_cols), sizeof(size_t));
+    input.read(reinterpret_cast<char *>(&num_entries), sizeof(size_t));
+
+    coo.resize(num_rows, num_cols, num_entries);
+
+    size_t index = 0;
+    while( index < num_entries )
     {
-        std::getline(input, line);
-    } while (line[0] == 'c');
-
-    // line contains [num_rows num_columns num_entries]
-    std::vector<std::string> tokens;
-    detail::tokenize(tokens, line);
-
-    if (tokens.size() != 4)
-        throw cusp::io_exception("invalid binary coordinate format");
-
-    size_t num_verts, num_entries;
-
-    std::istringstream(tokens[2]) >> num_verts;
-    std::istringstream(tokens[3]) >> num_entries;
-
-    coo.resize(num_verts, num_verts, num_entries);
-
-    size_t num_entries_read = 0;
-    IndexType src = -1;
-    IndexType snk = -1;
-
-    while(num_entries_read < coo.num_entries && !input.eof())
-    {
-        double real;
-
-        input >> line;
-
-        if(line[0] == 'a')
-        {
-            input >> coo.row_indices[num_entries_read];
-            input >> coo.column_indices[num_entries_read];
-            input >> real;
-
-            coo.values[num_entries_read++] = real;
-        }
-        else if(line[0] == 'n')
-        {
-            IndexType vertex;
-
-            input >> vertex;
-            input >> line;
-
-            if(line[0] == 's')
-                src = vertex - 1;
-            else if(line[0] == 't')
-                snk = vertex - 1;
-            else
-                throw cusp::io_exception("unexpected terminal vertex specified");
-        }
-        else
-        {
-            throw cusp::io_exception("unexpected edge type specified");
-        }
+        input.read(reinterpret_cast<char *>(&ientry), sizeof(IndexType));
+        coo.row_indices[index++] = ientry;
     }
 
-    if(num_entries_read != coo.num_entries)
-        throw cusp::io_exception("unexpected EOF while reading Dimacs entries");
-
-    // check validity of row and column index data
-    if (coo.num_entries > 0)
+    index = 0;
+    while( index < num_entries )
     {
-        size_t min_row_index = *std::min_element(coo.row_indices.begin(), coo.row_indices.end());
-        size_t max_row_index = *std::max_element(coo.row_indices.begin(), coo.row_indices.end());
-        size_t min_col_index = *std::min_element(coo.column_indices.begin(), coo.column_indices.end());
-        size_t max_col_index = *std::max_element(coo.column_indices.begin(), coo.column_indices.end());
-
-        if (min_row_index < 1)            throw cusp::io_exception("found invalid row index (index < 1)");
-        if (min_col_index < 1)            throw cusp::io_exception("found invalid column index (index < 1)");
-        if (max_row_index > coo.num_rows) throw cusp::io_exception("found invalid row index (index > num_rows)");
-        if (max_col_index > coo.num_cols) throw cusp::io_exception("found invalid column index (index > num_columns)");
+        input.read(reinterpret_cast<char *>(&ientry), sizeof(IndexType));
+        coo.column_indices[index++] = ientry;
     }
 
-    // convert base-1 indices to base-0
-    for(size_t n = 0; n < coo.num_entries; n++)
+    index = 0;
+    while( index < num_entries )
     {
-        coo.row_indices[n]    -= 1;
-        coo.column_indices[n] -= 1;
+        input.read(reinterpret_cast<char *>(&ventry), sizeof(ValueType));
+        coo.values[index++] = ventry;
     }
 
     // sort indices by (row,column)
@@ -133,7 +79,7 @@ void read_dimacs_stream(cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>&
 }
 
 template <typename Matrix, typename Stream, typename Format>
-void read_dimacs_stream(Matrix& mtx, Stream& input, Format)
+void read_binary_stream(Matrix& mtx, Stream& input, Format)
 {
     // general case
     typedef typename Matrix::index_type IndexType;
@@ -141,32 +87,25 @@ void read_dimacs_stream(Matrix& mtx, Stream& input, Format)
 
     cusp::coo_matrix<IndexType,ValueType,cusp::host_memory> temp;
 
-    read_dimacs_stream(temp, input);
+    read_binary_stream(temp, input);
 
     cusp::convert(temp, mtx);
 }
 
 template <typename IndexType, typename ValueType, typename Stream>
-void write_dimacs_stream(const cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& coo,
+void write_binary_stream(const cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& coo,
                          Stream& output)
 {
-    output << "p max " << coo.num_rows << " " << coo.num_entries << std::endl;
-    output << "n " << (thrust::get<0>(t) + 1) << " s" << std::endl;
-    output << "n " << (thrust::get<1>(t) + 1) << " t" << std::endl;
-
-    for(size_t i = 0; i < coo.num_entries; i++)
-    {
-        output << "a ";
-        output << (coo.row_indices[i]    + 1) << " ";
-        output << (coo.column_indices[i] + 1) << " ";
-
-        int val = coo.values[i];
-        output << val << std::endl;
-    }
+    output.write(reinterpret_cast<const char *>(&coo.num_rows), sizeof(size_t));
+    output.write(reinterpret_cast<const char *>(&coo.num_cols), sizeof(size_t));
+    output.write(reinterpret_cast<const char *>(&coo.num_entries), sizeof(size_t));
+    output.write(reinterpret_cast<const char *>(&coo.row_indices[0]), coo.num_entries*sizeof(IndexType));
+    output.write(reinterpret_cast<const char *>(&coo.column_indices[0]), coo.num_entries*sizeof(IndexType));
+    output.write(reinterpret_cast<const char *>(&coo.values[0]), coo.num_entries*sizeof(ValueType));
 }
 
 template <typename Matrix, typename Stream>
-void write_dimacs_stream(const Matrix& mtx, Stream& output, cusp::sparse_format)
+void write_binary_stream(const Matrix& mtx, Stream& output, cusp::sparse_format)
 {
     // general sparse case
     typedef typename Matrix::index_type IndexType;
@@ -174,64 +113,64 @@ void write_dimacs_stream(const Matrix& mtx, Stream& output, cusp::sparse_format)
 
     cusp::coo_matrix<IndexType,ValueType,cusp::host_memory> coo(mtx);
 
-    cusp::io::detail::write_dimacs_stream(coo, output);
+    cusp::io::detail::write_binary_stream(coo, output);
 }
 
 } // end namespace detail
 
 
 template <typename Matrix>
-void read_dimacs_file(Matrix& mtx, const std::string& filename)
+void read_binary_file(Matrix& mtx, const std::string& filename)
 {
-    std::ifstream file(filename.c_str());
+    std::ifstream file(filename.c_str(), std::ios::binary);
 
     if (!file)
         throw cusp::io_exception(std::string("unable to open file \"") + filename + std::string("\" for reading"));
 
 #ifdef __APPLE__
     // WAR OSX-specific issue using rdbuf
-    std::stringstream file_string (std::stringstream::in | std::stringstream::out);
+    std::stringstream file_string (std::stringstream::in | std::stringstream::out | std::ios::binary);
     std::vector<char> buffer(file.rdbuf()->pubseekoff(0, std::ios::end,std::ios::in));
     file.rdbuf()->pubseekpos(0, std::ios::in);
     file.rdbuf()->sgetn(&buffer[0], buffer.size());
     file_string.write(&buffer[0], buffer.size());
 
-    cusp::io::read_dimacs_stream(mtx, file_string);
+    cusp::io::read_binary_stream(mtx, file_string);
 #else
-    cusp::io::read_dimacs_stream(mtx, file);
+    cusp::io::read_binary_stream(mtx, file);
 #endif
 }
 
 template <typename Matrix, typename Stream>
-void read_dimacs_stream(Matrix& mtx, Stream& input)
+void read_binary_stream(Matrix& mtx, Stream& input)
 {
-    return cusp::io::detail::read_dimacs_stream(mtx, input, typename Matrix::format());
+    return cusp::io::detail::read_binary_stream(mtx, input, typename Matrix::format());
 }
 
 template <typename Matrix>
-void write_dimacs_file(const Matrix& mtx, const std::string& filename)
+void write_binary_file(const Matrix& mtx, const std::string& filename)
 {
-    std::ofstream file(filename.c_str());
+    std::ofstream file(filename.c_str(), std::ios::binary);
 
     if (!file)
         throw cusp::io_exception(std::string("unable to open file \"") + filename + std::string("\" for writing"));
 
 #ifdef __APPLE__
     // WAR OSX-specific issue using rdbuf
-    std::stringstream file_string (std::stringstream::in | std::stringstream::out);
+    std::stringstream file_string (std::stringstream::in | std::stringstream::out | std::ios::binary);
 
-    cusp::io::write_dimacs_stream(mtx, file_string);
+    cusp::io::write_binary_stream(mtx, file_string);
 
     file.rdbuf()->sputn(file_string.str().c_str(), file_string.str().size());
 #else
-    cusp::io::write_dimacs_stream(mtx, file);
+    cusp::io::write_binary_stream(mtx, file);
 #endif
 }
 
 template <typename Matrix, typename Stream>
-void write_dimacs_stream(const Matrix& mtx, Stream& output)
+void write_binary_stream(const Matrix& mtx, Stream& output)
 {
-    cusp::io::detail::write_dimacs_stream(mtx, output, typename Matrix::format());
+    cusp::io::detail::write_binary_stream(mtx, output, typename Matrix::format());
 }
 
 } //end namespace io
