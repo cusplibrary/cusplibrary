@@ -90,6 +90,7 @@ read_dimacs_file(Matrix& mtx, const std::string& filename);
  * int main(void)
  * {
  *     // read matrix stored in A.mtx into a coo_matrix
+ *     thrust::tuple<int,int> nodes;
  *     cusp::coo_matrix<int, float, cusp::device_memory> A;
  *     nodes = cusp::io::read_dimacs_stream(A, std::cin);
  *
