@@ -55,7 +55,7 @@ namespace io
  * {
  *     // read matrix stored in A.mtx into a coo_matrix
  *     cusp::coo_matrix<int, float, cusp::device_memory> A;
- *     cusp::io::read_binary_file(A, "A.binary");
+ *     cusp::io::read_binary_file(A, "A.bin");
  *
  *     return 0;
  * }
