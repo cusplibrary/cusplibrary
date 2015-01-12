@@ -100,8 +100,8 @@ template <typename Array1,
          typename Array2>
 typename Array1::value_type
 dotc(const cublas::detail::blas_policy<typename Array1::memory_space>& policy,
-    const Array1& x,
-    const Array2& y)
+     const Array1& x,
+     const Array2& y)
 {
     typedef typename Array2::value_type ValueType;
 
@@ -218,7 +218,7 @@ void gemv(const cublas::detail::blas_policy<typename Array1d2::memory_space>& po
     ValueType alpha = 1.0;
     ValueType beta = 0.0;
 
-    const ValueType *A_p = A.raw_data();
+    const ValueType *A_p = thrust::raw_pointer_cast(&A(0,0));
     const ValueType *x_p = thrust::raw_pointer_cast(&x[0]);
     ValueType *y_p = thrust::raw_pointer_cast(&y[0]);
 
@@ -249,9 +249,9 @@ void gemm(const cublas::detail::blas_policy<typename Array2d3::memory_space>& po
     ValueType alpha = 1.0;
     ValueType beta = 0.0;
 
-    const ValueType * A_p = A.raw_data();
-    const ValueType * B_p = B.raw_data();
-    ValueType * C_p = C.raw_data();
+    const ValueType * A_p = thrust::raw_pointer_cast(&A(0,0));
+    const ValueType * B_p = thrust::raw_pointer_cast(&B(0,0));
+    ValueType * C_p = thrust::raw_pointer_cast(&C(0,0));
 
     cublasStatus_t result;
 

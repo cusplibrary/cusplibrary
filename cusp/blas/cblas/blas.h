@@ -156,9 +156,9 @@ void gemv(const cblas::detail::blas_policy<typename Array1d2::memory_space>& pol
     ValueType alpha = 1.0;
     ValueType beta = 0.0;
 
-    ValueType *A_p = A.raw_data();
-    ValueType *x_p = thrust::raw_pointer_cast(&x[0]);
-    ValueType *y_p = thrust::raw_pointer_cast(&y[0]);
+    ValueType * A_p = thrust::raw_pointer_cast(&A(0,0));
+    ValueType * x_p = thrust::raw_pointer_cast(&x[0]);
+    ValueType * y_p = thrust::raw_pointer_cast(&y[0]);
 
     cblas::detail::gemv(order, trans, m, n, alpha,
                  A_p, m, x_p, 1, beta, y_p, 1);
@@ -183,9 +183,9 @@ void gemm(const cblas::detail::blas_policy<typename Array2d3::memory_space>& pol
     ValueType alpha = 1.0;
     ValueType beta = 0.0;
 
-    ValueType * A_p = A.raw_data();
-    ValueType * B_p = B.raw_data();
-    ValueType * C_p = C.raw_data();
+    ValueType * A_p = thrust::raw_pointer_cast(&A(0,0));
+    ValueType * B_p = thrust::raw_pointer_cast(&B(0,0));
+    ValueType * C_p = thrust::raw_pointer_cast(&C(0,0));
 
     cblas::detail::gemm(order, transa, transb,
                  m, n, k, alpha, A_p, m,
