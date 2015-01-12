@@ -22,6 +22,8 @@
 
 #include <cusp/detail/config.h>
 
+#include <cusp/eigen/lanczos_options.h>
+
 namespace cusp
 {
 namespace eigen
@@ -33,8 +35,91 @@ namespace eigen
  *  \{
  */
 
-template <typename Matrix, typename Array2d>
-void lanczos(const Matrix& A, Array2d& H, size_t k = 10);
+/* \cond */
+template <typename Matrix, typename Array1d>
+void lanczos(const Matrix& A, Array1d& eigVals);
+
+template <typename Matrix, typename Array1d, typename Array2d>
+void lanczos(const Matrix& A, Array1d& eigVals, Array2d& eigVecs);
+/* \endcond */
+
+/**
+ * \brief Lanczos method
+ *
+ * \tparam LinearOperator is a matrix or subclass of \p linear_operator
+ * \tparam Vector vector
+ * \tparam Monitor is a \p monitor
+ * \tparam Preconditioner is a matrix or subclass of \p linear_operator
+ *
+ * \param A matrix of the linear system
+ * \param S eigenvalues
+ * \param X eigenvectors
+ * \param monitor monitors iteration and determines stopping conditions
+ * \param M preconditioner for A
+ * \param largest If true compute the eigenpair corresponding to the largest
+ * eigenvalue otherwise compute the smallest.
+ *
+ * \par Overview
+ * Computes the extreme eigenpairs of hermitian linear systems A x = s x
+ * with preconditioner \p M.
+ *
+ * \note \p A and \p M must be symmetric.
+ *
+ * \par Example
+ *  The following code snippet demonstrates how to use \p lobpcg to
+ *  solve a 10x10 Poisson problem.
+ *
+ *  \code
+ *  #include <cusp/csr_matrix.h>
+ *  #include <cusp/monitor.h>
+ *  #include <cusp/eigen/lobpcg.h>
+ *  #include <cusp/gallery/poisson.h>
+ *
+ *  int main(void)
+ *  {
+ *      // create an empty sparse matrix structure (CSR format)
+ *      cusp::csr_matrix<int, double, cusp::device_memory> A;
+ *
+ *      // initialize matrix
+ *      cusp::gallery::poisson5pt(A, 10, 10);
+ *
+ *      // allocate storage and initialize eigenpairs
+ *      cusp::random_array<double> randx(A.num_rows);
+ *      cusp::array1d<double, cusp::device_memory> X(randx);
+ *      cusp::array1d<double, cusp::device_memory> S(1,0);
+ *
+ *      // set stopping criteria:
+ *      //  iteration_limit    = 100
+ *      //  relative_tolerance = 1e-6
+ *      //  absolute_tolerance = 0
+ *      //  verbose            = true
+ *      cusp::monitor<double> monitor(X, 100, 1e-6, 0, true);
+ *
+ *      // set preconditioner (identity)
+ *      cusp::identity_operator<double, cusp::device_memory> M(A.num_rows, A.num_rows);
+ *
+ *      // Compute the largest eigenpair of A
+ *      cusp::eigen::lobpcg(A, S, X, monitor, M, true);
+ *
+ *      std::cout << "Largest eigenvalue : " << S[0] << std::endl;
+ *
+ *      return 0;
+ *  }
+ *  \endcode
+ *
+ *  \see \p monitor
+ *
+ */
+template <typename Matrix,
+          typename Array1d1,
+          typename Array2d1,
+          typename Array1d2,
+          typename Array2d2,
+          typename LanczosOptions>
+void lanczos(const Matrix& A,
+             Array1d1& eigVals,
+             Array2d1& eigVecs,
+             LanczosOptions& options);
 
 /*! \}
  */
