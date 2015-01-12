@@ -37,6 +37,97 @@ namespace cusp
 {
 namespace eigen
 {
+namespace detail
+{
+
+template <typename Matrix>
+double disks_spectral_radius(const Matrix& A, coo_format)
+{
+    typedef typename Matrix::index_type   IndexType;
+    typedef typename Matrix::value_type   ValueType;
+    typedef typename Matrix::memory_space MemorySpace;
+
+    const IndexType N = A.num_rows;
+
+    // compute sum of absolute values for each row of A
+    cusp::array1d<IndexType, MemorySpace> row_sums(N);
+
+    cusp::array1d<IndexType, MemorySpace> temp(N);
+    thrust::reduce_by_key
+    (A.row_indices.begin(), A.row_indices.end(),
+     thrust::make_transform_iterator(A.values.begin(), cusp::detail::absolute<ValueType>()),
+     temp.begin(),
+     row_sums.begin());
+
+    return *thrust::max_element(row_sums.begin(), row_sums.end());
+}
+
+template <typename Matrix>
+double disks_spectral_radius(const Matrix& A, sparse_format)
+{
+    typename cusp::detail::as_coo_type<Matrix>::type A_coo(A);
+    return disks_spectral_radius(A_coo, coo_format());
+}
+
+template <typename Matrix, typename Array2d>
+void lanczos_estimate(const Matrix& A, Array2d& H, size_t k)
+{
+    typedef typename Matrix::value_type   ValueType;
+    typedef typename Matrix::memory_space MemorySpace;
+
+    size_t N = A.num_cols;
+    size_t maxiter = std::min(N, k);
+
+    // allocate workspace
+    cusp::array1d<ValueType,MemorySpace> v0(N);
+    cusp::array1d<ValueType,MemorySpace> v1(N);
+    cusp::array1d<ValueType,MemorySpace> w(N);
+
+    // initialize starting vector to random values in [0,1)
+    cusp::copy(cusp::random_array<ValueType>(N), v1);
+
+    cusp::blas::scal(v1, ValueType(1) / cusp::blas::nrm2(v1));
+
+    Array2d H_(maxiter + 1, maxiter, 0);
+
+    ValueType alpha = 0.0, beta = 0.0;
+
+    size_t j;
+
+    for(j = 0; j < maxiter; j++)
+    {
+        cusp::multiply(A, v1, w);
+
+        if(j >= 1)
+        {
+            H_(j - 1, j) = beta;
+            cusp::blas::axpy(v0, w, -beta);
+        }
+
+        alpha = cusp::blas::dot(w, v1);
+        H_(j,j) = alpha;
+
+        cusp::blas::axpy(v1, w, -alpha);
+
+        beta = cusp::blas::nrm2(w);
+        H_(j + 1, j) = beta;
+
+        if(beta < 1e-10) break;
+
+        cusp::blas::scal(w, ValueType(1) / beta);
+
+        // [v0 v1  w] - > [v1  w v0]
+        v0.swap(v1);
+        v1.swap(w);
+    }
+
+    H.resize(j,j);
+    for(size_t row = 0; row < j; row++)
+        for(size_t col = 0; col < j; col++)
+            H(row,col) = H_(row,col);
+}
+
+} // end detail namespace
 
 template <typename Matrix>
 double estimate_spectral_radius(const Matrix& A, size_t k)
@@ -60,62 +151,28 @@ double estimate_spectral_radius(const Matrix& A, size_t k)
         x.swap(y);
     }
 
-    if (k == 0)
-        return 0;
+    return k == 0 ? 0 : cusp::blas::nrm2(x) / cusp::blas::nrm2(y);
+}
+
+template <typename Matrix>
+double ritz_spectral_radius(const Matrix& A, size_t k, bool symmetric)
+{
+    typedef typename Matrix::value_type ValueType;
+
+    cusp::array2d<ValueType,cusp::host_memory> H;
+
+    if(symmetric)
+      detail::lanczos_estimate(A, H, k);
     else
-        return cusp::blas::nrm2(x) / cusp::blas::nrm2(y);
-}
-
-template <typename Matrix>
-double ritz_spectral_radius(const Matrix& A, size_t k)
-{
-    typedef typename Matrix::value_type ValueType;
-
-    cusp::array2d<ValueType,cusp::host_memory> H;
-    cusp::eigen::arnoldi(A, H, k);
+      cusp::eigen::arnoldi(A, H, k);
 
     return estimate_spectral_radius(H);
-}
-
-template <typename Matrix>
-double ritz_spectral_radius_symmetric(const Matrix& A, size_t k)
-{
-    typedef typename Matrix::value_type ValueType;
-
-    cusp::array2d<ValueType,cusp::host_memory> H;
-    cusp::eigen::lanczos(A, H, k);
-
-    return estimate_spectral_radius(H);
-}
-
-template <typename IndexType, typename ValueType, typename MemorySpace>
-double disks_spectral_radius(const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& A)
-{
-    const IndexType N = A.num_rows;
-
-    // compute sum of absolute values for each row of A
-    cusp::array1d<IndexType, MemorySpace> row_sums(N);
-
-    cusp::array1d<IndexType, MemorySpace> temp(N);
-    thrust::reduce_by_key
-    (A.row_indices.begin(), A.row_indices.end(),
-     thrust::make_transform_iterator(A.values.begin(), cusp::detail::absolute<ValueType>()),
-     temp.begin(),
-     row_sums.begin());
-
-    return *thrust::max_element(row_sums.begin(), row_sums.end());
 }
 
 template <typename Matrix>
 double disks_spectral_radius(const Matrix& A)
 {
-    typedef typename Matrix::index_type   IndexType;
-    typedef typename Matrix::value_type   ValueType;
-    typedef typename Matrix::memory_space MemorySpace;
-
-    const cusp::coo_matrix<IndexType,ValueType,MemorySpace> C(A);
-
-    return disks_spectral_radius(C);
+    return detail::disks_spectral_radius(A, typename Matrix::format());
 }
 
 } // end namespace eigen

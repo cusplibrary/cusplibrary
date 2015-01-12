@@ -185,7 +185,6 @@ void lobpcg(LinearOperator& A,
         Array2d eigBlockVector_h(gramA.num_rows, gramA.num_cols, ValueType(0));
 
         cusp::lapack::sygv(gramA, gramB, _lambda_h, eigBlockVector_h);
-        cusp::print(_lambda_h);
 
         int start_index = largest ? gramA.num_rows-1 : 0;
 

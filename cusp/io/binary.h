@@ -14,14 +14,13 @@
  *  limitations under the License.
  */
 
-/*! \file dimacs.h
- *  \brief Dimacs file I/O
+/*! \file binary.h
+ *  \brief binary file I/O
  */
 
 #pragma once
 
 #include <cusp/detail/config.h>
-#include <thrust/tuple.h>
 
 #include <string>
 
@@ -37,154 +36,142 @@ namespace io
  */
 
 /**
- * \brief Read a Dimacs file
+ * \brief Read a binary file
  *
  * \tparam Matrix matrix container
  *
  * \param mtx a matrix container (e.g. \p csr_matrix or \p coo_matrix)
- * \param filename file name of the Dimacs file
+ * \param filename file name of the binary file
  *
  * \par Overview
  * \note any contents of \p mtx will be overwritten
  *
  * \par Example
  * \code
- * #include <cusp/io/dimacs.h>
+ * #include <cusp/io/binary.h>
  * #include <cusp/coo_matrix.h>
  *
  * int main(void)
  * {
  *     // read matrix stored in A.mtx into a coo_matrix
- *     thrust::tuple<int,int> nodes;
  *     cusp::coo_matrix<int, float, cusp::device_memory> A;
- *     nodes = cusp::io::read_dimacs_file(A, "A.dimacs");
+ *     cusp::io::read_binary_file(A, "A.bin");
  *
  *     return 0;
  * }
  * \endcode
  *
- * \see \p write_dimacs_file
- * \see \p write_dimacs_stream
+ * \see \p write_binary_file
+ * \see \p write_binary_stream
  */
 template <typename Matrix>
-thrust::tuple<typename Matrix::index_type, typename Matrix::index_type>
-read_dimacs_file(Matrix& mtx, const std::string& filename);
+void read_binary_file(Matrix& mtx, const std::string& filename);
 
 /**
- * \brief Read Dimacs data from a stream.
+ * \brief Read binary data from a stream.
  *
  * \tparam Matrix matrix container
  * \tparam Stream stream type
  *
  * \param mtx a matrix container (e.g. \p csr_matrix or \p coo_matrix)
- * \param intput stream from which to read the Dimacs contents
+ * \param intput stream from which to read the binary contents
  *
  * \par Overview
  * \note any contents of \p mtx will be overwritten
  *
  * \par Example
  * \code
- * #include <cusp/io/dimacs.h>
  * #include <cusp/coo_matrix.h>
+ * #include <cusp/io/binary.h>
  *
  * int main(void)
  * {
  *     // read matrix stored in A.mtx into a coo_matrix
- *     thrust::tuple<int,int> nodes;
  *     cusp::coo_matrix<int, float, cusp::device_memory> A;
- *     nodes = cusp::io::read_dimacs_stream(A, std::cin);
+ *     cusp::io::read_binary_stream(A, std::cin);
  *
  *     return 0;
  * }
  * \endcode
  *
- * \see \p write_dimacs_file
- * \see \p write_dimacs_stream
+ * \see \p write_binary_file
+ * \see \p write_binary_stream
  */
 template <typename Matrix, typename Stream>
-thrust::tuple<typename Matrix::index_type, typename Matrix::index_type>
-read_dimacs_stream(Matrix& mtx, Stream& input);
+void read_binary_stream(Matrix& mtx, Stream& input);
 
 
 /**
- * \brief Write a Dimacs file
+ * \brief Write a binary file
  *
  * \tparam Matrix matrix container
  *
  * \param mtx a matrix container (e.g. \p csr_matrix or \p coo_matrix)
- * \param filename file name of the Dimacs file
+ * \param filename file name of the binary file
  *
  * \par Overview
  * \note if the file already exists it will be overwritten
  *
  * \par Example
  * \code
- * #include <cusp/io/dimacs.h>
  * #include <cusp/array2d.h>
+ * #include <cusp/io/binary.h>
  *
  * int main(void)
  * {
  *     // create a simple example
- *     cusp::array2d<float, cusp::host_memory> A(4,4);
+ *     cusp::array2d<float, cusp::host_memory> A(3,4);
  *     A(0,0) = 10;  A(0,1) =  0;  A(0,2) = 20;  A(0,3) =  0;
  *     A(1,0) =  0;  A(1,1) = 30;  A(1,2) =  0;  A(1,3) = 40;
  *     A(2,0) = 50;  A(2,1) = 60;  A(2,2) = 70;  A(2,3) = 80;
- *     A(3,0) =  0;  A(3,1) =  0;  A(3,2) =  0;  A(3,3) =  0;
  *
- *     // save A into Dimacs file
- *     thrust::tuple<int,int> nodes(0,3);
- *     cusp::io::write_dimacs_file(A, nodes, "A.dimacs");
+ *     // save A into binary file
+ *     cusp::io::write_binary_file(A, "A.bin");
  *
  *     return 0;
  * }
  * \endcode
  *
- * \see \p read_dimacs_file
- * \see \p read_dimacs_stream
+ * \see \p read_binary_file
+ * \see \p read_binary_stream
  */
 template <typename Matrix>
-void write_dimacs_file(const Matrix& mtx,
-                       const thrust::tuple<typename Matrix::index_type,typename Matrix::index_type>& t,
-                       const std::string& filename);
+void write_binary_file(const Matrix& mtx, const std::string& filename);
 
 /**
- * \brief Write Dimacs data to a stream.
+ * \brief Write binary data to a stream.
  *
  * \tparam Matrix matrix container
  * \tparam Stream stream type
  *
  * \param mtx a matrix container (e.g. \p csr_matrix or \p coo_matrix)
- * \param output stream to which the Dimacs contents will be written
+ * \param output stream to which the binary contents will be written
  *
  * \par Example
  * \code
- * #include <cusp/io/dimacs.h>
  * #include <cusp/array2d.h>
+ * #include <cusp/io/binary.h>
  *
  * int main(void)
  * {
  *     // create a simple example
- *     cusp::array2d<float, cusp::host_memory> A(4,4);
+ *     cusp::array2d<float, cusp::host_memory> A(3,4);
  *     A(0,0) = 10;  A(0,1) =  0;  A(0,2) = 20;  A(0,3) =  0;
  *     A(1,0) =  0;  A(1,1) = 30;  A(1,2) =  0;  A(1,3) = 40;
  *     A(2,0) = 50;  A(2,1) = 60;  A(2,2) = 70;  A(2,3) = 80;
- *     A(3,0) =  0;  A(3,1) =  0;  A(3,2) =  0;  A(3,3) =  0;
  *
- *     // save A into Dimacs file
- *     thrust::tuple<int,int> nodes(0,3);
- *     cusp::io::write_dimacs_stream(A, nodes, std::cout);
+ *     // save A into binary file
+ *     cusp::io::write_binary_stream(A, std::cout);
  *
  *     return 0;
  * }
  * \endcode
  *
- * \see read_dimacs_file
- * \see read_dimacs_stream
+ * \see read_binary_file
+ * \see read_binary_stream
  */
 template <typename Matrix, typename Stream>
-void write_dimacs_stream(const Matrix& mtx,
-                         const thrust::tuple<typename Matrix::index_type,typename Matrix::index_type>& t,
-                         Stream& output);
+void write_binary_stream(const Matrix& mtx, Stream& output);
 
 /*! \}
  */
@@ -192,5 +179,5 @@ void write_dimacs_stream(const Matrix& mtx,
 } //end namespace io
 } //end namespace cusp
 
-#include <cusp/io/detail/dimacs.inl>
+#include <cusp/io/detail/binary.inl>
 

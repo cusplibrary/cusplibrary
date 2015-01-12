@@ -107,11 +107,6 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverTyp
 
     if(ML->levels.size() > 0)
       ML->levels.resize(0);
-    if(sa_levels.size() > 0)
-      sa_levels.resize(0);
-
-    ML->resize(A.num_rows, A.num_cols, A.num_entries);
-    ML->levels.reserve(sa_options.max_levels); // avoid reallocations which force matrix copies
 
     ML->resize(A.num_rows, A.num_cols, A.num_entries);
     ML->levels.reserve(sa_options.max_levels); // avoid reallocations which force matrix copies
@@ -123,7 +118,7 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverTyp
     sa_levels.back().A_ = A; // copy
 
     while ((sa_levels.back().A_.num_rows > sa_options.min_level_size) &&
-            (sa_levels.size() < sa_options.max_levels))
+           (sa_levels.size() < sa_options.max_levels))
         extend_hierarchy();
 
     ML->solver = SolverType(sa_levels.back().A_);

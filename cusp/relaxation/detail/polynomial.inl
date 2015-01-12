@@ -93,7 +93,7 @@ polynomial<ValueType,MemorySpace>
 {
     size_t N = sa_level.A_.num_rows;
 
-    ValueType rho = cusp::eigen::ritz_spectral_radius_symmetric(sa_level.A_, 8);
+    ValueType rho = cusp::eigen::ritz_spectral_radius(sa_level.A_, 8, true);
     detail::chebyshev_polynomial_coefficients(rho, default_coefficients);
     default_coefficients.resize( default_coefficients.size() - 1 );
 

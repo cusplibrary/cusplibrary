@@ -114,6 +114,7 @@ void generalized_spmv(thrust::execution_policy<DerivedPolicy> &exec,
 
     typedef typename Vector3::value_type ValueType3;
     thrust::detail::temporary_array<ValueType3, DerivedPolicy> vals(exec, A.num_rows);
+    thrust::fill(exec, vals.begin(), vals.end(), ValueType(0));
 
     thrust::reduce_by_key(exec,
                           row_indices_begin, row_indices_begin + A.values.num_entries,
