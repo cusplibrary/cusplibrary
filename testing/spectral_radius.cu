@@ -23,7 +23,7 @@ void TestEstimateSpectralRadius(void)
         float rho = 5.0;
         ASSERT_EQUAL((std::abs(cusp::eigen::estimate_spectral_radius(A) - rho) / rho) < 0.1f, true);
         ASSERT_EQUAL((std::abs(cusp::eigen::ritz_spectral_radius(A) - rho) / rho) < 0.1f, true);
-        ASSERT_EQUAL((std::abs(cusp::eigen::ritz_spectral_radius_symmetric(A) - rho) / rho) < 0.1f, true);
+        ASSERT_EQUAL((std::abs(cusp::eigen::ritz_spectral_radius(A,10,true) - rho) / rho) < 0.1f, true);
         ASSERT_EQUAL((std::abs(cusp::eigen::disks_spectral_radius(A) - rho) / rho) < 0.1f, true);
     }
 
@@ -34,7 +34,7 @@ void TestEstimateSpectralRadius(void)
         float rho = 6.0;
         ASSERT_EQUAL((std::abs(cusp::eigen::estimate_spectral_radius(A) - rho) / rho) < 0.1f, true);
         ASSERT_EQUAL((std::abs(cusp::eigen::ritz_spectral_radius(A) - rho) / rho) < 0.1f, true);
-        ASSERT_EQUAL((std::abs(cusp::eigen::ritz_spectral_radius_symmetric(A) - rho) / rho) < 0.1f, true);
+        ASSERT_EQUAL((std::abs(cusp::eigen::ritz_spectral_radius(A,10,true) - rho) / rho) < 0.1f, true);
         ASSERT_EQUAL((std::abs(cusp::eigen::disks_spectral_radius(A) - rho) / rho) < 0.1f, true);
     }
 
@@ -45,7 +45,7 @@ void TestEstimateSpectralRadius(void)
         float rho = 7.2360679774997871;
         ASSERT_EQUAL((std::abs(cusp::eigen::estimate_spectral_radius(A) - rho) / rho) < 0.1f, true);
         ASSERT_EQUAL((std::abs(cusp::eigen::ritz_spectral_radius(A) - rho) / rho) < 0.1f, true);
-        ASSERT_EQUAL((std::abs(cusp::eigen::ritz_spectral_radius_symmetric(A) - rho) / rho) < 0.1f, true);
+        ASSERT_EQUAL((std::abs(cusp::eigen::ritz_spectral_radius(A,10,true) - rho) / rho) < 0.1f, true);
         ASSERT_EQUAL((std::abs(cusp::eigen::disks_spectral_radius(A) - rho) / rho) < 0.11f, true);
     }
 
