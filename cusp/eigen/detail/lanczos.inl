@@ -136,7 +136,10 @@ void lanczos(const Matrix& A, Array1d& eigVals, Array2d& eigVecs, LanczosOptions
     cusp::copy(cusp::random_array<ValueType>(N), v1);
     cusp::blas::scal(v1, 1.0/cusp::blas::nrm2(v1));
 
-    cusp::array2d<ValueType,MemorySpace,cusp::column_major> V(N, options.minIter, ValueType(0));
+    cusp::array2d<ValueType,MemorySpace,cusp::column_major> V;
+
+    if(!options.reorth==None)
+        V.resize(N, options.minIter);
 
     bool allEigenvaluesCheckedConverged = false;
 
@@ -145,7 +148,7 @@ void lanczos(const Matrix& A, Array1d& eigVals, Array2d& eigVecs, LanczosOptions
 
     while(1)
     {
-        if(iter == memorySize && options.reorth==Full)
+        if(iter == memorySize)
         {
             if(options.verbose)
                 std::cout << "At iteration #" << iter+1 <<
@@ -156,11 +159,13 @@ void lanczos(const Matrix& A, Array1d& eigVals, Array2d& eigVecs, LanczosOptions
 
             alphas.resize(memorySize);
             betas.resize(memorySize);
-            V.resize(N, memorySize);
+
+            if(options.reorth==Full)
+                V.resize(N, memorySize);
         }
 
         if(options.reorth==Full)
-          cusp::blas::copy(v1, V.column(iter));
+            cusp::blas::copy(v1, V.column(iter));
 
         cusp::multiply(A, v1, v2);
 
@@ -452,13 +457,17 @@ void lanczos(const Matrix& A, Array1d& eigVals, Array2d& eigVecs, LanczosOptions
     if(options.verbose)
     {
         std::cout << std::endl;
+        std::cout << "Max absolute eigenvalue error   : " << maxErr0 << std::endl;
+        std::cout << "Max relative eigenvalue error   : " << maxErr  << std::endl;
+
+        std::cout << "Eigenvalues : " << std::endl;
+        std::cout << std::scientific << std::setprecision(7);
+
+        cusp::array2d<ValueType,MemorySpace,cusp::column_major> E(A.num_rows, eigVecs.num_cols, 0);
+
+        std::cout << "eig id     eigenvalues      residual norm" << std::endl;
         if(options.computeEigVecs)
         {
-            std::cout << "Max absolute eigenvalue error   : " << maxErr0 << std::endl;
-            std::cout << "Max relative eigenvalue error   : " << maxErr  << std::endl;
-
-            cusp::array2d<ValueType,MemorySpace,cusp::column_major> E(A.num_rows, eigVecs.num_cols, 0);
-
             for(size_t i = 0; i < eigVals.size(); i++)
             {
                 ColumnView eigV = eigVecs.column(i);
@@ -467,15 +476,17 @@ void lanczos(const Matrix& A, Array1d& eigVals, Array2d& eigVecs, LanczosOptions
                 cusp::blas::axpy(eigV, EV, -eigVals[i]);
             }
 
-            std::cout << "Eigenvalues : " << std::endl;
-            std::cout << std::scientific << std::setprecision(7);
-            std::cout << "eig id     eigenvalues      residual norm" << std::endl;
             for(size_t i = 0; i < eigVals.size(); i++)
                 std::cout << std::setw(6) << i << std::setw(17) << eigVals[i] << std::setw(17)
                           << cusp::blas::nrm2(E.column(i)) << std::endl;
 
             std::cout << "||A*V-V*S||_F=" << cusp::blas::nrm2(E.values) << std::endl;
             std::cout.unsetf(std::ios::floatfield);
+        }
+        else
+        {
+            for(size_t i = 0; i < eigVals.size(); i++)
+                std::cout << std::setw(6) << i << std::setw(17) << eigVals[i] << std::endl;
         }
 
         ValueType reorthVectorRate = 0.0;
