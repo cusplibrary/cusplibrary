@@ -141,22 +141,22 @@ void spmv_dia(const Matrix&  A,
 
     for(size_t i = 0; i < num_diagonals; i++)
     {
-        const IndexType& k = A.diagonal_offsets[i];
+        const IndexType k = A.diagonal_offsets[i];
 
-        const IndexType& i_start = std::max<IndexType>(0, -k);
-        const IndexType& j_start = std::max<IndexType>(0,  k);
+        const IndexType i_start = std::max<IndexType>(0, -k);
+        const IndexType j_start = std::max<IndexType>(0,  k);
 
         // number of elements to process in this diagonal
         const IndexType N = std::min(A.num_rows - i_start, A.num_cols - j_start);
 
         for(IndexType n = 0; n < N; n++)
         {
-            const ValueType& Aij = A.values(i_start + n, i);
+            const ValueType Aij = A.values(i_start + n, i);
 
-            const ValueType& xj = x[j_start + n];
-                  ValueType& yi = y[i_start + n];
-    
-            yi = reduce(yi, combine(Aij, xj));
+            const ValueType xj = x[j_start + n];
+                  ValueType yi = y[i_start + n];
+
+            y[i_start + n] = reduce(yi, combine(Aij, xj));
         }
     }
 }
