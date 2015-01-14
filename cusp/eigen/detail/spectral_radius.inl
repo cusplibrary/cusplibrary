@@ -24,7 +24,6 @@
 
 #include <cusp/blas/blas.h>
 #include <cusp/eigen/arnoldi.h>
-#include <cusp/eigen/lanczos.h>
 
 #include <thrust/extrema.h>
 #include <thrust/transform.h>
