@@ -99,15 +99,10 @@ public:
     typedef RandomTransformIterator                                                      iterator;
     /*! \endcond */
 
-    /*! \brief Null constructor initializes this \p strided_iterator's stride to zero.
-     */
-    random_iterator(void)
-        : random_counting_iterator(CountingIterator(0), IndexFunctor(0)) {}
-
     /*! \brief This constructor builds a \p random_iterator using a specified seed.
      *  \param seed The seed initial value used to generate the random sequence.
      */
-    random_iterator(const size_t seed)
+    random_iterator(const size_t seed = 0)
         : random_counting_iterator(CountingIterator(0), IndexFunctor(seed)) {}
 
     /*! \brief This method returns an iterator pointing to the beginning of
