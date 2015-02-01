@@ -28,17 +28,17 @@ namespace aggregation
 {
 namespace detail
 {
-
 template <typename Matrix>
-void setup_level_matrix(Matrix& dst, Matrix& src) {
+void setup_level_matrix(Matrix& dst, Matrix& src)
+{
     dst.swap(src);
 }
 
 template <typename Matrix1, typename Matrix2>
-void setup_level_matrix(Matrix1& dst, Matrix2& src) {
+void setup_level_matrix(Matrix1& dst, Matrix2& src)
+{
     dst = src;
 }
-
 } // end namespace detail
 
 template <typename IndexType, typename ValueType, typename MemorySpace, typename SmootherType, typename SolverType>

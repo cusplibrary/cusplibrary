@@ -84,7 +84,8 @@ struct amg_container<IndexType,ValueType,cusp::device_memory>
 {
     // use COO on device
     typedef typename cusp::coo_matrix<IndexType,ValueType,cusp::device_memory> setup_type;
-    typedef typename cusp::hyb_matrix<IndexType,ValueType,cusp::device_memory> solve_type;
+    // typedef typename cusp::hyb_matrix<IndexType,ValueType,cusp::device_memory> solve_type;
+    typedef typename cusp::csr_matrix<IndexType,ValueType,cusp::device_memory> solve_type;
 };
 
 template<typename IndexType, typename ValueType, typename MemorySpace>

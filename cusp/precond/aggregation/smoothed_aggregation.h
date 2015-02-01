@@ -99,10 +99,12 @@ class smoothed_aggregation :
                          const Options& sa_options);
 
     template <typename MatrixType>
-    smoothed_aggregation(const MatrixType& A, const cusp::array1d<ValueType,MemorySpace>& B);
+    smoothed_aggregation(const MatrixType& A,
+                         const cusp::array1d<ValueType,MemorySpace>& B);
 
     template <typename MatrixType, typename Options>
-    smoothed_aggregation(const MatrixType& A, const cusp::array1d<ValueType,MemorySpace>& B,
+    smoothed_aggregation(const MatrixType& A,
+                         const cusp::array1d<ValueType,MemorySpace>& B,
                          const Options& sa_options);
 
     template <typename MemorySpace2,typename SmootherType2,typename SolverType2>
@@ -112,7 +114,8 @@ class smoothed_aggregation :
     void sa_initialize(const MatrixType& A);
 
     template <typename MatrixType, typename ArrayType>
-    void sa_initialize(const MatrixType& A, const ArrayType& B);
+    void sa_initialize(const MatrixType& A,
+                       const ArrayType& B);
 
 protected:
 

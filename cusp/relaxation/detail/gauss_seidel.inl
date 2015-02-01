@@ -53,6 +53,30 @@ gauss_seidel<ValueType,MemorySpace>
     color_offsets = temp;
 }
 
+template <typename ValueType, typename MemorySpace>
+template<typename MatrixType>
+gauss_seidel<ValueType,MemorySpace>
+::gauss_seidel(const cusp::precond::aggregation::sa_level<MatrixType>& sa_level, sweep default_direction)
+    : ordering(sa_level.A_.num_rows), default_direction(default_direction)
+{
+    const MatrixType& A = sa_level.A_;
+
+    cusp::array1d<int,MemorySpace> colors(A.num_rows);
+    int max_colors = cusp::graph::vertex_coloring(A, colors);
+
+    thrust::sequence(ordering.begin(), ordering.end());
+    thrust::sort_by_key(colors.begin(), colors.end(), ordering.begin());
+
+    cusp::array1d<int,MemorySpace> temp(max_colors + 1);
+    thrust::reduce_by_key(colors.begin(),
+                          colors.end(),
+                          thrust::constant_iterator<int>(1),
+                          thrust::make_discard_iterator(),
+                          temp.begin());
+    thrust::exclusive_scan(temp.begin(), temp.end(), temp.begin(), 0);
+    color_offsets = temp;
+}
+
 // linear_operator
 template <typename ValueType, typename MemorySpace>
 template<typename MatrixType, typename VectorType1, typename VectorType2>
@@ -95,6 +119,23 @@ void gauss_seidel<ValueType,MemorySpace>
     {
         throw cusp::runtime_exception("Unknown Gauss-Seidel sweep direction specified.");
     }
+}
+
+template <typename ValueType, typename MemorySpace>
+template<typename MatrixType, typename VectorType1, typename VectorType2>
+void gauss_seidel<ValueType,MemorySpace>
+::presmooth(const MatrixType& A, const VectorType1& b, VectorType2& x)
+{
+    VectorType2 temp_b(b.size(), 0);
+    gauss_seidel<ValueType,MemorySpace>::operator()(A,temp_b,x,default_direction);
+}
+
+template <typename ValueType, typename MemorySpace>
+template<typename MatrixType, typename VectorType1, typename VectorType2>
+void gauss_seidel<ValueType,MemorySpace>
+::postsmooth(const MatrixType& A, const VectorType1& b, VectorType2& x)
+{
+    gauss_seidel<ValueType,MemorySpace>::operator()(A,b,x,default_direction);
 }
 
 } // end namespace relaxation
