@@ -15,6 +15,7 @@
  */
 
 #include <cusp/array1d.h>
+#include <cusp/coo_matrix.h>
 #include <cusp/sort.h>
 
 #include <cusp/format_utils.h>
