@@ -18,5 +18,24 @@
 
 #include <cusp/detail/config.h>
 
+#include <cusp/system/omp/detail/multiply/csr_spmv.h>
+#include <cusp/system/omp/detail/multiply/spgemm.h>
+
 // this system inherits multiply
 #include <cusp/system/cpp/detail/multiply.h>
+
+namespace cusp
+{
+namespace system
+{
+namespace omp
+{
+
+} // end namespace omp
+} // end namespace system
+
+// hack until ADL is operational
+using cusp::system::omp::multiply;
+using cusp::system::omp::multiply_;
+
+} // end namespace cusp

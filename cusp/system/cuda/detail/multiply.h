@@ -24,6 +24,8 @@
 #include <cusp/system/cuda/detail/multiply/ell_spmv.h>
 // #include <cusp/system/cuda/detail/multiply/hyb_spmv.h>
 
+#include <cusp/system/cuda/detail/multiply/spgemm.h>
+
 namespace cusp
 {
 namespace system
@@ -36,5 +38,6 @@ namespace cuda
 
 // hack until ADL is operational
 using cusp::system::cuda::multiply;
+using cusp::system::cuda::multiply_;
 
 } // end namespace cusp

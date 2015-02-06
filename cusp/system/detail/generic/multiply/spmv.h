@@ -133,7 +133,6 @@ void multiply(thrust::execution_policy<DerivedPolicy> &exec,
 {
     typedef typename LinearOperator::index_type IndexType;
     typedef typename LinearOperator::value_type ValueType;
-    typedef typename LinearOperator::memory_space MemorySpace;
 
     typedef logical_to_other_physical_functor<IndexType,cusp::row_major,cusp::column_major> LogicalFunctor;
 
@@ -195,7 +194,6 @@ void multiply(thrust::execution_policy<DerivedPolicy> &exec,
 {
     typedef typename LinearOperator::index_type IndexType;
     typedef typename LinearOperator::value_type ValueType;
-    typedef typename LinearOperator::memory_space MemorySpace;
 
     thrust::detail::temporary_array<IndexType, DerivedPolicy> rows(exec, A.num_rows);
     thrust::detail::temporary_array<ValueType, DerivedPolicy> vals(exec, A.num_rows);

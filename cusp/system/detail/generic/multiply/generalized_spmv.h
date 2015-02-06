@@ -156,7 +156,6 @@ void generalized_spmv(thrust::execution_policy<DerivedPolicy> &exec,
 {
     typedef typename LinearOperator::index_type IndexType;
     typedef typename LinearOperator::value_type ValueType;
-    typedef typename LinearOperator::memory_space MemorySpace;
 
     typedef logical_to_other_physical_functor<IndexType,cusp::row_major,cusp::column_major> LogicalFunctor;
 
@@ -220,7 +219,6 @@ void generalized_spmv(thrust::execution_policy<DerivedPolicy> &exec,
 {
     typedef typename LinearOperator::index_type IndexType;
     typedef typename LinearOperator::value_type ValueType;
-    typedef typename LinearOperator::memory_space MemorySpace;
 
     thrust::copy(exec, y.begin(), y.end(), z.begin());
 

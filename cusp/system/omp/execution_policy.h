@@ -28,6 +28,17 @@
 // get the definition of par
 #include <thrust/system/omp/detail/par.h>
 
+namespace cusp
+{
+namespace system
+{
+namespace omp
+{
+using namespace thrust::system::omp;
+} // end namespace omp
+} // end namespace system
+} // end namespace cusp
+
 // now get all the algorithm definitions
 
 #include <cusp/system/omp/detail/convert.h>

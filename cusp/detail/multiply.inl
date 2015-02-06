@@ -171,7 +171,7 @@ void generalized_spmv(const LinearOperator&  A,
     System1 system1;
     System2 system2;
     System3 system3;
-    System3 system4;
+    System4 system4;
 
     cusp::generalized_spmv(select_system(system1,system2,system3,system4), A, x, y, z, combine, reduce);
 }

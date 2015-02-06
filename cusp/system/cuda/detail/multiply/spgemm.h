@@ -34,9 +34,7 @@ namespace cusp
 {
 namespace system
 {
-namespace detail
-{
-namespace generic
+namespace cuda
 {
 
 template <typename Matrix1,
@@ -139,7 +137,7 @@ template <typename DerivedPolicy,
          typename Matrix1,
          typename Matrix2,
          typename Matrix3>
-void multiply_(thrust::execution_policy<DerivedPolicy>& exec,
+void multiply_(cuda::execution_policy<DerivedPolicy>& exec,
               Matrix1& A,
               Matrix2& B,
               Matrix3& C,
@@ -184,7 +182,8 @@ void multiply_(thrust::execution_policy<DerivedPolicy>& exec,
     size_t workspace_capacity = thrust::min<size_t>(coo_num_nonzeros, 16 << 20);
 
     {
-        size_t free = UINT_MAX;
+        size_t free, total;
+        cudaMemGetInfo(&free, &total);
 
         // divide free bytes by the size of each workspace unit
         size_t max_workspace_capacity = free / (4 * sizeof(IndexType) + sizeof(ValueType));
@@ -310,57 +309,6 @@ void multiply_(thrust::execution_policy<DerivedPolicy>& exec,
     }
 }
 
-template <typename DerivedPolicy,
-         typename Matrix1,
-         typename Matrix2,
-         typename Matrix3>
-void multiply_(thrust::execution_policy<DerivedPolicy>& exec,
-              Matrix1& A,
-              Matrix2& B,
-              Matrix3& C,
-              sparse_format,
-              sparse_format,
-              sparse_format)
-{
-    using namespace thrust::placeholders;
-
-    // other formats use COO * COO
-    typedef typename cusp::detail::as_coo_type<Matrix1>::type CooMatrix1;
-    typedef typename cusp::detail::as_coo_type<Matrix2>::type CooMatrix2;
-    typedef typename cusp::detail::as_coo_type<Matrix3>::type CooMatrix3;
-
-    typedef typename Matrix3::value_type ValueType;
-
-    CooMatrix1 A_(A);
-    CooMatrix2 B_(B);
-    CooMatrix3 C_;
-
-    cusp::multiply(exec, A_,B_,C_);
-
-    int num_zeros = thrust::count(C_.values.begin(), C_.values.end(), ValueType(0));
-
-    // The result of the elementwise operation contains zero entries so we need
-    // to contract the result to produce a strictly valid COO matrix
-    if(num_zeros != 0)
-    {
-        int num_reduced_entries =
-            thrust::remove_if(
-                thrust::make_zip_iterator(
-                  thrust::make_tuple(C_.row_indices.begin(), C_.column_indices.begin(), C_.values.begin())),
-                thrust::make_zip_iterator(
-                  thrust::make_tuple(C_.row_indices.end(),   C_.column_indices.end(), C_.values.end())),
-                C_.values.begin(),
-                _1 == ValueType(0)) -
-            thrust::make_zip_iterator(
-                thrust::make_tuple(C_.row_indices.begin(), C_.column_indices.begin(), C_.values.begin()));
-
-        C_.resize(C_.num_rows, C_.num_cols, num_reduced_entries);
-    }
-
-    cusp::convert(C_, C);
-}
-
-} // end namespace generic
-} // end namespace detail
+} // end namespace cuda
 } // end namespace system
 } // end namespace cusp
