@@ -183,8 +183,10 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
         num_entries_per_row = max_entries_per_row;
     }
 
+    size_t num_entries = src.num_entries - thrust::count(exec, src.values.begin(), src.values.end(), ValueType(0));
+
     // allocate output storage
-    dst.resize(src.num_rows, src.num_cols, src.num_entries, num_entries_per_row, alignment);
+    dst.resize(src.num_rows, src.num_cols, num_entries, num_entries_per_row, alignment);
 
     // expand row offsets into row indices
     cusp::array1d<IndexType, MemorySpace> row_indices(src.num_entries);
