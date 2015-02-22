@@ -99,15 +99,13 @@ void gauss_seidel<ValueType,MemorySpace>
     if(direction == FORWARD)
     {
         for(int i = 0; i < color_offsets.size()-1; i++)
-            gauss_seidel_indexed(
-                thrust::detail::derived_cast(select_system(system)),
+            gauss_seidel_indexed(thrust::detail::derived_cast(system),
                 A, x, b, ordering, color_offsets[i], color_offsets[i+1], 1);
     }
     else if(direction == BACKWARD)
     {
         for(int i = color_offsets.size()-1; i > 0; i--)
-            gauss_seidel_indexed(
-                thrust::detail::derived_cast(select_system(system)),
+            gauss_seidel_indexed(thrust::detail::derived_cast(system),
                 A, x, b, ordering, color_offsets[i-1], color_offsets[i], 1);
     }
     else if(direction == SYMMETRIC)
@@ -126,8 +124,8 @@ template<typename MatrixType, typename VectorType1, typename VectorType2>
 void gauss_seidel<ValueType,MemorySpace>
 ::presmooth(const MatrixType& A, const VectorType1& b, VectorType2& x)
 {
-    VectorType2 temp_b(b.size(), 0);
-    gauss_seidel<ValueType,MemorySpace>::operator()(A,temp_b,x,default_direction);
+    // TODO : specialize this using initial x of all 0s
+    gauss_seidel<ValueType,MemorySpace>::operator()(A,b,x,default_direction);
 }
 
 template <typename ValueType, typename MemorySpace>

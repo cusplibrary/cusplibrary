@@ -173,14 +173,14 @@ template <typename Vector>
 bool monitor<ValueType>
 ::finished(const Vector& r)
 {
+    r_norm = cusp::blas::nrm2(r);
+    residuals.push_back(r_norm);
+
     if(verbose)
     {
         std::cout << "       "  << std::setw(10) << iteration_count();
         std::cout << "       "  << std::setw(10) << std::scientific << residual_norm() << std::endl;
     }
-
-    r_norm = cusp::blas::nrm2(r);
-    residuals.push_back(r_norm);
 
     if (converged())
     {
