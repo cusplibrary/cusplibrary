@@ -1,9 +1,10 @@
+#include <cusp/csr_matrix.h>
+#include <cusp/gallery/poisson.h>
+#include <cusp/krylov/cg.h>
+#include <cusp/precond/aggregation/smoothed_aggregation.h>
 #include <cusp/relaxation/jacobi.h>
 #include <cusp/relaxation/polynomial.h>
-#include <cusp/precond/aggregation/smoothed_aggregation.h>
-#include <cusp/krylov/cg.h>
-#include <cusp/gallery/poisson.h>
-#include <cusp/csr_matrix.h>
+#include <cusp/relaxation/gauss_seidel.h>
 
 #include <iostream>
 
@@ -52,13 +53,13 @@ void run_amg(const MatrixType& A, Prec& M)
 int main(int argc, char ** argv)
 {
     typedef int                 IndexType;
-    typedef float               ValueType;
+    typedef double              ValueType;
     typedef cusp::device_memory MemorySpace;
 
     // create an empty sparse matrix structure
     cusp::hyb_matrix<IndexType, ValueType, MemorySpace> A;
 
-    IndexType N = 256;
+    IndexType N = 1024;
 
     // create 2D Poisson problem
     cusp::gallery::poisson5pt(A, N, N);
@@ -83,7 +84,7 @@ int main(int argc, char ** argv)
         monitor.print();
     }
 
-    // solve with smoothed aggregation algebraic multigrid preconditioner
+    // solve with smoothed aggregation algebraic multigrid preconditioner and jacobi smoother
     {
         std::cout << "\nSolving with smoothed aggregation preconditioner and jacobi smoother" << std::endl;
 
@@ -99,6 +100,18 @@ int main(int argc, char ** argv)
     {
         typedef cusp::relaxation::polynomial<ValueType,MemorySpace> Smoother;
         std::cout << "\nSolving with smoothed aggregation preconditioner and polynomial smoother" << std::endl;
+
+        timer t0;
+        cusp::precond::aggregation::smoothed_aggregation<IndexType, ValueType, MemorySpace, Smoother> M(A);
+        std::cout << "constructed hierarchy in " << t0.milliseconds_elapsed() << " ms " << std::endl;
+
+        run_amg(A,M);
+    }
+
+    // solve with smoothed aggregation algebraic multigrid preconditioner and gauss-seidel smoother
+    {
+        typedef cusp::relaxation::gauss_seidel<ValueType,MemorySpace> Smoother;
+        std::cout << "\nSolving with smoothed aggregation preconditioner and gauss-seidel smoother" << std::endl;
 
         timer t0;
         cusp::precond::aggregation::smoothed_aggregation<IndexType, ValueType, MemorySpace, Smoother> M(A);
