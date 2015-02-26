@@ -246,7 +246,7 @@ void multiply_(cuda::execution_policy<DerivedPolicy>& exec,
 
             // find largest end_row such that the capacity of [begin_row, end_row) fits in the workspace_capacity
             size_t end_row = thrust::upper_bound(cummulative_row_workspace.begin() + begin_row, cummulative_row_workspace.end(),
-                                                 total_work + IndexType(workspace_capacity)) - cummulative_row_workspace.begin();
+                                                 IndexType(total_work + workspace_capacity)) - cummulative_row_workspace.begin();
 
             size_t begin_segment = A_row_offsets[begin_row];
             size_t end_segment   = A_row_offsets[end_row];
