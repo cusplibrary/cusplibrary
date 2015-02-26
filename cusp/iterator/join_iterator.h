@@ -95,7 +95,7 @@ class join_iterator
         }
     };
 
-    typedef typename thrust::transform_iterator<concat_select_functor, IndexIterator> TransformIterator;
+    typedef typename thrust::transform_iterator<join_select_functor, IndexIterator> TransformIterator;
 
     // type of the join_iterator
     typedef TransformIterator iterator;
@@ -106,7 +106,7 @@ class join_iterator
 
     iterator begin(void) const
     {
-        return TransformIterator(indices_begin, concat_select_functor(first_begin, second_begin, first_end-first_begin));
+        return TransformIterator(indices_begin, join_select_functor(first_begin, second_begin, first_end-first_begin));
     }
 
     iterator end(void) const
