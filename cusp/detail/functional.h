@@ -162,6 +162,22 @@ struct less_equal_value
     less_equal_value(const T value) : Parent(value) {}
 };
 
+template<typename IndexType>
+struct coo_tuple_comp
+{
+    template<typename Tuple1, typename Tuple2>
+    __host__ __device__
+    bool operator()(const Tuple1& t1, const Tuple2& t2) const
+    {
+        const IndexType i1 = thrust::get<0>(t1);
+        const IndexType j1 = thrust::get<1>(t1);
+        const IndexType i2 = thrust::get<0>(t2);
+        const IndexType j2 = thrust::get<1>(t2);
+
+        return (i1 < i2) || ((i1 == i2) && (j1 < j2));
+    }
+};
+
 template <typename BinaryFunction>
 struct combine_tuple_base_functor
         : public thrust::unary_function<
@@ -183,6 +199,10 @@ struct combine_tuple_base_functor
 template <typename T>
 struct sum_tuple_functor
         : public combine_tuple_base_functor< thrust::plus<T> > {};
+
+template <typename T>
+struct divide_tuple_functor
+        : public combine_tuple_base_functor< thrust::divides<T> > {};
 
 template <typename T>
 struct equal_tuple_functor

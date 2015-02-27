@@ -1,6 +1,7 @@
 #include <unittest/unittest.h>
 
 #include <cusp/coo_matrix.h>
+#include <cusp/hyb_matrix.h>
 #include <cusp/multiply.h>
 
 template <typename MemorySpace>
@@ -193,3 +194,30 @@ void TestMakeCooMatrixView(void)
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestMakeCooMatrixView);
 
+template <typename MemorySpace>
+void TestToCooMatrixView(void)
+{
+    typedef int                                                  IndexType;
+    typedef float                                                ValueType;
+    typedef cusp::coo_matrix<IndexType,ValueType,MemorySpace>    CooMatrix;
+    typedef cusp::hyb_matrix<IndexType,ValueType,MemorySpace>    HybMatrix;
+    typedef typename HybMatrix::coo_view_type                    View;
+
+    CooMatrix M(3, 2, 6);
+
+    M.row_indices[0] = 0;
+    M.column_indices[0] = 1;
+    M.values[0] = 2;
+
+    HybMatrix W(M);
+    View V(W.ascoo());
+
+    ASSERT_EQUAL(V.num_rows,    3);
+    ASSERT_EQUAL(V.num_cols,    2);
+    ASSERT_EQUAL(V.num_entries, 6);
+
+    ASSERT_EQUAL_QUIET(V.row_indices[0],    M.row_indices[0]);
+    ASSERT_EQUAL_QUIET(V.column_indices[0], M.column_indices[0]);
+    ASSERT_EQUAL_QUIET(V.values[0],         M.values[0]);
+}
+DECLARE_HOST_DEVICE_UNITTEST(TestToCooMatrixView);

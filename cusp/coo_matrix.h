@@ -383,7 +383,7 @@ public:
      *
      *  \param matrix \p coo_matrix_view used to create view.
      */
-    coo_matrix_view(coo_matrix_view<IndexType,ValueType,MemorySpace,ArrayType1,ArrayType2,ArrayType3>& matrix)
+    coo_matrix_view(view& matrix)
         : Parent(matrix),
           row_indices(matrix.row_indices),
           column_indices(matrix.column_indices),
@@ -393,12 +393,11 @@ public:
      *
      *  \param matrix \p coo_matrix used to create view.
      */
-    coo_matrix_view(const coo_matrix_view<IndexType,ValueType,MemorySpace,ArrayType1,ArrayType2,ArrayType3>& matrix)
+    coo_matrix_view(const view& matrix)
         : Parent(matrix),
           row_indices(matrix.row_indices),
           column_indices(matrix.column_indices),
           values(matrix.values) {}
-
 
     /*! Resize matrix dimensions and underlying storage
      *

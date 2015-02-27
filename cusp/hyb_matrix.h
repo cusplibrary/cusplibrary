@@ -25,6 +25,7 @@
 #include <cusp/array1d.h>
 #include <cusp/detail/format.h>
 #include <cusp/detail/matrix_base.h>
+#include <cusp/detail/type_traits.h>
 
 namespace cusp
 {
@@ -160,6 +161,8 @@ public:
             typename cusp::coo_matrix<IndexType,ValueType,MemorySpace>::const_view,
             IndexType, ValueType, MemorySpace> const_view;
 
+    typedef typename cusp::detail::coo_view_type<IndexType,ValueType,MemorySpace,cusp::hyb_format>::type coo_view_type;
+
     template<typename MemorySpace2>
     struct rebind
     {
@@ -174,6 +177,10 @@ public:
     /*! Storage for the \p ell_matrix portion.
      */
     coo_matrix_type coo;
+
+    /*! Storage for indices used to generate COO view.
+     */
+    cusp::array1d<IndexType,MemorySpace> indices;
 
     /*! Construct an empty \p hyb_matrix.
      */
@@ -232,6 +239,11 @@ public:
      */
     template <typename MatrixType>
     hyb_matrix& operator=(const MatrixType& matrix);
+
+    /*! Generates coo_view of hyb_matrix
+     *
+     */
+    coo_view_type ascoo(void);
 }; // class hyb_matrix
 /*! \}
  */
