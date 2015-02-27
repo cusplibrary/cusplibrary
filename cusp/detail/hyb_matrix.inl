@@ -85,8 +85,11 @@ hyb_matrix<IndexType,ValueType,MemorySpace>
     PermColumnIndexIterator perm_column_indices_begin(ell.column_indices.values.begin(), perm_indices_begin);
     PermValueIterator       perm_values_begin(ell.values.values.begin(), perm_indices_begin);
 
-    thrust::merge_by_key(thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, ell.column_indices.values.begin())),
-                         thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, ell.column_indices.values.begin())) + ell_num_entries,
+    // TODO : Remove this WAR when Thrust v1.9 is released, related issue #635
+    cusp::array1d<IndexType,MemorySpace> row_indices(row_indices_begin, row_indices_begin + ell_num_entries);
+
+    thrust::merge_by_key(thrust::make_zip_iterator(thrust::make_tuple(row_indices.begin(), ell.column_indices.values.begin())),
+                         thrust::make_zip_iterator(thrust::make_tuple(row_indices.begin(), ell.column_indices.values.begin())) + ell_num_entries,
                          thrust::make_zip_iterator(thrust::make_tuple(coo.row_indices.begin(), coo.column_indices.begin())),
                          thrust::make_zip_iterator(thrust::make_tuple(coo.row_indices.begin(), coo.column_indices.begin())) + coo_num_entries,
                          thrust::counting_iterator<IndexType>(0),
