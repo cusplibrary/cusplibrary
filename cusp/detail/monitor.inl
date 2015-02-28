@@ -143,6 +143,13 @@ void
 monitor<ValueType>
 ::print(void)
 {
+    if(iteration_count() == 0)
+    {
+        std::cout << "Monitor configured with " << tolerance() << " tolerance ";
+        std::cout << "and iteration limit " << iteration_limit() << std::endl;
+        return;
+    }
+
     // report solver results
     if (converged())
     {
