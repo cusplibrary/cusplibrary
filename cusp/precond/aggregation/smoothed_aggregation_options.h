@@ -65,7 +65,6 @@ double estimate_rho_Dinv_A(const MatrixType& A)
     return cusp::eigen::ritz_spectral_radius(Dinv_A, 8);
 }
 
-
 } // end namespace detail
 
 template <typename IndexType, typename ValueType, typename MemorySpace>
@@ -84,8 +83,7 @@ struct amg_container<IndexType,ValueType,cusp::device_memory>
 {
     // use COO on device
     typedef typename cusp::coo_matrix<IndexType,ValueType,cusp::device_memory> setup_type;
-    // typedef typename cusp::hyb_matrix<IndexType,ValueType,cusp::device_memory> solve_type;
-    typedef typename cusp::csr_matrix<IndexType,ValueType,cusp::device_memory> solve_type;
+    typedef typename cusp::hyb_matrix<IndexType,ValueType,cusp::device_memory> solve_type;
 };
 
 template<typename IndexType, typename ValueType, typename MemorySpace>
@@ -97,10 +95,10 @@ public:
     typedef cusp::array1d<IndexType,MemorySpace> IndexArray;
     typedef cusp::array1d<ValueType,MemorySpace> ValueArray;
 
-    const ValueType theta;
-    const ValueType omega;
-    const size_t min_level_size;
-    const size_t max_levels;
+    ValueType theta;
+    ValueType omega;
+    size_t min_level_size;
+    size_t max_levels;
 
     smoothed_aggregation_options(const ValueType theta = 0.0, const ValueType omega = 4.0/3.0,
                                  const size_t min_level_size = 100, const size_t max_levels = 20)
