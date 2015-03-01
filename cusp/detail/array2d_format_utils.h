@@ -133,6 +133,9 @@ struct logical_to_physical_functor : public thrust::unary_function<IndexType,Ind
 {
     IndexType num_rows, num_cols, pitch;
 
+    __host__ __device__
+    logical_to_physical_functor(void) {}
+
     logical_to_physical_functor(IndexType num_rows, IndexType num_cols, IndexType pitch)
         : num_rows(num_rows), num_cols(num_cols), pitch(pitch) {}
 
@@ -148,6 +151,9 @@ template <typename IndexType, typename Orientation1, typename Orientation2>
 struct transpose_index_functor : public thrust::unary_function<IndexType,IndexType>
 {
     IndexType num_rows, num_cols, pitch; // source dimensions
+
+    __host__ __device__
+    transpose_index_functor(void) {}
 
     transpose_index_functor(IndexType num_rows, IndexType num_cols, IndexType pitch)
         : num_rows(num_rows), num_cols(num_cols), pitch(pitch) {}
@@ -168,6 +174,10 @@ struct logical_to_other_physical_functor : public thrust::unary_function<IndexTy
 {
     IndexType num_rows, num_cols, pitch;
 
+    __host__ __device__
+    logical_to_other_physical_functor(void) {}
+
+    __host__ __device__
     logical_to_other_physical_functor(IndexType num_rows, IndexType num_cols, IndexType pitch)
         : num_rows(num_rows), num_cols(num_cols), pitch(pitch) {}
 

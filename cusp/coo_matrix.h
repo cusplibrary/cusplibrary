@@ -332,6 +332,11 @@ public:
     values_array_type values;
 
     /**
+     * Storage for indices used to generate COO view.
+     */
+    cusp::array1d<int,MemorySpace> indices;
+
+    /**
      * Construct an empty \p coo_matrix_view.
      */
     coo_matrix_view(void)
@@ -398,6 +403,18 @@ public:
           row_indices(matrix.row_indices),
           column_indices(matrix.column_indices),
           values(matrix.values) {}
+
+    /*! Construct a \p coo_matrix_view from a existing const \p coo_matrix.
+     *
+     *  \param matrix \p coo_matrix used to create view.
+     */
+    template<typename MatrixType>
+    coo_matrix_view(const MatrixType& matrix,
+                    typename thrust::detail::enable_if_convertible<typename MatrixType::format,csr_format>::type* = 0);
+
+    template<typename MatrixType>
+    coo_matrix_view(const MatrixType& matrix,
+                    typename thrust::detail::enable_if_convertible<typename MatrixType::format,hyb_format>::type* = 0);
 
     /*! Resize matrix dimensions and underlying storage
      *

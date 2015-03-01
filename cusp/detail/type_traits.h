@@ -29,6 +29,9 @@
 
 #include <cusp/iterator/join_iterator.h>
 
+#include <thrust/iterator/counting_iterator.h>
+#include <thrust/iterator/permutation_iterator.h>
+
 namespace cusp
 {
 
@@ -42,6 +45,8 @@ template <typename, typename, typename> class coo_matrix;
 template <typename, typename, typename> class csr_matrix;
 template <typename, typename, typename> class ell_matrix;
 template <typename, typename, typename> class hyb_matrix;
+
+template <typename RandomAccessIterator> class array1d_view;
 
 template <typename ArrayType1, typename ArrayType2, typename ArrayType3,
           typename IndexType, typename ValueType, typename MemorySpace> class coo_matrix_view;
@@ -154,16 +159,16 @@ struct coo_view_type<IndexType,ValueType,MemorySpace,hyb_format>
 {
     typedef cusp::ell_matrix<IndexType,ValueType,MemorySpace>                                               EllMatrixType;
     typedef thrust::counting_iterator<IndexType>                                                            CountingIterator;
-    typedef thrust::transform_iterator<cusp::detail::divide_value<IndexType>, CountingIterator>             RowIndexIterator;
-    typedef typename EllMatrixType::column_indices_array_type::values_array_type::iterator                  ColumnIndexIterator;
-    typedef typename EllMatrixType::values_array_type::values_array_type::iterator                          ValueIterator;
+    typedef thrust::transform_iterator<divide_value<IndexType>, CountingIterator>                           RowIndexIterator;
+    typedef typename EllMatrixType::column_indices_array_type::values_array_type::const_iterator            ColumnIndexIterator;
+    typedef typename EllMatrixType::values_array_type::values_array_type::const_iterator                    ValueIterator;
 
-    typedef cusp::detail::logical_to_other_physical_functor<IndexType, cusp::row_major, cusp::column_major> PermFunctor;
+    typedef logical_to_other_physical_functor<IndexType, cusp::row_major, cusp::column_major>               PermFunctor;
     typedef thrust::transform_iterator<PermFunctor, CountingIterator>                                       PermIndexIterator;
     typedef thrust::permutation_iterator<ColumnIndexIterator, PermIndexIterator>                            PermColumnIndicesIterator;
     typedef thrust::permutation_iterator<ValueIterator, PermIndexIterator>                                  PermValueIterator;
 
-    typedef typename cusp::array1d<IndexType,MemorySpace>::iterator                                         IndexIterator;
+    typedef typename cusp::array1d<IndexType,MemorySpace>::const_iterator                                   IndexIterator;
     typedef cusp::join_iterator<RowIndexIterator,ColumnIndexIterator,IndexIterator>                         JoinRowIterator;
     typedef cusp::join_iterator<PermColumnIndicesIterator,ColumnIndexIterator,IndexIterator>                JoinColumnIterator;
     typedef cusp::join_iterator<PermValueIterator,ValueIterator,IndexIterator>                              JoinValueIterator;
@@ -171,6 +176,17 @@ struct coo_view_type<IndexType,ValueType,MemorySpace,hyb_format>
     typedef cusp::array1d_view<typename JoinRowIterator::iterator>                                          Array1;
     typedef cusp::array1d_view<typename JoinColumnIterator::iterator>                                       Array2;
     typedef cusp::array1d_view<typename JoinValueIterator::iterator>                                        Array3;
+
+    typedef cusp::coo_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>                     type;
+};
+
+template<typename IndexType,typename ValueType,typename MemorySpace>
+struct coo_view_type<IndexType,ValueType,MemorySpace,csr_format>
+{
+    typedef cusp::csr_matrix<IndexType,ValueType,MemorySpace>                                               CSRMatrixType;
+    typedef cusp::array1d_view<typename CSRMatrixType::row_offsets_array_type::iterator>                    Array1;
+    typedef cusp::array1d_view<typename CSRMatrixType::column_indices_array_type::iterator>                 Array2;
+    typedef cusp::array1d_view<typename CSRMatrixType::values_array_type::iterator>                         Array3;
 
     typedef cusp::coo_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>                     type;
 };

@@ -85,6 +85,10 @@ class join_iterator
         Iterator2 second;
         difference_type first_size;
 
+        __host__ __device__
+        join_select_functor(void){}
+
+        __host__ __device__
         join_select_functor(Iterator1 first, Iterator2 second, difference_type first_size)
             : first(first), second(second-first_size), first_size(first_size) {}
 
@@ -101,8 +105,12 @@ class join_iterator
     typedef TransformIterator iterator;
 
     // construct join_iterator using first_begin and second_begin
-    join_iterator(Iterator1 first_begin, Iterator1 first_end, Iterator2 second_begin, Iterator2 second_end, IndexIterator indices_begin)
-        : first_begin(first_begin), first_end(first_end), second_begin(second_begin), second_end(second_end), indices_begin(indices_begin) {}
+    join_iterator(Iterator1 first_begin, Iterator1 first_end,
+                  Iterator2 second_begin, Iterator2 second_end,
+                  IndexIterator indices_begin)
+        : first_begin(first_begin), first_end(first_end),
+          second_begin(second_begin), second_end(second_end),
+          indices_begin(indices_begin) {}
 
     iterator begin(void) const
     {

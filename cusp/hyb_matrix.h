@@ -240,10 +240,6 @@ public:
     template <typename MatrixType>
     hyb_matrix& operator=(const MatrixType& matrix);
 
-    /*! Generates coo_view of hyb_matrix
-     *
-     */
-    coo_view_type ascoo(void);
 }; // class hyb_matrix
 /*! \}
  */

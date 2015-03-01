@@ -14,10 +14,12 @@
  *  limitations under the License.
  */
 
+#include<cusp/format_utils.h>
+
 namespace cusp
 {
 
-// Forward definition
+// Forward definitions
 template <typename T1, typename T2> void convert(const T1&, T2&);
 
 //////////////////
@@ -70,7 +72,6 @@ csr_matrix<IndexType,ValueType,MemorySpace>
 
     return *this;
 }
-
 
 // construct from a different matrix
 template <typename ArrayType1,typename ArrayType2,typename ArrayType3,

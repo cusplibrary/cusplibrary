@@ -25,6 +25,7 @@
 #include <cusp/array1d.h>
 #include <cusp/detail/format.h>
 #include <cusp/detail/matrix_base.h>
+#include <cusp/detail/type_traits.h>
 
 namespace cusp
 {
@@ -126,6 +127,8 @@ public:
             typename values_array_type::const_view,
             IndexType, ValueType, MemorySpace> const_view;
 
+    typedef typename cusp::detail::coo_view_type<IndexType,ValueType,MemorySpace,cusp::csr_format>::type coo_view_type;
+
     template<typename MemorySpace2>
     struct rebind
     {
@@ -194,6 +197,7 @@ public:
      */
     template <typename MatrixType>
     csr_matrix& operator=(const MatrixType& matrix);
+
 }; // class csr_matrix
 /*! \}
  */
