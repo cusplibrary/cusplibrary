@@ -35,7 +35,8 @@ template <typename ValueType, typename MemorySpace>
 template<typename MatrixType>
 diagonal<ValueType,MemorySpace>
 ::diagonal(const MatrixType& A)
-    : linear_operator<ValueType,MemorySpace>(A.num_rows, A.num_cols, A.num_rows)
+    : linear_operator<ValueType,MemorySpace>(A.num_rows, A.num_cols, A.num_rows),
+      diagonal_reciprocals(A.num_rows)
 {
     // extract the main diagonal
     cusp::extract_diagonal(A, diagonal_reciprocals);
