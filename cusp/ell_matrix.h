@@ -23,9 +23,11 @@
 #include <cusp/detail/config.h>
 
 #include <cusp/array1d.h>
-#include <cusp/detail/format.h>
 #include <cusp/memory.h>
+
+#include <cusp/detail/format.h>
 #include <cusp/detail/matrix_base.h>
+#include <cusp/detail/type_traits.h>
 #include <cusp/detail/utils.h>
 
 namespace cusp
@@ -139,6 +141,9 @@ public:
             typename column_indices_array_type::const_view,
             typename values_array_type::const_view,
             IndexType, ValueType, MemorySpace> const_view;
+
+    typedef typename cusp::detail::coo_view_type<IndexType,ValueType,MemorySpace,ell_format>::view       coo_view_type;
+    typedef typename cusp::detail::coo_view_type<IndexType,ValueType,MemorySpace,ell_format>::const_view const_coo_view_type;
 
     template<typename MemorySpace2>
     struct rebind

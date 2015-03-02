@@ -127,7 +127,8 @@ public:
             typename values_array_type::const_view,
             IndexType, ValueType, MemorySpace> const_view;
 
-    typedef typename cusp::detail::coo_view_type<IndexType,ValueType,MemorySpace,cusp::csr_format>::type coo_view_type;
+    typedef typename cusp::detail::coo_view_type<IndexType,ValueType,MemorySpace,cusp::csr_format>::view       coo_view_type;
+    typedef typename cusp::detail::coo_view_type<IndexType,ValueType,MemorySpace,cusp::csr_format>::const_view const_coo_view_type;
 
     template<typename MemorySpace2>
     struct rebind

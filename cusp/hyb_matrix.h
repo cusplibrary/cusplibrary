@@ -161,7 +161,8 @@ public:
             typename cusp::coo_matrix<IndexType,ValueType,MemorySpace>::const_view,
             IndexType, ValueType, MemorySpace> const_view;
 
-    typedef typename cusp::detail::coo_view_type<IndexType,ValueType,MemorySpace,cusp::hyb_format>::type coo_view_type;
+    typedef typename cusp::detail::coo_view_type<IndexType,ValueType,MemorySpace,hyb_format>::view        coo_view_type;
+    typedef typename cusp::detail::coo_view_type<IndexType,ValueType,MemorySpace,hyb_format>::const_view  const_coo_view_type;
 
     template<typename MemorySpace2>
     struct rebind
@@ -177,10 +178,6 @@ public:
     /*! Storage for the \p ell_matrix portion.
      */
     coo_matrix_type coo;
-
-    /*! Storage for indices used to generate COO view.
-     */
-    cusp::array1d<IndexType,MemorySpace> indices;
 
     /*! Construct an empty \p hyb_matrix.
      */

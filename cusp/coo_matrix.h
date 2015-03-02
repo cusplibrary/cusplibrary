@@ -128,6 +128,9 @@ public:
             typename values_array_type::const_view,
             IndexType, ValueType, MemorySpace> const_view;
 
+    typedef view       coo_view_type;
+    typedef const_view const_coo_view_type;
+
     template<typename MemorySpace2>
     struct rebind
     {
@@ -409,8 +412,16 @@ public:
      *  \param matrix \p coo_matrix used to create view.
      */
     template<typename MatrixType>
+    coo_matrix_view(MatrixType& matrix,
+                    typename thrust::detail::enable_if_convertible<typename MatrixType::format,csr_format>::type* = 0);
+
+    template<typename MatrixType>
     coo_matrix_view(const MatrixType& matrix,
                     typename thrust::detail::enable_if_convertible<typename MatrixType::format,csr_format>::type* = 0);
+
+    template<typename MatrixType>
+    coo_matrix_view(MatrixType& matrix,
+                    typename thrust::detail::enable_if_convertible<typename MatrixType::format,hyb_format>::type* = 0);
 
     template<typename MatrixType>
     coo_matrix_view(const MatrixType& matrix,
