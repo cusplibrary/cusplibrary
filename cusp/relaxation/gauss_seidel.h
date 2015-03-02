@@ -119,6 +119,7 @@ public:
     /* \cond */
     cusp::array1d<int,MemorySpace> ordering;
     cusp::array1d<int,cusp::host_memory> color_offsets;
+    cusp::array1d<ValueType,MemorySpace> diagonal;
     sweep default_direction;
     /* \endcond */
 
@@ -148,17 +149,6 @@ public:
     template<typename MemorySpace2>
     gauss_seidel(const gauss_seidel<ValueType,MemorySpace2>& A)
         : ordering(A.ordering), color_offsets(A.color_offsets), default_direction(A.default_direction) {}
-
-    template <typename MatrixType>
-    gauss_seidel(const cusp::precond::aggregation::sa_level<MatrixType>& sa_level, sweep default_direction=SYMMETRIC);
-
-    // ignores initial x
-    template<typename MatrixType, typename VectorType1, typename VectorType2>
-    void presmooth(const MatrixType& A, const VectorType1& b, VectorType2& x);
-
-    // smooths initial x
-    template<typename MatrixType, typename VectorType1, typename VectorType2>
-    void postsmooth(const MatrixType& A, const VectorType1& b, VectorType2& x);
 
     /*! Perform Gauss-Seidel relaxation using default sweep specified during
      * construction of this \p gauss_seidel smoother

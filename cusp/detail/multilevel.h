@@ -63,20 +63,24 @@ public:
 
         SmootherType smoother;
 
-        level() {}
+        level(void) {}
 
-        template<typename Level_Type>
-        level(const Level_Type& level)
-          : R(level.R), A(level.A), P(level.P), x(level.x), b(level.b),
-            residual(level.residual), smoother(level.smoother) {}
+        template<typename LevelType>
+        level(const LevelType& level)
+          : R(level.R), A(level.A), P(level.P),
+            x(level.x), b(level.b), residual(level.residual),
+            smoother(level.smoother) {}
     };
     /* \endcond */
+
+    MatrixType  A;
+    MatrixType* A_ptr;
 
     SolverType solver;
 
     std::vector<level> levels;
 
-    multilevel() {};
+    multilevel(void) : A_ptr(NULL) {};
 
     template <typename MatrixType2, typename SmootherType2, typename SolverType2>
     multilevel(const multilevel<MatrixType2, SmootherType2, SolverType2>& M);

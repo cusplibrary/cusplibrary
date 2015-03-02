@@ -148,17 +148,6 @@ public:
     : default_coefficients(A.default_coefficients),
       residual(A.residual), h(A.h), y(A.y) {}
 
-    template <typename MatrixType>
-    polynomial(const cusp::precond::aggregation::sa_level<MatrixType>& sa_level);
-
-    // ignores initial x
-    template<typename MatrixType, typename VectorType1, typename VectorType2>
-    void presmooth(const MatrixType& A, const VectorType1& b, VectorType2& x);
-
-    // smooths initial x
-    template<typename MatrixType, typename VectorType1, typename VectorType2>
-    void postsmooth(const MatrixType& A, const VectorType1& b, VectorType2& x);
-
     /*! Perform polynomial relaxation using default coefficients specified during
      * construction of this \p polynomial smoother
      *

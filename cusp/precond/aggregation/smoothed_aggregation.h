@@ -24,11 +24,9 @@
 #include <cusp/detail/config.h>
 #include <cusp/detail/multilevel.h>
 
-#include <cusp/linear_operator.h>
-
 #include <cusp/eigen/spectral_radius.h>
-#include <cusp/relaxation/jacobi.h>
 #include <cusp/precond/aggregation/smoothed_aggregation_options.h>
+#include <cusp/precond/aggregation/smoother/jacobi_smoother.h>
 
 #include <vector> // TODO replace with host_vector
 
@@ -48,6 +46,8 @@ namespace aggregation
 template<typename MatrixType>
 struct sa_level
 {
+    public:
+
     typedef typename MatrixType::index_type IndexType;
     typedef typename MatrixType::value_type ValueType;
     typedef typename MatrixType::memory_space MemorySpace;
@@ -56,13 +56,17 @@ struct sa_level
     cusp::array1d<IndexType,MemorySpace> aggregates;      // aggregates
     cusp::array1d<ValueType,MemorySpace> B;               // near-nullspace candidates
 
+    size_t    num_iters;
     ValueType rho_DinvA;
 
-    sa_level() : rho_DinvA(0) {}
+    sa_level(void) : num_iters(1), rho_DinvA(0) {}
 
-    template<typename SA_Level_Type>
-    sa_level(const SA_Level_Type& sa_level)
-      : A_(sa_level.A_), aggregates(sa_level.aggregates), B(sa_level.B), rho_DinvA(sa_level.rho_DinvA) {}
+    template<typename SALevelType>
+    sa_level(const SALevelType& L)
+      : A_(L.A_),
+        aggregates(L.aggregates), B(L.B),
+        num_iters(L.num_iters), rho_DinvA(L.rho_DinvA)
+    {}
 };
 /* \endcond */
 
@@ -72,7 +76,7 @@ struct sa_level
  *
  */
 template <typename IndexType, typename ValueType, typename MemorySpace,
-	  typename SmootherType = cusp::relaxation::jacobi<ValueType,MemorySpace>,
+	  typename SmootherType = jacobi_smoother<ValueType,MemorySpace>,
 	  typename SolverType = cusp::detail::lu_solver<ValueType,cusp::host_memory> >
 class smoothed_aggregation :
   public cusp::multilevel< typename amg_container<IndexType,ValueType,MemorySpace>::solve_type, SmootherType, SolverType>
@@ -110,6 +114,17 @@ class smoothed_aggregation :
     void sa_initialize(const MatrixType& A, const ArrayType& B);
 
 protected:
+
+    void set_multilevel_matrix(const SolveMatrixType& A);
+
+    template <typename MatrixType>
+    void set_multilevel_matrix(const MatrixType& A);
+
+    template <typename MatrixType>
+    void setup_level_matrix(MatrixType& dst, MatrixType& src);
+
+    template <typename MatrixType1, typename MatrixType2>
+    void setup_level_matrix(MatrixType1& dst, MatrixType2& src);
 
     template <typename MatrixType>
     void extend_hierarchy(const MatrixType& A);

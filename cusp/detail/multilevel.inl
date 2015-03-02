@@ -28,7 +28,10 @@ multilevel<MatrixType,SmootherType,SolverType>
     : solver(M.solver)
 {
     for( size_t lvl = 0; lvl < M.levels.size(); lvl++ )
-        levels.push_back(M.levels[lvl]);
+      levels.push_back(M.levels[lvl]);
+
+    levels[0].A = *M.A_ptr;
+    A_ptr = &levels[0].A;
 }
 
 template <typename MatrixType, typename SmootherType, typename SolverType>
@@ -55,14 +58,14 @@ template <typename Array1, typename Array2, typename Monitor>
 void multilevel<MatrixType,SmootherType,SolverType>
 ::solve(const Array1& b, Array2& x, Monitor& monitor)
 {
-    const size_t n = levels[0].A.num_rows;
+    const size_t n = A_ptr->num_rows;
 
     // use simple iteration
     cusp::array1d<ValueType,MemorySpace> update(n);
     cusp::array1d<ValueType,MemorySpace> residual(n);
 
     // compute initial residual
-    cusp::multiply(levels[0].A, x, residual);
+    cusp::multiply(*A_ptr, x, residual);
     cusp::blas::axpby(b, residual, residual, ValueType(1.0), ValueType(-1.0));
 
     while(!monitor.finished(residual))
@@ -73,7 +76,7 @@ void multilevel<MatrixType,SmootherType,SolverType>
         cusp::blas::axpy(update, x, ValueType(1.0));
 
         // update residual
-        cusp::multiply(levels[0].A, x, residual);
+        cusp::multiply(*A_ptr, x, residual);
         cusp::blas::axpby(b, residual, residual, ValueType(1.0), ValueType(-1.0));
         ++monitor;
     }
@@ -98,11 +101,18 @@ void multilevel<MatrixType,SmootherType,SolverType>
         // initialize solution
         cusp::blas::fill(x, ValueType(0));
 
-        // presmooth
-        levels[i].smoother.presmooth(levels[i].A, b, x);
+       // presmooth
+        if(i == 0)
+          levels[i].smoother.presmooth(*A_ptr, b, x);
+        else
+          levels[i].smoother.presmooth(levels[i].A, b, x);
 
         // compute residual <- b - A*x
-        cusp::multiply(levels[i].A, x, levels[i].residual);
+        if(i == 0)
+          cusp::multiply(*A_ptr, x, levels[i].residual);
+        else
+          cusp::multiply(levels[i].A, x, levels[i].residual);
+
         cusp::blas::axpby(b, levels[i].residual, levels[i].residual, ValueType(1.0), ValueType(-1.0));
 
         // restrict to coarse grid
@@ -116,7 +126,10 @@ void multilevel<MatrixType,SmootherType,SolverType>
         cusp::blas::axpy(levels[i].residual, x, ValueType(1.0));
 
         // postsmooth
-        levels[i].smoother.postsmooth(levels[i].A, b, x);
+        if(i == 0)
+          levels[i].smoother.postsmooth(*A_ptr, b, x);
+        else
+          levels[i].smoother.postsmooth(levels[i].A, b, x);
     }
 }
 
@@ -125,20 +138,24 @@ void multilevel<MatrixType,SmootherType,SolverType>
 ::print( void )
 {
     size_t num_levels = levels.size();
+    double nnz = A_ptr->num_entries;
 
     std::cout << "\tNumber of Levels:\t" << num_levels << std::endl;
     std::cout << "\tOperator Complexity:\t" << operator_complexity() << std::endl;
     std::cout << "\tGrid Complexity:\t" << grid_complexity() << std::endl;
     std::cout << "\tlevel\tunknowns\tnonzeros:\t" << std::endl;
 
-    double nnz = 0;
-
-    for(size_t index = 0; index < num_levels; index++)
+    for(size_t index = 1; index < num_levels; index++)
         nnz += levels[index].A.num_entries;
 
-    for(size_t index = 0; index < num_levels; index++)
+    double percent = A_ptr->num_entries / nnz;
+    std::cout << "\t" << 0 << "\t" << A_ptr->num_cols << "\t\t" \
+              << A_ptr->num_entries << " \t[" << 100*percent << "%]" \
+              << std::endl;
+
+    for(size_t index = 1; index < num_levels; index++)
     {
-        double percent = levels[index].A.num_entries / nnz;
+        percent = levels[index].A.num_entries / nnz;
         std::cout << "\t" << index << "\t" << levels[index].A.num_cols << "\t\t" \
                   << levels[index].A.num_entries << " \t[" << 100*percent << "%]" \
                   << std::endl;
@@ -149,23 +166,24 @@ template <typename MatrixType, typename SmootherType, typename SolverType>
 double multilevel<MatrixType,SmootherType,SolverType>
 ::operator_complexity( void )
 {
-    size_t nnz = 0;
+    size_t nnz = A_ptr->num_entries;
 
-    for(size_t index = 0; index < levels.size(); index++)
+    for(size_t index = 1; index < levels.size(); index++)
         nnz += levels[index].A.num_entries;
 
-    return (double) nnz / (double) levels[0].A.num_entries;
+    return (double) nnz / (double) A_ptr->num_entries;
 }
 
 template <typename MatrixType, typename SmootherType, typename SolverType>
 double multilevel<MatrixType,SmootherType,SolverType>
 ::grid_complexity( void )
 {
-    size_t unknowns = 0;
-    for(size_t index = 0; index < levels.size(); index++)
+    size_t unknowns = A_ptr->num_rows;
+
+    for(size_t index = 1; index < levels.size(); index++)
         unknowns += levels[index].A.num_rows;
 
-    return (double) unknowns / (double) levels[0].A.num_rows;
+    return (double) unknowns / (double) A_ptr->num_rows;
 }
 
 } // end namespace cusp
