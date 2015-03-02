@@ -140,24 +140,25 @@ void multilevel<MatrixType,SmootherType,SolverType>
     size_t num_levels = levels.size();
     double nnz = A_ptr->num_entries;
 
-    std::cout << "\tNumber of Levels:\t" << num_levels << std::endl;
-    std::cout << "\tOperator Complexity:\t" << operator_complexity() << std::endl;
-    std::cout << "\tGrid Complexity:\t" << grid_complexity() << std::endl;
-    std::cout << "\tlevel\tunknowns\tnonzeros:\t" << std::endl;
+    std::cout << "\tNumber of Levels    :\t" << num_levels << std::endl;
+    std::cout << "\tOperator Complexity :\t" << operator_complexity() << std::endl;
+    std::cout << "\tGrid Complexity     :\t" << grid_complexity() << std::endl;
+    std::cout << "\tlevel\tunknowns\tnonzeros" << std::endl;
 
     for(size_t index = 1; index < num_levels; index++)
         nnz += levels[index].A.num_entries;
 
     double percent = A_ptr->num_entries / nnz;
-    std::cout << "\t" << 0 << "\t" << A_ptr->num_cols << "\t\t" \
-              << A_ptr->num_entries << " \t[" << 100*percent << "%]" \
+
+    std::cout << "\t" << 0 << "\t" << std::setw(8) << std::right << A_ptr->num_cols << "\t" \
+              << std::setw(8) << std::right << A_ptr->num_entries << "  [" << 100*percent << "%]" \
               << std::endl;
 
     for(size_t index = 1; index < num_levels; index++)
     {
         percent = levels[index].A.num_entries / nnz;
-        std::cout << "\t" << index << "\t" << levels[index].A.num_cols << "\t\t" \
-                  << levels[index].A.num_entries << " \t[" << 100*percent << "%]" \
+        std::cout << "\t" << index << "\t" << std::setw(8) << std::right << levels[index].A.num_cols << "\t" \
+                  << std::setw(8) << std::right << levels[index].A.num_entries << "  [" << 100*percent << "%]" \
                   << std::endl;
     }
 }
