@@ -1,10 +1,9 @@
 #include <cusp/csr_matrix.h>
+#include <cusp/gallery/diffusion.h>
 #include <cusp/gallery/poisson.h>
 #include <cusp/krylov/cg.h>
 #include <cusp/precond/aggregation/smoothed_aggregation.h>
-#include <cusp/relaxation/jacobi.h>
-#include <cusp/relaxation/polynomial.h>
-#include <cusp/relaxation/gauss_seidel.h>
+#include <cusp/precond/aggregation/smoother/polynomial_smoother.h>
 
 #include <iostream>
 
@@ -57,12 +56,13 @@ int main(int argc, char ** argv)
     typedef cusp::device_memory MemorySpace;
 
     // create an empty sparse matrix structure
-    cusp::hyb_matrix<IndexType, ValueType, MemorySpace> A;
+    cusp::csr_matrix<IndexType, ValueType, MemorySpace> A;
 
-    IndexType N = 1024;
+    size_t N = 128;
 
     // create 2D Poisson problem
-    cusp::gallery::poisson5pt(A, N, N);
+    /* cusp::gallery::poisson5pt(A, N, N); */
+    cusp::gallery::diffusion<cusp::gallery::FE>(A, N, N);
 
     // solve without preconditioning
     {
@@ -98,20 +98,8 @@ int main(int argc, char ** argv)
 
     // solve with smoothed aggregation algebraic multigrid preconditioner and polynomial smoother
     {
-        typedef cusp::relaxation::polynomial<ValueType,MemorySpace> Smoother;
+        typedef cusp::precond::aggregation::polynomial_smoother<ValueType,MemorySpace> Smoother;
         std::cout << "\nSolving with smoothed aggregation preconditioner and polynomial smoother" << std::endl;
-
-        timer t0;
-        cusp::precond::aggregation::smoothed_aggregation<IndexType, ValueType, MemorySpace, Smoother> M(A);
-        std::cout << "constructed hierarchy in " << t0.milliseconds_elapsed() << " ms " << std::endl;
-
-        run_amg(A,M);
-    }
-
-    // solve with smoothed aggregation algebraic multigrid preconditioner and gauss-seidel smoother
-    {
-        typedef cusp::relaxation::gauss_seidel<ValueType,MemorySpace> Smoother;
-        std::cout << "\nSolving with smoothed aggregation preconditioner and gauss-seidel smoother" << std::endl;
 
         timer t0;
         cusp::precond::aggregation::smoothed_aggregation<IndexType, ValueType, MemorySpace, Smoother> M(A);

@@ -39,7 +39,8 @@ smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverType>
 template <typename IndexType, typename ValueType, typename MemorySpace, typename SmootherType, typename SolverType>
 template <typename MatrixType,typename ArrayType>
 smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverType>
-::smoothed_aggregation(const MatrixType& A, const ArrayType& B, const SAOptionsType& sa_options)
+::smoothed_aggregation(const MatrixType& A, const ArrayType& B, const SAOptionsType& sa_options,
+                       typename thrust::detail::enable_if_convertible<typename ArrayType::format,cusp::array1d_format>::type*)
     : sa_options(sa_options)
 {
     sa_initialize(A,B);

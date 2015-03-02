@@ -96,13 +96,11 @@ class smoothed_aggregation :
       : sa_options(SAOptionsType()) {}
 
     template <typename MatrixType>
-    smoothed_aggregation(const MatrixType& A,
-                         const SAOptionsType& sa_options = SAOptionsType());
+    smoothed_aggregation(const MatrixType& A, const SAOptionsType& sa_options = SAOptionsType());
 
     template <typename MatrixType,typename ArrayType>
-    smoothed_aggregation(const MatrixType& A,
-                         const ArrayType&  B,
-                         const SAOptionsType& sa_options = SAOptionsType());
+    smoothed_aggregation(const MatrixType& A, const ArrayType& B, const SAOptionsType& sa_options = SAOptionsType(),
+                         typename thrust::detail::enable_if_convertible<typename ArrayType::format,cusp::array1d_format>::type* = 0);
 
     template <typename MemorySpace2,typename SmootherType2,typename SolverType2>
     smoothed_aggregation(const smoothed_aggregation<IndexType,ValueType,MemorySpace2,SmootherType2,SolverType2>& M);
