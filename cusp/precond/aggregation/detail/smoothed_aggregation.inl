@@ -14,11 +14,7 @@
  *  limitations under the License.
  */
 
-#include <cusp/elementwise.h>
-#include <cusp/format_utils.h>
-#include <cusp/multiply.h>
-
-#include <cusp/blas/blas.h>
+#include <cusp/array1d.h>
 
 namespace cusp
 {
@@ -110,15 +106,13 @@ template <typename MatrixType>
 void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverType>
 ::extend_hierarchy(const MatrixType& A)
 {
-    cusp::array1d<IndexType,MemorySpace> aggregates;
+    cusp::array1d<IndexType,MemorySpace> aggregates(A.num_rows, IndexType(0));
     {
         // compute stength of connection matrix
         SetupMatrixType C;
         sa_options.strength_of_connection(A, C);
 
         // compute aggregates
-        aggregates.resize(C.num_rows);
-        cusp::blas::fill(aggregates,IndexType(0));
         sa_options.aggregate(C, aggregates);
     }
 

@@ -38,6 +38,7 @@ namespace aggregation
 {
 namespace detail
 {
+
 template <typename MatrixType>
 struct Dinv_A : public cusp::linear_operator<typename MatrixType::value_type, typename MatrixType::memory_space>
 {
@@ -66,6 +67,32 @@ double estimate_rho_Dinv_A(const MatrixType& A)
 }
 
 } // end namespace detail
+
+template<typename MatrixType>
+struct sa_level
+{
+    public:
+
+    typedef typename MatrixType::index_type IndexType;
+    typedef typename MatrixType::value_type ValueType;
+    typedef typename MatrixType::memory_space MemorySpace;
+
+    MatrixType A_; 					                              // matrix
+    cusp::array1d<IndexType,MemorySpace> aggregates;      // aggregates
+    cusp::array1d<ValueType,MemorySpace> B;               // near-nullspace candidates
+
+    size_t    num_iters;
+    ValueType rho_DinvA;
+
+    sa_level(void) : num_iters(1), rho_DinvA(0) {}
+
+    template<typename SALevelType>
+    sa_level(const SALevelType& L)
+      : A_(L.A_),
+        aggregates(L.aggregates), B(L.B),
+        num_iters(L.num_iters), rho_DinvA(L.rho_DinvA)
+    {}
+};
 
 template <typename IndexType, typename ValueType, typename MemorySpace>
 struct amg_container {};

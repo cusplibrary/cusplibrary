@@ -41,7 +41,13 @@ template <typename MatrixType2, typename Level>
 void multilevel<MatrixType,SmootherType,SolverType>
 ::setup_level(const size_t lvl, const MatrixType2& A, const Level& L)
 {
-    size_t N = lvl == 0 ? A_ptr->num_rows : A.num_rows;
+    size_t N = A.num_rows;
+
+    // Setup solve matrix for each level
+    if(lvl == 0)
+        set_multilevel_matrix(A);
+    else
+        copy_or_swap_matrix(levels[lvl].A, A);
 
     levels[lvl].x.resize(N);
     levels[lvl].b.resize(N);
@@ -49,12 +55,6 @@ void multilevel<MatrixType,SmootherType,SolverType>
 
     // Initialize smoother for each level
     levels[lvl].smoother.initialize(A, L);
-
-    // Setup solve matrix for each level
-    if(lvl == 0)
-      set_multilevel_matrix(A);
-    else
-      copy_or_swap_matrix(levels[lvl].A, A);
 }
 
 template <typename MatrixType, typename SmootherType, typename SolverType>
@@ -110,11 +110,11 @@ template <typename Array1, typename Array2, typename Monitor>
 void multilevel<MatrixType,SmootherType,SolverType>
 ::solve(const Array1& b, Array2& x, Monitor& monitor)
 {
-    const size_t n = A_ptr->num_rows;
+    const size_t N = A_ptr->num_rows;
 
     // use simple iteration
-    cusp::array1d<ValueType,MemorySpace> update(n);
-    cusp::array1d<ValueType,MemorySpace> residual(n);
+    cusp::array1d<ValueType,MemorySpace> update(N);
+    cusp::array1d<ValueType,MemorySpace> residual(N);
 
     // compute initial residual
     cusp::multiply(*A_ptr, x, residual);
@@ -240,4 +240,5 @@ double multilevel<MatrixType,SmootherType,SolverType>
 }
 
 } // end namespace cusp
+
 
