@@ -77,7 +77,8 @@ struct modulus_value : public base_functor< thrust::modulus<T> >
 {
     typedef base_functor< thrust::modulus<T> > Parent;
 
-    modulus_value(const T value) : Parent(value) {}
+    __host__ __device__
+    modulus_value(const T value = T(0)) : Parent(value) {}
 };
 
 template <typename T>

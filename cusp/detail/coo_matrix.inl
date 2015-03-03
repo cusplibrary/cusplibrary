@@ -160,6 +160,203 @@ template <typename Array1, typename Array2, typename Array3, typename IndexType,
 template <typename MatrixType>
 coo_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>
 ::coo_matrix_view(MatrixType& matrix,
+                  typename thrust::detail::enable_if_convertible<typename MatrixType::format,dia_format>::type*)
+ : Parent(matrix)
+{
+    typedef cusp::detail::coo_view_type<IndexType,ValueType,MemorySpace,dia_format> dia_view_type;
+
+    typedef thrust::counting_iterator<IndexType>             CountingIterator;
+    typedef typename dia_view_type::PermFunctor              PermFunctor;
+    typedef typename dia_view_type::OffsetsPermIterator      OffsetsPermIterator;
+    typedef typename dia_view_type::ModulusIterator          ModulusIterator;
+    typedef typename dia_view_type::ZipIterator              ZipIterator;
+
+    typedef typename dia_view_type::PermIndexIterator        PermIndexIterator;
+    typedef typename dia_view_type::RowIndexIterator         RowIndexIterator;
+    typedef typename dia_view_type::ColumnIndexIterator      ColumnIndexIterator;
+    typedef typename dia_view_type::PermValueIterator        PermValueIterator;
+
+    typedef typename dia_view_type::RowPermIterator          RowPermIterator;
+    typedef typename dia_view_type::ColumnPermIterator       ColumnPermIterator;
+    typedef typename dia_view_type::ValuePermIterator        ValuePermIterator;
+
+    const size_t num_entries = matrix.values.num_entries;
+
+    RowIndexIterator    row_indices_begin(CountingIterator(0), cusp::detail::divide_value<IndexType>(matrix.values.num_cols));
+    ModulusIterator     gather_indices_begin(CountingIterator(0), cusp::detail::modulus_value<IndexType>(matrix.values.num_cols));
+    OffsetsPermIterator offsets_begin(matrix.diagonal_offsets.begin(), gather_indices_begin);
+    ZipIterator         offset_modulus_tuple(thrust::make_tuple(offsets_begin, row_indices_begin));
+
+    ColumnIndexIterator column_indices_begin(offset_modulus_tuple, cusp::detail::sum_tuple_functor<IndexType>());
+    PermIndexIterator   perm_indices_begin(CountingIterator(0),   PermFunctor(matrix.values.num_rows, matrix.values.num_cols, matrix.values.pitch));
+    PermValueIterator   perm_values_begin(matrix.values.values.begin(), perm_indices_begin);
+
+    indices.resize(num_entries);
+    thrust::sequence(indices.begin(), indices.end());
+    thrust::remove_if(indices.begin(), indices.end(), perm_values_begin, thrust::placeholders::_1 == ValueType(0));
+
+    RowPermIterator           rows_iter(row_indices_begin, indices.begin());
+    ColumnPermIterator        cols_iter(column_indices_begin, indices.begin());
+    ValuePermIterator         vals_iter(perm_values_begin, indices.begin());
+
+    row_indices_array_type    rows_array(rows_iter, rows_iter+matrix.num_entries);
+    column_indices_array_type cols_array(cols_iter, cols_iter+matrix.num_entries);
+    values_array_type         vals_array(vals_iter, vals_iter+matrix.num_entries);
+
+    row_indices    = rows_array;
+    column_indices = cols_array;
+    values         = vals_array;
+}
+
+template <typename Array1, typename Array2, typename Array3, typename IndexType, typename ValueType, typename MemorySpace>
+template <typename MatrixType>
+coo_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>
+::coo_matrix_view(const MatrixType& matrix,
+                  typename thrust::detail::enable_if_convertible<typename MatrixType::format,dia_format>::type*)
+ : Parent(matrix)
+{
+    typedef cusp::detail::coo_view_type<IndexType,ValueType,MemorySpace,dia_format> dia_view_type;
+
+    typedef thrust::counting_iterator<IndexType>             CountingIterator;
+    typedef typename dia_view_type::PermFunctor              PermFunctor;
+    typedef typename dia_view_type::OffsetsPermIterator      OffsetsPermIterator;
+    typedef typename dia_view_type::ModulusIterator          ModulusIterator;
+    typedef typename dia_view_type::ZipIterator              ZipIterator;
+
+    typedef typename dia_view_type::PermIndexIterator        PermIndexIterator;
+    typedef typename dia_view_type::RowIndexIterator         RowIndexIterator;
+    typedef typename dia_view_type::ColumnIndexIterator      ColumnIndexIterator;
+    typedef typename dia_view_type::PermValueIterator        PermValueIterator;
+
+    typedef typename dia_view_type::RowPermIterator          RowPermIterator;
+    typedef typename dia_view_type::ColumnPermIterator       ColumnPermIterator;
+    typedef typename dia_view_type::ValuePermIterator        ValuePermIterator;
+
+    const size_t num_entries = matrix.values.num_entries;
+
+    RowIndexIterator    row_indices_begin(CountingIterator(0), cusp::detail::divide_value<IndexType>(matrix.values.num_cols));
+    ModulusIterator     gather_indices_begin(CountingIterator(0), cusp::detail::modulus_value<IndexType>(matrix.values.num_cols));
+    OffsetsPermIterator offsets_begin(matrix.diagonal_offsets.begin(), gather_indices_begin);
+    ZipIterator         offset_modulus_tuple(thrust::make_tuple(offsets_begin, row_indices_begin));
+
+    ColumnIndexIterator column_indices_begin(offset_modulus_tuple, cusp::detail::sum_tuple_functor<IndexType>());
+    PermIndexIterator   perm_indices_begin(CountingIterator(0),   PermFunctor(matrix.values.num_rows, matrix.values.num_cols, matrix.values.pitch));
+    PermValueIterator   perm_values_begin(matrix.values.values.begin(), perm_indices_begin);
+
+    indices.resize(num_entries);
+    thrust::sequence(indices.begin(), indices.end());
+    thrust::remove_if(indices.begin(), indices.end(), perm_values_begin, thrust::placeholders::_1 == ValueType(0));
+
+    RowPermIterator           rows_iter(row_indices_begin, indices.begin());
+    ColumnPermIterator        cols_iter(column_indices_begin, indices.begin());
+    ValuePermIterator         vals_iter(perm_values_begin, indices.begin());
+
+    row_indices_array_type    rows_array(rows_iter, rows_iter+matrix.num_entries);
+    column_indices_array_type cols_array(cols_iter, cols_iter+matrix.num_entries);
+    values_array_type         vals_array(vals_iter, vals_iter+matrix.num_entries);
+
+    row_indices    = rows_array;
+    column_indices = cols_array;
+    values         = vals_array;
+}
+
+template <typename Array1, typename Array2, typename Array3, typename IndexType, typename ValueType, typename MemorySpace>
+template <typename MatrixType>
+coo_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>
+::coo_matrix_view(MatrixType& matrix,
+                  typename thrust::detail::enable_if_convertible<typename MatrixType::format,ell_format>::type*)
+ : Parent(matrix)
+{
+    typedef cusp::detail::coo_view_type<IndexType,ValueType,MemorySpace,ell_format> ell_view_type;
+
+    typedef thrust::counting_iterator<IndexType>             CountingIterator;
+    typedef typename ell_view_type::PermFunctor              PermFunctor;
+    typedef typename ell_view_type::PermIndexIterator        PermIndexIterator;
+
+    typedef typename ell_view_type::RowIndexIterator         RowIndexIterator;
+    typedef typename ell_view_type::PermColumnIndexIterator  PermColumnIndexIterator;
+    typedef typename ell_view_type::PermValueIterator        PermValueIterator;
+
+    typedef typename ell_view_type::RowPermIterator          RowPermIterator;
+    typedef typename ell_view_type::ColumnPermIterator       ColumnPermIterator;
+    typedef typename ell_view_type::ValuePermIterator        ValuePermIterator;
+
+    const int    X               = MatrixType::invalid_index;
+    const size_t ell_num_entries = matrix.column_indices.num_entries;
+
+    PermIndexIterator       perm_indices_begin(CountingIterator(0), PermFunctor(matrix.values.num_rows, matrix.values.num_cols, matrix.values.pitch));
+
+    RowIndexIterator        row_indices_begin(CountingIterator(0), cusp::detail::divide_value<IndexType>(matrix.values.num_cols));
+    PermColumnIndexIterator perm_column_indices_begin(matrix.column_indices.values.begin(), perm_indices_begin);
+    PermValueIterator       perm_values_begin(matrix.values.values.begin(), perm_indices_begin);
+
+    indices.resize(ell_num_entries);
+    thrust::sequence(indices.begin(), indices.end());
+    thrust::remove_if(indices.begin(), indices.end(), perm_column_indices_begin, thrust::placeholders::_1 == X);
+
+    RowPermIterator           rows_iter(row_indices_begin, indices.begin());
+    ColumnPermIterator        cols_iter(perm_column_indices_begin, indices.begin());
+    ValuePermIterator         vals_iter(perm_values_begin, indices.begin());
+
+    row_indices_array_type    rows_array(rows_iter, rows_iter+matrix.num_entries);
+    column_indices_array_type cols_array(cols_iter, cols_iter+matrix.num_entries);
+    values_array_type         vals_array(vals_iter, vals_iter+matrix.num_entries);
+
+    row_indices    = rows_array;
+    column_indices = cols_array;
+    values         = vals_array;
+}
+
+template <typename Array1, typename Array2, typename Array3, typename IndexType, typename ValueType, typename MemorySpace>
+template <typename MatrixType>
+coo_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>
+::coo_matrix_view(const MatrixType& matrix,
+                  typename thrust::detail::enable_if_convertible<typename MatrixType::format,ell_format>::type*)
+ : Parent(matrix)
+{
+    typedef cusp::detail::coo_view_type<IndexType,ValueType,MemorySpace,ell_format> ell_view_type;
+
+    typedef thrust::counting_iterator<IndexType>             CountingIterator;
+    typedef typename ell_view_type::PermFunctor              PermFunctor;
+    typedef typename ell_view_type::PermIndexIterator        PermIndexIterator;
+
+    typedef typename ell_view_type::RowIndexIterator         RowIndexIterator;
+    typedef typename ell_view_type::PermColumnIndexIterator  PermColumnIndexIterator;
+    typedef typename ell_view_type::PermValueIterator        PermValueIterator;
+
+    typedef typename ell_view_type::RowPermIterator          RowPermIterator;
+    typedef typename ell_view_type::ColumnPermIterator       ColumnPermIterator;
+    typedef typename ell_view_type::ValuePermIterator        ValuePermIterator;
+
+    const int    X               = MatrixType::invalid_index;
+    const size_t ell_num_entries = matrix.column_indices.num_entries;
+
+    RowIndexIterator        row_indices_begin(CountingIterator(0), cusp::detail::divide_value<IndexType>(matrix.values.num_cols));
+    PermIndexIterator       perm_indices_begin(CountingIterator(0), PermFunctor(matrix.values.num_rows, matrix.values.num_cols, matrix.values.pitch));
+    PermColumnIndexIterator perm_column_indices_begin(matrix.column_indices.values.begin(), perm_indices_begin);
+    PermValueIterator       perm_values_begin(matrix.values.values.begin(), perm_indices_begin);
+
+    indices.resize(ell_num_entries);
+    thrust::sequence(indices.begin(), indices.end());
+    thrust::remove_if(indices.begin(), indices.end(), perm_column_indices_begin, thrust::placeholders::_1 == X);
+
+    RowPermIterator          rows_iter(row_indices_begin, indices.begin());
+    ColumnPermIterator       cols_iter(perm_column_indices_begin, indices.begin());
+    ValuePermIterator        vals_iter(perm_values_begin, indices.begin());
+
+    row_indices_array_type    rows_array(rows_iter, rows_iter+matrix.num_entries);
+    column_indices_array_type cols_array(cols_iter, cols_iter+matrix.num_entries);
+    values_array_type         vals_array(vals_iter, vals_iter+matrix.num_entries);
+
+    row_indices    = rows_array;
+    column_indices = cols_array;
+    values         = vals_array;
+}
+
+template <typename Array1, typename Array2, typename Array3, typename IndexType, typename ValueType, typename MemorySpace>
+template <typename MatrixType>
+coo_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>
+::coo_matrix_view(MatrixType& matrix,
                   typename thrust::detail::enable_if_convertible<typename MatrixType::format,hyb_format>::type*)
  : Parent(matrix)
 {
@@ -184,7 +381,6 @@ coo_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>
     const size_t ell_num_entries = matrix.ell.column_indices.num_entries;
     const size_t coo_num_entries = matrix.coo.num_entries;
     const size_t total           = ell_num_entries + coo_num_entries;
-    const size_t num_invalid     = ell_num_entries - matrix.ell.num_entries;
 
     RowIndexIterator        row_indices_begin(CountingIterator(0), divide_value<IndexType>(matrix.ell.values.num_cols));
     PermIndexIterator       perm_indices_begin(CountingIterator(0), PermFunctor(matrix.ell.values.num_rows, matrix.ell.values.num_cols, matrix.ell.values.pitch));
@@ -221,11 +417,11 @@ coo_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>
 
     cusp::array1d<IndexType,MemorySpace> temp_indices(indices);
     thrust::remove_if(temp_indices.begin(), temp_indices.end(), cols_iter.begin(), thrust::placeholders::_1 == X);
-    thrust::copy(temp_indices.begin(), temp_indices.begin() + total - num_invalid, indices.begin());
+    thrust::copy(temp_indices.begin(), temp_indices.begin() + matrix.num_entries, indices.begin());
 
-    row_indices_array_type    rows_array(rows_iter.begin(), rows_iter.end()-num_invalid);
-    column_indices_array_type cols_array(cols_iter.begin(), cols_iter.end()-num_invalid);
-    values_array_type         vals_array(vals_iter.begin(), vals_iter.end()-num_invalid);
+    row_indices_array_type    rows_array(rows_iter.begin(), rows_iter.begin()+matrix.num_entries);
+    column_indices_array_type cols_array(cols_iter.begin(), cols_iter.begin()+matrix.num_entries);
+    values_array_type         vals_array(vals_iter.begin(), vals_iter.begin()+matrix.num_entries);
 
     row_indices    = rows_array;
     column_indices = cols_array;
@@ -259,7 +455,6 @@ coo_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>
     const size_t ell_num_entries = matrix.ell.column_indices.num_entries;
     const size_t coo_num_entries = matrix.coo.num_entries;
     const size_t total           = ell_num_entries + coo_num_entries;
-    const size_t num_invalid     = ell_num_entries - matrix.ell.num_entries;
 
     RowIndexIterator        row_indices_begin(CountingIterator(0), divide_value<IndexType>(matrix.ell.values.num_cols));
     PermIndexIterator       perm_indices_begin(CountingIterator(0), PermFunctor(matrix.ell.values.num_rows, matrix.ell.values.num_cols, matrix.ell.values.pitch));
@@ -296,11 +491,11 @@ coo_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>
 
     cusp::array1d<IndexType,MemorySpace> temp_indices(indices);
     thrust::remove_if(temp_indices.begin(), temp_indices.end(), cols_iter.begin(), thrust::placeholders::_1 == X);
-    thrust::copy(temp_indices.begin(), temp_indices.begin() + total - num_invalid, indices.begin());
+    thrust::copy(temp_indices.begin(), temp_indices.begin() + matrix.num_entries, indices.begin());
 
-    row_indices_array_type    rows_array(rows_iter.begin(), rows_iter.end()-num_invalid);
-    column_indices_array_type cols_array(cols_iter.begin(), cols_iter.end()-num_invalid);
-    values_array_type         vals_array(vals_iter.begin(), vals_iter.end()-num_invalid);
+    row_indices_array_type    rows_array(rows_iter.begin(), rows_iter.begin()+matrix.num_entries);
+    column_indices_array_type cols_array(cols_iter.begin(), cols_iter.begin()+matrix.num_entries);
+    values_array_type         vals_array(vals_iter.begin(), vals_iter.begin()+matrix.num_entries);
 
     row_indices    = rows_array;
     column_indices = cols_array;

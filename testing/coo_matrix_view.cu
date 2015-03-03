@@ -1,6 +1,9 @@
 #include <unittest/unittest.h>
 
 #include <cusp/coo_matrix.h>
+#include <cusp/csr_matrix.h>
+#include <cusp/dia_matrix.h>
+#include <cusp/ell_matrix.h>
 #include <cusp/hyb_matrix.h>
 #include <cusp/multiply.h>
 
@@ -194,30 +197,51 @@ void TestMakeCooMatrixView(void)
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestMakeCooMatrixView);
 
-template <typename MemorySpace>
+template <typename TestMatrix>
 void TestToCooMatrixView(void)
 {
-    typedef int                                                IndexType;
-    typedef float                                              ValueType;
-    typedef cusp::coo_matrix<IndexType,ValueType,MemorySpace>  CooMatrix;
-    typedef cusp::hyb_matrix<IndexType,ValueType,MemorySpace>  HybMatrix;
-    typedef typename HybMatrix::coo_view_type                  View;
+    typedef typename TestMatrix::index_type   IndexType;
+    typedef typename TestMatrix::value_type   ValueType;
+    typedef typename TestMatrix::memory_space MemorySpace;
 
-    CooMatrix M(3, 2, 6);
+    typedef typename TestMatrix::coo_view_type View;
 
-    M.row_indices[0] = 0;
-    M.column_indices[0] = 1;
-    M.values[0] = 2;
+    cusp::coo_matrix<IndexType,ValueType,cusp::host_memory> A(3, 2, 6);
+    A.row_indices[0] = 0;
+    A.column_indices[0] = 0;
+    A.values[0] = 1;
+    A.row_indices[1] = 0;
+    A.column_indices[1] = 1;
+    A.values[1] = 2;
+    A.row_indices[2] = 1;
+    A.column_indices[2] = 0;
+    A.values[2] = 3;
+    A.row_indices[3] = 1;
+    A.column_indices[3] = 1;
+    A.values[3] = 4;
+    A.row_indices[4] = 2;
+    A.column_indices[4] = 0;
+    A.values[4] = 5;
+    A.row_indices[5] = 2;
+    A.column_indices[5] = 1;
+    A.values[5] = 6;
 
-    HybMatrix W(M);
-    View V(W);
+    TestMatrix M(A);
+    View V(M);
 
-    ASSERT_EQUAL(V.num_rows,    3);
-    ASSERT_EQUAL(V.num_cols,    2);
-    ASSERT_EQUAL(V.num_entries, 6);
+    ASSERT_EQUAL(V.num_rows,              3);
+    ASSERT_EQUAL(V.num_cols,              2);
+    ASSERT_EQUAL(V.num_entries,           6);
+    ASSERT_EQUAL(V.row_indices.size(),    6);
+    ASSERT_EQUAL(V.column_indices.size(), 6);
+    ASSERT_EQUAL(V.values.size(),         6);
 
-    ASSERT_EQUAL_QUIET(V.row_indices[0],    M.row_indices[0]);
-    ASSERT_EQUAL_QUIET(V.column_indices[0], M.column_indices[0]);
-    ASSERT_EQUAL_QUIET(V.values[0],         M.values[0]);
+    cusp::array1d<IndexType,cusp::host_memory> row_indices(V.row_indices);
+    cusp::array1d<IndexType,cusp::host_memory> column_indices(V.column_indices);
+    cusp::array1d<ValueType,cusp::host_memory> values(V.values);
+
+    ASSERT_EQUAL(row_indices,    A.row_indices);
+    ASSERT_EQUAL(column_indices, A.column_indices);
+    ASSERT_EQUAL(values,         A.values);
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestToCooMatrixView);
+DECLARE_SPARSE_MATRIX_UNITTEST(TestToCooMatrixView);

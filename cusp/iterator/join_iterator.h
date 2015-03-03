@@ -14,8 +14,8 @@
  *  limitations under the License.
  */
 
-/*! \file cusp/iterator/strided_iterator.h
- *  \brief An iterator which returns strided access to array entries
+/*! \file cusp/iterator/join_iterator.h
+ *  \brief An iterator which concatenates two separate iterators.
  */
 
 #pragma once
@@ -31,18 +31,26 @@ namespace cusp
  *  \{
  */
 
-/*! \brief RandomAccessIterator for strided access to array entries.
+/*! \brief RandomAccessIterator for access to array entries from two
+ * concatenated iterators.
  *
- * \tparam RandomAccessIterator The iterator type used to encapsulate the underlying data.
+ * \tparam Iterator1 The iterator type used to encapsulate the first set of
+ * entries.
+ * \tparam Iterator2 The iterator type used to encapsulate the second set of
+ * entries.
+ * \tparam IndexIterator The iterator type used to order concatenated entries
+ * from two separate iterators.
  *
  * \par Overview
- * \p strided_iterator is an iterator which represents a pointer into
- *  a strided range entries in a underlying array. This iterator is useful
- *  for creating a strided sublist of entries from a larger iterator.
+ * \p join_iterator is an iterator which represents a pointer into
+ *  a concatenated range entries from two underlying arrays. This iterator
+ *  is useful for creating a single range of permuted entries from two
+ *  different iterators.
  *
  * \par Example
- *  The following code snippet demonstrates how to create a \p strided_iterator whose
- *  \c value_type is \c int and whose values are gather from a \p counting_array.
+ *  The following code snippet demonstrates how to create a \p join_iterator whose
+ *  \c value_type is \c int and whose values are gather from a \p counting_iterator
+ *  and a \p constant_iterator.
  *
  *  \code
  *  #include <cusp/array1d.h>
@@ -55,13 +63,13 @@ namespace cusp
  *    typedef cusp::counting_iterator<int>                                           CountingIterator;
  *    typedef cusp::constant_iterator<int>                                           ConstantIterator;
  *    typedef cusp::array1d<int,cusp::device_memory>::iterator                       ArrayIterator;
- *    typedef cusp::join_iterator<CountingIterator,ConstantIterator,ArrayIterator> ConcatIterator
+ *    typedef cusp::join_iterator<CountingIterator,ConstantIterator,ArrayIterator>   JoinIterator
  *
  *    CountingIterator a(4);
  *    ConstantIterator b(10);
  *    cusp::array1d<int,cusp::device_memory> indices(a.size() + b.size());
  *    thrust::sequence(indices.begin(), indices.end());
- *    ConcatIterator iter(a.begin(), a.end(), b.begin(), b.end(), indices.begin());
+ *    JoinIterator iter(a.begin(), a.end(), b.begin(), b.end(), indices.begin());
  *
  *    std::cout << iter[0] << std::endl;   // returns 0
  *    std::cout << iter[3] << std::endl;   // returns 3
