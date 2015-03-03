@@ -407,41 +407,21 @@ public:
           column_indices(matrix.column_indices),
           values(matrix.values) {}
 
-    /*! Construct a \p coo_matrix_view from a existing const \p coo_matrix.
+    /*! Construct a \p coo_matrix_view from a existing matrix in another
+     * format.
      *
-     *  \param matrix \p coo_matrix used to create view.
+     *  \param matrix used to create view.
      */
     template<typename MatrixType>
-    coo_matrix_view(MatrixType& matrix,
-                    typename thrust::detail::enable_if_convertible<typename MatrixType::format,csr_format>::type* = 0);
+    coo_matrix_view(MatrixType& matrix);
 
+    /*! Construct a \p coo_matrix_view from a existing const matrix in another
+     * format.
+     *
+     *  \param matrix used to create view.
+     */
     template<typename MatrixType>
-    coo_matrix_view(const MatrixType& matrix,
-                    typename thrust::detail::enable_if_convertible<typename MatrixType::format,csr_format>::type* = 0);
-
-    template<typename MatrixType>
-    coo_matrix_view(MatrixType& matrix,
-                    typename thrust::detail::enable_if_convertible<typename MatrixType::format,dia_format>::type* = 0);
-
-    template<typename MatrixType>
-    coo_matrix_view(const MatrixType& matrix,
-                    typename thrust::detail::enable_if_convertible<typename MatrixType::format,dia_format>::type* = 0);
-
-    template<typename MatrixType>
-    coo_matrix_view(MatrixType& matrix,
-                    typename thrust::detail::enable_if_convertible<typename MatrixType::format,ell_format>::type* = 0);
-
-    template<typename MatrixType>
-    coo_matrix_view(const MatrixType& matrix,
-                    typename thrust::detail::enable_if_convertible<typename MatrixType::format,ell_format>::type* = 0);
-
-    template<typename MatrixType>
-    coo_matrix_view(MatrixType& matrix,
-                    typename thrust::detail::enable_if_convertible<typename MatrixType::format,hyb_format>::type* = 0);
-
-    template<typename MatrixType>
-    coo_matrix_view(const MatrixType& matrix,
-                    typename thrust::detail::enable_if_convertible<typename MatrixType::format,hyb_format>::type* = 0);
+    coo_matrix_view(const MatrixType& matrix);
 
     /*! Resize matrix dimensions and underlying storage
      *
@@ -470,6 +450,19 @@ public:
      *  \return \c false, if the row and column indices are unsorted; \c true, otherwise.
      */
     bool is_sorted_by_row_and_column(void);
+
+protected:
+    template<typename MatrixType>
+    void construct_from(MatrixType& matrix, csr_format);
+
+    template<typename MatrixType>
+    void construct_from(MatrixType& matrix, dia_format);
+
+    template<typename MatrixType>
+    void construct_from(MatrixType& matrix, ell_format);
+
+    template<typename MatrixType>
+    void construct_from(MatrixType& matrix, hyb_format);
 };
 
 /* Convenience functions */
