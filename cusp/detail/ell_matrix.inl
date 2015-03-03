@@ -93,6 +93,14 @@ ell_matrix<IndexType,ValueType,MemorySpace>
     return *this;
 }
 
+///////////////////////
+// View Constructors //
+///////////////////////
+
+///////////////////////////
+// View Member Functions //
+///////////////////////////
+
 template <typename Array1, typename Array2, typename IndexType, typename ValueType, class MemorySpace>
 void
 ell_matrix_view<Array1,Array2,IndexType,ValueType,MemorySpace>

@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-#include<cusp/format_utils.h>
+#include <cusp/format_utils.h>
 
 namespace cusp
 {
@@ -72,6 +72,14 @@ csr_matrix<IndexType,ValueType,MemorySpace>
 
     return *this;
 }
+
+///////////////////////
+// View Constructors //
+///////////////////////
+
+///////////////////////////
+// View Member Functions //
+///////////////////////////
 
 // construct from a different matrix
 template <typename ArrayType1,typename ArrayType2,typename ArrayType3,

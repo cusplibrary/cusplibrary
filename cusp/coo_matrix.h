@@ -452,15 +452,31 @@ public:
     bool is_sorted_by_row_and_column(void);
 
 protected:
+    /*! Initialize \p coo_matrix_view from  \p csr_matrix.
+     *
+     *  \param matrix Another matrix in csr_format.
+     */
     template<typename MatrixType>
     void construct_from(MatrixType& matrix, csr_format);
 
+    /*! Construct \p coo_matrix_view from  \p dia_matrix.
+     *
+     *  \param matrix Another matrix in dia_format.
+     */
     template<typename MatrixType>
     void construct_from(MatrixType& matrix, dia_format);
 
+    /*! Construct \p coo_matrix_view from  \p ell_matrix.
+     *
+     *  \param matrix Another matrix in ell_format.
+     */
     template<typename MatrixType>
     void construct_from(MatrixType& matrix, ell_format);
 
+    /*! Construct \p coo_matrix_view from  \p hyb_matrix.
+     *
+     *  \param matrix Another matrix in hyb_format.
+     */
     template<typename MatrixType>
     void construct_from(MatrixType& matrix, hyb_format);
 };

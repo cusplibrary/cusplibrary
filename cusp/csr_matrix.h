@@ -314,15 +314,18 @@ public:
     typedef typename cusp::csr_matrix_view<ArrayType1, ArrayType2, ArrayType3, IndexType, ValueType, MemorySpace> view;
     /*! \endcond */
 
-    /*! Storage for the row offsets of the CSR data structure.  Also called the "row pointer" array.
+    /**
+     * View of the row_offsets of the CSR data structure.
      */
     row_offsets_array_type row_offsets;
 
-    /*! Storage for the column indices of the CSR data structure.
+    /**
+     * View of the column indices of the CSR data structure.
      */
     column_indices_array_type column_indices;
 
-    /*! Storage for the nonzero entries of the CSR data structure.
+    /**
+     * View for the nonzero entries of the CSR data structure.
      */
     values_array_type values;
 
@@ -354,28 +357,40 @@ public:
           column_indices(column_indices),
           values(values) {}
 
-    // construct from existing CSR matrix or view
+    /*! Construct a \p csr_matrix_view from a existing \p csr_matrix.
+     *
+     *  \param matrix \p csr_matrix used to create view.
+     */
     csr_matrix_view(csr_matrix<IndexType,ValueType,MemorySpace>& matrix)
         : Parent(matrix),
           row_offsets(matrix.row_offsets),
           column_indices(matrix.column_indices),
           values(matrix.values) {}
 
-    // construct from existing CSR matrix or view
+    /*! Construct a \p csr_matrix_view from a existing const \p csr_matrix.
+     *
+     *  \param matrix \p csr_matrix used to create view.
+     */
     csr_matrix_view(const csr_matrix<IndexType,ValueType,MemorySpace>& matrix)
         : Parent(matrix),
           row_offsets(matrix.row_offsets),
           column_indices(matrix.column_indices),
           values(matrix.values) {}
 
-    // construct from existing CSR matrix or view
+    /*! Construct a \p csr_matrix_view from a existing \p csr_matrix_view.
+     *
+     *  \param matrix \p csr_matrix_view used to create view.
+     */
     csr_matrix_view(csr_matrix_view& matrix)
         : Parent(matrix),
           row_offsets(matrix.row_offsets),
           column_indices(matrix.column_indices),
           values(matrix.values) {}
 
-    // construct from existing CSR matrix or view
+    /*! Construct a \p csr_matrix_view from a existing const \p csr_matrix_view.
+     *
+     *  \param matrix \p csr_matrix_view used to create view.
+     */
     csr_matrix_view(const csr_matrix_view& matrix)
         : Parent(matrix),
           row_offsets(matrix.row_offsets),
@@ -393,6 +408,22 @@ public:
 
 /* Convenience functions */
 
+/**
+ *  This is a convenience function for generating an \p csr_matrix_view
+ *  using individual arrays
+ *  \tparam ArrayType1 row offsets array type
+ *  \tparam ArrayType2 column indices array type
+ *  \tparam ArrayType3 values array type
+ *
+ *  \param num_rows Number of rows.
+ *  \param num_cols Number of columns.
+ *  \param num_entries Number of nonzero matrix entries.
+ *  \param row_offsets Array containing the row offsets.
+ *  \param column_indices Array containing the column indices.
+ *  \param values Array containing the values.
+ *
+ *  \return \p csr_matrix_view constructed using input arrays
+ */
 template <typename ArrayType1,
          typename ArrayType2,
          typename ArrayType3>
@@ -409,6 +440,22 @@ make_csr_matrix_view(size_t num_rows,
             row_offsets, column_indices, values);
 }
 
+/**
+ *  This is a convenience function for generating an \p csr_matrix_view
+ *  using individual arrays with explicit index, value, and memory space
+ *  annotations.
+ *
+ *  \tparam ArrayType1 row offsets array type
+ *  \tparam ArrayType2 column indices array type
+ *  \tparam ArrayType3 values array type
+ *  \tparam IndexType  indices type
+ *  \tparam ValueType  values type
+ *  \tparam MemorySpace memory space of the arrays
+ *
+ *  \param m Exemplar \p csr_matrix_view matrix to copy.
+ *
+ *  \return \p csr_matrix_view constructed using input arrays.
+ */
 template <typename ArrayType1,
          typename ArrayType2,
          typename ArrayType3,
@@ -421,6 +468,18 @@ make_csr_matrix_view(const csr_matrix_view<ArrayType1,ArrayType2,ArrayType3,Inde
     return csr_matrix_view<ArrayType1,ArrayType2,ArrayType3,IndexType,ValueType,MemorySpace>(m);
 }
 
+/**
+ *  This is a convenience function for generating an \p csr_matrix_view
+ *  using an existing \p csr_matrix.
+ *
+ *  \tparam IndexType  indices type
+ *  \tparam ValueType  values type
+ *  \tparam MemorySpace memory space of the arrays
+ *
+ *  \param m Exemplar \p csr_matrix matrix to copy.
+ *
+ *  \return \p csr_matrix_view constructed using input arrays.
+ */
 template <typename IndexType, typename ValueType, class MemorySpace>
 typename csr_matrix<IndexType,ValueType,MemorySpace>::view
 make_csr_matrix_view(csr_matrix<IndexType,ValueType,MemorySpace>& m)
@@ -432,6 +491,18 @@ make_csr_matrix_view(csr_matrix<IndexType,ValueType,MemorySpace>& m)
             make_array1d_view(m.values));
 }
 
+/**
+ *  This is a convenience function for generating an const \p csr_matrix_view
+ *  using an existing \p csr_matrix.
+ *
+ *  \tparam IndexType  indices type
+ *  \tparam ValueType  values type
+ *  \tparam MemorySpace memory space of the arrays
+ *
+ *  \param m Exemplar \p csr_matrix matrix to copy.
+ *
+ *  \return \p csr_matrix_view constructed using input arrays.
+ */
 template <typename IndexType, typename ValueType, class MemorySpace>
 typename csr_matrix<IndexType,ValueType,MemorySpace>::const_view
 make_csr_matrix_view(const csr_matrix<IndexType,ValueType,MemorySpace>& m)

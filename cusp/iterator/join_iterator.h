@@ -56,17 +56,21 @@ namespace cusp
  *  #include <cusp/array1d.h>
  *  #include <cusp/iterator/join_iterator.h>
  *
+ *  #include <thrust/sequence.h>
+ *
  *  #include <iostream>
  *
  *  int main(void)
  *  {
- *    typedef cusp::counting_iterator<int>                                           CountingIterator;
- *    typedef cusp::constant_iterator<int>                                           ConstantIterator;
+ *    typedef cusp::counting_array<int>                                              CountingArray;
+ *    typedef cusp::constant_array<int>                                              ConstantArray;
+ *    typedef typename CountingArray::iterator                                       CountingIterator;
+ *    typedef typename ConstantArray::iterator                                       ConstantIterator;
  *    typedef cusp::array1d<int,cusp::device_memory>::iterator                       ArrayIterator;
- *    typedef cusp::join_iterator<CountingIterator,ConstantIterator,ArrayIterator>   JoinIterator
+ *    typedef cusp::join_iterator<CountingIterator,ConstantIterator,ArrayIterator>   JoinIterator;
  *
- *    CountingIterator a(4);
- *    ConstantIterator b(10);
+ *    CountingArray a(4);
+ *    ConstantArray b(5, 10);
  *    cusp::array1d<int,cusp::device_memory> indices(a.size() + b.size());
  *    thrust::sequence(indices.begin(), indices.end());
  *    JoinIterator iter(a.begin(), a.end(), b.begin(), b.end(), indices.begin());
@@ -84,8 +88,13 @@ class join_iterator
 {
     public:
 
-    typedef typename thrust::iterator_value<Iterator1>::type      value_type;
-    typedef typename thrust::iterator_difference<Iterator1>::type difference_type;
+    /*! \cond */
+    typedef typename thrust::iterator_value<Iterator1>::type                       value_type;
+    typedef typename thrust::iterator_system<Iterator1>::type                      memory_space;
+    typedef typename thrust::iterator_pointer<Iterator1>::type                     pointer;
+    typedef typename thrust::iterator_reference<Iterator1>::type                   reference;
+    typedef typename thrust::iterator_difference<Iterator1>::type                  difference_type;
+    typedef typename thrust::iterator_difference<Iterator1>::type                  size_type;
 
     struct join_select_functor : public thrust::unary_function<difference_type,value_type>
     {
@@ -108,11 +117,19 @@ class join_iterator
     };
 
     typedef typename thrust::transform_iterator<join_select_functor, IndexIterator> TransformIterator;
+    /*! \endcond */
 
     // type of the join_iterator
     typedef TransformIterator iterator;
 
-    // construct join_iterator using first_begin and second_begin
+    /*! \brief This constructor builds a \p join_iterator from two iterators.
+     *  \param first_begin The beginning of the first range.
+     *  \param first_end The end of the first range.
+     *  \param second_begin The beginning of the second range.
+     *  \param second_end The end of the second range.
+     *  \param indices_begin The permutation indices used to order entries
+     *  from the two joined iterators.
+     */
     join_iterator(Iterator1 first_begin, Iterator1 first_end,
                   Iterator2 second_begin, Iterator2 second_end,
                   IndexIterator indices_begin)
@@ -120,14 +137,35 @@ class join_iterator
           second_begin(second_begin), second_end(second_end),
           indices_begin(indices_begin) {}
 
+    /*! \brief This method returns an iterator pointing to the beginning of
+     *  this joined sequence of permuted entries.
+     *  \return mStart
+     */
     iterator begin(void) const
     {
         return TransformIterator(indices_begin, join_select_functor(first_begin, second_begin, first_end-first_begin));
     }
 
+    /*! \brief This method returns an iterator pointing to one element past
+     *  the last of this joined sequence of permuted entries.
+     *  \return mEnd
+     */
     iterator end(void) const
     {
         return begin() + (first_end-first_begin) + (second_end-second_begin);
+    }
+
+    /*! \brief Subscript access to the data contained in this iterator.
+     *  \param n The index of the element for which data should be accessed.
+     *  \return Read/write reference to data.
+     *
+     *  This operator allows for easy, array-style, data access.
+     *  Note that data access with this operator is unchecked and
+     *  out_of_range lookups are not defined.
+     */
+    reference operator[](size_type n) const
+    {
+        return *(begin() + n);
     }
 
     protected:

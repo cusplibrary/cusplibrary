@@ -122,9 +122,9 @@ coo_matrix<IndexType,ValueType,MemorySpace>
             thrust::make_zip_iterator(thrust::make_tuple(row_indices.end(),   column_indices.end())));
 }
 
-//////////////////
-// Constructors //
-//////////////////
+///////////////////////
+// View Constructors //
+///////////////////////
 
 template <typename Array1, typename Array2, typename Array3, typename IndexType, typename ValueType, typename MemorySpace>
 template <typename MatrixType>

@@ -159,7 +159,8 @@ public:
      */
     values_array_type values;
 
-    /*! Construct an empty \p dia_matrix.
+    /**
+     * Construct an empty \p dia_matrix_view.
      */
     dia_matrix(void) {}
 
@@ -329,15 +330,18 @@ public:
     typedef typename cusp::dia_matrix_view<ArrayType1, ArrayType2, IndexType, ValueType, MemorySpace> view;
     /*! \endcond */
 
-    /*! Storage for the diagonal offsets.
+    /**
+     * View of the diagonal_offsets of the DIA data structure.
      */
     diagonal_offsets_array_type diagonal_offsets;
 
-    /*! Storage for the nonzero entries of the DIA data structure.
+    /**
+     * View for the nonzero entries of the DIA data structure.
      */
     values_array_type values;
 
-    /*! Construct an empty \p dia_matrix_view.
+    /**
+     * Construct an empty \p dia_matrix_view.
      */
     dia_matrix_view(void) {}
 
@@ -431,7 +435,22 @@ public:
                 const size_t num_diagonals, const size_t alignment);
 }; // class dia_matrix_view
 
+/* Convenience functions */
 
+/**
+ *  This is a convenience function for generating an \p dia_matrix_view
+ *  using individual arrays
+ *  \tparam ArrayType1 diagonal offsets array type
+ *  \tparam ArrayType2 values array type
+ *
+ *  \param num_rows Number of rows.
+ *  \param num_cols Number of columns.
+ *  \param num_entries Number of nonzero matrix entries.
+ *  \param dia_offsets Array containing the diagonal offsets.
+ *  \param values Array containing the values.
+ *
+ *  \return \p dia_matrix_view constructed using input arrays
+ */
 template <typename ArrayType1,
          typename ArrayType2>
 dia_matrix_view<ArrayType1,ArrayType2>
@@ -446,6 +465,21 @@ make_dia_matrix_view(size_t num_rows,
             diagonal_offsets, values);
 }
 
+/**
+ *  This is a convenience function for generating an \p dia_matrix_view
+ *  using individual arrays with explicit index, value, and memory space
+ *  annotations.
+ *
+ *  \tparam ArrayType1 diagonal offsets array type
+ *  \tparam ArrayType2 values array type
+ *  \tparam IndexType  indices type
+ *  \tparam ValueType  values type
+ *  \tparam MemorySpace memory space of the arrays
+ *
+ *  \param m Exemplar \p dia_matrix_view matrix to copy.
+ *
+ *  \return \p dia_matrix_view constructed using input arrays.
+ */
 template <typename ArrayType1,
          typename ArrayType2,
          typename IndexType,
@@ -457,6 +491,18 @@ make_dia_matrix_view(const dia_matrix_view<ArrayType1,ArrayType2,IndexType,Value
     return dia_matrix_view<ArrayType1,ArrayType2,IndexType,ValueType,MemorySpace>(m);
 }
 
+/**
+ *  This is a convenience function for generating an \p dia_matrix_view
+ *  using an existing \p dia_matrix.
+ *
+ *  \tparam IndexType  indices type
+ *  \tparam ValueType  values type
+ *  \tparam MemorySpace memory space of the arrays
+ *
+ *  \param m Exemplar \p dia_matrix matrix to copy.
+ *
+ *  \return \p dia_matrix_view constructed using input arrays.
+ */
 template <typename IndexType, typename ValueType, class MemorySpace>
 typename dia_matrix<IndexType,ValueType,MemorySpace>::view
 make_dia_matrix_view(dia_matrix<IndexType,ValueType,MemorySpace>& m)
@@ -467,6 +513,18 @@ make_dia_matrix_view(dia_matrix<IndexType,ValueType,MemorySpace>& m)
             cusp::make_array2d_view(m.values));
 }
 
+/**
+ *  This is a convenience function for generating an const \p dia_matrix_view
+ *  using an existing \p coo_matrix.
+ *
+ *  \tparam IndexType  indices type
+ *  \tparam ValueType  values type
+ *  \tparam MemorySpace memory space of the arrays
+ *
+ *  \param m Exemplar \p dia_matrix matrix to copy.
+ *
+ *  \return \p dia_matrix_view constructed using input arrays.
+ */
 template <typename IndexType, typename ValueType, class MemorySpace>
 typename dia_matrix<IndexType,ValueType,MemorySpace>::const_view
 make_dia_matrix_view(const dia_matrix<IndexType,ValueType,MemorySpace>& m)

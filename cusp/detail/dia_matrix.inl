@@ -91,6 +91,14 @@ dia_matrix<IndexType,ValueType,MemorySpace>
     return *this;
 }
 
+///////////////////////
+// View Constructors //
+///////////////////////
+
+///////////////////////////
+// View Member Functions //
+///////////////////////////
+
 template <typename Array1, typename Array2, typename IndexType, typename ValueType, typename MemorySpace>
 void
 dia_matrix_view<Array1,Array2,IndexType,ValueType,MemorySpace>

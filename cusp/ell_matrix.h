@@ -331,19 +331,23 @@ public:
     typedef typename cusp::ell_matrix_view<ArrayType1, ArrayType2, IndexType, ValueType, MemorySpace> view;
     /*! \endcond */
 
-    /*! Value used to pad the rows of the column_indices array.
+    /**
+     * Value used to pad the rows of the column_indices array.
      */
-    const static IndexType invalid_index = static_cast<IndexType>(-1);
+    const static IndexType invalid_index = container::invalid_index;
 
-    /*! View to column indices of the ELL data structure.
+    /**
+     * View to column indices of the ELL data structure.
      */
     column_indices_array_type column_indices;
 
-    /*! View to nonzero entries of the ELL data structure.
+    /**
+     * View to nonzero entries of the ELL data structure.
      */
     values_array_type values;
 
-    /*! Construct an empty \p ell_matrix_view.
+    /**
+     * Construct an empty \p ell_matrix_view.
      */
     ell_matrix_view(void) {}
 
@@ -421,7 +425,20 @@ public:
                 size_t num_entries_per_row, size_t alignment);
 }; // class ell_matrix_view
 
-
+/**
+ *  This is a convenience function for generating an \p ell_matrix_view
+ *  using individual arrays
+ *  \tparam ArrayType1 column indices array type
+ *  \tparam ArrayType2 values array type
+ *
+ *  \param num_rows Number of rows.
+ *  \param num_cols Number of columns.
+ *  \param num_entries Number of nonzero matrix entries.
+ *  \param column_indices Array containing the column indices.
+ *  \param values Array containing the values.
+ *
+ *  \return \p ell_matrix_view constructed using input arrays
+ */
 template <typename ArrayType1, typename ArrayType2>
 ell_matrix_view<ArrayType1,ArrayType2>
 make_ell_matrix_view(size_t num_rows, size_t num_cols, size_t num_entries,
@@ -432,6 +449,21 @@ make_ell_matrix_view(size_t num_rows, size_t num_cols, size_t num_entries,
             column_indices, values);
 }
 
+/**
+ *  This is a convenience function for generating an \p ell_matrix_view
+ *  using individual arrays with explicit index, value, and memory space
+ *  annotations.
+ *
+ *  \tparam ArrayType1 column indices array type
+ *  \tparam ArrayType2 values array type
+ *  \tparam IndexType  indices type
+ *  \tparam ValueType  values type
+ *  \tparam MemorySpace memory space of the arrays
+ *
+ *  \param m Exemplar \p ell_matrix_view matrix to copy.
+ *
+ *  \return \p ell_matrix_view constructed using input arrays.
+ */
 template <typename ArrayType1,
          typename ArrayType2,
          typename IndexType,
@@ -443,6 +475,18 @@ make_ell_matrix_view(const ell_matrix_view<ArrayType1,ArrayType2,IndexType,Value
     return ell_matrix_view<ArrayType1,ArrayType2,IndexType,ValueType,MemorySpace>(m);
 }
 
+/**
+ *  This is a convenience function for generating an \p ell_matrix_view
+ *  using an existing \p ell_matrix.
+ *
+ *  \tparam IndexType  indices type
+ *  \tparam ValueType  values type
+ *  \tparam MemorySpace memory space of the arrays
+ *
+ *  \param m Exemplar \p ell_matrix matrix to copy.
+ *
+ *  \return \p ell_matrix_view constructed using input arrays.
+ */
 template <typename IndexType, typename ValueType, typename MemorySpace>
 typename ell_matrix<IndexType,ValueType,MemorySpace>::view
 make_ell_matrix_view(ell_matrix<IndexType,ValueType,MemorySpace>& m)
@@ -453,6 +497,18 @@ make_ell_matrix_view(ell_matrix<IndexType,ValueType,MemorySpace>& m)
             cusp::make_array2d_view(m.values));
 }
 
+/**
+ *  This is a convenience function for generating an const \p ell_matrix_view
+ *  using an existing \p ell_matrix.
+ *
+ *  \tparam IndexType  indices type
+ *  \tparam ValueType  values type
+ *  \tparam MemorySpace memory space of the arrays
+ *
+ *  \param m Exemplar \p ell_matrix matrix to copy.
+ *
+ *  \return \p ell_matrix_view constructed using input arrays.
+ */
 template <typename IndexType, typename ValueType, typename MemorySpace>
 typename ell_matrix<IndexType,ValueType,MemorySpace>::const_view
 make_ell_matrix_view(const ell_matrix<IndexType,ValueType,MemorySpace>& m)

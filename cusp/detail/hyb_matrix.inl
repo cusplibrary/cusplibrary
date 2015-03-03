@@ -49,6 +49,14 @@ hyb_matrix<IndexType,ValueType,MemorySpace>
     return *this;
 }
 
+///////////////////////
+// View Constructors //
+///////////////////////
+
+///////////////////////////
+// View Member Functions //
+///////////////////////////
+
 template <typename Matrix1, typename Matrix2, typename IndexType, typename ValueType, typename MemorySpace>
 void
 hyb_matrix_view<Matrix1,Matrix2,IndexType,ValueType,MemorySpace>
