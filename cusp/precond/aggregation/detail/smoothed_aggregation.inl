@@ -59,38 +59,6 @@ smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverType>
 template <typename IndexType, typename ValueType, typename MemorySpace, typename SmootherType, typename SolverType>
 template <typename MatrixType>
 void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverType>
-::set_multilevel_matrix(const MatrixType& A)
-{
-    Parent::A = A;
-    Parent::A_ptr = &this->A;
-}
-
-template <typename IndexType, typename ValueType, typename MemorySpace, typename SmootherType, typename SolverType>
-void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverType>
-::set_multilevel_matrix(const SolveMatrixType& A)
-{
-    Parent::A_ptr = const_cast<SolveMatrixType*>(&A);
-}
-
-template <typename IndexType, typename ValueType, typename MemorySpace, typename SmootherType, typename SolverType>
-template <typename MatrixType>
-void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverType>
-::setup_level_matrix(MatrixType& dst, MatrixType& src)
-{
-    dst.swap(src);
-}
-
-template <typename IndexType, typename ValueType, typename MemorySpace, typename SmootherType, typename SolverType>
-template <typename MatrixType1, typename MatrixType2>
-void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverType>
-::setup_level_matrix(MatrixType1& dst, MatrixType2& src)
-{
-    dst = src;
-}
-
-template <typename IndexType, typename ValueType, typename MemorySpace, typename SmootherType, typename SolverType>
-template <typename MatrixType>
-void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverType>
 ::sa_initialize(const MatrixType& A)
 {
     cusp::constant_array<ValueType> B(A.num_rows, 1);
@@ -103,10 +71,6 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverTyp
 ::sa_initialize(const MatrixType& A, const ArrayType& B)
 {
     typedef typename MatrixType::const_coo_view_type CooView;
-    typedef typename SolveMatrixType::format         Format;
-    typedef cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,Format> BaseMatrixType;
-
-    set_multilevel_matrix(A);
 
     if(sa_levels.size() > 0)
     {
@@ -126,13 +90,7 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverTyp
     {
         CooView A_(A);
         extend_hierarchy(A_);
-
-        size_t N = A.num_rows;
-        Parent::levels[0].x.resize(N);
-        Parent::levels[0].b.resize(N);
-        Parent::levels[0].residual.resize(N);
-
-        Parent::levels[0].smoother.initialize(A, sa_levels[0]);
+        Parent::setup_level(0, A, sa_levels[0]);
     }
 
     // Iteratively setup lower levels until stopping criteria are reached
@@ -144,18 +102,7 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverTyp
     Parent::solver = SolverType(sa_levels.back().A_);
 
     for( size_t lvl = 1; lvl < sa_levels.size(); lvl++ )
-    {
-        size_t N = sa_levels[lvl].A_.num_rows;
-        Parent::levels[lvl].x.resize(N);
-        Parent::levels[lvl].b.resize(N);
-        Parent::levels[lvl].residual.resize(N);
-
-        // Setup solve matrix for each level
-        setup_level_matrix( Parent::levels[lvl].A, sa_levels[lvl].A_ );
-
-        // Initialize smoother for each level
-        Parent::levels[lvl].smoother.initialize(Parent::levels[lvl].A, sa_levels[lvl]);
-    }
+      Parent::setup_level(lvl, sa_levels[lvl].A_, sa_levels[lvl]);
 }
 
 template <typename IndexType, typename ValueType, typename MemorySpace, typename SmootherType, typename SolverType>
@@ -200,8 +147,8 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverTyp
     sa_levels.back().A_.swap(RAP);
     sa_levels.back().B.swap(B_coarse);
 
-    setup_level_matrix( Parent::levels.back().R, R );
-    setup_level_matrix( Parent::levels.back().P, P );
+    Parent::copy_or_swap_matrix( Parent::levels.back().R, R );
+    Parent::copy_or_swap_matrix( Parent::levels.back().P, P );
     Parent::levels.push_back(typename Parent::level());
 }
 

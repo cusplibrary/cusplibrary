@@ -113,17 +113,6 @@ class smoothed_aggregation :
 
 protected:
 
-    void set_multilevel_matrix(const SolveMatrixType& A);
-
-    template <typename MatrixType>
-    void set_multilevel_matrix(const MatrixType& A);
-
-    template <typename MatrixType>
-    void setup_level_matrix(MatrixType& dst, MatrixType& src);
-
-    template <typename MatrixType1, typename MatrixType2>
-    void setup_level_matrix(MatrixType1& dst, MatrixType2& src);
-
     template <typename MatrixType>
     void extend_hierarchy(const MatrixType& A);
 };

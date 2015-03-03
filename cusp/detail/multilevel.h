@@ -104,6 +104,19 @@ protected:
 
     template <typename Array1, typename Array2>
     void _solve(const Array1& b, Array2& x, const size_t i);
+
+    template <typename MatrixType2, typename Level>
+    void setup_level(const size_t lvl, const MatrixType2& A, const Level& L);
+
+    void set_multilevel_matrix(const MatrixType& A);
+
+    template <typename MatrixType2>
+    void set_multilevel_matrix(const MatrixType2& A);
+
+    void copy_or_swap_matrix(MatrixType& dst, MatrixType& src);
+
+    template <typename MatrixType2>
+    void copy_or_swap_matrix(MatrixType& dst, MatrixType2& src);
 };
 /*! \}
  */

@@ -22,13 +22,65 @@ namespace cusp
 {
 
 template <typename MatrixType, typename SmootherType, typename SolverType>
+void multilevel<MatrixType,SmootherType,SolverType>
+::copy_or_swap_matrix(MatrixType& dst, MatrixType& src)
+{
+    dst.swap(src);
+}
+
+template <typename MatrixType, typename SmootherType, typename SolverType>
+template <typename MatrixType2>
+void multilevel<MatrixType,SmootherType,SolverType>
+::copy_or_swap_matrix(MatrixType& dst, MatrixType2& src)
+{
+    dst = src;
+}
+
+template <typename MatrixType, typename SmootherType, typename SolverType>
+template <typename MatrixType2, typename Level>
+void multilevel<MatrixType,SmootherType,SolverType>
+::setup_level(const size_t lvl, const MatrixType2& A, const Level& L)
+{
+    size_t N = lvl == 0 ? A_ptr->num_rows : A.num_rows;
+
+    levels[lvl].x.resize(N);
+    levels[lvl].b.resize(N);
+    levels[lvl].residual.resize(N);
+
+    // Initialize smoother for each level
+    levels[lvl].smoother.initialize(A, L);
+
+    // Setup solve matrix for each level
+    if(lvl == 0)
+      set_multilevel_matrix(A);
+    else
+      copy_or_swap_matrix(levels[lvl].A, A);
+}
+
+template <typename MatrixType, typename SmootherType, typename SolverType>
+template <typename MatrixType2>
+void multilevel<MatrixType,SmootherType,SolverType>
+::set_multilevel_matrix(const MatrixType2& A)
+{
+    this->A = A;
+    A_ptr = &this->A;
+}
+
+template <typename MatrixType, typename SmootherType, typename SolverType>
+void multilevel<MatrixType,SmootherType,SolverType>
+::set_multilevel_matrix(const MatrixType& A)
+{
+    A_ptr = const_cast<MatrixType*>(&A);
+}
+
+template <typename MatrixType, typename SmootherType, typename SolverType>
 template <typename MatrixType2, typename SmootherType2, typename SolverType2>
 multilevel<MatrixType,SmootherType,SolverType>
 ::multilevel(const multilevel<MatrixType2,SmootherType2,SolverType2>& M)
     : solver(M.solver)
 {
     for( size_t lvl = 0; lvl < M.levels.size(); lvl++ )
-      levels.push_back(M.levels[lvl]);
+        levels.push_back(M.levels[lvl]);
 
     levels[0].A = *M.A_ptr;
     A_ptr = &levels[0].A;
@@ -101,17 +153,17 @@ void multilevel<MatrixType,SmootherType,SolverType>
         // initialize solution
         cusp::blas::fill(x, ValueType(0));
 
-       // presmooth
+        // presmooth
         if(i == 0)
-          levels[i].smoother.presmooth(*A_ptr, b, x);
+            levels[i].smoother.presmooth(*A_ptr, b, x);
         else
-          levels[i].smoother.presmooth(levels[i].A, b, x);
+            levels[i].smoother.presmooth(levels[i].A, b, x);
 
         // compute residual <- b - A*x
         if(i == 0)
-          cusp::multiply(*A_ptr, x, levels[i].residual);
+            cusp::multiply(*A_ptr, x, levels[i].residual);
         else
-          cusp::multiply(levels[i].A, x, levels[i].residual);
+            cusp::multiply(levels[i].A, x, levels[i].residual);
 
         cusp::blas::axpby(b, levels[i].residual, levels[i].residual, ValueType(1.0), ValueType(-1.0));
 
@@ -127,9 +179,9 @@ void multilevel<MatrixType,SmootherType,SolverType>
 
         // postsmooth
         if(i == 0)
-          levels[i].smoother.postsmooth(*A_ptr, b, x);
+            levels[i].smoother.postsmooth(*A_ptr, b, x);
         else
-          levels[i].smoother.postsmooth(levels[i].A, b, x);
+            levels[i].smoother.postsmooth(levels[i].A, b, x);
     }
 }
 
