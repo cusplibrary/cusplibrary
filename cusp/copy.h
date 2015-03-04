@@ -51,6 +51,30 @@ void copy(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
  * \note SourceType and DestinationType must have the same format
  * \note DestinationType will be resized as necessary
  *
+ * \par Example
+ * \code
+ * #include <cusp/array1d.h>
+ * #include <cusp/print.h>
+ *
+ * // include cusp copy header file
+ * #include <cusp/copy.h>
+ *
+ * int main()
+ * {
+ *   // Allocate a array of size 10
+ *   cusp::array1d<int,cusp::host_memory> a(10);
+ *
+ *   // Create a random array with 10 entries
+ *   cusp::random_array<int> rand(10);
+ *
+ *   // Copy random values from rand into a
+ *   cusp::copy(rand, a);
+ *
+ *   // print the contents of a
+ *   cusp::print(a);
+ * }
+ * \endcode
+ *
  * \see \p convert
  */
 template <typename SourceType, typename DestinationType>

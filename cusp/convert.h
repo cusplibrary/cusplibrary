@@ -52,6 +52,36 @@ void convert(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
  *
  * \note DestinationType will be resized as necessary
  *
+ * \par Example
+ * \code
+ * #include <cusp/array2d.h>
+ * #include <cusp/coo_matrix.h>
+ * #include <cusp/print.h>
+ *
+ * #include <cusp/gallery/poisson.h>
+ *
+ * // include cusp convert header file
+ * #include <cusp/convert.h>
+ *
+ * int main()
+ * {
+ *   // create an empty sparse matrix structure
+ *   cusp::coo_matrix<int,float,cusp::host_memory> A;
+ *
+ *   // create 2D Poisson problem
+ *   cusp::gallery::poisson5pt(A, 4, 4);
+ *
+ *   // create an empty array2d structure
+ *   cusp::array2d<float,cusp::host_memory> B;
+ *
+ *   // convert coo_matrix to array2d
+ *   cusp::convert(A, B);
+ *
+ *   // print the contents of B
+ *   cusp::print(B);
+ * }
+ * \endcode
+ *
  * \see \p copy
  */
 template <typename SourceType, typename DestinationType>
