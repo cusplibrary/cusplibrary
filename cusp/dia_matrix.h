@@ -446,7 +446,7 @@ public:
  *  \param num_rows Number of rows.
  *  \param num_cols Number of columns.
  *  \param num_entries Number of nonzero matrix entries.
- *  \param dia_offsets Array containing the diagonal offsets.
+ *  \param diagonal_offsets Array containing the diagonal offsets.
  *  \param values Array containing the values.
  *
  *  \return \p dia_matrix_view constructed using input arrays

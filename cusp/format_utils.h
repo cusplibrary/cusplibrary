@@ -108,6 +108,8 @@ size_t count_diagonals(const thrust::detail::execution_policy_base<DerivedPolicy
  * \tparam ArrayType1 Type of input row indices
  * \tparam ArrayType2 Type of input column indices
  *
+ * \param num_rows Number of rows.
+ * \param num_cols Number of columns.
  * \param row_indices row indices of input matrix
  * \param column_indices column indices of input matrix
  * \return number of occupied diagonals

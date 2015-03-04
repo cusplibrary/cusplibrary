@@ -79,7 +79,7 @@ void sort_by_row(const thrust::detail::execution_policy_base<DerivedPolicy> &exe
  *  \endcode
  */
 template <typename ArrayType1, typename ArrayType2, typename ArrayType3>
-void sort_by_row(ArrayType1& rows, ArrayType2& columns, ArrayType3& values);
+void sort_by_row(ArrayType1& row_indices, ArrayType2& column_indices, ArrayType3& values);
 
 /* \cond */
 template <typename DerivedPolicy, typename ArrayType1, typename ArrayType2, typename ArrayType3>
@@ -128,7 +128,7 @@ void sort_by_row_and_column(const thrust::detail::execution_policy_base<DerivedP
  *  \endcode
  */
 template <typename ArrayType1, typename ArrayType2, typename ArrayType3>
-void sort_by_row_and_column(ArrayType1& rows, ArrayType2& columns, ArrayType3& values);
+void sort_by_row_and_column(ArrayType1& row_indices, ArrayType2& column_indices, ArrayType3& values);
 /*! \}
  */
 

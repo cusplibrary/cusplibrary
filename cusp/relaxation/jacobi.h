@@ -139,17 +139,6 @@ public:
     jacobi(const jacobi<ValueType,MemorySpace2>& A)
         : default_omega(A.default_omega), temp(A.temp), diagonal(A.diagonal){}
 
-    template <typename MatrixType>
-    jacobi(const cusp::precond::aggregation::sa_level<MatrixType>& sa_level, ValueType weight=4.0/3.0);
-
-    // ignores initial x
-    template<typename MatrixType, typename VectorType1, typename VectorType2>
-    void presmooth(const MatrixType& A, const VectorType1& b, VectorType2& x);
-
-    // smooths initial x
-    template<typename MatrixType, typename VectorType1, typename VectorType2>
-    void postsmooth(const MatrixType& A, const VectorType1& b, VectorType2& x);
-
     /*! Perform Jacobi relaxation using default omega damping factor specified during
      * construction of this \p jacobi smoother
      *

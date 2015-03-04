@@ -77,7 +77,7 @@ read_dimacs_file(Matrix& mtx, const std::string& filename);
  * \tparam Stream stream type
  *
  * \param mtx a matrix container (e.g. \p csr_matrix or \p coo_matrix)
- * \param intput stream from which to read the Dimacs contents
+ * \param input stream from which to read the Dimacs contents
  *
  * \par Overview
  * \note any contents of \p mtx will be overwritten
@@ -112,6 +112,7 @@ read_dimacs_stream(Matrix& mtx, Stream& input);
  * \tparam Matrix matrix container
  *
  * \param mtx a matrix container (e.g. \p csr_matrix or \p coo_matrix)
+ * \param t a tuple of indices specifying the source and sink vertices
  * \param filename file name of the Dimacs file
  *
  * \par Overview
@@ -154,6 +155,7 @@ void write_dimacs_file(const Matrix& mtx,
  * \tparam Stream stream type
  *
  * \param mtx a matrix container (e.g. \p csr_matrix or \p coo_matrix)
+ * \param t a tuple of indices specifying the source and sink vertices
  * \param output stream to which the Dimacs contents will be written
  *
  * \par Example

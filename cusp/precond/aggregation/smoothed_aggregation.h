@@ -39,8 +39,9 @@ namespace precond
 namespace aggregation
 {
 
-/*! \addtogroup preconditioners Preconditioners
- *  \ingroup preconditioners
+/*! \addtogroup iterative_solvers Iterative Solvers
+ *  \addtogroup preconditioners Preconditioners
+ *  \ingroup iterative_solvers
  *  \{
  */
 

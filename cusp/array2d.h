@@ -223,7 +223,7 @@ public:
     void resize(const size_t num_rows, const size_t num_cols, const size_t pitch);
 
     /*! This method swaps the contents of this array2d with another array2d.
-     *  \param v The array2d with which to swap.
+     *  \param matrix The array2d with which to swap.
      */
     void swap(array2d& matrix);
 
@@ -383,7 +383,7 @@ public:
      *  \tparam Array2 The type of values used to construct this array2d_view.
      *  \param num_rows The number of array2d_view rows.
      *  \param num_cols The number of array2d_view columns.
-     *  \param value The initial value of all entries.
+     *  \param values The initial value of all entries.
      *  \param pitch The stride between entries in the major dimension.
      */
     template <typename Array2>
@@ -471,9 +471,9 @@ make_array2d_view(size_t num_rows, size_t num_cols, size_t pitch, const cusp::ar
  */
 template <typename Array, typename Orientation>
 array2d_view<Array,Orientation>
-make_array2d_view(const array2d_view<Array, Orientation>& a)
+make_array2d_view(const array2d_view<Array, Orientation>& v)
 {
-    return array2d_view<Array,Orientation>(a);
+    return array2d_view<Array,Orientation>(v);
 }
 
 /**

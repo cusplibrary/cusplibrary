@@ -712,9 +712,8 @@ typename array1d<T,MemorySpace>::view make_array1d_view(array1d<T,MemorySpace>& 
 
 /**
  *  This is a convenience function for generating an array1d_view
- *  using an array1d_view
- *  \tparam T value_type of the array
- *  \tparam MemorySpace memory space of the array (cusp::host_memory or cusp::device_memory)
+ *  using a array1d_view
+ *  \tparam Iterator iterator of the array1d_view
  *  \param v The array1d_view used to construct array1d_view
  *  \return array1d_view constructed using input array1d_view
  */
@@ -724,6 +723,13 @@ typename array1d_view<Iterator>::view make_array1d_view(array1d_view<Iterator>& 
     return make_array1d_view(v.begin(), v.end());
 }
 
+/**
+ *  This is a convenience function for generating an array1d_view
+ *  using a const array1d_view
+ *  \tparam Iterator iterator of the array1d_view
+ *  \param v The array1d_view used to construct array1d_view
+ *  \return array1d_view constructed using input array1d_view
+ */
 template <typename Iterator>
 typename array1d_view<Iterator>::view make_array1d_view(const array1d_view<Iterator>& v)
 {

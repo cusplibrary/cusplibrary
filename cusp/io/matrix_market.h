@@ -74,7 +74,7 @@ void read_matrix_market_file(Matrix& mtx, const std::string& filename);
  * \tparam Stream stream type
  *
  * \param mtx a matrix container (e.g. \p csr_matrix or \p coo_matrix)
- * \param intput stream from which to read the MatrixMarket contents
+ * \param input stream from which to read the MatrixMarket contents
  *
  * \par Overview
  * \note any contents of \p mtx will be overwritten

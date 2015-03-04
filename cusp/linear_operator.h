@@ -110,14 +110,32 @@ namespace cusp
 template <typename ValueType, typename MemorySpace, typename IndexType=int>
 class linear_operator : public cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::unknown_format>
 {
+private:
+
     typedef cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::unknown_format> Parent;
+
 public:
-    linear_operator()
+
+    /*! Construct an empty \p linear_operator.
+     */
+    linear_operator(void)
         : Parent() {}
 
+    /*! Construct a \p linear_operator with a specific shape.
+     *
+     *  \param num_rows Number of rows.
+     *  \param num_cols Number of columns.
+     */
     linear_operator(IndexType num_rows, IndexType num_cols)
         : Parent(num_rows, num_cols) {}
 
+    /*! Construct a \p linear_operator with a specific shape and number of
+     * nonzero entries.
+     *
+     *  \param num_rows Number of rows.
+     *  \param num_cols Number of columns.
+     *  \param num_entries Number of nonzero entries.
+     */
     linear_operator(IndexType num_rows, IndexType num_cols, IndexType num_entries)
         : Parent(num_rows, num_cols, num_entries) {}
 }; // linear_operator
@@ -164,17 +182,34 @@ public:
 template <typename ValueType, typename MemorySpace, typename IndexType=int>
 class identity_operator : public linear_operator<ValueType,MemorySpace,IndexType>
 {
+private:
+
     typedef linear_operator<ValueType,MemorySpace> Parent;
+
 public:
 
-    identity_operator()
+    /*! Construct an empty \p identity_operator.
+     */
+    identity_operator(void)
         : Parent() {}
 
+    /*! Construct a \p identity_operator with a specific shape.
+     *
+     *  \param num_rows Number of rows.
+     *  \param num_cols Number of columns.
+     */
     identity_operator(IndexType num_rows, IndexType num_cols)
         : Parent(num_rows, num_cols) {}
 
-    template <typename VectorType1,
-             typename VectorType2>
+    /*! Apply the \p identity_operator to vector x and produce vector y.
+     *
+     * \tparam VectorType1 Type of the input vector
+     * \tparam VectorType2 Type of the output vector
+     *
+     *  \param x Input vector to copy.
+     *  \param y Output vector to produce.
+     */
+    template <typename VectorType1, typename VectorType2>
     void operator()(const VectorType1& x, VectorType2& y) const
     {
         cusp::blas::copy(x, y);
