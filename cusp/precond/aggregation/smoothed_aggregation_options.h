@@ -21,6 +21,7 @@
 #include <cusp/hyb_matrix.h>
 #include <cusp/transpose.h>
 #include <cusp/multiply.h>
+#include <cusp/linear_operator.h>
 
 #include <cusp/eigen/arnoldi.h>
 
@@ -42,12 +43,15 @@ namespace detail
 template <typename MatrixType>
 struct Dinv_A : public cusp::linear_operator<typename MatrixType::value_type, typename MatrixType::memory_space>
 {
+    typedef typename MatrixType::value_type   ValueType;
+    typedef typename MatrixType::memory_space MemorySpace;
+
     const MatrixType& A;
-    const cusp::precond::diagonal<typename MatrixType::value_type, typename MatrixType::memory_space> Dinv;
+    const cusp::precond::diagonal<ValueType,MemorySpace> Dinv;
 
     Dinv_A(const MatrixType& A)
         : A(A), Dinv(A),
-          cusp::linear_operator<typename MatrixType::value_type, typename MatrixType::memory_space>(A.num_rows, A.num_cols, A.num_entries + A.num_rows)
+          cusp::linear_operator<ValueType,MemorySpace>(A.num_rows, A.num_cols, A.num_entries + A.num_rows)
     {}
 
     template <typename Array1, typename Array2>
@@ -67,6 +71,36 @@ double estimate_rho_Dinv_A(const MatrixType& A)
 }
 
 } // end namespace detail
+
+template <typename IndexType, typename ValueType, typename MemorySpace>
+struct select_sa_matrix_type
+{
+  typedef cusp::csr_matrix<IndexType,ValueType,MemorySpace> CSRType;
+  typedef cusp::coo_matrix<IndexType,ValueType,MemorySpace> COOType;
+
+  typedef typename thrust::detail::eval_if<
+        thrust::detail::is_same<MemorySpace, cusp::host_memory>::value
+      , thrust::detail::identity_<CSRType>
+      , thrust::detail::identity_<COOType>
+    >::type type;
+};
+
+template <typename MatrixType>
+struct select_sa_matrix_view
+{
+  typedef typename MatrixType::memory_space MemorySpace;
+  typedef typename MatrixType::format       Format;
+
+  typedef typename thrust::detail::eval_if<
+        thrust::detail::is_same<MemorySpace, cusp::host_memory>::value
+      , typename thrust::detail::eval_if<
+          thrust::detail::is_same<Format, cusp::csr_format>::value
+          , thrust::detail::identity_<typename MatrixType::const_view>
+          , cusp::detail::as_csr_type<MatrixType>
+          >
+      , thrust::detail::identity_<typename MatrixType::const_coo_view_type>
+    >::type type;
+};
 
 template<typename MatrixType>
 struct sa_level
@@ -94,41 +128,26 @@ struct sa_level
     {}
 };
 
-template <typename IndexType, typename ValueType, typename MemorySpace>
-struct amg_container {};
-
-template <typename IndexType, typename ValueType>
-struct amg_container<IndexType,ValueType,cusp::host_memory>
-{
-    // use CSR on host
-    typedef typename cusp::csr_matrix<IndexType,ValueType,cusp::host_memory> setup_type;
-    typedef typename cusp::csr_matrix<IndexType,ValueType,cusp::host_memory> solve_type;
-};
-
-template <typename IndexType, typename ValueType>
-struct amg_container<IndexType,ValueType,cusp::device_memory>
-{
-    // use COO on device
-    typedef typename cusp::coo_matrix<IndexType,ValueType,cusp::device_memory> setup_type;
-    typedef typename cusp::hyb_matrix<IndexType,ValueType,cusp::device_memory> solve_type;
-};
-
 template<typename IndexType, typename ValueType, typename MemorySpace>
 class smoothed_aggregation_options
 {
-public:
+protected:
 
-    typedef typename amg_container<IndexType,ValueType,MemorySpace>::setup_type MatrixType;
+    typedef typename select_sa_matrix_type<IndexType,ValueType,MemorySpace>::type MatrixType;
     typedef cusp::array1d<IndexType,MemorySpace> IndexArray;
     typedef cusp::array1d<ValueType,MemorySpace> ValueArray;
+
+public:
 
     ValueType theta;
     ValueType omega;
     size_t min_level_size;
     size_t max_levels;
 
-    smoothed_aggregation_options(const ValueType theta = 0.0, const ValueType omega = 4.0/3.0,
-                                 const size_t min_level_size = 100, const size_t max_levels = 20)
+    smoothed_aggregation_options(const ValueType theta = 0.0,
+                                 const ValueType omega = 4.0/3.0,
+                                 const size_t min_level_size = 100,
+                                 const size_t max_levels = 20)
         : theta(theta), omega(omega), min_level_size(min_level_size), max_levels(max_levels)
     {}
 

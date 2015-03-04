@@ -23,12 +23,59 @@
 
 #include <cusp/detail/config.h>
 #include <cusp/detail/lu.h>
+#include <cusp/detail/type_traits.h>
 
 #include <cusp/array1d.h>
 #include <cusp/linear_operator.h>
 
+#include <cusp/precond/aggregation/smoother/jacobi_smoother.h>
+
+#include <thrust/detail/use_default.h>
+
 namespace cusp
 {
+namespace detail
+{
+  template <typename FormatType, typename MemorySpace>
+  struct select_format_type
+  {
+    typedef typename thrust::detail::eval_if<
+        thrust::detail::is_same<MemorySpace, cusp::host_memory>::value
+      , thrust::detail::identity_<cusp::csr_format>
+      , thrust::detail::identity_<cusp::hyb_format>
+      >::type DefaultFormat;
+
+    typedef typename thrust::detail::eval_if<
+          thrust::detail::is_same<FormatType, thrust::use_default>::value
+        , thrust::detail::identity_<DefaultFormat>
+        , thrust::detail::identity_<FormatType>
+      >::type type;
+  };
+
+  template <typename SmootherType, typename ValueType, typename MemorySpace>
+  struct select_smoother_type
+  {
+    typedef cusp::precond::aggregation::jacobi_smoother<ValueType,MemorySpace> JacobiSmoother;
+
+    typedef typename thrust::detail::eval_if<
+          thrust::detail::is_same<SmootherType, thrust::use_default>::value
+        , thrust::detail::identity_<JacobiSmoother>
+        , thrust::detail::identity_<SmootherType>
+      >::type type;
+  };
+
+  template <typename SolverType, typename ValueType, typename MemorySpace>
+  struct select_solver_type
+  {
+    typedef cusp::detail::lu_solver<ValueType,cusp::host_memory> LUSolver;
+
+    typedef typename thrust::detail::eval_if<
+          thrust::detail::is_same<SolverType, thrust::use_default>::value
+        , thrust::detail::identity_<LUSolver>
+        , thrust::detail::identity_<SolverType>
+      >::type type;
+  };
+} // end detail namespace
 
 /*! \addtogroup iterative_solvers Iterative Solvers
  *  \addtogroup preconditioners Preconditioners
@@ -41,17 +88,25 @@ namespace cusp
  *
  *  TODO
  */
-template <typename MatrixType, typename SmootherType, typename SolverType>
+template <typename IndexType,
+          typename ValueType,
+          typename MemorySpace,
+          typename FormatType   = thrust::use_default,
+          typename SmootherType = thrust::use_default,
+          typename SolverType   = thrust::use_default>
 class multilevel
-: public cusp::linear_operator<typename MatrixType::value_type, typename MatrixType::memory_space>
+: public cusp::linear_operator<ValueType,MemorySpace>
 {
+private:
+
+    typedef typename detail::select_format_type<FormatType,MemorySpace>::type                   Format;
+    typedef typename detail::matrix_type<IndexType,ValueType,MemorySpace,Format>::type          MatrixType;
+    typedef typename detail::select_smoother_type<SmootherType,ValueType,MemorySpace>::type     Smoother;
+    typedef typename detail::select_solver_type<SolverType,ValueType,MemorySpace>::type         Solver;
+
 public:
 
     /* \cond */
-    typedef typename MatrixType::index_type IndexType;
-    typedef typename MatrixType::value_type ValueType;
-    typedef typename MatrixType::memory_space MemorySpace;
-
     struct level
     {
         MatrixType R;  // restriction operator
@@ -61,7 +116,7 @@ public:
         cusp::array1d<ValueType,MemorySpace> b;               // per-level rhs
         cusp::array1d<ValueType,MemorySpace> residual;        // per-level residual
 
-        SmootherType smoother;
+        Smoother smoother;
 
         level(void) {}
 
@@ -73,17 +128,16 @@ public:
     };
     /* \endcond */
 
-    MatrixType  A;
     MatrixType* A_ptr;
 
-    SolverType solver;
+    Solver solver;
 
     std::vector<level> levels;
 
     multilevel(void) : A_ptr(NULL) {};
 
-    template <typename MatrixType2, typename SmootherType2, typename SolverType2>
-    multilevel(const multilevel<MatrixType2, SmootherType2, SolverType2>& M);
+    template <typename MemorySpace2, typename Format2, typename SmootherType2, typename SolverType2>
+    multilevel(const multilevel<IndexType,ValueType,MemorySpace2,Format2,SmootherType2,SolverType2>& M);
 
     template <typename Array1, typename Array2>
     void operator()(const Array1& x, Array2& y);
@@ -102,6 +156,8 @@ public:
 
 protected:
 
+    MatrixType A;
+
     template <typename Array1, typename Array2>
     void _solve(const Array1& b, Array2& x, const size_t i);
 
@@ -117,6 +173,8 @@ protected:
 
     template <typename MatrixType2>
     void copy_or_swap_matrix(MatrixType& dst, MatrixType2& src);
+
+    void initialize_coarse_solver(void);
 };
 /*! \}
  */

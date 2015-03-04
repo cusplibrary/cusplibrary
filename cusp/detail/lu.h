@@ -116,6 +116,9 @@ int lu_solve(const cusp::array2d<ValueType,MemorySpace,Orientation>& A,
 template <typename ValueType, typename MemorySpace>
 class lu_solver : public cusp::linear_operator<ValueType,MemorySpace>
 {
+private:
+    typedef cusp::linear_operator<ValueType,MemorySpace> Parent;
+
     cusp::array2d<ValueType,cusp::host_memory> lu;
     cusp::array1d<int,cusp::host_memory>       pivot;
 
@@ -124,13 +127,14 @@ public:
         : linear_operator<ValueType,MemorySpace>()
     { }
 
-    lu_solver(const lu_solver<ValueType,MemorySpace>& M)
-        : lu(M.lu), pivot(M.pivot), linear_operator<ValueType,MemorySpace>(M.num_rows, M.num_cols, M.num_entries)
+    template <typename ValueType2, typename MemorySpace2>
+    lu_solver(const lu_solver<ValueType2,MemorySpace2>& M)
+        : lu(M.lu), pivot(M.pivot), Parent(M.num_rows, M.num_cols, M.num_entries)
     { }
 
     template <typename MatrixType>
     lu_solver(const MatrixType& A)
-        : linear_operator<ValueType,MemorySpace>(A.num_rows, A.num_cols, A.num_entries)
+        : Parent(A.num_rows, A.num_cols, A.num_entries)
     {
         // TODO assert A is square
         lu = A;

@@ -28,6 +28,8 @@
 #include <cusp/precond/aggregation/smoothed_aggregation_options.h>
 #include <cusp/precond/aggregation/smoother/jacobi_smoother.h>
 
+#include <thrust/detail/use_default.h>
+
 #include <vector> // TODO replace with host_vector
 
 namespace cusp
@@ -42,21 +44,93 @@ namespace aggregation
  *  \{
  */
 
-/*! \p smoothed_aggregation : algebraic multigrid preconditoner based on
- *  smoothed aggregation
+/**
+ *  \brief Algebraic multigrid preconditoner based on smoothed aggregation
  *
+ *  \tparam IndexType Type used for matrix values (e.g. \c int or \c size_t).
+ *  \tparam ValueType Type used for matrix values (e.g. \c float or \c double).
+ *  \tparam MemorySpace A memory space (e.g. \c cusp::host_memory or \c cusp::device_memory)
+ *
+ *  \par Overview
+ *  Given a matrix \c A to precondition, the smoothed aggregation preconditioner
+ *  constructs a algebraic multigrid (AMG) operator.
+ *
+ *  Smoothed aggregation is expensive to use but is a very effective
+ *  preconditioning technique to solve challenging linear systems.
+ *  The default configuration uses a symmetric strength measure, MIS-based
+ *  aggregation in device memory, sequential aggregation in host_memory,
+ *  Jacobi smoothing is applied to the tentative prolongator, Jacobi relaxation
+ *  on each level of hierarchy and LU to solve the coarse matrix in host
+ *  memory.
+ *
+ *  \par Example
+ *  The following code snippet demonstrates how to use a
+ *  \p smoothed_aggregation preconditioner to solve a linear system.
+ *
+ *  \code
+ *  #include <cusp/csr_matrix.h>
+ *  #include <cusp/gallery/poisson.h>
+ *  #include <cusp/io/matrix_market.h>
+ *  #include <cusp/krylov/cg.h>
+ *  #include <cusp/precond/aggregation/smoothed_aggregation.h>
+ *
+ *  #include <iostream>
+ *
+ *  int main(int argc, char *argv[])
+ *  {
+ *      typedef int                 IndexType;
+ *      typedef double              ValueType;
+ *      typedef cusp::device_memory MemorySpace;
+ *
+ *      // create an empty sparse matrix structure
+ *      cusp::hyb_matrix<IndexType, ValueType, MemorySpace> A;
+ *
+ *      // construct 2d poisson matrix
+ *      IndexType N = 256;
+ *      cusp::gallery::poisson5pt(A, N, N);
+ *
+ *      std::cout << "Generated matrix (poisson5pt) "
+ *                << "with shape ("  << A.num_rows << "," << A.num_cols << ") and "
+ *                << A.num_entries << " entries" << "\n";
+ *
+ *      std::cout << "\nSolving with smoothed aggregation preconditioner and jacobi smoother" << std::endl;
+ *
+ *      cusp::precond::aggregation::smoothed_aggregation<IndexType, ValueType, MemorySpace> M(A);
+ *
+ *      // print AMG statistics
+ *      M.print();
+ *
+ *      // allocate storage for solution (x) and right hand side (b)
+ *      cusp::array1d<ValueType, MemorySpace> x(A.num_rows, 0);
+ *      cusp::array1d<ValueType, MemorySpace> b(A.num_rows, 1);
+ *
+ *      // set stopping criteria (iteration_limit = 1000, relative_tolerance = 1e-10)
+ *      cusp::monitor<ValueType> monitor(b, 1000, 1e-10);
+ *
+ *      // solve
+ *      cusp::krylov::cg(A, x, b, monitor, M);
+ *
+ *      // report status
+ *      monitor.print();
+ *
+ *      return 0;
+ *  }
+ *  \endcode
  */
-template <typename IndexType, typename ValueType, typename MemorySpace,
-	  typename SmootherType = jacobi_smoother<ValueType,MemorySpace>,
-	  typename SolverType = cusp::detail::lu_solver<ValueType,cusp::host_memory> >
+template <typename IndexType,
+          typename ValueType,
+          typename MemorySpace,
+	        typename SmootherType = thrust::use_default,
+	        typename SolverType   = thrust::use_default,
+          typename Format       = thrust::use_default>
 class smoothed_aggregation :
-  public cusp::multilevel< typename amg_container<IndexType,ValueType,MemorySpace>::solve_type, SmootherType, SolverType>
+  public cusp::multilevel<IndexType,ValueType,MemorySpace,Format,SmootherType,SolverType>
 {
   private:
-    typedef typename amg_container<IndexType,ValueType,MemorySpace>::setup_type SetupMatrixType;
-    typedef typename amg_container<IndexType,ValueType,MemorySpace>::solve_type SolveMatrixType;
-    typedef smoothed_aggregation_options<IndexType,ValueType,MemorySpace>       SAOptionsType;
-    typedef cusp::multilevel<SolveMatrixType,SmootherType,SolverType>           Parent;
+
+    typedef smoothed_aggregation_options<IndexType,ValueType,MemorySpace>                      SAOptionsType;
+    typedef typename select_sa_matrix_type<IndexType,ValueType,MemorySpace>::type              SetupMatrixType;
+    typedef cusp::multilevel<IndexType,ValueType,MemorySpace,Format,SmootherType,SolverType>   Parent;
 
   public:
 
@@ -73,8 +147,8 @@ class smoothed_aggregation :
     smoothed_aggregation(const MatrixType& A, const ArrayType& B, const SAOptionsType& sa_options = SAOptionsType(),
                          typename thrust::detail::enable_if_convertible<typename ArrayType::format,cusp::array1d_format>::type* = 0);
 
-    template <typename MemorySpace2,typename SmootherType2,typename SolverType2>
-    smoothed_aggregation(const smoothed_aggregation<IndexType,ValueType,MemorySpace2,SmootherType2,SolverType2>& M);
+    template <typename MemorySpace2,typename SmootherType2,typename SolverType2,typename Format2>
+    smoothed_aggregation(const smoothed_aggregation<IndexType,ValueType,MemorySpace2,SmootherType2,SolverType2,Format2>& M);
 
     template <typename MatrixType>
     void sa_initialize(const MatrixType& A);

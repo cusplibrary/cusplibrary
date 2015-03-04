@@ -21,24 +21,37 @@
 namespace cusp
 {
 
-template <typename MatrixType, typename SmootherType, typename SolverType>
-void multilevel<MatrixType,SmootherType,SolverType>
+template <typename IndexType, typename ValueType, typename MemorySpace, typename Format, typename SmootherType, typename SolverType>
+template <typename MemorySpace2, typename Format2, typename SmootherType2, typename SolverType2>
+multilevel<IndexType,ValueType,MemorySpace,Format,SmootherType,SolverType>
+::multilevel(const multilevel<IndexType,ValueType,MemorySpace2,Format2,SmootherType2,SolverType2>& M)
+    : solver(M.solver)
+{
+    for( size_t lvl = 0; lvl < M.levels.size(); lvl++ )
+        levels.push_back(M.levels[lvl]);
+
+    levels[0].A = *M.A_ptr;
+    A_ptr = &levels[0].A;
+}
+
+template <typename IndexType, typename ValueType, typename MemorySpace, typename Format, typename SmootherType, typename SolverType>
+void multilevel<IndexType,ValueType,MemorySpace,Format,SmootherType,SolverType>
 ::copy_or_swap_matrix(MatrixType& dst, MatrixType& src)
 {
     dst.swap(src);
 }
 
-template <typename MatrixType, typename SmootherType, typename SolverType>
+template <typename IndexType, typename ValueType, typename MemorySpace, typename Format, typename SmootherType, typename SolverType>
 template <typename MatrixType2>
-void multilevel<MatrixType,SmootherType,SolverType>
+void multilevel<IndexType,ValueType,MemorySpace,Format,SmootherType,SolverType>
 ::copy_or_swap_matrix(MatrixType& dst, MatrixType2& src)
 {
     dst = src;
 }
 
-template <typename MatrixType, typename SmootherType, typename SolverType>
+template <typename IndexType, typename ValueType, typename MemorySpace, typename Format, typename SmootherType, typename SolverType>
 template <typename MatrixType2, typename Level>
-void multilevel<MatrixType,SmootherType,SolverType>
+void multilevel<IndexType,ValueType,MemorySpace,Format,SmootherType,SolverType>
 ::setup_level(const size_t lvl, const MatrixType2& A, const Level& L)
 {
     size_t N = A.num_rows;
@@ -57,47 +70,41 @@ void multilevel<MatrixType,SmootherType,SolverType>
     levels[lvl].smoother.initialize(A, L);
 }
 
-template <typename MatrixType, typename SmootherType, typename SolverType>
+template <typename IndexType, typename ValueType, typename MemorySpace, typename Format, typename SmootherType, typename SolverType>
 template <typename MatrixType2>
-void multilevel<MatrixType,SmootherType,SolverType>
+void multilevel<IndexType,ValueType,MemorySpace,Format,SmootherType,SolverType>
 ::set_multilevel_matrix(const MatrixType2& A)
 {
     this->A = A;
     A_ptr = &this->A;
 }
 
-template <typename MatrixType, typename SmootherType, typename SolverType>
-void multilevel<MatrixType,SmootherType,SolverType>
+template <typename IndexType, typename ValueType, typename MemorySpace, typename Format, typename SmootherType, typename SolverType>
+void multilevel<IndexType,ValueType,MemorySpace,Format,SmootherType,SolverType>
 ::set_multilevel_matrix(const MatrixType& A)
 {
     A_ptr = const_cast<MatrixType*>(&A);
 }
 
-template <typename MatrixType, typename SmootherType, typename SolverType>
-template <typename MatrixType2, typename SmootherType2, typename SolverType2>
-multilevel<MatrixType,SmootherType,SolverType>
-::multilevel(const multilevel<MatrixType2,SmootherType2,SolverType2>& M)
-    : solver(M.solver)
+template <typename IndexType, typename ValueType, typename MemorySpace, typename Format, typename SmootherType, typename SolverType>
+void multilevel<IndexType,ValueType,MemorySpace,Format,SmootherType,SolverType>
+::initialize_coarse_solver(void)
 {
-    for( size_t lvl = 0; lvl < M.levels.size(); lvl++ )
-        levels.push_back(M.levels[lvl]);
-
-    levels[0].A = *M.A_ptr;
-    A_ptr = &levels[0].A;
+  solver = Solver(levels.back().A);
 }
 
-template <typename MatrixType, typename SmootherType, typename SolverType>
+template <typename IndexType, typename ValueType, typename MemorySpace, typename Format, typename SmootherType, typename SolverType>
 template <typename Array1, typename Array2>
-void multilevel<MatrixType,SmootherType,SolverType>
+void multilevel<IndexType,ValueType,MemorySpace,Format,SmootherType,SolverType>
 ::operator()(const Array1& b, Array2& x)
 {
     // perform 1 V-cycle
     _solve(b, x, 0);
 }
 
-template <typename MatrixType, typename SmootherType, typename SolverType>
+template <typename IndexType, typename ValueType, typename MemorySpace, typename Format, typename SmootherType, typename SolverType>
 template <typename Array1, typename Array2>
-void multilevel<MatrixType,SmootherType,SolverType>
+void multilevel<IndexType,ValueType,MemorySpace,Format,SmootherType,SolverType>
 ::solve(const Array1& b, Array2& x)
 {
     cusp::monitor<ValueType> monitor(b);
@@ -105,9 +112,9 @@ void multilevel<MatrixType,SmootherType,SolverType>
     solve(b, x, monitor);
 }
 
-template <typename MatrixType, typename SmootherType, typename SolverType>
+template <typename IndexType, typename ValueType, typename MemorySpace, typename Format, typename SmootherType, typename SolverType>
 template <typename Array1, typename Array2, typename Monitor>
-void multilevel<MatrixType,SmootherType,SolverType>
+void multilevel<IndexType,ValueType,MemorySpace,Format,SmootherType,SolverType>
 ::solve(const Array1& b, Array2& x, Monitor& monitor)
 {
     const size_t N = A_ptr->num_rows;
@@ -134,9 +141,9 @@ void multilevel<MatrixType,SmootherType,SolverType>
     }
 }
 
-template <typename MatrixType, typename SmootherType, typename SolverType>
+template <typename IndexType, typename ValueType, typename MemorySpace, typename Format, typename SmootherType, typename SolverType>
 template <typename Array1, typename Array2>
-void multilevel<MatrixType,SmootherType,SolverType>
+void multilevel<IndexType,ValueType,MemorySpace,Format,SmootherType,SolverType>
 ::_solve(const Array1& b, Array2& x, const size_t i)
 {
     if (i + 1 == levels.size())
@@ -185,8 +192,8 @@ void multilevel<MatrixType,SmootherType,SolverType>
     }
 }
 
-template <typename MatrixType, typename SmootherType, typename SolverType>
-void multilevel<MatrixType,SmootherType,SolverType>
+template <typename IndexType, typename ValueType, typename MemorySpace, typename Format, typename SmootherType, typename SolverType>
+void multilevel<IndexType,ValueType,MemorySpace,Format,SmootherType,SolverType>
 ::print( void )
 {
     size_t num_levels = levels.size();
@@ -215,8 +222,8 @@ void multilevel<MatrixType,SmootherType,SolverType>
     }
 }
 
-template <typename MatrixType, typename SmootherType, typename SolverType>
-double multilevel<MatrixType,SmootherType,SolverType>
+template <typename IndexType, typename ValueType, typename MemorySpace, typename Format, typename SmootherType, typename SolverType>
+double multilevel<IndexType,ValueType,MemorySpace,Format,SmootherType,SolverType>
 ::operator_complexity( void )
 {
     size_t nnz = A_ptr->num_entries;
@@ -227,8 +234,8 @@ double multilevel<MatrixType,SmootherType,SolverType>
     return (double) nnz / (double) A_ptr->num_entries;
 }
 
-template <typename MatrixType, typename SmootherType, typename SolverType>
-double multilevel<MatrixType,SmootherType,SolverType>
+template <typename IndexType, typename ValueType, typename MemorySpace, typename Format, typename SmootherType, typename SolverType>
+double multilevel<IndexType,ValueType,MemorySpace,Format,SmootherType,SolverType>
 ::grid_complexity( void )
 {
     size_t unknowns = A_ptr->num_rows;
