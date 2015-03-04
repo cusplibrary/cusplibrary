@@ -9,11 +9,15 @@
 
 #include "../timer.h"
 
+using namespace cusp::precond::aggregation;
+
 template<typename IndexType, typename ValueType, typename MemorySpace>
 class unsmoothed_aggregation_options
-    : public cusp::precond::aggregation::smoothed_aggregation_options<IndexType,ValueType,MemorySpace>
+    : public smoothed_aggregation_options<IndexType,ValueType,MemorySpace>
 {
-    typedef cusp::precond::aggregation::smoothed_aggregation_options<IndexType,ValueType,MemorySpace> Parent;
+protected:
+
+    typedef smoothed_aggregation_options<IndexType,ValueType,MemorySpace> Parent;
     typedef typename Parent::MatrixType MatrixType;
 
 public:
@@ -58,11 +62,13 @@ int main(int argc, char ** argv)
     // create an empty sparse matrix structure
     cusp::csr_matrix<IndexType, ValueType, MemorySpace> A;
 
-    size_t N = 128;
+    size_t N = 1024;
 
     // create 2D Poisson problem
-    /* cusp::gallery::poisson5pt(A, N, N); */
-    cusp::gallery::diffusion<cusp::gallery::FE>(A, N, N);
+    cusp::gallery::poisson5pt(A, N, N);
+
+    std::cout << "Constructed test matrix with shape ("  << A.num_rows << "," << A.num_cols << ") and "
+              << A.num_entries << " entries" << std::endl;
 
     // solve without preconditioning
     {

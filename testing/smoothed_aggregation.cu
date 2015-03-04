@@ -18,7 +18,7 @@ void TestStandardAggregation(void)
 {
     // TODO make this test something, possibly disjoint things that must aggregate
 
-    typedef typename cusp::precond::aggregation::amg_container<int,float,MemorySpace>::setup_type SetupMatrixType;
+    typedef typename cusp::precond::aggregation::select_sa_matrix_type<int,float,MemorySpace>::type SetupMatrixType;
 
     SetupMatrixType A;
     cusp::gallery::poisson5pt(A, 10, 10);
@@ -68,7 +68,7 @@ DECLARE_HOST_DEVICE_UNITTEST(TestEstimateRhoDinvA);
 template <typename MemorySpace>
 void TestFitCandidates(void)
 {
-    typedef typename cusp::precond::aggregation::amg_container<int,float,MemorySpace>::setup_type SetupMatrixType;
+    typedef typename cusp::precond::aggregation::select_sa_matrix_type<int,float,MemorySpace>::type SetupMatrixType;
 
     // 2 aggregates with 2 nodes each
     {
@@ -141,7 +141,7 @@ DECLARE_HOST_DEVICE_UNITTEST(TestFitCandidates);
 template <class MemorySpace>
 void TestSmoothProlongator(void)
 {
-    typedef typename cusp::precond::aggregation::amg_container<int,float,MemorySpace>::setup_type SetupMatrixType;
+    typedef typename cusp::precond::aggregation::select_sa_matrix_type<int,float,MemorySpace>::type SetupMatrixType;
 
     // simple example with diagonal S
     {
