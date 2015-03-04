@@ -74,6 +74,9 @@ void sort_by_row(const thrust::detail::execution_policy_base<DerivedPolicy> &exe
  *      // sort A by row
  *      cusp::sort_by_row(A.row_indices, A.column_indices, A.values);
  *
+ *      // print the sorted matrix
+ *      cusp::print(A);
+ *
  *      return 0;
  *  }
  *  \endcode
@@ -122,6 +125,9 @@ void sort_by_row_and_column(const thrust::detail::execution_policy_base<DerivedP
  *
  *      // sort A by row
  *      cusp::sort_by_row_and_column(A.row_indices, A.column_indices, A.values);
+ *
+ *      // print the sorted matrix
+ *      cusp::print(A);
  *
  *      return 0;
  *  }

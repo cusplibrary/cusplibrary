@@ -26,17 +26,6 @@
 
 namespace cusp
 {
-/*! \cond */
-namespace precond
-{
-namespace aggregation
-{
-// forward definitions
-template<typename MatrixType> struct sa_level;
-} // end namespace aggregation
-} // end namespace precond
-/*! \endcond */
-
 namespace relaxation
 {
 

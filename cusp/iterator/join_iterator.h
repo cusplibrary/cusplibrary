@@ -43,7 +43,7 @@ namespace cusp
  *
  * \par Overview
  * \p join_iterator is an iterator which represents a pointer into
- *  a concatenated range entries from two underlying arrays. This iterator
+ *  a concatenated range of entries from two underlying arrays. This iterator
  *  is useful for creating a single range of permuted entries from two
  *  different iterators.
  *
@@ -69,10 +69,14 @@ namespace cusp
  *    typedef cusp::array1d<int,cusp::device_memory>::iterator                       ArrayIterator;
  *    typedef cusp::join_iterator<CountingIterator,ConstantIterator,ArrayIterator>   JoinIterator;
  *
+ *    // a = [0, 1, 2, 3]
  *    CountingArray a(4);
+ *    // b = [10, 10, 10, 10, 10]
  *    ConstantArray b(5, 10);
  *    cusp::array1d<int,cusp::device_memory> indices(a.size() + b.size());
+ *    // set indices to a sequence for simple in order access
  *    thrust::sequence(indices.begin(), indices.end());
+ *    // iter = [0, 1, 2, 3, 10, 10, 10, 10, 10]
  *    JoinIterator iter(a.begin(), a.end(), b.begin(), b.end(), indices.begin());
  *
  *    std::cout << iter[0] << std::endl;   // returns 0
