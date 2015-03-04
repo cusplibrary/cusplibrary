@@ -43,7 +43,8 @@ struct is_elementwiseable
       thrust::detail::and_<
           thrust::detail::is_same<format1,format2>,
           thrust::detail::is_same<format2,format3> >::value,
-            thrust::detail::or_< is_coo<MatrixType1>, is_csr<MatrixType1>, is_array2d<MatrixType1> >,
+            // thrust::detail::or_< is_coo<MatrixType1>, is_csr<MatrixType1>, is_array2d<MatrixType1> >,
+            thrust::detail::or_< is_coo<MatrixType1>, is_array2d<MatrixType1> >,
           thrust::detail::identity_<thrust::detail::false_type>
       >::type type;
 };

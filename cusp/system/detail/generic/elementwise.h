@@ -31,11 +31,10 @@ namespace generic
 
 template <typename DerivedPolicy,
           typename MatrixType1, typename MatrixType2, typename MatrixType3,
-          typename BinaryFunction,
-          typename Format>
+          typename BinaryFunction>
 void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
                  const MatrixType1& A, const MatrixType2& B, MatrixType3& C,
-                 BinaryFunction op, Format& format);
+                 BinaryFunction op, cusp::coo_format);
 
 } // end namespace generic
 } // end namespace detail
