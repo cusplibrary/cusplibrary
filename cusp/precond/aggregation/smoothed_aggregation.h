@@ -26,7 +26,6 @@
 
 #include <cusp/eigen/spectral_radius.h>
 #include <cusp/precond/aggregation/smoothed_aggregation_options.h>
-#include <cusp/precond/aggregation/smoother/jacobi_smoother.h>
 
 #include <thrust/detail/use_default.h>
 

@@ -23,7 +23,11 @@
 
 #include <cusp/detail/config.h>
 
-#include <cusp/relaxation/sor.h>
+#include <cusp/format_utils.h>
+#include <cusp/precond/aggregation/smoothed_aggregation_options.h>
+#include <cusp/relaxation/jacobi.h>
+
+#include <thrust/transform.h>
 
 namespace cusp
 {
@@ -32,63 +36,66 @@ namespace precond
 namespace aggregation
 {
 
+template <typename ValueType>
+struct jacobi_presmooth_functor
+{
+    ValueType omega;
+
+    jacobi_presmooth_functor(ValueType omega) : omega(omega) {}
+
+    __host__ __device__
+    ValueType operator()(const ValueType& b, const ValueType& d) const
+    {
+        return omega * b / d;
+    }
+};
+
 /*! \addtogroup preconditioners Preconditioners
  *  \ingroup preconditioners
  *  \{
  */
 
 template <typename ValueType, typename MemorySpace>
-class sor_smoother
+class jacobi_smoother
 {
+private:
+
+    typedef cusp::relaxation::jacobi<ValueType,MemorySpace> BaseSmoother;
+
 public:
     size_t num_iters;
-    cusp::relaxation::sor<ValueType,MemorySpace> M;
+    BaseSmoother M;
 
-    sor_smoother(void) {}
+    jacobi_smoother(void) {}
 
     template <typename ValueType2, typename MemorySpace2>
-    gauss_seidel_smoother(const gauss_seidel_smoother<ValueType2,MemorySpace2>& A)
-        : num_iters(A.num_iters), M(A.M) {}
+    jacobi_smoother(const jacobi_smoother<ValueType2,MemorySpace2>& A) : num_iters(A.num_iters), M(A.M) {}
 
-    template <typename MatrixType1, typename MatrixType2>
-    gauss_seidel_smoother(const MatrixType1& A, const sa_level<MatrixType2>& L)
+    template <typename MatrixType, typename Level>
+    jacobi_smoother(const MatrixType& A, const Level& L, ValueType weight=4.0/3.0)
     {
-        initialize(A, L);
+        initialize(A, L, weight);
     }
 
-    template <typename MatrixType1, typename MatrixType2>
-    void initialize(const MatrixType1& A, const sa_level<MatrixType2>& L, ValueType omega=4.0/3.0)
+    template <typename MatrixType, typename Level>
+    void initialize(const MatrixType& A, const Level& L, ValueType weight=4.0/3.0)
     {
-        M.default_omega = omega;
+        num_iters = L.num_iters;
 
-        M.temp.resize(A.num_rows);
-        M.gs.ordering.resize(A.num_rows);
-        M.gs.color_offsets.resize(A.num_rows);
-
-        cusp::array1d<int,MemorySpace> colors(A.num_rows);
-        int max_colors = cusp::graph::vertex_coloring(A, colors);
-
-        thrust::sequence(M.gs.ordering.begin(), M.gs.ordering.end());
-        thrust::sort_by_key(colors.begin(), colors.end(), M.gs.ordering.begin());
-
-        cusp::array1d<int,MemorySpace> temp(max_colors + 1);
-        thrust::reduce_by_key(colors.begin(),
-                              colors.end(),
-                              thrust::constant_iterator<int>(1),
-                              thrust::make_discard_iterator(),
-                              temp.begin());
-        thrust::exclusive_scan(temp.begin(), temp.end(), temp.begin(), 0);
-        M.gs.color_offsets = temp;
-
-        cusp::extract_diagonal(A, M.gs.diagonal);
+        if(L.rho_DinvA == ValueType(0))
+            M = BaseSmoother(A, weight / detail::estimate_rho_Dinv_A(A));
+        else
+            M = BaseSmoother(A, weight / L.rho_DinvA);
     }
 
-    // smooths initial x
+    // ignores initial x
     template<typename MatrixType, typename VectorType1, typename VectorType2>
     void presmooth(const MatrixType& A, const VectorType1& b, VectorType2& x)
     {
         for(size_t i = 0; i < num_iters; i++)
-            M(A, b, x);
+          // x <- omega * D^-1 * b
+          thrust::transform(b.begin(), b.end(), M.diagonal.begin(), x.begin(),
+                            jacobi_presmooth_functor<ValueType>(M.default_omega));
     }
 
     // smooths initial x
@@ -96,7 +103,7 @@ public:
     void postsmooth(const MatrixType& A, const VectorType1& b, VectorType2& x)
     {
         for(size_t i = 0; i < num_iters; i++)
-            M(A, b, x);
+          M(A, b, x);
     }
 };
 /*! \}

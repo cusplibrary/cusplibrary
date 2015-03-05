@@ -28,7 +28,7 @@
 #include <cusp/array1d.h>
 #include <cusp/linear_operator.h>
 
-#include <cusp/precond/aggregation/smoother/jacobi_smoother.h>
+#include <cusp/precond/smoother/jacobi_smoother.h>
 
 #include <thrust/detail/use_default.h>
 

@@ -44,6 +44,10 @@ namespace aggregation
 template <typename ValueType, typename MemorySpace>
 class polynomial_smoother
 {
+private:
+
+    typedef cusp::relaxation::polynomial<ValueType,MemorySpace> BaseSmoother;
+
 public:
     size_t num_iters;
     cusp::relaxation::polynomial<ValueType,MemorySpace> M;
@@ -53,28 +57,17 @@ public:
     template <typename ValueType2, typename MemorySpace2>
     polynomial_smoother(const polynomial_smoother<ValueType2,MemorySpace2>& A) : num_iters(A.num_iters), M(A.M) {}
 
-    template <typename MatrixType1, typename MatrixType2>
-    polynomial_smoother(const MatrixType1& A, const sa_level<MatrixType2>& L)
+    template <typename MatrixType, typename Level>
+    polynomial_smoother(const MatrixType& A, const Level& L)
     {
         initialize(A, L);
     }
 
-    template <typename MatrixType1, typename MatrixType2>
-    void initialize(const MatrixType1& A, const sa_level<MatrixType2>& L)
+    template <typename MatrixType, typename Level>
+    void initialize(const MatrixType& A, const Level& L)
     {
-        size_t N = A.num_rows;
-
         num_iters = L.num_iters;
-
-        M.h.resize(N);
-        M.y.resize(N);
-        M.residual.resize(N);
-
-        ValueType rho = cusp::eigen::ritz_spectral_radius(A, 8, true);
-        cusp::relaxation::detail::chebyshev_polynomial_coefficients(rho, M.default_coefficients);
-        M.default_coefficients.resize( M.default_coefficients.size() - 1 );
-
-        cusp::blas::scal(M.default_coefficients, -1);
+        M = BaseSmoother(A);
     }
 
     // ignores initial x

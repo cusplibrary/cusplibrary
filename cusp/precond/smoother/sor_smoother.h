@@ -23,17 +23,7 @@
 
 #include <cusp/detail/config.h>
 
-#include <cusp/array1d.h>
-#include <cusp/format_utils.h>
-#include <cusp/graph/vertex_coloring.h>
-#include <cusp/relaxation/gauss_seidel.h>
-
-#include <thrust/reduce.h>
-#include <thrust/sequence.h>
-#include <thrust/sort.h>
-
-#include <thrust/iterator/constant_iterator.h>
-#include <thrust/iterator/discard_iterator.h>
+#include <cusp/relaxation/sor.h>
 
 namespace cusp
 {
@@ -48,46 +38,37 @@ namespace aggregation
  */
 
 template <typename ValueType, typename MemorySpace>
-class gauss_seidel_smoother
+class sor_smoother
 {
+private:
+
+    typedef cusp::relaxation::sor<ValueType,MemorySpace> BaseSmoother;
+
 public:
     size_t num_iters;
-    cusp::relaxation::gauss_seidel<ValueType,MemorySpace> M;
+    BaseSmoother M;
 
-    gauss_seidel_smoother(void) {}
+    sor_smoother(void) {}
 
     template <typename ValueType2, typename MemorySpace2>
-    gauss_seidel_smoother(const gauss_seidel_smoother<ValueType2,MemorySpace2>& A)
-      : num_iters(A.num_iters), M(A.M) {}
+    sor_smoother(const gauss_seidel_smoother<ValueType2,MemorySpace2>& A)
+        : num_iters(A.num_iters), M(A.M) {}
 
-    template <typename MatrixType1, typename MatrixType2>
-    gauss_seidel_smoother(const MatrixType1& A, const sa_level<MatrixType2>& L)
+    template <typename MatrixType, typename Level>
+    sor_smoother(const MatrixType& A, const Level& L)
     {
         initialize(A, L);
     }
 
-    template <typename MatrixType1, typename MatrixType2>
-    void initialize(const MatrixType1& A, const sa_level<MatrixType2>& L)
+    template <typename MatrixType, typename Level>
+    void initialize(const MatrixType& A, const Level& L, ValueType weight=4.0/3.0)
     {
-        M.ordering.resize(A.num_rows);
-        M.color_offsets.resize(A.num_rows);
+        num_iters = L.num_iters;
 
-        cusp::array1d<int,MemorySpace> colors(A.num_rows);
-        int max_colors = cusp::graph::vertex_coloring(A, colors);
-
-        thrust::sequence(M.ordering.begin(), M.ordering.end());
-        thrust::sort_by_key(colors.begin(), colors.end(), M.ordering.begin());
-
-        cusp::array1d<int,MemorySpace> temp(max_colors + 1);
-        thrust::reduce_by_key(colors.begin(),
-                              colors.end(),
-                              thrust::constant_iterator<int>(1),
-                              thrust::make_discard_iterator(),
-                              temp.begin());
-        thrust::exclusive_scan(temp.begin(), temp.end(), temp.begin(), 0);
-        M.color_offsets = temp;
-
-        cusp::extract_diagonal(A, M.diagonal);
+        if(L.rho_DinvA == ValueType(0))
+            M = BaseSmoother(A, weight / detail::estimate_rho_Dinv_A(A));
+        else
+            M = BaseSmoother(A, weight / L.rho_DinvA);
     }
 
     // smooths initial x
