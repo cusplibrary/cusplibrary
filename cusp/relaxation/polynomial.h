@@ -115,6 +115,17 @@ public:
     polynomial(void){}
 
     /*! This constructor creates a \p polynomial smoother using a given
+     *  matrix.
+     *
+     *  \tparam MatrixType Type of input matrix used to create this \p
+     *  polynomial smoother.
+     *
+     *  \param A Input matrix used to create smoother.
+     */
+    template <typename MatrixType>
+    polynomial(const MatrixType& A);
+
+    /*! This constructor creates a \p polynomial smoother using a given
      *  matrix and coefficients.
      *
      *  \tparam MatrixType Type of input matrix used to create this \p

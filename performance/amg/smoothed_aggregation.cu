@@ -3,7 +3,8 @@
 #include <cusp/gallery/poisson.h>
 #include <cusp/krylov/cg.h>
 #include <cusp/precond/aggregation/smoothed_aggregation.h>
-#include <cusp/precond/aggregation/smoother/polynomial_smoother.h>
+#include <cusp/precond/smoother/gauss_seidel_smoother.h>
+#include <cusp/precond/smoother/polynomial_smoother.h>
 
 #include <iostream>
 
@@ -60,7 +61,7 @@ int main(int argc, char ** argv)
     typedef cusp::device_memory MemorySpace;
 
     // create an empty sparse matrix structure
-    cusp::csr_matrix<IndexType, ValueType, MemorySpace> A;
+    cusp::hyb_matrix<IndexType, ValueType, MemorySpace> A;
 
     size_t N = 1024;
 
@@ -112,6 +113,21 @@ int main(int argc, char ** argv)
         std::cout << "constructed hierarchy in " << t0.milliseconds_elapsed() << " ms " << std::endl;
 
         run_amg(A,M);
+    }
+
+    // solve with smoothed aggregation algebraic multigrid preconditioner and gauss-seidel smoother
+    {
+        typedef cusp::precond::aggregation::gauss_seidel_smoother<ValueType,MemorySpace> Smoother;
+        std::cout << "\nSolving with smoothed aggregation preconditioner and gauss-seidel smoother" << std::endl;
+
+        // Input matrix must be in CSR format for GS smoother
+        cusp::csr_matrix<IndexType, ValueType, MemorySpace> A_csr(A);
+
+        timer t0;
+        cusp::precond::aggregation::smoothed_aggregation<IndexType, ValueType, MemorySpace, Smoother, thrust::use_default, cusp::csr_format> M(A_csr);
+        std::cout << "constructed hierarchy in " << t0.milliseconds_elapsed() << " ms " << std::endl;
+
+        run_amg(A_csr,M);
     }
 
     // solve with unsmoothed aggregation algebraic multigrid preconditioner and polynomial smoother
