@@ -112,6 +112,7 @@ struct sa_level
     typedef typename MatrixType::memory_space MemorySpace;
 
     MatrixType A_; 					                              // matrix
+    MatrixType T; 					                              // matrix
     cusp::array1d<IndexType,MemorySpace> aggregates;      // aggregates
     cusp::array1d<ValueType,MemorySpace> B;               // near-nullspace candidates
 

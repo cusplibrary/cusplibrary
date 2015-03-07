@@ -121,11 +121,10 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverTyp
     cusp::array1d<ValueType,MemorySpace>  B_coarse;
     {
         // compute tenative prolongator and coarse nullspace vector
-        SetupMatrixType 				T;
-        sa_options.fit_candidates(aggregates, sa_levels.back().B, T, B_coarse);
+        sa_options.fit_candidates(aggregates, sa_levels.back().B, sa_levels.back().T, B_coarse);
 
         // compute prolongation operator
-        sa_options.smooth_prolongator(A, T, P, sa_levels.back().rho_DinvA);  // TODO if C != A then compute rho_Dinv_C
+        sa_options.smooth_prolongator(A, sa_levels.back().T, P, sa_levels.back().rho_DinvA);  // TODO if C != A then compute rho_Dinv_C
     }
 
     // compute restriction operator (transpose of prolongator)

@@ -128,12 +128,12 @@ class smoothed_aggregation :
 {
   private:
 
-    typedef smoothed_aggregation_options<IndexType,ValueType,MemorySpace>                      SAOptionsType;
     typedef typename select_sa_matrix_type<IndexType,ValueType,MemorySpace>::type              SetupMatrixType;
     typedef cusp::multilevel<IndexType,ValueType,MemorySpace,Format,SmootherType,SolverType>   Parent;
 
   public:
 
+    typedef smoothed_aggregation_options<IndexType,ValueType,MemorySpace>                      SAOptionsType;
     const SAOptionsType & sa_options;
     std::vector< sa_level<SetupMatrixType> > sa_levels;
 
