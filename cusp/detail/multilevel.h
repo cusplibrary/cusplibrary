@@ -164,10 +164,11 @@ protected:
     template <typename MatrixType2, typename Level>
     void setup_level(const size_t lvl, const MatrixType2& A, const Level& L);
 
-    void set_multilevel_matrix(const MatrixType& A);
+    template <typename Level>
+    void set_multilevel_matrix(const MatrixType& A, const Level& L);
 
-    template <typename MatrixType2>
-    void set_multilevel_matrix(const MatrixType2& A);
+    template <typename MatrixType2, typename Level>
+    void set_multilevel_matrix(const MatrixType2& A, const Level& L);
 
     void copy_or_swap_matrix(MatrixType& dst, MatrixType& src);
 

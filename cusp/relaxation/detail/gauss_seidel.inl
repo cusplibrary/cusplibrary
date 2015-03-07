@@ -30,7 +30,8 @@ namespace relaxation
 template <typename ValueType, typename MemorySpace>
 template<typename MatrixType>
 gauss_seidel<ValueType,MemorySpace>
-::gauss_seidel(const MatrixType& A, sweep default_direction)
+::gauss_seidel(const MatrixType& A, sweep default_direction,
+               typename thrust::detail::enable_if_convertible<typename MatrixType::format,cusp::csr_format>::type*)
     : ordering(A.num_rows), default_direction(default_direction)
 {
     cusp::array1d<int,MemorySpace> colors(A.num_rows);
