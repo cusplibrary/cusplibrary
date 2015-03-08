@@ -20,11 +20,13 @@
 
 #include <cusp/format_utils.h>
 
+#include <thrust/binary_search.h>
+#include <thrust/fill.h>
 #include <thrust/gather.h>
+#include <thrust/reduce.h>
 #include <thrust/scan.h>
 #include <thrust/scatter.h>
 #include <thrust/transform.h>
-#include <thrust/reduce.h>
 #include <thrust/inner_product.h>
 #include <thrust/iterator/zip_iterator.h>
 #include <thrust/iterator/permutation_iterator.h>
