@@ -34,9 +34,134 @@ namespace cusp
  */
 
 /* \cond */
+template <typename DerivedPolicy, typename ArrayType>
+void counting_sort(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                   ArrayType& keys, typename ArrayType::value_type min, typename ArrayType::value_type max);
+/* \endcond */
+
+/**
+ * \brief Use counting sort to order an array
+ *
+ * \tparam ArrayType Type of input array
+ *
+ * \param keys input of keys to sort
+ * \param min minimum key in input array
+ * \param max maximum key in input array
+ *
+ * \par Example
+ *  The following code snippet demonstrates how to use \p
+ *  counting_sort.
+ *
+ *  \code
+ *  #include <cusp/array1d.h>
+ *  #include <cusp/print.h>
+ *  #include <cusp/sort.h>
+ *
+ *  #include <thrust/transform.h>
+ *
+ *  struct mod
+ *  {
+ *      int operator()(int i)
+ *      {
+ *          // transform i to range [0,5)
+ *          return (i >= 0 ? i : -i) % 5;
+ *      }
+ *  };
+ *
+ *  int main(void)
+ *  {
+ *      // create random array with 10 elements
+ *      cusp::random_array<int> rand(10);
+ *      // initialize v to random array
+ *      cusp::array1d<int,cusp::host_memory> v(rand);
+ *      // transform entries to interval [0,5)
+ *      thrust::transform(v.begin(), v.end(), v.begin(), mod());
+ *      // print array
+ *      cusp::print(v);
+ *      // sort
+ *      cusp::counting_sort(v, 0, 5);
+ *      // print the sorted array
+ *      cusp::print(v);
+ *
+ *      return 0;
+ *  }
+ *  \endcode
+ */
+template <typename ArrayType>
+void counting_sort(ArrayType& keys, typename ArrayType::value_type min, typename ArrayType::value_type max);
+
+/* \cond */
+template <typename DerivedPolicy, typename ArrayType1, typename ArrayType2>
+void counting_sort_by_key(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                          ArrayType1& keys, ArrayType2& vals,
+                          typename ArrayType1::value_type min, typename ArrayType1::value_type max);
+/* \endcond */
+
+/**
+ * \brief Use counting sort to order an array
+ * and permute an array of values
+ *
+ * \tparam ArrayType1 Type of keys array
+ * \tparam ArrayType2 Type of values array
+ *
+ * \param keys input array of keys to sort
+ * \param vals input array of values to permute
+ * \param min minimum key in keys array
+ * \param max maximum key in keys array
+ *
+ * \par Example
+ *  The following code snippet demonstrates how to use \p
+ *  counting_sort_by_key.
+ *
+ *  \code
+ *  #include <cusp/array1d.h>
+ *  #include <cusp/print.h>
+ *  #include <cusp/sort.h>
+ *
+ *  #include <thrust/transform.h>
+ *
+ *  struct mod
+ *  {
+ *      int operator()(int i)
+ *      {
+ *          // transform i to range [0,5)
+ *          return (i >= 0 ? i : -i) % 5;
+ *      }
+ *  };
+ *
+ *  int main(void)
+ *  {
+ *      // create random array with 10 elements
+ *      cusp::random_array<int> rand1(10,0);
+ *      cusp::random_array<int> rand2(10,3);
+ *      // initialize v to random array
+ *      cusp::array1d<int,cusp::host_memory> v1(rand1);
+ *      cusp::array1d<int,cusp::host_memory> v2(rand2);
+ *      // transform entries to interval [0,5)
+ *      thrust::transform(v1.begin(), v1.end(), v1.begin(), mod());
+ *      // print array
+ *      cusp::print(v1);
+ *      cusp::print(v2);
+ *      // sort
+ *      cusp::counting_sort_by_key(v1, v2, 0, 5);
+ *      // print the sorted array
+ *      cusp::print(v1);
+ *      cusp::print(v2);
+ *
+ *      return 0;
+ *  }
+ *  \endcode
+ */
+template <typename ArrayType1, typename ArrayType2>
+void counting_sort_by_key(ArrayType1& keys, ArrayType2& vals,
+                          typename ArrayType1::value_type min, typename ArrayType1::value_type max);
+
+
+/* \cond */
 template <typename DerivedPolicy, typename ArrayType1, typename ArrayType2, typename ArrayType3>
 void sort_by_row(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-                 ArrayType1& row_indices, ArrayType2& column_indices, ArrayType3& values);
+                 ArrayType1& row_indices, ArrayType2& column_indices, ArrayType3& values,
+                 const int min_row = -1, const int max_row = -1);
 /* \endcond */
 
 /**
@@ -82,12 +207,15 @@ void sort_by_row(const thrust::detail::execution_policy_base<DerivedPolicy> &exe
  *  \endcode
  */
 template <typename ArrayType1, typename ArrayType2, typename ArrayType3>
-void sort_by_row(ArrayType1& row_indices, ArrayType2& column_indices, ArrayType3& values);
+void sort_by_row(ArrayType1& row_indices, ArrayType2& column_indices, ArrayType3& values,
+                 const int min_row = -1, const int max_row = -1);
 
 /* \cond */
 template <typename DerivedPolicy, typename ArrayType1, typename ArrayType2, typename ArrayType3>
 void sort_by_row_and_column(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-                            ArrayType1& row_indices, ArrayType2& column_indices, ArrayType3& values);
+                            ArrayType1& row_indices, ArrayType2& column_indices, ArrayType3& values,
+                            const int min_row = -1, const int max_row = -1,
+                            const int min_col = -1, const int max_col = -1);
 /* \endcond */
 
 /**
@@ -134,7 +262,9 @@ void sort_by_row_and_column(const thrust::detail::execution_policy_base<DerivedP
  *  \endcode
  */
 template <typename ArrayType1, typename ArrayType2, typename ArrayType3>
-void sort_by_row_and_column(ArrayType1& row_indices, ArrayType2& column_indices, ArrayType3& values);
+void sort_by_row_and_column(ArrayType1& row_indices, ArrayType2& column_indices, ArrayType3& values,
+                            const int min_row = -1, const int max_row = -1,
+                            const int min_col = -1, const int max_col = -1);
 /*! \}
  */
 

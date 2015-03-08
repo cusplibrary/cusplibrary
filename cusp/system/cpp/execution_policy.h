@@ -44,6 +44,7 @@ using namespace thrust::system::cpp;
 #include <cusp/system/cpp/detail/convert.h>
 #include <cusp/system/cpp/detail/elementwise.h>
 #include <cusp/system/cpp/detail/multiply.h>
+#include <cusp/system/cpp/detail/sort.h>
 #include <cusp/system/cpp/detail/transpose.h>
 
 #include <cusp/system/cpp/detail/graph/breadth_first_search.h>
