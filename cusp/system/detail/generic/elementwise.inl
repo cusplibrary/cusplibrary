@@ -95,7 +95,7 @@ void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
         thrust::transform(exec, B.values.begin(), B.values.end(), vals.begin() + A_nnz, thrust::negate<ValueType>());
 
     // sort by (I,J)
-    cusp::sort_by_row_and_column(exec, rows, cols, vals);
+    cusp::sort_by_row_and_column(exec, rows, cols, vals, 0, A.num_rows, 0, A.num_cols);
 
     // compute unique number of nonzeros in the output
     IndexType C_nnz = thrust::inner_product(exec,

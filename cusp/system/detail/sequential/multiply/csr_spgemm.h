@@ -150,7 +150,6 @@ size_t spmm_csr_pass2(const size_t num_rows, const size_t num_cols,
 }
 
 template <typename DerivedPolicy,
-         typename MatrixType,
          typename Matrix1,
          typename Matrix2,
          typename Matrix3>

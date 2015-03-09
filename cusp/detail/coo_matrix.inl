@@ -23,11 +23,14 @@
 
 #include <cusp/detail/array2d_format_utils.h>
 
+#include <thrust/copy.h>
 #include <thrust/merge.h>
 #include <thrust/remove.h>
+#include <thrust/sequence.h>
 #include <thrust/sort.h>
 
 #include <thrust/iterator/counting_iterator.h>
+#include <thrust/iterator/discard_iterator.h>
 #include <thrust/iterator/zip_iterator.h>
 
 namespace cusp

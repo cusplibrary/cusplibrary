@@ -33,7 +33,6 @@ namespace sequential
 {
 
 template <typename DerivedPolicy,
-         typename MatrixType,
          typename Matrix1,
          typename Matrix2,
          typename Matrix3>

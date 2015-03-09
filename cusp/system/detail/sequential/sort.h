@@ -42,6 +42,7 @@ void counting_sort(sequential::execution_policy<DerivedPolicy>& exec,
                    typename ArrayType::value_type min,
                    typename ArrayType::value_type max)
 {
+    typedef typename ArrayType::container  Container;
     typedef typename ArrayType::value_type IndexType;
 
     if(min < IndexType(0))
@@ -53,11 +54,11 @@ void counting_sort(sequential::execution_policy<DerivedPolicy>& exec,
     if(min > 0) min = 0;
 
     // compute the number of bins
-    IndexType size = max - min;
+    size_t size = max - min;
 
     // allocate temporary arrays
-    ArrayType counts(size+1, 0);
-    ArrayType temp_keys(keys);
+    Container counts(IndexType(size + 1), IndexType(0));
+    Container temp_keys(keys);
 
     // count the number of occurences of each key
     for(size_t i = 0; i < keys.size(); i++)
@@ -79,6 +80,8 @@ void counting_sort_by_key(sequential::execution_policy<DerivedPolicy>& exec,
                           typename ArrayType1::value_type min,
                           typename ArrayType1::value_type max)
 {
+    typedef typename ArrayType1::container  Container1;
+    typedef typename ArrayType2::container  Container2;
     typedef typename ArrayType1::value_type IndexType;
 
     if(min < IndexType(0))
@@ -93,12 +96,12 @@ void counting_sort_by_key(sequential::execution_policy<DerivedPolicy>& exec,
     if(min > 0) min = 0;
 
     // compute the number of bins
-    IndexType size = max - min;
+    size_t size = max - min;
 
     // allocate temporary arrays
-    ArrayType1 counts(size+1, 0);
-    ArrayType1 temp_keys(keys);
-    ArrayType2 temp_vals(vals);
+    Container1 counts(IndexType(size + 1), IndexType(0));
+    Container1 temp_keys(keys);
+    Container2 temp_vals(vals);
 
     // count the number of occurences of each key
     for(size_t i = 0; i < keys.size(); i++)
