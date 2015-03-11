@@ -89,6 +89,8 @@ size_t spmm_csr_pass2(const size_t num_rows, const size_t num_cols,
 {
     typedef typename Array7::value_type IndexType;
     typedef typename Array9::value_type ValueType;
+    typedef typename Array7::container IndexArray;
+    typedef typename Array9::container ValueArray;
 
     size_t num_nonzeros = 0;
     C_row_offsets[0] = 0;
@@ -99,8 +101,8 @@ size_t spmm_csr_pass2(const size_t num_rows, const size_t num_cols,
         const IndexType init   = static_cast<IndexType>(-2);
 
         // Compute entries of C
-        cusp::array1d<IndexType,cusp::host_memory> next(num_cols, unseen);
-        cusp::array1d<ValueType,cusp::host_memory> sums(num_cols, ValueType(0));
+        IndexArray next(num_cols, unseen);
+        ValueArray sums(num_cols, ValueType(0));
 
 
         #pragma omp for ordered
@@ -171,24 +173,26 @@ template <typename DerivedPolicy,
          typename Matrix2,
          typename Matrix3>
 void multiply_inner(omp::execution_policy<DerivedPolicy>& exec,
-              Matrix1& A,
-              Matrix2& B,
-              Matrix3& C,
-              csr_format,
-              csr_format,
-              csr_format)
+                    Matrix1& A,
+                    Matrix2& B,
+                    Matrix3& C,
+                    csr_format,
+                    csr_format,
+                    csr_format)
 {
     typedef typename Matrix3::index_type IndexType;
     typedef typename Matrix3::value_type ValueType;
     typedef typename Matrix1::index_type IndexType1;
     typedef typename Matrix2::index_type IndexType2;
 
-    cusp::array1d<IndexType, cusp::host_memory> C_row_offsets( A.num_rows + 1);
+    typedef typename Matrix3::memory_space MemorySpace;
+
+    cusp::array1d<IndexType,MemorySpace> C_row_offsets(A.num_rows + 1);
     C_row_offsets[0] = 0;
 
     #pragma omp parallel
     {
-        cusp::array1d<size_t, cusp::host_memory> mask(B.num_cols, A.num_rows);
+        cusp::array1d<size_t,MemorySpace> mask(B.num_cols, A.num_rows);
         //MW: Compute nnz in each row of C (including explicit zeros)
         //MW: spmm_csr_pass1 only computes the total number of nonzeros
         #pragma omp for
@@ -215,11 +219,11 @@ void multiply_inner(omp::execution_policy<DerivedPolicy>& exec,
     }//omp parallel
 
     //MW: now to transform to offsets and ressize column and values
-    thrust::inclusive_scan( thrust::omp::par, C_row_offsets.begin(), C_row_offsets.end(), C_row_offsets.begin()); //MW: fast
+    thrust::inclusive_scan(exec, C_row_offsets.begin(), C_row_offsets.end(), C_row_offsets.begin()); //MW: fast
 
     size_t num_entries_in_C = C_row_offsets[A.num_rows];
-    cusp::array1d<IndexType, cusp::host_memory> C_column_indices( num_entries_in_C);
-    cusp::array1d<ValueType, cusp::host_memory> C_values( num_entries_in_C);
+    cusp::array1d<IndexType, MemorySpace> C_column_indices( num_entries_in_C);
+    cusp::array1d<ValueType, MemorySpace> C_values( num_entries_in_C);
 
     //MW: parallel version of spmm_csr_pass2 that doesn't account for explicit zeros
     #pragma omp parallel
@@ -228,8 +232,8 @@ void multiply_inner(omp::execution_policy<DerivedPolicy>& exec,
         const IndexType init   = static_cast<IndexType>(-2);
 
         // Compute entries of C
-        cusp::array1d<IndexType,cusp::host_memory> next(B.num_cols, unseen);
-        cusp::array1d<ValueType,cusp::host_memory> sums(B.num_cols, ValueType(0));
+        cusp::array1d<IndexType,MemorySpace> next(B.num_cols, unseen);
+        cusp::array1d<ValueType,MemorySpace> sums(B.num_cols, ValueType(0));
 
         #pragma omp for
         for(size_t i = 0; i < A.num_rows; i++)
@@ -278,10 +282,11 @@ void multiply_inner(omp::execution_policy<DerivedPolicy>& exec,
 
         } //omp for
     }//omp parallel
-    C.row_offsets.swap( C_row_offsets);
-    C.column_indices.swap( C_column_indices);
-    C.values.swap( C_values);
+
     C.resize(A.num_rows, B.num_cols, num_entries_in_C); //MW: cheap
+    C.row_offsets    = C_row_offsets;
+    C.column_indices = C_column_indices;
+    C.values         = C_values;
     // XXX note: entries of C are unsorted within each row
 }
 
