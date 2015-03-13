@@ -133,7 +133,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     // replace shifted diagonals with index of diagonal in offsets array
     cusp::array1d<IndexType,cusp::host_memory> diagonal_offsets( dst.diagonal_offsets );
     for( IndexType num_diag = 0; num_diag < num_diagonals; num_diag++ )
-        thrust::replace(diag_map.begin(), diag_map.end(), diagonal_offsets[num_diag], num_diag);
+        thrust::replace(exec, diag_map.begin(), diag_map.end(), diagonal_offsets[num_diag], num_diag);
 
     // copy values to dst
     thrust::scatter(exec,
@@ -145,7 +145,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
 
     // shift diagonal_offsets by num_rows
     cusp::constant_array<IndexType> constant(num_diagonals, dst.num_rows);
-    cusp::blas::axpy(constant, dst.diagonal_offsets, IndexType(-1));
+    cusp::blas::axpy(exec, constant, dst.diagonal_offsets, IndexType(-1));
 }
 
 template <typename DerivedPolicy, typename SourceType, typename DestinationType>
@@ -202,7 +202,8 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
                                   IndexType(0));
 
     // next, scale by pitch and add row index
-    cusp::blas::axpby(permutation, row_indices,
+    cusp::blas::axpby(exec,
+                      permutation, row_indices,
                       permutation,
                       IndexType(dst.column_indices.pitch),
                       IndexType(1));
@@ -252,7 +253,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
 
     // expand row offsets into row indices
     cusp::array1d<IndexType, MemorySpace> row_indices(src.num_entries);
-    cusp::offsets_to_indices(src.row_offsets, row_indices);
+    cusp::offsets_to_indices(exec, src.row_offsets, row_indices);
 
     // TODO call coo_to_hyb with a coo_matrix_view
 
@@ -281,7 +282,8 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
                     greater_equal_value<size_t>(num_entries_per_row) );
 
     // next, scale by pitch and add row index
-    cusp::blas::axpby(indices, row_indices,
+    cusp::blas::axpby(exec,
+                      indices, row_indices,
                       indices,
                       IndexType(dst.ell.column_indices.pitch),
                       IndexType(1));

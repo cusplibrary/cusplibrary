@@ -192,7 +192,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     // replace shifted diagonals with index of diagonal in offsets array
     cusp::array1d<IndexType,cusp::host_memory> diagonal_offsets( dst.diagonal_offsets );
     for( IndexType num_diag = 0; num_diag < num_diagonals; num_diag++ )
-        thrust::replace(diag_map.begin(), diag_map.end(), diagonal_offsets[num_diag], num_diag);
+        thrust::replace(exec, diag_map.begin(), diag_map.end(), diagonal_offsets[num_diag], num_diag);
 
     // copy values to dst
     thrust::scatter(exec,
@@ -203,7 +203,8 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
                     dst.values.values.begin());
 
     cusp::constant_array<IndexType> constant_view(num_diagonals, dst.num_rows);
-    cusp::blas::axpy(constant_view,
+    cusp::blas::axpy(exec,
+                     constant_view,
                      dst.diagonal_offsets,
                      IndexType(-1));
 }
@@ -262,7 +263,8 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
                                   IndexType(0));
 
     // next, scale by pitch and add row index
-    cusp::blas::axpby(permutation, src.row_indices,
+    cusp::blas::axpby(exec,
+                      permutation, src.row_indices,
                       permutation,
                       IndexType(dst.column_indices.pitch),
                       IndexType(1));
@@ -347,7 +349,8 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     size_t pitch = dst.ell.column_indices.pitch;
 
     // next, scale by pitch and add row index
-    cusp::blas::axpby(indices, src.row_indices,
+    cusp::blas::axpby(exec,
+                      indices, src.row_indices,
                       indices,
                       IndexType(pitch),
                       IndexType(1));

@@ -140,7 +140,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
       _1 != ValueType(0));
 
     // convert COO row_indices to CSR row_offsets
-    cusp::indices_to_offsets(row_indices, dst.row_offsets);
+    cusp::indices_to_offsets(exec, row_indices, dst.row_offsets);
 }
 
 template <typename DerivedPolicy, typename SourceType, typename DestinationType>

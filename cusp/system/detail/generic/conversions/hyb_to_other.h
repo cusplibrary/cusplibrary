@@ -61,7 +61,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     thrust::copy(exec, src.coo.values.begin(),         src.coo.values.end(),         dst.values.begin()         + temp.num_entries);
 
     if (temp.num_entries > 0 && src.coo.num_entries > 0)
-        cusp::sort_by_row_and_column(dst.row_indices, dst.column_indices, dst.values);
+        cusp::sort_by_row_and_column(exec, dst.row_indices, dst.column_indices, dst.values);
 }
 
 } // end namespace generic
