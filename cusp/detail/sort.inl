@@ -100,7 +100,6 @@ void sort_by_row(const thrust::detail::execution_policy_base<DerivedPolicy> &exe
     thrust::sequence(exec, permutation.begin(), permutation.end());
 
     // compute permutation that sorts the row_indices
-    IndexType max = *thrust::max_element(row_indices.begin(), row_indices.end());
     cusp::counting_sort_by_key(exec, row_indices, permutation, minr, maxr);
 
     // copy column_indices and values to temporary buffers
