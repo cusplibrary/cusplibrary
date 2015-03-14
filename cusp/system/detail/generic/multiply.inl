@@ -50,7 +50,7 @@ void multiply_inner(thrust::detail::execution_policy_base<DerivedPolicy> &exec,
                array1d_format)
 {
     // user-defined LinearOperator
-    ((LinearOperator&)A)(B,C);
+    A(B,C);
 }
 
 template <typename DerivedPolicy,
