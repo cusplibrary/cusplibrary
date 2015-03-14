@@ -1,4 +1,4 @@
-#include <cusp/detail/random.h>
+#include <cusp/array1d.h>
 #include <cusp/gallery/poisson.h>
 #include <cusp/graph/hilbert_curve.h>
 
@@ -12,7 +12,7 @@ int main(int argc, char*argv[])
 
     typedef int   IndexType;
     typedef double ValueType;
-    typedef cusp::device_memory MemorySpace;
+    typedef cusp::host_memory MemorySpace;
 
     size_t num_points = 1<<20; // 1M points
 
@@ -20,12 +20,12 @@ int main(int argc, char*argv[])
         for( int i = 2; i < 4; i++ )
         {
             cusp::array2d<ValueType,MemorySpace,cusp::column_major> coords(num_points, i);
-            cusp::copy(cusp::detail::random_reals<ValueType>(i*num_points, rand()), coords.values);
+            cusp::copy(cusp::random_array<ValueType>(i*num_points), coords.values);
 
             cusp::array1d<IndexType,MemorySpace> parts(num_points);
             timer t;
             cusp::graph::hilbert_curve(coords, i, parts);
-    	    std::cout << "Number of points : " << num_points << std::endl;
+            std::cout << "Number of points : " << num_points << std::endl;
             std::cout << " hsfc(" << i << "D) : " << t.milliseconds_elapsed() << " (ms)\n" << std::endl;
         }
         num_points <<= 1;
