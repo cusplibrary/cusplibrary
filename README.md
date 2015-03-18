@@ -35,8 +35,8 @@ int main(void)
 <br><hr>
 <h3>Stable Releases</h3>
 
-CUSP releases are labeled using version identifiers having three fields: 
- 
+CUSP releases are labeled using version identifiers having three fields:
+
 | Date | Version |
 | ---- | ------- |
 | 03/13/2015 | [CUSP v0.5.0](https://github.com/cusplibrary/cusplibrary/archive/0.5.0.zip)  |
@@ -51,6 +51,19 @@ CUSP releases are labeled using version identifiers having three fields:
 <h3>Contributors</h3>
 
 CUSP is developed as an open-source project by [NVIDIA Research](http://research.nvidia.com).
+
+<br><hr>
+<h3>Citing</h3>
+
+```shell
+@MISC{Cusp,
+  author = "Steven Dalton, Nathan Bell, Luke Olson and Michael Garland",
+  title = "Cusp: Generic Parallel Algorithms for Sparse Matrix and Graph Computations",
+  year = "2014",
+  url = "http://cusplibrary.github.io/",
+  note = "Version 0.5.0"
+}
+```
 
 <br><hr>
 <h3>Open Source License</h3>
