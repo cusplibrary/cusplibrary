@@ -67,6 +67,7 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverTyp
 ::sa_initialize(const MatrixType& A, const ArrayType& B)
 {
     typedef typename select_sa_matrix_view<MatrixType>::type View;
+    typedef typename ML::level Level;
 
     if(sa_levels.size() > 0)
     {
@@ -76,7 +77,7 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverTyp
 
     ML::resize(A.num_rows, A.num_cols, A.num_entries);
     ML::levels.reserve(sa_options.max_levels); // avoid reallocations which force matrix copies
-    ML::levels.push_back(ML::level());
+    ML::levels.push_back(Level());
 
     sa_levels.push_back(sa_level<SetupMatrixType>());
     sa_levels.back().B = B;
@@ -107,6 +108,8 @@ template <typename MatrixType>
 void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverType,Format>
 ::extend_hierarchy(const MatrixType& A)
 {
+    typedef typename ML::level Level;
+
     cusp::array1d<IndexType,MemorySpace> aggregates(A.num_rows, IndexType(0));
     {
         // compute stength of connection matrix
@@ -143,7 +146,7 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverTyp
 
     ML::copy_or_swap_matrix( ML::levels.back().R, R );
     ML::copy_or_swap_matrix( ML::levels.back().P, P );
-    ML::levels.push_back(ML::level());
+    ML::levels.push_back(Level());
 }
 
 } // end namespace aggregation
