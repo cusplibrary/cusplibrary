@@ -97,7 +97,7 @@ template <typename IndexType,
 class multilevel
 : public cusp::linear_operator<ValueType,MemorySpace>
 {
-private:
+protected:
 
     typedef typename detail::select_format_type<FormatType,MemorySpace>::type                   Format;
     typedef typename detail::matrix_type<IndexType,ValueType,MemorySpace,Format>::type          MatrixType;
