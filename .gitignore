@@ -81,3 +81,14 @@ performance/overhead/memory
 performance/spmv/spmv
 #<AutoIgnore/>
 
+VS/cusplibrary.vcxproj.user
+*.filters
+*.suo
+*.sdf
+*.deps
+*.cache
+*.lastbuildstate
+*.tlog
+*.cd
+*.ilk
+*.opensdf
