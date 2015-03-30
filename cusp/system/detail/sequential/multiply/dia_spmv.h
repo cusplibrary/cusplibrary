@@ -23,6 +23,8 @@
 
 #include <cusp/system/detail/sequential/execution_policy.h>
 
+#include <algorithm>
+
 namespace cusp
 {
 namespace system

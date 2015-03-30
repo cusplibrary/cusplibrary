@@ -32,6 +32,8 @@
 
 #include <thrust/detail/integer_traits.h>
 
+#include <algorithm>
+
 namespace cusp
 {
 namespace eigen

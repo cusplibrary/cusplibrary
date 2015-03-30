@@ -29,6 +29,8 @@
 // TODO : Abstract using generic QR interface
 #include <cusp/eigen/detail/gram_schmidt.inl>
 
+#include <algorithm>
+
 namespace cusp
 {
 namespace eigen
