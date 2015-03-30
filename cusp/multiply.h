@@ -258,7 +258,7 @@ void generalized_spmv(const thrust::detail::execution_policy_base<DerivedPolicy>
  *      cusp::array1d<float, cusp::host_memory> z(2);
  *
  *      // compute z = y + (A * x)
- *      cusp::generalized_spmv(A, x, y, z,
+ *      cusp::generalized_spmv(A, x, y, z);
  *      thrust::multiplies<float>(),
  *      thrust::plus<float>());
  *
