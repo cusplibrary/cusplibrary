@@ -27,7 +27,7 @@ template <typename IndexType, typename ValueType, typename MemorySpace, typename
 template <typename MatrixType>
 smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverType,Format>
 ::smoothed_aggregation(const MatrixType& A, const SAOptionsType& sa_options)
-	: sa_options(sa_options), ML()
+	: ML(), sa_options(sa_options)
 {
     sa_initialize(A);
 }
@@ -37,7 +37,7 @@ template <typename MatrixType, typename ArrayType>
 smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverType,Format>
 ::smoothed_aggregation(const MatrixType& A, const ArrayType& B, const SAOptionsType& sa_options,
                        typename thrust::detail::enable_if_convertible<typename ArrayType::format,cusp::array1d_format>::type*)
-	: sa_options(sa_options), ML()
+	: ML(), sa_options(sa_options)
 {
     sa_initialize(A,B);
 }
@@ -46,7 +46,7 @@ template <typename IndexType, typename ValueType, typename MemorySpace, typename
 template <typename MemorySpace2, typename SmootherType2, typename SolverType2, typename Format2>
 smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverType,Format>
 ::smoothed_aggregation(const smoothed_aggregation<IndexType,ValueType,MemorySpace2,SmootherType2,SolverType2,Format2>& M)
-    : sa_options(M.sa_options), ML(M)
+    : ML(M), sa_options(M.sa_options)
 {
     for( size_t lvl = 0; lvl < M.sa_levels.size(); lvl++ )
         sa_levels.push_back(M.sa_levels[lvl]);

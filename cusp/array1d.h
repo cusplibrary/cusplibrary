@@ -377,7 +377,8 @@ public :
     typedef typename thrust::iterator_pointer<RandomAccessIterator>::type       pointer;
     typedef typename thrust::iterator_reference<RandomAccessIterator>::type     reference;
     typedef typename thrust::iterator_difference<RandomAccessIterator>::type    difference_type;
-    typedef typename thrust::iterator_difference<RandomAccessIterator>::type    size_type;
+    // typedef typename thrust::iterator_difference<RandomAccessIterator>::type    size_type;
+    typedef size_t                                                              size_type;
 
     typedef typename cusp::array1d<value_type,memory_space>                     container;
 

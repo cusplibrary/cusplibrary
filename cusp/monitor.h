@@ -241,14 +241,13 @@ public:
 
 private:
 
-    bool verbose;
-    Real r_norm;
     Real b_norm;
-    Real relative_tolerance_;
-    Real absolute_tolerance_;
-
+    Real r_norm;
     size_t iteration_limit_;
     size_t iteration_count_;
+    Real relative_tolerance_;
+    Real absolute_tolerance_;
+    bool verbose;
 };
 
 } // end namespace cusp

@@ -50,8 +50,8 @@ struct Dinv_A : public cusp::linear_operator<typename MatrixType::value_type, ty
     const cusp::precond::diagonal<ValueType,MemorySpace> Dinv;
 
     Dinv_A(const MatrixType& A)
-        : A(A), Dinv(A),
-          cusp::linear_operator<ValueType,MemorySpace>(A.num_rows, A.num_cols, A.num_entries + A.num_rows)
+        : cusp::linear_operator<ValueType,MemorySpace>(A.num_rows, A.num_cols, A.num_entries + A.num_rows),
+          A(A), Dinv(A)
     {}
 
     template <typename Array1, typename Array2>

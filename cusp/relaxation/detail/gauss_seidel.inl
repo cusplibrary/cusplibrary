@@ -73,13 +73,13 @@ void gauss_seidel<ValueType,MemorySpace>
 
     if(direction == FORWARD)
     {
-        for(int i = 0; i < color_offsets.size()-1; i++)
+        for(size_t i = 0; i < color_offsets.size()-1; i++)
             gauss_seidel_indexed(thrust::detail::derived_cast(system),
                 A, x, b, ordering, color_offsets[i], color_offsets[i+1], 1);
     }
     else if(direction == BACKWARD)
     {
-        for(int i = color_offsets.size()-1; i > 0; i--)
+        for(size_t i = color_offsets.size()-1; i > 0; i--)
             gauss_seidel_indexed(thrust::detail::derived_cast(system),
                 A, x, b, ordering, color_offsets[i-1], color_offsets[i], 1);
     }

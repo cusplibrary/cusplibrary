@@ -44,7 +44,7 @@ size_t vertex_coloring(sequential::execution_policy<DerivedPolicy>& exec,
     size_t max_color = 0;
     size_t N = G.num_rows;
     thrust::fill(colors.begin(), colors.end(), N-1);
-    cusp::array1d<IndexType,cusp::host_memory> mark(N, std::numeric_limits<IndexType>::max());
+    cusp::array1d<size_t,cusp::host_memory> mark(N, std::numeric_limits<IndexType>::max());
 
     for(size_t vertex = 0; vertex < N; vertex++)
     {

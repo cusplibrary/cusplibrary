@@ -75,7 +75,7 @@ template <typename ValueType, typename MemorySpace>
 template<typename MatrixType>
 polynomial<ValueType,MemorySpace>
 ::polynomial(const MatrixType& A)
-  : residual(A.num_rows), y(A.num_rows), h(A.num_rows)
+  : residual(A.num_rows), h(A.num_rows), y(A.num_rows)
 {
     ValueType rho = cusp::eigen::ritz_spectral_radius(A, 8, true);
     detail::chebyshev_polynomial_coefficients(rho, default_coefficients);
@@ -89,7 +89,7 @@ template <typename ValueType, typename MemorySpace>
 template<typename MatrixType, typename VectorType>
 polynomial<ValueType,MemorySpace>
 ::polynomial(const MatrixType& A, const VectorType& coefficients)
-  : residual(A.num_rows), y(A.num_rows), h(A.num_rows)
+  : residual(A.num_rows), h(A.num_rows), y(A.num_rows)
 {
     size_t default_size = coefficients.size()-1;
     default_coefficients.resize( default_size );

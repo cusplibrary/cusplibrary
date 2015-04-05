@@ -173,12 +173,12 @@ class join_iterator
     }
 
     protected:
-    IndexIterator indices_begin;
-
     Iterator1 first_begin;
     Iterator1 first_end;
     Iterator2 second_begin;
     Iterator2 second_end;
+
+    IndexIterator indices_begin;
 };
 
 /*! \} // end iterators
