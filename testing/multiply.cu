@@ -92,13 +92,13 @@ void TestSparseMatrixMatrixMultiply(void)
     cusp::gallery::poisson5pt(H, 8, 3);
 
     cusp::array2d<float,cusp::host_memory> I;
-    cusp::gallery::random(24, 24, 150, I);
+    cusp::gallery::random(I, 24, 24, 150);
 
     cusp::array2d<float,cusp::host_memory> J;
-    cusp::gallery::random(24, 24, 50, J);
+    cusp::gallery::random(J, 24, 24, 50);
 
     cusp::array2d<float,cusp::host_memory> K;
-    cusp::gallery::random(24, 12, 20, K);
+    cusp::gallery::random(K, 24, 12, 20);
 
     //thrust::host_vector< cusp::array2d<float,cusp::host_memory> > matrices;
     std::vector< cusp::array2d<float,cusp::host_memory> > matrices;
@@ -225,13 +225,13 @@ void TestSparseMatrixDenseMatrixMultiply(void)
     cusp::gallery::poisson5pt(H, 8, 3);
 
     cusp::array2d<float,cusp::host_memory> I;
-    cusp::gallery::random(24, 24, 150, I);
+    cusp::gallery::random(I, 24, 24, 150);
 
     cusp::array2d<float,cusp::host_memory> J;
-    cusp::gallery::random(24, 24, 50, J);
+    cusp::gallery::random(J, 24, 24, 50);
 
     cusp::array2d<float,cusp::host_memory> K;
-    cusp::gallery::random(24, 12, 20, K);
+    cusp::gallery::random(K, 24, 12, 20);
 
     //thrust::host_vector< cusp::array2d<float,cusp::host_memory,cusp::column_major> > matrices;
     std::vector< cusp::array2d<float,cusp::host_memory,cusp::column_major> > matrices;

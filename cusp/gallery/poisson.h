@@ -33,8 +33,8 @@ namespace gallery
  *  \{
  */
 
-/*! \p poisson5pt: Create a matrix representing a Poisson problem
- * discretized on an \p m by \p n grid with the standard 5-point
+/*! \p poisson5pt: Create a matrix representing a 5pt Poisson problem
+ * discretized on an \p m by \p n grid with the standard 2D 5-point
  * finite-difference stencil.
  *
  * \param matrix output
@@ -60,86 +60,109 @@ namespace gallery
  *     return 0;
  * }
  * \endcode
- *
  */
 template <typename MatrixType>
-void poisson5pt(      MatrixType& matrix, size_t m, size_t n)
-{
-    typedef typename MatrixType::index_type IndexType;
-    typedef typename MatrixType::value_type ValueType;
-    typedef thrust::tuple<IndexType,IndexType>    StencilIndex;
-    typedef thrust::tuple<StencilIndex,ValueType> StencilPoint;
+void poisson5pt(MatrixType& matrix, size_t m, size_t n);
 
-    cusp::array1d<StencilPoint, cusp::host_memory> stencil;
-    stencil.push_back(StencilPoint(StencilIndex(  0, -1), ValueType(-1)));
-    stencil.push_back(StencilPoint(StencilIndex( -1,  0), ValueType(-1)));
-    stencil.push_back(StencilPoint(StencilIndex(  0,  0), ValueType( 4)));
-    stencil.push_back(StencilPoint(StencilIndex(  1,  0), ValueType(-1)));
-    stencil.push_back(StencilPoint(StencilIndex(  0,  1), ValueType(-1)));
-
-    cusp::gallery::generate_matrix_from_stencil(matrix, stencil, StencilIndex(m,n));
-}
-
+/*! \p poisson9pt: Create a matrix representing a 9pt Poisson problem
+ * discretized on an \p m by \p n grid with the standard 2D 9-point
+ * finite-difference stencil.
+ *
+ * \param matrix output
+ * \param m number of grid rows
+ * \param n number of grid columns
+ * \tparam MatrixType matrix container
+ *
+ * \code
+ * #include <cusp/gallery/poisson.h>
+ * #include <cusp/coo_matrix.h>
+ * #include <cusp/print.h>
+ *
+ * int main(void)
+ * {
+ *     cusp::coo_matrix<int, float, cusp::device_memory> A;
+ *
+ *     // create a matrix for a Poisson problem on a 4x4 grid
+ *     cusp::gallery::poisson9pt(A, 4, 4);
+ *
+ *     // print matrix
+ *     cusp::print(A);
+ *
+ *     return 0;
+ * }
+ * \endcode
+ */
 template <typename MatrixType>
-void poisson9pt(      MatrixType& matrix, size_t m, size_t n)
-{
-    typedef typename MatrixType::index_type IndexType;
-    typedef typename MatrixType::value_type ValueType;
-    typedef thrust::tuple<IndexType,IndexType>    StencilIndex;
-    typedef thrust::tuple<StencilIndex,ValueType> StencilPoint;
+void poisson9pt(MatrixType& matrix, size_t m, size_t n);
 
-    cusp::array1d<StencilPoint, cusp::host_memory> stencil;
-    stencil.push_back(StencilPoint(StencilIndex( -1, -1), ValueType(-1)));
-    stencil.push_back(StencilPoint(StencilIndex(  0, -1), ValueType(-1)));
-    stencil.push_back(StencilPoint(StencilIndex(  1, -1), ValueType(-1)));
-    stencil.push_back(StencilPoint(StencilIndex( -1,  0), ValueType(-1)));
-    stencil.push_back(StencilPoint(StencilIndex(  0,  0), ValueType( 8)));
-    stencil.push_back(StencilPoint(StencilIndex(  1,  0), ValueType(-1)));
-    stencil.push_back(StencilPoint(StencilIndex( -1,  1), ValueType(-1)));
-    stencil.push_back(StencilPoint(StencilIndex(  0,  1), ValueType(-1)));
-    stencil.push_back(StencilPoint(StencilIndex(  1,  1), ValueType(-1)));
-
-    cusp::gallery::generate_matrix_from_stencil(matrix, stencil, StencilIndex(m,n));
-}
-
+/*! \p poisson7pt: Create a matrix representing a 7pt Poisson problem
+ * discretized on an \p m by \p n by \p k grid with the standard 3D 7-point
+ * finite-difference stencil.
+ *
+ * \param matrix output
+ * \param m number of grid rows
+ * \param n number of grid columns
+ * \param k number of grid layers
+ * \tparam MatrixType matrix container
+ *
+ * \code
+ * #include <cusp/gallery/poisson.h>
+ * #include <cusp/coo_matrix.h>
+ * #include <cusp/print.h>
+ *
+ * int main(void)
+ * {
+ *     cusp::coo_matrix<int, float, cusp::device_memory> A;
+ *
+ *     // create a matrix for a Poisson problem on a 4x4x4 grid
+ *     cusp::gallery::poisson7pt(A, 4, 4, 4);
+ *
+ *     // print matrix
+ *     cusp::print(A);
+ *
+ *     return 0;
+ * }
+ * \endcode
+ */
 template <typename MatrixType>
-void poisson7pt(      MatrixType& matrix, size_t m, size_t n, size_t k)
-{
-    typedef typename MatrixType::index_type IndexType;
-    typedef typename MatrixType::value_type ValueType;
-    typedef thrust::tuple<IndexType,IndexType,IndexType>    StencilIndex;
-    typedef thrust::tuple<StencilIndex,ValueType> 	    StencilPoint;
+void poisson7pt(MatrixType& matrix, size_t m, size_t n, size_t k);
 
-    cusp::array1d<StencilPoint, cusp::host_memory> stencil;
-    stencil.push_back(StencilPoint(StencilIndex( 0,  0, -1), ValueType(-1)));
-    stencil.push_back(StencilPoint(StencilIndex( 0, -1,  0), ValueType(-1)));
-    stencil.push_back(StencilPoint(StencilIndex(-1,  0,  0), ValueType(-1)));
-    stencil.push_back(StencilPoint(StencilIndex( 0,  0,  0), ValueType( 6)));
-    stencil.push_back(StencilPoint(StencilIndex( 1,  0,  0), ValueType(-1)));
-    stencil.push_back(StencilPoint(StencilIndex( 0,  1,  0), ValueType(-1)));
-    stencil.push_back(StencilPoint(StencilIndex( 0,  0,  1), ValueType(-1)));
-
-    cusp::gallery::generate_matrix_from_stencil(matrix, stencil, StencilIndex(m,n,k));
-}
-
+/*! \p poisson27pt: Create a matrix representing a 27pt Poisson problem
+ * discretized on an \p m by \p n by \p l grid with the standard 3D 27-point
+ * finite-difference stencil.
+ *
+ * \param matrix output
+ * \param m number of grid rows
+ * \param n number of grid columns
+ * \param l number of grid layers
+ * \tparam MatrixType matrix container
+ *
+ * \code
+ * #include <cusp/gallery/poisson.h>
+ * #include <cusp/coo_matrix.h>
+ * #include <cusp/print.h>
+ *
+ * int main(void)
+ * {
+ *     cusp::coo_matrix<int, float, cusp::device_memory> A;
+ *
+ *     // create a matrix for a Poisson problem on a 4x4x4 grid
+ *     cusp::gallery::poisson27pt(A, 4, 4, 4);
+ *
+ *     // print matrix
+ *     cusp::print(A);
+ *
+ *     return 0;
+ * }
+ * \endcode
+ */
 template <typename MatrixType>
-void poisson27pt(      MatrixType& matrix, size_t m, size_t n, size_t l)
-{
-    typedef typename MatrixType::index_type IndexType;
-    typedef typename MatrixType::value_type ValueType;
-    typedef thrust::tuple<IndexType,IndexType,IndexType>    StencilIndex;
-    typedef thrust::tuple<StencilIndex,ValueType> 	    StencilPoint;
+void poisson27pt(MatrixType& matrix, size_t m, size_t n, size_t l);
 
-    cusp::array1d<StencilPoint, cusp::host_memory> stencil;
-    for( IndexType k = -1; k <= 1; k++ )
-        for( IndexType j = -1; j <= 1; j++ )
-            for( IndexType i = -1; i <= 1; i++ )
-                stencil.push_back(StencilPoint(StencilIndex( i, j, k), (i==0 && j==0 && k==0) ? ValueType(26) : ValueType(-1)));
-
-    cusp::gallery::generate_matrix_from_stencil(matrix, stencil, StencilIndex(m,n,l));
-}
 /*! \}
  */
 
 } // end namespace gallery
 } // end namespace cusp
+
+#include <cusp/gallery/detail/poisson.inl>

@@ -61,40 +61,43 @@ namespace gallery
  *
  */
 template <typename MatrixType>
-void grid2d(      MatrixType& matrix, size_t m, size_t n)
-{
-    typedef typename MatrixType::index_type IndexType;
-    typedef typename MatrixType::value_type ValueType;
-    typedef thrust::tuple<IndexType,IndexType>    StencilIndex;
-    typedef thrust::tuple<StencilIndex,ValueType> StencilPoint;
+void grid2d(MatrixType& matrix, size_t m, size_t n);
 
-    cusp::array1d<StencilPoint, cusp::host_memory> stencil;
-    stencil.push_back(StencilPoint(StencilIndex(  0, -1), 1));
-    stencil.push_back(StencilPoint(StencilIndex( -1,  0), 1));
-    stencil.push_back(StencilPoint(StencilIndex(  1,  0), 1));
-    stencil.push_back(StencilPoint(StencilIndex(  0,  1), 1));
-
-    cusp::gallery::generate_matrix_from_stencil(matrix, stencil, StencilIndex(m,n));
-}
+/*! \p grid3d: Create a matrix representing a 3d \p m by \p n by \p l grid.
+ *
+ * \param matrix output
+ * \param m number of grid rows
+ * \param n number of grid columns
+ * \param l number of grid layers
+ * \tparam MatrixType matrix container
+ *
+ * \code
+ * #include <cusp/gallery/grid.h>
+ * #include <cusp/coo_matrix.h>
+ * #include <cusp/print.h>
+ *
+ * int main(void)
+ * {
+ *     cusp::coo_matrix<int, float, cusp::device_memory> A;
+ *
+ *     // create a matrix for a 4x4x4 grid
+ *     cusp::gallery::grid3d(A, 4, 4, 4);
+ *
+ *     // print matrix
+ *     cusp::print(A);
+ *
+ *     return 0;
+ * }
+ * \endcode
+ *
+ */
 template <typename MatrixType>
-void grid3d(      MatrixType& matrix, size_t m, size_t n, size_t l)
-{
-    typedef typename MatrixType::index_type IndexType;
-    typedef typename MatrixType::value_type ValueType;
-    typedef thrust::tuple<IndexType,IndexType,IndexType>    StencilIndex;
-    typedef thrust::tuple<StencilIndex,ValueType> 	    StencilPoint;
+void grid3d(MatrixType& matrix, size_t m, size_t n, size_t l);
 
-    cusp::array1d<StencilPoint, cusp::host_memory> stencil;
-    for( IndexType k = -1; k <= 1; k++ )
-        for( IndexType j = -1; j <= 1; j++ )
-            for( IndexType i = -1; i <= 1; i++ )
-                if(i==0 && j==0 && k== 0) continue;
-                else stencil.push_back(StencilPoint(StencilIndex( i, j, k), 1));
-
-    cusp::gallery::generate_matrix_from_stencil(matrix, stencil, StencilIndex(m,n,l));
-}
 /*! \}
  */
 
 } // end namespace gallery
 } // end namespace cusp
+
+#include <cusp/gallery/detail/grid.inl>
