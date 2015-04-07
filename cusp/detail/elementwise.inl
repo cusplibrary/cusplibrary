@@ -32,49 +32,35 @@ namespace cusp
 namespace detail
 {
 
-template<typename MatrixType1, typename MatrixType2, typename MatrixType3>
-struct is_elementwiseable
-{
-  typedef typename MatrixType1::format format1;
-  typedef typename MatrixType2::format format2;
-  typedef typename MatrixType3::format format3;
-
-  typedef typename thrust::detail::eval_if<
-      thrust::detail::and_<
-          thrust::detail::is_same<format1,format2>,
-          thrust::detail::is_same<format2,format3> >::value,
-            // thrust::detail::or_< is_coo<MatrixType1>, is_csr<MatrixType1>, is_array2d<MatrixType1> >,
-            thrust::detail::or_< is_coo<MatrixType1>, is_array2d<MatrixType1> >,
-          thrust::detail::identity_<thrust::detail::false_type>
-      >::type type;
-};
-
 template <typename DerivedPolicy,
           typename MatrixType1, typename MatrixType2, typename MatrixType3,
-          typename BinaryFunction>
+          typename BinaryFunction, typename Format>
 void elementwise(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
                  const MatrixType1& A, const MatrixType2& B, MatrixType3& C,
                  BinaryFunction op,
-                 thrust::detail::true_type)
+                 Format, Format, Format)
 {
     using cusp::system::detail::generic::elementwise;
 
-    typename MatrixType1::format format;
-
-    elementwise(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, B, C, op, format);
+    elementwise(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, B, C, op, Format());
 }
 
 template <typename DerivedPolicy,
           typename MatrixType1, typename MatrixType2, typename MatrixType3,
-          typename BinaryFunction>
+          typename BinaryFunction,
+          typename Format1, typename Format2, typename Format3>
 void elementwise(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
                  const MatrixType1& A, const MatrixType2& B, MatrixType3& C,
                  BinaryFunction op,
-                 thrust::detail::false_type)
+                 Format1, Format2, Format3)
 {
-    typename as_coo_type<MatrixType1>::type A_coo(A);
-    typename as_coo_type<MatrixType2>::type B_coo(B);
-    typename as_coo_type<MatrixType3>::type C_coo;
+    typedef typename cusp::detail::coo_view_type<typename MatrixType1::index_type, typename MatrixType1::value_type, typename MatrixType1::memory_space, Format1>::view View1;
+    typedef typename cusp::detail::coo_view_type<typename MatrixType2::index_type, typename MatrixType2::value_type, typename MatrixType2::memory_space, Format2>::view View2;
+    typedef typename cusp::detail::as_coo_type<MatrixType3>::type CooMatrixType;
+
+    View1 A_coo(A);
+    View2 B_coo(B);
+    CooMatrixType C_coo;
 
     cusp::elementwise(exec, A_coo, B_coo, C_coo, op);
 
@@ -90,11 +76,14 @@ void elementwise(const thrust::detail::execution_policy_base<DerivedPolicy>& exe
                  const MatrixType1& A, const MatrixType2& B, MatrixType3& C,
                  BinaryFunction op)
 {
+    typename MatrixType1::format format1;
+    typename MatrixType2::format format2;
+    typename MatrixType3::format format3;
+
     if(A.num_rows != B.num_rows || A.num_cols != B.num_cols)
         throw cusp::invalid_input_exception("matrix dimensions do not match");
 
-    typename detail::is_elementwiseable<MatrixType1,MatrixType2,MatrixType3>::type is_elementwiseable;
-    cusp::detail::elementwise(exec, A, B, C, op, is_elementwiseable);
+    cusp::detail::elementwise(exec, A, B, C, op, format1, format2, format3);
 }
 
 template <typename MatrixType1, typename MatrixType2, typename MatrixType3,

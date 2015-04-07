@@ -38,6 +38,27 @@ namespace detail
 {
 namespace generic
 {
+namespace elementwise_detail
+{
+template <typename BinaryFunction>
+struct ops
+{
+  typedef typename BinaryFunction::result_type ValueType;
+  typedef thrust::minus<ValueType> Sub;
+
+  typedef typename thrust::detail::eval_if<
+        thrust::detail::is_same<Sub, BinaryFunction>::value
+      , thrust::detail::identity_< thrust::negate<ValueType> >
+      , thrust::detail::identity_< thrust::identity<ValueType> >
+    >::type unary_op_type;
+
+  typedef typename thrust::detail::eval_if<
+        thrust::detail::is_same<Sub, BinaryFunction>::value
+      , thrust::detail::identity_< thrust::plus<ValueType> >
+      , thrust::detail::identity_< BinaryFunction >
+    >::type binary_op_type;
+};
+}
 
 template <typename DerivedPolicy,
          typename MatrixType1, typename MatrixType2, typename MatrixType3,
@@ -45,7 +66,7 @@ template <typename DerivedPolicy,
 void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
                  const MatrixType1& A, const MatrixType2& B, MatrixType3& C,
                  BinaryFunction op,
-                 cusp::array2d_format& format)
+                 cusp::array2d_format)
 {
     C.resize(A.num_rows, A.num_cols);
 
@@ -54,6 +75,28 @@ void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
                       B.values.begin(),
                       C.values.begin(),
                       op);
+}
+
+template <typename DerivedPolicy,
+         typename MatrixType1, typename MatrixType2, typename MatrixType3,
+         typename BinaryFunction,
+         typename Format>
+void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
+                 const MatrixType1& A, const MatrixType2& B, MatrixType3& C,
+                 BinaryFunction op,
+                 Format)
+{
+    typedef typename cusp::detail::coo_view_type<typename MatrixType1::index_type, typename MatrixType1::value_type, typename MatrixType1::memory_space, Format>::view View1;
+    typedef typename cusp::detail::coo_view_type<typename MatrixType2::index_type, typename MatrixType2::value_type, typename MatrixType2::memory_space, Format>::view View2;
+    typedef typename cusp::detail::as_coo_type<MatrixType3>::type CooMatrixType;
+
+    View1 A_coo(A);
+    View2 B_coo(B);
+    CooMatrixType C_coo;
+
+    cusp::elementwise(exec, A_coo, B_coo, C_coo, op);
+
+    cusp::convert(C_coo, C);
 }
 
 template <typename DerivedPolicy,
@@ -87,7 +130,11 @@ void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
 
     typedef typename cusp::array1d<IndexType,MemorySpace>::iterator             IndexIterator;
     typedef cusp::join_iterator<ZipIterator1, ZipIterator2, IndexIterator>      JoinIndexIterator;
-    typedef cusp::join_iterator<ValueIterator1, ValueIterator2, IndexIterator>  JoinValueIterator;
+
+    typedef typename elementwise_detail::ops<BinaryFunction>::unary_op_type     UnaryOp;
+    typedef typename elementwise_detail::ops<BinaryFunction>::binary_op_type    BinaryOp;
+    typedef thrust::transform_iterator<UnaryOp, ValueIterator2>                      TransValueIterator2;
+    typedef cusp::join_iterator<ValueIterator1, TransValueIterator2, IndexIterator>  JoinValueIterator;
 
     IndexType A_nnz = A.num_entries;
     IndexType B_nnz = B.num_entries;
@@ -98,30 +145,8 @@ void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
         return;
     }
 
-    CooView1 A_coo(A);
-    CooView2 B_coo(B);
-
     ZipIterator1 A_tuples(thrust::make_tuple(A.row_indices.begin(), A.column_indices.begin()));
     ZipIterator2 B_tuples(thrust::make_tuple(B.row_indices.begin(), B.column_indices.begin()));
-
-    // cusp::array1d<IndexType,MemorySpace> rows(A_nnz + B_nnz);
-    // cusp::array1d<IndexType,MemorySpace> cols(A_nnz + B_nnz);
-    // cusp::array1d<ValueType,MemorySpace> vals(A_nnz + B_nnz);
-    //
-    // thrust::copy(exec, A.row_indices.begin(),    A.row_indices.end(),    rows.begin());
-    // thrust::copy(exec, B.row_indices.begin(),    B.row_indices.end(),    rows.begin() + A_nnz);
-    // thrust::copy(exec, A.column_indices.begin(), A.column_indices.end(), cols.begin());
-    // thrust::copy(exec, B.column_indices.begin(), B.column_indices.end(), cols.begin() + A_nnz);
-    // thrust::copy(exec, A.values.begin(),         A.values.end(),         vals.begin());
-    //
-    // // apply transformation to B's values
-    // if(thrust::detail::is_same< BinaryFunction, thrust::plus<ValueType> >::value)
-    //     thrust::transform(exec, B.values.begin(), B.values.end(), vals.begin() + A_nnz, thrust::identity<ValueType>());
-    // else
-    //     thrust::transform(exec, B.values.begin(), B.values.end(), vals.begin() + A_nnz, thrust::negate<ValueType>());
-
-    // sort by (I,J)
-    // cusp::sort_by_row_and_column(exec, rows, cols, vals);
 
     cusp::array1d<IndexType,MemorySpace> indices(A_nnz + B_nnz);
     thrust::sequence(exec, indices.begin(), indices.end());
@@ -136,7 +161,9 @@ void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
                          cusp::detail::coo_tuple_comp<IndexType>());
 
     JoinIndexIterator combined_tuples(A_tuples, A_tuples + A_nnz, B_tuples, B_tuples + B_nnz, indices.begin());
-    JoinValueIterator combined_values(A_coo.values.begin(), A_coo.values.begin() + A_nnz, B_coo.values.begin(), B_coo.values.begin() + B_nnz, indices.begin());
+
+    TransValueIterator2 vals(B.values.begin(), UnaryOp());
+    JoinValueIterator combined_values(A.values.begin(), A.values.begin() + A_nnz, vals, vals + B_nnz, indices.begin());
 
     // compute unique number of nonzeros in the output
     IndexType C_nnz = thrust::inner_product(exec,
@@ -158,7 +185,7 @@ void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
                           thrust::make_zip_iterator(thrust::make_tuple(C.row_indices.begin(), C.column_indices.begin())),
                           C.values.begin(),
                           thrust::equal_to< thrust::tuple<IndexType,IndexType> >(),
-                          thrust::plus<ValueType>());
+                          BinaryOp());
 
     int num_zeros = thrust::count(exec, C.values.begin(), C.values.end(), ValueType(0));
 
@@ -181,44 +208,6 @@ void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
         C.resize(C.num_rows, C.num_cols, num_reduced_entries);
     }
 }
-
-// template <typename DerivedPolicy,
-//          typename MatrixType1, typename MatrixType2, typename MatrixType3,
-//          typename BinaryFunction>
-// void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
-//                  const MatrixType1& A, const MatrixType2& B, MatrixType3& C,
-//                  BinaryFunction op,
-//                  cusp::csr_format&)
-// {
-//     typedef typename MatrixType1::memory_space MemorySpace;
-//
-//     typedef coo_matrix_view<typename MatrixType1::row_offsets_array_type::view,
-//             typename MatrixType1::column_indices_array_type::const_view,
-//             typename MatrixType1::values_array_type::const_view> View1;
-//     typedef coo_matrix_view<typename MatrixType2::row_offsets_array_type::view,
-//             typename MatrixType2::column_indices_array_type::const_view,
-//             typename MatrixType2::values_array_type::const_view> View2;
-//
-//     typename MatrixType1::row_offsets_array_type::container A_row_indices(A.num_entries);
-//     typename MatrixType2::row_offsets_array_type::container B_row_indices(B.num_entries);
-//
-//     cusp::offsets_to_indices(exec, A.row_offsets, A_row_indices);
-//     cusp::offsets_to_indices(exec, B.row_offsets, B_row_indices);
-//
-//     View1 A_coo_view(A.num_rows, A.num_cols, A.num_entries,
-//                      cusp::make_array1d_view(A_row_indices),
-//                      cusp::make_array1d_view(A.column_indices),
-//                      cusp::make_array1d_view(A.values));
-//     View2 B_coo_view(B.num_rows, B.num_cols, B.num_entries,
-//                      cusp::make_array1d_view(B_row_indices),
-//                      cusp::make_array1d_view(B.column_indices),
-//                      cusp::make_array1d_view(B.values));
-//     typename cusp::detail::as_coo_type<MatrixType3>::type C_coo;
-//
-//     cusp::elementwise(exec, A_coo_view, B_coo_view, C_coo, op);
-//
-//     cusp::convert(exec, C_coo, C);
-// }
 
 } // end namespace generic
 } // end namespace detail

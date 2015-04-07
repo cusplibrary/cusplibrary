@@ -312,6 +312,9 @@ public:
 
     typedef typename cusp::csr_matrix<IndexType, ValueType, MemorySpace> container;
     typedef typename cusp::csr_matrix_view<ArrayType1, ArrayType2, ArrayType3, IndexType, ValueType, MemorySpace> view;
+
+    typedef view       coo_view_type;
+    typedef view const_coo_view_type;
     /*! \endcond */
 
     /**

@@ -329,6 +329,9 @@ public:
     typedef ArrayType2 values_array_type;
     typedef typename cusp::ell_matrix<IndexType, ValueType, MemorySpace> container;
     typedef typename cusp::ell_matrix_view<ArrayType1, ArrayType2, IndexType, ValueType, MemorySpace> view;
+
+    typedef view       coo_view_type;
+    typedef view const_coo_view_type;
     /*! \endcond */
 
     /**

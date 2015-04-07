@@ -351,6 +351,9 @@ public:
 
     typedef typename cusp::hyb_matrix<IndexType, ValueType, MemorySpace> container;
     typedef typename cusp::hyb_matrix_view<MatrixType1, MatrixType2, IndexType, ValueType, MemorySpace> view;
+
+    typedef view       coo_view_type;
+    typedef view const_coo_view_type;
     /*! \endcond */
 
     /*! View to the \p ELL portion of the HYB structure.
