@@ -17,24 +17,16 @@
 #pragma once
 
 #include <thrust/detail/config.h>
-#include <thrust/reduce.h>
-
-#include <thrust/system/detail/generic/tag.h>
-#include <thrust/iterator/counting_iterator.h>
-#include <thrust/iterator/discard_iterator.h>
-#include <thrust/iterator/permutation_iterator.h>
-#include <thrust/iterator/transform_iterator.h>
 
 #include <cusp/detail/format.h>
-#include <cusp/coo_matrix.h>
-#include <cusp/csr_matrix.h>
-
-#include <cusp/detail/utils.h>
-#include <cusp/detail/array2d_format_utils.h>
+#include <cusp/detail/functional.h>
 
 #include <cusp/system/detail/generic/multiply/generalized_spmv.h>
+#include <cusp/system/detail/generic/multiply/permute.h>
 #include <cusp/system/detail/generic/multiply/spgemm.h>
 #include <cusp/system/detail/generic/multiply/spmv.h>
+
+#include <thrust/functional.h>
 
 namespace cusp
 {
@@ -46,32 +38,32 @@ namespace generic
 {
 
 template <typename DerivedPolicy,
-         typename LinearOperator,
-         typename MatrixOrVector1,
-         typename MatrixOrVector2>
-void multiply_(thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-         LinearOperator&  A,
-         MatrixOrVector1& B,
-         MatrixOrVector2& C,
-         unknown_format,
-         array1d_format,
-         array1d_format)
+          typename LinearOperator,
+          typename MatrixOrVector1,
+          typename MatrixOrVector2>
+void multiply_inner(thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+               LinearOperator&  A,
+               MatrixOrVector1& B,
+               MatrixOrVector2& C,
+               unknown_format,
+               array1d_format,
+               array1d_format)
 {
     // user-defined LinearOperator
     A(B,C);
 }
 
 template <typename DerivedPolicy,
-         typename LinearOperator,
-         typename MatrixOrVector1,
-         typename MatrixOrVector2>
-void multiply_(thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-         LinearOperator&  A,
-         MatrixOrVector1& B,
-         MatrixOrVector2& C,
-         known_format,
-         array1d_format,
-         array1d_format)
+          typename LinearOperator,
+          typename MatrixOrVector1,
+          typename MatrixOrVector2>
+void multiply_inner(thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+               LinearOperator&  A,
+               MatrixOrVector1& B,
+               MatrixOrVector2& C,
+               known_format,
+               array1d_format,
+               array1d_format)
 {
     typedef typename LinearOperator::value_type ValueType;
 

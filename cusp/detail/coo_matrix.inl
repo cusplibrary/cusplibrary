@@ -23,11 +23,14 @@
 
 #include <cusp/detail/array2d_format_utils.h>
 
+#include <thrust/copy.h>
 #include <thrust/merge.h>
 #include <thrust/remove.h>
+#include <thrust/sequence.h>
 #include <thrust/sort.h>
 
 #include <thrust/iterator/counting_iterator.h>
+#include <thrust/iterator/discard_iterator.h>
 #include <thrust/iterator/zip_iterator.h>
 
 namespace cusp
@@ -90,7 +93,7 @@ void
 coo_matrix<IndexType,ValueType,MemorySpace>
 ::sort_by_row(void)
 {
-    cusp::sort_by_row(row_indices, column_indices, values);
+    cusp::sort_by_row(row_indices, column_indices, values, size_t(0), Parent::num_rows);
 }
 
 // sort matrix elements by row index
@@ -99,7 +102,7 @@ void
 coo_matrix<IndexType,ValueType,MemorySpace>
 ::sort_by_row_and_column(void)
 {
-    cusp::sort_by_row_and_column(row_indices, column_indices, values);
+    cusp::sort_by_row_and_column(row_indices, column_indices, values, size_t(0), Parent::num_rows, size_t(0), Parent::num_cols);
 }
 
 // determine whether matrix elements are sorted by row index
@@ -352,7 +355,7 @@ void
 coo_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>
 ::sort_by_row(void)
 {
-    cusp::sort_by_row(row_indices, column_indices, values);
+    cusp::sort_by_row(row_indices, column_indices, values, size_t(0), Parent::num_rows);
 }
 
 // sort matrix elements by row index
@@ -361,7 +364,7 @@ void
 coo_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>
 ::sort_by_row_and_column(void)
 {
-    cusp::sort_by_row_and_column(row_indices, column_indices, values);
+    cusp::sort_by_row_and_column(row_indices, column_indices, values, size_t(0), Parent::num_rows, size_t(0), Parent::num_cols);
 }
 
 // determine whether matrix elements are sorted by row index

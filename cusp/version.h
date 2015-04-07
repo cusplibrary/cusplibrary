@@ -29,7 +29,7 @@
 //  CUSP_VERSION / 100 % 1000 is the minor version
 //  CUSP_VERSION / 100000 is the major version
 
-#define CUSP_VERSION 400
+#define CUSP_VERSION 500
 #define CUSP_MAJOR_VERSION     (CUSP_VERSION / 100000)
 #define CUSP_MINOR_VERSION     (CUSP_VERSION / 100 % 1000)
 #define CUSP_SUBMINOR_VERSION  (CUSP_VERSION % 100)

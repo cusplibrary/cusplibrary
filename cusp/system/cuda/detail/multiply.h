@@ -38,6 +38,6 @@ namespace cuda
 
 // hack until ADL is operational
 using cusp::system::cuda::multiply;
-using cusp::system::cuda::multiply_;
+using cusp::system::cuda::multiply_inner;
 
 } // end namespace cusp

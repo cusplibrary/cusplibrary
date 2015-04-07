@@ -48,6 +48,7 @@ using namespace thrust::system::detail::sequential;
 #include <cusp/system/detail/sequential/convert.h>
 #include <cusp/system/detail/sequential/elementwise.h>
 #include <cusp/system/detail/sequential/multiply.h>
+#include <cusp/system/detail/sequential/sort.h>
 #include <cusp/system/detail/sequential/transpose.h>
 
 #include <cusp/system/detail/sequential/graph/breadth_first_search.h>

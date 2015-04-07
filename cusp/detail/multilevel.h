@@ -28,7 +28,7 @@
 #include <cusp/array1d.h>
 #include <cusp/linear_operator.h>
 
-#include <cusp/precond/aggregation/smoother/jacobi_smoother.h>
+#include <cusp/precond/smoother/jacobi_smoother.h>
 
 #include <thrust/detail/use_default.h>
 
@@ -91,27 +91,29 @@ namespace detail
 template <typename IndexType,
           typename ValueType,
           typename MemorySpace,
-          typename FormatType   = thrust::use_default,
-          typename SmootherType = thrust::use_default,
-          typename SolverType   = thrust::use_default>
+          typename FormatType,
+          typename SmootherType,
+          typename SolverType>
 class multilevel
 : public cusp::linear_operator<ValueType,MemorySpace>
 {
 private:
 
-    typedef typename detail::select_format_type<FormatType,MemorySpace>::type                   Format;
-    typedef typename detail::matrix_type<IndexType,ValueType,MemorySpace,Format>::type          MatrixType;
-    typedef typename detail::select_smoother_type<SmootherType,ValueType,MemorySpace>::type     Smoother;
-    typedef typename detail::select_solver_type<SolverType,ValueType,MemorySpace>::type         Solver;
+    typedef typename detail::select_format_type<FormatType,MemorySpace>::type					MatrixFormat;
+    typedef typename detail::matrix_type<IndexType,ValueType,MemorySpace,MatrixFormat>::type	SolveMatrixType;
+    typedef typename detail::select_smoother_type<SmootherType,ValueType,MemorySpace>::type		Smoother;
+    typedef typename detail::select_solver_type<SolverType,ValueType,MemorySpace>::type			Solver;
 
 public:
+
+	typedef cusp::multilevel<IndexType, ValueType, MemorySpace, MatrixFormat, Smoother, Solver>	container;
 
     /* \cond */
     struct level
     {
-        MatrixType R;  // restriction operator
-        MatrixType A;  // matrix
-        MatrixType P;  // prolongation operator
+        SolveMatrixType R;  // restriction operator
+        SolveMatrixType A;  // matrix
+        SolveMatrixType P;  // prolongation operator
         cusp::array1d<ValueType,MemorySpace> x;               // per-level solution
         cusp::array1d<ValueType,MemorySpace> b;               // per-level rhs
         cusp::array1d<ValueType,MemorySpace> residual;        // per-level residual
@@ -128,7 +130,7 @@ public:
     };
     /* \endcond */
 
-    MatrixType* A_ptr;
+    SolveMatrixType* A_ptr;
 
     Solver solver;
 
@@ -156,7 +158,7 @@ public:
 
 protected:
 
-    MatrixType A;
+    SolveMatrixType A;
 
     template <typename Array1, typename Array2>
     void _solve(const Array1& b, Array2& x, const size_t i);
@@ -164,15 +166,16 @@ protected:
     template <typename MatrixType2, typename Level>
     void setup_level(const size_t lvl, const MatrixType2& A, const Level& L);
 
-    void set_multilevel_matrix(const MatrixType& A);
+    template <typename Level>
+    void set_multilevel_matrix(const SolveMatrixType& A, const Level& L);
 
-    template <typename MatrixType2>
-    void set_multilevel_matrix(const MatrixType2& A);
+    template <typename SolveMatrixType2, typename Level>
+    void set_multilevel_matrix(const SolveMatrixType2& A, const Level& L);
 
-    void copy_or_swap_matrix(MatrixType& dst, MatrixType& src);
+    void copy_or_swap_matrix(SolveMatrixType& dst, SolveMatrixType& src);
 
-    template <typename MatrixType2>
-    void copy_or_swap_matrix(MatrixType& dst, MatrixType2& src);
+    template <typename SolveMatrixType2>
+    void copy_or_swap_matrix(SolveMatrixType& dst, SolveMatrixType2& src);
 
     void initialize_coarse_solver(void);
 };

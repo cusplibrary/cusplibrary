@@ -21,6 +21,8 @@
 
 #include <thrust/device_ptr.h>
 
+#include <algorithm>
+
 namespace cusp
 {
 namespace system

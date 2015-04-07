@@ -140,9 +140,9 @@ template <typename IndexType,
          typename MemorySpace,
          typename StencilPoint,
          typename GridDimension>
-void generate_matrix_from_stencil(      cusp::dia_matrix<IndexType,ValueType,MemorySpace>& matrix,
-                                        const cusp::array1d<StencilPoint,cusp::host_memory>& stencil,
-                                        const GridDimension& grid)
+void generate_matrix_from_stencil(cusp::dia_matrix<IndexType,ValueType,MemorySpace>& matrix,
+                                  const cusp::array1d<StencilPoint,cusp::host_memory>& stencil,
+                                  const GridDimension& grid)
 {
     IndexType num_dimensions = thrust::tuple_size<GridDimension>::value;
 
@@ -189,9 +189,9 @@ void generate_matrix_from_stencil(      cusp::dia_matrix<IndexType,ValueType,Mem
 template <typename MatrixType,
          typename StencilPoint,
          typename GridDimension>
-void generate_matrix_from_stencil(      MatrixType& matrix,
-                                        const cusp::array1d<StencilPoint,cusp::host_memory>& stencil,
-                                        const GridDimension& grid)
+void generate_matrix_from_stencil(MatrixType& matrix,
+                                  const cusp::array1d<StencilPoint,cusp::host_memory>& stencil,
+                                  const GridDimension& grid)
 {
     typedef typename MatrixType::index_type   IndexType;
     typedef typename MatrixType::value_type   ValueType;

@@ -35,7 +35,7 @@ template <typename DerivedPolicy,
          typename Matrix1,
          typename Matrix2,
          typename Matrix3>
-void multiply_(sequential::execution_policy<DerivedPolicy>& exec,
+void multiply_inner(sequential::execution_policy<DerivedPolicy>& exec,
               Matrix1& A,
               Matrix2& B,
               Matrix3& C,

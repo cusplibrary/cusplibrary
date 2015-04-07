@@ -29,15 +29,25 @@ namespace cusp
 namespace gallery
 {
 
+/*! \p generate_matrix_from_stencil: generate a matrix using the provided
+ * stencil operator and grid dimensions.
+ *
+ * \param matrix output
+ * \param stencil stencil object
+ * \param grid grid dimensions
+ * \tparam MatrixType matrix container
+ * \tparam StencilPoint stencil descriptor
+ * \tparam GridDimension dimensions of the grid
+ */
 template <typename MatrixType,
          typename StencilPoint,
          typename GridDimension>
-void generate_matrix_from_stencil(      MatrixType& matrix,
-                                        const cusp::array1d<StencilPoint,cusp::host_memory>& stencil,
-                                        const GridDimension& grid);
+void generate_matrix_from_stencil(MatrixType& matrix,
+                                  const cusp::array1d<StencilPoint,cusp::host_memory>& stencil,
+                                  const GridDimension& grid);
 
 } // end namespace gallery
 } // end namespace cusp
 
-#include <cusp/gallery/stencil.inl>
+#include <cusp/gallery/detail/stencil.inl>
 

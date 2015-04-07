@@ -1,4 +1,39 @@
 #######################################
+#            Cusp v0.5.0              #
+#######################################
+
+Summary
+  Cusp v0.5.0 provides support for CUDA 7.0RC and Thrust 1.8. This release
+  reflects a major refactoring of the dispatch system and provides closer
+  integration with the internal structure of Thrust. This release also
+  marks a substantial improvement in the overall documentation of Cusp.
+
+New Features
+  Gauss-Seidel and SOR relaxation methods for CSR matrices
+  Implementation of robust Lanczos and LOBPCG eigensolvers (experimental)
+  Native implementation of BFS, imported from back40computing
+  Policy based interface to control execution and memory allocation of algorithms
+  Support for generalized SpMV operations sparse matrices in any format
+  Unified verbose_monitor and convergence_monitor functionality into the default monitor class
+  New IO routines to read graphs or matrices stored in DIMACS or binary format
+  counting_sort implementation to improve the performance of host sorting routines
+  join_iterator used to combine separate iterators in an arbitrary order
+  random_iterator used to generate random numbers
+
+  Algorithms
+     cusp::graph::vertex_coloring
+     cusp::relaxation::gauss_seidel
+     cusp::relaxation::sor
+     cusp::relaxation::jacobi
+     cusp::io::dimacs
+     cusp::io::binary
+
+Bug Fixes
+  Resolved issues related to Thrust 1.7 & Thrust 1.8
+  Resolved issues related to CUDA 6.5 & CUDA 7.0
+  Silenced warnings concerning Thrust OMP backend
+
+#######################################
 #            Cusp v0.4.0              #
 #######################################
 

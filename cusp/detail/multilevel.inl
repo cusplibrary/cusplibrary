@@ -35,55 +35,65 @@ multilevel<IndexType,ValueType,MemorySpace,Format,SmootherType,SolverType>
 }
 
 template <typename IndexType, typename ValueType, typename MemorySpace, typename Format, typename SmootherType, typename SolverType>
-void multilevel<IndexType,ValueType,MemorySpace,Format,SmootherType,SolverType>
-::copy_or_swap_matrix(MatrixType& dst, MatrixType& src)
-{
-    dst.swap(src);
-}
-
-template <typename IndexType, typename ValueType, typename MemorySpace, typename Format, typename SmootherType, typename SolverType>
-template <typename MatrixType2>
-void multilevel<IndexType,ValueType,MemorySpace,Format,SmootherType,SolverType>
-::copy_or_swap_matrix(MatrixType& dst, MatrixType2& src)
-{
-    dst = src;
-}
-
-template <typename IndexType, typename ValueType, typename MemorySpace, typename Format, typename SmootherType, typename SolverType>
 template <typename MatrixType2, typename Level>
 void multilevel<IndexType,ValueType,MemorySpace,Format,SmootherType,SolverType>
 ::setup_level(const size_t lvl, const MatrixType2& A, const Level& L)
 {
     size_t N = A.num_rows;
 
-    // Setup solve matrix for each level
-    if(lvl == 0)
-        set_multilevel_matrix(A);
-    else
-        copy_or_swap_matrix(levels[lvl].A, A);
-
+    // Allocate arrays used during cycling
     levels[lvl].x.resize(N);
     levels[lvl].b.resize(N);
     levels[lvl].residual.resize(N);
 
-    // Initialize smoother for each level
-    levels[lvl].smoother.initialize(A, L);
+    // Setup solve matrix for each level
+    if(lvl == 0)
+    {
+        set_multilevel_matrix(A, L);
+    }
+    else
+    {
+        copy_or_swap_matrix(levels[lvl].A, const_cast<MatrixType2&>(A));
+
+        // Initialize smoother for each level
+        levels[lvl].smoother.initialize(levels[lvl].A, L);
+    }
 }
 
 template <typename IndexType, typename ValueType, typename MemorySpace, typename Format, typename SmootherType, typename SolverType>
-template <typename MatrixType2>
 void multilevel<IndexType,ValueType,MemorySpace,Format,SmootherType,SolverType>
-::set_multilevel_matrix(const MatrixType2& A)
+::copy_or_swap_matrix(SolveMatrixType& dst, SolveMatrixType& src)
+{
+    dst.swap(src);
+}
+
+template <typename IndexType, typename ValueType, typename MemorySpace, typename Format, typename SmootherType, typename SolverType>
+template <typename SolveMatrixType2>
+void multilevel<IndexType,ValueType,MemorySpace,Format,SmootherType,SolverType>
+::copy_or_swap_matrix(SolveMatrixType& dst, SolveMatrixType2& src)
+{
+    dst = src;
+}
+
+template <typename IndexType, typename ValueType, typename MemorySpace, typename Format, typename SmootherType, typename SolverType>
+template <typename SolveMatrixType2, typename Level>
+void multilevel<IndexType,ValueType,MemorySpace,Format,SmootherType,SolverType>
+::set_multilevel_matrix(const SolveMatrixType2& A, const Level& L)
 {
     this->A = A;
     A_ptr = &this->A;
+
+    levels[0].smoother.initialize(this->A, L);
 }
 
 template <typename IndexType, typename ValueType, typename MemorySpace, typename Format, typename SmootherType, typename SolverType>
+template <typename Level>
 void multilevel<IndexType,ValueType,MemorySpace,Format,SmootherType,SolverType>
-::set_multilevel_matrix(const MatrixType& A)
+::set_multilevel_matrix(const SolveMatrixType& A, const Level& L)
 {
-    A_ptr = const_cast<MatrixType*>(&A);
+    A_ptr = const_cast<SolveMatrixType*>(&A);
+
+    levels[0].smoother.initialize(A, L);
 }
 
 template <typename IndexType, typename ValueType, typename MemorySpace, typename Format, typename SmootherType, typename SolverType>

@@ -13,20 +13,9 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+#pragma once
 
 #include <cusp/array1d.h>
-#include <cusp/sort.h>
-
-#include <cusp/format_utils.h>
-
-#include <thrust/gather.h>
-#include <thrust/scan.h>
-#include <thrust/scatter.h>
-#include <thrust/transform.h>
-#include <thrust/reduce.h>
-#include <thrust/inner_product.h>
-#include <thrust/iterator/zip_iterator.h>
-#include <thrust/iterator/permutation_iterator.h>
 
 #include <list>
 
@@ -89,6 +78,8 @@ size_t spmm_csr_pass2(const size_t num_rows, const size_t num_cols,
 {
     typedef typename Array7::value_type IndexType;
     typedef typename Array9::value_type ValueType;
+    typedef typename Array7::container IndexArray;
+    typedef typename Array9::container ValueArray;
 
     size_t num_nonzeros = 0;
     C_row_offsets[0] = 0;
@@ -99,8 +90,8 @@ size_t spmm_csr_pass2(const size_t num_rows, const size_t num_cols,
         const IndexType init   = static_cast<IndexType>(-2);
 
         // Compute entries of C
-        cusp::array1d<IndexType,cusp::host_memory> next(num_cols, unseen);
-        cusp::array1d<ValueType,cusp::host_memory> sums(num_cols, ValueType(0));
+        IndexArray next(num_cols, unseen);
+        ValueArray sums(num_cols, ValueType(0));
 
 
         #pragma omp for ordered
@@ -167,123 +158,35 @@ size_t spmm_csr_pass2(const size_t num_rows, const size_t num_cols,
 }
 
 template <typename DerivedPolicy,
-         typename MatrixType,
          typename Matrix1,
          typename Matrix2,
          typename Matrix3>
-void multiply_(omp::execution_policy<DerivedPolicy>& exec,
-              Matrix1& A,
-              Matrix2& B,
-              Matrix3& C,
-              csr_format,
-              csr_format,
-              csr_format)
+void multiply_inner(omp::execution_policy<DerivedPolicy>& exec,
+                    Matrix1& A,
+                    Matrix2& B,
+                    Matrix3& C,
+                    csr_format,
+                    csr_format,
+                    csr_format)
 {
     typedef typename Matrix3::index_type IndexType;
-    typedef typename Matrix3::value_type ValueType;
-    typedef typename Matrix1::index_type IndexType1;
-    typedef typename Matrix2::index_type IndexType2;
 
-    cusp::array1d<IndexType, cusp::host_memory> C_row_offsets( A.num_rows + 1);
-    C_row_offsets[0] = 0;
+    IndexType num_nonzeros =
+        spmm_csr_pass1(A.num_rows, B.num_cols,
+                       A.row_offsets, A.column_indices,
+                       B.row_offsets, B.column_indices);
 
-    #pragma omp parallel
-    {
-        cusp::array1d<size_t, cusp::host_memory> mask(B.num_cols, A.num_rows);
-        //MW: Compute nnz in each row of C (including explicit zeros)
-        //MW: spmm_csr_pass1 only computes the total number of nonzeros
-        #pragma omp for
-        for(size_t i = 0; i < A.num_rows; i++)
-        {
-            IndexType num_nonzeros_in_row_i = 0;
-            for(IndexType1 jj = A.row_offsets[i]; jj < A.row_offsets[i+1]; jj++)
-            {
-                IndexType1 j = A.column_indices[jj];
+    // Resize output
+    C.resize(A.num_rows, B.num_cols, num_nonzeros);
 
-                for(IndexType2 kk = B.row_offsets[j]; kk < B.row_offsets[j+1]; kk++)
-                {
-                    IndexType2 k = B.column_indices[kk];
+    num_nonzeros =
+        spmm_csr_pass2(A.num_rows, B.num_cols,
+                       A.row_offsets, A.column_indices, A.values,
+                       B.row_offsets, B.column_indices, B.values,
+                       C.row_offsets, C.column_indices, C.values);
 
-                    if(mask[k] != i)
-                    {
-                        mask[k] = i;
-                        num_nonzeros_in_row_i++;
-                    }
-                }
-            }
-            C_row_offsets[i+1] = num_nonzeros_in_row_i;
-        } //omp for
-    }//omp parallel
-
-    //MW: now to transform to offsets and ressize column and values
-    thrust::inclusive_scan( thrust::omp::par, C_row_offsets.begin(), C_row_offsets.end(), C_row_offsets.begin()); //MW: fast
-
-    size_t num_entries_in_C = C_row_offsets[A.num_rows];
-    cusp::array1d<IndexType, cusp::host_memory> C_column_indices( num_entries_in_C);
-    cusp::array1d<ValueType, cusp::host_memory> C_values( num_entries_in_C);
-
-    //MW: parallel version of spmm_csr_pass2 that doesn't account for explicit zeros
-    #pragma omp parallel
-    {
-        const IndexType unseen = static_cast<IndexType>(-1);
-        const IndexType init   = static_cast<IndexType>(-2);
-
-        // Compute entries of C
-        cusp::array1d<IndexType,cusp::host_memory> next(B.num_cols, unseen);
-        cusp::array1d<ValueType,cusp::host_memory> sums(B.num_cols, ValueType(0));
-
-        #pragma omp for
-        for(size_t i = 0; i < A.num_rows; i++)
-        {
-            IndexType head   = init;
-            IndexType length =    0;
-
-            IndexType jj_start = A.row_offsets[i];
-            IndexType jj_end   = A.row_offsets[i+1];
-
-            for(IndexType jj = jj_start; jj < jj_end; jj++)
-            {
-                IndexType j = A.column_indices[jj];
-                ValueType v = A.values[jj];
-
-                IndexType kk_start = B.row_offsets[j];
-                IndexType kk_end   = B.row_offsets[j+1];
-
-                for(IndexType kk = kk_start; kk < kk_end; kk++)
-                {
-                    IndexType k = B.column_indices[kk];
-
-                    sums[k] += v * B.values[kk];
-
-                    if(next[k] == unseen)
-                    {
-                        next[k] = head;
-                        head  = k;
-                        length++;
-                    }
-                }
-            }
-
-            IndexType j = C_row_offsets[i];
-            for(IndexType jj = 0; jj < length; jj++)
-            {
-                C_column_indices[j+jj] = head;
-                C_values[j+jj]         = sums[head];
-
-                IndexType temp = head;
-                head = next[head];
-                // clear arrays
-                next[temp] = unseen;
-                sums[temp] = ValueType(0);
-            }
-
-        } //omp for
-    }//omp parallel
-    C.row_offsets.swap( C_row_offsets);
-    C.column_indices.swap( C_column_indices);
-    C.values.swap( C_values);
-    C.resize(A.num_rows, B.num_cols, num_entries_in_C); //MW: cheap
-    // XXX note: entries of C are unsorted within each row
+    // Resize output again since pass2 omits explict zeros
+    C.resize(A.num_rows, B.num_cols, num_nonzeros);
 }
 
 } // end namespace omp

@@ -16,6 +16,8 @@
 
 #include <cusp/detail/format.h>
 #include <cusp/array1d.h>
+#include <cusp/system/detail/adl/sort.h>
+#include <cusp/system/detail/generic/sort.h>
 
 #include <thrust/binary_search.h>
 #include <thrust/copy.h>
@@ -31,9 +33,56 @@
 namespace cusp
 {
 
+template <typename DerivedPolicy, typename ArrayType>
+void counting_sort(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                   ArrayType& v, typename ArrayType::value_type min, typename ArrayType::value_type max)
+{
+    using cusp::system::detail::generic::counting_sort;
+
+    counting_sort(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), v, min, max);
+}
+
+template <typename ArrayType>
+void counting_sort(ArrayType& v, typename ArrayType::value_type min, typename ArrayType::value_type max)
+{
+    using thrust::system::detail::generic::select_system;
+
+    typedef typename ArrayType::memory_space System;
+
+    System system;
+
+    cusp::counting_sort(select_system(system), v, min, max);
+}
+
+template <typename DerivedPolicy, typename ArrayType1, typename ArrayType2>
+void counting_sort_by_key(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                          ArrayType1& keys, ArrayType2& vals,
+                          typename ArrayType1::value_type min, typename ArrayType1::value_type max)
+{
+    using cusp::system::detail::generic::counting_sort_by_key;
+
+    counting_sort_by_key(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), keys, vals, min, max);
+}
+
+template <typename ArrayType1, typename ArrayType2>
+void counting_sort_by_key(ArrayType1& keys, ArrayType2& vals,
+                          typename ArrayType1::value_type min, typename ArrayType1::value_type max)
+{
+    using thrust::system::detail::generic::select_system;
+
+    typedef typename ArrayType1::memory_space System1;
+    typedef typename ArrayType2::memory_space System2;
+
+    System1 system1;
+    System2 system2;
+
+    cusp::counting_sort_by_key(select_system(system1,system2), keys, vals, min, max);
+}
+
 template <typename DerivedPolicy, typename ArrayType1, typename ArrayType2, typename ArrayType3>
 void sort_by_row(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-                 ArrayType1& row_indices, ArrayType2& column_indices, ArrayType3& values)
+                 ArrayType1& row_indices, ArrayType2& column_indices, ArrayType3& values,
+                 const int min_row, const int max_row)
 {
     typedef typename ArrayType1::value_type IndexType;
     typedef typename ArrayType3::value_type ValueType;
@@ -41,11 +90,17 @@ void sort_by_row(const thrust::detail::execution_policy_base<DerivedPolicy> &exe
 
     size_t N = row_indices.size();
 
+    IndexType minr = min_row == -1 ? 0 : min_row;
+    IndexType maxr = max_row;
+
+    if(max_row == -1)
+      maxr = *thrust::max_element(row_indices.begin(), row_indices.end());
+
     cusp::array1d<IndexType,MemorySpace> permutation(N);
     thrust::sequence(exec, permutation.begin(), permutation.end());
 
     // compute permutation that sorts the row_indices
-    thrust::sort_by_key(exec, row_indices.begin(), row_indices.end(), permutation.begin());
+    cusp::counting_sort_by_key(exec, row_indices, permutation, minr, maxr);
 
     // copy column_indices and values to temporary buffers
     cusp::array1d<IndexType,MemorySpace> temp1(column_indices);
@@ -59,7 +114,8 @@ void sort_by_row(const thrust::detail::execution_policy_base<DerivedPolicy> &exe
 }
 
 template <typename ArrayType1, typename ArrayType2, typename ArrayType3>
-void sort_by_row(ArrayType1& row_indices, ArrayType2& column_indices, ArrayType3& values)
+void sort_by_row(ArrayType1& row_indices, ArrayType2& column_indices, ArrayType3& values,
+                 const int min_row, const int max_row)
 {
     using thrust::system::detail::generic::select_system;
 
@@ -71,12 +127,15 @@ void sort_by_row(ArrayType1& row_indices, ArrayType2& column_indices, ArrayType3
     System2 system2;
     System3 system3;
 
-    cusp::sort_by_row(select_system(system1,system2,system3), row_indices, column_indices, values);
+    cusp::sort_by_row(select_system(system1,system2,system3),
+                      row_indices, column_indices, values,
+                      min_row, max_row);
 }
 
 template <typename DerivedPolicy, typename ArrayType1, typename ArrayType2, typename ArrayType3>
 void sort_by_row_and_column(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-                            ArrayType1& row_indices, ArrayType2& column_indices, ArrayType3& values)
+                            ArrayType1& row_indices, ArrayType2& column_indices, ArrayType3& values,
+                            const int min_row, const int max_row, const int min_col, const int max_col)
 {
     typedef typename ArrayType1::value_type IndexType;
     typedef typename ArrayType3::value_type ValueType;
@@ -87,14 +146,24 @@ void sort_by_row_and_column(const thrust::detail::execution_policy_base<DerivedP
     cusp::array1d<IndexType,MemorySpace> permutation(N);
     thrust::sequence(exec, permutation.begin(), permutation.end());
 
+    IndexType minr = min_row == -1 ? 0 : min_row;
+    IndexType maxr = max_row;
+    IndexType minc = min_col == -1 ? 0 : min_col;
+    IndexType maxc = max_col;
+
+    if(max_row == -1)
+      maxr = *thrust::max_element(row_indices.begin(), row_indices.end());
+    if(max_col == -1)
+      maxc = *thrust::max_element(column_indices.begin(), column_indices.end());
+
     // compute permutation and sort by (I,J)
     {
         cusp::array1d<IndexType,MemorySpace> temp(column_indices);
-        thrust::stable_sort_by_key(exec, temp.begin(), temp.end(), permutation.begin());
+        cusp::counting_sort_by_key(exec, temp, permutation, minc, maxc);
 
         thrust::copy(exec, row_indices.begin(), row_indices.end(), temp.begin());
         thrust::gather(exec, permutation.begin(), permutation.end(), temp.begin(), row_indices.begin());
-        thrust::stable_sort_by_key(exec, row_indices.begin(), row_indices.end(), permutation.begin());
+        cusp::counting_sort_by_key(exec, row_indices, permutation, minr, maxr);
 
         thrust::copy(exec, column_indices.begin(), column_indices.end(), temp.begin());
         thrust::gather(exec, permutation.begin(), permutation.end(), temp.begin(), column_indices.begin());
@@ -108,7 +177,8 @@ void sort_by_row_and_column(const thrust::detail::execution_policy_base<DerivedP
 }
 
 template <typename ArrayType1, typename ArrayType2, typename ArrayType3>
-void sort_by_row_and_column(ArrayType1& row_indices, ArrayType2& column_indices, ArrayType3& values)
+void sort_by_row_and_column(ArrayType1& row_indices, ArrayType2& column_indices, ArrayType3& values,
+                            const int min_row, const int max_row, const int min_col, const int max_col)
 {
     using thrust::system::detail::generic::select_system;
 
@@ -120,7 +190,9 @@ void sort_by_row_and_column(ArrayType1& row_indices, ArrayType2& column_indices,
     System2 system2;
     System3 system3;
 
-    cusp::sort_by_row_and_column(select_system(system1,system2,system3), row_indices, column_indices, values);
+    cusp::sort_by_row_and_column(select_system(system1,system2,system3),
+                                 row_indices, column_indices, values,
+                                 min_row, max_row, min_col, max_col);
 }
 
 } // end namespace cusp

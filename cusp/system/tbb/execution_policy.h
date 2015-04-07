@@ -33,6 +33,7 @@
 #include <cusp/system/tbb/detail/convert.h>
 #include <cusp/system/tbb/detail/elementwise.h>
 #include <cusp/system/tbb/detail/multiply.h>
+#include <cusp/system/tbb/detail/sort.h>
 #include <cusp/system/tbb/detail/transpose.h>
 
 #include <cusp/system/tbb/detail/graph/breadth_first_search.h>

@@ -86,6 +86,7 @@ struct multiplies_value : public base_functor< thrust::multiplies<T> >
 {
     typedef base_functor< thrust::multiplies<T> > Parent;
 
+    __host__ __device__
     multiplies_value(const T value) : Parent(value) {}
 };
 
@@ -94,6 +95,7 @@ struct greater_value : public base_functor< thrust::greater<T> >
 {
     typedef base_functor< thrust::greater<T> > Parent;
 
+    __host__ __device__
     greater_value(const T value) : Parent(value) {}
 };
 
@@ -102,6 +104,7 @@ struct greater_equal_value : public base_functor< thrust::greater_equal<T> >
 {
     typedef base_functor< thrust::greater_equal<T> > Parent;
 
+    __host__ __device__
     greater_equal_value(const T value) : Parent(value) {}
 };
 
@@ -110,6 +113,7 @@ struct less_value : public base_functor< thrust::less<T> >
 {
     typedef base_functor< thrust::less<T> > Parent;
 
+    __host__ __device__
     less_value(const T value) : Parent(value) {}
 };
 
@@ -118,6 +122,7 @@ struct less_equal_value : public base_functor< thrust::less_equal<T> >
 {
     typedef base_functor< thrust::less_equal<T> > Parent;
 
+    __host__ __device__
     less_equal_value(const T value) : Parent(value) {}
 };
 

@@ -24,6 +24,8 @@
 #include <cusp/system/cuda/detail/multiply/coo_serial.h>
 #include <cusp/system/cuda/detail/multiply/coo_flat_spmv.h>
 
+#include <algorithm>
+
 // Note: Unlike the other kernels this kernel implements y += A*x
 
 namespace cusp

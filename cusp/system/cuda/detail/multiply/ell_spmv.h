@@ -26,6 +26,7 @@
 #include <thrust/device_ptr.h>
 
 #include <cassert>
+#include <algorithm>
 
 namespace cusp
 {

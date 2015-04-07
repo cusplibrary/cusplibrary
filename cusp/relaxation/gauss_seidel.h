@@ -25,17 +25,6 @@
 
 namespace cusp
 {
-/*! \cond */
-namespace precond
-{
-namespace aggregation
-{
-// forward definitions
-template<typename MatrixType> struct sa_level;
-} // end namespace aggregation
-} // end namespace precond
-/*! \endcond */
-
 namespace relaxation
 {
 
@@ -138,7 +127,8 @@ public:
      *  smoothing.
      */
     template <typename MatrixType>
-    gauss_seidel(const MatrixType& A, sweep default_direction=SYMMETRIC);
+    gauss_seidel(const MatrixType& A, sweep default_direction=SYMMETRIC,
+                 typename thrust::detail::enable_if_convertible<typename MatrixType::format,cusp::csr_format>::type* = 0);
 
     /*! Copy constructor for \p gauss_seidel smoother.
      *

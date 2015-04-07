@@ -31,11 +31,13 @@ namespace detail
 namespace generic
 {
 
-template <typename DerivedPolicy,
-          typename SourceType,
-          typename DestinationType>
-void permutation_to_csr(thrust::execution_policy<DerivedPolicy>& exec,
-                        const SourceType& src, DestinationType& dst)
+template <typename DerivedPolicy, typename SourceType, typename DestinationType>
+typename enable_if_same_system<SourceType,DestinationType>::type
+convert(thrust::execution_policy<DerivedPolicy>& exec,
+        const SourceType& src,
+        DestinationType& dst,
+        cusp::permutation_format&,
+        cusp::csr_format&)
 {
     typedef typename DestinationType::index_type IndexType;
     typedef typename DestinationType::value_type ValueType;
@@ -47,11 +49,13 @@ void permutation_to_csr(thrust::execution_policy<DerivedPolicy>& exec,
     thrust::fill(exec, dst.values.begin(), dst.values.end(), ValueType(1));
 }
 
-template <typename DerivedPolicy,
-          typename SourceType,
-          typename DestinationType>
-void permutation_to_coo(thrust::execution_policy<DerivedPolicy>& exec,
-                        const SourceType& src, DestinationType& dst)
+template <typename DerivedPolicy, typename SourceType, typename DestinationType>
+typename enable_if_same_system<SourceType,DestinationType>::type
+convert(thrust::execution_policy<DerivedPolicy>& exec,
+        const SourceType& src,
+        DestinationType& dst,
+        cusp::permutation_format&,
+        cusp::coo_format&)
 {
     typedef typename DestinationType::index_type IndexType;
     typedef typename DestinationType::value_type ValueType;

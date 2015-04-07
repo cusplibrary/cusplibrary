@@ -48,6 +48,7 @@ using namespace thrust::system::cuda;
 #include <cusp/system/cuda/detail/convert.h>
 #include <cusp/system/cuda/detail/elementwise.h>
 #include <cusp/system/cuda/detail/multiply.h>
+#include <cusp/system/cuda/detail/sort.h>
 #include <cusp/system/cuda/detail/transpose.h>
 
 #include <cusp/system/cuda/detail/graph/breadth_first_search.h>

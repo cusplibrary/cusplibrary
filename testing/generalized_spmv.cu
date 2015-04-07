@@ -100,27 +100,27 @@ void TestGeneralizedSpMV()
     }
     {
         HostMatrix M;
-        cusp::gallery::random( 21,  23,   5, M);
+        cusp::gallery::random(M,  21,  23,   5);
         matrices.push_back(M);
     }
     {
         HostMatrix M;
-        cusp::gallery::random( 45,  37,  15, M);
+        cusp::gallery::random(M,  45,  37,  15);
         matrices.push_back(M);
     }
     {
         HostMatrix M;
-        cusp::gallery::random(129, 127,  40, M);
+        cusp::gallery::random(M, 129, 127,  40);
         matrices.push_back(M);
     }
     {
         HostMatrix M;
-        cusp::gallery::random(355, 378, 234, M);
+        cusp::gallery::random(M, 355, 378, 234);
         matrices.push_back(M);
     }
     {
         HostMatrix M;
-        cusp::gallery::random(512, 512, 276, M);
+        cusp::gallery::random(M, 512, 512, 276);
         matrices.push_back(M);
     }
 

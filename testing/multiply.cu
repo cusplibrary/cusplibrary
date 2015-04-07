@@ -92,13 +92,13 @@ void TestSparseMatrixMatrixMultiply(void)
     cusp::gallery::poisson5pt(H, 8, 3);
 
     cusp::array2d<float,cusp::host_memory> I;
-    cusp::gallery::random(24, 24, 150, I);
+    cusp::gallery::random(I, 24, 24, 150);
 
     cusp::array2d<float,cusp::host_memory> J;
-    cusp::gallery::random(24, 24, 50, J);
+    cusp::gallery::random(J, 24, 24, 50);
 
     cusp::array2d<float,cusp::host_memory> K;
-    cusp::gallery::random(24, 12, 20, K);
+    cusp::gallery::random(K, 24, 12, 20);
 
     //thrust::host_vector< cusp::array2d<float,cusp::host_memory> > matrices;
     std::vector< cusp::array2d<float,cusp::host_memory> > matrices;
@@ -225,13 +225,13 @@ void TestSparseMatrixDenseMatrixMultiply(void)
     cusp::gallery::poisson5pt(H, 8, 3);
 
     cusp::array2d<float,cusp::host_memory> I;
-    cusp::gallery::random(24, 24, 150, I);
+    cusp::gallery::random(I, 24, 24, 150);
 
     cusp::array2d<float,cusp::host_memory> J;
-    cusp::gallery::random(24, 24, 50, J);
+    cusp::gallery::random(J, 24, 24, 50);
 
     cusp::array2d<float,cusp::host_memory> K;
-    cusp::gallery::random(24, 12, 20, K);
+    cusp::gallery::random(K, 24, 12, 20);
 
     //thrust::host_vector< cusp::array2d<float,cusp::host_memory,cusp::column_major> > matrices;
     std::vector< cusp::array2d<float,cusp::host_memory,cusp::column_major> > matrices;
@@ -458,4 +458,88 @@ void TestMultiplyPermutationOperator(void)
     ASSERT_EQUAL(y[3],  7.0f);
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestMultiplyPermutationOperator);
+
+template<typename TestMatrix>
+void TestPermutationMatrixMultiply(void)
+{
+    typedef typename TestMatrix::index_type   IndexType;
+    typedef typename TestMatrix::value_type   ValueType;
+    typedef typename TestMatrix::memory_space MemorySpace;
+
+    cusp::coo_matrix<IndexType,ValueType,cusp::host_memory> A(3,3,7);
+
+    A.row_indices[0] = 0;
+    A.column_indices[0] = 0;
+    A.values[0] = 10;
+    A.row_indices[1] = 0;
+    A.column_indices[1] = 1;
+    A.values[1] = 20;
+    A.row_indices[2] = 0;
+    A.column_indices[2] = 2;
+    A.values[2] = 30;
+    A.row_indices[3] = 1;
+    A.column_indices[3] = 0;
+    A.values[3] = 40;
+    A.row_indices[4] = 1;
+    A.column_indices[4] = 1;
+    A.values[4] = 50;
+    A.row_indices[5] = 2;
+    A.column_indices[5] = 0;
+    A.values[5] = 60;
+    A.row_indices[6] = 2;
+    A.column_indices[6] = 2;
+    A.values[6] = 70;
+
+    cusp::array1d<IndexType,MemorySpace> permutation(3);
+    permutation[0] = 2;
+    permutation[1] = 1;
+    permutation[2] = 0;
+
+    cusp::permutation_matrix<ValueType,MemorySpace,IndexType> P(3, permutation);
+
+    // Test row permutations
+    {
+        TestMatrix PA;
+        TestMatrix A_(A);
+        cusp::multiply(P, A_, PA);
+
+        cusp::array2d<ValueType,cusp::host_memory> host_matrix(PA);
+
+        ASSERT_EQUAL(PA.num_rows,    A.num_rows);
+        ASSERT_EQUAL(PA.num_cols,    A.num_cols);
+        ASSERT_EQUAL(PA.num_entries, A.num_entries);
+        ASSERT_EQUAL(host_matrix(0,0), ValueType(60));
+        ASSERT_EQUAL(host_matrix(0,1), ValueType( 0));
+        ASSERT_EQUAL(host_matrix(0,2), ValueType(70));
+        ASSERT_EQUAL(host_matrix(1,0), ValueType(40));
+        ASSERT_EQUAL(host_matrix(1,1), ValueType(50));
+        ASSERT_EQUAL(host_matrix(1,2), ValueType( 0));
+        ASSERT_EQUAL(host_matrix(2,0), ValueType(10));
+        ASSERT_EQUAL(host_matrix(2,1), ValueType(20));
+        ASSERT_EQUAL(host_matrix(2,2), ValueType(30));
+    }
+
+    // Test column permutations
+    {
+        TestMatrix AP;
+        TestMatrix A_(A);
+        cusp::multiply(A_, P, AP);
+
+        cusp::array2d<ValueType,cusp::host_memory> host_matrix(AP);
+
+        ASSERT_EQUAL(AP.num_rows,    A.num_rows);
+        ASSERT_EQUAL(AP.num_cols,    A.num_cols);
+        ASSERT_EQUAL(AP.num_entries, A.num_entries);
+        ASSERT_EQUAL(host_matrix(0,0), ValueType(30));
+        ASSERT_EQUAL(host_matrix(0,1), ValueType(20));
+        ASSERT_EQUAL(host_matrix(0,2), ValueType(10));
+        ASSERT_EQUAL(host_matrix(1,0), ValueType( 0));
+        ASSERT_EQUAL(host_matrix(1,1), ValueType(50));
+        ASSERT_EQUAL(host_matrix(1,2), ValueType(40));
+        ASSERT_EQUAL(host_matrix(2,0), ValueType(70));
+        ASSERT_EQUAL(host_matrix(2,1), ValueType( 0));
+        ASSERT_EQUAL(host_matrix(2,2), ValueType(60));
+    }
+}
+DECLARE_SPARSE_MATRIX_UNITTEST(TestPermutationMatrixMultiply);
 

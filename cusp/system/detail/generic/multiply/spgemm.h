@@ -140,7 +140,7 @@ template <typename DerivedPolicy,
          typename Matrix1,
          typename Matrix2,
          typename Matrix3>
-void multiply_(thrust::execution_policy<DerivedPolicy>& exec,
+void multiply_inner(thrust::execution_policy<DerivedPolicy>& exec,
               Matrix1& A,
               Matrix2& B,
               Matrix3& C,
@@ -315,7 +315,7 @@ template <typename DerivedPolicy,
          typename Matrix1,
          typename Matrix2,
          typename Matrix3>
-void multiply_(thrust::execution_policy<DerivedPolicy>& exec,
+void multiply_inner(thrust::execution_policy<DerivedPolicy>& exec,
               Matrix1& A,
               Matrix2& B,
               Matrix3& C,
@@ -338,14 +338,14 @@ void multiply_(thrust::execution_policy<DerivedPolicy>& exec,
 
     cusp::multiply(exec, A_,B_,C_);
 
-    int num_zeros = thrust::count(C_.values.begin(), C_.values.end(), ValueType(0));
+    int num_zeros = thrust::count(exec, C_.values.begin(), C_.values.end(), ValueType(0));
 
     // The result of the elementwise operation contains zero entries so we need
     // to contract the result to produce a strictly valid COO matrix
     if(num_zeros != 0)
     {
         int num_reduced_entries =
-            thrust::remove_if(
+            thrust::remove_if(exec,
                 thrust::make_zip_iterator(
                   thrust::make_tuple(C_.row_indices.begin(), C_.column_indices.begin(), C_.values.begin())),
                 thrust::make_zip_iterator(
@@ -358,7 +358,7 @@ void multiply_(thrust::execution_policy<DerivedPolicy>& exec,
         C_.resize(C_.num_rows, C_.num_cols, num_reduced_entries);
     }
 
-    cusp::convert(C_, C);
+    cusp::convert(exec, C_, C);
 }
 
 } // end namespace generic

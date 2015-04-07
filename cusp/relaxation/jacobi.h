@@ -25,17 +25,6 @@
 
 namespace cusp
 {
-/*! \cond */
-namespace precond
-{
-namespace aggregation
-{
-// forward definitions
-template<typename MatrixType> struct sa_level;
-} // end namespace aggregation
-} // end namespace precond
-/*! \endcond */
-
 namespace relaxation
 {
 
@@ -137,7 +126,7 @@ public:
      */
     template<typename MemorySpace2>
     jacobi(const jacobi<ValueType,MemorySpace2>& A)
-        : default_omega(A.default_omega), temp(A.temp), diagonal(A.diagonal){}
+        : default_omega(A.default_omega), diagonal(A.diagonal), temp(A.temp){}
 
     /*! Perform Jacobi relaxation using default omega damping factor specified during
      * construction of this \p jacobi smoother
