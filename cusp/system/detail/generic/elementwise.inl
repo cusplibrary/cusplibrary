@@ -133,11 +133,12 @@ void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
 
     typedef typename elementwise_detail::ops<BinaryFunction>::unary_op_type     UnaryOp;
     typedef typename elementwise_detail::ops<BinaryFunction>::binary_op_type    BinaryOp;
-    typedef thrust::transform_iterator<UnaryOp, ValueIterator2>                      TransValueIterator2;
-    typedef cusp::join_iterator<ValueIterator1, TransValueIterator2, IndexIterator>  JoinValueIterator;
+    typedef thrust::transform_iterator<UnaryOp, ValueIterator2>                 TransValueIterator;
+    typedef cusp::join_iterator<ValueIterator1, TransValueIterator, IndexIterator>  JoinValueIterator;
 
-    IndexType A_nnz = A.num_entries;
-    IndexType B_nnz = B.num_entries;
+    size_t A_nnz = A.num_entries;
+    size_t B_nnz = B.num_entries;
+    size_t num_entries = A_nnz + B_nnz;
 
     if (A_nnz == 0 && B_nnz == 0)
     {
@@ -145,10 +146,11 @@ void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
         return;
     }
 
+#if THRUST_VERSION >= 100900
     ZipIterator1 A_tuples(thrust::make_tuple(A.row_indices.begin(), A.column_indices.begin()));
     ZipIterator2 B_tuples(thrust::make_tuple(B.row_indices.begin(), B.column_indices.begin()));
 
-    cusp::array1d<IndexType,MemorySpace> indices(A_nnz + B_nnz);
+    cusp::array1d<IndexType,MemorySpace> indices(num_entries);
     thrust::sequence(exec, indices.begin(), indices.end());
 
     thrust::merge_by_key(exec,
@@ -162,7 +164,7 @@ void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
 
     JoinIndexIterator combined_tuples(A_tuples, A_tuples + A_nnz, B_tuples, B_tuples + B_nnz, indices.begin());
 
-    TransValueIterator2 vals(B.values.begin(), UnaryOp());
+    TransValueIterator vals(B.values.begin(), UnaryOp());
     JoinValueIterator combined_values(A.values.begin(), A.values.begin() + A_nnz, vals, vals + B_nnz, indices.begin());
 
     // compute unique number of nonzeros in the output
@@ -178,6 +180,7 @@ void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
     C.resize(A.num_rows, A.num_cols, C_nnz);
 
     // sum values with the same (i,j)
+
     thrust::reduce_by_key(exec,
                           combined_tuples.begin(),
                           combined_tuples.end(),
@@ -186,6 +189,45 @@ void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
                           C.values.begin(),
                           thrust::equal_to< thrust::tuple<IndexType,IndexType> >(),
                           BinaryOp());
+#else
+    cusp::array1d<IndexType,MemorySpace> rows(num_entries);
+    cusp::array1d<IndexType,MemorySpace> cols(num_entries);
+    cusp::array1d<ValueType,MemorySpace> vals(num_entries);
+
+    thrust::copy(exec, A.row_indices.begin(),    A.row_indices.end(),    rows.begin());
+    thrust::copy(exec, B.row_indices.begin(),    B.row_indices.end(),    rows.begin() + A_nnz);
+    thrust::copy(exec, A.column_indices.begin(), A.column_indices.end(), cols.begin());
+    thrust::copy(exec, B.column_indices.begin(), B.column_indices.end(), cols.begin() + A_nnz);
+    thrust::copy(exec, A.values.begin(),         A.values.end(),         vals.begin());
+
+    // apply transformation to B's values
+    thrust::transform(exec, B.values.begin(), B.values.end(), vals.begin() + A_nnz, UnaryOp());
+
+    // sort by (I,J)
+    cusp::sort_by_row_and_column(exec, rows, cols, vals, 0, A.num_rows, 0, A.num_cols);
+
+    // compute unique number of nonzeros in the output
+    IndexType C_nnz = thrust::inner_product(exec,
+                                            thrust::make_zip_iterator(thrust::make_tuple(rows.begin(), cols.begin())),
+                                            thrust::make_zip_iterator(thrust::make_tuple(rows.end (),  cols.end()))   - 1,
+                                            thrust::make_zip_iterator(thrust::make_tuple(rows.begin(), cols.begin())) + 1,
+                                            IndexType(1),
+                                            thrust::plus<IndexType>(),
+                                            thrust::not_equal_to< thrust::tuple<IndexType,IndexType> >());
+
+    // allocate space for output
+    C.resize(A.num_rows, A.num_cols, C_nnz);
+
+    // sum values with the same (i,j)
+    thrust::reduce_by_key(exec,
+                          thrust::make_zip_iterator(thrust::make_tuple(rows.begin(), cols.begin())),
+                          thrust::make_zip_iterator(thrust::make_tuple(rows.end(),   cols.end())),
+                          vals.begin(),
+                          thrust::make_zip_iterator(thrust::make_tuple(C.row_indices.begin(), C.column_indices.begin())),
+                          C.values.begin(),
+                          thrust::equal_to< thrust::tuple<IndexType,IndexType> >(),
+                          thrust::plus<ValueType>());
+#endif
 
     int num_zeros = thrust::count(exec, C.values.begin(), C.values.end(), ValueType(0));
 

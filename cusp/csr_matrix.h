@@ -127,8 +127,8 @@ public:
             typename values_array_type::const_view,
             IndexType, ValueType, MemorySpace> const_view;
 
-    typedef typename cusp::detail::coo_view_type<IndexType,ValueType,MemorySpace,cusp::csr_format>::view coo_view_type;
-    typedef typename cusp::detail::coo_view_type<IndexType,ValueType,MemorySpace,cusp::csr_format>::view const_coo_view_type;
+    typedef typename cusp::detail::coo_view_type<IndexType,ValueType,MemorySpace,csr_format>::view coo_view_type;
+    typedef typename cusp::detail::coo_view_type<IndexType,ValueType,MemorySpace,csr_format>::view const_coo_view_type;
 
     template<typename MemorySpace2>
     struct rebind
@@ -313,8 +313,8 @@ public:
     typedef typename cusp::csr_matrix<IndexType, ValueType, MemorySpace> container;
     typedef typename cusp::csr_matrix_view<ArrayType1, ArrayType2, ArrayType3, IndexType, ValueType, MemorySpace> view;
 
-    typedef view       coo_view_type;
-    typedef view const_coo_view_type;
+    typedef typename cusp::detail::coo_view_type<IndexType,ValueType,MemorySpace,csr_format>::view coo_view_type;
+    typedef typename cusp::detail::coo_view_type<IndexType,ValueType,MemorySpace,csr_format>::view const_coo_view_type;
     /*! \endcond */
 
     /**

@@ -330,8 +330,8 @@ public:
     typedef typename cusp::ell_matrix<IndexType, ValueType, MemorySpace> container;
     typedef typename cusp::ell_matrix_view<ArrayType1, ArrayType2, IndexType, ValueType, MemorySpace> view;
 
-    typedef view       coo_view_type;
-    typedef view const_coo_view_type;
+    typedef typename cusp::detail::coo_view_type<IndexType,ValueType,MemorySpace,ell_format>::view coo_view_type;
+    typedef typename cusp::detail::coo_view_type<IndexType,ValueType,MemorySpace,ell_format>::view const_coo_view_type;
     /*! \endcond */
 
     /**

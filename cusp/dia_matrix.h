@@ -329,8 +329,8 @@ public:
     typedef typename cusp::dia_matrix<IndexType, ValueType, MemorySpace> container;
     typedef typename cusp::dia_matrix_view<ArrayType1, ArrayType2, IndexType, ValueType, MemorySpace> view;
 
-    typedef view       coo_view_type;
-    typedef view const_coo_view_type;
+    typedef typename cusp::detail::coo_view_type<IndexType,ValueType,MemorySpace,dia_format>::view coo_view_type;
+    typedef typename cusp::detail::coo_view_type<IndexType,ValueType,MemorySpace,dia_format>::view const_coo_view_type;
     /*! \endcond */
 
     /**

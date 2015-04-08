@@ -64,7 +64,7 @@ void elementwise(const thrust::detail::execution_policy_base<DerivedPolicy>& exe
 
     cusp::elementwise(exec, A_coo, B_coo, C_coo, op);
 
-    cusp::convert(C_coo, C);
+    cusp::convert(exec, C_coo, C);
 }
 
 } // end namespace detail
