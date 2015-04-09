@@ -173,12 +173,15 @@ class join_iterator
     }
 
     protected:
+
+    /*! \cond */
     Iterator1 first_begin;
     Iterator1 first_end;
     Iterator2 second_begin;
     Iterator2 second_end;
 
     IndexIterator indices_begin;
+    /*! \cond */
 };
 
 /*! \} // end iterators

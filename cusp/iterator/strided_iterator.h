@@ -98,8 +98,8 @@ public:
         : stride(0) {}
 
     /*! \brief This constructor builds a \p strided_iterator from a range.
-     *  \param begin The beginning of the range.
-     *  \param end The end of the range.
+     *  \param first The beginning of the range.
+     *  \param last The end of the range.
      *  \param stride The stride between consecutive entries in the iterator.
      */
     strided_iterator(RandomAccessIterator first, RandomAccessIterator last, difference_type stride)
@@ -137,9 +137,13 @@ public:
     }
 
 protected:
+
+    /*! \cond */
     RandomAccessIterator first;
     RandomAccessIterator last;
     difference_type stride;
+    /*! \endcond */
+
 }; // end strided_iterator
 
 /*! \} // end iterators

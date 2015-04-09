@@ -200,5 +200,5 @@ We strongly encourage users to subscribe to the [cusp-users](http://groups.googl
 \example array1d.cu
 \example array2d_raw.cu
 \example cg_raw.cu
-\example csr.cu
+\example csr_view.cu
 \example csr_raw.cu

@@ -126,7 +126,11 @@ public:
     }
 
 protected:
+
+    /*! \cond */
     RandomCountingIterator random_counting_iterator;
+    /*! \endcond */
+
 }; // end random_iterator
 
 /*! \} // end iterators
