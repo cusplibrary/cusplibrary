@@ -31,7 +31,7 @@ namespace generic
 {
 
 template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2, typename Format>
-void transpose(thrust::execution_policy<DerivedPolicy>& exec, const MatrixType1& A, MatrixType2& At, Format& format);
+void transpose(thrust::execution_policy<DerivedPolicy>& exec, const MatrixType1& A, MatrixType2& At, Format format);
 
 } // end namespace generic
 } // end namespace detail

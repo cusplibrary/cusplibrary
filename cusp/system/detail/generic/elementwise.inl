@@ -40,29 +40,31 @@ namespace generic
 {
 namespace elementwise_detail
 {
+
 template <typename BinaryFunction>
 struct ops
 {
-  typedef typename BinaryFunction::result_type ValueType;
-  typedef thrust::minus<ValueType> Sub;
+    typedef typename BinaryFunction::result_type ValueType;
+    typedef thrust::minus<ValueType> Sub;
 
-  typedef typename thrust::detail::eval_if<
-        thrust::detail::is_same<Sub, BinaryFunction>::value
-      , thrust::detail::identity_< thrust::negate<ValueType> >
-      , thrust::detail::identity_< thrust::identity<ValueType> >
+    typedef typename thrust::detail::eval_if<
+    thrust::detail::is_same<Sub, BinaryFunction>::value
+    , thrust::detail::identity_< thrust::negate<ValueType> >
+    , thrust::detail::identity_< thrust::identity<ValueType> >
     >::type unary_op_type;
 
-  typedef typename thrust::detail::eval_if<
-        thrust::detail::is_same<Sub, BinaryFunction>::value
-      , thrust::detail::identity_< thrust::plus<ValueType> >
-      , thrust::detail::identity_< BinaryFunction >
+    typedef typename thrust::detail::eval_if<
+    thrust::detail::is_same<Sub, BinaryFunction>::value
+    , thrust::detail::identity_< thrust::plus<ValueType> >
+    , thrust::detail::identity_< BinaryFunction >
     >::type binary_op_type;
 };
-}
+
+} // end elementwise_detail namespace
 
 template <typename DerivedPolicy,
-         typename MatrixType1, typename MatrixType2, typename MatrixType3,
-         typename BinaryFunction>
+          typename MatrixType1, typename MatrixType2, typename MatrixType3,
+          typename BinaryFunction>
 void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
                  const MatrixType1& A, const MatrixType2& B, MatrixType3& C,
                  BinaryFunction op,
@@ -78,30 +80,8 @@ void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
 }
 
 template <typename DerivedPolicy,
-         typename MatrixType1, typename MatrixType2, typename MatrixType3,
-         typename BinaryFunction,
-         typename Format>
-void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
-                 const MatrixType1& A, const MatrixType2& B, MatrixType3& C,
-                 BinaryFunction op,
-                 Format)
-{
-    typedef typename cusp::detail::coo_view_type<MatrixType1>::view View1;
-    typedef typename cusp::detail::coo_view_type<MatrixType2>::view View2;
-    typedef typename cusp::detail::as_coo_type<MatrixType3>::type CooMatrixType;
-
-    View1 A_coo(A);
-    View2 B_coo(B);
-    CooMatrixType C_coo;
-
-    cusp::elementwise(exec, A_coo, B_coo, C_coo, op);
-
-    cusp::convert(C_coo, C);
-}
-
-template <typename DerivedPolicy,
-         typename MatrixType1, typename MatrixType2, typename MatrixType3,
-         typename BinaryFunction>
+          typename MatrixType1, typename MatrixType2, typename MatrixType3,
+          typename BinaryFunction>
 void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
                  const MatrixType1& A, const MatrixType2& B, MatrixType3& C,
                  BinaryFunction op,
@@ -239,9 +219,9 @@ void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
             thrust::remove_if(
                 exec,
                 thrust::make_zip_iterator(
-                  thrust::make_tuple(C.row_indices.begin(), C.column_indices.begin(), C.values.begin())),
+                    thrust::make_tuple(C.row_indices.begin(), C.column_indices.begin(), C.values.begin())),
                 thrust::make_zip_iterator(
-                  thrust::make_tuple(C.row_indices.end(),   C.column_indices.end(), C.values.end())),
+                    thrust::make_tuple(C.row_indices.end(),   C.column_indices.end(), C.values.end())),
                 C.values.begin(),
                 _1 == ValueType(0)) -
             thrust::make_zip_iterator(
@@ -251,7 +231,30 @@ void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
     }
 }
 
+template <typename DerivedPolicy,
+          typename MatrixType1, typename MatrixType2, typename MatrixType3,
+          typename BinaryFunction,
+          typename Format>
+void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
+                 const MatrixType1& A, const MatrixType2& B, MatrixType3& C,
+                 BinaryFunction op,
+                 Format)
+{
+    typedef typename cusp::detail::coo_view_type<MatrixType1>::view View1;
+    typedef typename cusp::detail::coo_view_type<MatrixType2>::view View2;
+    typedef typename cusp::detail::as_coo_type<MatrixType3>::type CooMatrixType;
+
+    View1 A_coo(A);
+    View2 B_coo(B);
+    CooMatrixType C_coo;
+
+    cusp::elementwise(exec, A_coo, B_coo, C_coo, op);
+
+    cusp::convert(C_coo, C);
+}
+
 } // end namespace generic
 } // end namespace detail
 } // end namespace system
 } // end namespace cusp
+

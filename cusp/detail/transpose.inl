@@ -32,41 +32,25 @@ namespace cusp
 namespace detail
 {
 
-template<typename MatrixType1, typename MatrixType2>
-struct is_transposeable
-{
-  typedef typename MatrixType1::format format1;
-  typedef typename MatrixType2::format format2;
-
-  typedef typename thrust::detail::eval_if<
-      thrust::detail::is_same<format1,format2>::value,
-          thrust::detail::or_< is_coo<MatrixType1>, is_csr<MatrixType1>, is_array2d<MatrixType1> >,
-          thrust::detail::identity_<thrust::detail::false_type>
-      >::type type;
-};
-
-template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
+template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2, typename Format>
 void transpose(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
-               const MatrixType1& A, MatrixType2& At,
-               thrust::detail::true_type)
+               const MatrixType1& A, MatrixType2& At, Format, Format)
 {
     using cusp::system::detail::generic::transpose;
 
-    typename MatrixType1::format format;
-
-    transpose(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, At, format);
+    transpose(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, At, Format());
 }
 
-template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
+template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2, typename Format1, typename Format2>
 void transpose(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
-               const MatrixType1& A, MatrixType2& At,
-               thrust::detail::false_type)
+               const MatrixType1& A, MatrixType2& At, Format1, Format2)
 {
-    typename as_csr_type<MatrixType1>::type A_csr(A);
-    typename as_csr_type<MatrixType2>::type At_csr;
-    cusp::transpose(exec, A_csr, At_csr);
+    typename cusp::detail::coo_view_type<MatrixType1>::const_view A_coo(A);
+    typename cusp::detail::as_coo_type<MatrixType2>::type         At_coo;
 
-    cusp::convert(At_csr, At);
+    cusp::transpose(exec, A_coo, At_coo);
+
+    cusp::convert(exec, At_coo, At);
 }
 
 } // end namespace detail
@@ -75,8 +59,10 @@ template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
 void transpose(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
                const MatrixType1& A, MatrixType2& At)
 {
-    typename detail::is_transposeable<MatrixType1,MatrixType2>::type transposeable;
-    cusp::detail::transpose(exec, A, At, transposeable);
+    typename MatrixType1::format format1;
+    typename MatrixType2::format format2;
+
+    cusp::detail::transpose(exec, A, At, format1, format2);
 }
 
 template <typename MatrixType1, typename MatrixType2>
