@@ -155,15 +155,20 @@ public:
 
     /*! Construct a \p permutation_matrix from another matrix.
      *
+     *  \tparam MemorySpace2 Memory space of the input matrix
+     *
      *  \param matrix Another sparse or dense matrix.
      */
     template<typename MemorySpace2>
-    permutation_matrix(const permutation_matrix<ValueType,MemorySpace2>& P)
-        : Parent(P), permutation(P.permutation) {}
+    permutation_matrix(const permutation_matrix<ValueType,MemorySpace2>& matrix)
+        : Parent(matrix), permutation(matrix.permutation) {}
 
     /*! Construct a \p permutation_matrix from another matrix.
      *
-     *  \param matrix Another sparse or dense matrix.
+     *  \tparam ArrayType permutation array type
+     *
+     *  \param num_rows Number of rows.
+     *  \param permutation Array containing the permutation indices.
      */
     template<typename ArrayType>
     permutation_matrix(const size_t num_rows, const ArrayType& permutation)
@@ -182,6 +187,8 @@ public:
     void swap(permutation_matrix& matrix);
 
     /*! Permute rows and columns of matrix elements
+     *
+     *  \tparam MatrixType Type of input matrix to permute
      *
      *  \param matrix Input matrix to apply symmetric permutation.
      */
@@ -367,7 +374,7 @@ public:
  *  \tparam ArrayType row offsets array type
  *
  *  \param num_rows Number of rows.
- *  \param permutations Array containing the permutation.
+ *  \param permutation Array containing the permutation.
  *
  *  \return \p permutation_matrix_view constructed using input arrays
  */

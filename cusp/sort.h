@@ -174,6 +174,8 @@ void sort_by_row(const thrust::detail::execution_policy_base<DerivedPolicy> &exe
  * \param row_indices input matrix row indices
  * \param column_indices input matrix column indices
  * \param values input matrix values
+ * \param min_row minimum row index
+ * \param max_row maximum row index
  *
  * \par Example
  *  The following code snippet demonstrates how to use \p sort_by_row.
@@ -228,6 +230,10 @@ void sort_by_row_and_column(const thrust::detail::execution_policy_base<DerivedP
  * \param row_indices input matrix row indices
  * \param column_indices input matrix column indices
  * \param values input matrix values
+ * \param min_row minimum row index
+ * \param max_row maximum row index
+ * \param min_col minimum column index
+ * \param max_col maximum column index
  *
  * \par Example
  *  The following code snippet demonstrates how to use \p
