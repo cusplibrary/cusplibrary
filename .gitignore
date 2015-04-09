@@ -31,8 +31,9 @@ tester
 *.gcno
 *.info
 
-# Documentation files
-cusp/docs
+# Ignore html
+*.html
+*.css
 
 # Ignore build files
 #<AutoIgnore>
