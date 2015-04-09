@@ -152,17 +152,18 @@ public:
     typedef cusp::coo_matrix<IndexType,ValueType,MemorySpace> coo_matrix_type;
 
     typedef typename cusp::hyb_matrix<IndexType, ValueType, MemorySpace> container;
+    typedef typename cusp::detail::coo_view_type<container>::view        coo_view_type;
+    typedef typename cusp::detail::coo_view_type<container>::const_view  const_coo_view_type;
 
-    typedef typename cusp::hyb_matrix_view<typename cusp::ell_matrix<IndexType,ValueType,MemorySpace>::view,
+    typedef typename cusp::hyb_matrix_view<
+            typename cusp::ell_matrix<IndexType,ValueType,MemorySpace>::view,
             typename cusp::coo_matrix<IndexType,ValueType,MemorySpace>::view,
             IndexType, ValueType, MemorySpace> view;
 
-    typedef typename cusp::hyb_matrix_view<typename cusp::ell_matrix<IndexType,ValueType,MemorySpace>::const_view,
+    typedef typename cusp::hyb_matrix_view<
+            typename cusp::ell_matrix<IndexType,ValueType,MemorySpace>::const_view,
             typename cusp::coo_matrix<IndexType,ValueType,MemorySpace>::const_view,
             IndexType, ValueType, MemorySpace> const_view;
-
-    typedef typename cusp::detail::coo_view_type<IndexType,ValueType,MemorySpace,hyb_format>::view  coo_view_type;
-    typedef typename cusp::detail::coo_view_type<IndexType,ValueType,MemorySpace,hyb_format>::view  const_coo_view_type;
 
     template<typename MemorySpace2>
     struct rebind
@@ -352,8 +353,8 @@ public:
     typedef typename cusp::hyb_matrix<IndexType, ValueType, MemorySpace> container;
     typedef typename cusp::hyb_matrix_view<MatrixType1, MatrixType2, IndexType, ValueType, MemorySpace> view;
 
-    typedef typename cusp::detail::coo_view_type<IndexType,ValueType,MemorySpace,hyb_format>::view coo_view_type;
-    typedef typename cusp::detail::coo_view_type<IndexType,ValueType,MemorySpace,hyb_format>::view const_coo_view_type;
+    typedef typename cusp::detail::coo_view_type<view>::view coo_view_type;
+    typedef typename cusp::detail::coo_view_type<view>::view const_coo_view_type;
     /*! \endcond */
 
     /*! View to the \p ELL portion of the HYB structure.

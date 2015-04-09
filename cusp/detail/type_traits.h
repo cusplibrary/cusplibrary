@@ -56,9 +56,30 @@ namespace detail
 
 template <typename ,typename ,typename> struct logical_to_other_physical_functor;
 
+template<typename T1, typename T2, typename T = void>
+struct enable_if_same_system
+        : thrust::detail::enable_if< thrust::detail::is_same<typename T1::memory_space,typename T2::memory_space>::value, T >
+{};
+template<typename T1, typename T2, typename T = void>
+struct enable_if_different_system
+        : thrust::detail::enable_if< thrust::detail::is_different<typename T1::memory_space,typename T2::memory_space>::value, T >
+{};
+
+template <typename T>
+struct norm_type
+{
+    typedef T type;
+};
+
+template <typename T>
+struct norm_type< cusp::complex<T> >
+{
+    typedef T type;
+};
+
 template<typename MatrixType, typename CompareTag>
-struct is_matrix_type : thrust::detail::integral_constant<bool,
-        thrust::detail::is_same<typename MatrixType::format,CompareTag>::value>
+struct is_matrix_type
+  : thrust::detail::integral_constant<bool,thrust::detail::is_same<typename MatrixType::format,CompareTag>::value>
 {};
 
 template<typename MatrixType> struct is_array2d : is_matrix_type<MatrixType,array2d_format> {};
@@ -128,7 +149,7 @@ template<typename MatrixType, typename MemorySpace, typename FormatTag>
 struct as_matrix_type
 {
     typedef typename get_index_type<MatrixType>::type IndexType;
-    typedef typename MatrixType::value_type ValueType;
+    typedef typename MatrixType::value_type           ValueType;
 
     typedef typename matrix_type<IndexType,ValueType,MemorySpace,FormatTag>::type type;
 };
@@ -151,158 +172,147 @@ struct as_ell_type : as_matrix_type<MatrixType,MemorySpace,ell_format> {};
 template<typename MatrixType,typename MemorySpace=typename MatrixType::memory_space>
 struct as_hyb_type : as_matrix_type<MatrixType,MemorySpace,hyb_format> {};
 
-template<typename IndexType,typename ValueType,typename MemorySpace,typename FormatTag>
+template<typename MatrixType,typename FormatTag = typename MatrixType::format>
 struct coo_view_type{};
 
-template<typename IndexType,typename ValueType,typename MemorySpace>
-struct coo_view_type<IndexType,ValueType,MemorySpace,csr_format>
+template<typename MatrixType>
+struct coo_view_type<MatrixType,csr_format>
 {
-    typedef cusp::csr_matrix<IndexType,ValueType,MemorySpace>                                               CSRMatrixType;
-    typedef cusp::array1d_view<typename CSRMatrixType::row_offsets_array_type::iterator>                    Array1;
-    typedef cusp::array1d_view<typename CSRMatrixType::column_indices_array_type::iterator>                 Array2;
-    typedef cusp::array1d_view<typename CSRMatrixType::values_array_type::iterator>                         Array3;
+    typedef typename MatrixType::index_type                                                              IndexType;
+    typedef typename MatrixType::value_type                                                              ValueType;
+    typedef typename MatrixType::memory_space                                                            MemorySpace;
 
-    typedef cusp::coo_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>                     view;
+    typedef cusp::array1d_view<typename MatrixType::row_offsets_array_type::iterator>                    Array1;
+    typedef cusp::array1d_view<typename MatrixType::column_indices_array_type::iterator>                 Array2;
+    typedef cusp::array1d_view<typename MatrixType::values_array_type::iterator>                         Array3;
 
-    typedef cusp::array1d_view<typename CSRMatrixType::row_offsets_array_type::const_iterator>              ConstArray1;
-    typedef cusp::array1d_view<typename CSRMatrixType::column_indices_array_type::const_iterator>           ConstArray2;
-    typedef cusp::array1d_view<typename CSRMatrixType::values_array_type::const_iterator>                   ConstArray3;
+    typedef cusp::array1d_view<typename MatrixType::row_offsets_array_type::const_iterator>              ConstArray1;
+    typedef cusp::array1d_view<typename MatrixType::column_indices_array_type::const_iterator>           ConstArray2;
+    typedef cusp::array1d_view<typename MatrixType::values_array_type::const_iterator>                   ConstArray3;
 
-    typedef cusp::coo_matrix_view<ConstArray1,ConstArray2,ConstArray3,IndexType,ValueType,MemorySpace>      const_view;
+    typedef cusp::coo_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>                  view;
+    typedef cusp::coo_matrix_view<ConstArray1,ConstArray2,ConstArray3,IndexType,ValueType,MemorySpace>   const_view;
 };
 
-template<typename IndexType,typename ValueType,typename MemorySpace>
-struct coo_view_type<IndexType,ValueType,MemorySpace,dia_format>
+template<typename MatrixType>
+struct coo_view_type<MatrixType,dia_format>
 {
-    typedef cusp::dia_matrix<IndexType,ValueType,MemorySpace>                                               DiaMatrixType;
-    typedef typename thrust::counting_iterator<IndexType>                                                   CountingIterator;
-    typedef typename thrust::transform_iterator<divide_value<IndexType>, CountingIterator>                  RowIndexIterator;
+    typedef typename MatrixType::index_type                                                              IndexType;
+    typedef typename MatrixType::value_type                                                              ValueType;
+    typedef typename MatrixType::memory_space                                                            MemorySpace;
 
-    typedef typename cusp::array1d<IndexType,MemorySpace>::iterator                                         ElementIterator;
-    typedef typename thrust::transform_iterator<modulus_value<IndexType>, CountingIterator>                 ModulusIterator;
-    typedef typename thrust::permutation_iterator<ElementIterator,ModulusIterator>                          OffsetsPermIterator;
-    typedef typename thrust::tuple<OffsetsPermIterator, RowIndexIterator>                                   IteratorTuple;
-    typedef typename thrust::zip_iterator<IteratorTuple>                                                    ZipIterator;
-    typedef typename thrust::transform_iterator<sum_tuple_functor<IndexType>, ZipIterator>                  ColumnIndexIterator;
+    typedef typename thrust::counting_iterator<IndexType>                                                CountingIterator;
+    typedef typename thrust::transform_iterator<divide_value<IndexType>, CountingIterator>               RowIndexIterator;
 
-    typedef logical_to_other_physical_functor<IndexType, cusp::row_major, cusp::column_major>               PermFunctor;
-    typedef typename thrust::transform_iterator<PermFunctor, CountingIterator>                              PermIndexIterator;
-    typedef typename DiaMatrixType::values_array_type::values_array_type::iterator                          ValueIterator;
-    typedef typename thrust::permutation_iterator<ValueIterator, PermIndexIterator>                         PermValueIterator;
+    typedef typename cusp::array1d<IndexType,MemorySpace>::iterator                                      ElementIterator;
+    typedef typename thrust::transform_iterator<modulus_value<IndexType>, CountingIterator>              ModulusIterator;
+    typedef typename thrust::permutation_iterator<ElementIterator,ModulusIterator>                       OffsetsPermIterator;
+    typedef typename thrust::tuple<OffsetsPermIterator, RowIndexIterator>                                IteratorTuple;
+    typedef typename thrust::zip_iterator<IteratorTuple>                                                 ZipIterator;
+    typedef typename thrust::transform_iterator<sum_tuple_functor<IndexType>, ZipIterator>               ColumnIndexIterator;
 
-    typedef typename cusp::array1d<IndexType,MemorySpace>::iterator                                         IndexIterator;
-    typedef thrust::permutation_iterator<RowIndexIterator, IndexIterator>                                   RowPermIterator;
-    typedef thrust::permutation_iterator<ColumnIndexIterator, IndexIterator>                                ColumnPermIterator;
-    typedef thrust::permutation_iterator<PermValueIterator, IndexIterator>                                  ValuePermIterator;
+    typedef typename MatrixType::values_array_type::values_array_type::iterator                          ValueIterator;
+    typedef logical_to_other_physical_functor<IndexType, cusp::row_major, cusp::column_major>            PermFunctor;
+    typedef typename thrust::transform_iterator<PermFunctor, CountingIterator>                           PermIndexIterator;
+    typedef typename thrust::permutation_iterator<ValueIterator, PermIndexIterator>                      PermValueIterator;
 
-    typedef cusp::array1d_view<RowPermIterator>                                                             Array1;
-    typedef cusp::array1d_view<ColumnPermIterator>                                                          Array2;
-    typedef cusp::array1d_view<ValuePermIterator>                                                           Array3;
+    typedef typename cusp::array1d<IndexType,MemorySpace>::iterator                                      IndexIterator;
+    typedef thrust::permutation_iterator<RowIndexIterator, IndexIterator>                                RowPermIterator;
+    typedef thrust::permutation_iterator<ColumnIndexIterator, IndexIterator>                             ColumnPermIterator;
+    typedef thrust::permutation_iterator<PermValueIterator, IndexIterator>                               ValuePermIterator;
 
-    typedef cusp::coo_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>                     view;
+    typedef cusp::array1d_view<RowPermIterator>                                                          Array1;
+    typedef cusp::array1d_view<ColumnPermIterator>                                                       Array2;
+    typedef cusp::array1d_view<ValuePermIterator>                                                        Array3;
 
-    typedef typename DiaMatrixType::values_array_type::values_array_type::const_iterator                    ConstValueIterator;
-    typedef typename thrust::permutation_iterator<ConstValueIterator, PermIndexIterator>                    ConstPermValueIterator;
-    typedef cusp::array1d_view<ConstPermValueIterator>                                                      ConstArray3;
+    typedef typename MatrixType::values_array_type::values_array_type::const_iterator                    ConstValueIterator;
+    typedef typename thrust::permutation_iterator<ConstValueIterator, PermIndexIterator>                 ConstPermValueIterator;
+    typedef cusp::array1d_view<ConstPermValueIterator>                                                   ConstArray3;
 
-    typedef cusp::coo_matrix_view<Array1,Array2,ConstArray3,IndexType,ValueType,MemorySpace>                const_view;
+    typedef cusp::coo_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>                  view;
+    typedef cusp::coo_matrix_view<Array1,Array2,ConstArray3,IndexType,ValueType,MemorySpace>             const_view;
 };
 
-template<typename IndexType,typename ValueType,typename MemorySpace>
-struct coo_view_type<IndexType,ValueType,MemorySpace,ell_format>
+template<typename MatrixType>
+struct coo_view_type<MatrixType,ell_format>
 {
-    typedef cusp::ell_matrix<IndexType,ValueType,MemorySpace>                                               EllMatrixType;
-    typedef thrust::counting_iterator<IndexType>                                                            CountingIterator;
-    typedef thrust::transform_iterator<divide_value<IndexType>, CountingIterator>                           RowIndexIterator;
-    typedef typename EllMatrixType::column_indices_array_type::values_array_type::iterator                  ColumnIndexIterator;
-    typedef typename EllMatrixType::values_array_type::values_array_type::iterator                          ValueIterator;
+    typedef typename MatrixType::index_type                                                              IndexType;
+    typedef typename MatrixType::value_type                                                              ValueType;
+    typedef typename MatrixType::memory_space                                                            MemorySpace;
 
-    typedef logical_to_other_physical_functor<IndexType, cusp::row_major, cusp::column_major>               PermFunctor;
-    typedef thrust::transform_iterator<PermFunctor, CountingIterator>                                       PermIndexIterator;
-    typedef thrust::permutation_iterator<ColumnIndexIterator, PermIndexIterator>                            PermColumnIndexIterator;
-    typedef thrust::permutation_iterator<ValueIterator, PermIndexIterator>                                  PermValueIterator;
+    typedef thrust::counting_iterator<IndexType>                                                         CountingIterator;
+    typedef thrust::transform_iterator<divide_value<IndexType>, CountingIterator>                        RowIndexIterator;
+    typedef typename MatrixType::column_indices_array_type::values_array_type::iterator                  ColumnIndexIterator;
+    typedef typename MatrixType::values_array_type::values_array_type::iterator                          ValueIterator;
 
-    typedef typename cusp::array1d<IndexType,MemorySpace>::iterator                                         IndexIterator;
-    typedef thrust::permutation_iterator<RowIndexIterator, IndexIterator>                                   RowPermIterator;
-    typedef thrust::permutation_iterator<PermColumnIndexIterator, IndexIterator>                            ColumnPermIterator;
-    typedef thrust::permutation_iterator<PermValueIterator, IndexIterator>                                  ValuePermIterator;
+    typedef logical_to_other_physical_functor<IndexType, cusp::row_major, cusp::column_major>            PermFunctor;
+    typedef thrust::transform_iterator<PermFunctor, CountingIterator>                                    PermIndexIterator;
+    typedef thrust::permutation_iterator<ColumnIndexIterator, PermIndexIterator>                         PermColumnIndexIterator;
+    typedef thrust::permutation_iterator<ValueIterator, PermIndexIterator>                               PermValueIterator;
 
-    typedef cusp::array1d_view<RowPermIterator>                                                             Array1;
-    typedef cusp::array1d_view<ColumnPermIterator>                                                          Array2;
-    typedef cusp::array1d_view<ValuePermIterator>                                                           Array3;
+    typedef typename cusp::array1d<IndexType,MemorySpace>::iterator                                      IndexIterator;
+    typedef thrust::permutation_iterator<RowIndexIterator, IndexIterator>                                RowPermIterator;
+    typedef thrust::permutation_iterator<PermColumnIndexIterator, IndexIterator>                         ColumnPermIterator;
+    typedef thrust::permutation_iterator<PermValueIterator, IndexIterator>                               ValuePermIterator;
 
-    typedef cusp::coo_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>                     view;
+    typedef cusp::array1d_view<RowPermIterator>                                                          Array1;
+    typedef cusp::array1d_view<ColumnPermIterator>                                                       Array2;
+    typedef cusp::array1d_view<ValuePermIterator>                                                        Array3;
 
-    typedef typename EllMatrixType::column_indices_array_type::values_array_type::const_iterator            ConstColumnIndexIterator;
-    typedef typename EllMatrixType::values_array_type::values_array_type::const_iterator                    ConstValueIterator;
+    typedef typename MatrixType::column_indices_array_type::values_array_type::const_iterator            ConstColumnIndexIterator;
+    typedef typename MatrixType::values_array_type::values_array_type::const_iterator                    ConstValueIterator;
 
-    typedef thrust::permutation_iterator<ConstColumnIndexIterator, PermIndexIterator>                       ConstPermColumnIndexIterator;
-    typedef thrust::permutation_iterator<ConstValueIterator, PermIndexIterator>                             ConstPermValueIterator;
+    typedef thrust::permutation_iterator<ConstColumnIndexIterator, PermIndexIterator>                    ConstPermColumnIndexIterator;
+    typedef thrust::permutation_iterator<ConstValueIterator, PermIndexIterator>                          ConstPermValueIterator;
 
-    typedef cusp::array1d_view<ConstPermColumnIndexIterator>                                                ConstArray2;
-    typedef cusp::array1d_view<ConstPermValueIterator>                                                      ConstArray3;
+    typedef cusp::array1d_view<ConstPermColumnIndexIterator>                                             ConstArray2;
+    typedef cusp::array1d_view<ConstPermValueIterator>                                                   ConstArray3;
 
-    typedef cusp::coo_matrix_view<Array1,ConstArray2,ConstArray3,IndexType,ValueType,MemorySpace>           const_view;
+    typedef cusp::coo_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>                  view;
+    typedef cusp::coo_matrix_view<Array1,ConstArray2,ConstArray3,IndexType,ValueType,MemorySpace>        const_view;
 };
 
-template<typename IndexType,typename ValueType,typename MemorySpace>
-struct coo_view_type<IndexType,ValueType,MemorySpace,hyb_format>
+template<typename MatrixType>
+struct coo_view_type<MatrixType,hyb_format>
 {
-    typedef coo_view_type<IndexType,ValueType,MemorySpace,ell_format>                                       ell_view_type;
-    typedef typename ell_view_type::RowIndexIterator                                                        RowIndexIterator;
-    typedef typename ell_view_type::ColumnIndexIterator                                                     ColumnIndexIterator;
-    typedef typename ell_view_type::ValueIterator                                                           ValueIterator;
+    typedef typename MatrixType::index_type                                                              IndexType;
+    typedef typename MatrixType::value_type                                                              ValueType;
+    typedef typename MatrixType::memory_space                                                            MemorySpace;
 
-    typedef typename ell_view_type::PermIndexIterator                                                       PermIndexIterator;
-    typedef typename ell_view_type::PermColumnIndexIterator                                                 PermColumnIndexIterator;
-    typedef typename ell_view_type::PermValueIterator                                                       PermValueIterator;
+    typedef typename MatrixType::ell_matrix_type                                                         ell_matrix_type;
+    typedef coo_view_type<ell_matrix_type>                                                               ell_view_type;
+    typedef typename ell_view_type::RowIndexIterator                                                     RowIndexIterator;
+    typedef typename ell_view_type::ColumnIndexIterator                                                  ColumnIndexIterator;
+    typedef typename ell_view_type::ValueIterator                                                        ValueIterator;
 
-    typedef typename cusp::array1d<IndexType,MemorySpace>::iterator                                         IndexIterator;
-    typedef cusp::join_iterator<RowIndexIterator,ColumnIndexIterator,IndexIterator>                         JoinRowIterator;
-    typedef cusp::join_iterator<PermColumnIndexIterator,ColumnIndexIterator,IndexIterator>                  JoinColumnIterator;
-    typedef cusp::join_iterator<PermValueIterator,ValueIterator,IndexIterator>                              JoinValueIterator;
+    typedef typename ell_view_type::PermIndexIterator                                                    PermIndexIterator;
+    typedef typename ell_view_type::PermColumnIndexIterator                                              PermColumnIndexIterator;
+    typedef typename ell_view_type::PermValueIterator                                                    PermValueIterator;
 
-    typedef cusp::array1d_view<typename JoinRowIterator::iterator>                                          Array1;
-    typedef cusp::array1d_view<typename JoinColumnIterator::iterator>                                       Array2;
-    typedef cusp::array1d_view<typename JoinValueIterator::iterator>                                        Array3;
+    typedef typename cusp::array1d<IndexType,MemorySpace>::iterator                                      IndexIterator;
+    typedef cusp::join_iterator<RowIndexIterator,ColumnIndexIterator,IndexIterator>                      JoinRowIterator;
+    typedef cusp::join_iterator<PermColumnIndexIterator,ColumnIndexIterator,IndexIterator>               JoinColumnIterator;
+    typedef cusp::join_iterator<PermValueIterator,ValueIterator,IndexIterator>                           JoinValueIterator;
 
-    typedef cusp::coo_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>                     view;
+    typedef cusp::array1d_view<typename JoinRowIterator::iterator>                                       Array1;
+    typedef cusp::array1d_view<typename JoinColumnIterator::iterator>                                    Array2;
+    typedef cusp::array1d_view<typename JoinValueIterator::iterator>                                     Array3;
 
-    typedef typename ell_view_type::ConstColumnIndexIterator                                                ConstColumnIndexIterator;
-    typedef typename ell_view_type::ConstValueIterator                                                      ConstValueIterator;
-    typedef typename ell_view_type::ConstPermColumnIndexIterator                                            ConstPermColumnIndexIterator;
-    typedef typename ell_view_type::ConstPermValueIterator                                                  ConstPermValueIterator;
+    typedef typename ell_view_type::ConstColumnIndexIterator                                             ConstColumnIndexIterator;
+    typedef typename ell_view_type::ConstValueIterator                                                   ConstValueIterator;
+    typedef typename ell_view_type::ConstPermColumnIndexIterator                                         ConstPermColumnIndexIterator;
+    typedef typename ell_view_type::ConstPermValueIterator                                               ConstPermValueIterator;
 
-    typedef cusp::join_iterator<RowIndexIterator,ConstColumnIndexIterator,IndexIterator>                    ConstJoinRowIterator;
-    typedef cusp::join_iterator<ConstPermColumnIndexIterator,ConstColumnIndexIterator,IndexIterator>        ConstJoinColumnIterator;
-    typedef cusp::join_iterator<ConstPermValueIterator,ConstValueIterator,IndexIterator>                    ConstJoinValueIterator;
+    typedef cusp::join_iterator<RowIndexIterator,ConstColumnIndexIterator,IndexIterator>                 ConstJoinRowIterator;
+    typedef cusp::join_iterator<ConstPermColumnIndexIterator,ConstColumnIndexIterator,IndexIterator>     ConstJoinColumnIterator;
+    typedef cusp::join_iterator<ConstPermValueIterator,ConstValueIterator,IndexIterator>                 ConstJoinValueIterator;
 
-    typedef cusp::array1d_view<typename ConstJoinRowIterator::iterator>                                     ConstArray1;
-    typedef cusp::array1d_view<typename ConstJoinColumnIterator::iterator>                                  ConstArray2;
-    typedef cusp::array1d_view<typename ConstJoinValueIterator::iterator>                                   ConstArray3;
+    typedef cusp::array1d_view<typename ConstJoinRowIterator::iterator>                                  ConstArray1;
+    typedef cusp::array1d_view<typename ConstJoinColumnIterator::iterator>                               ConstArray2;
+    typedef cusp::array1d_view<typename ConstJoinValueIterator::iterator>                                ConstArray3;
 
-    typedef cusp::coo_matrix_view<ConstArray1,ConstArray2,ConstArray3,IndexType,ValueType,MemorySpace>      const_view;
-};
-
-template<typename T1, typename T2, typename T = void>
-struct enable_if_same_system
-        : thrust::detail::enable_if< thrust::detail::is_same<typename T1::memory_space,typename T2::memory_space>::value, T >
-{};
-template<typename T1, typename T2, typename T = void>
-struct enable_if_different_system
-        : thrust::detail::enable_if< thrust::detail::is_different<typename T1::memory_space,typename T2::memory_space>::value, T >
-{};
-
-template <typename T>
-struct norm_type
-{
-    typedef T type;
-};
-
-template <typename T>
-struct norm_type< cusp::complex<T> >
-{
-    typedef T type;
+    typedef cusp::coo_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>                  view;
+    typedef cusp::coo_matrix_view<ConstArray1,ConstArray2,ConstArray3,IndexType,ValueType,MemorySpace>   const_view;
 };
 
 } // end detail

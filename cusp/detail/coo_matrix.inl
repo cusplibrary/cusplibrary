@@ -168,7 +168,7 @@ template <typename MatrixType>
 void coo_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>
 ::construct_from(MatrixType& matrix, dia_format)
 {
-    typedef cusp::detail::coo_view_type<IndexType,ValueType,MemorySpace,dia_format> dia_view_type;
+    typedef cusp::detail::coo_view_type<MatrixType>          dia_view_type;
 
     typedef thrust::counting_iterator<IndexType>             CountingIterator;
     typedef typename dia_view_type::PermFunctor              PermFunctor;
@@ -220,7 +220,7 @@ template <typename MatrixType>
 void coo_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>
 ::construct_from(MatrixType& matrix, ell_format)
 {
-    typedef cusp::detail::coo_view_type<IndexType,ValueType,MemorySpace,ell_format> ell_view_type;
+    typedef cusp::detail::coo_view_type<MatrixType>          ell_view_type;
 
     typedef thrust::counting_iterator<IndexType>             CountingIterator;
     typedef typename ell_view_type::PermFunctor              PermFunctor;
@@ -269,20 +269,20 @@ void coo_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>
 {
     using namespace cusp::detail;
 
-    typedef cusp::detail::coo_view_type<IndexType,ValueType,MemorySpace,hyb_format>                    hyb_view_type;
+    typedef cusp::detail::coo_view_type<MatrixType>             hyb_view_type;
 
-    typedef thrust::counting_iterator<IndexType>                                                       CountingIterator;
-    typedef typename hyb_view_type::ell_view_type::PermFunctor                                         PermFunctor;
-    typedef typename hyb_view_type::PermIndexIterator                                                  PermIndexIterator;
+    typedef thrust::counting_iterator<IndexType>                CountingIterator;
+    typedef typename hyb_view_type::ell_view_type::PermFunctor  PermFunctor;
+    typedef typename hyb_view_type::PermIndexIterator           PermIndexIterator;
 
-    typedef typename hyb_view_type::RowIndexIterator                                                   RowIndexIterator;
-    typedef typename hyb_view_type::ColumnIndexIterator                                                ColumnIndexIterator;
-    typedef typename hyb_view_type::PermColumnIndexIterator                                            PermColumnIndexIterator;
-    typedef typename hyb_view_type::PermValueIterator                                                  PermValueIterator;
+    typedef typename hyb_view_type::RowIndexIterator            RowIndexIterator;
+    typedef typename hyb_view_type::ColumnIndexIterator         ColumnIndexIterator;
+    typedef typename hyb_view_type::PermColumnIndexIterator     PermColumnIndexIterator;
+    typedef typename hyb_view_type::PermValueIterator           PermValueIterator;
 
-    typedef typename hyb_view_type::JoinRowIterator                                                    JoinRowIterator;
-    typedef typename hyb_view_type::JoinColumnIterator                                                 JoinColumnIterator;
-    typedef typename hyb_view_type::JoinValueIterator                                                  JoinValueIterator;
+    typedef typename hyb_view_type::JoinRowIterator             JoinRowIterator;
+    typedef typename hyb_view_type::JoinColumnIterator          JoinColumnIterator;
+    typedef typename hyb_view_type::JoinValueIterator           JoinValueIterator;
 
     const int    X               = MatrixType::ell_matrix_type::invalid_index;
     const size_t ell_num_entries = matrix.ell.column_indices.num_entries;
@@ -299,17 +299,17 @@ void coo_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>
     indices.resize(total);
 
     // TODO : Remove this WAR when Thrust v1.9 is released, related to issue #635
-// #if THRUST_VERSION >= 100900
-//     thrust::merge_by_key(thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, perm_column_indices_begin)),
-//                          thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, perm_column_indices_begin)) + ell_num_entries,
-//                          thrust::make_zip_iterator(thrust::make_tuple(matrix.coo.row_indices.begin(), matrix.coo.column_indices.begin())),
-//                          thrust::make_zip_iterator(thrust::make_tuple(matrix.coo.row_indices.begin(), matrix.coo.column_indices.begin())) + coo_num_entries,
-//                          thrust::counting_iterator<IndexType>(0),
-//                          thrust::counting_iterator<IndexType>(ell_num_entries),
-//                          thrust::make_discard_iterator(),
-//                          indices.begin(),
-//                          coo_tuple_comp<IndexType>());
-// #else
+#if THRUST_VERSION >= 100900
+    thrust::merge_by_key(thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, perm_column_indices_begin)),
+                         thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, perm_column_indices_begin)) + ell_num_entries,
+                         thrust::make_zip_iterator(thrust::make_tuple(matrix.coo.row_indices.begin(), matrix.coo.column_indices.begin())),
+                         thrust::make_zip_iterator(thrust::make_tuple(matrix.coo.row_indices.begin(), matrix.coo.column_indices.begin())) + coo_num_entries,
+                         thrust::counting_iterator<IndexType>(0),
+                         thrust::counting_iterator<IndexType>(ell_num_entries),
+                         thrust::make_discard_iterator(),
+                         indices.begin(),
+                         coo_tuple_comp<IndexType>());
+#else
     {
         cusp::array1d<IndexType,MemorySpace> temp_row_indices(row_indices_begin, row_indices_begin + ell_num_entries);
         cusp::array1d<IndexType,MemorySpace> temp_column_indices(perm_column_indices_begin, perm_column_indices_begin + ell_num_entries);
@@ -324,7 +324,7 @@ void coo_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>
                              indices.begin(),
                              coo_tuple_comp<IndexType>());
     }
-// #endif
+#endif
 
     JoinRowIterator    rows_iter(row_indices_begin, row_indices_begin + ell_num_entries,
                                  matrix.coo.row_indices.begin(), matrix.coo.row_indices.end(),

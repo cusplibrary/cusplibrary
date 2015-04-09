@@ -86,8 +86,8 @@ void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
                  BinaryFunction op,
                  Format)
 {
-    typedef typename cusp::detail::coo_view_type<typename MatrixType1::index_type, typename MatrixType1::value_type, typename MatrixType1::memory_space, Format>::view View1;
-    typedef typename cusp::detail::coo_view_type<typename MatrixType2::index_type, typename MatrixType2::value_type, typename MatrixType2::memory_space, Format>::view View2;
+    typedef typename cusp::detail::coo_view_type<MatrixType1>::view View1;
+    typedef typename cusp::detail::coo_view_type<MatrixType2>::view View2;
     typedef typename cusp::detail::as_coo_type<MatrixType3>::type CooMatrixType;
 
     View1 A_coo(A);
