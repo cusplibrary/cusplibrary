@@ -361,6 +361,16 @@ public:
 
 /* Convenience functions */
 
+/**
+ *  This is a convenience function for generating a \p permutation_matrix_view
+ *  using individual arrays
+ *  \tparam ArrayType row offsets array type
+ *
+ *  \param num_rows Number of rows.
+ *  \param permutations Array containing the permutation.
+ *
+ *  \return \p permutation_matrix_view constructed using input arrays
+ */
 template <typename ArrayType>
 permutation_matrix_view<ArrayType>
 make_permutation_matrix_view(size_t num_rows, ArrayType permutation)
@@ -368,6 +378,19 @@ make_permutation_matrix_view(size_t num_rows, ArrayType permutation)
     return permutation_matrix_view<ArrayType>(num_rows, permutation);
 }
 
+/**
+ *  This is a convenience function for generating a \p permutation_matrix_view
+ *  using individual arrays with explicit value, and memory space
+ *  annotations.
+ *
+ *  \tparam ArrayType permutation array type
+ *  \tparam ValueType  values type
+ *  \tparam MemorySpace memory space of the arrays
+ *
+ *  \param m Exemplar \p permutation_matrix_view matrix to copy.
+ *
+ *  \return \p permutation_matrix_view constructed using input arrays.
+ */
 template <typename ArrayType, typename ValueType, typename MemorySpace>
 permutation_matrix_view<ArrayType,ValueType,MemorySpace>
 make_permutation_matrix_view(const permutation_matrix_view<ArrayType,ValueType,MemorySpace>& m)
@@ -375,6 +398,17 @@ make_permutation_matrix_view(const permutation_matrix_view<ArrayType,ValueType,M
     return permutation_matrix_view<ArrayType,ValueType,MemorySpace>(m);
 }
 
+/**
+ *  This is a convenience function for generating a \p permutation_matrix_view
+ *  using an existing \p permutation_matrix.
+ *
+ *  \tparam ValueType  values type
+ *  \tparam MemorySpace memory space of the arrays
+ *
+ *  \param m Exemplar \p permutation_matrix matrix to copy.
+ *
+ *  \return \p permutation_matrix_view constructed using input arrays.
+ */
 template <typename ValueType, class MemorySpace>
 typename permutation_matrix<ValueType,MemorySpace>::view
 make_permutation_matrix_view(permutation_matrix<ValueType,MemorySpace>& m)
@@ -382,6 +416,17 @@ make_permutation_matrix_view(permutation_matrix<ValueType,MemorySpace>& m)
     return make_permutation_matrix_view(m.num_rows, make_array1d_view(m.permutation));
 }
 
+/**
+ *  This is a convenience function for generating a const \p permutation_matrix_view
+ *  using an existing const \p permutation_matrix.
+ *
+ *  \tparam ValueType  values type
+ *  \tparam MemorySpace memory space of the arrays
+ *
+ *  \param m Exemplar \p permutation_matrix matrix to copy.
+ *
+ *  \return \p permutation_matrix_view constructed using input arrays.
+ */
 template <typename ValueType, class MemorySpace>
 typename permutation_matrix<ValueType,MemorySpace>::const_view
 make_permutation_matrix_view(const permutation_matrix<ValueType,MemorySpace>& m)
