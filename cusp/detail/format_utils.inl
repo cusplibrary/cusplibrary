@@ -35,9 +35,11 @@
 
 namespace cusp
 {
+namespace detail
+{
 
 template <typename DerivedPolicy, typename Matrix, typename Array>
-void extract_diagonal(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+void extract_diagonal(thrust::execution_policy<DerivedPolicy> &exec,
                       const Matrix& A,
                       Array& output,
                       cusp::coo_format)
@@ -60,7 +62,7 @@ void extract_diagonal(const thrust::detail::execution_policy_base<DerivedPolicy>
 }
 
 template <typename DerivedPolicy, typename Matrix, typename Array>
-void extract_diagonal(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+void extract_diagonal(thrust::execution_policy<DerivedPolicy> &exec,
                       const Matrix& A,
                       Array& output,
                       cusp::csr_format)
@@ -70,8 +72,8 @@ void extract_diagonal(const thrust::detail::execution_policy_base<DerivedPolicy>
     typedef typename Array::memory_space MemorySpace;
 
     // first expand the compressed row offsets into row indices
-    cusp::array1d<IndexType,MemorySpace> row_indices(A.num_entries);
-    offsets_to_indices(exec, A.row_offsets, row_indices);
+    thrust::detail::temporary_array<IndexType, DerivedPolicy> row_indices(exec, A.num_entries);
+    cusp::offsets_to_indices(exec, A.row_offsets, row_indices);
 
     // initialize output to zero
     thrust::fill(exec, output.begin(), output.end(), ValueType(0));
@@ -88,7 +90,7 @@ void extract_diagonal(const thrust::detail::execution_policy_base<DerivedPolicy>
 }
 
 template <typename DerivedPolicy, typename Matrix, typename Array>
-void extract_diagonal(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+void extract_diagonal(thrust::execution_policy<DerivedPolicy> &exec,
                       const Matrix& A,
                       Array& output,
                       cusp::dia_format)
@@ -96,12 +98,9 @@ void extract_diagonal(const thrust::detail::execution_policy_base<DerivedPolicy>
     typedef typename Matrix::index_type  IndexType;
     typedef typename Array::value_type   ValueType;
 
-    // copy diagonal_offsets to host (sometimes unnecessary)
-    cusp::array1d<IndexType,cusp::host_memory> diagonal_offsets(A.diagonal_offsets);
-
-    for(size_t i = 0; i < diagonal_offsets.size(); i++)
+    for(size_t i = 0; i < A.diagonal_offsets.size(); i++)
     {
-        if(diagonal_offsets[i] == 0)
+        if(A.diagonal_offsets[i] == 0)
         {
             // diagonal found, copy to output and return
             thrust::copy(exec,
@@ -117,7 +116,7 @@ void extract_diagonal(const thrust::detail::execution_policy_base<DerivedPolicy>
 }
 
 template <typename DerivedPolicy, typename Matrix, typename Array>
-void extract_diagonal(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+void extract_diagonal(thrust::execution_policy<DerivedPolicy> &exec,
                       const Matrix& A,
                       Array& output,
                       cusp::ell_format)
@@ -135,15 +134,15 @@ void extract_diagonal(const thrust::detail::execution_policy_base<DerivedPolicy>
                                      cusp::detail::modulus_value<size_t>(A.column_indices.pitch)),
      thrust::make_zip_iterator(thrust::make_tuple
                                (thrust::make_transform_iterator(
-                                     thrust::counting_iterator<size_t>(0),
-                                     cusp::detail::modulus_value<size_t>(A.column_indices.pitch)),
+                                    thrust::counting_iterator<size_t>(0),
+                                    cusp::detail::modulus_value<size_t>(A.column_indices.pitch)),
                                 A.column_indices.values.begin())),
      output.begin(),
      cusp::detail::equal_tuple_functor<IndexType>());
 }
 
 template <typename DerivedPolicy, typename Matrix, typename Array>
-void extract_diagonal(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+void extract_diagonal(thrust::execution_policy<DerivedPolicy> &exec,
                       const Matrix& A,
                       Array& output,
                       cusp::hyb_format)
@@ -158,44 +157,18 @@ void extract_diagonal(const thrust::detail::execution_policy_base<DerivedPolicy>
     (exec,
      A.ell.values.values.begin(), A.ell.values.values.end(),
      thrust::make_transform_iterator(
-       thrust::counting_iterator<size_t>(0), cusp::detail::modulus_value<size_t>(A.ell.column_indices.pitch)),
+         thrust::counting_iterator<size_t>(0), cusp::detail::modulus_value<size_t>(A.ell.column_indices.pitch)),
      thrust::make_zip_iterator(thrust::make_tuple(
-     thrust::make_transform_iterator(
-       thrust::counting_iterator<size_t>(0), cusp::detail::modulus_value<size_t>(A.ell.column_indices.pitch)),
-     A.ell.column_indices.values.begin())),
+                                   thrust::make_transform_iterator(
+                                       thrust::counting_iterator<size_t>(0), cusp::detail::modulus_value<size_t>(A.ell.column_indices.pitch)),
+                                   A.ell.column_indices.values.begin())),
      output.begin(),
      cusp::detail::equal_tuple_functor<IndexType>());
 }
 
-template <typename DerivedPolicy, typename Matrix, typename Array>
-void extract_diagonal(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-                      const Matrix& A,
-                      Array& output)
-{
-    output.resize(thrust::min(A.num_rows, A.num_cols));
-
-    // dispatch on matrix format
-    extract_diagonal(exec, A, output, typename Matrix::format());
-}
-
-template <typename Matrix, typename Array>
-void extract_diagonal(const Matrix& A, Array& output)
-{
-  using thrust::system::detail::generic::select_system;
-
-  typedef typename Matrix::memory_space System1;
-  typedef typename Array::memory_space  System2;
-
-  System1 system1;
-  System2 system2;
-
-  return extract_diagonal(select_system(system1,system2), A, output);
-}
-
 template <typename DerivedPolicy, typename OffsetArray, typename IndexArray>
-void offsets_to_indices(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-                        const OffsetArray& offsets,
-                        IndexArray& indices)
+void offsets_to_indices(thrust::execution_policy<DerivedPolicy> &exec,
+                        const OffsetArray& offsets, IndexArray& indices)
 {
     typedef typename OffsetArray::value_type OffsetType;
 
@@ -212,24 +185,9 @@ void offsets_to_indices(const thrust::detail::execution_policy_base<DerivedPolic
     thrust::inclusive_scan(exec, indices.begin(), indices.end(), indices.begin(), thrust::maximum<OffsetType>());
 }
 
-template <typename OffsetArray, typename IndexArray>
-void offsets_to_indices(const OffsetArray& offsets, IndexArray& indices)
-{
-  using thrust::system::detail::generic::select_system;
-
-  typedef typename IndexArray::memory_space  System1;
-  typedef typename OffsetArray::memory_space System2;
-
-  System1 system1;
-  System2 system2;
-
-  return offsets_to_indices(select_system(system1,system2), offsets, indices);
-}
-
 template <typename DerivedPolicy, typename IndexArray, typename OffsetArray>
-void indices_to_offsets(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-                        const IndexArray& indices,
-                        OffsetArray& offsets)
+void indices_to_offsets(thrust::execution_policy<DerivedPolicy> &exec,
+                        const IndexArray& indices, OffsetArray& offsets)
 {
     typedef typename OffsetArray::value_type OffsetType;
 
@@ -242,22 +200,8 @@ void indices_to_offsets(const thrust::detail::execution_policy_base<DerivedPolic
                         offsets.begin());
 }
 
-template <typename IndexArray, typename OffsetArray>
-void indices_to_offsets(const IndexArray& indices, OffsetArray& offsets)
-{
-  using thrust::system::detail::generic::select_system;
-
-  typedef typename IndexArray::memory_space  System1;
-  typedef typename OffsetArray::memory_space System2;
-
-  System1 system1;
-  System2 system2;
-
-  return indices_to_offsets(select_system(system1,system2), indices, offsets);
-}
-
 template <typename DerivedPolicy, typename ArrayType1, typename ArrayType2>
-size_t count_diagonals(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+size_t count_diagonals(thrust::execution_policy<DerivedPolicy> &exec,
                        const size_t num_rows,
                        const size_t num_cols,
                        const ArrayType1& row_indices,
@@ -268,39 +212,24 @@ size_t count_diagonals(const thrust::detail::execution_policy_base<DerivedPolicy
 
     size_t num_entries = row_indices.size();
 
-    cusp::array1d<IndexType,MemorySpace> values(num_rows+num_cols,IndexType(0));
+    thrust::detail::temporary_array<IndexType, DerivedPolicy> values(exec, num_rows + num_cols);
+    thrust::fill(exec, values.begin(), values.end(), IndexType(0));
 
     thrust::scatter(exec,
                     thrust::constant_iterator<IndexType>(1),
                     thrust::constant_iterator<IndexType>(1)+num_entries,
                     thrust::make_transform_iterator(
-                      thrust::make_zip_iterator(
-                        thrust::make_tuple( row_indices.begin(), column_indices.begin() ) ),
-                            cusp::detail::occupied_diagonal_functor<IndexType>(num_rows)),
+                        thrust::make_zip_iterator(
+                            thrust::make_tuple( row_indices.begin(), column_indices.begin() ) ),
+                        cusp::detail::occupied_diagonal_functor<IndexType>(num_rows)),
                     values.begin());
 
     return thrust::reduce(exec, values.begin(), values.end());
 }
 
-template <typename ArrayType1, typename ArrayType2>
-size_t count_diagonals(const size_t num_rows,
-                       const size_t num_cols,
-                       const ArrayType1& row_indices,
-                       const ArrayType2& column_indices)
-{
-  using thrust::system::detail::generic::select_system;
-
-  typedef typename ArrayType1::memory_space System1;
-  typedef typename ArrayType2::memory_space System2;
-
-  System1 system1;
-  System2 system2;
-
-  return count_diagonals(select_system(system1,system2), num_rows, num_cols, row_indices, column_indices);
-}
 
 template <typename DerivedPolicy, typename ArrayType>
-size_t compute_max_entries_per_row(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+size_t compute_max_entries_per_row(thrust::execution_policy<DerivedPolicy> &exec,
                                    const ArrayType& row_offsets)
 {
     typedef typename ArrayType::value_type IndexType;
@@ -314,18 +243,6 @@ size_t compute_max_entries_per_row(const thrust::detail::execution_policy_base<D
                               thrust::minus<IndexType>());
 
     return max_entries_per_row;
-}
-
-template <typename ArrayType>
-size_t compute_max_entries_per_row(const ArrayType& row_offsets)
-{
-  using thrust::system::detail::generic::select_system;
-
-  typedef typename ArrayType::memory_space System;
-
-  System system;
-
-  return compute_max_entries_per_row(select_system(system), row_offsets);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -343,7 +260,7 @@ size_t compute_max_entries_per_row(const ArrayType& row_offsets)
 //! @param breakeven_threshold  Minimum threshold at which ELL is faster than COO
 ////////////////////////////////////////////////////////////////////////////////
 template <typename DerivedPolicy, typename ArrayType>
-size_t compute_optimal_entries_per_row(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+size_t compute_optimal_entries_per_row(thrust::execution_policy<DerivedPolicy> &exec,
                                        const ArrayType& row_offsets,
                                        float relative_speed,
                                        size_t breakeven_threshold)
@@ -357,11 +274,12 @@ size_t compute_optimal_entries_per_row(const thrust::detail::execution_policy_ba
     IndexType max_cols_per_row = compute_max_entries_per_row(exec, row_offsets);
 
     // allocate storage for the cumulative histogram and histogram
-    cusp::array1d<IndexType,MemorySpace> cumulative_histogram(max_cols_per_row + 1, IndexType(0));
+    thrust::detail::temporary_array<IndexType, DerivedPolicy> cumulative_histogram(exec, max_cols_per_row + 1);
+    thrust::fill(exec, cumulative_histogram.begin(), cumulative_histogram.end(), IndexType(0));
 
     // compute distribution of nnz per row
-    cusp::array1d<IndexType,MemorySpace> entries_per_row(num_rows);
-    thrust::adjacent_difference(exec, row_offsets.begin()+1, row_offsets.end(), entries_per_row.begin() );
+    thrust::detail::temporary_array<IndexType, DerivedPolicy> entries_per_row(exec, num_rows);
+    thrust::adjacent_difference(exec, row_offsets.begin()+1, row_offsets.end(), entries_per_row.begin());
 
     // sort data to bring equal elements together
     thrust::sort(exec, entries_per_row.begin(), entries_per_row.end());
@@ -384,18 +302,150 @@ size_t compute_optimal_entries_per_row(const thrust::detail::execution_policy_ba
     return num_cols_per_row;
 }
 
+} // end detail namespace
+
+template <typename DerivedPolicy, typename Matrix, typename Array>
+void extract_diagonal(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                      const Matrix& A, Array& output)
+{
+    typedef typename Matrix::format Format;
+
+    output.resize(thrust::min(A.num_rows, A.num_cols));
+
+    // dispatch on matrix format
+    detail::extract_diagonal(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
+                             A, output, Format());
+}
+
+template <typename Matrix, typename Array>
+void extract_diagonal(const Matrix& A, Array& output)
+{
+    using thrust::system::detail::generic::select_system;
+
+    typedef typename Matrix::memory_space System1;
+    typedef typename Array::memory_space  System2;
+
+    System1 system1;
+    System2 system2;
+
+    extract_diagonal(select_system(system1,system2), A, output);
+}
+
+template <typename DerivedPolicy, typename OffsetArray, typename IndexArray>
+void offsets_to_indices(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                        const OffsetArray& offsets, IndexArray& indices)
+{
+    return detail::offsets_to_indices(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
+                                      offsets, indices);
+}
+
+template <typename OffsetArray, typename IndexArray>
+void offsets_to_indices(const OffsetArray& offsets, IndexArray& indices)
+{
+    using thrust::system::detail::generic::select_system;
+
+    typedef typename IndexArray::memory_space  System1;
+    typedef typename OffsetArray::memory_space System2;
+
+    System1 system1;
+    System2 system2;
+
+    return offsets_to_indices(select_system(system1,system2), offsets, indices);
+}
+
+template <typename DerivedPolicy, typename IndexArray, typename OffsetArray>
+void indices_to_offsets(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                        const IndexArray& indices, OffsetArray& offsets)
+{
+    return detail::indices_to_offsets(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
+                                      indices, offsets);
+}
+
+template <typename IndexArray, typename OffsetArray>
+void indices_to_offsets(const IndexArray& indices, OffsetArray& offsets)
+{
+    using thrust::system::detail::generic::select_system;
+
+    typedef typename IndexArray::memory_space  System1;
+    typedef typename OffsetArray::memory_space System2;
+
+    System1 system1;
+    System2 system2;
+
+    return indices_to_offsets(select_system(system1,system2), indices, offsets);
+}
+
+template <typename DerivedPolicy, typename ArrayType1, typename ArrayType2>
+size_t count_diagonals(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                       const size_t num_rows,
+                       const size_t num_cols,
+                       const ArrayType1& row_indices,
+                       const ArrayType2& column_indices)
+{
+    return detail::count_diagonals(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
+                                   num_rows, num_cols, row_indices, column_indices);
+}
+
+template <typename ArrayType1, typename ArrayType2>
+size_t count_diagonals(const size_t num_rows,
+                       const size_t num_cols,
+                       const ArrayType1& row_indices,
+                       const ArrayType2& column_indices)
+{
+    using thrust::system::detail::generic::select_system;
+
+    typedef typename ArrayType1::memory_space System1;
+    typedef typename ArrayType2::memory_space System2;
+
+    System1 system1;
+    System2 system2;
+
+    return count_diagonals(select_system(system1,system2), num_rows, num_cols, row_indices, column_indices);
+}
+
+template <typename DerivedPolicy, typename ArrayType>
+size_t compute_max_entries_per_row(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                                   const ArrayType& row_offsets)
+{
+    return detail::compute_max_entries_per_row(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
+            row_offsets);
+}
+
+template <typename ArrayType>
+size_t compute_max_entries_per_row(const ArrayType& row_offsets)
+{
+    using thrust::system::detail::generic::select_system;
+
+    typedef typename ArrayType::memory_space System;
+
+    System system;
+
+    return compute_max_entries_per_row(select_system(system), row_offsets);
+}
+
+template <typename DerivedPolicy, typename ArrayType>
+size_t compute_optimal_entries_per_row(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                                       const ArrayType& row_offsets,
+                                       float relative_speed,
+                                       size_t breakeven_threshold)
+{
+    return detail::compute_optimal_entries_per_row(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
+            row_offsets, relative_speed, breakeven_threshold);
+}
+
 template <typename ArrayType>
 size_t compute_optimal_entries_per_row(const ArrayType& row_offsets,
                                        float relative_speed,
                                        size_t breakeven_threshold)
 {
-  using thrust::system::detail::generic::select_system;
+    using thrust::system::detail::generic::select_system;
 
-  typedef typename ArrayType::memory_space System;
+    typedef typename ArrayType::memory_space System;
 
-  System system;
+    System system;
 
-  return compute_optimal_entries_per_row(select_system(system), row_offsets, relative_speed, breakeven_threshold);
+    return compute_optimal_entries_per_row(select_system(system), row_offsets, relative_speed, breakeven_threshold);
 }
 
 } // end namespace cusp
+
