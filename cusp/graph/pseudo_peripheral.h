@@ -86,7 +86,7 @@ pseudo_peripheral_vertex(const thrust::detail::execution_policy_base<DerivedPoli
  *
  *    cusp::array1d<int,cusp::device_memory> levels(G.num_rows);
  *
- *    // Compute connected components on the device
+ *    // Compute pseudo peripheral vertex on the device
  *    int pseudo_vertex = cusp::graph::pseudo_peripheral_vertex(G, levels);
  *
  *    // Print the pseudo-peripheral vertex and the level set

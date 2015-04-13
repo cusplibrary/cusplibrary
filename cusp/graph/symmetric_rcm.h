@@ -82,7 +82,7 @@ void symmetric_rcm(const thrust::detail::execution_policy_base<DerivedPolicy>& e
  *    // Allocate permutation matrix P
  *    cusp::permutation_matrix<int,cusp::device_memory> P(G.num_rows);
  *
- *    // Compute connected components on the device
+ *    // Construct symmetric RCM permutation matrix on the device
  *    cusp::graph::symmetric_rcm(G, P);
  *
  *    // Convert permutation to dense matrix

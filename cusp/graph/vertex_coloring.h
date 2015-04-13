@@ -74,7 +74,7 @@ size_t vertex_coloring(const thrust::detail::execution_policy_base<DerivedPolicy
  *
  *     cusp::array1d<int,cusp::device_memory> colors(G.num_rows);
  *
- *     // Execute a BFS traversal on the device
+ *     // Execute vertex coloring on the device
  *     cusp::graph::vertex_coloring(G, colors);
  *
  *     // Print the vertex colors
