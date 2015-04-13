@@ -33,8 +33,6 @@ namespace cusp
 {
 namespace precond
 {
-namespace aggregation
-{
 
 template <typename ValueType>
 struct jacobi_presmooth_functor
@@ -83,7 +81,7 @@ public:
         num_iters = L.num_iters;
 
         if(L.rho_DinvA == ValueType(0))
-            M = BaseSmoother(A, weight / detail::estimate_rho_Dinv_A(A));
+            M = BaseSmoother(A, weight / cusp::precond::aggregation::detail::estimate_rho_Dinv_A(A));
         else
             M = BaseSmoother(A, weight / L.rho_DinvA);
     }
@@ -109,7 +107,6 @@ public:
 /*! \}
  */
 
-} // end namespace aggregation
 } // end namespace precond
 } // end namespace cusp
 

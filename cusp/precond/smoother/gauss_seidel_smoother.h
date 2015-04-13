@@ -39,8 +39,6 @@ namespace cusp
 {
 namespace precond
 {
-namespace aggregation
-{
 
 /*! \addtogroup preconditioners Preconditioners
  *  \ingroup preconditioners
@@ -96,7 +94,6 @@ public:
 /*! \}
  */
 
-} // end namespace aggregation
 } // end namespace precond
 } // end namespace cusp
 

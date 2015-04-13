@@ -55,7 +55,7 @@ namespace detail
   template <typename SmootherType, typename ValueType, typename MemorySpace>
   struct select_smoother_type
   {
-    typedef cusp::precond::aggregation::jacobi_smoother<ValueType,MemorySpace> JacobiSmoother;
+    typedef cusp::precond::jacobi_smoother<ValueType,MemorySpace> JacobiSmoother;
 
     typedef typename thrust::detail::eval_if<
           thrust::detail::is_same<SmootherType, thrust::use_default>::value
