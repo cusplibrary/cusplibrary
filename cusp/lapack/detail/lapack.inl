@@ -172,13 +172,11 @@ void trtrs( const Array2d& A, Array2d& B, char uplo, char trans, char diag )
 }
 
 template<typename Array2d>
-void trtri( Array2d& A )
+void trtri( Array2d& A, char uplo, char diag )
 {
     typedef typename Array2d::value_type ValueType;
 
     lapack_int order = Orientation<typename Array2d::orientation>::type;
-    char uplo = UpperOrLower<upper>::type;
-    char diag = UnitOrNonunit<nonunit>::type;
 
     lapack_int n = A.num_rows;
     lapack_int lda = A.pitch;
@@ -190,15 +188,14 @@ void trtri( Array2d& A )
 }
 
 template<typename Array2d, typename Array1d>
-void syev( const Array2d& A, Array1d& eigvals, Array2d& eigvecs )
+void syev( const Array2d& A, Array1d& eigvals, Array2d& eigvecs, char uplo )
 {
     typedef typename Array2d::value_type ValueType;
 
     eigvecs = A;
 
     lapack_int order = Orientation<typename Array2d::orientation>::type;
-    char job  = EvalsOrEvecs<evecs>::type;
-    char uplo = UpperOrLower<upper>::type;
+    char job  = 'V';
 
     lapack_int n    = A.num_rows;
     lapack_int lda  = A.pitch;
