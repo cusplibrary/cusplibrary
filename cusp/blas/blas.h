@@ -208,8 +208,9 @@ void fill(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
  */
 template <typename Array,
           typename ScalarType>
-void fill(Array& array,
-          ScalarType alpha);
+typename thrust::detail::enable_if_convertible<typename Array::format,cusp::array1d_format>::type
+fill(Array& array,
+     ScalarType alpha);
 
 /*! \cond */
 template <typename DerivedPolicy,

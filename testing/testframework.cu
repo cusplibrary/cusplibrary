@@ -1,7 +1,10 @@
 #include "unittest/testframework.h"
 #include "unittest/exceptions.h"
 
+#ifdef __CUDACC__
 #include <cuda_runtime.h>
+#endif
+
 #include <iostream>
 #include <cstdlib>
 #include <algorithm>
@@ -134,6 +137,7 @@ void usage(int argc, char** argv)
 
 void list_devices(void)
 {
+#ifdef __CUDACC__
     int deviceCount;
     cudaGetDeviceCount(&deviceCount);
     if (deviceCount == 0)
@@ -166,6 +170,7 @@ void list_devices(void)
         std::cout << "  Total amount of global memory:                 " << deviceProp.totalGlobalMem << " bytes" << std::endl;
     }
     std::cout << std::endl;
+#endif
 }
 
 
@@ -273,6 +278,7 @@ bool UnitTestDriver::run_tests(std::vector<UnitTest *>& tests_to_run, const Argu
     if (!concise)
         std::cout << "Running " << tests_to_run.size() << " unit tests." << std::endl;
 
+    #ifdef __CUDACC__
     // Check error status before running any tests
     cudaError_t error = cudaGetLastError();
     if(error)
@@ -286,6 +292,7 @@ bool UnitTestDriver::run_tests(std::vector<UnitTest *>& tests_to_run, const Argu
 
         return false;
     }
+    #endif
 
 
     for(size_t i = 0; i < tests_to_run.size(); i++) {
@@ -367,6 +374,7 @@ bool UnitTestDriver::run_tests(std::vector<UnitTest *>& tests_to_run, const Argu
         }
 
 
+        #ifdef __CUDACC__
         error = cudaGetLastError();
         if(error && error != cudaErrorMemoryAllocation)
         {
@@ -378,6 +386,7 @@ bool UnitTestDriver::run_tests(std::vector<UnitTest *>& tests_to_run, const Argu
             }
             return false;
         }
+        #endif
 
         std::cout.flush();
     }
@@ -499,8 +508,10 @@ int main(int argc, char **argv)
 
     if(kwargs.count("device"))
     {
+#ifdef __CUDACC__
         int device_id  = kwargs.count("device") ? atoi(kwargs["device"].c_str()) :  0;
         cudaSetDevice(device_id);
+#endif
     }
 
     if(kwargs.count("verbose"))

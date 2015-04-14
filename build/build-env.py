@@ -211,6 +211,11 @@ def Environment():
     vars.Add(EnumVariable('MSVC_VERSION', 'MS Visual C++ version', None, allowed_values=('8.0', '9.0', '10.0')))
 
   # add a variable to handle the device backend
+  compiler_variable = EnumVariable('compiler', 'The compiler to use', 'nvcc',
+                                  allowed_values = ('nvcc', 'g++'))
+  vars.Add(compiler_variable)
+
+  # add a variable to handle the device backend
   backend_variable = EnumVariable('backend', 'The parallel device backend to target', 'cuda',
                                   allowed_values = ('cuda', 'omp', 'ocelot'))
   vars.Add(backend_variable)
@@ -261,8 +266,10 @@ def Environment():
   thisFile = inspect.getabsfile(Environment)
   thisDir = os.path.dirname(thisFile)
 
+  compiler_define = env['compiler']
+
   # enable nvcc
-  env.Tool('nvcc', toolpath = [os.path.join(thisDir)])
+  env.Tool(compiler_define, toolpath = [os.path.join(thisDir)])
 
   # get the preprocessor define to use for the backend
   backend_define = { 'cuda' : 'THRUST_DEVICE_SYSTEM_CUDA', 'omp' : 'THRUST_DEVICE_SYSTEM_OMP', 'ocelot' : 'THRUST_DEVICE_SYSTEM_CUDA' }[env['backend']]

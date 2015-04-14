@@ -280,10 +280,11 @@ dotc(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
     return dotc(x,y);
 }
 
-template <typename ArrayType,
+template <typename Array,
           typename ScalarType>
-void fill(ArrayType& x,
-          const ScalarType alpha)
+typename thrust::detail::enable_if_convertible<typename Array::format,cusp::array1d_format>::type
+fill(Array& x,
+     const ScalarType alpha)
 {
     thrust::fill(x.begin(), x.end(), alpha);
 }
