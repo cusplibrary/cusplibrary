@@ -13,7 +13,7 @@ New Features
   Implementation of robust Lanczos and LOBPCG eigensolvers (experimental)
   Native implementation of BFS, imported from back40computing
   Policy based interface to control execution and memory allocation of algorithms
-  Support for generalized SpMV operations sparse matrices in any format
+  Support for generalized SpMV operations on any sparse matrix
   Unified verbose_monitor and convergence_monitor functionality into the default monitor class
   New IO routines to read graphs or matrices stored in DIMACS or binary format
   counting_sort implementation to improve the performance of host sorting routines
