@@ -29,6 +29,14 @@ namespace cusp
 namespace lapack
 {
 
+/*! \addtogroup dense Dense Algorithms
+ */
+
+/*! \addtogroup lapack LAPACK
+ *  \ingroup dense
+ *  \{
+ */
+
 /**
  * \brief Compute LU factorization of matrix
  *
@@ -83,6 +91,7 @@ void getrf( Array2d& A, Array1d& piv );
  * \tparam Array2d Type of the input matrix to factor
  *
  * \param A Input matrix to factor
+ * \param uplo Indicates whether A is upper or lower triangular
  *
  * \par Overview
  * This routine forms the Cholesky factorization of a symmetric positive-definite or,
@@ -128,6 +137,7 @@ void potrf( Array2d& A, char uplo = 'U' );
  *
  * \param A Input matrix to factor
  * \param piv Array containing pivots
+ * \param uplo Indicates whether A is upper or lower triangular
  *
  * \par Overview
  * This routine computes the factorization of a symmetric or hermitian matrix
@@ -182,6 +192,7 @@ void sytrf( Array2d& A, Array1d& piv, char uplo = 'U' );
  * \param A LU factored input matrix
  * \param piv Array containing pivots
  * \param B matrix containing multiple right-hand side vectors
+ * \param trans If 'N', then A*X = B is solved for X.
  *
  * \par Overview
  * This routine solves for X the following systems of linear equations:
@@ -452,6 +463,8 @@ void trtri( Array2d& A, char uplo = 'U', char diag = 'N' );
  * \tparam Array1d Type of the input array
  *
  * \param A Symmetric input matrix
+ * \param eigvals On return contain eigenvalues of matrix
+ * \param eigvecs On return contain eigenvectors of the matrix
  * \param uplo Indicates whether upper or lower portion of symmetric
  * matrix is stored.
  *
@@ -502,6 +515,7 @@ void syev( const Array2d& A, Array1d& eigvals, Array2d& eigvecs, char uplo = 'U'
  * \param betas  First sub-diagonal entries
  * \param eigvals On return contain eigenvalues of matrix
  * \param eigvecs On return contain eigenvectors of the matrix
+ * \param job If 'V', then eigenvalues and eigenvectors are computed
  *
  * \par Overview
  * This routine computes all eigenvalues and eigenvectors of a real
@@ -642,7 +656,10 @@ void sygv( const Array2d1& A, const Array2d2& B, Array1d& eigvals, Array2d3& eig
  * \endcode
  */
 template<typename Array2d, typename Array1d>
-void gesv( const Array2d& A, Array2d& B, Array1d& pivots );
+void gesv( const Array2d& A, Array2d& B, Array1d& piv );
+
+/*! \}
+ */
 
 } // end namespace lapack
 } // end namespace cusp
