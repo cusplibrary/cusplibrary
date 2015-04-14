@@ -20,12 +20,12 @@
 
 #pragma once
 
+#include <lapacke.h>
+
 namespace cusp
 {
 namespace lapack
 {
-#include <lapacke.h>
-#undef complex
 
 struct lapack_format {};
 
