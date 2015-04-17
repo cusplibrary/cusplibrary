@@ -83,6 +83,9 @@ template <typename Array>
 typename cusp::detail::norm_type<typename Array::value_type>::type
 nrm1(const thrustblas::detail::blas_policy<typename Array::memory_space>& policy, Array& x)
 {
+    using thrust::abs;
+    using std::abs;
+
     typedef typename Array::value_type ValueType;
 
     detail::absolute<ValueType> unary_op;
@@ -97,14 +100,20 @@ template <typename Array>
 typename cusp::detail::norm_type<typename Array::value_type>::type
 nrm2(const thrustblas::detail::blas_policy<typename Array::memory_space>& policy, Array& x)
 {
+    using thrust::sqrt;
+    using thrust::abs;
+
+    using std::sqrt;
+    using std::abs;
+
     typedef typename Array::value_type ValueType;
 
-    detail::norm_squared<ValueType> unary_op;
+    cusp::detail::norm_squared<ValueType> unary_op;
     thrust::plus<ValueType>   binary_op;
 
     ValueType init = 0;
 
-    return std::sqrt( abs(thrust::transform_reduce(x.begin(), x.end(), unary_op, init, binary_op)) );
+    return sqrt( abs(thrust::transform_reduce(x.begin(), x.end(), unary_op, init, binary_op)) );
 }
 
 template <typename Array>

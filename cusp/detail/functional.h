@@ -299,7 +299,11 @@ template <typename T>
 struct sqrt_functor : thrust::unary_function<T,T>
 {
     __host__ __device__
-    T operator()(const T& x) {
+    T operator()(const T& x)
+    {
+        using thrust::sqrt;
+        using std::sqrt;
+
         return sqrt(x);
     }
 };
@@ -309,8 +313,11 @@ template <typename T>
 struct absolute : public thrust::unary_function<T,T>
 {
     __host__ __device__
-    T operator()(T x)
+    T operator()(const T& x)
     {
+        using thrust::abs;
+        using std::abs;
+
         return abs(x);
     }
 };
