@@ -29,6 +29,7 @@ tester
 # Ignore LCOV files
 *.gcda
 *.gcno
+*.gcov
 *.info
 
 # Ignore html

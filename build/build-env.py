@@ -93,18 +93,18 @@ OldEnvironment = Environment
 # this dictionary maps the name of a compiler program to a dictionary mapping the name of
 # a compiler switch of interest to the specific switch implementing the feature
 gCompilerOptions = {
-    'gcc': {'warn_all': '-Wall', 'warn_errors': '-Werror', 'optimization': '-O3', 'debug': '-g',  'exception_handling': '',      'omp': '-fopenmp'},
-    'g++': {'warn_all': '-Wall', 'warn_errors': '-Werror', 'optimization': '-O3', 'debug': '-g',  'exception_handling': '',      'omp': '-fopenmp'},
-    'cl': {'warn_all': '/Wall', 'warn_errors': '/WX',     'optimization': '/Ox', 'debug': ['/Zi', '-D_DEBUG', '/MTd'], 'exception_handling': '/EHsc', 'omp': '/openmp'}
+        'gcc': {'warn_all': '-Wall', 'warn_errors': '-Werror', 'optimization': '-O3', 'debug': '-g',  'exception_handling': '',      'omp': '-fopenmp', 'coverage':['-O0', '-coverage']},
+        'g++': {'warn_all': '-Wall', 'warn_errors': '-Werror', 'optimization': '-O3', 'debug': '-g',  'exception_handling': '',      'omp': '-fopenmp', 'coverage':['-O0', '-coverage']},
+        'cl': {'warn_all': '/Wall', 'warn_errors': '/WX',     'optimization': '/Ox', 'debug': ['/Zi', '-D_DEBUG', '/MTd'], 'exception_handling': '/EHsc', 'omp': '/openmp', 'coverage':''}
 }
 
 
 # this dictionary maps the name of a linker program to a dictionary mapping the name of
 # a linker switch of interest to the specific switch implementing the feature
 gLinkerOptions = {
-    'gcc': {'debug': ''},
-    'g++': {'debug': ''},
-    'link': {'debug': '/debug'}
+        'gcc': {'debug': ''},
+        'g++': {'debug': ''},
+        'link': {'debug': '/debug'}
 }
 
 
@@ -117,6 +117,11 @@ def getCFLAGS(mode, backend, warn, warnings_as_errors, hostspblas, CC):
         # turn on debug mode
         result.append(gCompilerOptions[CC]['debug'])
         result.append('-DTHRUST_DEBUG')
+    elif mode == 'coverage':
+        result.append(gCompilerOptions[CC]['debug'])
+        result.append(gCompilerOptions[CC]['coverage'])
+        result.append('-DTHRUST_DEBUG')
+
     # force 32b code on darwin
     # if platform.platform()[:6] == 'Darwin':
     #   result.append('-m32')
@@ -151,6 +156,11 @@ def getCXXFLAGS(mode, backend, warn, warnings_as_errors, hostspblas, CXX):
     elif mode == 'debug':
         # turn on debug mode
         result.append(gCompilerOptions[CXX]['debug'])
+    elif mode == 'coverage':
+        result.append(gCompilerOptions[CXX]['debug'])
+        result.append(gCompilerOptions[CXX]['coverage'])
+        result.append('-DTHRUST_DEBUG')
+
     # enable exception handling
     result.append(gCompilerOptions[CXX]['exception_handling'])
 
@@ -227,7 +237,7 @@ def Environment():
 
     # add a variable to handle RELEASE/DEBUG mode
     vars.Add(EnumVariable('mode', 'Release versus debug mode', 'release',
-                          allowed_values=('release', 'debug')))
+                          allowed_values=('release', 'debug', 'coverage')))
 
     # add a variable to handle compute capability
     vars.Add(
@@ -340,6 +350,9 @@ def Environment():
     #     cuda runtime, but cudafe inserts some dependencies when compiling .cu files
     # XXX ideally this gets handled in nvcc.py if possible
     env.Append(LIBS=['stdc++', 'm'])
+
+    if env['mode'] == 'coverage':
+        env.Append(LIBS=['gcov'])
 
     if env['backend'] == 'ocelot':
         if os.name == 'posix':

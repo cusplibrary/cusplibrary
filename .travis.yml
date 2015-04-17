@@ -5,8 +5,9 @@ compiler:
 
 install:
     - git clone https://github.com/sdalton1/thrust.git
+    - export THRUST_PATH=$PWD/thrust
     - cd testing
 
 script:
-  - g++ -o tester -x c++ ainv.cu array1d.cu array1d_view.cu array2d.cu array2d_view.cu bicgstab.cu binary.cu blas.cu cg.cu cg_m.cu convert.cu coo_matrix.cu coo_matrix_view.cu csr_matrix.cu csr_matrix_view.cu dia_matrix.cu dia_matrix_view.cu diagonal.cu diffusion.cu dimacs.cu elementwise.cu ell_matrix.cu ell_matrix_view.cu format.cu format_utils.cu gauss_seidel.cu generalized_spmv.cu hyb_matrix.cu hyb_matrix_view.cu jacobi.cu linear_operator.cu lu.cu matrix_market.cu maximal_independent_set.cu memory.cu monitor.cu multiply.cu permutation_matrix.cu permutation_matrix_view.cu poisson.cu polynomial.cu print.cu random.cu smoothed_aggregation.cu spectral_radius.cu stencil.cu testframework.cu transpose.cu unittest_tester.cu verify.cu -lstdc++ -lm -I ../ -I ./ -I ../thrust -DTHRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_OMP -fopenmp -O3 -DCUSP_DEVICE_BLAS_SYSTEM=CUSP_DEVICE_BLAS_THRUST -DCUSP_HOST_BLAS_SYSTEM=CUSP_HOST_BLAS_THRUST -Wall -Werror -Wno-unused-local-typedefs
-  - ./tester
+    - scons compiler=g++ backend=omp
+    - ./tester --verbose

@@ -1,7 +1,9 @@
 <hr>
 <h3>CUSP : A C++ Templated Sparse Matrix Library</h3>
 
-Current release: v0.5.0 (March 13, 2015)
+Current release: v0.5.0 (March 13, 2015) [![Build Status](https://travis-ci.org/sdalton1/cusplibrary.png)](https://travis-ci.org/sdalton1/cusplibrary)
+[![Coverage Status](https://coveralls.io/repos/sdalton1/cusplibrary/badge.svg?branch=master)](https://coveralls.io/r/sdalton1/cusplibrary?branch=master)
+
 
 View the project at [CUSP Website](http://cusplibrary.github.io) and the [cusp-users discussion forum](http://groups.google.com/group/cusp-users) for information and questions.
 
