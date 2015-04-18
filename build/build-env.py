@@ -4,7 +4,8 @@ import os
 
 import inspect
 import platform
-
+import subprocess
+from distutils.version import StrictVersion
 
 def get_cuda_paths():
     """Determines CUDA {bin,lib,include} paths
@@ -336,7 +337,11 @@ def Environment():
         env.Append(LIBS=['cudart'])
 
     else:
-        env.Append(NVCCFLAGS = ["-x", "c++", '-Wno-unused-local-typedefs'])
+        env.Append(NVCCFLAGS = ["-x", "c++"])
+
+        GCC_VERSION = subprocess.check_output([env['CXX'], '-dumpversion'])
+        if StrictVersion(GCC_VERSION) >= StrictVersion("4.8.0") :
+            env.Append(NVCCFLAGS = ["-Wno-unused-local-typedefs"])
 
     # hack to silence unknown pragma warnings
     # env.Append(NVCCFLAGS = [compile_flag_prefix, '-Wno-unknown-pragmas'])
