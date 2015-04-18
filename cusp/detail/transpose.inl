@@ -45,8 +45,11 @@ template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2, ty
 void transpose(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
                const MatrixType1& A, MatrixType2& At, Format1, Format2)
 {
-    typename cusp::detail::coo_view_type<MatrixType1>::const_view A_coo(A);
-    typename cusp::detail::as_coo_type<MatrixType2>::type         At_coo;
+    typedef typename MatrixType1::const_coo_view_type              View;
+    typedef typename cusp::detail::as_coo_type<MatrixType2>::type  CooType;
+
+    View A_coo(A);
+    CooType At_coo;
 
     cusp::transpose(exec, A_coo, At_coo);
 

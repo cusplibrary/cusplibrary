@@ -284,14 +284,15 @@ void TestSmoothProlongator(void)
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestSmoothProlongator);
 
-template <class MemorySpace>
+template <typename SparseMatrix>
 void TestSmoothedAggregation(void)
 {
-    typedef int                 IndexType;
-    typedef float               ValueType;
+    typedef typename SparseMatrix::index_type   IndexType;
+    typedef typename SparseMatrix::value_type   ValueType;
+    typedef typename SparseMatrix::memory_space MemorySpace;
 
     // Create 2D Poisson problem
-    cusp::coo_matrix<IndexType,ValueType,MemorySpace> A;
+    SparseMatrix A;
     cusp::gallery::poisson5pt(A, 100, 100);
 
     // create smoothed aggregation solver
@@ -323,7 +324,7 @@ void TestSmoothedAggregation(void)
         ASSERT_EQUAL(monitor.geometric_rate() < 0.5, true);
     }
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestSmoothedAggregation);
+DECLARE_SPARSE_MATRIX_UNITTEST(TestSmoothedAggregation);
 
 void TestSmoothedAggregationHostToDevice(void)
 {

@@ -126,13 +126,16 @@ private:
     typedef cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::ell_format> Parent;
 
 public:
+
+    /*! Value used to pad the rows of the column_indices array.
+     */
+    const static IndexType invalid_index = static_cast<IndexType>(-1);
+
     /*! \cond */
     typedef typename cusp::array2d<IndexType, MemorySpace, cusp::column_major> column_indices_array_type;
     typedef typename cusp::array2d<ValueType, MemorySpace, cusp::column_major> values_array_type;
 
     typedef typename cusp::ell_matrix<IndexType, ValueType, MemorySpace>       container;
-    typedef typename cusp::detail::coo_view_type<container>::view              coo_view_type;
-    typedef typename cusp::detail::coo_view_type<container>::const_view        const_coo_view_type;
 
     typedef typename cusp::ell_matrix_view<
             typename column_indices_array_type::view,
@@ -144,17 +147,15 @@ public:
             typename values_array_type::const_view,
             IndexType, ValueType, MemorySpace> const_view;
 
+    typedef typename cusp::detail::coo_view_type<container>::view                    coo_view_type;
+    typedef typename cusp::detail::coo_view_type<container const>::view              const_coo_view_type;
+
     template<typename MemorySpace2>
     struct rebind
     {
         typedef cusp::ell_matrix<IndexType, ValueType, MemorySpace2> type;
     };
     /*! \endcond */
-
-
-    /*! Value used to pad the rows of the column_indices array.
-     */
-    const static IndexType invalid_index = static_cast<IndexType>(-1);
 
     /*! Storage for the column indices of the ELL data structure.
      */
@@ -326,11 +327,13 @@ public:
     /*! \cond */
     typedef ArrayType1 column_indices_array_type;
     typedef ArrayType2 values_array_type;
-    typedef typename cusp::ell_matrix<IndexType, ValueType, MemorySpace> container;
-    typedef typename cusp::ell_matrix_view<ArrayType1, ArrayType2, IndexType, ValueType, MemorySpace> view;
 
-    typedef typename cusp::detail::coo_view_type<view>::view coo_view_type;
-    typedef typename cusp::detail::coo_view_type<view>::view const_coo_view_type;
+    typedef cusp::ell_matrix<IndexType, ValueType, MemorySpace>                              container;
+    typedef cusp::ell_matrix_view<ArrayType1, ArrayType2, IndexType, ValueType, MemorySpace> view;
+    typedef cusp::ell_matrix_view<ArrayType1, ArrayType2, IndexType, ValueType, MemorySpace> const_view;
+
+    typedef typename cusp::detail::coo_view_type<view>::view       coo_view_type;
+    typedef typename cusp::detail::coo_view_type<view const>::view const_coo_view_type;
     /*! \endcond */
 
     /**

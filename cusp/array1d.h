@@ -386,7 +386,7 @@ public :
     typedef typename cusp::array1d_view<RandomAccessIterator>                   view;
 
     typedef RandomAccessIterator                                                const_iterator;
-    typedef typename cusp::array1d_view<RandomAccessIterator>                   const_view;
+    typedef typename cusp::array1d_view<const_iterator>                         const_view;
     /*! \endcond */
 
     /*! This constructor creates an empty \p array1d_view vector.

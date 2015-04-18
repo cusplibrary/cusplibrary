@@ -155,10 +155,9 @@ void coo_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>
 ::construct_from(MatrixType& matrix, csr_format)
 {
     Parent::resize(matrix.num_rows, matrix.num_cols, matrix.num_entries);
-    indices.resize(matrix.num_entries);
-    cusp::offsets_to_indices(matrix.row_offsets, indices);
+    row_indices.resize(matrix.num_entries);
+    cusp::offsets_to_indices(matrix.row_offsets, row_indices);
 
-    row_indices    = row_indices_array_type(indices.begin(), indices.end());
     column_indices = column_indices_array_type(matrix.column_indices.begin(), matrix.column_indices.end());
     values         = values_array_type(matrix.values.begin(), matrix.values.end());
 }
@@ -170,7 +169,7 @@ void coo_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>
 {
     typedef cusp::detail::coo_view_type<MatrixType>          dia_view_type;
 
-    typedef thrust::counting_iterator<IndexType>             CountingIterator;
+    typedef typename dia_view_type::CountingIterator         CountingIterator;
     typedef typename dia_view_type::PermFunctor              PermFunctor;
     typedef typename dia_view_type::OffsetsPermIterator      OffsetsPermIterator;
     typedef typename dia_view_type::ModulusIterator          ModulusIterator;
@@ -222,7 +221,7 @@ void coo_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>
 {
     typedef cusp::detail::coo_view_type<MatrixType>          ell_view_type;
 
-    typedef thrust::counting_iterator<IndexType>             CountingIterator;
+    typedef typename ell_view_type::CountingIterator         CountingIterator;
     typedef typename ell_view_type::PermFunctor              PermFunctor;
     typedef typename ell_view_type::PermIndexIterator        PermIndexIterator;
 
@@ -269,20 +268,19 @@ void coo_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>
 {
     using namespace cusp::detail;
 
-    typedef cusp::detail::coo_view_type<MatrixType>             hyb_view_type;
+    typedef cusp::detail::coo_view_type<MatrixType>                  hyb_view_type;
 
-    typedef thrust::counting_iterator<IndexType>                CountingIterator;
-    typedef typename hyb_view_type::ell_view_type::PermFunctor  PermFunctor;
-    typedef typename hyb_view_type::PermIndexIterator           PermIndexIterator;
+    typedef typename hyb_view_type::ell_view_type::CountingIterator  CountingIterator;
+    typedef typename hyb_view_type::ell_view_type::PermFunctor       PermFunctor;
 
-    typedef typename hyb_view_type::RowIndexIterator            RowIndexIterator;
-    typedef typename hyb_view_type::ColumnIndexIterator         ColumnIndexIterator;
-    typedef typename hyb_view_type::PermColumnIndexIterator     PermColumnIndexIterator;
-    typedef typename hyb_view_type::PermValueIterator           PermValueIterator;
+    typedef typename hyb_view_type::EllPermIndexIterator             PermIndexIterator;
+    typedef typename hyb_view_type::EllRowIndexIterator              RowIndexIterator;
+    typedef typename hyb_view_type::EllColumnIndexIterator           PermColumnIndexIterator;
+    typedef typename hyb_view_type::EllValueIterator                 PermValueIterator;
 
-    typedef typename hyb_view_type::JoinRowIterator             JoinRowIterator;
-    typedef typename hyb_view_type::JoinColumnIterator          JoinColumnIterator;
-    typedef typename hyb_view_type::JoinValueIterator           JoinValueIterator;
+    typedef typename hyb_view_type::JoinRowIterator                  JoinRowIterator;
+    typedef typename hyb_view_type::JoinColumnIterator               JoinColumnIterator;
+    typedef typename hyb_view_type::JoinValueIterator                JoinValueIterator;
 
     const int    X               = MatrixType::ell_matrix_type::invalid_index;
     const size_t ell_num_entries = matrix.ell.column_indices.num_entries;
@@ -291,8 +289,8 @@ void coo_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>
 
     Parent::resize(matrix.num_rows, matrix.num_cols, matrix.num_entries);
 
-    RowIndexIterator        row_indices_begin(CountingIterator(0), divide_value<IndexType>(matrix.ell.values.num_cols));
     PermIndexIterator       perm_indices_begin(CountingIterator(0), PermFunctor(matrix.ell.values.num_rows, matrix.ell.values.num_cols, matrix.ell.values.pitch));
+    RowIndexIterator        row_indices_begin(CountingIterator(0), divide_value<IndexType>(matrix.ell.values.num_cols));
     PermColumnIndexIterator perm_column_indices_begin(matrix.ell.column_indices.values.begin(), perm_indices_begin);
     PermValueIterator       perm_values_begin(matrix.ell.values.values.begin(), perm_indices_begin);
 
@@ -348,7 +346,6 @@ void coo_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>
     column_indices = cols_array;
     values         = vals_array;
 }
-
 
 template <typename Array1, typename Array2, typename Array3, typename IndexType, typename ValueType, typename MemorySpace>
 void

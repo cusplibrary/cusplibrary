@@ -120,8 +120,8 @@ namespace aggregation
 template <typename IndexType,
           typename ValueType,
           typename MemorySpace,
-	      typename SmootherType = thrust::use_default,
-	      typename SolverType   = thrust::use_default,
+	        typename SmootherType = thrust::use_default,
+	        typename SolverType   = thrust::use_default,
           typename Format       = thrust::use_default>
 class smoothed_aggregation :
 	public cusp::multilevel<IndexType,ValueType,MemorySpace,Format,SmootherType,SolverType>::container

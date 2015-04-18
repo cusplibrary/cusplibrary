@@ -118,18 +118,20 @@ public:
 
     typedef typename cusp::coo_matrix<IndexType, ValueType, MemorySpace> container;
 
-    typedef typename cusp::coo_matrix_view<typename row_indices_array_type::view,
+    typedef typename cusp::coo_matrix_view<
+            typename row_indices_array_type::view,
             typename column_indices_array_type::view,
             typename values_array_type::view,
             IndexType, ValueType, MemorySpace> view;
 
-    typedef typename cusp::coo_matrix_view<typename row_indices_array_type::const_view,
+    typedef typename cusp::coo_matrix_view<
+            typename row_indices_array_type::const_view,
             typename column_indices_array_type::const_view,
             typename values_array_type::const_view,
             IndexType, ValueType, MemorySpace> const_view;
 
-    typedef view       coo_view_type;
-    typedef const_view const_coo_view_type;
+    typedef container        coo_view_type;
+    typedef container const  const_coo_view_type;
 
     template<typename MemorySpace2>
     struct rebind
@@ -296,7 +298,7 @@ public:
 template <typename ArrayType1,
           typename ArrayType2,
           typename ArrayType3,
-          typename IndexType   = typename ArrayType1::value_type,
+          typename IndexType   = typename ArrayType2::value_type,
           typename ValueType   = typename ArrayType3::value_type,
           typename MemorySpace = typename cusp::minimum_space<
                                     typename ArrayType1::memory_space,
@@ -317,9 +319,10 @@ public:
 
     typedef typename cusp::coo_matrix<IndexType, ValueType, MemorySpace> container;
     typedef typename cusp::coo_matrix_view<ArrayType1, ArrayType2, ArrayType3, IndexType, ValueType, MemorySpace> view;
+    typedef typename cusp::coo_matrix_view<ArrayType1, ArrayType2, ArrayType3, IndexType, ValueType, MemorySpace> const_view;
 
     typedef view       coo_view_type;
-    typedef view const_coo_view_type;
+    typedef view const const_coo_view_type;
     /*! \endcond */
 
     /**
@@ -340,7 +343,7 @@ public:
     /**
      * Storage for indices used to generate COO view.
      */
-    cusp::array1d<IndexType,MemorySpace> indices;
+    cusp::array1d<typename thrust::detail::remove_const<IndexType>::type,MemorySpace> indices;
 
     /**
      * Construct an empty \p coo_matrix_view.
