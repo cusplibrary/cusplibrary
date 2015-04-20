@@ -30,10 +30,9 @@ namespace lapack
 {
 
 /*! \addtogroup dense Dense Algorithms
- */
-
-/*! \addtogroup lapack LAPACK
+ *  \addtogroup lapack LAPACK
  *  \ingroup dense
+ *  \brief Interface to LAPACK routines
  *  \{
  */
 

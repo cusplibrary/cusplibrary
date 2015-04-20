@@ -1,9 +1,10 @@
 <hr>
 <h3>CUSP : A C++ Templated Sparse Matrix Library</h3>
 
-Current release: v0.5.0 (March 13, 2015) [![Build Status](https://travis-ci.org/sdalton1/cusplibrary.png)](https://travis-ci.org/sdalton1/cusplibrary)
-[![Coverage Status](https://coveralls.io/repos/sdalton1/cusplibrary/badge.svg?branch=master)](https://coveralls.io/r/sdalton1/cusplibrary?branch=master)
+Current release    : v0.5.0 (March 13, 2015)
 
+Development status : [![Build Status](https://travis-ci.org/sdalton1/cusplibrary.png)](https://travis-ci.org/sdalton1/cusplibrary)
+[![Coverage Status](https://coveralls.io/repos/sdalton1/cusplibrary/badge.svg?branch=master)](https://coveralls.io/r/sdalton1/cusplibrary?branch=master)
 
 View the project at [CUSP Website](http://cusplibrary.github.io) and the [cusp-users discussion forum](http://groups.google.com/group/cusp-users) for information and questions.
 
@@ -41,7 +42,7 @@ CUSP releases are labeled using version identifiers having three fields:
 
 | Date | Version |
 | ---- | ------- |
-| 03/13/2015 | [CUSP v0.5.0](https://github.com/cusplibrary/cusplibrary/archive/0.5.0.zip)  |
+| 03/13/2015 | [CUSP v0.5.0](https://github.com/cusplibrary/cusplibrary/archive/v0.5.0.zip)  |
 | 08/30/2013 | [CUSP v0.4.0](https://github.com/cusplibrary/cusplibrary/archive/v0.4.0.zip) |
 | 03/08/2012 | [CUSP v0.3.1](https://github.com/cusplibrary/cusplibrary/archive/v0.3.1.zip) |
 | 02/04/2012 | [CUSP v0.3.0](https://github.com/cusplibrary/cusplibrary/archive/v0.3.0.zip) |
@@ -53,6 +54,8 @@ CUSP releases are labeled using version identifiers having three fields:
 <h3>Contributors</h3>
 
 CUSP is developed as an open-source project by [NVIDIA Research](http://research.nvidia.com).
+[Nathan Bell](http:github.com/wnbell) was the original creator and
+[Steven Dalton](http://github.com/sdalton1) is the current primary contributor.
 
 <br><hr>
 <h3>Citing</h3>
