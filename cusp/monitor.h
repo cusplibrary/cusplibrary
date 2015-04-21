@@ -241,6 +241,7 @@ public:
 
 private:
 
+    /*! \cond */
     Real b_norm;
     Real r_norm;
     size_t iteration_limit_;
@@ -248,6 +249,110 @@ private:
     Real relative_tolerance_;
     Real absolute_tolerance_;
     bool verbose;
+    /*! \endcond */
+};
+
+// TODO : Remove convergence, default, and verbose monitors in v0.6.0
+template <typename ValueType>
+class convergence_monitor : public monitor<ValueType>
+{
+private:
+
+    typedef monitor<ValueType> Parent;
+
+public:
+
+    typedef typename Parent::Real Real;
+
+    /**
+     *  \brief Constructs a \p convergence_monitor for a given right-hand-side \p b
+     *
+     *  \tparam VectorType Type of initial vector
+     *
+     *  \param b right-hand-side of the linear system A x = b
+     *  \param iteration_limit maximum number of solver iterations to allow
+     *  \param relative_tolerance determines convergence criteria
+     *  \param absolute_tolerance determines convergence criteria
+     *  \param verbose Controls printing status updates during execution
+     *
+     *  \deprecated As of v0.4.0 monitors have been unified. Use monitor
+     *  instead.
+     */
+    template <typename VectorType>
+    CUSP_DEPRECATED
+    convergence_monitor(const VectorType& b,
+                        const size_t iteration_limit = 500,
+                        const Real relative_tolerance = 1e-5,
+                        const Real absolute_tolerance = 0)
+    : Parent(b, iteration_limit, relative_tolerance, absolute_tolerance, false) {}
+};
+
+template <typename ValueType>
+class default_monitor : public monitor<ValueType>
+{
+private:
+
+    typedef monitor<ValueType> Parent;
+
+public:
+
+    typedef typename Parent::Real Real;
+
+    /**
+     *  \brief Constructs a \p default_monitor for a given right-hand-side \p b
+     *
+     *  \tparam VectorType Type of initial vector
+     *
+     *  \param b right-hand-side of the linear system A x = b
+     *  \param iteration_limit maximum number of solver iterations to allow
+     *  \param relative_tolerance determines convergence criteria
+     *  \param absolute_tolerance determines convergence criteria
+     *  \param verbose Controls printing status updates during execution
+     *
+     *  \deprecated As of v0.4.0 monitors have been unified. Use monitor
+     *  instead.
+     */
+    template <typename VectorType>
+    CUSP_DEPRECATED
+    default_monitor(const VectorType& b,
+                    const size_t iteration_limit = 500,
+                    const Real relative_tolerance = 1e-5,
+                    const Real absolute_tolerance = 0)
+    : Parent(b, iteration_limit, relative_tolerance, absolute_tolerance, false) {}
+};
+
+template <typename ValueType>
+class verbose_monitor : public monitor<ValueType>
+{
+private:
+
+    typedef monitor<ValueType> Parent;
+
+public:
+
+    typedef typename Parent::Real Real;
+
+    /**
+     *  \brief Constructs a \p verbose_monitor for a given right-hand-side \p b
+     *
+     *  \tparam VectorType Type of initial vector
+     *
+     *  \param b right-hand-side of the linear system A x = b
+     *  \param iteration_limit maximum number of solver iterations to allow
+     *  \param relative_tolerance determines convergence criteria
+     *  \param absolute_tolerance determines convergence criteria
+     *  \param verbose Controls printing status updates during execution
+     *
+     *  \deprecated As of v0.4.0 monitors have been unified. Use monitor
+     *  instead.
+     */
+    template <typename VectorType>
+    CUSP_DEPRECATED
+    verbose_monitor(const VectorType& b,
+                    const size_t iteration_limit = 500,
+                    const Real relative_tolerance = 1e-5,
+                    const Real absolute_tolerance = 0)
+    : Parent(b, iteration_limit, relative_tolerance, absolute_tolerance, true) {}
 };
 
 } // end namespace cusp
