@@ -1,4 +1,13 @@
 #######################################
+#            Cusp v0.5.1              #
+#######################################
+
+Summary
+  Fixed coo_matrix_view conversion error
+  Added cusp/blas.h for compatibility with v0.4.0
+  Added convergence, default and verbose monitors for compatibility with v0.4.0
+
+#######################################
 #            Cusp v0.5.0              #
 #######################################
 
