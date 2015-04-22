@@ -354,7 +354,8 @@ def Environment():
     # XXX we shouldn't have to link against cudart unless we're using the
     #     cuda runtime, but cudafe inserts some dependencies when compiling .cu files
     # XXX ideally this gets handled in nvcc.py if possible
-    env.Append(LIBS=['stdc++', 'm'])
+    if os.name != 'nt':
+        env.Append(LIBS=['stdc++', 'm'])
 
     if env['mode'] == 'coverage':
         env.Append(LIBS=['gcov'])
