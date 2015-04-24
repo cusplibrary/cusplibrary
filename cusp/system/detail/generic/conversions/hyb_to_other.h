@@ -40,28 +40,10 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
         cusp::hyb_format&,
         cusp::coo_format&)
 {
-    typedef typename SourceType::coo_matrix_type  CooMatrixType;
-    typedef typename CooMatrixType::container  CooMatrix;
+    typedef typename SourceType::const_coo_view_type  CooViewType;
 
-    // convert ell portion to coo
-    CooMatrix temp;
-    cusp::convert(exec, src.ell, temp);
-
-    // resize output
-    dst.resize(src.num_rows, src.num_cols, temp.num_entries + src.coo.num_entries);
-
-    if(src.num_entries == 0) return;
-
-    // merge coo matrices together
-    thrust::copy(exec, temp.row_indices.begin(),       temp.row_indices.end(),       dst.row_indices.begin());
-    thrust::copy(exec, temp.column_indices.begin(),    temp.column_indices.end(),    dst.column_indices.begin());
-    thrust::copy(exec, temp.values.begin(),            temp.values.end(),            dst.values.begin());
-    thrust::copy(exec, src.coo.row_indices.begin(),    src.coo.row_indices.end(),    dst.row_indices.begin()    + temp.num_entries);
-    thrust::copy(exec, src.coo.column_indices.begin(), src.coo.column_indices.end(), dst.column_indices.begin() + temp.num_entries);
-    thrust::copy(exec, src.coo.values.begin(),         src.coo.values.end(),         dst.values.begin()         + temp.num_entries);
-
-    if (temp.num_entries > 0 && src.coo.num_entries > 0)
-        cusp::sort_by_row_and_column(exec, dst.row_indices, dst.column_indices, dst.values);
+    CooViewType src_coo(src);
+    cusp::copy(src_coo, dst);
 }
 
 } // end namespace generic
