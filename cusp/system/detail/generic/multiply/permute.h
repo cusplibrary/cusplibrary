@@ -34,13 +34,13 @@ template <typename DerivedPolicy,
           typename LinearOperator,
           typename MatrixOrVector1,
           typename MatrixOrVector2>
-void multiply_inner(thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-               LinearOperator&  A,
-               MatrixOrVector1& B,
-               MatrixOrVector2& C,
-               permutation_format,
-               array1d_format,
-               array1d_format)
+void multiply(thrust::execution_policy<DerivedPolicy> &exec,
+              const LinearOperator&  A,
+              const MatrixOrVector1& B,
+              MatrixOrVector2& C,
+              permutation_format,
+              array1d_format,
+              array1d_format)
 {
     C.resize(B.size());
 
@@ -51,13 +51,13 @@ template <typename DerivedPolicy,
           typename LinearOperator,
           typename MatrixOrVector1,
           typename MatrixOrVector2>
-void multiply_inner(thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-               LinearOperator&  A,
-               MatrixOrVector1& B,
-               MatrixOrVector2& C,
-               permutation_format,
-               coo_format,
-               coo_format)
+void multiply(thrust::execution_policy<DerivedPolicy> &exec,
+              const LinearOperator&  A,
+              const MatrixOrVector1& B,
+              MatrixOrVector2& C,
+              permutation_format,
+              coo_format,
+              coo_format)
 {
     C.resize(B.num_rows, B.num_cols, B.num_entries);
 
@@ -73,13 +73,13 @@ template <typename DerivedPolicy,
           typename LinearOperator,
           typename MatrixOrVector1,
           typename MatrixOrVector2>
-void multiply_inner(thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-               LinearOperator&  A,
-               MatrixOrVector1& B,
-               MatrixOrVector2& C,
-               coo_format,
-               permutation_format,
-               coo_format)
+void multiply(thrust::execution_policy<DerivedPolicy> &exec,
+              const LinearOperator&  A,
+              const MatrixOrVector1& B,
+              MatrixOrVector2& C,
+              coo_format,
+              permutation_format,
+              coo_format)
 {
     C.resize(A.num_rows, A.num_cols, A.num_entries);
 
@@ -95,13 +95,13 @@ template <typename DerivedPolicy,
           typename LinearOperator,
           typename MatrixOrVector1,
           typename MatrixOrVector2>
-void multiply_inner(thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-               LinearOperator&  A,
-               MatrixOrVector1& B,
-               MatrixOrVector2& C,
-               permutation_format,
-               sparse_format,
-               sparse_format)
+void multiply(thrust::execution_policy<DerivedPolicy> &exec,
+              const LinearOperator&  A,
+              const MatrixOrVector1& B,
+              MatrixOrVector2& C,
+              permutation_format,
+              sparse_format,
+              sparse_format)
 {
    typename cusp::detail::as_coo_type<MatrixOrVector1>::type B_(B);
    typename cusp::detail::as_coo_type<MatrixOrVector2>::type C_(C);
@@ -114,13 +114,13 @@ template <typename DerivedPolicy,
           typename LinearOperator,
           typename MatrixOrVector1,
           typename MatrixOrVector2>
-void multiply_inner(thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-               LinearOperator&  A,
-               MatrixOrVector1& B,
-               MatrixOrVector2& C,
-               sparse_format,
-               permutation_format,
-               sparse_format)
+void multiply(thrust::execution_policy<DerivedPolicy> &exec,
+              const LinearOperator&  A,
+              const MatrixOrVector1& B,
+              MatrixOrVector2& C,
+              sparse_format,
+              permutation_format,
+              sparse_format)
 {
    typename cusp::detail::as_coo_type<MatrixOrVector1>::type A_(A);
    typename cusp::detail::as_coo_type<MatrixOrVector2>::type C_(C);

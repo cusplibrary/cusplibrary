@@ -47,7 +47,6 @@ namespace sequential
 
 // hack until ADL is operational
 using cusp::system::detail::sequential::multiply;
-using cusp::system::detail::sequential::multiply_inner;
 
 } // end namespace cusp
 
