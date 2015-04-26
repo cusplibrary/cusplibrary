@@ -21,7 +21,6 @@
 
 #pragma once
 
-#include <typeinfo>
 #include <cusp/detail/config.h>
 
 #include <cusp/memory.h>

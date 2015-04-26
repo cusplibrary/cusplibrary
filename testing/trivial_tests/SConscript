@@ -39,11 +39,15 @@ env.Append(BUILDERS = {'CPPFile' : cpp_from_header_builder})
 # find all user-includable .h files in the cusp tree and generate trivial source files #including them
 extensions = ['.h']
 folders = ['',              # main folder
+           # 'eigen/',
            'gallery/',
            'graph/',
            'io/',
+           'iterator/',
            'krylov/',
            'precond/',
+           'precond/aggregation/',
+           'precond/smoother/',
            'relaxation/']
 
 sources  = []

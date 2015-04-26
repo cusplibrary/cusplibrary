@@ -18,6 +18,7 @@
 #pragma once
 
 #include <cusp/detail/config.h>
+#include <cusp/detail/format.h>
 
 #include <thrust/execution_policy.h>
 

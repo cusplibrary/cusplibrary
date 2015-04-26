@@ -19,9 +19,13 @@
  */
 
 #pragma once
+
+#include <cusp/detail/config.h>
+
 #include <thrust/functional.h>
 
 #include <thrust/iterator/transform_iterator.h>
+
 namespace cusp
 {
 

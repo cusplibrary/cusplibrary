@@ -15,7 +15,7 @@ void TestReadBinaryFileCoordinateRealGeneral(void)
 {
     // load matrix
     cusp::coo_matrix<int, float, cusp::host_memory> coo;
-    cusp::io::read_binary_file(coo, "data/test/coordinate_real_general.bin");
+    cusp::io::read_binary_file(coo, "../data/test/coordinate_real_general.bin");
 
     // convert to array2d
     cusp::array2d<float, cusp::host_memory> D(coo);
@@ -57,7 +57,7 @@ void TestReadBinaryFileToCsrMatrix(void)
 {
     // load matrix
     cusp::csr_matrix<int, float, MemorySpace> csr;
-    cusp::io::read_binary_file(csr, "data/test/coordinate_real_general.bin");
+    cusp::io::read_binary_file(csr, "../data/test/coordinate_real_general.bin");
 
     // convert to array2d
     cusp::array2d<float, cusp::host_memory> D(csr);

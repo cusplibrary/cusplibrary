@@ -343,6 +343,9 @@ def Environment():
         if StrictVersion(GCC_VERSION) >= StrictVersion("4.8.0") :
             env.Append(NVCCFLAGS = ["-Wno-unused-local-typedefs"])
 
+        if 'THRUST_PATH' not in os.environ :
+            raise ValueError("Building without nvcc requires THRUST_PATH environment variable!")
+
     # hack to silence unknown pragma warnings
     # env.Append(NVCCFLAGS = [compile_flag_prefix, '-Wno-unknown-pragmas'])
 
