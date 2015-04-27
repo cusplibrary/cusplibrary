@@ -44,15 +44,15 @@ namespace generic
 template<typename T>
 struct valid_index_functor : public thrust::unary_function<T,T>
 {
-    const T num_rows;
+    const T size;
 
-    valid_index_functor(const T num_rows)
-        : num_rows(num_rows) {}
+    valid_index_functor(const T size)
+        : size(size) {}
 
     __host__ __device__
     T operator()(const T col)
     {
-        return col < 0 || col > num_rows ? 0 : col;
+        return (col < 0 || col >= size) ? 0 : col;
     }
 };
 
