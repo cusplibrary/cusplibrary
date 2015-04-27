@@ -2,23 +2,7 @@ import os
 import inspect
 
 # try to import an environment first
-try:
-  Import('env')
-except:
-  exec open("../build/build-env.py")
-  env = Environment()
-
-# assemble the name of this configuration's targets directory
-targets_dir = 'targets/device_{0}_{1}'.format(env['backend'], env['mode'])
-env.VariantDir(targets_dir, '.', duplicate = False)
-
-# on mac we have to tell the linker to link against the C++ library
-if env['PLATFORM'] == "darwin":
-  env.Append(LINKFLAGS = "-lstdc++")
-
-# on windows we have to do /bigobj
-if env['PLATFORM'] == "win32" or env['PLATFORM'] == "win64":
-  env.Append(CPPFLAGS = "/bigobj")
+Import('env')
 
 # find all .cus & .cpps in the current and backend/ directories
 sources = []
@@ -64,5 +48,6 @@ tester = env.Program('tester', sources)
 
 # invoke trivial_tests SConscript
 if ('tests' not in env) and ('single_test' not in env) :
+  # SConscript('external_libs/SConscript', exports='env')
   SConscript('trivial_tests/Sconscript', exports='env')
 

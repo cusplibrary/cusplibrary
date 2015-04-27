@@ -5,11 +5,7 @@ from warnings import warn
 cusp_abspath = os.path.abspath("../../cusp/")
 
 # try to import an environment first
-try:
-  Import('env')
-except:
-  exec open("../../build/build-env.py")
-  env = Environment()
+Import('env')
 
 # this function builds a trivial source file from a Cusp header
 def trivial_source_from_header(source, target, env):
