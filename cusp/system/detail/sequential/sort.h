@@ -56,7 +56,7 @@ void counting_sort(sequential::execution_policy<DerivedPolicy>& exec,
     size_t size = max - min;
 
     // allocate temporary arrays
-    thrust::detail::temporary_array<size_t, DerivedPolicy>    counts(exec, size + 1);
+    thrust::detail::temporary_array<size_t, DerivedPolicy>    counts(exec, size + 2);
     thrust::detail::temporary_array<IndexType, DerivedPolicy> temp_keys(exec, keys.begin(), keys.end());
 
     // initialize counts
@@ -64,11 +64,11 @@ void counting_sort(sequential::execution_policy<DerivedPolicy>& exec,
 
     // count the number of occurences of each key
     for(size_t i = 0; i < keys.size(); i++)
-      counts[keys[i]+1]++;
+      counts[keys[i] + 1]++;
 
     // scan the sum of each bin
     for(size_t i = 0; i < size; i++)
-      counts[i+1] += counts[i];
+      counts[i + 1] += counts[i];
 
     // generate output in sorted order
     for(size_t i = 0; i < keys.size(); i++)
@@ -100,7 +100,7 @@ void counting_sort_by_key(sequential::execution_policy<DerivedPolicy>& exec,
     size_t size = max - min;
 
     // allocate temporary arrays
-    thrust::detail::temporary_array<size_t, DerivedPolicy> counts(exec, size + 1);
+    thrust::detail::temporary_array<size_t, DerivedPolicy> counts(exec, size + 2);
     thrust::detail::temporary_array<IndexType1, DerivedPolicy> temp_keys(exec, keys.begin(), keys.end());
     thrust::detail::temporary_array<IndexType2, DerivedPolicy> temp_vals(exec, vals.begin(), vals.end());
 
@@ -109,11 +109,11 @@ void counting_sort_by_key(sequential::execution_policy<DerivedPolicy>& exec,
 
     // count the number of occurences of each key
     for(size_t i = 0; i < keys.size(); i++)
-      counts[keys[i]+1]++;
+      counts[keys[i] + 1]++;
 
     // scan the sum of each bin
     for(size_t i = 0; i < size; i++)
-      counts[i+1] += counts[i];
+      counts[i + 1] += counts[i];
 
     // generate output in sorted order
     for(size_t i = 0; i < keys.size(); i++)
