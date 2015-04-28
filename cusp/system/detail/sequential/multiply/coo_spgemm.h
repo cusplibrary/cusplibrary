@@ -33,12 +33,12 @@ namespace sequential
 {
 
 template <typename DerivedPolicy,
-         typename Matrix1,
-         typename Matrix2,
-         typename Matrix3>
-void multiply_inner(sequential::execution_policy<DerivedPolicy>& exec,
-              Matrix1& A,
-              Matrix2& B,
+          typename Matrix1,
+          typename Matrix2,
+          typename Matrix3>
+void multiply(sequential::execution_policy<DerivedPolicy>& exec,
+              const Matrix1& A,
+              const Matrix2& B,
               Matrix3& C,
               coo_format,
               coo_format,

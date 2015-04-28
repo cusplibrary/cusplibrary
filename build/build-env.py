@@ -343,6 +343,9 @@ def Environment():
         if StrictVersion(GCC_VERSION) >= StrictVersion("4.8.0") :
             env.Append(NVCCFLAGS = ["-Wno-unused-local-typedefs"])
 
+        if 'THRUST_PATH' not in os.environ :
+            raise ValueError("Building without nvcc requires THRUST_PATH environment variable!")
+
     # hack to silence unknown pragma warnings
     # env.Append(NVCCFLAGS = [compile_flag_prefix, '-Wno-unknown-pragmas'])
 
@@ -354,7 +357,8 @@ def Environment():
     # XXX we shouldn't have to link against cudart unless we're using the
     #     cuda runtime, but cudafe inserts some dependencies when compiling .cu files
     # XXX ideally this gets handled in nvcc.py if possible
-    env.Append(LIBS=['stdc++', 'm'])
+    if os.name != 'nt':
+        env.Append(LIBS=['stdc++', 'm'])
 
     if env['mode'] == 'coverage':
         env.Append(LIBS=['gcov'])

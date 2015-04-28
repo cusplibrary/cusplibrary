@@ -61,7 +61,7 @@ void TestReadMatrixMarketFileCoordinateRealGeneral(void)
 {
     // load matrix
     cusp::coo_matrix<int, float, cusp::host_memory> coo;
-    cusp::io::read_matrix_market_file(coo, "data/test/coordinate_real_general.mtx");
+    cusp::io::read_matrix_market_file(coo, "../data/test/coordinate_real_general.mtx");
 
     // convert to array2d
     cusp::array2d<float, cusp::host_memory> D(coo);
@@ -102,7 +102,7 @@ void TestReadMatrixMarketFileCoordinateComplexGeneral(void)
 {
     // load matrix
     cusp::coo_matrix<int, cusp::complex<float>, cusp::host_memory> coo;
-    cusp::io::read_matrix_market_file(coo, "data/test/coordinate_complex_general.mtx");
+    cusp::io::read_matrix_market_file(coo, "../data/test/coordinate_complex_general.mtx");
 
     // convert to array2d
     cusp::array2d<cusp::complex<float>, cusp::host_memory> D(coo);
@@ -147,7 +147,7 @@ void TestReadMatrixMarketFileCoordinatePatternSymmetric(void)
 {
     // load matrix
     cusp::coo_matrix<int, float, cusp::host_memory> coo;
-    cusp::io::read_matrix_market_file(coo, "data/test/coordinate_pattern_symmetric.mtx");
+    cusp::io::read_matrix_market_file(coo, "../data/test/coordinate_pattern_symmetric.mtx");
 
     // convert to array2d
     cusp::array2d<float, cusp::host_memory> D(coo);
@@ -188,7 +188,7 @@ void TestReadMatrixMarketFileArrayRealGeneral(void)
 {
     // load matrix
     cusp::coo_matrix<int, float, cusp::host_memory> coo;
-    cusp::io::read_matrix_market_file(coo, "data/test/array_real_general.mtx");
+    cusp::io::read_matrix_market_file(coo, "../data/test/array_real_general.mtx");
 
     // convert to array2d
     cusp::array2d<float, cusp::host_memory> D(coo);
@@ -217,7 +217,7 @@ void TestReadMatrixMarketFileToCsrMatrix(void)
 {
     // load matrix
     cusp::csr_matrix<int, float, MemorySpace> csr;
-    cusp::io::read_matrix_market_file(csr, "data/test/coordinate_real_general.mtx");
+    cusp::io::read_matrix_market_file(csr, "../data/test/coordinate_real_general.mtx");
 
     // convert to array2d
     cusp::array2d<float, cusp::host_memory> D(csr);

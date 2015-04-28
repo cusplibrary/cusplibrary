@@ -23,6 +23,10 @@
 #include <cusp/format_utils.h>
 #include <cusp/eigen/spectral_radius.h>
 
+#ifdef _WIN32
+	#define _USE_MATH_DEFINES
+#endif
+
 #include <math.h>
 
 namespace cusp

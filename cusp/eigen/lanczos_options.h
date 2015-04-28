@@ -20,6 +20,8 @@
 
 #pragma once
 
+#include <cusp/detail/config.h>
+
 #include <cusp/array1d.h>
 
 #include <limits>

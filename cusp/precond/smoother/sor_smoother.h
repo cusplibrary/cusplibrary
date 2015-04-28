@@ -23,6 +23,7 @@
 
 #include <cusp/detail/config.h>
 
+#include <cusp/precond/aggregation/smoothed_aggregation_options.h>
 #include <cusp/relaxation/sor.h>
 
 namespace cusp
@@ -49,7 +50,7 @@ public:
     sor_smoother(void) {}
 
     template <typename ValueType2, typename MemorySpace2>
-    sor_smoother(const gauss_seidel_smoother<ValueType2,MemorySpace2>& A)
+    sor_smoother(const sor_smoother<ValueType2,MemorySpace2>& A)
         : num_iters(A.num_iters), M(A.M) {}
 
     template <typename MatrixType, typename Level>
@@ -64,7 +65,7 @@ public:
         num_iters = L.num_iters;
 
         if(L.rho_DinvA == ValueType(0))
-            M = BaseSmoother(A, weight / detail::estimate_rho_Dinv_A(A));
+            M = BaseSmoother(A, weight / cusp::precond::aggregation::detail::estimate_rho_Dinv_A(A));
         else
             M = BaseSmoother(A, weight / L.rho_DinvA);
     }

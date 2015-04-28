@@ -158,16 +158,16 @@ size_t spmm_csr_pass2(const size_t num_rows, const size_t num_cols,
 }
 
 template <typename DerivedPolicy,
-         typename Matrix1,
-         typename Matrix2,
-         typename Matrix3>
-void multiply_inner(omp::execution_policy<DerivedPolicy>& exec,
-                    Matrix1& A,
-                    Matrix2& B,
-                    Matrix3& C,
-                    csr_format,
-                    csr_format,
-                    csr_format)
+          typename Matrix1,
+          typename Matrix2,
+          typename Matrix3>
+void multiply(omp::execution_policy<DerivedPolicy>& exec,
+              const Matrix1& A,
+              const Matrix2& B,
+              Matrix3& C,
+              csr_format,
+              csr_format,
+              csr_format)
 {
     typedef typename Matrix3::index_type IndexType;
 

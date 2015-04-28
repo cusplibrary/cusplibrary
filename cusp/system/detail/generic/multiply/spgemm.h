@@ -137,12 +137,12 @@ void coo_spmm_helper(size_t workspace_size,
 }
 
 template <typename DerivedPolicy,
-         typename Matrix1,
-         typename Matrix2,
-         typename Matrix3>
-void multiply_inner(thrust::execution_policy<DerivedPolicy>& exec,
-              Matrix1& A,
-              Matrix2& B,
+          typename Matrix1,
+          typename Matrix2,
+          typename Matrix3>
+void multiply(thrust::execution_policy<DerivedPolicy>& exec,
+              const Matrix1& A,
+              const Matrix2& B,
               Matrix3& C,
               coo_format,
               coo_format,
@@ -312,12 +312,12 @@ void multiply_inner(thrust::execution_policy<DerivedPolicy>& exec,
 }
 
 template <typename DerivedPolicy,
-         typename Matrix1,
-         typename Matrix2,
-         typename Matrix3>
-void multiply_inner(thrust::execution_policy<DerivedPolicy>& exec,
-              Matrix1& A,
-              Matrix2& B,
+          typename Matrix1,
+          typename Matrix2,
+          typename Matrix3>
+void multiply(thrust::execution_policy<DerivedPolicy>& exec,
+              const Matrix1& A,
+              const Matrix2& B,
               Matrix3& C,
               sparse_format,
               sparse_format,

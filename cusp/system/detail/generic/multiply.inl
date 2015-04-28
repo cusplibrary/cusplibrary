@@ -41,29 +41,29 @@ template <typename DerivedPolicy,
           typename LinearOperator,
           typename MatrixOrVector1,
           typename MatrixOrVector2>
-void multiply_inner(thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-               LinearOperator&  A,
-               MatrixOrVector1& B,
-               MatrixOrVector2& C,
-               unknown_format,
-               array1d_format,
-               array1d_format)
+void multiply(thrust::execution_policy<DerivedPolicy> &exec,
+              const LinearOperator&  A,
+              const MatrixOrVector1& B,
+              MatrixOrVector2& C,
+              unknown_format,
+              array1d_format,
+              array1d_format)
 {
     // user-defined LinearOperator
-    A(B,C);
+    const_cast<LinearOperator&>(A)(B,C);
 }
 
 template <typename DerivedPolicy,
           typename LinearOperator,
           typename MatrixOrVector1,
           typename MatrixOrVector2>
-void multiply_inner(thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-               LinearOperator&  A,
-               MatrixOrVector1& B,
-               MatrixOrVector2& C,
-               known_format,
-               array1d_format,
-               array1d_format)
+void multiply(thrust::execution_policy<DerivedPolicy> &exec,
+              const  LinearOperator&  A,
+              const  MatrixOrVector1& B,
+              MatrixOrVector2& C,
+              known_format,
+              array1d_format,
+              array1d_format)
 {
     typedef typename LinearOperator::value_type ValueType;
 

@@ -21,7 +21,6 @@
 
 #pragma once
 
-#include <typeinfo>
 #include <cusp/detail/config.h>
 
 #include <cusp/memory.h>
@@ -694,7 +693,9 @@ public:
 template <typename Iterator>
 array1d_view<Iterator> make_array1d_view(Iterator first, Iterator last)
 {
-    return array1d_view<Iterator>(first, last);
+    array1d_view<Iterator> ret(first, last);
+
+	return ret;
 }
 
 /**

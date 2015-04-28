@@ -99,10 +99,10 @@ class multilevel
 {
 private:
 
-    typedef typename detail::select_format_type<FormatType,MemorySpace>::type					MatrixFormat;
+    typedef typename detail::select_format_type<FormatType,MemorySpace>::type					        MatrixFormat;
     typedef typename detail::matrix_type<IndexType,ValueType,MemorySpace,MatrixFormat>::type	SolveMatrixType;
     typedef typename detail::select_smoother_type<SmootherType,ValueType,MemorySpace>::type		Smoother;
-    typedef typename detail::select_solver_type<SolverType,ValueType,MemorySpace>::type			Solver;
+    typedef typename detail::select_solver_type<SolverType,ValueType,MemorySpace>::type			  Solver;
 
 public:
 
