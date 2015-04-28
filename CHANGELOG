@@ -2,10 +2,16 @@
 #            Cusp v0.5.1              #
 #######################################
 
-Summary
+Bug Fixes
   Fixed coo_matrix_view conversion error
+  Fixed interface error in LAPACK routines
+  Fixed memory access error in counting_sort
+  Fixed memory access error in DIA generalized_spmv
+  Fixed smoothed_aggregation and polynomial smoother errors related to VS2013
   Added cusp/blas.h for compatibility with v0.4.0
   Added convergence, default and verbose monitors for compatibility with v0.4.0
+  Added missing header files for size_t defs
+  Updated multiply interface for tighter integration with policy-based dispatching
 
 #######################################
 #            Cusp v0.5.0              #
