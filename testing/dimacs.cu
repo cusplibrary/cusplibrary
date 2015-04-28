@@ -16,7 +16,7 @@ void TestReadDimacsFileCoordinateRealGeneral(void)
     // load matrix
     thrust::tuple<int,int> nodes(-1,-1);
     cusp::coo_matrix<int, float, cusp::host_memory> coo;
-    nodes = cusp::io::read_dimacs_file(coo, "data/test/coordinate_real_general.dimacs");
+    nodes = cusp::io::read_dimacs_file(coo, "../data/test/coordinate_real_general.dimacs");
 
     // convert to array2d
     cusp::array2d<float, cusp::host_memory> D(coo);
@@ -61,7 +61,7 @@ void TestReadDimacsFileToCsrMatrix(void)
     // load matrix
     thrust::tuple<int,int> nodes(-1,-1);
     cusp::csr_matrix<int, float, MemorySpace> csr;
-    nodes = cusp::io::read_dimacs_file(csr, "data/test/coordinate_real_general.dimacs");
+    nodes = cusp::io::read_dimacs_file(csr, "../data/test/coordinate_real_general.dimacs");
 
     // convert to array2d
     cusp::array2d<float, cusp::host_memory> D(csr);

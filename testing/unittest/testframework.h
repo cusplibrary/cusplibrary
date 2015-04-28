@@ -151,12 +151,12 @@ TEST##UnitTest TEST##Instance
 // Macro to create host and device versions of a
 // unit test for a couple data types
 #define DECLARE_VECTOR_UNITTEST(VTEST)                                                                            \
-void VTEST##Host(void)   {  VTEST< thrust::host_vector<short> >();   VTEST< thrust::host_vector<int> >();   }    \
-void VTEST##Device(void) {  VTEST< thrust::device_vector<short> >(); VTEST< thrust::device_vector<int> >(); }    \
+void VTEST##Host(void)   {  VTEST< cusp::array1d<short, cusp::host_memory> >();   VTEST< cusp::array1d<int, cusp::host_memory> >();   VTEST< cusp::array1d<long long, cusp::host_memory> >();   }    \
+void VTEST##Device(void) {  VTEST< cusp::array1d<short, cusp::device_memory> >(); VTEST< cusp::array1d<int, cusp::device_memory> >(); VTEST< cusp::array1d<long long, cusp::device_memory> >(); }    \
 DECLARE_UNITTEST(VTEST##Host);                                                                                    \
 DECLARE_UNITTEST(VTEST##Device);
 
-// Macro to create instances of a test for several 
+// Macro to create instances of a test for several
 // data types and array sizes
 #define DECLARE_VARIABLE_UNITTEST(TEST)                          \
 class TEST##UnitTest : public UnitTest {                         \

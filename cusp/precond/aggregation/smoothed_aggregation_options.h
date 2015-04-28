@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include <cusp/detail/config.h>
+
 #include <cusp/coo_matrix.h>
 #include <cusp/csr_matrix.h>
 #include <cusp/hyb_matrix.h>

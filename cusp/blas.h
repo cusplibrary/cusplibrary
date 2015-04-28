@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2013 NVIDIA Corporation
+ *  Copyright 2008-2014 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,29 +14,31 @@
  *  limitations under the License.
  */
 
+/*! \file blas.h
+ *  \brief BLAS-like functions
+ */
+
+// TODO : Remove cusp/blas.h in v0.6.0
 #pragma once
 
 #include <cusp/detail/config.h>
+#include <cusp/blas/blas.h>
+#include <cusp/verify.h>
 
-#include <cusp/system/cuda/detail/multiply/coo_flat_spmv.h>
-#include <cusp/system/cuda/detail/multiply/csr_vector_spmv.h>
-#include <cusp/system/cuda/detail/multiply/dia_spmv.h>
-#include <cusp/system/cuda/detail/multiply/ell_spmv.h>
-// #include <cusp/system/cuda/detail/multiply/hyb_spmv.h>
-
-#include <cusp/system/cuda/detail/multiply/spgemm.h>
+#if THRUST_HOST_COMPILER == THRUST_HOST_COMPILER_MSVC
+#    pragma message("| WARNING: cusp/blas.h is deprecated as of 0.4.0; use cusp/blas/blas.h instead |")
+#else
+#    warning | WARNING: cusp/blas.h is deprecated as of 0.4.0; use cusp/blas/blas.h instead |
+#endif
 
 namespace cusp
 {
-namespace system
+namespace blas
 {
-namespace cuda
+namespace detail
 {
-
-} // end namespace cuda
-} // end namespace system
-
-// hack until ADL is operational
-using cusp::system::cuda::multiply;
-
+  using cusp::assert_same_dimensions;
+  using cusp::is_valid_matrix;
+} // end namespace detail
+} // end namespace blas
 } // end namespace cusp

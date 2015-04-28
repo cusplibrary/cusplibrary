@@ -234,7 +234,7 @@ void write_dimacs_file(const Matrix& mtx,
     // WAR OSX-specific issue using rdbuf
     std::stringstream file_string (std::stringstream::in | std::stringstream::out);
 
-    cusp::io::write_dimacs_stream(mtx, file_string);
+    cusp::io::write_dimacs_stream(mtx, t, file_string);
 
     file.rdbuf()->sputn(file_string.str().c_str(), file_string.str().size());
 #else

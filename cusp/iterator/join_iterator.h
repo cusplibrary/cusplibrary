@@ -19,9 +19,14 @@
  */
 
 #pragma once
+
+#include <cusp/detail/config.h>
+
+#include <thrust/distance.h>
 #include <thrust/functional.h>
 
 #include <thrust/iterator/transform_iterator.h>
+
 namespace cusp
 {
 
@@ -147,7 +152,7 @@ class join_iterator
      */
     iterator begin(void) const
     {
-        return TransformIterator(indices_begin, join_select_functor(first_begin, second_begin, first_end-first_begin));
+        return TransformIterator(indices_begin, join_select_functor(first_begin, second_begin, thrust::distance(first_begin,first_end)));
     }
 
     /*! \brief This method returns an iterator pointing to one element past
@@ -156,7 +161,7 @@ class join_iterator
      */
     iterator end(void) const
     {
-        return begin() + (first_end-first_begin) + (second_end-second_begin);
+        return begin() + thrust::distance(first_begin,first_end) + thrust::distance(second_begin,second_end);
     }
 
     /*! \brief Subscript access to the data contained in this iterator.

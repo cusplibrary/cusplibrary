@@ -44,15 +44,15 @@ namespace generic
 template<typename T>
 struct valid_index_functor : public thrust::unary_function<T,T>
 {
-    const T num_rows;
+    const T size;
 
-    valid_index_functor(const T num_rows)
-        : num_rows(num_rows) {}
+    valid_index_functor(const T size)
+        : size(size) {}
 
     __host__ __device__
     T operator()(const T col)
     {
-        return col < 0 || col > num_rows ? 0 : col;
+        return (col < 0 || col >= size) ? 0 : col;
     }
 };
 
@@ -64,9 +64,9 @@ template <typename DerivedPolicy,
          typename BinaryFunction1,
          typename BinaryFunction2>
 void generalized_spmv(thrust::execution_policy<DerivedPolicy> &exec,
-                      LinearOperator&  A,
-                      Vector1& x,
-                      Vector2& y,
+                      const LinearOperator&  A,
+                      const Vector1& x,
+                      const Vector2& y,
                       Vector3& z,
                       BinaryFunction1  combine,
                       BinaryFunction2  reduce,
@@ -143,9 +143,9 @@ template <typename DerivedPolicy,
          typename BinaryFunction1,
          typename BinaryFunction2>
 void generalized_spmv(thrust::execution_policy<DerivedPolicy> &exec,
-                      LinearOperator&  A,
-                      Vector1& x,
-                      Vector2& y,
+                      const LinearOperator&  A,
+                      const Vector1& x,
+                      const Vector2& y,
                       Vector3& z,
                       BinaryFunction1  combine,
                       BinaryFunction2  reduce,
@@ -206,9 +206,9 @@ template <typename DerivedPolicy,
          typename BinaryFunction1,
          typename BinaryFunction2>
 void generalized_spmv(thrust::execution_policy<DerivedPolicy> &exec,
-                      LinearOperator&  A,
-                      Vector1& x,
-                      Vector2& y,
+                      const LinearOperator&  A,
+                      const Vector1& x,
+                      const Vector2& y,
                       Vector3& z,
                       BinaryFunction1  combine,
                       BinaryFunction2  reduce,
@@ -261,9 +261,9 @@ template <typename DerivedPolicy,
          typename BinaryFunction1,
          typename BinaryFunction2>
 void generalized_spmv(thrust::execution_policy<DerivedPolicy> &exec,
-                      LinearOperator&  A,
-                      Vector1& x,
-                      Vector2& y,
+                      const LinearOperator&  A,
+                      const Vector1& x,
+                      const Vector2& y,
                       Vector3& z,
                       BinaryFunction1  combine,
                       BinaryFunction2  reduce,
@@ -275,9 +275,9 @@ void generalized_spmv(thrust::execution_policy<DerivedPolicy> &exec,
     typedef typename LinearOperator::index_type IndexType;
     typedef typename thrust::detail::temporary_array<IndexType, DerivedPolicy>::iterator TempIterator;
 
-    typedef typename cusp::array1d_view<TempIterator>::view           RowView;
-    typedef typename LinearOperator::column_indices_array_type::view  ColView;
-    typedef typename LinearOperator::values_array_type::view          ValView;
+    typedef typename cusp::array1d_view<TempIterator>::const_view           RowView;
+    typedef typename LinearOperator::column_indices_array_type::const_view  ColView;
+    typedef typename LinearOperator::values_array_type::const_view          ValView;
 
     if(A.num_entries == 0)
     {
@@ -305,9 +305,9 @@ template <typename DerivedPolicy,
          typename BinaryFunction1,
          typename BinaryFunction2>
 void generalized_spmv(thrust::execution_policy<DerivedPolicy> &exec,
-                      LinearOperator&  A,
-                      Vector1& x,
-                      Vector2& y,
+                      const LinearOperator&  A,
+                      const Vector1& x,
+                      const Vector2& y,
                       Vector3& z,
                       BinaryFunction1 combine,
                       BinaryFunction2 reduce,

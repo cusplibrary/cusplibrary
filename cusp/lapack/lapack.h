@@ -30,10 +30,9 @@ namespace lapack
 {
 
 /*! \addtogroup dense Dense Algorithms
- */
-
-/*! \addtogroup lapack LAPACK
+ *  \addtogroup lapack LAPACK
  *  \ingroup dense
+ *  \brief Interface to LAPACK routines
  *  \{
  */
 
@@ -416,7 +415,7 @@ void sytrs( const Array2d& A, const Array1d& piv, Array2d& B, char uplo = 'U' );
  * }
  * \endcode
  */
-template<typename Array2d, typename Array1d>
+template<typename Array2d>
 void trtrs( const Array2d& A, Array2d& B, char uplo = 'U', char trans = 'N', char diag = 'N' );
 
 /**

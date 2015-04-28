@@ -32,10 +32,9 @@ namespace blas
 {
 
 /*! \addtogroup dense Dense Algorithms
- */
-
-/*! \addtogroup blas BLAS
+ *  \addtogroup blas BLAS
  *  \ingroup dense
+ *  \brief Interface to BLAS routines
  *  \{
  */
 

@@ -20,6 +20,8 @@
 
 #pragma once
 
+#include <cusp/detail/config.h>
+
 #include <thrust/functional.h>
 
 #include <thrust/iterator/counting_iterator.h>

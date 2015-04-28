@@ -20,10 +20,14 @@
 
 #pragma once
 
+#include <cusp/detail/config.h>
+
+#include <thrust/distance.h>
+#include <thrust/functional.h>
+
 #include <thrust/iterator/counting_iterator.h>
 #include <thrust/iterator/permutation_iterator.h>
 #include <thrust/iterator/transform_iterator.h>
-#include <thrust/functional.h>
 
 #include <cusp/detail/functional.h>
 
@@ -120,7 +124,7 @@ public:
      */
     iterator end(void) const
     {
-        return begin() + ((last - first) + (stride - 1)) / stride;
+        return begin() + (thrust::distance(first,last) + (stride - 1)) / stride;
     }
 
     /*! \brief Subscript access to the data contained in this iterator.

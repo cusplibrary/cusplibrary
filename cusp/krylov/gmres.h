@@ -22,6 +22,8 @@
 
 #include <cusp/detail/config.h>
 
+#include <cstddef>
+
 namespace cusp
 {
 namespace krylov

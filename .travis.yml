@@ -10,4 +10,5 @@ install:
 
 script:
     - scons compiler=g++ backend=omp
+    - cd device_omp_release
     - ./tester --verbose

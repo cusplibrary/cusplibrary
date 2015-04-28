@@ -37,6 +37,5 @@ namespace omp
 
 // hack until ADL is operational
 using cusp::system::omp::multiply;
-using cusp::system::omp::multiply_inner;
 
 } // end namespace cusp

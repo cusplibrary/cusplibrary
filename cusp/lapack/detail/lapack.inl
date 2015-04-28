@@ -36,6 +36,9 @@ void getrf( Array2d& A, Array1d& piv )
 
     lapack_int order = Orientation<typename Array2d::orientation>::type;
 
+    if(piv.size() != A.num_cols)
+        piv.resize(A.num_cols);
+
     lapack_int m    = A.num_cols;
     lapack_int n    = A.num_rows;
     lapack_int lda  = A.pitch;
@@ -72,6 +75,9 @@ void sytrf( Array2d& A, Array1d& piv, char uplo )
 
     lapack_int order = Orientation<typename Array2d::orientation>::type;
 
+    if(piv.size() != A.num_cols)
+        piv.resize(A.num_cols);
+
     lapack_int n    = A.num_rows;
     lapack_int lda  = A.pitch;
     ValueType *a    = thrust::raw_pointer_cast(&A(0,0));
@@ -92,8 +98,8 @@ void getrs( const Array2d& A, const Array1d& piv, Array2d& B, char trans )
 
     lapack_int n    = A.num_rows;
     lapack_int lda  = A.pitch;
-    ValueType *a    = thrust::raw_pointer_cast(&A(0,0));
-    IndexType *ipiv = thrust::raw_pointer_cast(&piv[0]);
+    const ValueType *a    = thrust::raw_pointer_cast(&A(0,0));
+    const IndexType *ipiv = thrust::raw_pointer_cast(&piv[0]);
 
     lapack_int nrhs = B.num_cols;
     lapack_int ldb  = B.pitch;
@@ -114,7 +120,7 @@ void potrs( const Array2d& A, Array2d& B, char uplo )
 
     lapack_int n    = A.num_rows;
     lapack_int lda  = A.pitch;
-    ValueType *a    = thrust::raw_pointer_cast(&A(0,0));
+    const ValueType *a    = thrust::raw_pointer_cast(&A(0,0));
 
     lapack_int nrhs = B.num_cols;
     lapack_int ldb  = B.pitch;
@@ -136,8 +142,8 @@ void sytrs( const Array2d& A, const Array1d& piv, Array2d& B, char uplo )
 
     lapack_int n    = A.num_rows;
     lapack_int lda  = A.pitch;
-    ValueType *a    = thrust::raw_pointer_cast(&A(0,0));
-    IndexType *ipiv = thrust::raw_pointer_cast(&piv[0]);
+    const ValueType *a    = thrust::raw_pointer_cast(&A(0,0));
+    const IndexType *ipiv = thrust::raw_pointer_cast(&piv[0]);
 
     lapack_int nrhs = B.num_cols;
     lapack_int ldb  = B.pitch;
@@ -149,17 +155,16 @@ void sytrs( const Array2d& A, const Array1d& piv, Array2d& B, char uplo )
         throw cusp::runtime_exception("sytrs failed");
 }
 
-template<typename Array2d, typename Array1d>
+template<typename Array2d>
 void trtrs( const Array2d& A, Array2d& B, char uplo, char trans, char diag )
 {
     typedef typename Array2d::value_type ValueType;
-    typedef typename Array1d::value_type IndexType;
 
     lapack_int order = Orientation<typename Array2d::orientation>::type;
 
     lapack_int n    = A.num_rows;
     lapack_int lda  = A.pitch;
-    ValueType *a    = thrust::raw_pointer_cast(&A(0,0));
+    const ValueType *a    = thrust::raw_pointer_cast(&A(0,0));
 
     lapack_int nrhs = B.num_cols;
     lapack_int ldb  = B.pitch;
@@ -192,7 +197,13 @@ void syev( const Array2d& A, Array1d& eigvals, Array2d& eigvecs, char uplo )
 {
     typedef typename Array2d::value_type ValueType;
 
-    eigvecs = A;
+    if((eigvecs.num_rows != A.num_rows) || (eigvecs.num_cols != A.num_cols))
+        eigvals.resize(A.num_rows, A.num_cols);
+
+    if(eigvals.size() != A.num_cols)
+        eigvals.resize(A.num_cols);
+
+    cusp::copy(A, eigvecs);
 
     lapack_int order = Orientation<typename Array2d::orientation>::type;
     char job  = 'V';
@@ -234,12 +245,12 @@ void stev( const Array1d1& alphas, const Array1d2& betas, Array1d3& eigvals, Arr
 template<typename Array1d1, typename Array1d2, typename Array1d3>
 void stev( const Array1d1& alphas, const Array1d2& betas, Array1d3& eigvals )
 {
-  typedef typename Array1d1::value_type ValueType;
+    typedef typename Array1d1::value_type ValueType;
 
-  char job  = EvalsOrEvecs<evals>::type;
-  cusp::array2d<ValueType,cusp::host_memory> eigvecs;
+    char job  = EvalsOrEvecs<evals>::type;
+    cusp::array2d<ValueType,cusp::host_memory> eigvecs;
 
-  stev(alphas, betas, eigvals, eigvecs, job);
+    stev(alphas, betas, eigvals, eigvecs, job);
 }
 
 template<typename Array2d1, typename Array2d2, typename Array1d, typename Array2d3>
@@ -259,7 +270,7 @@ void sygv( const Array2d1& A, const Array2d2& B, Array1d& eigvals, Array2d3& eig
     lapack_int n    = A.num_rows;
     lapack_int lda  = A.pitch;
     lapack_int ldb  = B.pitch;
-    ValueType *a    = thrust::raw_pointer_cast(&eigvecs(0,0));
+    const ValueType *a    = thrust::raw_pointer_cast(&eigvecs(0,0));
     ValueType *b    = thrust::raw_pointer_cast(&temp(0,0));
     ValueType *w    = thrust::raw_pointer_cast(&eigvals[0]);
     lapack_int info = detail::sygv(order, itype, job, uplo, n, a, lda, b, ldb, w);
@@ -281,6 +292,9 @@ void gesv( const Array2d& A, Array2d& B, Array1d& pivots )
 
     lapack_int order = Orientation<typename Array2d::orientation>::type;
 
+    if(pivots.size() != A.num_cols)
+        pivots.resize(A.num_cols);
+
     lapack_int n    = C.num_rows;
     lapack_int nrhs = B.num_cols;
     lapack_int ldc  = C.pitch;
@@ -296,3 +310,4 @@ void gesv( const Array2d& A, Array2d& B, Array1d& pivots )
 
 } // end namespace lapack
 } // end namespace cusp
+

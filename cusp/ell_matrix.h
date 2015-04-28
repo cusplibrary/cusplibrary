@@ -147,8 +147,8 @@ public:
             typename values_array_type::const_view,
             IndexType, ValueType, MemorySpace> const_view;
 
-    typedef typename cusp::detail::coo_view_type<container>::view                    coo_view_type;
-    typedef typename cusp::detail::coo_view_type<container const>::view              const_coo_view_type;
+    typedef typename cusp::detail::coo_view_type<container, cusp::ell_format>::view                    coo_view_type;
+    typedef typename cusp::detail::coo_view_type<container const, cusp::ell_format>::view              const_coo_view_type;
 
     template<typename MemorySpace2>
     struct rebind
@@ -332,8 +332,8 @@ public:
     typedef cusp::ell_matrix_view<ArrayType1, ArrayType2, IndexType, ValueType, MemorySpace> view;
     typedef cusp::ell_matrix_view<ArrayType1, ArrayType2, IndexType, ValueType, MemorySpace> const_view;
 
-    typedef typename cusp::detail::coo_view_type<view>::view       coo_view_type;
-    typedef typename cusp::detail::coo_view_type<view const>::view const_coo_view_type;
+    typedef typename cusp::detail::coo_view_type<view,cusp::ell_format>::view       coo_view_type;
+    typedef typename cusp::detail::coo_view_type<view const,cusp::ell_format>::view const_coo_view_type;
     /*! \endcond */
 
     /**
