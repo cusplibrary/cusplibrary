@@ -401,7 +401,8 @@ public:
         : Parent(matrix),
           row_indices(matrix.row_indices),
           column_indices(matrix.column_indices),
-          values(matrix.values) {}
+          values(matrix.values),
+          indices(indices) {}
 
     /*! Construct a \p coo_matrix_view from a existing const \p coo_matrix.
      *
@@ -411,7 +412,8 @@ public:
         : Parent(matrix),
           row_indices(matrix.row_indices),
           column_indices(matrix.column_indices),
-          values(matrix.values) {}
+          values(matrix.values),
+          indices(indices) {}
 
     /*! Construct a \p coo_matrix_view from a existing matrix in another
      * format.
