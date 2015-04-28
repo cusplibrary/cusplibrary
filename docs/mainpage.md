@@ -5,13 +5,15 @@ Cusp is a library for sparse linear algebra and graph computations based on Thru
 </blockquote>
 
 # News
-- Cusp v0.5.0 has been released with support for CUDA 7.0. See [CHANGELOG](https://github.com/cusplibrary/cusplibrary/blob/master/CHANGELOG#L1) for release information.
+- Cusp v0.5.1 has been released with bug fixes. See [CHANGELOG](https://github.com/cusplibrary/cusplibrary/blob/master/CHANGELOG#L1) for release information.
 
-- Cusp v0.4.0 has been released with support for CUDA 5.5. See [CHANGELOG](https://github.com/cusplibrary/cusplibrary/blob/master/CHANGELOG#L36) for release information.
+- Cusp v0.5.0 has been released with support for CUDA 7.0. See [CHANGELOG](https://github.com/cusplibrary/cusplibrary/blob/master/CHANGELOG#L16) for release information.
 
-- Cusp v0.3.0 has been released with support for CUDA 4.1. See [CHANGELOG](https://github.com/cusplibrary/cusplibrary/blob/master/CHANGELOG#L76) for release information.
+- Cusp v0.4.0 has been released with support for CUDA 5.5. See [CHANGELOG](https://github.com/cusplibrary/cusplibrary/blob/master/CHANGELOG#L51) for release information.
 
-- Cusp v0.2.0 has been released! See [CHANGELOG](https://github.com/cusplibrary/cusplibrary/blob/master/CHANGELOG#L97) for release information.
+- Cusp v0.3.0 has been released with support for CUDA 4.1. See [CHANGELOG](https://github.com/cusplibrary/cusplibrary/blob/master/CHANGELOG#L84) for release information.
+
+- Cusp v0.2.0 has been released! See [CHANGELOG](https://github.com/cusplibrary/cusplibrary/blob/master/CHANGELOG#L112) for release information.
 
 - Cusp v0.1.2 has been released! v0.1.2 contains compatibility fixes for Thrust v1.3.0.
 

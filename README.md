@@ -1,7 +1,7 @@
 <hr>
 <h3>CUSP : A C++ Templated Sparse Matrix Library</h3>
 
-Current release    : v0.5.0 (March 13, 2015)
+Current release    : v0.5.1 (April 28, 2015)
 
 Development status : [![Build Status](https://travis-ci.org/sdalton1/cusplibrary.png)](https://travis-ci.org/sdalton1/cusplibrary)
 [![Coverage Status](https://coveralls.io/repos/sdalton1/cusplibrary/badge.svg?branch=master)](https://coveralls.io/r/sdalton1/cusplibrary?branch=master)
@@ -40,14 +40,14 @@ int main(void)
 
 CUSP releases are labeled using version identifiers having three fields:
 
-| Date | Version |
-| ---- | ------- |
-| 03/13/2015 | [CUSP v0.5.0](https://github.com/cusplibrary/cusplibrary/archive/v0.5.0.zip)  |
-| 08/30/2013 | [CUSP v0.4.0](https://github.com/cusplibrary/cusplibrary/archive/v0.4.0.zip) |
-| 03/08/2012 | [CUSP v0.3.1](https://github.com/cusplibrary/cusplibrary/archive/v0.3.1.zip) |
-| 02/04/2012 | [CUSP v0.3.0](https://github.com/cusplibrary/cusplibrary/archive/v0.3.0.zip) |
-| 05/30/2011 | [CUSP v0.2.0](https://github.com/cusplibrary/cusplibrary/archive/v0.2.0.zip) |
-| 07/10/2010 | [CUSP v0.1.0](https://github.com/cusplibrary/cusplibrary/archive/v0.1.0.zip) |
+| Date | Version | Date | Version |
+| ---- | ------- | ---- | ------- |
+|            |                                                                              | 03/13/2015 | [CUSP v0.5.0](https://github.com/cusplibrary/cusplibrary/archive/v0.5.0.zip) |
+|            |                                                                              | 08/30/2013 | [CUSP v0.4.0](https://github.com/cusplibrary/cusplibrary/archive/v0.4.0.zip) |
+|            |                                                                              | 03/08/2012 | [CUSP v0.3.1](https://github.com/cusplibrary/cusplibrary/archive/v0.3.1.zip) |
+|            |                                                                              | 02/04/2012 | [CUSP v0.3.0](https://github.com/cusplibrary/cusplibrary/archive/v0.3.0.zip) |
+|            |                                                                              | 05/30/2011 | [CUSP v0.2.0](https://github.com/cusplibrary/cusplibrary/archive/v0.2.0.zip) |
+| 04/28/2015 | [CUSP v0.5.1](https://github.com/cusplibrary/cusplibrary/archive/v0.5.1.zip) | 07/10/2010 | [CUSP v0.1.0](https://github.com/cusplibrary/cusplibrary/archive/v0.1.0.zip) |
 
 
 <br><hr>
