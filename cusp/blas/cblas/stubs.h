@@ -14,14 +14,104 @@
  *  limitations under the License.
  */
 
-/*! \file stubs.h
- *  \brief Two-dimensional array
- */
-
-#pragma once
-
+#include <cusp/complex.h>
 #include <cblas.h>
-#undef complex
+
+#define CUSP_CBLAS_EXPAND_REAL_DEFS(FUNC_MACRO)               \
+  FUNC_MACRO(float , float , s)                               \
+  FUNC_MACRO(double, double, d)
+
+#define CUSP_CBLAS_EXPAND_COMPLEX_DEFS_1(FUNC_MACRO)          \
+  FUNC_MACRO(cusp::complex<float> , float,  c)                \
+  FUNC_MACRO(cusp::complex<double>, double, z)
+
+#define CUSP_CBLAS_EXPAND_COMPLEX_DEFS_2(FUNC_MACRO)          \
+  FUNC_MACRO(cusp::complex<float> , float,  sc)               \
+  FUNC_MACRO(cusp::complex<double>, double, dz)
+
+#define CUSP_CBLAS_EXPAND_DEFS_1(FUNC_MACRO)                  \
+  CUSP_CBLAS_EXPAND_REAL_DEFS(FUNC_MACRO)                     \
+  // CUSP_CBLAS_EXPAND_COMPLEX_DEFS_1(FUNC_MACRO)
+
+#define CUSP_CBLAS_EXPAND_DEFS_2(FUNC_MACRO)                  \
+  CUSP_CBLAS_EXPAND_REAL_DEFS(FUNC_MACRO)                     \
+  // CUSP_CBLAS_EXPAND_COMPLEX_DEFS_2(FUNC_MACRO)
+
+#define CUSP_CBLAS_ASUM(T,V,name)                                                           \
+  V asum( const int n, const T* X, const int incX )                                         \
+  {                                                                                         \
+    return cblas_##name##asum(n, (const V*) X, incX);                                       \
+  }
+
+#define CUSP_CBLAS_AXPY(T,V,name)                                                           \
+  void axpy( const int n, const V alpha, const T* X, const int incX, T* Y, const int incY ) \
+  {                                                                                         \
+    cblas_##name##axpy(n, alpha, (const V*) X, incX, (V*) Y, incY);                         \
+  }
+
+#define CUSP_CBLAS_COPY(T,V,name)                                                           \
+  void copy( const int n, const T* X, const int incX, T* Y, const int incY )                \
+  {                                                                                         \
+    cblas_##name##copy(n, (const V*) X, incX, (V*) Y, incY);                                \
+  }
+
+#define CUSP_CBLAS_DOT(T,V,name)                                                            \
+  T dot( const int n, const T* X, const int incX, const T* Y, const int incY )              \
+  {                                                                                         \
+    return cblas_##name##dot(n, (const V*) X, incX, (const V*) Y, incY);                    \
+  }
+
+#define CUSP_CBLAS_DOTC(T,V,name)                                                           \
+  void dotc( const int n, const T* X, const int incX, const T* Y, const int incY, T* ret )  \
+  {                                                                                         \
+    cblas_##name##dotc_sub(n, (const V*) X, incX, (const V*) Y, incY, (V*) ret);            \
+  }
+
+#define CUSP_CBLAS_DOTU(T,V,name)                                                           \
+  void dotu( const int n, const T* X, const int incX, const T* Y, const int incY, T* ret )  \
+  {                                                                                         \
+    cblas_##name##dotu_sub(n, (const V*) X, incX, (const V*) Y, incY, (V*) ret);            \
+  }
+
+#define CUSP_CBLAS_NRM2(T,V,name)                                                           \
+  T nrm2( const int n, const T* X, const int incX )                                         \
+  {                                                                                         \
+    return cblas_##name##nrm2(n, (const V*) X, incX);                                       \
+  }
+
+#define CUSP_CBLAS_SCAL(T,V,name)                                                           \
+  void scal( const int n, const T alpha, T* X, const int incX )                             \
+  {                                                                                         \
+    cblas_##name##scal(n, alpha, (V*) X, incX);                                             \
+  }
+
+#define CUSP_CBLAS_SWAP(T,V,name)                                                           \
+  void swap( const int n, T* X, const int incX, T* Y, const int incY )                      \
+  {                                                                                         \
+    cblas_##name##swap(n, (V*) X, incX, (V*) Y, incY);                                      \
+  }
+
+#define CUSP_CBLAS_AMAX(T,V,name)                                                           \
+  int amax( const int n, const T* X, const int incX )                                       \
+  {                                                                                         \
+    return cblas_i##name##amax(n, (const V*) X, incX);                                      \
+  }
+
+#define CUSP_CBLAS_GEMV(T,V,name)                                                           \
+void gemv( enum CBLAS_ORDER order, enum CBLAS_TRANSPOSE trans,                              \
+           int m, int n, T alpha, const T* A, int lda,                                      \
+           const T* x, int incx, T beta, T* y, int incy)                                    \
+{                                                                                           \
+    cblas_##name##gemv(order, trans, m, n, alpha, A, lda, x, incx, beta, y, incy);          \
+}
+
+#define CUSP_CBLAS_GEMM(T,V,name)                                                           \
+void gemm( enum CBLAS_ORDER order, enum CBLAS_TRANSPOSE transa, enum CBLAS_TRANSPOSE transb,\
+           int m, int n, int k, T alpha, const T* A, int lda,                               \
+           const T* B, int ldb, T beta, T* C, int ldc)                                      \
+{                                                                                           \
+    cblas_##name##gemm(order, transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);\
+}
 
 namespace cusp
 {
@@ -32,144 +122,26 @@ namespace cblas
 namespace detail
 {
 
-static void axpy( int n, float * alpha, const float* x, int incx, float* y, int incy )
-{
-    cblas_saxpy(n, *alpha, x, incx, y, incy);
-}
-static void axpy( int n, double * alpha, const double* x, int incx, double* y, int incy )
-{
-    cblas_daxpy(n, *alpha, x, incx, y, incy);
-}
-static void axpy( int n, void * alpha, const cusp::complex<float>* x, int incx, cusp::complex<float>* y, int incy )
-{
-    cblas_caxpy(n, alpha, (void*)x, incx, (void*)y, incy);
-}
-static void axpy( int n, void * alpha, const cusp::complex<double>* x, int incx, cusp::complex<double>* y, int incy )
-{
-    cblas_zaxpy(n, alpha, (void*)x, incx, (void*)y, incy);
-}
+// LEVEL 1
+CUSP_CBLAS_EXPAND_DEFS_2(CUSP_CBLAS_ASUM);
+CUSP_CBLAS_EXPAND_DEFS_1(CUSP_CBLAS_AXPY);
+CUSP_CBLAS_EXPAND_DEFS_1(CUSP_CBLAS_COPY);
+CUSP_CBLAS_EXPAND_REAL_DEFS(CUSP_CBLAS_DOT);
+// CUSP_CBLAS_EXPAND_COMPLEX_DEFS_1(CUSP_CBLAS_DOTC);
+// CUSP_CBLAS_EXPAND_COMPLEX_DEFS_1(CUSP_CBLAS_DOTU);
+CUSP_CBLAS_EXPAND_DEFS_1(CUSP_CBLAS_NRM2);
+CUSP_CBLAS_EXPAND_DEFS_1(CUSP_CBLAS_SCAL);
+CUSP_CBLAS_EXPAND_DEFS_1(CUSP_CBLAS_SWAP);
+CUSP_CBLAS_EXPAND_DEFS_1(CUSP_CBLAS_AMAX);
 
-static float dot( int n, const float* x, int incx, const float* y, int incy )
-{
-  return cblas_sdot(n, x, incx, y, incy);
-}
-static double dot( int n, const double* x, int incx, const double* y, int incy )
-{
-  return cblas_ddot(n, x, incx, y, incy);
-}
+// LEVEL 2
+CUSP_CBLAS_EXPAND_DEFS_1(CUSP_CBLAS_GEMV);
 
-static void dotc( int n, const float* x, int incx, const float* y, int incy, float* result )
-{
-  *result = cblas_sdot(n, x, incx, y, incy);
-}
-static void dotc( int n, const double* x, int incx, const double* y, int incy, double* result )
-{
-  *result = cblas_ddot(n, x, incx, y, incy);
-}
-static void dotc( int n, const cusp::complex<float>* x, int incx, const cusp::complex<float>* y, int incy, cusp::complex<float>* result )
-{
-  cblas_cdotc_sub(n, (void*)x, incx, (void*)y, incy, (void*)result);
-}
-static void dotc( int n, const cusp::complex<double>* x, int incx, const cusp::complex<double>* y, int incy, cusp::complex<double>* result )
-{
-  cblas_zdotc_sub(n, (void*)x, incx, (void*)y, incy, (void*)result);
-}
-
-static float asum( int n, const float* x, int incx )
-{
-  return cblas_sasum(n, x, incx);
-}
-static double asum( int n, const double* x, int incx )
-{
-  return cblas_dasum(n, x, incx);
-}
-static float asum( int n, const cusp::complex<float>* x, int incx )
-{
-  return cblas_scasum(n, (void*)x, incx);
-}
-static double asum( int n, const cusp::complex<double>* x, int incx )
-{
-  return cblas_dzasum(n, (void*)x, incx);
-}
-
-static int amax( int n, const float* x, int incx )
-{
-  return cblas_isamax(n, x, incx);
-}
-static int amax( int n, const double* x, int incx )
-{
-  return cblas_idamax(n, x, incx);
-}
-static int amax( int n, const cusp::complex<float>* x, int incx )
-{
-  return cblas_icamax(n, (void*)x, incx);
-}
-static int amax( int n, const cusp::complex<double>* x, int incx )
-{
-  return cblas_izamax(n, (void*)x, incx);
-}
-
-static float nrm2( int n, const float* x, int incx )
-{
-  return cblas_snrm2(n, x, incx);
-}
-static double nrm2( int n, const double* x, int incx )
-{
-  return cblas_dnrm2(n, x, incx);
-}
-static float nrm2( int n, const cusp::complex<float>* x, int incx )
-{
-  return cblas_scnrm2(n, (void*)x, incx);
-}
-static double nrm2( int n, const cusp::complex<double>* x, int incx )
-{
-  return cblas_dznrm2(n, (void*)x, incx);
-}
-
-static void scal( int n, float * alpha, float* x, int incx )
-{
-  return cblas_sscal(n, *alpha, x, incx);
-}
-static void scal( int n, double * alpha, double* x, int incx )
-{
-  return cblas_dscal(n, *alpha, x, incx);
-}
-static void scal( int n, float * alpha, cusp::complex<float>* x, int incx )
-{
-  return cblas_cscal(n, alpha, (void*)x, incx);
-}
-static void scal( int n, double * alpha, cusp::complex<double>* x, int incx )
-{
-  return cblas_zscal(n, alpha, (void*)x, incx);
-}
-
-static void gemv( enum CBLAS_ORDER order, enum CBLAS_TRANSPOSE trans,
-           int m, int n, float alpha, float* A, int lda,
-           float* x, int incx, float beta, float* y, int incy)
-{
-    cblas_sgemv(order, trans, m, n, alpha, A, lda, x, incx, beta, y, incy);
-}
-static void gemv( enum CBLAS_ORDER order, enum CBLAS_TRANSPOSE trans,
-           int m, int n, double alpha, double* A, int lda,
-           double* x, int incx, double beta, double* y, int incy)
-{
-    cblas_dgemv(order, trans, m, n, alpha, A, lda, x, incx, beta, y, incy);
-}
-
-static void gemm( enum CBLAS_ORDER order, enum CBLAS_TRANSPOSE transa, enum CBLAS_TRANSPOSE transb,
-           int m, int n, int k, float alpha, float* A, int lda,
-           float* B, int ldb, float beta, float* C, int ldc)
-{
-    cblas_sgemm(order, transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
-}
-static void gemm( enum CBLAS_ORDER order, enum CBLAS_TRANSPOSE transa, enum CBLAS_TRANSPOSE transb,
-           int m, int n, int k, double alpha, double* A, int lda,
-           double* B, int ldb, double beta, double* C, int ldc)
-{
-    cblas_dgemm(order, transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
-}
+// LEVEL 3
+CUSP_CBLAS_EXPAND_DEFS_1(CUSP_CBLAS_GEMM);
 
 } // end namespace detail
 } // end namespace cblas
 } // end namespace blas
 } // end namespace cusp
+

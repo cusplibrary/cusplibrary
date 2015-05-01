@@ -19,6 +19,7 @@
 #include <cusp/array1d.h>
 #include <cusp/exception.h>
 #include <cusp/blas/cblas/stubs.h>
+#include <cusp/blas/cblas/blas_policy.h>
 
 namespace cusp
 {
@@ -39,11 +40,11 @@ void axpy(const cblas::detail::blas_policy<typename Array1::memory_space>& polic
     const ValueType* x_p = thrust::raw_pointer_cast(&x[0]);
     ValueType* y_p = thrust::raw_pointer_cast(&y[0]);
 
-    cblas::detail::axpy(n, &alpha, x_p, 1, y_p, 1);
+    cblas::detail::axpy(n, alpha, x_p, 1, y_p, 1);
 }
 
 template <typename Array1,
-         typename Array2>
+          typename Array2>
 typename Array1::value_type
 dot(const cblas::detail::blas_policy<typename Array1::memory_space>& policy,
     const Array1& x,
@@ -60,11 +61,11 @@ dot(const cblas::detail::blas_policy<typename Array1::memory_space>& policy,
 }
 
 template <typename Array1,
-         typename Array2>
+          typename Array2>
 typename Array1::value_type
 dotc(const cblas::detail::blas_policy<typename Array1::memory_space>& policy,
-    const Array1& x,
-    const Array2& y)
+     const Array1& x,
+     const Array2& y)
 {
     typedef typename Array2::value_type ValueType;
 
@@ -75,7 +76,7 @@ dotc(const cblas::detail::blas_policy<typename Array1::memory_space>& policy,
 
     ValueType result;
 
-    cblas::detail::dotc(n, x_p, 1, y_p, 1, &result);
+    // cblas::detail::dotc(n, x_p, 1, y_p, 1, &result);
 
     return result;
 }

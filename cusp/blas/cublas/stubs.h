@@ -20,7 +20,105 @@
 
 #pragma once
 
+
+#include <cusp/complex.h>
 #include <cublas_v2.h>
+
+#define CUSP_CUBLAS_EXPAND_REAL_DEFS(FUNC_MACRO)               \
+  FUNC_MACRO(float , float , s)                               \
+  FUNC_MACRO(double, double, d)
+
+#define CUSP_CUBLAS_EXPAND_COMPLEX_DEFS_1(FUNC_MACRO)          \
+  FUNC_MACRO(cusp::complex<float> , float,  c)                \
+  FUNC_MACRO(cusp::complex<double>, double, z)
+
+#define CUSP_CUBLAS_EXPAND_COMPLEX_DEFS_2(FUNC_MACRO)          \
+  FUNC_MACRO(cusp::complex<float> , float,  sc)               \
+  FUNC_MACRO(cusp::complex<double>, double, dz)
+
+#define CUSP_CUBLAS_EXPAND_DEFS_1(FUNC_MACRO)                  \
+  CUSP_CUBLAS_EXPAND_REAL_DEFS(FUNC_MACRO)                     \
+  // CUSP_CUBLAS_EXPAND_COMPLEX_DEFS_1(FUNC_MACRO)
+
+#define CUSP_CUBLAS_EXPAND_DEFS_2(FUNC_MACRO)                  \
+  CUSP_CUBLAS_EXPAND_REAL_DEFS(FUNC_MACRO)                     \
+  // CUSP_CUBLAS_EXPAND_COMPLEX_DEFS_2(FUNC_MACRO)
+
+#define CUSP_CUBLAS_ASUM(T,V,name)                                                           \
+  V asum( const int n, const T* X, const int incX )                                         \
+  {                                                                                         \
+    return cblas_##name##asum(n, (const V*) X, incX);                                       \
+  }
+
+#define CUSP_CUBLAS_AXPY(T,V,name)                                                           \
+  void axpy( const int n, const V alpha, const T* X, const int incX, T* Y, const int incY ) \
+  {                                                                                         \
+    cblas_##name##axpy(n, alpha, (const V*) X, incX, (V*) Y, incY);                         \
+  }
+
+#define CUSP_CUBLAS_COPY(T,V,name)                                                           \
+  void copy( const int n, const T* X, const int incX, T* Y, const int incY )                \
+  {                                                                                         \
+    cblas_##name##copy(n, (const V*) X, incX, (V*) Y, incY);                                \
+  }
+
+#define CUSP_CUBLAS_DOT(T,V,name)                                                            \
+  T dot( const int n, const T* X, const int incX, const T* Y, const int incY )              \
+  {                                                                                         \
+    return cblas_##name##dot(n, (const V*) X, incX, (const V*) Y, incY);                    \
+  }
+
+#define CUSP_CUBLAS_DOTC(T,V,name)                                                           \
+  void dotc( const int n, const T* X, const int incX, const T* Y, const int incY, T* ret )  \
+  {                                                                                         \
+    cblas_##name##dotc_sub(n, (const V*) X, incX, (const V*) Y, incY, (V*) ret);            \
+  }
+
+#define CUSP_CUBLAS_DOTU(T,V,name)                                                           \
+  void dotu( const int n, const T* X, const int incX, const T* Y, const int incY, T* ret )  \
+  {                                                                                         \
+    cblas_##name##dotu_sub(n, (const V*) X, incX, (const V*) Y, incY, (V*) ret);            \
+  }
+
+#define CUSP_CUBLAS_NRM2(T,V,name)                                                           \
+  T nrm2( const int n, const T* X, const int incX )                                         \
+  {                                                                                         \
+    return cblas_##name##nrm2(n, (const V*) X, incX);                                       \
+  }
+
+#define CUSP_CUBLAS_SCAL(T,V,name)                                                           \
+  void scal( const int n, const T alpha, T* X, const int incX )                             \
+  {                                                                                         \
+    cblas_##name##scal(n, alpha, (V*) X, incX);                                             \
+  }
+
+#define CUSP_CUBLAS_SWAP(T,V,name)                                                           \
+  void swap( const int n, T* X, const int incX, T* Y, const int incY )                      \
+  {                                                                                         \
+    cblas_##name##swap(n, (V*) X, incX, (V*) Y, incY);                                      \
+  }
+
+#define CUSP_CUBLAS_AMAX(T,V,name)                                                           \
+  int amax( const int n, const T* X, const int incX )                                       \
+  {                                                                                         \
+    return cblas_i##name##amax(n, (const V*) X, incX);                                      \
+  }
+
+#define CUSP_CUBLAS_GEMV(T,V,name)                                                           \
+void gemv( enum CUBLAS_ORDER order, enum CUBLAS_TRANSPOSE trans,                              \
+           int m, int n, T alpha, const T* A, int lda,                                      \
+           const T* x, int incx, T beta, T* y, int incy)                                    \
+{                                                                                           \
+    cblas_##name##gemv(order, trans, m, n, alpha, A, lda, x, incx, beta, y, incy);          \
+}
+
+#define CUSP_CUBLAS_GEMM(T,V,name)                                                           \
+void gemm( enum CUBLAS_ORDER order, enum CUBLAS_TRANSPOSE transa, enum CUBLAS_TRANSPOSE transb,\
+           int m, int n, int k, T alpha, const T* A, int lda,                               \
+           const T* B, int ldb, T beta, T* C, int ldc)                                      \
+{                                                                                           \
+    cblas_##name##gemm(order, transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);\
+}
 
 namespace cusp
 {
