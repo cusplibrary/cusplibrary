@@ -2,7 +2,9 @@ import os
 import inspect
 
 lapack_dir = os.environ["HOME"] + "/.local"
-lapack_lib = "-lopenblas.so"
+lapack_lib = "-lopenblas"
+
+cublas_lib = "-lcublas"
 
 # try to import an environment first
 Import('env')
@@ -22,7 +24,7 @@ this_file = inspect.currentframe().f_code.co_filename
 # this_dir = os.path.dirname(this_file)
 env.Append(CPPPATH = lapack_dir + "/include")
 env.Append(LIBPATH = lapack_dir + "/lib")
-env.Append(LIBS = lapack_lib)
+env.Append(LIBS = [cublas_lib, lapack_lib])
 
 tester = env.Program('tester', sources)
 

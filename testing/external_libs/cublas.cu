@@ -3,7 +3,7 @@
 #include <cusp/gallery/poisson.h>
 #include <cusp/blas/cublas/blas.h>
 
-void TestAxpy(void)
+void TestCUBLASAxpy(void)
 {
     typedef cusp::host_memory MemorySpace;
     typedef typename cusp::array1d<float, MemorySpace>       Array;
@@ -43,4 +43,4 @@ void TestAxpy(void)
     Array w(3);
     ASSERT_THROWS(cusp::blas::axpy(x, w, 1.0f), cusp::invalid_input_exception);
 }
-DECLARE_UNITTEST(TestAxpy);
+DECLARE_UNITTEST(TestCUBLASAxpy);

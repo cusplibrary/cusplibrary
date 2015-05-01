@@ -18,6 +18,8 @@
 
 #include <cusp/array1d.h>
 #include <cusp/exception.h>
+
+#include <cusp/blas/cublas/blas_policy.h>
 #include <cusp/blas/cublas/stubs.h>
 
 #include <cublas_v2.h>
@@ -52,8 +54,8 @@ static cublasLibrary __cublas;
 } // end namespace cublas
 
 template <typename Array1,
-         typename Array2,
-         typename ScalarType>
+          typename Array2,
+          typename ScalarType>
 void axpy(const cublas::detail::blas_policy<typename Array2::memory_space>& policy,
           const Array1& x,
           Array2& y,
@@ -73,7 +75,7 @@ void axpy(const cublas::detail::blas_policy<typename Array2::memory_space>& poli
 }
 
 template <typename Array1,
-         typename Array2>
+          typename Array2>
 typename Array1::value_type
 dot(const cublas::detail::blas_policy<typename Array1::memory_space>& policy,
     const Array1& x,
@@ -97,7 +99,7 @@ dot(const cublas::detail::blas_policy<typename Array1::memory_space>& policy,
 }
 
 template <typename Array1,
-         typename Array2>
+          typename Array2>
 typename Array1::value_type
 dotc(const cublas::detail::blas_policy<typename Array1::memory_space>& policy,
      const Array1& x,
