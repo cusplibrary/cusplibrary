@@ -42,11 +42,11 @@
 
 #define CUSP_CUBLAS_EXPAND_DEFS_1(FUNC_MACRO)                   \
   CUSP_CUBLAS_EXPAND_REAL_DEFS(FUNC_MACRO)                      \
-  // CUSP_CUBLAS_EXPAND_COMPLEX_DEFS_1(FUNC_MACRO)
+  CUSP_CUBLAS_EXPAND_COMPLEX_DEFS_1(FUNC_MACRO)
 
 #define CUSP_CUBLAS_EXPAND_DEFS_2(FUNC_MACRO)                   \
   CUSP_CUBLAS_EXPAND_REAL_DEFS(FUNC_MACRO)                      \
-  // CUSP_CUBLAS_EXPAND_COMPLEX_DEFS_2(FUNC_MACRO)
+  CUSP_CUBLAS_EXPAND_COMPLEX_DEFS_2(FUNC_MACRO)
 
 #define CUSP_CUBLAS_AMAX(T,V,name)                                                            \
   cublasStatus_t amax( cublasHandle_t handle,                                                 \
@@ -59,7 +59,8 @@
   cublasStatus_t asum( cublasHandle_t handle,                                                 \
                        const int n, const T* X, const int incX, T* result )                   \
   {                                                                                           \
-    return cublas##name##asum(handle, n, (const V*) X, incX, result);                         \
+    typedef typename cusp::detail::norm_type<T>::type Real;                                   \
+    return cublas##name##asum(handle, n, (const V*) X, incX, (Real*) result);                 \
   }
 
 #define CUSP_CUBLAS_AXPY(T,V,name)                                                            \
@@ -67,7 +68,7 @@
                        const int n, const T alpha, const T* X, const int incX,                \
                        T* Y, const int incY )                                                 \
   {                                                                                           \
-    return cublas##name##axpy(handle, n, &alpha, (const V*) X, incX, (V*) Y, incY);           \
+    return cublas##name##axpy(handle, n, (const V*) &alpha, (const V*) X, incX, (V*) Y, incY);\
   }
 
 #define CUSP_CUBLAS_COPY(T,V,name)                                                            \
@@ -113,7 +114,7 @@
   cublasStatus_t scal( cublasHandle_t handle,                                                 \
                        const int n, const T alpha, T* X, const int incX )                     \
   {                                                                                           \
-    return cublas##name##scal(handle, n, &alpha, (V*) X, incX);                               \
+    return cublas##name##scal(handle, n, (const V*) &alpha, (V*) X, incX);                    \
   }
 
 #define CUSP_CUBLAS_SWAP(T,V,name)                                                            \
@@ -125,12 +126,57 @@
 
 #define CUSP_CUBLAS_GEMV(T,V,name)                                                            \
   cublasStatus_t gemv( cublasHandle_t handle,                                                 \
-           cublasOperation_t trans,                                                           \
-           int m, int n, T alpha, const T* A, int lda,                                        \
-           const T* x, int incx, T beta, T* y, int incy)                                      \
+                       cublasOperation_t trans,                                               \
+                       int m, int n, T alpha, const T* A, int lda,                            \
+                       const T* x, int incx, T beta, T* y, int incy)                          \
 {                                                                                             \
     return cublas##name##gemv(handle, trans, m, n, (const V*) &alpha, (const V*) A, lda,      \
                               (const V*) x, incx, (const V*) &beta, (V*) y, incy);            \
+}
+
+#define CUSP_CUBLAS_GER(T,V,name)                                                             \
+  cublasStatus_t ger( cublasHandle_t handle,                                                  \
+                      int m, int n, T alpha, const T* x, int incx, const T* y, int incy,      \
+                      T* A, int lda)                                                          \
+{                                                                                             \
+    return cublas##name##ger(handle, m, n, (const V*) &alpha,                                 \
+                             (const V*) x, incx, (const V*) y, incy,                          \
+                             (V*) A, lda);                                                    \
+}
+
+#define CUSP_CUBLAS_SYMV(T,V,name)                                                            \
+  cublasStatus_t symv( cublasHandle_t handle, cublasFillMode_t uplo,                          \
+                       int n, T alpha, const T* A, int lda,                                   \
+                       const T* x, int incx, T beta, T* y, int incy)                          \
+{                                                                                             \
+    return cublas##name##symv(handle, uplo, n, (const V*) &alpha, (const V*) A, lda,          \
+                              (const V*) x, incx, (const V*) &beta, (V*) y, incy);            \
+}
+
+#define CUSP_CUBLAS_SYR(T,V,name)                                                             \
+  cublasStatus_t syr( cublasHandle_t handle, cublasFillMode_t uplo,                           \
+                      int n, T alpha, const T* x, int incx, T* A, int lda)                    \
+{                                                                                             \
+    return cublas##name##syr(handle, uplo, n, (const V*) &alpha,                              \
+                             (const V*) x, incx, (V*) A, lda);                                \
+}
+
+#define CUSP_CUBLAS_TRMV(T,V,name)                                                            \
+  cublasStatus_t trmv( cublasHandle_t handle, cublasFillMode_t uplo,                          \
+                       cublasOperation_t trans, cublasDiagType_t diag,                        \
+                       int n, const T* A, int lda, const T* x, int incx)                      \
+{                                                                                             \
+    return cublas##name##trmv(handle, uplo, trans, diag, n,                                   \
+                              (const V*) A, lda, (V*) x, incx);                               \
+}
+
+#define CUSP_CUBLAS_TRSV(T,V,name)                                                            \
+  cublasStatus_t trsv( cublasHandle_t handle, cublasFillMode_t uplo,                          \
+                       cublasOperation_t trans, cublasDiagType_t diag,                        \
+                       int n, const T* A, int lda, const T* x, int incx)                      \
+{                                                                                             \
+    return cublas##name##trsv(handle, uplo, trans, diag, n,                                   \
+                              (const V*) A, lda, (V*) x, incx);                               \
 }
 
 #define CUSP_CUBLAS_GEMM(T,V,name)                                                            \
@@ -142,6 +188,63 @@
     return cublas##name##gemm(handle, transa, transb, m, n, k,                                \
                               (const V*) &alpha, (const V*) A, lda, (const V*) B, ldb,        \
                               (const V*) &beta, (V*) C, ldc);                                 \
+}
+
+#define CUSP_CUBLAS_SYMM(T,V,name)                                                            \
+  cublasStatus_t symm( cublasHandle_t handle,                                                 \
+                       cublasSideMode_t side, cublasFillMode_t uplo,                          \
+                       int m, int n, T alpha, const T* A, int lda,                            \
+                       const T* B, int ldb, T beta, T* C, int ldc)                            \
+{                                                                                             \
+    return cublas##name##symm(handle, side, uplo, m, n,                                       \
+                              (const V*) &alpha, (const V*) A, lda, (const V*) B, ldb,        \
+                              (const V*) &beta, (V*) C, ldc);                                 \
+}
+
+#define CUSP_CUBLAS_SYRK(T,V,name)                                                            \
+  cublasStatus_t syrk( cublasHandle_t handle,                                                 \
+                       cublasFillMode_t uplo, cublasOperation_t trans,                        \
+                       int n, int k, T alpha, const T* A, int lda,                            \
+                       T beta, T* C, int ldc)                                                 \
+{                                                                                             \
+    return cublas##name##syrk(handle, uplo, trans, n, k,                                      \
+                              (const V*) &alpha, (const V*) A, lda,                           \
+                              (const V*) &beta, (V*) C, ldc);                                 \
+}
+
+#define CUSP_CUBLAS_SYR2K(T,V,name)                                                           \
+  cublasStatus_t syr2k( cublasHandle_t handle,                                                \
+                        cublasFillMode_t uplo, cublasOperation_t trans,                       \
+                        int n, int k, T alpha, const T* A, int lda,                           \
+                        const T* B, int ldb, T beta, T* C, int ldc)                           \
+{                                                                                             \
+    return cublas##name##syr2k(handle, uplo, trans, n, k,                                     \
+                               (const V*) &alpha, (const V*) A, lda,                          \
+                               (const V*) B, ldb, (const V*) &beta, (V*) C, ldc);             \
+}
+
+#define CUSP_CUBLAS_TRMM(T,V,name)                                                            \
+  cublasStatus_t trmm( cublasHandle_t handle,                                                 \
+                       cublasSideMode_t side, cublasFillMode_t uplo,                          \
+                       cublasOperation_t trans, cublasDiagType_t diag,                        \
+                       int m, int n, T alpha, const T* A, int lda,                            \
+                       const T* B, int ldb, T* C, int ldc)                                    \
+{                                                                                             \
+    return cublas##name##trmm(handle, side, uplo, trans, diag, m, n,                          \
+                              (const V*) &alpha, (const V*) A, lda,                           \
+                              (const V*) B, ldb, (V*) C, ldc);                                \
+}
+
+#define CUSP_CUBLAS_TRSM(T,V,name)                                                            \
+  cublasStatus_t trsm( cublasHandle_t handle,                                                 \
+                       cublasSideMode_t side, cublasFillMode_t uplo,                          \
+                       cublasOperation_t trans, cublasDiagType_t diag,                        \
+                       int m, int n, T alpha, const T* A, int lda,                            \
+                       T* B, int ldb)                                                         \
+{                                                                                             \
+    return cublas##name##trsm(handle, side, uplo, trans, diag, m, n,                          \
+                              (const V*) &alpha, (const V*) A, lda,                           \
+                              (V*) B, ldb);                                                   \
 }
 
 namespace cusp
@@ -161,17 +264,28 @@ CUSP_CUBLAS_EXPAND_DEFS_1(CUSP_CUBLAS_COPY);
 CUSP_CUBLAS_EXPAND_REAL_DEFS(CUSP_CUBLAS_DOT);
 CUSP_CUBLAS_EXPAND_COMPLEX_DEFS_1(CUSP_CUBLAS_DOTC);
 CUSP_CUBLAS_EXPAND_COMPLEX_DEFS_1(CUSP_CUBLAS_DOTU);
-CUSP_CUBLAS_EXPAND_DEFS_1(CUSP_CUBLAS_NRM2);
+CUSP_CUBLAS_EXPAND_DEFS_2(CUSP_CUBLAS_NRM2);
 CUSP_CUBLAS_EXPAND_DEFS_1(CUSP_CUBLAS_SCAL);
 CUSP_CUBLAS_EXPAND_DEFS_1(CUSP_CUBLAS_SWAP);
 
 // LEVEL 2
 CUSP_CUBLAS_EXPAND_DEFS_1(CUSP_CUBLAS_GEMV);
+CUSP_CUBLAS_EXPAND_REAL_DEFS(CUSP_CUBLAS_GER);
+CUSP_CUBLAS_EXPAND_DEFS_1(CUSP_CUBLAS_SYMV);
+CUSP_CUBLAS_EXPAND_DEFS_1(CUSP_CUBLAS_SYR);
+CUSP_CUBLAS_EXPAND_DEFS_1(CUSP_CUBLAS_TRMV);
+CUSP_CUBLAS_EXPAND_DEFS_1(CUSP_CUBLAS_TRSV);
 
 // LEVEL 3
 CUSP_CUBLAS_EXPAND_DEFS_1(CUSP_CUBLAS_GEMM);
+CUSP_CUBLAS_EXPAND_DEFS_1(CUSP_CUBLAS_SYMM);
+CUSP_CUBLAS_EXPAND_DEFS_1(CUSP_CUBLAS_SYRK);
+CUSP_CUBLAS_EXPAND_DEFS_1(CUSP_CUBLAS_SYR2K);
+CUSP_CUBLAS_EXPAND_DEFS_1(CUSP_CUBLAS_TRMM);
+CUSP_CUBLAS_EXPAND_DEFS_1(CUSP_CUBLAS_TRSM);
 
 } // end namespace detail
 } // end namespace cublas
 } // end namespace blas
 } // end namespace cusp
+
