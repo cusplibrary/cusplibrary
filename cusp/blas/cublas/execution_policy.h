@@ -19,22 +19,56 @@
 #include <cusp/detail/config.h>
 #include <cusp/blas/blas_policy.h>
 
+#include <cublas_v2.h>
+#include <thrust/system/cuda/detail/execution_policy.h>
+
 namespace cusp
 {
 namespace blas
 {
 namespace cublas
 {
-// put the canonical tag in the same ns as the backend's entry points
 namespace detail
 {
 
-template<typename MemorySpace> struct blas_policy{};
+template<typename DerivedPolicy>
+class execution_policy
+  : public thrust::system::cuda::detail::execution_policy<DerivedPolicy>
+{
+  public:
+
+    execution_policy<DerivedPolicy> with_cublas(const cublasHandle_t &h) const
+    {
+      // create a copy of *this to return
+      // make sure it is the derived type
+      execution_policy<DerivedPolicy> result = *this;
+
+      // change the result's cublas handle to h
+      result.set_cublas_handle(h);
+
+      return result;
+    }
+
+    inline cublasHandle_t handle(void)
+    {
+      return cublasHandle;
+    }
+
+  private:
+
+    __host__ __device__
+    inline void set_cublas_handle(const cublasHandle_t &h)
+    {
+      cublasHandle = h;
+    }
+
+    cublasHandle_t cublasHandle;
+};
 
 } // end detail
 
 // alias execution_policy and tag here
-using cusp::blas::cublas::detail::blas_policy;
+using cusp::blas::cublas::detail::execution_policy;
 
 } // end cublas
 } // end blas
@@ -43,7 +77,7 @@ using cusp::blas::cublas::detail::blas_policy;
 namespace cublas
 {
 
-using cusp::blas::cublas::blas_policy;
+using cusp::blas::cublas::execution_policy;
 
 } // end cublas
 } // end cusp

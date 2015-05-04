@@ -3,15 +3,71 @@
 #include <cusp/gallery/poisson.h>
 #include <cusp/blas/cublas/blas.h>
 
-void TestCUBLASAxpy(void)
+void TestCUBLASamax(void)
 {
-    typedef cusp::host_memory MemorySpace;
+    typedef cusp::device_memory MemorySpace;
     typedef typename cusp::array1d<float, MemorySpace>       Array;
     typedef typename cusp::array1d<float, MemorySpace>::view View;
 
+    cusp::cublas::execution_policy<MemorySpace> cublas;
+
+    Array x(6);
+    View view_x(x);
+
+    x[0] =  7.0f;
+    x[1] = -5.0f;
+    x[2] =  4.0f;
+    x[3] = -3.0f;
+    x[4] =  0.0f;
+    x[5] =  1.0f;
+
+    /* ASSERT_EQUAL(cusp::blas::amax(cublas,x), 0); */
+
+    /* ASSERT_EQUAL(cusp::blas::amax(cublas,view_x), 0); */
+}
+DECLARE_UNITTEST(TestCUBLASamax);
+
+void TestCUBLASasum(void)
+{
+    typedef cusp::device_memory MemorySpace;
+    typedef typename cusp::array1d<float, MemorySpace>       Array;
+    typedef typename cusp::array1d<float, MemorySpace>::view View;
+
+    cusp::cublas::execution_policy<MemorySpace> cublas;
+
+    Array x(6);
+    View view_x(x);
+
+    x[0] =  7.0f;
+    x[1] =  5.0f;
+    x[2] =  4.0f;
+    x[3] = -3.0f;
+    x[4] =  0.0f;
+    x[5] =  1.0f;
+
+    /* ASSERT_EQUAL(cusp::blas::asum(cublas,x), 20.0f); */
+
+    /* ASSERT_EQUAL(cusp::blas::asum(cublas,view_x), 20.0f); */
+}
+DECLARE_UNITTEST(TestCUBLASasum);
+
+void TestCUBLASaxpy(void)
+{
+    typedef cusp::device_memory MemorySpace;
+    typedef typename cusp::array1d<float, MemorySpace>       Array;
+    typedef typename cusp::array1d<float, MemorySpace>::view View;
+
+    cusp::cublas::execution_policy<MemorySpace> cublas;
+
+    cublasHandle_t handle;
+
+    if(cublasCreate(&handle) != CUBLAS_STATUS_SUCCESS)
+    {
+      throw cusp::runtime_exception("cublasCreate failed");
+    }
+
     Array x(4);
     Array y(4);
-
 
     x[0] =  7.0f;
     y[0] =  0.0f;
@@ -22,7 +78,7 @@ void TestCUBLASAxpy(void)
     x[3] = -3.0f;
     y[3] =  5.0f;
 
-    cusp::blas::axpy(x, y, 2.0f);
+    cusp::blas::axpy(cublas.with_cublas(handle), x, y, 2.0f);
 
     ASSERT_EQUAL(y[0],  14.0);
     ASSERT_EQUAL(y[1],   8.0);
@@ -32,15 +88,144 @@ void TestCUBLASAxpy(void)
     View view_x(x);
     View view_y(y);
 
-    cusp::blas::axpy(view_x, view_y, 2.0f);
+    cusp::blas::axpy(cublas.with_cublas(handle), view_x, view_y, 2.0f);
 
     ASSERT_EQUAL(y[0],  28.0);
     ASSERT_EQUAL(y[1],  18.0);
     ASSERT_EQUAL(y[2],  16.0);
     ASSERT_EQUAL(y[3],  -7.0);
+}
+DECLARE_UNITTEST(TestCUBLASaxpy);
+
+void TestCUBLAScopy(void)
+{
+    typedef cusp::device_memory MemorySpace;
+    typedef typename cusp::array1d<float, MemorySpace>       Array;
+    typedef typename cusp::array1d<float, MemorySpace>::view View;
+
+    cusp::cublas::execution_policy<MemorySpace> cublas;
+
+    Array x(4);
+
+    x[0] =  7.0f;
+    x[1] =  5.0f;
+    x[2] =  4.0f;
+    x[3] = -3.0f;
+
+    {
+        Array y(4, -1);
+        cusp::blas::copy(cublas, x, y);
+        ASSERT_EQUAL(x, y);
+    }
+
+    {
+        Array y(4, -1);
+        View view_x(x);
+        View view_y(y);
+        cusp::blas::copy(cublas, view_x, view_y);
+        ASSERT_EQUAL(x, y);
+    }
 
     // test size checking
-    Array w(3);
-    ASSERT_THROWS(cusp::blas::axpy(x, w, 1.0f), cusp::invalid_input_exception);
+    cusp::array1d<float, MemorySpace> w(3);
+    ASSERT_THROWS(cusp::blas::copy(cublas, w, x), cusp::invalid_input_exception);
 }
-DECLARE_UNITTEST(TestCUBLASAxpy);
+DECLARE_UNITTEST(TestCUBLAScopy);
+
+void TestCUBLASdot(void)
+{
+    typedef cusp::device_memory MemorySpace;
+    typedef typename cusp::array1d<float, MemorySpace>       Array;
+    typedef typename cusp::array1d<float, MemorySpace>::view View;
+
+    cusp::cublas::execution_policy<MemorySpace> cublas;
+
+    Array x(6);
+    Array y(6);
+
+    x[0] =  7.0f;
+    y[0] =  0.0f;
+    x[1] =  5.0f;
+    y[1] = -2.0f;
+    x[2] =  4.0f;
+    y[2] =  0.0f;
+    x[3] = -3.0f;
+    y[3] =  5.0f;
+    x[4] =  0.0f;
+    y[4] =  6.0f;
+    x[5] =  4.0f;
+    y[5] =  1.0f;
+
+    ASSERT_EQUAL(cusp::blas::dot(cublas, x, y), -21.0f);
+
+    View view_x(x);
+    View view_y(y);
+    ASSERT_EQUAL(cusp::blas::dot(cublas, view_x, view_y), -21.0f);
+
+    // test size checking
+    cusp::array1d<float, MemorySpace> w(3);
+    ASSERT_THROWS(cusp::blas::dot(cublas, x, w), cusp::invalid_input_exception);
+}
+DECLARE_UNITTEST(TestCUBLASdot);
+
+void TestCUBLASnrm2(void)
+{
+    typedef cusp::device_memory MemorySpace;
+    typedef typename cusp::array1d<float, MemorySpace>       Array;
+    typedef typename cusp::array1d<float, MemorySpace>::view View;
+
+    cusp::cublas::execution_policy<MemorySpace> cublas;
+
+    Array x(6);
+
+    x[0] =  7.0f;
+    x[1] =  5.0f;
+    x[2] =  4.0f;
+    x[3] = -3.0f;
+    x[4] =  0.0f;
+    x[5] =  1.0f;
+
+    ASSERT_EQUAL(cusp::blas::nrm2(cublas, x), 10.0f);
+
+    ASSERT_EQUAL(cusp::blas::nrm2(cublas, View(x)), 10.0f);
+}
+DECLARE_UNITTEST(TestCUBLASnrm2);
+
+void TestCUBLASscal(void)
+{
+    typedef cusp::device_memory MemorySpace;
+    typedef typename cusp::array1d<float, MemorySpace>       Array;
+    typedef typename cusp::array1d<float, MemorySpace>::view View;
+
+    cusp::cublas::execution_policy<MemorySpace> cublas;
+
+    Array x(6);
+
+    x[0] =  7.0f;
+    x[1] =  5.0f;
+    x[2] =  4.0f;
+    x[3] = -3.0f;
+    x[4] =  0.0f;
+    x[5] =  4.0f;
+
+    cusp::blas::scal(cublas, x, 4.0f);
+
+    ASSERT_EQUAL(x[0],  28.0);
+    ASSERT_EQUAL(x[1],  20.0);
+    ASSERT_EQUAL(x[2],  16.0);
+    ASSERT_EQUAL(x[3], -12.0);
+    ASSERT_EQUAL(x[4],   0.0);
+    ASSERT_EQUAL(x[5],  16.0);
+
+    View v(x);
+    cusp::blas::scal(cublas, v, 2.0f);
+
+    ASSERT_EQUAL(x[0],  56.0);
+    ASSERT_EQUAL(x[1],  40.0);
+    ASSERT_EQUAL(x[2],  32.0);
+    ASSERT_EQUAL(x[3], -24.0);
+    ASSERT_EQUAL(x[4],   0.0);
+    ASSERT_EQUAL(x[5],  32.0);
+}
+DECLARE_UNITTEST(TestCUBLASscal);
+

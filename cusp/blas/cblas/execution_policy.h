@@ -29,7 +29,7 @@ namespace cblas
 namespace detail
 {
 
-template<typename DerivedPolicy> struct execution_policy{};
+template<typename DerivedPolicy> struct execution_policy {};
 
 } // end detail
 

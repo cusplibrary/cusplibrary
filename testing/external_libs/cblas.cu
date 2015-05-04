@@ -118,10 +118,6 @@ void TestCBLAScopy(void)
         cusp::blas::copy(cblas, view_x, view_y);
         ASSERT_EQUAL(x, y);
     }
-
-    // test size checking
-    cusp::array1d<float, MemorySpace> w(3);
-    ASSERT_THROWS(cusp::blas::copy(cblas, w, x), cusp::invalid_input_exception);
 }
 DECLARE_UNITTEST(TestCBLAScopy);
 
@@ -154,10 +150,6 @@ void TestCBLASdot(void)
     View view_x(x);
     View view_y(y);
     ASSERT_EQUAL(cusp::blas::dot(cblas, view_x, view_y), -21.0f);
-
-    // test size checking
-    cusp::array1d<float, MemorySpace> w(3);
-    ASSERT_THROWS(cusp::blas::dot(cblas, x, w), cusp::invalid_input_exception);
 }
 DECLARE_UNITTEST(TestCBLASdot);
 
