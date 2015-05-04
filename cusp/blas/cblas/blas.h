@@ -162,7 +162,7 @@ void gemv(const cblas::detail::blas_policy<typename Array1d2::memory_space>& pol
     ValueType * y_p = thrust::raw_pointer_cast(&y[0]);
 
     cblas::detail::gemv(order, trans, m, n, alpha,
-                 A_p, m, x_p, 1, beta, y_p, 1);
+                        A_p, m, x_p, 1, beta, y_p, 1);
 }
 
 template<typename Array2d1, typename Array2d2, typename Array2d3>
@@ -189,8 +189,8 @@ void gemm(const cblas::detail::blas_policy<typename Array2d3::memory_space>& pol
     ValueType * C_p = thrust::raw_pointer_cast(&C(0,0));
 
     cblas::detail::gemm(order, transa, transb,
-                 m, n, k, alpha, A_p, m,
-                 B_p, k, beta, C_p, m);
+                        m, n, k, alpha, A_p, m,
+                        B_p, k, beta, C_p, m);
 }
 
 } // end namespace blas
