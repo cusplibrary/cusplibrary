@@ -134,7 +134,7 @@ void gemv( enum CBLAS_ORDER order, enum CBLAS_TRANSPOSE trans,                  
 #define CUSP_CBLAS_TRMV(T,V,name)                                                           \
   void trmv( enum CBLAS_ORDER order, enum CBLAS_UPLO uplo,                                  \
              enum CBLAS_TRANSPOSE trans, enum CBLAS_DIAG diag,                              \
-             int n, const T* A, int lda, const T* x, int incx)                              \
+             int n, const T* A, int lda, T* x, int incx)                                    \
 {                                                                                           \
     return cblas_##name##trmv(order, uplo, trans, diag, n,                                  \
                               (const V*) A, lda, (V*) x, incx);                             \
@@ -143,7 +143,7 @@ void gemv( enum CBLAS_ORDER order, enum CBLAS_TRANSPOSE trans,                  
 #define CUSP_CBLAS_TRSV(T,V,name)                                                           \
   void trsv( enum CBLAS_ORDER order, enum CBLAS_UPLO uplo,                                  \
              enum CBLAS_TRANSPOSE trans, enum CBLAS_DIAG diag,                              \
-             int n, const T* A, int lda, const T* x, int incx)                              \
+             int n, const T* A, int lda, T* x, int incx)                                    \
 {                                                                                           \
     return cblas_##name##trsv(order, uplo, trans, diag, n,                                  \
                               (const V*) A, lda, (V*) x, incx);                             \
@@ -161,9 +161,9 @@ void gemm( enum CBLAS_ORDER order,                                              
 
 #define CUSP_CBLAS_SYMM(T,V,name)                                                           \
   void symm( enum CBLAS_ORDER order,                                                        \
-                       enum CBLAS_SIDE side, enum CBLAS_UPLO uplo,                          \
-                       int m, int n, T alpha, const T* A, int lda,                          \
-                       const T* B, int ldb, T beta, T* C, int ldc)                          \
+             enum CBLAS_SIDE side, enum CBLAS_UPLO uplo,                                    \
+             int m, int n, T alpha, const T* A, int lda,                                    \
+             const T* B, int ldb, T beta, T* C, int ldc)                                    \
 {                                                                                           \
     return cblas_##name##symm(order, side, uplo, m, n,                                      \
                               (V) alpha, (const V*) A, lda, (const V*) B, ldb,              \
@@ -172,9 +172,9 @@ void gemm( enum CBLAS_ORDER order,                                              
 
 #define CUSP_CBLAS_SYRK(T,V,name)                                                           \
   void syrk( enum CBLAS_ORDER order,                                                        \
-                       enum CBLAS_UPLO uplo, enum CBLAS_TRANSPOSE trans,                    \
-                       int n, int k, T alpha, const T* A, int lda,                          \
-                       T beta, T* C, int ldc)                                               \
+             enum CBLAS_UPLO uplo, enum CBLAS_TRANSPOSE trans,                              \
+             int n, int k, T alpha, const T* A, int lda,                                    \
+             T beta, T* C, int ldc)                                                         \
 {                                                                                           \
     return cblas_##name##syrk(order, uplo, trans, n, k,                                     \
                               (V) alpha, (const V*) A, lda,                                 \
@@ -183,9 +183,9 @@ void gemm( enum CBLAS_ORDER order,                                              
 
 #define CUSP_CBLAS_SYR2K(T,V,name)                                                          \
   void syr2k( enum CBLAS_ORDER order,                                                       \
-                        enum CBLAS_UPLO uplo, enum CBLAS_TRANSPOSE trans,                   \
-                        int n, int k, T alpha, const T* A, int lda,                         \
-                        const T* B, int ldb, T beta, T* C, int ldc)                         \
+              enum CBLAS_UPLO uplo, enum CBLAS_TRANSPOSE trans,                             \
+              int n, int k, T alpha, const T* A, int lda,                                   \
+              const T* B, int ldb, T beta, T* C, int ldc)                                   \
 {                                                                                           \
     return cblas_##name##syr2k(order, uplo, trans, n, k,                                    \
                                (V) alpha, (const V*) A, lda,                                \
@@ -194,10 +194,10 @@ void gemm( enum CBLAS_ORDER order,                                              
 
 #define CUSP_CBLAS_TRMM(T,V,name)                                                           \
   void trmm( enum CBLAS_ORDER order,                                                        \
-                       enum CBLAS_SIDE side, enum CBLAS_UPLO uplo,                          \
-                       enum CBLAS_TRANSPOSE trans, enum CBLAS_DIAG diag,                    \
-                       int m, int n, T alpha, const T* A, int lda,                          \
-                       T* B, int ldb)                                                       \
+             enum CBLAS_SIDE side, enum CBLAS_UPLO uplo,                                    \
+             enum CBLAS_TRANSPOSE trans, enum CBLAS_DIAG diag,                              \
+             int m, int n, T alpha, const T* A, int lda,                                    \
+             T* B, int ldb)                                                                 \
 {                                                                                           \
     return cblas_##name##trmm(order, side, uplo, trans, diag, m, n,                         \
                               (V) alpha, (const V*) A, lda, (V*) B, ldb);                   \
@@ -205,10 +205,10 @@ void gemm( enum CBLAS_ORDER order,                                              
 
 #define CUSP_CBLAS_TRSM(T,V,name)                                                           \
   void trsm( enum CBLAS_ORDER order,                                                        \
-                       enum CBLAS_SIDE side, enum CBLAS_UPLO uplo,                          \
-                       enum CBLAS_TRANSPOSE trans, enum CBLAS_DIAG diag,                    \
-                       int m, int n, T alpha, const T* A, int lda,                          \
-                       T* B, int ldb)                                                       \
+             enum CBLAS_SIDE side, enum CBLAS_UPLO uplo,                                    \
+             enum CBLAS_TRANSPOSE trans, enum CBLAS_DIAG diag,                              \
+             int m, int n, T alpha, const T* A, int lda,                                    \
+             T* B, int ldb)                                                                 \
 {                                                                                           \
     return cblas_##name##trsm(order, side, uplo, trans, diag, m, n,                         \
                               (V) alpha, (const V*) A, lda, (V*) B, ldb);                   \

@@ -44,9 +44,9 @@ template <typename DerivedPolicy,
           typename Array2,
           typename ScalarType>
 void axpy(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-             const Array1& x,
-                   Array2& y,
-             ScalarType alpha);
+          const Array1& x,
+                Array2& y,
+          const ScalarType alpha);
 /*! \endcond */
 
 /*! \p axpy : scaled vector addition (y = alpha * x + y)
@@ -56,7 +56,7 @@ template <typename Array1,
           typename ScalarType>
 void axpy(const Array1& x,
                 Array2& y,
-          ScalarType alpha);
+                ScalarType alpha);
 
 /*! \cond */
 template <typename DerivedPolicy,
@@ -69,8 +69,8 @@ void axpby(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
            const Array1& x,
            const Array2& y,
                  Array3& output,
-           ScalarType1 alpha,
-           ScalarType2 beta);
+                 ScalarType1 alpha,
+                 ScalarType2 beta);
 /*! \endcond */
 
 /*! \p axpby : linear combination of two vectors (output = alpha * x + beta * y)
@@ -83,8 +83,8 @@ template <typename Array1,
 void axpby(const Array1& x,
            const Array2& y,
                  Array3& output,
-           ScalarType1 alpha,
-           ScalarType2 beta);
+                 ScalarType1 alpha,
+                 ScalarType2 beta);
 
 /*! \cond */
 template <typename DerivedPolicy,
@@ -200,16 +200,15 @@ template <typename DerivedPolicy,
           typename ScalarType>
 void fill(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
           Array& array,
-          ScalarType alpha);
+          const ScalarType alpha);
 /*! \endcond */
 
 /*! \p fill : vector fill (x[i] = alpha)
  */
 template <typename Array,
           typename ScalarType>
-typename thrust::detail::enable_if_convertible<typename Array::format,cusp::array1d_format>::type
-fill(Array& array,
-     ScalarType alpha);
+void fill(Array& array,
+          const ScalarType alpha);
 
 /*! \cond */
 template <typename DerivedPolicy,

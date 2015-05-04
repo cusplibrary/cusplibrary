@@ -209,6 +209,7 @@ void TestCopy(void)
     typedef typename cusp::array1d<float, MemorySpace>::view View;
 
     Array x(4);
+    View view_x(x);
 
     x[0] =  7.0f;
     x[1] =  5.0f;
@@ -223,7 +224,8 @@ void TestCopy(void)
 
     {
         Array y(4, -1);
-        cusp::blas::copy(View(x), View(y));
+        View view_y(y);
+        cusp::blas::copy(view_x, view_y);
         ASSERT_EQUAL(x, y);
     }
 
@@ -312,6 +314,7 @@ void TestFill(void)
     typedef typename cusp::array1d<float, MemorySpace>::view View;
 
     Array x(4);
+    View view_x(x);
 
     x[0] =  7.0f;
     x[1] =  5.0f;
@@ -325,7 +328,7 @@ void TestFill(void)
     ASSERT_EQUAL(x[2], 2.0);
     ASSERT_EQUAL(x[3], 2.0);
 
-    cusp::blas::fill(View(x), 1.0f);
+    cusp::blas::fill(view_x, 1.0f);
 
     ASSERT_EQUAL(x[0], 1.0);
     ASSERT_EQUAL(x[1], 1.0);
@@ -342,6 +345,7 @@ void TestNrm1(void)
     typedef typename cusp::array1d<float, MemorySpace>::view View;
 
     Array x(6);
+    View view_x(x);
 
     x[0] =  7.0f;
     x[1] =  5.0f;
@@ -352,7 +356,7 @@ void TestNrm1(void)
 
     ASSERT_EQUAL(cusp::blas::nrm1(x), 20.0f);
 
-    ASSERT_EQUAL(cusp::blas::nrm1(View(x)), 20.0f);
+    ASSERT_EQUAL(cusp::blas::nrm1(view_x), 20.0f);
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestNrm1);
 
@@ -363,6 +367,7 @@ void TestComplexNrm1(void)
     typedef typename cusp::array1d<cusp::complex<float>, MemorySpace>::view View;
 
     Array x(6);
+    View view_x(x);
 
     x[0] =  7.0f;
     x[1] =  5.0f;
@@ -373,7 +378,7 @@ void TestComplexNrm1(void)
 
     ASSERT_EQUAL(cusp::blas::nrm1(x), 20.0f);
 
-    ASSERT_EQUAL(cusp::blas::nrm1(View(x)), 20.0f);
+    ASSERT_EQUAL(cusp::blas::nrm1(view_x), 20.0f);
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestComplexNrm1);
 
@@ -385,6 +390,7 @@ void TestNrm2(void)
     typedef typename cusp::array1d<float, MemorySpace>::view View;
 
     Array x(6);
+    View view_x(x);
 
     x[0] =  7.0f;
     x[1] =  5.0f;
@@ -395,7 +401,7 @@ void TestNrm2(void)
 
     ASSERT_EQUAL(cusp::blas::nrm2(x), 10.0f);
 
-    ASSERT_EQUAL(cusp::blas::nrm2(View(x)), 10.0f);
+    ASSERT_EQUAL(cusp::blas::nrm2(view_x), 10.0f);
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestNrm2);
 
@@ -406,6 +412,7 @@ void TestComplexNrm2(void)
     typedef typename cusp::array1d<cusp::complex<float>, MemorySpace>::view View;
 
     Array x(6);
+    View view_x(x);
 
     x[0] =  7.0f;
     x[1] =  5.0f;
@@ -416,7 +423,7 @@ void TestComplexNrm2(void)
 
     ASSERT_EQUAL(cusp::blas::nrm2(x), 10.0f);
 
-    ASSERT_EQUAL(cusp::blas::nrm2(View(x)), 10.0f);
+    ASSERT_EQUAL(cusp::blas::nrm2(view_x), 10.0f);
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestComplexNrm2);
 
@@ -439,7 +446,7 @@ void TestNrmmax(void)
 
     ASSERT_EQUAL(cusp::blas::nrmmax(x), 7.0f);
 
-    ASSERT_EQUAL(cusp::blas::nrmmax(View(x)), 7.0f);
+    ASSERT_EQUAL(cusp::blas::nrmmax(view_x), 7.0f);
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestNrmmax);
 
@@ -461,7 +468,7 @@ void TestComplexNrmmax(void)
 
     ASSERT_EQUAL(cusp::blas::nrmmax(x), 7.0f);
 
-    ASSERT_EQUAL(cusp::blas::nrmmax(View(x)), 7.0f);
+    ASSERT_EQUAL(cusp::blas::nrmmax(view_x), 7.0f);
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestComplexNrmmax);
 
@@ -473,6 +480,7 @@ void TestScal(void)
     typedef typename cusp::array1d<float, MemorySpace>::view View;
 
     Array x(6);
+    View view_x(x);
 
     x[0] =  7.0f;
     x[1] =  5.0f;
@@ -490,7 +498,7 @@ void TestScal(void)
     ASSERT_EQUAL(x[4],   0.0);
     ASSERT_EQUAL(x[5],  16.0);
 
-    cusp::blas::scal(View(x), 2.0f);
+    cusp::blas::scal(view_x, 2.0f);
 
     ASSERT_EQUAL(x[0],  56.0);
     ASSERT_EQUAL(x[1],  40.0);

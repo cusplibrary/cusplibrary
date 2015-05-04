@@ -29,12 +29,12 @@ namespace cblas
 namespace detail
 {
 
-template<typename MemorySpace> struct blas_policy{};
+template<typename DerivedPolicy> struct execution_policy{};
 
 } // end detail
 
 // alias execution_policy and tag here
-using cusp::blas::cblas::detail::blas_policy;
+using cusp::blas::cblas::detail::execution_policy;
 
 } // end cblas
 } // end blas
@@ -43,7 +43,7 @@ using cusp::blas::cblas::detail::blas_policy;
 namespace cblas
 {
 
-using cusp::blas::cblas::blas_policy;
+using cusp::blas::cblas::execution_policy;
 
 } // end cblas
 } // end cusp
