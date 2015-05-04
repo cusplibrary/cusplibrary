@@ -28,9 +28,8 @@ namespace blas
 namespace cblas
 {
 
-template <typename DerivedPolicy,
-          typename Array>
-int amax(cblas::execution_policy<DerivedPolicy>& policy,
+template <typename Array>
+int amax(cblas::execution_policy& exec,
          const Array& x)
 {
     typedef typename Array::value_type ValueType;
@@ -42,10 +41,9 @@ int amax(cblas::execution_policy<DerivedPolicy>& policy,
     return detail::amax(n, x_p, 1);
 }
 
-template <typename DerivedPolicy,
-          typename Array>
+template <typename Array>
 typename Array::value_type
-asum(cblas::execution_policy<DerivedPolicy>& policy,
+asum(cblas::execution_policy& exec,
      const Array& x)
 {
     typedef typename Array::value_type ValueType;
@@ -57,11 +55,10 @@ asum(cblas::execution_policy<DerivedPolicy>& policy,
     return detail::asum(n, x_p, 1);
 }
 
-template <typename DerivedPolicy,
-          typename Array1,
+template <typename Array1,
           typename Array2,
           typename ScalarType>
-void axpy(cblas::execution_policy<DerivedPolicy>& policy,
+void axpy(cblas::execution_policy& exec,
           const Array1& x,
                 Array2& y,
                 ScalarType alpha)
@@ -76,10 +73,9 @@ void axpy(cblas::execution_policy<DerivedPolicy>& policy,
     detail::axpy(n, ValueType(alpha), x_p, 1, y_p, 1);
 }
 
-template <typename DerivedPolicy,
-          typename Array1,
+template <typename Array1,
           typename Array2>
-void copy(cblas::execution_policy<DerivedPolicy>& policy,
+void copy(cblas::execution_policy& exec,
           const Array1& x,
                 Array2& y)
 {
@@ -93,11 +89,10 @@ void copy(cblas::execution_policy<DerivedPolicy>& policy,
     detail::copy(n, x_p, 1, y_p, 1);
 }
 
-template <typename DerivedPolicy,
-          typename Array1,
+template <typename Array1,
           typename Array2>
 typename Array1::value_type
-dot(cblas::execution_policy<DerivedPolicy>& policy,
+dot(cblas::execution_policy& exec,
     const Array1& x,
     const Array2& y)
 {
@@ -111,11 +106,10 @@ dot(cblas::execution_policy<DerivedPolicy>& policy,
     return detail::dot(n, x_p, 1, y_p, 1);
 }
 
-template <typename DerivedPolicy,
-          typename Array1,
+template <typename Array1,
           typename Array2>
 typename Array1::value_type
-dotc(cblas::execution_policy<DerivedPolicy>& policy,
+dotc(cblas::execution_policy& exec,
      const Array1& x,
      const Array2& y)
 {
@@ -133,10 +127,9 @@ dotc(cblas::execution_policy<DerivedPolicy>& policy,
     return result;
 }
 
-template <typename DerivedPolicy,
-          typename Array>
+template <typename Array>
 typename cusp::detail::norm_type<typename Array::value_type>::type
-nrm2(cblas::execution_policy<DerivedPolicy>& policy,
+nrm2(cblas::execution_policy& exec,
      const Array& x)
 {
     typedef typename Array::value_type ValueType;
@@ -148,12 +141,11 @@ nrm2(cblas::execution_policy<DerivedPolicy>& policy,
     return detail::nrm2(n, x_p, 1);
 }
 
-template <typename DerivedPolicy,
-          typename Array,
+template <typename Array,
           typename ScalarType>
-void scal(cblas::execution_policy<DerivedPolicy>& policy,
+void scal(cblas::execution_policy& exec,
           Array& x,
-          ScalarType alpha)
+          const ScalarType alpha)
 {
     typedef typename Array::value_type ValueType;
 
@@ -164,10 +156,9 @@ void scal(cblas::execution_policy<DerivedPolicy>& policy,
     detail::scal(n, ValueType(alpha), x_p, 1);
 }
 
-template <typename DerivedPolicy,
-          typename Array1,
+template <typename Array1,
           typename Array2>
-void swap(cblas::execution_policy<DerivedPolicy>& policy,
+void swap(cblas::execution_policy& exec,
           Array1& x,
           Array2& y)
 {
@@ -181,11 +172,10 @@ void swap(cblas::execution_policy<DerivedPolicy>& policy,
     detail::swap(n, x_p, 1, y_p, 1);
 }
 
-template<typename DerivedPolicy,
-         typename Array2d1,
+template<typename Array2d1,
          typename Array1d1,
          typename Array1d2>
-void gemv(cblas::execution_policy<DerivedPolicy>& policy,
+void gemv(cblas::execution_policy& exec,
           const Array2d1& A,
           const Array1d1& x,
                 Array1d2& y)
@@ -209,12 +199,11 @@ void gemv(cblas::execution_policy<DerivedPolicy>& policy,
                  A_p, m, x_p, 1, beta, y_p, 1);
 }
 
-template<typename DerivedPolicy,
-         typename Array1d1,
+template<typename Array1d1,
          typename Array1d2,
          typename Array2d1,
          typename ScalarType>
-void ger(cblas::execution_policy<DerivedPolicy>& policy,
+void ger(cblas::execution_policy& exec,
          const Array1d1& x,
          const Array1d2& y,
                Array2d1& A,
@@ -236,11 +225,10 @@ void ger(cblas::execution_policy<DerivedPolicy>& policy,
                 x_p, 1, y_p, 1, A_p, lda);
 }
 
-template<typename DerivedPolicy,
-         typename Array2d1,
+template<typename Array2d1,
          typename Array1d1,
          typename Array1d2>
-void symv(cblas::execution_policy<DerivedPolicy>& policy,
+void symv(cblas::execution_policy& exec,
           const Array2d1& A,
           const Array1d1& x,
                 Array1d2& y)
@@ -264,11 +252,10 @@ void symv(cblas::execution_policy<DerivedPolicy>& policy,
                  A_p, lda, x_p, 1, beta, y_p, 1);
 }
 
-template<typename DerivedPolicy,
-         typename Array1d,
+template<typename Array1d,
          typename Array2d,
          typename ScalarType>
-void syr(cblas::execution_policy<DerivedPolicy>& policy,
+void syr(cblas::execution_policy& exec,
          const Array1d& x,
                Array2d& A,
                ScalarType alpha)
@@ -288,10 +275,9 @@ void syr(cblas::execution_policy<DerivedPolicy>& policy,
                 x_p, 1, A_p, lda);
 }
 
-template<typename DerivedPolicy,
-         typename Array2d,
+template<typename Array2d,
          typename Array1d>
-void trmv(cblas::execution_policy<DerivedPolicy>& policy,
+void trmv(cblas::execution_policy& exec,
           const Array2d& A,
                 Array1d& x)
 {
@@ -312,10 +298,9 @@ void trmv(cblas::execution_policy<DerivedPolicy>& policy,
                  A_p, lda, x_p, 1);
 }
 
-template<typename DerivedPolicy,
-         typename Array2d,
+template<typename Array2d,
          typename Array1d>
-void trsv(cblas::execution_policy<DerivedPolicy>& policy,
+void trsv(cblas::execution_policy& exec,
           const Array2d& A,
                 Array1d& x)
 {
@@ -336,11 +321,10 @@ void trsv(cblas::execution_policy<DerivedPolicy>& policy,
                  A_p, lda, x_p, 1);
 }
 
-template<typename DerivedPolicy,
-         typename Array2d1,
+template<typename Array2d1,
          typename Array2d2,
          typename Array2d3>
-void gemm(cblas::execution_policy<DerivedPolicy>& policy,
+void gemm(cblas::execution_policy& exec,
           const Array2d1& A,
           const Array2d2& B,
                 Array2d3& C)
@@ -367,11 +351,10 @@ void gemm(cblas::execution_policy<DerivedPolicy>& policy,
                  B_p, k, beta, C_p, m);
 }
 
-template<typename DerivedPolicy,
-         typename Array2d1,
+template<typename Array2d1,
          typename Array2d2,
          typename Array2d3>
-void symm(cblas::execution_policy<DerivedPolicy>& policy,
+void symm(cblas::execution_policy& exec,
           const Array2d1& A,
           const Array2d2& B,
                 Array2d3& C)
@@ -400,10 +383,9 @@ void symm(cblas::execution_policy<DerivedPolicy>& policy,
                  B_p, ldb, beta, C_p, ldc);
 }
 
-template<typename DerivedPolicy,
-         typename Array2d1,
+template<typename Array2d1,
          typename Array2d2>
-void syrk(cblas::execution_policy<DerivedPolicy>& policy,
+void syrk(cblas::execution_policy& exec,
           const Array2d1& A,
                 Array2d2& B)
 {
@@ -429,11 +411,10 @@ void syrk(cblas::execution_policy<DerivedPolicy>& policy,
                  beta, B_p, ldb);
 }
 
-template<typename DerivedPolicy,
-         typename Array2d1,
+template<typename Array2d1,
          typename Array2d2,
          typename Array2d3>
-void syr2k(cblas::execution_policy<DerivedPolicy>& policy,
+void syr2k(cblas::execution_policy& exec,
            const Array2d1& A,
            const Array2d2& B,
                  Array2d3& C)
@@ -462,10 +443,9 @@ void syr2k(cblas::execution_policy<DerivedPolicy>& policy,
                   beta, B_p, ldb, C_p, ldc);
 }
 
-template<typename DerivedPolicy,
-         typename Array2d1,
+template<typename Array2d1,
          typename Array2d2>
-void trmm(cblas::execution_policy<DerivedPolicy>& policy,
+void trmm(cblas::execution_policy& exec,
           const Array2d1& A,
                 Array2d2& B)
 {
@@ -492,10 +472,9 @@ void trmm(cblas::execution_policy<DerivedPolicy>& policy,
                  m, n, alpha, A_p, lda, B_p, ldb);
 }
 
-template<typename DerivedPolicy,
-         typename Array2d1,
+template<typename Array2d1,
          typename Array2d2>
-void trsm(cblas::execution_policy<DerivedPolicy>& policy,
+void trsm(cblas::execution_policy& exec,
           const Array2d1& A,
                 Array2d2& B)
 {
@@ -522,10 +501,9 @@ void trsm(cblas::execution_policy<DerivedPolicy>& policy,
                  m, n, alpha, A_p, lda, B_p, ldb);
 }
 
-template <typename DerivedPolicy,
-          typename Array>
+template <typename Array>
 typename cusp::detail::norm_type<typename Array::value_type>::type
-nrm1(cblas::execution_policy<DerivedPolicy>& policy,
+nrm1(cblas::execution_policy& exec,
      const Array& x)
 {
     typedef typename Array::value_type ValueType;
@@ -537,10 +515,9 @@ nrm1(cblas::execution_policy<DerivedPolicy>& policy,
     return detail::asum(n, x_p, 1);
 }
 
-template <typename DerivedPolicy,
-          typename Array>
+template <typename Array>
 typename Array::value_type
-nrmmax(cblas::execution_policy<DerivedPolicy>& policy,
+nrmmax(cblas::execution_policy& exec,
        const Array& x)
 {
     typedef typename Array::value_type ValueType;
@@ -556,34 +533,6 @@ nrmmax(cblas::execution_policy<DerivedPolicy>& policy,
 }
 
 } // end namespace cblas
-
-using cblas::amax;
-using cblas::asum;
-using cblas::axpy;
-using cblas::copy;
-using cblas::dot;
-using cblas::dotc;
-using cblas::nrm2;
-using cblas::scal;
-using cblas::swap;
-
-using cblas::gemv;
-using cblas::ger;
-using cblas::symv;
-using cblas::syr;
-using cblas::trmv;
-using cblas::trsv;
-
-using cblas::gemm;
-using cblas::symm;
-using cblas::syrk;
-using cblas::syr2k;
-using cblas::trmm;
-using cblas::trsm;
-
-using cblas::nrm1;
-using cblas::nrmmax;
-
 } // end namespace blas
 } // end namespace cusp
 

@@ -2,6 +2,7 @@
 #include <cusp/array2d.h>
 #include <cusp/gallery/poisson.h>
 #include <cusp/blas/cublas/blas.h>
+#include <cusp/blas/blas.h>
 
 void TestCUBLASamax(void)
 {
@@ -9,7 +10,7 @@ void TestCUBLASamax(void)
     typedef typename cusp::array1d<float, MemorySpace>       Array;
     typedef typename cusp::array1d<float, MemorySpace>::view View;
 
-    cusp::cublas::execution_policy<MemorySpace> cublas;
+    cusp::cublas::execution_policy cublas;
 
     Array x(6);
     View view_x(x);
@@ -33,7 +34,7 @@ void TestCUBLASasum(void)
     typedef typename cusp::array1d<float, MemorySpace>       Array;
     typedef typename cusp::array1d<float, MemorySpace>::view View;
 
-    cusp::cublas::execution_policy<MemorySpace> cublas;
+    cusp::cublas::execution_policy cublas;
 
     Array x(6);
     View view_x(x);
@@ -57,14 +58,14 @@ void TestCUBLASaxpy(void)
     typedef typename cusp::array1d<float, MemorySpace>       Array;
     typedef typename cusp::array1d<float, MemorySpace>::view View;
 
-    cusp::cublas::execution_policy<MemorySpace> cublas;
-
     cublasHandle_t handle;
 
     if(cublasCreate(&handle) != CUBLAS_STATUS_SUCCESS)
     {
       throw cusp::runtime_exception("cublasCreate failed");
     }
+
+    cusp::cublas::execution_policy cublas(handle);
 
     Array x(4);
     Array y(4);
@@ -78,7 +79,7 @@ void TestCUBLASaxpy(void)
     x[3] = -3.0f;
     y[3] =  5.0f;
 
-    cusp::blas::axpy(cublas.with_cublas(handle), x, y, 2.0f);
+    cusp::blas::axpy(cublas, x, y, 2.0f);
 
     ASSERT_EQUAL(y[0],  14.0);
     ASSERT_EQUAL(y[1],   8.0);
@@ -88,12 +89,17 @@ void TestCUBLASaxpy(void)
     View view_x(x);
     View view_y(y);
 
-    cusp::blas::axpy(cublas.with_cublas(handle), view_x, view_y, 2.0f);
+    cusp::blas::axpy(cublas, view_x, view_y, 2.0f);
 
     ASSERT_EQUAL(y[0],  28.0);
     ASSERT_EQUAL(y[1],  18.0);
     ASSERT_EQUAL(y[2],  16.0);
     ASSERT_EQUAL(y[3],  -7.0);
+
+    if(cublasDestroy(handle) != CUBLAS_STATUS_SUCCESS)
+    {
+      throw cusp::runtime_exception("cublasDestroy failed");
+    }
 }
 DECLARE_UNITTEST(TestCUBLASaxpy);
 
@@ -103,7 +109,14 @@ void TestCUBLAScopy(void)
     typedef typename cusp::array1d<float, MemorySpace>       Array;
     typedef typename cusp::array1d<float, MemorySpace>::view View;
 
-    cusp::cublas::execution_policy<MemorySpace> cublas;
+    cublasHandle_t handle;
+
+    if(cublasCreate(&handle) != CUBLAS_STATUS_SUCCESS)
+    {
+      throw cusp::runtime_exception("cublasCreate failed");
+    }
+
+    cusp::cublas::execution_policy cublas(handle);
 
     Array x(4);
 
@@ -125,10 +138,6 @@ void TestCUBLAScopy(void)
         cusp::blas::copy(cublas, view_x, view_y);
         ASSERT_EQUAL(x, y);
     }
-
-    // test size checking
-    cusp::array1d<float, MemorySpace> w(3);
-    ASSERT_THROWS(cusp::blas::copy(cublas, w, x), cusp::invalid_input_exception);
 }
 DECLARE_UNITTEST(TestCUBLAScopy);
 
@@ -138,7 +147,14 @@ void TestCUBLASdot(void)
     typedef typename cusp::array1d<float, MemorySpace>       Array;
     typedef typename cusp::array1d<float, MemorySpace>::view View;
 
-    cusp::cublas::execution_policy<MemorySpace> cublas;
+    cublasHandle_t handle;
+
+    if(cublasCreate(&handle) != CUBLAS_STATUS_SUCCESS)
+    {
+      throw cusp::runtime_exception("cublasCreate failed");
+    }
+
+    cusp::cublas::execution_policy cublas(handle);
 
     Array x(6);
     Array y(6);
@@ -161,10 +177,6 @@ void TestCUBLASdot(void)
     View view_x(x);
     View view_y(y);
     ASSERT_EQUAL(cusp::blas::dot(cublas, view_x, view_y), -21.0f);
-
-    // test size checking
-    cusp::array1d<float, MemorySpace> w(3);
-    ASSERT_THROWS(cusp::blas::dot(cublas, x, w), cusp::invalid_input_exception);
 }
 DECLARE_UNITTEST(TestCUBLASdot);
 
@@ -174,7 +186,14 @@ void TestCUBLASnrm2(void)
     typedef typename cusp::array1d<float, MemorySpace>       Array;
     typedef typename cusp::array1d<float, MemorySpace>::view View;
 
-    cusp::cublas::execution_policy<MemorySpace> cublas;
+    cublasHandle_t handle;
+
+    if(cublasCreate(&handle) != CUBLAS_STATUS_SUCCESS)
+    {
+      throw cusp::runtime_exception("cublasCreate failed");
+    }
+
+    cusp::cublas::execution_policy cublas(handle);
 
     Array x(6);
 
@@ -197,7 +216,14 @@ void TestCUBLASscal(void)
     typedef typename cusp::array1d<float, MemorySpace>       Array;
     typedef typename cusp::array1d<float, MemorySpace>::view View;
 
-    cusp::cublas::execution_policy<MemorySpace> cublas;
+    cublasHandle_t handle;
+
+    if(cublasCreate(&handle) != CUBLAS_STATUS_SUCCESS)
+    {
+      throw cusp::runtime_exception("cublasCreate failed");
+    }
+
+    cusp::cublas::execution_policy cublas(handle);
 
     Array x(6);
 

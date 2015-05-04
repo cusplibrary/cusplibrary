@@ -16,10 +16,11 @@
 
 #pragma once
 
+#include <cublas_v2.h>
+
 #include <cusp/detail/config.h>
 #include <cusp/blas/blas_policy.h>
 
-#include <cublas_v2.h>
 #include <thrust/system/cuda/detail/execution_policy.h>
 
 namespace cusp
@@ -28,47 +29,45 @@ namespace blas
 {
 namespace cublas
 {
-namespace detail
-{
 
-template<typename DerivedPolicy>
 class execution_policy
-  : public thrust::system::cuda::detail::execution_policy<DerivedPolicy>
+  : public thrust::system::cuda::detail::execution_policy<execution_policy>
 {
   public:
 
-    execution_policy<DerivedPolicy> with_cublas(const cublasHandle_t &h) const
+    execution_policy(void) {}
+
+    execution_policy(const cublasHandle_t& handle)
+      : handle(handle)
+    {}
+
+    thrust::system::cuda::detail::execution_policy<execution_policy>
+    with_cublas(const cublasHandle_t &h) const
     {
       // create a copy of *this to return
       // make sure it is the derived type
-      execution_policy<DerivedPolicy> result = *this;
+      execution_policy result = *this;
 
       // change the result's cublas handle to h
-      result.set_cublas_handle(h);
+      result.set_handle(h);
 
       return result;
     }
 
-    inline cublasHandle_t handle(void)
+    inline cublasHandle_t get_handle(void)
     {
-      return cublasHandle;
+      return handle;
     }
 
   private:
 
-    __host__ __device__
-    inline void set_cublas_handle(const cublasHandle_t &h)
+    inline void set_handle(const cublasHandle_t &h)
     {
-      cublasHandle = h;
+      handle = h;
     }
 
-    cublasHandle_t cublasHandle;
+    cublasHandle_t handle;
 };
-
-} // end detail
-
-// alias execution_policy and tag here
-using cusp::blas::cublas::detail::execution_policy;
 
 } // end cublas
 } // end blas

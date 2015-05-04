@@ -50,25 +50,26 @@
 
 #define CUSP_CUBLAS_AMAX(T,V,name)                                                            \
   cublasStatus_t amax( cublasHandle_t handle,                                                 \
-                       const int n, const T* X, const int incX, int* result )                 \
+                       const int n, const T* X, const int incX, int& result )                 \
   {                                                                                           \
-    return cublasI##name##amax(handle, n, (const V*) X, incX, result);                        \
+    return cublasI##name##amax(handle, n, (const V*) X, incX, &result);                       \
   }
 
 #define CUSP_CUBLAS_ASUM(T,V,name)                                                            \
   cublasStatus_t asum( cublasHandle_t handle,                                                 \
-                       const int n, const T* X, const int incX, T* result )                   \
+                       const int n, const T* X, const int incX, T& result )                   \
   {                                                                                           \
     typedef typename cusp::detail::norm_type<T>::type Real;                                   \
-    return cublas##name##asum(handle, n, (const V*) X, incX, (Real*) result);                 \
+    return cublas##name##asum(handle, n, (const V*) X, incX, (Real*) &result);                \
   }
 
 #define CUSP_CUBLAS_AXPY(T,V,name)                                                            \
   cublasStatus_t axpy( cublasHandle_t handle,                                                 \
-                       const int n, const T alpha, const T* X, const int incX,                \
+                       const int n, const T& alpha, const T* X, const int incX,               \
                        T* Y, const int incY )                                                 \
   {                                                                                           \
-    return cublas##name##axpy(handle, n, (const V*) &alpha, (const V*) X, incX, (V*) Y, incY);\
+    return cublas##name##axpy(handle, n, (const V*) &alpha, (const V*) X, incX,               \
+                              (V*) Y, incY);                                                  \
   }
 
 #define CUSP_CUBLAS_COPY(T,V,name)                                                            \
@@ -81,33 +82,33 @@
 #define CUSP_CUBLAS_DOT(T,V,name)                                                             \
   cublasStatus_t dot( cublasHandle_t handle,                                                  \
                       const int n, const T* X, const int incX, const T* Y, const int incY,    \
-                      T* result )                                                             \
+                      T& result )                                                             \
   {                                                                                           \
-    return cublas##name##dot(handle, n, (const V*) X, incX, (const V*) Y, incY, result);      \
+    return cublas##name##dot(handle, n, (const V*) X, incX, (const V*) Y, incY, &result);     \
   }
 
 #define CUSP_CUBLAS_DOTC(T,V,name)                                                            \
   cublasStatus_t dotc( cublasHandle_t handle,                                                 \
                        const int n, const T* X, const int incX, const T* Y,                   \
-                       const int incY, T* ret )                                               \
+                       const int incY, T& ret )                                               \
   {                                                                                           \
-    return cublas##name##dotc(handle, n, (const V*) X, incX, (const V*) Y, incY, (V*) ret);   \
+    return cublas##name##dotc(handle, n, (const V*) X, incX, (const V*) Y, incY, (V*) &ret);  \
   }
 
 #define CUSP_CUBLAS_DOTU(T,V,name)                                                            \
   cublasStatus_t dotu( cublasHandle_t handle,                                                 \
                        const int n, const T* X, const int incX, const T* Y,                   \
-                       const int incY, T* ret )                                               \
+                       const int incY, T& ret )                                               \
   {                                                                                           \
-    return cublas##name##dotu(handle, n, (const V*) X, incX, (const V*) Y, incY, (V*) ret);   \
+    return cublas##name##dotu(handle, n, (const V*) X, incX, (const V*) Y, incY, (V*) &ret);  \
   }
 
 #define CUSP_CUBLAS_NRM2(T,V,name)                                                            \
   cublasStatus_t nrm2( cublasHandle_t handle,                                                 \
-      const int n, const T* X, const int incX,                                                \
-      typename cusp::detail::norm_type<T>::type* result)                                      \
+                       const int n, const T* X, const int incX,                               \
+                       typename cusp::detail::norm_type<T>::type& result)                     \
   {                                                                                           \
-    return cublas##name##nrm2(handle, n, (const V*) X, incX, result);                         \
+    return cublas##name##nrm2(handle, n, (const V*) X, incX, &result);                        \
   }
 
 #define CUSP_CUBLAS_SCAL(T,V,name)                                                            \

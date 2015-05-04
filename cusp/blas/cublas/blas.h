@@ -31,11 +31,10 @@ namespace blas
 namespace cublas
 {
 
-template <typename DerivedPolicy,
-          typename Array1,
+template <typename Array1,
           typename Array2,
           typename ScalarType>
-void axpy(cublas::execution_policy<DerivedPolicy>& exec,
+void axpy(cublas::execution_policy& exec,
           const Array1& x,
                 Array2& y,
           const ScalarType alpha)
@@ -47,17 +46,35 @@ void axpy(cublas::execution_policy<DerivedPolicy>& exec,
     const ValueType* x_p = thrust::raw_pointer_cast(&x[0]);
     ValueType* y_p = thrust::raw_pointer_cast(&y[0]);
 
-    if(cublas::detail::axpy(exec.handle(), n, alpha, x_p, 1, y_p, 1) != CUBLAS_STATUS_SUCCESS)
+    if(cublas::detail::axpy(exec.get_handle(), n, ValueType(alpha), x_p, 1, y_p, 1) != CUBLAS_STATUS_SUCCESS)
     {
         throw cusp::runtime_exception("CUBLAS axpy failed!");
     }
 }
 
-template <typename DerivedPolicy,
-          typename Array1,
+template <typename Array1,
+          typename Array2>
+void copy(cublas::execution_policy& exec,
+          const Array1& x,
+                Array2& y)
+{
+    typedef typename Array2::value_type ValueType;
+
+    int n = y.size();
+
+    const ValueType* x_p = thrust::raw_pointer_cast(&x[0]);
+    ValueType* y_p = thrust::raw_pointer_cast(&y[0]);
+
+    if(cublas::detail::copy(exec.get_handle(), n, x_p, 1, y_p, 1) != CUBLAS_STATUS_SUCCESS)
+    {
+        throw cusp::runtime_exception("CUBLAS copy failed!");
+    }
+}
+
+template <typename Array1,
           typename Array2>
 typename Array1::value_type
-dot(cublas::execution_policy<DerivedPolicy>& exec,
+dot(cublas::execution_policy& exec,
     const Array1& x,
     const Array2& y)
 {
@@ -70,7 +87,7 @@ dot(cublas::execution_policy<DerivedPolicy>& exec,
 
     ValueType result;
 
-    if(cublas::detail::dot(exec.handle(), n, x_p, 1, y_p, 1, &result) != CUBLAS_STATUS_SUCCESS)
+    if(cublas::detail::dot(exec.get_handle(), n, x_p, 1, y_p, 1, result) != CUBLAS_STATUS_SUCCESS)
     {
         throw cusp::runtime_exception("CUBLAS dot failed!");
     }
@@ -78,11 +95,10 @@ dot(cublas::execution_policy<DerivedPolicy>& exec,
     return result;
 }
 
-template <typename DerivedPolicy,
-          typename Array1,
+template <typename Array1,
           typename Array2>
 typename Array1::value_type
-dotc(cublas::execution_policy<DerivedPolicy>& exec,
+dotc(cublas::execution_policy& exec,
      const Array1& x,
      const Array2& y)
 {
@@ -95,7 +111,7 @@ dotc(cublas::execution_policy<DerivedPolicy>& exec,
 
     ValueType result;
 
-    if(cublas::detail::dotc(exec.handle(), n, x_p, 1, y_p, 1, &result) != CUBLAS_STATUS_SUCCESS)
+    if(cublas::detail::dotc(exec.get_handle(), n, x_p, 1, y_p, 1, &result) != CUBLAS_STATUS_SUCCESS)
     {
         throw cusp::runtime_exception("CUBLAS dotc failed!");
     }
@@ -103,10 +119,9 @@ dotc(cublas::execution_policy<DerivedPolicy>& exec,
     return result;
 }
 
-template <typename DerivedPolicy,
-          typename Array>
+template <typename Array>
 typename cusp::detail::norm_type<typename Array::value_type>::type
-nrm1(cublas::execution_policy<DerivedPolicy>& exec,
+nrm1(cublas::execution_policy& exec,
      const Array& x)
 {
     typedef typename Array::value_type ValueType;
@@ -118,7 +133,7 @@ nrm1(cublas::execution_policy<DerivedPolicy>& exec,
 
     ResultType result;
 
-    if(cublas::detail::asum(exec.handle(), n, x_p, 1, &result) != CUBLAS_STATUS_SUCCESS)
+    if(cublas::detail::asum(exec.get_handle(), n, x_p, 1, &result) != CUBLAS_STATUS_SUCCESS)
     {
         throw cusp::runtime_exception("CUBLAS asum failed!");
     }
@@ -126,10 +141,9 @@ nrm1(cublas::execution_policy<DerivedPolicy>& exec,
     return result;
 }
 
-template <typename DerivedPolicy,
-          typename Array>
+template <typename Array>
 typename cusp::detail::norm_type<typename Array::value_type>::type
-nrm2(cublas::execution_policy<DerivedPolicy>& exec,
+nrm2(cublas::execution_policy& exec,
      const Array& x)
 {
     typedef typename Array::value_type ValueType;
@@ -141,7 +155,7 @@ nrm2(cublas::execution_policy<DerivedPolicy>& exec,
 
     ResultType result;
 
-    if(cublas::detail::nrm2(exec.handle(), n, x_p, 1, &result) != CUBLAS_STATUS_SUCCESS)
+    if(cublas::detail::nrm2(exec.get_handle(), n, x_p, 1, result) != CUBLAS_STATUS_SUCCESS)
     {
         throw cusp::runtime_exception("CUBLAS nrm2 failed!");
     }
@@ -149,10 +163,9 @@ nrm2(cublas::execution_policy<DerivedPolicy>& exec,
     return result;
 }
 
-template <typename DerivedPolicy,
-          typename Array>
+template <typename Array>
 typename Array::value_type
-nrmmax(cublas::execution_policy<DerivedPolicy>& exec,
+nrmmax(cublas::execution_policy& exec,
        const Array& x)
 {
     typedef typename Array::value_type ValueType;
@@ -163,7 +176,7 @@ nrmmax(cublas::execution_policy<DerivedPolicy>& exec,
 
     const ValueType* x_p = thrust::raw_pointer_cast(&x[0]);
 
-    if(cublas::detail::amax(exec.handle(), n, x_p, 1, &index) != CUBLAS_STATUS_SUCCESS)
+    if(cublas::detail::amax(exec.get_handle(), n, x_p, 1, &index) != CUBLAS_STATUS_SUCCESS)
     {
         throw cusp::runtime_exception("CUBLAS amax failed!");
     }
@@ -171,10 +184,9 @@ nrmmax(cublas::execution_policy<DerivedPolicy>& exec,
     return x[index-1];
 }
 
-template <typename DerivedPolicy,
-          typename Array,
+template <typename Array,
           typename ScalarType>
-void scal(cublas::execution_policy<DerivedPolicy>& exec,
+void scal(cublas::execution_policy& exec,
           Array& x,
           const ScalarType alpha)
 {
@@ -184,17 +196,16 @@ void scal(cublas::execution_policy<DerivedPolicy>& exec,
 
     ValueType* x_p = thrust::raw_pointer_cast(&x[0]);
 
-    if(cublas::detail::scal(exec.handle(), n, &alpha, x_p, 1) != CUBLAS_STATUS_SUCCESS)
+    if(cublas::detail::scal(exec.get_handle(), n, alpha, x_p, 1) != CUBLAS_STATUS_SUCCESS)
     {
         throw cusp::runtime_exception("CUBLAS scal failed!");
     }
 }
 
-template<typename DerivedPolicy,
-         typename Array2d1,
+template<typename Array2d1,
          typename Array1d1,
          typename Array1d2>
-void gemv(cublas::execution_policy<DerivedPolicy>& exec,
+void gemv(cublas::execution_policy& exec,
           const Array2d1& A,
           const Array1d1& x,
           Array1d2& y)
@@ -215,18 +226,17 @@ void gemv(cublas::execution_policy<DerivedPolicy>& exec,
 
     cublasStatus_t result;
 
-    result = cublas::detail::gemv(exec.handle(), trans, m, n, &alpha,
+    result = cublas::detail::gemv(exec.get_handle(), trans, m, n, &alpha,
                                   A_p, m, x_p, 1, &beta, y_p, 1);
 
     if(result != CUBLAS_STATUS_SUCCESS)
         throw cusp::runtime_exception("CUBLAS gemv failed!");
 }
 
-template<typename DerivedPolicy,
-         typename Array2d1,
+template<typename Array2d1,
          typename Array2d2,
          typename Array2d3>
-void gemm(cublas::execution_policy<DerivedPolicy>& exec,
+void gemm(cublas::execution_policy& exec,
           const Array2d1& A,
           const Array2d2& B,
           Array2d3& C)
@@ -249,7 +259,7 @@ void gemm(cublas::execution_policy<DerivedPolicy>& exec,
 
     cublasStatus_t result;
 
-    result = cublas::detail::gemm(exec.handle(), transa, transb,
+    result = cublas::detail::gemm(exec.get_handle(), transa, transb,
                                   m, n, k, &alpha, A_p, m,
                                   B_p, k, &beta, C_p, m);
 
@@ -258,9 +268,6 @@ void gemm(cublas::execution_policy<DerivedPolicy>& exec,
 }
 
 } // end namespace cublas
-
-using cublas::axpy;
-
 } // end namespace blas
 } // end namespace cusp
 

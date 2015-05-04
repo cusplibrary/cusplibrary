@@ -247,7 +247,7 @@ void copy(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 
     cusp::assert_same_dimensions(x, y);
 
-    copy(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), x.begin(), x.end(), y.begin());
+    copy(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), x, y);
 }
 
 template <typename Array1,

@@ -25,16 +25,10 @@ namespace blas
 {
 namespace cblas
 {
-// put the canonical tag in the same ns as the backend's entry points
-namespace detail
-{
 
-template<typename DerivedPolicy> struct execution_policy {};
-
-} // end detail
-
-// alias execution_policy and tag here
-using cusp::blas::cblas::detail::execution_policy;
+class execution_policy
+  : public thrust::system::cpp::detail::execution_policy<execution_policy>
+{};
 
 } // end cblas
 } // end blas
