@@ -402,7 +402,7 @@ public:
           row_indices(matrix.row_indices),
           column_indices(matrix.column_indices),
           values(matrix.values),
-          indices(indices) {}
+          indices(matrix.indices) {}
 
     /*! Construct a \p coo_matrix_view from a existing const \p coo_matrix.
      *
@@ -413,7 +413,7 @@ public:
           row_indices(matrix.row_indices),
           column_indices(matrix.column_indices),
           values(matrix.values),
-          indices(indices) {}
+          indices(matrix.indices) {}
 
     /*! Construct a \p coo_matrix_view from a existing matrix in another
      * format.
