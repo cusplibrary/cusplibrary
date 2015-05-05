@@ -31,6 +31,47 @@ namespace blas
 namespace cublas
 {
 
+template <typename Array>
+int amax(cublas::execution_policy& exec,
+         const Array& x)
+{
+    typedef typename Array::value_type ValueType;
+
+    int n = x.size();
+
+    const ValueType* x_p = thrust::raw_pointer_cast(&x[0]);
+
+    int result;
+
+    if(cublas::detail::amax(exec.get_handle(), n, x_p, 1, result) != CUBLAS_STATUS_SUCCESS)
+    {
+        throw cusp::runtime_exception("CUBLAS amax failed!");
+    }
+
+    return result - 1;
+}
+
+template <typename Array>
+typename Array::value_type
+asum(cublas::execution_policy& exec,
+     const Array& x)
+{
+    typedef typename Array::value_type ValueType;
+
+    int n = x.size();
+
+    const ValueType* x_p = thrust::raw_pointer_cast(&x[0]);
+
+    ValueType result;
+
+    if(cublas::detail::asum(exec.get_handle(), n, x_p, 1, result) != CUBLAS_STATUS_SUCCESS)
+    {
+        throw cusp::runtime_exception("CUBLAS asum failed!");
+    }
+
+    return result;
+}
+
 template <typename Array1,
           typename Array2,
           typename ScalarType>
@@ -121,28 +162,6 @@ dotc(cublas::execution_policy& exec,
 
 template <typename Array>
 typename cusp::detail::norm_type<typename Array::value_type>::type
-nrm1(cublas::execution_policy& exec,
-     const Array& x)
-{
-    typedef typename Array::value_type ValueType;
-    typedef typename cusp::detail::norm_type<ValueType>::type ResultType;
-
-    int n = x.size();
-
-    const ValueType* x_p = thrust::raw_pointer_cast(&x[0]);
-
-    ResultType result;
-
-    if(cublas::detail::asum(exec.get_handle(), n, x_p, 1, &result) != CUBLAS_STATUS_SUCCESS)
-    {
-        throw cusp::runtime_exception("CUBLAS asum failed!");
-    }
-
-    return result;
-}
-
-template <typename Array>
-typename cusp::detail::norm_type<typename Array::value_type>::type
 nrm2(cublas::execution_policy& exec,
      const Array& x)
 {
@@ -163,27 +182,6 @@ nrm2(cublas::execution_policy& exec,
     return result;
 }
 
-template <typename Array>
-typename Array::value_type
-nrmmax(cublas::execution_policy& exec,
-       const Array& x)
-{
-    typedef typename Array::value_type ValueType;
-    typedef typename cusp::detail::norm_type<ValueType>::type ResultType;
-
-    int index;
-    int n = x.size();
-
-    const ValueType* x_p = thrust::raw_pointer_cast(&x[0]);
-
-    if(cublas::detail::amax(exec.get_handle(), n, x_p, 1, &index) != CUBLAS_STATUS_SUCCESS)
-    {
-        throw cusp::runtime_exception("CUBLAS amax failed!");
-    }
-
-    return x[index-1];
-}
-
 template <typename Array,
           typename ScalarType>
 void scal(cublas::execution_policy& exec,
@@ -199,6 +197,25 @@ void scal(cublas::execution_policy& exec,
     if(cublas::detail::scal(exec.get_handle(), n, alpha, x_p, 1) != CUBLAS_STATUS_SUCCESS)
     {
         throw cusp::runtime_exception("CUBLAS scal failed!");
+    }
+}
+
+template <typename Array1,
+          typename Array2>
+void swap(cublas::execution_policy& exec,
+          Array1& x,
+          Array2& y)
+{
+    typedef typename Array1::value_type ValueType;
+
+    int n = x.size();
+
+    ValueType* x_p = thrust::raw_pointer_cast(&x[0]);
+    ValueType* y_p = thrust::raw_pointer_cast(&y[0]);
+
+    if(cublas::detail::swap(exec.get_handle(), n, x_p, 1, y_p, 1) != CUBLAS_STATUS_SUCCESS)
+    {
+        throw cusp::runtime_exception("CUBLAS swap failed!");
     }
 }
 
@@ -265,6 +282,49 @@ void gemm(cublas::execution_policy& exec,
 
     if(result != CUBLAS_STATUS_SUCCESS)
         throw cusp::runtime_exception("CUBLAS gemm failed!");
+}
+
+template <typename Array>
+typename cusp::detail::norm_type<typename Array::value_type>::type
+nrm1(cublas::execution_policy& exec,
+     const Array& x)
+{
+    typedef typename Array::value_type ValueType;
+    typedef typename cusp::detail::norm_type<ValueType>::type ResultType;
+
+    int n = x.size();
+
+    const ValueType* x_p = thrust::raw_pointer_cast(&x[0]);
+
+    ResultType result;
+
+    if(cublas::detail::asum(exec.get_handle(), n, x_p, 1, &result) != CUBLAS_STATUS_SUCCESS)
+    {
+        throw cusp::runtime_exception("CUBLAS asum failed!");
+    }
+
+    return result;
+}
+
+template <typename Array>
+typename Array::value_type
+nrmmax(cublas::execution_policy& exec,
+       const Array& x)
+{
+    typedef typename Array::value_type ValueType;
+    typedef typename cusp::detail::norm_type<ValueType>::type ResultType;
+
+    int index;
+    int n = x.size();
+
+    const ValueType* x_p = thrust::raw_pointer_cast(&x[0]);
+
+    if(cublas::detail::amax(exec.get_handle(), n, x_p, 1, &index) != CUBLAS_STATUS_SUCCESS)
+    {
+        throw cusp::runtime_exception("CUBLAS amax failed!");
+    }
+
+    return x[index-1];
 }
 
 } // end namespace cublas

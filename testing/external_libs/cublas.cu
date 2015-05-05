@@ -10,7 +10,14 @@ void TestCUBLASamax(void)
     typedef typename cusp::array1d<float, MemorySpace>       Array;
     typedef typename cusp::array1d<float, MemorySpace>::view View;
 
-    cusp::cublas::execution_policy cublas;
+    cublasHandle_t handle;
+
+    if(cublasCreate(&handle) != CUBLAS_STATUS_SUCCESS)
+    {
+      throw cusp::runtime_exception("cublasCreate failed");
+    }
+
+    cusp::cublas::execution_policy cublas(handle);
 
     Array x(6);
     View view_x(x);
@@ -22,9 +29,9 @@ void TestCUBLASamax(void)
     x[4] =  0.0f;
     x[5] =  1.0f;
 
-    /* ASSERT_EQUAL(cusp::blas::amax(cublas,x), 0); */
+    ASSERT_EQUAL(cusp::blas::amax(cublas,x), 0);
 
-    /* ASSERT_EQUAL(cusp::blas::amax(cublas,view_x), 0); */
+    ASSERT_EQUAL(cusp::blas::amax(cublas,view_x), 0);
 }
 DECLARE_UNITTEST(TestCUBLASamax);
 
@@ -34,7 +41,14 @@ void TestCUBLASasum(void)
     typedef typename cusp::array1d<float, MemorySpace>       Array;
     typedef typename cusp::array1d<float, MemorySpace>::view View;
 
-    cusp::cublas::execution_policy cublas;
+    cublasHandle_t handle;
+
+    if(cublasCreate(&handle) != CUBLAS_STATUS_SUCCESS)
+    {
+      throw cusp::runtime_exception("cublasCreate failed");
+    }
+
+    cusp::cublas::execution_policy cublas(handle);
 
     Array x(6);
     View view_x(x);
@@ -46,9 +60,9 @@ void TestCUBLASasum(void)
     x[4] =  0.0f;
     x[5] =  1.0f;
 
-    /* ASSERT_EQUAL(cusp::blas::asum(cublas,x), 20.0f); */
+    ASSERT_EQUAL(cusp::blas::asum(cublas,x), 20.0f);
 
-    /* ASSERT_EQUAL(cusp::blas::asum(cublas,view_x), 20.0f); */
+    ASSERT_EQUAL(cusp::blas::asum(cublas,view_x), 20.0f);
 }
 DECLARE_UNITTEST(TestCUBLASasum);
 

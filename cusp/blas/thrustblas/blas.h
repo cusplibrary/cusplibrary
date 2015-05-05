@@ -39,6 +39,40 @@ namespace thrustblas
 {
 
 template <typename DerivedPolicy,
+          typename Array>
+int amax(thrust::execution_policy<DerivedPolicy>& exec,
+         const Array& x)
+{
+    typedef typename Array::value_type ValueType;
+
+    detail::absolute<ValueType> unary_op;
+
+    return thrust::max_element(exec,
+                               thrust::make_transform_iterator(x.begin(), unary_op),
+                               thrust::make_transform_iterator(x.end(), unary_op))
+           - x.begin();
+}
+
+template <typename DerivedPolicy,
+          typename Array>
+typename cusp::detail::norm_type<typename Array::value_type>::type
+asum(thrust::execution_policy<DerivedPolicy>& exec,
+     const Array& x)
+{
+    using thrust::abs;
+    using std::abs;
+
+    typedef typename Array::value_type ValueType;
+
+    detail::absolute<ValueType> unary_op;
+    thrust::plus<ValueType>     binary_op;
+
+    ValueType init = 0;
+
+    return abs(thrust::transform_reduce(exec, x.begin(), x.end(), unary_op, init, binary_op));
+}
+
+template <typename DerivedPolicy,
           typename Array1,
           typename Array2,
           typename ScalarType>

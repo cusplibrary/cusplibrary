@@ -40,6 +40,32 @@ namespace blas
 
 /*! \cond */
 template <typename DerivedPolicy,
+          typename Array>
+int amax(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+         const Array& x);
+/*! \endcond */
+
+/*! \p amax : index of the largest element in a array
+ */
+template <typename Array>
+int amax(const Array& x);
+
+/*! \cond */
+template <typename DerivedPolicy,
+          typename Array>
+typename cusp::detail::norm_type<typename Array::value_type>::type
+asum(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+     const Array& x);
+/*! \endcond */
+
+/*! \p asum : sum of absolute value of all entries in array
+ */
+template <typename Array>
+typename cusp::detail::norm_type<typename Array::value_type>::type
+asum(const Array& x);
+
+/*! \cond */
+template <typename DerivedPolicy,
           typename Array1,
           typename Array2,
           typename ScalarType>

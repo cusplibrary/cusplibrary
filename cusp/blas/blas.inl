@@ -30,6 +30,52 @@ namespace blas
 {
 
 template <typename DerivedPolicy,
+          typename Array>
+int amax(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+         const Array& x)
+{
+    using cusp::blas::thrustblas::amax;
+
+    return amax(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), x);
+}
+
+template <typename Array>
+int amax(const Array& x)
+{
+    using thrust::system::detail::generic::select_system;
+
+    typedef typename Array::memory_space System;
+
+    System system;
+
+    return cusp::blas::amax(select_system(system), x);
+}
+
+template <typename DerivedPolicy,
+          typename Array>
+typename cusp::detail::norm_type<typename Array::value_type>::type
+asum(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+     const Array& x)
+{
+    using cusp::blas::thrustblas::asum;
+
+    return asum(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), x);
+}
+
+template <typename Array>
+typename cusp::detail::norm_type<typename Array::value_type>::type
+asum(const Array& x)
+{
+    using thrust::system::detail::generic::select_system;
+
+    typedef typename Array::memory_space System;
+
+    System system;
+
+    return cusp::blas::asum(select_system(system), x);
+}
+
+template <typename DerivedPolicy,
           typename Array1,
           typename Array2,
           typename ScalarType>
