@@ -32,6 +32,11 @@ void TestCUBLASamax(void)
     ASSERT_EQUAL(cusp::blas::amax(cublas,x), 0);
 
     ASSERT_EQUAL(cusp::blas::amax(cublas,view_x), 0);
+
+    if(cublasDestroy(handle) != CUBLAS_STATUS_SUCCESS)
+    {
+      throw cusp::runtime_exception("cublasDestroy failed");
+    }
 }
 DECLARE_UNITTEST(TestCUBLASamax);
 
@@ -63,6 +68,11 @@ void TestCUBLASasum(void)
     ASSERT_EQUAL(cusp::blas::asum(cublas,x), 20.0f);
 
     ASSERT_EQUAL(cusp::blas::asum(cublas,view_x), 20.0f);
+
+    if(cublasDestroy(handle) != CUBLAS_STATUS_SUCCESS)
+    {
+      throw cusp::runtime_exception("cublasDestroy failed");
+    }
 }
 DECLARE_UNITTEST(TestCUBLASasum);
 
@@ -152,6 +162,11 @@ void TestCUBLAScopy(void)
         cusp::blas::copy(cublas, view_x, view_y);
         ASSERT_EQUAL(x, y);
     }
+
+    if(cublasDestroy(handle) != CUBLAS_STATUS_SUCCESS)
+    {
+      throw cusp::runtime_exception("cublasDestroy failed");
+    }
 }
 DECLARE_UNITTEST(TestCUBLAScopy);
 
@@ -191,6 +206,11 @@ void TestCUBLASdot(void)
     View view_x(x);
     View view_y(y);
     ASSERT_EQUAL(cusp::blas::dot(cublas, view_x, view_y), -21.0f);
+
+    if(cublasDestroy(handle) != CUBLAS_STATUS_SUCCESS)
+    {
+      throw cusp::runtime_exception("cublasDestroy failed");
+    }
 }
 DECLARE_UNITTEST(TestCUBLASdot);
 
@@ -266,6 +286,61 @@ void TestCUBLASscal(void)
     ASSERT_EQUAL(x[3], -24.0);
     ASSERT_EQUAL(x[4],   0.0);
     ASSERT_EQUAL(x[5],  32.0);
+
+    if(cublasDestroy(handle) != CUBLAS_STATUS_SUCCESS)
+    {
+      throw cusp::runtime_exception("cublasDestroy failed");
+    }
 }
 DECLARE_UNITTEST(TestCUBLASscal);
+
+void TestCUBLASgemv(void)
+{
+    typedef cusp::device_memory MemorySpace;
+    typedef typename cusp::array2d<float, MemorySpace>       Array2d;
+    typedef typename cusp::array1d<float, MemorySpace>       Array1d;
+
+    cublasHandle_t handle;
+
+    if(cublasCreate(&handle) != CUBLAS_STATUS_SUCCESS)
+    {
+      throw cusp::runtime_exception("cublasCreate failed");
+    }
+
+    cusp::cublas::execution_policy cublas(handle);
+
+    Array2d A;
+    Array1d x(9);
+    Array1d y(9);
+
+    cusp::gallery::poisson5pt(A, 3, 3);
+
+    x[0] =  7.0f;
+    x[1] =  5.0f;
+    x[2] =  4.0f;
+    x[3] = -3.0f;
+    x[4] =  0.0f;
+    x[5] =  4.0f;
+    x[6] = -3.0f;
+    x[7] =  0.0f;
+    x[8] =  4.0f;
+
+    cusp::blas::gemv(cublas, A, x, y);
+
+    ASSERT_EQUAL(y[0],  26.0);
+    ASSERT_EQUAL(y[1],   9.0);
+    ASSERT_EQUAL(y[2],   7.0);
+    ASSERT_EQUAL(y[3], -16.0);
+    ASSERT_EQUAL(y[4],  -6.0);
+    ASSERT_EQUAL(y[5],   8.0);
+    ASSERT_EQUAL(y[6],  -9.0);
+    ASSERT_EQUAL(y[7],  -1.0);
+    ASSERT_EQUAL(y[8],  12.0);
+
+    if(cublasDestroy(handle) != CUBLAS_STATUS_SUCCESS)
+    {
+      throw cusp::runtime_exception("cublasDestroy failed");
+    }
+}
+DECLARE_UNITTEST(TestCUBLASgemv);
 

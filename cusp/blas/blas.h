@@ -82,7 +82,7 @@ template <typename Array1,
           typename ScalarType>
 void axpy(const Array1& x,
                 Array2& y,
-                ScalarType alpha);
+          const ScalarType alpha);
 
 /*! \cond */
 template <typename DerivedPolicy,
@@ -284,7 +284,7 @@ template <typename DerivedPolicy,
           typename ScalarType>
 void scal(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
           Array& x,
-          ScalarType alpha);
+          const ScalarType alpha);
 /*! \endcond */
 
 /*! \p scal : scale vector (x[i] = alpha * x[i])
@@ -292,7 +292,7 @@ void scal(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 template <typename Array,
           typename ScalarType>
 void scal(Array& x,
-          ScalarType alpha);
+          const ScalarType alpha);
 
 /*! \cond */
 template <typename DerivedPolicy,
@@ -328,7 +328,7 @@ template<typename Array2d1,
          typename Array2d3>
 void gemm(const Array2d1& A,
           const Array2d2& B,
-          Array2d3& C);
+                Array2d3& C);
 /*! \}
  */
 

@@ -206,8 +206,7 @@ template<typename Array1d1,
 void ger(cblas::execution_policy& exec,
          const Array1d1& x,
          const Array1d2& y,
-               Array2d1& A,
-               ScalarType alpha)
+               Array2d1& A)
 {
     typedef typename Array2d1::value_type ValueType;
 
@@ -217,12 +216,14 @@ void ger(cblas::execution_policy& exec,
     int n = A.num_cols;
     int lda = A.pitch;
 
+    ValueType alpha = 1.0;
+
     const ValueType * x_p = thrust::raw_pointer_cast(&x[0]);
     const ValueType * y_p = thrust::raw_pointer_cast(&y[0]);
     ValueType * A_p = thrust::raw_pointer_cast(&A(0,0));
 
-    cblas::detail::ger(order, m, n, ValueType(alpha),
-                x_p, 1, y_p, 1, A_p, lda);
+    cblas::detail::ger(order, m, n, alpha,
+                       x_p, 1, y_p, 1, A_p, lda);
 }
 
 template<typename Array2d1,
@@ -253,12 +254,10 @@ void symv(cblas::execution_policy& exec,
 }
 
 template<typename Array1d,
-         typename Array2d,
-         typename ScalarType>
+         typename Array2d>
 void syr(cblas::execution_policy& exec,
          const Array1d& x,
-               Array2d& A,
-               ScalarType alpha)
+               Array2d& A)
 {
     typedef typename Array2d::value_type ValueType;
 
@@ -271,8 +270,10 @@ void syr(cblas::execution_policy& exec,
     const ValueType * x_p = thrust::raw_pointer_cast(&x[0]);
     ValueType * A_p = thrust::raw_pointer_cast(&A(0,0));
 
-    cblas::detail::syr(order, uplo, n, ValueType(alpha),
-                x_p, 1, A_p, lda);
+    ValueType alpha = 1.0;
+
+    cblas::detail::syr(order, uplo, n, alpha,
+                       x_p, 1, A_p, lda);
 }
 
 template<typename Array2d,

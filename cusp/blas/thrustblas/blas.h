@@ -94,7 +94,7 @@ template <typename DerivedPolicy,
           typename Array2>
 void copy(thrust::execution_policy<DerivedPolicy>& exec,
           const Array1& x,
-                Array2& y)
+          Array2& y)
 {
     thrust::copy(exec, x.begin(), x.end(), y.begin());
 }
@@ -182,7 +182,61 @@ void gemv(thrust::execution_policy<DerivedPolicy>& exec,
           const Array1d1& x,
                 Array1d2& y)
 {
-  throw cusp::not_implemented_exception("CUSP GEMV not implemented");
+    throw cusp::not_implemented_exception("CUSP GEMV not implemented");
+}
+
+template <typename DerivedPolicy,
+          typename Array1d1,
+          typename Array1d2,
+          typename Array2d1>
+void ger(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+         const Array1d1& x,
+         const Array1d2& y,
+               Array2d1& A)
+{
+    throw cusp::not_implemented_exception("CUSP GER not implemented");
+}
+
+template <typename DerivedPolicy,
+          typename Array2d1,
+          typename Array1d1,
+          typename Array1d2>
+void symv(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+          const Array2d1& A,
+          const Array1d1& x,
+                Array1d2& y)
+{
+    throw cusp::not_implemented_exception("CUSP SYMV not implemented");
+}
+
+template <typename DerivedPolicy,
+          typename Array1d,
+          typename Array2d>
+void syr(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+         const Array1d& x,
+               Array2d& A)
+{
+    throw cusp::not_implemented_exception("CUSP SYR not implemented");
+}
+
+template <typename DerivedPolicy,
+          typename Array2d,
+          typename Array1d>
+void trmv(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+          const Array2d& A,
+                Array1d& x)
+{
+    throw cusp::not_implemented_exception("CUSP TRMV not implemented");
+}
+
+template <typename DerivedPolicy,
+          typename Array2d,
+          typename Array1d>
+void trsv(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+          const Array2d& A,
+                Array1d& x)
+{
+    throw cusp::not_implemented_exception("CUSP TRSV not implemented");
 }
 
 template<typename DerivedPolicy,
@@ -194,7 +248,65 @@ void gemm(thrust::execution_policy<DerivedPolicy>& exec,
           const Array2d2& B,
                 Array2d3& C)
 {
-  throw cusp::not_implemented_exception("CUSP GEMM not implemented");
+    throw cusp::not_implemented_exception("CUSP GEMM not implemented");
+}
+
+template<typename DerivedPolicy,
+         typename Array2d1,
+         typename Array2d2,
+         typename Array2d3>
+void symm(thrust::execution_policy<DerivedPolicy>& exec,
+          const Array2d1& A,
+          const Array2d2& B,
+                Array2d3& C)
+{
+    throw cusp::not_implemented_exception("CUSP SYMM not implemented");
+}
+
+template <typename DerivedPolicy,
+          typename Array2d1,
+          typename Array2d2>
+void syrk(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+          const Array2d1& A,
+                Array2d2& B)
+{
+    throw cusp::not_implemented_exception("CUSP SYRK not implemented");
+}
+
+template<typename DerivedPolicy,
+         typename Array2d1,
+         typename Array2d2,
+         typename Array2d3>
+void syr2k(thrust::execution_policy<DerivedPolicy>& exec,
+           const Array2d1& A,
+           const Array2d2& B,
+                 Array2d3& C)
+{
+    throw cusp::not_implemented_exception("CUSP SYR2K not implemented");
+}
+
+template<typename DerivedPolicy,
+         typename Array2d1,
+         typename Array2d2,
+         typename Array2d3>
+void trmm(thrust::execution_policy<DerivedPolicy>& exec,
+          const Array2d1& A,
+          const Array2d2& B,
+                Array2d3& C)
+{
+    throw cusp::not_implemented_exception("CUSP TRMM not implemented");
+}
+
+template<typename DerivedPolicy,
+         typename Array2d1,
+         typename Array2d2,
+         typename Array2d3>
+void trsm(thrust::execution_policy<DerivedPolicy>& exec,
+          const Array2d1& A,
+          const Array2d2& B,
+                Array2d3& C)
+{
+    throw cusp::not_implemented_exception("CUSP TRSM not implemented");
 }
 
 template <typename DerivedPolicy,
@@ -235,4 +347,5 @@ nrmmax(thrust::execution_policy<DerivedPolicy>& exec,
 } // end namespace thrustblas
 } // end namespace blas
 } // end namespace cusp
+
 

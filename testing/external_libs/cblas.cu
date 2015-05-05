@@ -215,3 +215,41 @@ void TestCBLASscal(void)
 }
 DECLARE_UNITTEST(TestCBLASscal);
 
+void TestCBLASgemv(void)
+{
+    typedef cusp::host_memory MemorySpace;
+    typedef typename cusp::array2d<float, MemorySpace>       Array2d;
+    typedef typename cusp::array1d<float, MemorySpace>       Array1d;
+
+    cusp::cblas::execution_policy cblas;
+
+    Array2d A;
+    Array1d x(9);
+    Array1d y(9);
+
+    cusp::gallery::poisson5pt(A, 3, 3);
+
+    x[0] =  7.0f;
+    x[1] =  5.0f;
+    x[2] =  4.0f;
+    x[3] = -3.0f;
+    x[4] =  0.0f;
+    x[5] =  4.0f;
+    x[6] = -3.0f;
+    x[7] =  0.0f;
+    x[8] =  4.0f;
+
+    cusp::blas::gemv(cblas, A, x, y);
+
+    ASSERT_EQUAL(y[0],  26.0);
+    ASSERT_EQUAL(y[1],   9.0);
+    ASSERT_EQUAL(y[2],   7.0);
+    ASSERT_EQUAL(y[3], -16.0);
+    ASSERT_EQUAL(y[4],  -6.0);
+    ASSERT_EQUAL(y[5],   8.0);
+    ASSERT_EQUAL(y[6],  -9.0);
+    ASSERT_EQUAL(y[7],  -1.0);
+    ASSERT_EQUAL(y[8],  12.0);
+}
+DECLARE_UNITTEST(TestCBLASgemv);
+
