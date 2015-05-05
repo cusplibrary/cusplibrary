@@ -38,7 +38,7 @@ int amax(cblas::execution_policy& exec,
 
     const ValueType* x_p = thrust::raw_pointer_cast(&x[0]);
 
-    return detail::amax(n, x_p, 1);
+    return cblas::detail::amax(n, x_p, 1);
 }
 
 template <typename Array>
@@ -52,7 +52,7 @@ asum(cblas::execution_policy& exec,
 
     const ValueType* x_p = thrust::raw_pointer_cast(&x[0]);
 
-    return detail::asum(n, x_p, 1);
+    return cblas::detail::asum(n, x_p, 1);
 }
 
 template <typename Array1,
@@ -61,7 +61,7 @@ template <typename Array1,
 void axpy(cblas::execution_policy& exec,
           const Array1& x,
                 Array2& y,
-                ScalarType alpha)
+          const ScalarType alpha)
 {
     typedef typename Array1::value_type ValueType;
 
@@ -70,7 +70,7 @@ void axpy(cblas::execution_policy& exec,
     const ValueType* x_p = thrust::raw_pointer_cast(&x[0]);
     ValueType* y_p = thrust::raw_pointer_cast(&y[0]);
 
-    detail::axpy(n, ValueType(alpha), x_p, 1, y_p, 1);
+    cblas::detail::axpy(n, ValueType(alpha), x_p, 1, y_p, 1);
 }
 
 template <typename Array1,
@@ -86,7 +86,7 @@ void copy(cblas::execution_policy& exec,
     const ValueType* x_p = thrust::raw_pointer_cast(&x[0]);
     ValueType* y_p = thrust::raw_pointer_cast(&y[0]);
 
-    detail::copy(n, x_p, 1, y_p, 1);
+    cblas::detail::copy(n, x_p, 1, y_p, 1);
 }
 
 template <typename Array1,
@@ -103,7 +103,7 @@ dot(cblas::execution_policy& exec,
     const ValueType* x_p = thrust::raw_pointer_cast(&x[0]);
     const ValueType* y_p = thrust::raw_pointer_cast(&y[0]);
 
-    return detail::dot(n, x_p, 1, y_p, 1);
+    return cblas::detail::dot(n, x_p, 1, y_p, 1);
 }
 
 template <typename Array1,
@@ -122,7 +122,7 @@ dotc(cblas::execution_policy& exec,
 
     ValueType result;
 
-    // cblas::detail::dotc(n, x_p, 1, y_p, 1, &result);
+    // cblas::cblas::detail::dotc(n, x_p, 1, y_p, 1, &result);
 
     return result;
 }
@@ -138,7 +138,7 @@ nrm2(cblas::execution_policy& exec,
 
     const ValueType* x_p = thrust::raw_pointer_cast(&x[0]);
 
-    return detail::nrm2(n, x_p, 1);
+    return cblas::detail::nrm2(n, x_p, 1);
 }
 
 template <typename Array,
@@ -153,7 +153,7 @@ void scal(cblas::execution_policy& exec,
 
     ValueType* x_p = thrust::raw_pointer_cast(&x[0]);
 
-    detail::scal(n, ValueType(alpha), x_p, 1);
+    cblas::detail::scal(n, ValueType(alpha), x_p, 1);
 }
 
 template <typename Array1,
@@ -169,7 +169,7 @@ void swap(cblas::execution_policy& exec,
     ValueType* x_p = thrust::raw_pointer_cast(&x[0]);
     ValueType* y_p = thrust::raw_pointer_cast(&y[0]);
 
-    detail::swap(n, x_p, 1, y_p, 1);
+    cblas::detail::swap(n, x_p, 1, y_p, 1);
 }
 
 template<typename Array2d1,
@@ -195,7 +195,7 @@ void gemv(cblas::execution_policy& exec,
     const ValueType * x_p = thrust::raw_pointer_cast(&x[0]);
     ValueType * y_p = thrust::raw_pointer_cast(&y[0]);
 
-    detail::gemv(order, trans, m, n, alpha,
+    cblas::detail::gemv(order, trans, m, n, alpha,
                  A_p, m, x_p, 1, beta, y_p, 1);
 }
 
@@ -221,7 +221,7 @@ void ger(cblas::execution_policy& exec,
     const ValueType * y_p = thrust::raw_pointer_cast(&y[0]);
     ValueType * A_p = thrust::raw_pointer_cast(&A(0,0));
 
-    detail::ger(order, m, n, ValueType(alpha),
+    cblas::detail::ger(order, m, n, ValueType(alpha),
                 x_p, 1, y_p, 1, A_p, lda);
 }
 
@@ -248,7 +248,7 @@ void symv(cblas::execution_policy& exec,
     const ValueType * x_p = thrust::raw_pointer_cast(&x[0]);
     ValueType * y_p = thrust::raw_pointer_cast(&y[0]);
 
-    detail::symv(order, uplo, n, alpha,
+    cblas::detail::symv(order, uplo, n, alpha,
                  A_p, lda, x_p, 1, beta, y_p, 1);
 }
 
@@ -271,7 +271,7 @@ void syr(cblas::execution_policy& exec,
     const ValueType * x_p = thrust::raw_pointer_cast(&x[0]);
     ValueType * A_p = thrust::raw_pointer_cast(&A(0,0));
 
-    detail::syr(order, uplo, n, ValueType(alpha),
+    cblas::detail::syr(order, uplo, n, ValueType(alpha),
                 x_p, 1, A_p, lda);
 }
 
@@ -294,7 +294,7 @@ void trmv(cblas::execution_policy& exec,
     const ValueType * A_p = thrust::raw_pointer_cast(&A(0,0));
     ValueType * x_p = thrust::raw_pointer_cast(&x[0]);
 
-    detail::trmv(order, uplo, trans, diag, n,
+    cblas::detail::trmv(order, uplo, trans, diag, n,
                  A_p, lda, x_p, 1);
 }
 
@@ -317,7 +317,7 @@ void trsv(cblas::execution_policy& exec,
     const ValueType * A_p = thrust::raw_pointer_cast(&A(0,0));
     ValueType * x_p = thrust::raw_pointer_cast(&x[0]);
 
-    detail::trsv(order, uplo, trans, diag, n,
+    cblas::detail::trsv(order, uplo, trans, diag, n,
                  A_p, lda, x_p, 1);
 }
 
@@ -346,7 +346,7 @@ void gemm(cblas::execution_policy& exec,
     const ValueType * B_p = thrust::raw_pointer_cast(&B(0,0));
     ValueType * C_p = thrust::raw_pointer_cast(&C(0,0));
 
-    detail::gemm(order, transa, transb,
+    cblas::detail::gemm(order, transa, transb,
                  m, n, k, alpha, A_p, m,
                  B_p, k, beta, C_p, m);
 }
@@ -378,7 +378,7 @@ void symm(cblas::execution_policy& exec,
     const ValueType * B_p = thrust::raw_pointer_cast(&B(0,0));
     ValueType * C_p = thrust::raw_pointer_cast(&C(0,0));
 
-    detail::symm(order, side, uplo,
+    cblas::detail::symm(order, side, uplo,
                  m, n, alpha, A_p, lda,
                  B_p, ldb, beta, C_p, ldc);
 }
@@ -406,7 +406,7 @@ void syrk(cblas::execution_policy& exec,
     const ValueType * A_p = thrust::raw_pointer_cast(&A(0,0));
     ValueType * B_p = thrust::raw_pointer_cast(&B(0,0));
 
-    detail::syrk(order, uplo, trans,
+    cblas::detail::syrk(order, uplo, trans,
                  n, k, alpha, A_p, lda,
                  beta, B_p, ldb);
 }
@@ -438,7 +438,7 @@ void syr2k(cblas::execution_policy& exec,
     const ValueType * B_p = thrust::raw_pointer_cast(&B(0,0));
     ValueType * C_p = thrust::raw_pointer_cast(&C(0,0));
 
-    detail::syr2k(order, uplo, trans,
+    cblas::detail::syr2k(order, uplo, trans,
                   n, k, alpha, A_p, lda,
                   beta, B_p, ldb, C_p, ldc);
 }
@@ -468,7 +468,7 @@ void trmm(cblas::execution_policy& exec,
     const ValueType * A_p = thrust::raw_pointer_cast(&A(0,0));
     ValueType * B_p = thrust::raw_pointer_cast(&B(0,0));
 
-    detail::trmm(order, side, uplo, trans, diag,
+    cblas::detail::trmm(order, side, uplo, trans, diag,
                  m, n, alpha, A_p, lda, B_p, ldb);
 }
 
@@ -497,7 +497,7 @@ void trsm(cblas::execution_policy& exec,
     const ValueType * A_p = thrust::raw_pointer_cast(&A(0,0));
     ValueType * B_p = thrust::raw_pointer_cast(&B(0,0));
 
-    detail::trsm(order, side, uplo, trans, diag,
+    cblas::detail::trsm(order, side, uplo, trans, diag,
                  m, n, alpha, A_p, lda, B_p, ldb);
 }
 
@@ -512,7 +512,7 @@ nrm1(cblas::execution_policy& exec,
 
     const ValueType* x_p = thrust::raw_pointer_cast(&x[0]);
 
-    return detail::asum(n, x_p, 1);
+    return cblas::detail::asum(n, x_p, 1);
 }
 
 template <typename Array>

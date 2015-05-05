@@ -165,7 +165,7 @@
 #define CUSP_CUBLAS_TRMV(T,V,name)                                                            \
   cublasStatus_t trmv( cublasHandle_t handle, cublasFillMode_t uplo,                          \
                        cublasOperation_t trans, cublasDiagType_t diag,                        \
-                       int n, const T* A, int lda, const T* x, int incx)                      \
+                       int n, const T* A, int lda, T* x, int incx)                            \
 {                                                                                             \
     return cublas##name##trmv(handle, uplo, trans, diag, n,                                   \
                               (const V*) A, lda, (V*) x, incx);                               \
@@ -174,7 +174,7 @@
 #define CUSP_CUBLAS_TRSV(T,V,name)                                                            \
   cublasStatus_t trsv( cublasHandle_t handle, cublasFillMode_t uplo,                          \
                        cublasOperation_t trans, cublasDiagType_t diag,                        \
-                       int n, const T* A, int lda, const T* x, int incx)                      \
+                       int n, const T* A, int lda, T* x, int incx)                            \
 {                                                                                             \
     return cublas##name##trsv(handle, uplo, trans, diag, n,                                   \
                               (const V*) A, lda, (V*) x, incx);                               \
@@ -206,11 +206,11 @@
   cublasStatus_t syrk( cublasHandle_t handle,                                                 \
                        cublasFillMode_t uplo, cublasOperation_t trans,                        \
                        int n, int k, T alpha, const T* A, int lda,                            \
-                       T beta, T* C, int ldc)                                                 \
+                       T beta, T* B, int ldb)                                                 \
 {                                                                                             \
     return cublas##name##syrk(handle, uplo, trans, n, k,                                      \
                               (const V*) &alpha, (const V*) A, lda,                           \
-                              (const V*) &beta, (V*) C, ldc);                                 \
+                              (const V*) &beta, (V*) B, ldb);                                 \
 }
 
 #define CUSP_CUBLAS_SYR2K(T,V,name)                                                           \
