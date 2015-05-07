@@ -4,11 +4,11 @@
 #include <cusp/blas/cblas/blas.h>
 #include <cusp/blas/blas.h>
 
+template<typename ValueType>
 void TestCBLASamax(void)
 {
-    typedef cusp::host_memory MemorySpace;
-    typedef typename cusp::array1d<float, MemorySpace>       Array;
-    typedef typename cusp::array1d<float, MemorySpace>::view View;
+    typedef cusp::array1d<ValueType, cusp::host_memory>       Array;
+    typedef typename Array::view                              View;
 
     cusp::cblas::execution_policy cblas;
 
@@ -26,13 +26,13 @@ void TestCBLASamax(void)
 
     ASSERT_EQUAL(cusp::blas::amax(cblas,view_x), 0);
 }
-DECLARE_UNITTEST(TestCBLASamax);
+DECLARE_NUMERIC_UNITTEST(TestCBLASamax);
 
+template<typename ValueType>
 void TestCBLASasum(void)
 {
-    typedef cusp::host_memory MemorySpace;
-    typedef typename cusp::array1d<float, MemorySpace>       Array;
-    typedef typename cusp::array1d<float, MemorySpace>::view View;
+    typedef cusp::array1d<ValueType, cusp::host_memory>       Array;
+    typedef typename Array::view                              View;
 
     cusp::cblas::execution_policy cblas;
 
@@ -50,13 +50,13 @@ void TestCBLASasum(void)
 
     ASSERT_EQUAL(cusp::blas::asum(cblas,view_x), 20.0f);
 }
-DECLARE_UNITTEST(TestCBLASasum);
+DECLARE_NUMERIC_UNITTEST(TestCBLASasum);
 
+template<typename ValueType>
 void TestCBLASaxpy(void)
 {
-    typedef cusp::host_memory MemorySpace;
-    typedef typename cusp::array1d<float, MemorySpace>       Array;
-    typedef typename cusp::array1d<float, MemorySpace>::view View;
+    typedef cusp::array1d<ValueType, cusp::host_memory>       Array;
+    typedef typename Array::view                              View;
 
     cusp::cblas::execution_policy cblas;
 
@@ -89,13 +89,13 @@ void TestCBLASaxpy(void)
     ASSERT_EQUAL(y[2],  16.0);
     ASSERT_EQUAL(y[3],  -7.0);
 }
-DECLARE_UNITTEST(TestCBLASaxpy);
+DECLARE_NUMERIC_UNITTEST(TestCBLASaxpy);
 
+template<typename ValueType>
 void TestCBLAScopy(void)
 {
-    typedef cusp::host_memory MemorySpace;
-    typedef typename cusp::array1d<float, MemorySpace>       Array;
-    typedef typename cusp::array1d<float, MemorySpace>::view View;
+    typedef cusp::array1d<ValueType, cusp::host_memory>       Array;
+    typedef typename Array::view                              View;
 
     cusp::cblas::execution_policy cblas;
 
@@ -109,7 +109,7 @@ void TestCBLAScopy(void)
     {
         Array y(4, -1);
         cusp::blas::copy(cblas, x, y);
-        ASSERT_EQUAL(x, y);
+        ASSERT_EQUAL(x == y, true);
     }
 
     {
@@ -117,16 +117,16 @@ void TestCBLAScopy(void)
         View view_x(x);
         View view_y(y);
         cusp::blas::copy(cblas, view_x, view_y);
-        ASSERT_EQUAL(x, y);
+        ASSERT_EQUAL(view_x == view_y, true);
     }
 }
-DECLARE_UNITTEST(TestCBLAScopy);
+DECLARE_NUMERIC_UNITTEST(TestCBLAScopy);
 
+template<typename ValueType>
 void TestCBLASdot(void)
 {
-    typedef cusp::host_memory MemorySpace;
-    typedef typename cusp::array1d<float, MemorySpace>       Array;
-    typedef typename cusp::array1d<float, MemorySpace>::view View;
+    typedef cusp::array1d<ValueType, cusp::host_memory>       Array;
+    typedef typename Array::view                              View;
 
     cusp::cblas::execution_policy cblas;
 
@@ -152,13 +152,45 @@ void TestCBLASdot(void)
     View view_y(y);
     ASSERT_EQUAL(cusp::blas::dot(cblas, view_x, view_y), -21.0f);
 }
-DECLARE_UNITTEST(TestCBLASdot);
+DECLARE_REAL_UNITTEST(TestCBLASdot);
 
+template<typename ValueType>
+void TestCBLASdotc(void)
+{
+    typedef cusp::array1d<ValueType, cusp::host_memory>       Array;
+    typedef typename Array::view                              View;
+
+    cusp::cblas::execution_policy cblas;
+
+    Array x(6);
+    Array y(6);
+
+    x[0] =  7.0f;
+    y[0] =  0.0f;
+    x[1] =  5.0f;
+    y[1] = -2.0f;
+    x[2] =  4.0f;
+    y[2] =  0.0f;
+    x[3] = -3.0f;
+    y[3] =  5.0f;
+    x[4] =  0.0f;
+    y[4] =  6.0f;
+    x[5] =  4.0f;
+    y[5] =  1.0f;
+
+    ASSERT_EQUAL(cusp::blas::dotc(cblas, x, y), -21.0);
+
+    View view_x(x);
+    View view_y(y);
+    ASSERT_EQUAL(cusp::blas::dotc(cblas, view_x, view_y), -21.0);
+}
+DECLARE_COMPLEX_UNITTEST(TestCBLASdotc);
+
+template<typename ValueType>
 void TestCBLASnrm2(void)
 {
-    typedef cusp::host_memory MemorySpace;
-    typedef typename cusp::array1d<float, MemorySpace>       Array;
-    typedef typename cusp::array1d<float, MemorySpace>::view View;
+    typedef cusp::array1d<ValueType, cusp::host_memory>       Array;
+    typedef typename Array::view                              View;
 
     cusp::cblas::execution_policy cblas;
 
@@ -175,13 +207,13 @@ void TestCBLASnrm2(void)
 
     ASSERT_EQUAL(cusp::blas::nrm2(cblas, View(x)), 10.0f);
 }
-DECLARE_UNITTEST(TestCBLASnrm2);
+DECLARE_NUMERIC_UNITTEST(TestCBLASnrm2);
 
+template<typename ValueType>
 void TestCBLASscal(void)
 {
-    typedef cusp::host_memory MemorySpace;
-    typedef typename cusp::array1d<float, MemorySpace>       Array;
-    typedef typename cusp::array1d<float, MemorySpace>::view View;
+    typedef cusp::array1d<ValueType, cusp::host_memory>       Array;
+    typedef typename Array::view                              View;
 
     cusp::cblas::execution_policy cblas;
 
@@ -213,13 +245,13 @@ void TestCBLASscal(void)
     ASSERT_EQUAL(x[4],   0.0);
     ASSERT_EQUAL(x[5],  32.0);
 }
-DECLARE_UNITTEST(TestCBLASscal);
+DECLARE_NUMERIC_UNITTEST(TestCBLASscal);
 
+template<typename ValueType>
 void TestCBLASgemv(void)
 {
-    typedef cusp::host_memory MemorySpace;
-    typedef typename cusp::array2d<float, MemorySpace>       Array2d;
-    typedef typename cusp::array1d<float, MemorySpace>       Array1d;
+    typedef cusp::array2d<ValueType, cusp::host_memory> Array2d;
+    typedef cusp::array1d<ValueType, cusp::host_memory> Array1d;
 
     cusp::cblas::execution_policy cblas;
 
@@ -251,5 +283,5 @@ void TestCBLASgemv(void)
     ASSERT_EQUAL(y[7],  -1.0);
     ASSERT_EQUAL(y[8],  12.0);
 }
-DECLARE_UNITTEST(TestCBLASgemv);
+DECLARE_NUMERIC_UNITTEST(TestCBLASgemv);
 

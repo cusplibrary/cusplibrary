@@ -52,7 +52,7 @@ int amax(cublas::execution_policy& exec,
 }
 
 template <typename Array>
-typename Array::value_type
+typename cusp::detail::norm_type<typename Array::value_type>::type
 asum(cublas::execution_policy& exec,
      const Array& x)
 {

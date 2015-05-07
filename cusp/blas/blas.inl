@@ -567,18 +567,18 @@ void ger(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
     ger(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), x, y, A);
 }
 
-template<typename Array2d,
-         typename Array1,
-         typename Array2>
-void symv(const Array2d& A,
-          const Array1&  x,
-                Array2&  y)
+template<typename Array2d1,
+         typename Array1d1,
+         typename Array1d2>
+void symv(const Array2d1& A,
+          const Array1d1& x,
+                Array1d2& y)
 {
     using thrust::system::detail::generic::select_system;
 
-    typedef typename Array2d::memory_space System1;
-    typedef typename Array1::memory_space  System2;
-    typedef typename Array2::memory_space  System3;
+    typedef typename Array2d1::memory_space System1;
+    typedef typename Array1d1::memory_space System2;
+    typedef typename Array1d2::memory_space System3;
 
     System1 system1;
     System2 system2;
@@ -588,13 +588,13 @@ void symv(const Array2d& A,
 }
 
 template <typename DerivedPolicy,
-          typename Array2d,
-          typename Array1,
-          typename Array2>
+          typename Array2d1,
+          typename Array1d1,
+          typename Array1d2>
 void symv(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-          const Array2d& A,
-          const Array1&  x,
-                Array2&  y)
+          const Array2d1& A,
+          const Array1d1& x,
+                Array1d2& y)
 {
     using cusp::blas::thrustblas::symv;
 
@@ -808,7 +808,7 @@ template <typename DerivedPolicy,
 void syr2k(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
            const Array2d1& A,
            const Array2d2& B,
-                 Array2d2& C)
+                 Array2d3& C)
 {
     using cusp::blas::thrustblas::syr2k;
 

@@ -83,10 +83,10 @@ inline void chop_prefix(std::string& str, const std::string& prefix)
 inline std::string base_class_name(const std::string& name)
 {
   std::string result = name;
-  
+
   // if the name begins with "struct ", chop it off
   chop_prefix(result, "struct ");
-  
+
   // if the name begins with "class ", chop it off
   chop_prefix(result, "class ");
 
@@ -112,7 +112,7 @@ class UnitTest {
         virtual ~UnitTest() {}
         virtual void run() {}
 
-        bool operator<(const UnitTest& u) const 
+        bool operator<(const UnitTest& u) const
         {
             return name < u.name;
         }
@@ -128,10 +128,10 @@ class UnitTestDriver
   bool run_tests(std::vector<UnitTest *>& tests_to_run, const ArgumentMap& kwargs);
 
 public:
-    
+
   void register_test(UnitTest * test);
   bool run_tests(const ArgumentSet& args, const ArgumentMap& kwargs);
-  void list_tests(void); 
+  void list_tests(void);
 
   static UnitTestDriver &s_driver();
 };
@@ -150,11 +150,37 @@ TEST##UnitTest TEST##Instance
 
 // Macro to create host and device versions of a
 // unit test for a couple data types
-#define DECLARE_VECTOR_UNITTEST(VTEST)                                                                            \
-void VTEST##Host(void)   {  VTEST< cusp::array1d<short, cusp::host_memory> >();   VTEST< cusp::array1d<int, cusp::host_memory> >();   VTEST< cusp::array1d<long long, cusp::host_memory> >();   }    \
-void VTEST##Device(void) {  VTEST< cusp::array1d<short, cusp::device_memory> >(); VTEST< cusp::array1d<int, cusp::device_memory> >(); VTEST< cusp::array1d<long long, cusp::device_memory> >(); }    \
-DECLARE_UNITTEST(VTEST##Host);                                                                                    \
+#define DECLARE_VECTOR_UNITTEST(VTEST)                           \
+void VTEST##Host(void)   {                                       \
+  VTEST< cusp::array1d<short    , cusp::host_memory> >();        \
+  VTEST< cusp::array1d<int      , cusp::host_memory> >();        \
+  VTEST< cusp::array1d<long long, cusp::host_memory> >();        \
+}                                                                \
+void VTEST##Device(void) {                                       \
+  VTEST< cusp::array1d<short    , cusp::device_memory> >();      \
+  VTEST< cusp::array1d<int      , cusp::device_memory> >();      \
+  VTEST< cusp::array1d<long long, cusp::device_memory> >();      \
+}                                                                \
+DECLARE_UNITTEST(VTEST##Host);                                   \
 DECLARE_UNITTEST(VTEST##Device);
+
+#define DECLARE_REAL_UNITTEST(VTEST)                             \
+void VTEST##Real(void)   {                                       \
+  VTEST< float >();                                              \
+  VTEST< double >();                                             \
+}                                                                \
+DECLARE_UNITTEST(VTEST##Real);
+
+#define DECLARE_COMPLEX_UNITTEST(VTEST)                          \
+void VTEST##Complex(void)   {                                    \
+  VTEST< cusp::complex<float> >();                               \
+  VTEST< cusp::complex<double> >();                              \
+}                                                                \
+DECLARE_UNITTEST(VTEST##Complex);
+
+#define DECLARE_NUMERIC_UNITTEST(VTEST)                          \
+  DECLARE_REAL_UNITTEST(VTEST);                                  \
+  DECLARE_COMPLEX_UNITTEST(VTEST);
 
 // Macro to create instances of a test for several
 // data types and array sizes
@@ -210,7 +236,7 @@ template<template <typename> class TestName, typename TypeList>
     {
         std::vector<size_t> sizes = get_test_sizes();
         for(size_t i = 0; i != sizes.size(); ++i)
-        {                                                 
+        {
             // get the first type in the list
             typedef typename unittest::get_type<TypeList,0>::type first_type;
 
@@ -218,7 +244,7 @@ template<template <typename> class TestName, typename TypeList>
 
             // loop over the types
             loop(sizes[i]);
-        }                                                 
+        }
     }
 }; // end VariableUnitTest
 
@@ -230,7 +256,7 @@ template<template <typename> class TestName,
     : public UnitTest
 {
   VectorUnitTest()
-    : UnitTest((base_class_name(unittest::type_name<TestName< Vector<int, Alloc<int> > > >()) + "<" + 
+    : UnitTest((base_class_name(unittest::type_name<TestName< Vector<int, Alloc<int> > > >()) + "<" +
                 base_class_name(unittest::type_name<Vector<int, Alloc<int> > >()) + ">").c_str())
   { }
 
