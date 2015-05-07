@@ -58,12 +58,13 @@ asum(cublas::execution_policy& exec,
      const Array& x)
 {
     typedef typename Array::value_type ValueType;
+    typedef typename cusp::detail::norm_type<typename Array::value_type>::type Real;
 
     int n = x.size();
 
     const ValueType* x_p = thrust::raw_pointer_cast(&x[0]);
 
-    ValueType result;
+    Real result;
 
     if(cublas::detail::asum(exec.get_handle(), n, x_p, 1, result) != CUBLAS_STATUS_SUCCESS)
     {

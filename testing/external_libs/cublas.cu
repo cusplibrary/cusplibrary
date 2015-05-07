@@ -4,11 +4,11 @@
 #include <cusp/blas/cublas/blas.h>
 #include <cusp/blas/blas.h>
 
+template<typename ValueType>
 void TestCUBLASamax(void)
 {
-    typedef cusp::device_memory MemorySpace;
-    typedef typename cusp::array1d<float, MemorySpace>       Array;
-    typedef typename cusp::array1d<float, MemorySpace>::view View;
+    typedef cusp::array1d<ValueType, cusp::device_memory>  Array;
+    typedef typename Array::view                           View;
 
     cublasHandle_t handle;
 
@@ -38,13 +38,13 @@ void TestCUBLASamax(void)
       throw cusp::runtime_exception("cublasDestroy failed");
     }
 }
-DECLARE_UNITTEST(TestCUBLASamax);
+DECLARE_NUMERIC_UNITTEST(TestCUBLASamax);
 
+template<typename ValueType>
 void TestCUBLASasum(void)
 {
-    typedef cusp::device_memory MemorySpace;
-    typedef typename cusp::array1d<float, MemorySpace>       Array;
-    typedef typename cusp::array1d<float, MemorySpace>::view View;
+    typedef cusp::array1d<ValueType, cusp::device_memory>  Array;
+    typedef typename Array::view                           View;
 
     cublasHandle_t handle;
 
@@ -74,13 +74,13 @@ void TestCUBLASasum(void)
       throw cusp::runtime_exception("cublasDestroy failed");
     }
 }
-DECLARE_UNITTEST(TestCUBLASasum);
+DECLARE_NUMERIC_UNITTEST(TestCUBLASasum);
 
+template<typename ValueType>
 void TestCUBLASaxpy(void)
 {
-    typedef cusp::device_memory MemorySpace;
-    typedef typename cusp::array1d<float, MemorySpace>       Array;
-    typedef typename cusp::array1d<float, MemorySpace>::view View;
+    typedef cusp::array1d<ValueType, cusp::device_memory>  Array;
+    typedef typename Array::view                           View;
 
     cublasHandle_t handle;
 
@@ -125,7 +125,7 @@ void TestCUBLASaxpy(void)
       throw cusp::runtime_exception("cublasDestroy failed");
     }
 }
-DECLARE_UNITTEST(TestCUBLASaxpy);
+DECLARE_NUMERIC_UNITTEST(TestCUBLASaxpy);
 
 void TestCUBLAScopy(void)
 {

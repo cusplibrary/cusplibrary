@@ -128,7 +128,7 @@ void gemv( enum CBLAS_ORDER order, enum CBLAS_TRANSPOSE trans,                  
   void her( enum CBLAS_ORDER order, enum CBLAS_UPLO uplo,                                   \
             int n, const V alpha, const T* x, int incx, T* A, int lda)                      \
 {                                                                                           \
-    return cblas_##name##her(order, uplo, n, (const V) alpha,                               \
+    return cblas_##name##her(order, uplo, n, alpha,                                         \
                              (const V*) x, incx, (V*) A, lda);                              \
 }
 

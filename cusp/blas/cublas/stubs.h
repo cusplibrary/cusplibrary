@@ -28,9 +28,11 @@
   FUNC_MACRO(float , float , S)                                 \
   FUNC_MACRO(double, double, D)
 
-#define CUSP_CUBLAS_EXPAND_REAL_DEFS_LOWER(FUNC_MACRO)          \
+#define CUSP_CUBLAS_EXPAND_DEFS_LOWER(FUNC_MACRO)               \
   FUNC_MACRO(float , float , s)                                 \
-  FUNC_MACRO(double, double, d)
+  FUNC_MACRO(double, double, d)                                 \
+  FUNC_MACRO(cusp::complex<float> , cuComplex,  c)              \
+  FUNC_MACRO(cusp::complex<double>, cuDoubleComplex, z)
 
 #define CUSP_CUBLAS_EXPAND_COMPLEX_DEFS_1(FUNC_MACRO)           \
   FUNC_MACRO(cusp::complex<float> , cuComplex,  C)              \
@@ -57,7 +59,8 @@
 
 #define CUSP_CUBLAS_ASUM(T,V,name)                                                            \
   cublasStatus_t asum( cublasHandle_t handle,                                                 \
-                       const int n, const T* X, const int incX, T& result )                   \
+                       const int n, const T* X, const int incX,                               \
+                       typename cusp::detail::norm_type<T>::type& result )                    \
   {                                                                                           \
     typedef typename cusp::detail::norm_type<T>::type Real;                                   \
     return cublas##name##asum(handle, n, (const V*) X, incX, (Real*) &result);                \
@@ -258,7 +261,7 @@ namespace detail
 {
 
 // LEVEL 1
-CUSP_CUBLAS_EXPAND_REAL_DEFS_LOWER(CUSP_CUBLAS_AMAX);
+CUSP_CUBLAS_EXPAND_DEFS_LOWER(CUSP_CUBLAS_AMAX);
 CUSP_CUBLAS_EXPAND_DEFS_2(CUSP_CUBLAS_ASUM);
 CUSP_CUBLAS_EXPAND_DEFS_1(CUSP_CUBLAS_AXPY);
 CUSP_CUBLAS_EXPAND_DEFS_1(CUSP_CUBLAS_COPY);
