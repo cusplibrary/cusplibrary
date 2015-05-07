@@ -14,111 +14,13 @@
  *  limitations under the License.
  */
 
-#include <cusp/detail/format.h>
-#include <cusp/array1d.h>
 #include <cusp/system/detail/adl/sort.h>
 #include <cusp/system/detail/generic/sort.h>
 
-#include <thrust/binary_search.h>
-#include <thrust/copy.h>
-#include <thrust/extrema.h>
-#include <thrust/gather.h>
-#include <thrust/fill.h>
-#include <thrust/scan.h>
-#include <thrust/scatter.h>
-#include <thrust/sequence.h>
-#include <thrust/sort.h>
-#include <thrust/transform.h>
+#include <thrust/execution_policy.h>
 
 namespace cusp
 {
-namespace detail
-{
-
-template <typename DerivedPolicy, typename ArrayType1, typename ArrayType2, typename ArrayType3>
-void sort_by_row(thrust::execution_policy<DerivedPolicy> &exec,
-                 ArrayType1& row_indices, ArrayType2& column_indices, ArrayType3& values,
-                 typename ArrayType1::value_type min_row = 0,
-                 typename ArrayType1::value_type max_row = 0)
-{
-    typedef typename ArrayType1::value_type IndexType;
-    typedef typename ArrayType3::value_type ValueType;
-    typedef typename ArrayType1::memory_space MemorySpace;
-
-    size_t N = row_indices.size();
-
-    IndexType minr = min_row;
-    IndexType maxr = max_row;
-
-    if(max_row == 0)
-      maxr = *thrust::max_element(row_indices.begin(), row_indices.end());
-
-    thrust::detail::temporary_array<IndexType, DerivedPolicy> permutation(exec, N);
-    thrust::sequence(exec, permutation.begin(), permutation.end());
-
-    // compute permutation that sorts the row_indices
-    cusp::counting_sort_by_key(exec, row_indices, permutation, minr, maxr);
-
-    // copy column_indices and values to temporary buffers
-    thrust::detail::temporary_array<IndexType, DerivedPolicy> temp1(exec, column_indices.begin(), column_indices.end());
-    thrust::detail::temporary_array<ValueType, DerivedPolicy> temp2(exec, values.begin(), values.end());
-
-    // use permutation to reorder the values
-    thrust::gather(exec,
-                   permutation.begin(), permutation.end(),
-                   thrust::make_zip_iterator(thrust::make_tuple(temp1.begin(),   temp2.begin())),
-                   thrust::make_zip_iterator(thrust::make_tuple(column_indices.begin(), values.begin())));
-}
-
-template <typename DerivedPolicy, typename ArrayType1, typename ArrayType2, typename ArrayType3>
-void sort_by_row_and_column(thrust::execution_policy<DerivedPolicy> &exec,
-                            ArrayType1& row_indices, ArrayType2& column_indices, ArrayType3& values,
-                            typename ArrayType1::value_type min_row = 0,
-                            typename ArrayType1::value_type max_row = 0,
-                            typename ArrayType2::value_type min_col = 0,
-                            typename ArrayType2::value_type max_col = 0)
-{
-    typedef typename ArrayType1::value_type IndexType1;
-    typedef typename ArrayType2::value_type IndexType2;
-    typedef typename ArrayType3::value_type ValueType;
-    typedef typename ArrayType1::memory_space MemorySpace;
-
-    size_t N = row_indices.size();
-
-    thrust::detail::temporary_array<IndexType1, DerivedPolicy> permutation(exec, N);
-    thrust::sequence(exec, permutation.begin(), permutation.end());
-
-    IndexType1 minr = min_row;
-    IndexType1 maxr = max_row;
-    IndexType2 minc = min_col;
-    IndexType2 maxc = max_col;
-
-    if(maxr == 0)
-      maxr = *thrust::max_element(row_indices.begin(), row_indices.end());
-    if(maxc == 0)
-      maxc = *thrust::max_element(column_indices.begin(), column_indices.end());
-
-    // compute permutation and sort by (I,J)
-    {
-        thrust::detail::temporary_array<IndexType1, DerivedPolicy> temp(exec, column_indices.begin(), column_indices.end());
-        cusp::counting_sort_by_key(exec, temp, permutation, minc, maxc);
-
-        thrust::copy(exec, row_indices.begin(), row_indices.end(), temp.begin());
-        thrust::gather(exec, permutation.begin(), permutation.end(), temp.begin(), row_indices.begin());
-        cusp::counting_sort_by_key(exec, row_indices, permutation, minr, maxr);
-
-        thrust::copy(exec, column_indices.begin(), column_indices.end(), temp.begin());
-        thrust::gather(exec, permutation.begin(), permutation.end(), temp.begin(), column_indices.begin());
-    }
-
-    // use permutation to reorder the values
-    {
-        thrust::detail::temporary_array<ValueType, DerivedPolicy> temp(exec, values.begin(), values.end());
-        thrust::gather(exec, permutation.begin(), permutation.end(), temp.begin(), values.begin());
-    }
-}
-
-} // end detail namespace
 
 template <typename DerivedPolicy, typename ArrayType>
 void counting_sort(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
@@ -173,9 +75,11 @@ void sort_by_row(const thrust::detail::execution_policy_base<DerivedPolicy> &exe
                  typename ArrayType1::value_type min_row,
                  typename ArrayType1::value_type max_row)
 {
-    detail::sort_by_row(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
-                        row_indices, column_indices, values,
-                        min_row, max_row);
+    using cusp::system::detail::generic::sort_by_row;
+
+    sort_by_row(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
+                row_indices, column_indices, values,
+                min_row, max_row);
 }
 
 template <typename ArrayType1, typename ArrayType2, typename ArrayType3>
@@ -206,9 +110,11 @@ void sort_by_row_and_column(const thrust::detail::execution_policy_base<DerivedP
                             typename ArrayType2::value_type min_col,
                             typename ArrayType2::value_type max_col)
 {
-    detail::sort_by_row_and_column(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
-                                   row_indices, column_indices, values,
-                                   min_row, max_row, min_col, max_col);
+    using cusp::system::detail::generic::sort_by_row_and_column;
+
+    sort_by_row_and_column(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
+                           row_indices, column_indices, values,
+                           min_row, max_row, min_col, max_col);
 }
 
 template <typename ArrayType1, typename ArrayType2, typename ArrayType3>

@@ -36,7 +36,8 @@ namespace cusp
 /* \cond */
 template <typename DerivedPolicy, typename ArrayType>
 void counting_sort(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-                   ArrayType& keys, typename ArrayType::value_type min, typename ArrayType::value_type max);
+                   ArrayType& keys,
+                   typename ArrayType::value_type min, typename ArrayType::value_type max);
 /* \endcond */
 
 /**
