@@ -40,13 +40,39 @@ namespace blas
 
 /*! \cond */
 template <typename DerivedPolicy,
+          typename Array>
+int amax(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+         const Array& x);
+/*! \endcond */
+
+/*! \p amax : index of the largest element in a array
+ */
+template <typename Array>
+int amax(const Array& x);
+
+/*! \cond */
+template <typename DerivedPolicy,
+          typename Array>
+typename cusp::detail::norm_type<typename Array::value_type>::type
+asum(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+     const Array& x);
+/*! \endcond */
+
+/*! \p asum : sum of absolute value of all entries in array
+ */
+template <typename Array>
+typename cusp::detail::norm_type<typename Array::value_type>::type
+asum(const Array& x);
+
+/*! \cond */
+template <typename DerivedPolicy,
           typename Array1,
           typename Array2,
           typename ScalarType>
 void axpy(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-             const Array1& x,
-                   Array2& y,
-             ScalarType alpha);
+          const Array1& x,
+                Array2& y,
+          const ScalarType alpha);
 /*! \endcond */
 
 /*! \p axpy : scaled vector addition (y = alpha * x + y)
@@ -56,7 +82,7 @@ template <typename Array1,
           typename ScalarType>
 void axpy(const Array1& x,
                 Array2& y,
-          ScalarType alpha);
+          const ScalarType alpha);
 
 /*! \cond */
 template <typename DerivedPolicy,
@@ -69,8 +95,8 @@ void axpby(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
            const Array1& x,
            const Array2& y,
                  Array3& output,
-           ScalarType1 alpha,
-           ScalarType2 beta);
+                 ScalarType1 alpha,
+                 ScalarType2 beta);
 /*! \endcond */
 
 /*! \p axpby : linear combination of two vectors (output = alpha * x + beta * y)
@@ -83,8 +109,8 @@ template <typename Array1,
 void axpby(const Array1& x,
            const Array2& y,
                  Array3& output,
-           ScalarType1 alpha,
-           ScalarType2 beta);
+                 ScalarType1 alpha,
+                 ScalarType2 beta);
 
 /*! \cond */
 template <typename DerivedPolicy,
@@ -163,9 +189,9 @@ template <typename DerivedPolicy,
           typename Array1,
           typename Array2>
 typename Array1::value_type
-    dot(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-        const Array1& x,
-        const Array2& y);
+dot(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+    const Array1& x,
+    const Array2& y);
 /*! \endcond */
 
 /*! \p dot : dot product (x^T * y)
@@ -173,17 +199,17 @@ typename Array1::value_type
 template <typename Array1,
           typename Array2>
 typename Array1::value_type
-    dot(const Array1& x,
-        const Array2& y);
+dot(const Array1& x,
+    const Array2& y);
 
 /*! \cond */
 template <typename DerivedPolicy,
           typename Array1,
           typename Array2>
 typename Array1::value_type
-    dotc(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-         const Array1& x,
-         const Array2& y);
+dotc(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+     const Array1& x,
+     const Array2& y);
 /*! \endcond */
 
 /*! \p dotc : conjugate dot product (conjugate(x)^T * y)
@@ -191,8 +217,8 @@ typename Array1::value_type
 template <typename Array1,
           typename Array2>
 typename Array1::value_type
-    dotc(const Array1& x,
-         const Array2& y);
+dotc(const Array1& x,
+     const Array2& y);
 
 /*! \cond */
 template <typename DerivedPolicy,
@@ -200,58 +226,57 @@ template <typename DerivedPolicy,
           typename ScalarType>
 void fill(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
           Array& array,
-          ScalarType alpha);
+          const ScalarType alpha);
 /*! \endcond */
 
 /*! \p fill : vector fill (x[i] = alpha)
  */
 template <typename Array,
           typename ScalarType>
-typename thrust::detail::enable_if_convertible<typename Array::format,cusp::array1d_format>::type
-fill(Array& array,
-     ScalarType alpha);
+void fill(Array& array,
+          const ScalarType alpha);
 
 /*! \cond */
 template <typename DerivedPolicy,
           typename Array>
 typename cusp::detail::norm_type<typename Array::value_type>::type
-    nrm1(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-         const Array& array);
+nrm1(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+     const Array& array);
 /*! \endcond */
 
 /*! \p nrm1 : vector 1-norm (sum abs(x[i]))
  */
 template <typename Array>
 typename cusp::detail::norm_type<typename Array::value_type>::type
-    nrm1(const Array& array);
+nrm1(const Array& array);
 
 /*! \cond */
 template <typename DerivedPolicy,
           typename Array>
 typename cusp::detail::norm_type<typename Array::value_type>::type
-    nrm2(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-         const Array& array);
+nrm2(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+     const Array& array);
 /*! \endcond */
 
 /*! \p nrm2 : vector 2-norm (sqrt(sum x[i] * x[i] )
  */
 template <typename Array>
 typename cusp::detail::norm_type<typename Array::value_type>::type
-    nrm2(const Array& array);
+nrm2(const Array& array);
 
 /*! \cond */
 template <typename DerivedPolicy,
           typename Array>
 typename Array::value_type
-    nrmmax(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-           const Array& array);
+nrmmax(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+       const Array& array);
 /*! \endcond */
 
 /*! \p nrmmax : vector infinity norm
  */
 template <typename Array>
 typename Array::value_type
-    nrmmax(const Array& array);
+nrmmax(const Array& array);
 
 /*! \cond */
 template <typename DerivedPolicy,
@@ -259,7 +284,7 @@ template <typename DerivedPolicy,
           typename ScalarType>
 void scal(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
           Array& x,
-          ScalarType alpha);
+          const ScalarType alpha);
 /*! \endcond */
 
 /*! \p scal : scale vector (x[i] = alpha * x[i])
@@ -267,25 +292,103 @@ void scal(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 template <typename Array,
           typename ScalarType>
 void scal(Array& x,
-          ScalarType alpha);
+          const ScalarType alpha);
+
+/*! \cond */
+template <typename DerivedPolicy,
+          typename Array2d1,
+          typename Array1d1,
+          typename Array1d2>
+void gemv(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+          const Array2d1& A,
+          const Array1d1& x,
+                Array1d2& y);
+/*! \endcond */
+
+template<typename Array2d1,
+         typename Array1d1,
+         typename Array1d2>
+void gemv(const Array2d1& A,
+          const Array1d1& x,
+                Array1d2& y);
+
+/*! \cond */
+template <typename DerivedPolicy,
+          typename Array1d1,
+          typename Array1d2,
+          typename Array2d1>
+void ger(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+         const Array1d1& x,
+         const Array1d2& y,
+               Array2d1& A);
+/*! \endcond */
+
+template<typename Array1d1,
+         typename Array1d2,
+         typename Array2d1>
+void ger(const Array1d1& x,
+         const Array1d2& y,
+               Array2d1& A);
+
+/*! \cond */
+template <typename DerivedPolicy,
+          typename Array2d1,
+          typename Array1d1,
+          typename Array1d2>
+void symv(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+          const Array2d1& A,
+          const Array1d1& x,
+                Array1d2& y);
+/*! \endcond */
+
+template <typename Array2d1,
+          typename Array1d1,
+          typename Array1d2>
+void symv(const Array2d1& A,
+          const Array1d1& x,
+                Array1d2& y);
+
+/*! \cond */
+template <typename DerivedPolicy,
+          typename Array1d,
+          typename Array2d>
+void syr(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+         const Array1d& x,
+               Array2d& A);
+/*! \endcond */
+
+template <typename Array1d,
+          typename Array2d>
+void syr(const Array1d& x,
+               Array2d& A);
 
 /*! \cond */
 template <typename DerivedPolicy,
           typename Array2d,
-          typename Array1,
-          typename Array2>
-void gemv(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+          typename Array1d>
+void trmv(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
           const Array2d& A,
-          const Array1&  x,
-                Array2&  y);
+                Array1d& x);
 /*! \endcond */
 
 template<typename Array2d,
-         typename Array1,
-         typename Array2>
-void gemv(const Array2d& A,
-          const Array1&  x,
-                Array2&  y);
+         typename Array1d>
+void trmv(const Array2d& A,
+                Array1d& x);
+
+/*! \cond */
+template <typename DerivedPolicy,
+          typename Array2d,
+          typename Array1d>
+void trsv(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+          const Array2d& A,
+                Array1d& x);
+/*! \endcond */
+
+template<typename Array2d,
+         typename Array1d>
+void trsv(const Array2d& A,
+                Array1d& x);
 
 /*! \cond */
 template <typename DerivedPolicy,
@@ -303,7 +406,94 @@ template<typename Array2d1,
          typename Array2d3>
 void gemm(const Array2d1& A,
           const Array2d2& B,
-          Array2d3& C);
+                Array2d3& C);
+
+/*! \cond */
+template <typename DerivedPolicy,
+          typename Array2d1,
+          typename Array2d2,
+          typename Array2d3>
+void symm(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+          const Array2d1& A,
+          const Array2d2& B,
+                Array2d3& C);
+/*! \endcond */
+
+template<typename Array2d1,
+         typename Array2d2,
+         typename Array2d3>
+void symm(const Array2d1& A,
+          const Array2d2& B,
+                Array2d3& C);
+
+/*! \cond */
+template <typename DerivedPolicy,
+          typename Array2d1,
+          typename Array2d2>
+void syrk(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+          const Array2d1& A,
+                Array2d2& C);
+/*! \endcond */
+
+template<typename Array2d1,
+         typename Array2d2>
+void syrk(const Array2d1& A,
+                Array2d2& B);
+
+/*! \cond */
+template <typename DerivedPolicy,
+          typename Array2d1,
+          typename Array2d2,
+          typename Array2d3>
+void syr2k(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+           const Array2d1& A,
+           const Array2d2& B,
+                 Array2d3& C);
+/*! \endcond */
+
+template<typename Array2d1,
+         typename Array2d2,
+         typename Array2d3>
+void syr2k(const Array2d1& A,
+           const Array2d2& B,
+                 Array2d3& C);
+
+/*! \cond */
+template <typename DerivedPolicy,
+          typename Array2d1,
+          typename Array2d2,
+          typename Array2d3>
+void trmm(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+          const Array2d1& A,
+          const Array2d2& B,
+                Array2d3& C);
+/*! \endcond */
+
+template<typename Array2d1,
+         typename Array2d2,
+         typename Array2d3>
+void trmm(const Array2d1& A,
+          const Array2d2& B,
+                Array2d3& C);
+
+/*! \cond */
+template <typename DerivedPolicy,
+          typename Array2d1,
+          typename Array2d2,
+          typename Array2d3>
+void trsm(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+          const Array2d1& A,
+          const Array2d2& B,
+                Array2d3& C);
+/*! \endcond */
+
+template<typename Array2d1,
+         typename Array2d2,
+         typename Array2d3>
+void trsm(const Array2d1& A,
+          const Array2d2& B,
+                Array2d3& C);
+
 /*! \}
  */
 

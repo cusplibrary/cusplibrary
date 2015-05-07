@@ -20,16 +20,16 @@
 
 #pragma once
 
-#define CUSP_LAPACK_EXPAND_REAL_DEFS(FUNC_MACRO)              \
-  FUNC_MACRO(float,float,s)                                   \
-  FUNC_MACRO(double,double,d)
+#define CUSP_LAPACK_EXPAND_REAL_DEFS(FUNC_MACRO)                                                           \
+  FUNC_MACRO(float , float , s)                                                                            \
+  FUNC_MACRO(double, double, d)
 
-#define CUSP_LAPACK_EXPAND_COMPLEX_DEFS(FUNC_MACRO)           \
-  FUNC_MACRO(cusp::complex<float> , lapack_complex_float , c) \
+#define CUSP_LAPACK_EXPAND_COMPLEX_DEFS(FUNC_MACRO)                                                        \
+  FUNC_MACRO(cusp::complex<float> , lapack_complex_float , c)                                              \
   FUNC_MACRO(cusp::complex<double>, lapack_complex_double, z)
 
-#define CUSP_LAPACK_EXPAND_DEFS(FUNC_MACRO)                   \
-  CUSP_LAPACK_EXPAND_REAL_DEFS(FUNC_MACRO)                    \
+#define CUSP_LAPACK_EXPAND_DEFS(FUNC_MACRO)                                                                \
+  CUSP_LAPACK_EXPAND_REAL_DEFS(FUNC_MACRO)                                                                 \
   CUSP_LAPACK_EXPAND_COMPLEX_DEFS(FUNC_MACRO)
 
 #define CUSP_LAPACK_GETRF(T,V,name)                                                                        \
@@ -72,7 +72,7 @@
   }
 
 #define CUSP_LAPACK_TRTRS(T,V,name)                                                                        \
-  lapack_int trtrs( lapack_int order, char uplo, char trans, char diag, lapack_int n, lapack_int nrhs,    \
+  lapack_int trtrs( lapack_int order, char uplo, char trans, char diag, lapack_int n, lapack_int nrhs,     \
   const T* a, lapack_int lda, T* b, lapack_int ldb )                                                       \
   {                                                                                                        \
     return LAPACKE_##name##trtrs(order, uplo, trans, diag, n, nrhs, (V*) a, lda, (V*) b, ldb);             \
