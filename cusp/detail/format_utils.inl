@@ -136,7 +136,7 @@ template <typename DerivedPolicy, typename ArrayType>
 size_t compute_max_entries_per_row(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
                                    const ArrayType& row_offsets)
 {
-    using cusp::system::detail::generic::count_diagonals;
+    using cusp::system::detail::generic::compute_max_entries_per_row;
 
     return compute_max_entries_per_row(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
                                        row_offsets);
