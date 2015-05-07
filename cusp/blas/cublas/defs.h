@@ -20,30 +20,30 @@
 
 #pragma once
 
-#include <cblas.h>
+#include <cublas_v2.h>
 
 namespace cusp
 {
 namespace blas
 {
-namespace cblas
+namespace cublas
 {
 
-struct cblas_format {};
+struct cublas_format {};
 
-struct upper   : public cblas_format {};
-struct lower   : public cblas_format {};
-struct unit    : public cblas_format {};
-struct nonunit : public cblas_format {};
+struct upper   : public cublas_format {};
+struct lower   : public cublas_format {};
+struct unit    : public cublas_format {};
+struct nonunit : public cublas_format {};
 
 template< typename LayoutFormat >
-struct Orientation {static const enum CBLAS_ORDER type;};
+struct Orientation {static const cublasOperation_t type;};
 template<>
-const enum CBLAS_ORDER Orientation<cusp::row_major>::type    = CblasRowMajor;
+const cublasOperation_t Orientation<cusp::row_major>::type    = CUBLAS_OP_T;
 template<>
-const enum CBLAS_ORDER Orientation<cusp::column_major>::type = CblasColMajor;
+const cublasOperation_t Orientation<cusp::column_major>::type = CUBLAS_OP_N;
 
-} // end namespace cblas
+} // end namespace cublas
 } // end namespace blas
 } // end namespace cusp
 

@@ -19,6 +19,7 @@
 #include <cusp/array1d.h>
 #include <cusp/exception.h>
 
+#include <cusp/blas/cublas/defs.h>
 #include <cusp/blas/cublas/execution_policy.h>
 #include <cusp/blas/cublas/stubs.h>
 

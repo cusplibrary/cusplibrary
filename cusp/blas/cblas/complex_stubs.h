@@ -53,31 +53,31 @@
     cblas_##name##copy(n, (const V*) X, incX, (V*) Y, incY);                                \
   }
 
-#define CUSP_CBLAS_COMPLEX_DOTC(T,V,name)                                                   \
-  T dotc( const int n, const T* X, const int incX, const T* Y, const int incY )             \
-  {                                                                                         \
-    typedef typename thrust::detail::eval_if<                 \
-      thrust::detail::is_same<V,float>::value,                \
-          thrust::detail::identity_<openblas_complex_float>,  \
-          thrust::detail::identity_<openblas_complex_double>  \
-    >::type Cmplx;                                            \
-    Cmplx z;                                                                                \
-    cblas_##name##dotc_sub(n, (const V*) X, incX, (const V*) Y, incY, &z);                  \
-    return T(z.real, z.imag);                                                               \
-  }
-
-#define CUSP_CBLAS_COMPLEX_DOTU(T,V,name)                                                   \
-  T dotu( const int n, const T* X, const int incX, const T* Y, const int incY )             \
-  {                                                                                         \
-    typedef typename thrust::detail::eval_if<                 \
-      thrust::detail::is_same<V,float>::value,                \
-          thrust::detail::identity_<openblas_complex_float>,  \
-          thrust::detail::identity_<openblas_complex_double>  \
-    >::type Cmplx;                                            \
-    Cmplx z;                                                                                \
-    cblas_##name##dotu_sub(n, (const V*) X, incX, (const V*) Y, incY, &z);                  \
-    return T(z.real, z.imag);                                                               \
-  }
+// #define CUSP_CBLAS_COMPLEX_DOTC(T,V,name)
+//   T dotc( const int n, const T* X, const int incX, const T* Y, const int incY )
+//   {
+//     typedef typename thrust::detail::eval_if<
+//       thrust::detail::is_same<V,float>::value,
+//           thrust::detail::identity_<openblas_complex_float>,
+//           thrust::detail::identity_<openblas_complex_double>
+//     >::type Cmplx;
+//     Cmplx z;
+//     cblas_##name##dotc_sub(n, (const V*) X, incX, (const V*) Y, incY, &z);
+//     return T(z.real, z.imag);
+//   }
+//
+// #define CUSP_CBLAS_COMPLEX_DOTU(T,V,name)
+//   T dotu( const int n, const T* X, const int incX, const T* Y, const int incY )
+//   {
+//     typedef typename thrust::detail::eval_if<
+//       thrust::detail::is_same<V,float>::value,
+//           thrust::detail::identity_<openblas_complex_float>,
+//           thrust::detail::identity_<openblas_complex_double>
+//     >::type Cmplx;
+//     Cmplx z;
+//     cblas_##name##dotu_sub(n, (const V*) X, incX, (const V*) Y, incY, &z);
+//     return T(z.real, z.imag);
+//   }
 
 #define CUSP_CBLAS_COMPLEX_NRM2(T,V,name)                                                   \
   V nrm2( const int n, const T* X, const int incX )                                         \
@@ -230,7 +230,7 @@ CUSP_CBLAS_COMPLEX_DEFS_1(CUSP_CBLAS_COMPLEX_AMAX);
 CUSP_CBLAS_COMPLEX_DEFS_2(CUSP_CBLAS_COMPLEX_ASUM);
 CUSP_CBLAS_COMPLEX_DEFS_1(CUSP_CBLAS_COMPLEX_AXPY);
 CUSP_CBLAS_COMPLEX_DEFS_1(CUSP_CBLAS_COMPLEX_COPY);
-CUSP_CBLAS_COMPLEX_DEFS_1(CUSP_CBLAS_COMPLEX_DOTC);
+// CUSP_CBLAS_COMPLEX_DEFS_1(CUSP_CBLAS_COMPLEX_DOTC);
 CUSP_CBLAS_COMPLEX_DEFS_2(CUSP_CBLAS_COMPLEX_NRM2);
 CUSP_CBLAS_COMPLEX_DEFS_3(CUSP_CBLAS_COMPLEX_SCAL);
 CUSP_CBLAS_COMPLEX_DEFS_1(CUSP_CBLAS_COMPLEX_SWAP);

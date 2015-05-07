@@ -18,9 +18,12 @@
 
 #include <cusp/array1d.h>
 #include <cusp/exception.h>
-#include <cusp/blas/cblas/stubs.h>
-#include <cusp/blas/cblas/complex_stubs.h>
+
+#include <cusp/blas/cblas/defs.h>
 #include <cusp/blas/cblas/execution_policy.h>
+
+#include <cusp/blas/cblas/complex_stubs.h>
+#include <cusp/blas/cblas/stubs.h>
 
 namespace cusp
 {
@@ -107,22 +110,22 @@ dot(cblas::execution_policy& exec,
     return cblas::detail::dot(n, x_p, 1, y_p, 1);
 }
 
-template <typename Array1,
-          typename Array2>
-typename Array1::value_type
-dotc(cblas::execution_policy& exec,
-     const Array1& x,
-     const Array2& y)
-{
-    typedef typename Array2::value_type ValueType;
-
-    int n = y.size();
-
-    const ValueType* x_p = thrust::raw_pointer_cast(&x[0]);
-    const ValueType* y_p = thrust::raw_pointer_cast(&y[0]);
-
-    return cblas::detail::dotc(n, x_p, 1, y_p, 1);
-}
+// template <typename Array1,
+//           typename Array2>
+// typename Array1::value_type
+// dotc(cblas::execution_policy& exec,
+//      const Array1& x,
+//      const Array2& y)
+// {
+//     typedef typename Array2::value_type ValueType;
+//
+//     int n = y.size();
+//
+//     const ValueType* x_p = thrust::raw_pointer_cast(&x[0]);
+//     const ValueType* y_p = thrust::raw_pointer_cast(&y[0]);
+//
+//     return cblas::detail::dotc(n, x_p, 1, y_p, 1);
+// }
 
 template <typename Array>
 typename cusp::detail::norm_type<typename Array::value_type>::type
@@ -179,7 +182,7 @@ void gemv(cblas::execution_policy& exec,
 {
     typedef typename Array2d1::value_type ValueType;
 
-    enum CBLAS_ORDER order = CblasColMajor;
+    enum CBLAS_ORDER order = Orientation<typename Array2d1::orientation>::type;
     enum CBLAS_TRANSPOSE trans = CblasNoTrans;
 
     int m = A.num_rows;
@@ -207,7 +210,7 @@ void ger(cblas::execution_policy& exec,
 {
     typedef typename Array2d1::value_type ValueType;
 
-    enum CBLAS_ORDER order = CblasColMajor;
+    enum CBLAS_ORDER order = Orientation<typename Array2d1::orientation>::type;
 
     int m = A.num_rows;
     int n = A.num_cols;
@@ -233,7 +236,7 @@ void symv(cblas::execution_policy& exec,
 {
     typedef typename Array2d1::value_type ValueType;
 
-    enum CBLAS_ORDER order = CblasColMajor;
+    enum CBLAS_ORDER order = Orientation<typename Array2d1::orientation>::type;
     enum CBLAS_UPLO  uplo  = CblasUpper;
 
     int n = A.num_rows;
@@ -258,7 +261,7 @@ void syr(cblas::execution_policy& exec,
 {
     typedef typename Array2d::value_type ValueType;
 
-    enum CBLAS_ORDER order = CblasColMajor;
+    enum CBLAS_ORDER order = Orientation<typename Array2d::orientation>::type;
     enum CBLAS_UPLO  uplo  = CblasUpper;
 
     int n = A.num_rows;
@@ -281,7 +284,7 @@ void trmv(cblas::execution_policy& exec,
 {
     typedef typename Array2d::value_type ValueType;
 
-    enum CBLAS_ORDER     order = CblasColMajor;
+    enum CBLAS_ORDER order = Orientation<typename Array2d::orientation>::type;
     enum CBLAS_UPLO      uplo  = CblasUpper;
     enum CBLAS_TRANSPOSE trans = CblasNoTrans;
     enum CBLAS_DIAG      diag  = CblasNonUnit;
@@ -304,7 +307,7 @@ void trsv(cblas::execution_policy& exec,
 {
     typedef typename Array2d::value_type ValueType;
 
-    enum CBLAS_ORDER     order = CblasColMajor;
+    enum CBLAS_ORDER order = Orientation<typename Array2d::orientation>::type;
     enum CBLAS_UPLO      uplo  = CblasUpper;
     enum CBLAS_TRANSPOSE trans = CblasNoTrans;
     enum CBLAS_DIAG      diag  = CblasNonUnit;
@@ -329,7 +332,7 @@ void gemm(cblas::execution_policy& exec,
 {
     typedef typename Array2d1::value_type ValueType;
 
-    enum CBLAS_ORDER order = CblasColMajor;
+    enum CBLAS_ORDER order = Orientation<typename Array2d1::orientation>::type;
     enum CBLAS_TRANSPOSE transa = CblasNoTrans;
     enum CBLAS_TRANSPOSE transb = CblasNoTrans;
 
@@ -359,7 +362,7 @@ void symm(cblas::execution_policy& exec,
 {
     typedef typename Array2d1::value_type ValueType;
 
-    enum CBLAS_ORDER order = CblasColMajor;
+    enum CBLAS_ORDER order = Orientation<typename Array2d1::orientation>::type;
     enum CBLAS_SIDE  side  = CblasLeft;
     enum CBLAS_UPLO  uplo  = CblasUpper;
 
@@ -389,7 +392,7 @@ void syrk(cblas::execution_policy& exec,
 {
     typedef typename Array2d1::value_type ValueType;
 
-    enum CBLAS_ORDER order = CblasColMajor;
+    enum CBLAS_ORDER order = Orientation<typename Array2d1::orientation>::type;
     enum CBLAS_UPLO  uplo  = CblasUpper;
     enum CBLAS_TRANSPOSE trans = CblasNoTrans;
 
@@ -419,7 +422,7 @@ void syr2k(cblas::execution_policy& exec,
 {
     typedef typename Array2d1::value_type ValueType;
 
-    enum CBLAS_ORDER order = CblasColMajor;
+    enum CBLAS_ORDER order = Orientation<typename Array2d1::orientation>::type;
     enum CBLAS_UPLO  uplo  = CblasUpper;
     enum CBLAS_TRANSPOSE trans = CblasNoTrans;
 
@@ -449,7 +452,7 @@ void trmm(cblas::execution_policy& exec,
 {
     typedef typename Array2d1::value_type ValueType;
 
-    enum CBLAS_ORDER order = CblasColMajor;
+    enum CBLAS_ORDER order = Orientation<typename Array2d1::orientation>::type;
     enum CBLAS_SIDE  side  = CblasLeft;
     enum CBLAS_UPLO  uplo  = CblasUpper;
     enum CBLAS_TRANSPOSE trans = CblasNoTrans;
@@ -478,7 +481,7 @@ void trsm(cblas::execution_policy& exec,
 {
     typedef typename Array2d1::value_type ValueType;
 
-    enum CBLAS_ORDER order = CblasColMajor;
+    enum CBLAS_ORDER order = Orientation<typename Array2d1::orientation>::type;
     enum CBLAS_SIDE  side  = CblasLeft;
     enum CBLAS_UPLO  uplo  = CblasUpper;
     enum CBLAS_TRANSPOSE trans = CblasNoTrans;
