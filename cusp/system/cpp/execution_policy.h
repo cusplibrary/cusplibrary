@@ -43,6 +43,7 @@ using namespace thrust::system::cpp;
 
 #include <cusp/system/cpp/detail/convert.h>
 #include <cusp/system/cpp/detail/elementwise.h>
+#include <cusp/system/cpp/detail/format_utils.h>
 #include <cusp/system/cpp/detail/multiply.h>
 #include <cusp/system/cpp/detail/sort.h>
 #include <cusp/system/cpp/detail/transpose.h>

@@ -43,6 +43,7 @@ using namespace thrust::system::omp;
 
 #include <cusp/system/omp/detail/convert.h>
 #include <cusp/system/omp/detail/elementwise.h>
+#include <cusp/system/omp/detail/format_utils.h>
 #include <cusp/system/omp/detail/multiply.h>
 #include <cusp/system/omp/detail/sort.h>
 #include <cusp/system/omp/detail/transpose.h>

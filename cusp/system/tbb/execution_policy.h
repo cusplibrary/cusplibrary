@@ -32,6 +32,7 @@
 
 #include <cusp/system/tbb/detail/convert.h>
 #include <cusp/system/tbb/detail/elementwise.h>
+#include <cusp/system/tbb/detail/format_utils.h>
 #include <cusp/system/tbb/detail/multiply.h>
 #include <cusp/system/tbb/detail/sort.h>
 #include <cusp/system/tbb/detail/transpose.h>
