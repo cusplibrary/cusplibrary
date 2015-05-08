@@ -1,5 +1,9 @@
 language: cpp
 
+branches:
+  only:
+    - develop
+
 compiler:
     - g++
 
