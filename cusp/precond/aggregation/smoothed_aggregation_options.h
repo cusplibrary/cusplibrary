@@ -159,11 +159,6 @@ public:
         : theta(M.theta), omega(M.omega), min_level_size(M.min_level_size), max_levels(M.max_levels)
     {}
 
-    virtual void strength_of_connection(const MatrixType& A, MatrixType& C) const
-    {
-        cusp::precond::aggregation::symmetric_strength_of_connection(A, C, theta);
-    }
-
     virtual void aggregate(const MatrixType& C, IndexArray& aggregates) const
     {
         cusp::precond::aggregation::standard_aggregation(C, aggregates);

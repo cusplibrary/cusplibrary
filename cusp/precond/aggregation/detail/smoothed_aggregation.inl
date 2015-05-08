@@ -66,6 +66,21 @@ template <typename MatrixType, typename ArrayType>
 void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverType,Format>
 ::sa_initialize(const MatrixType& A, const ArrayType& B)
 {
+    using thrust::system::detail::generic::select_system;
+
+    typedef typename MatrixType::memory_space System;
+
+    System system;
+
+    sa_initialize(select_system(system), A, B);
+}
+
+template <typename IndexType, typename ValueType, typename MemorySpace, typename SmootherType, typename SolverType, typename Format>
+template <typename DerivedPolicy, typename MatrixType, typename ArrayType>
+void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverType,Format>
+::sa_initialize(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                const MatrixType& A, const ArrayType& B)
+{
     typedef typename select_sa_matrix_view<MatrixType>::type View;
     typedef typename ML::level Level;
 
@@ -86,14 +101,14 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverTyp
     if(A.num_rows > sa_options.min_level_size)
     {
         View A_(A);
-        extend_hierarchy(A_);
+        extend_hierarchy(exec, A_);
         ML::setup_level(0, A, sa_levels[0]);
     }
 
     // Iteratively setup lower levels until stopping criteria are reached
     while ((sa_levels.back().A_.num_rows > sa_options.min_level_size) &&
             (sa_levels.size() < sa_options.max_levels))
-        extend_hierarchy(sa_levels.back().A_);
+        extend_hierarchy(exec, sa_levels.back().A_);
 
     // Setup multilevel arrays and matrices on each level
     for( size_t lvl = 1; lvl < sa_levels.size(); lvl++ )
@@ -104,31 +119,31 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverTyp
 }
 
 template <typename IndexType, typename ValueType, typename MemorySpace, typename SmootherType, typename SolverType, typename Format>
-template <typename MatrixType>
+template <typename DerivedPolicy, typename MatrixType>
 void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverType,Format>
-::extend_hierarchy(const MatrixType& A)
+::extend_hierarchy(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                   const MatrixType& A)
 {
     typedef typename ML::level Level;
 
-    cusp::array1d<IndexType,MemorySpace> aggregates(A.num_rows, IndexType(0));
     {
         // compute stength of connection matrix
         SetupMatrixType C;
-        sa_options.strength_of_connection(A, C);
+        strength_of_connection(exec, A, C);
 
         // compute aggregates
-        sa_options.aggregate(C, aggregates);
+        sa_levels.back().aggregates.resize(A.num_rows, IndexType(0));
+        sa_options.aggregate(C, sa_levels.back().aggregates);
     }
 
     SetupMatrixType P;
     cusp::array1d<ValueType,MemorySpace>  B_coarse;
-    {
-        // compute tenative prolongator and coarse nullspace vector
-        sa_options.fit_candidates(aggregates, sa_levels.back().B, sa_levels.back().T, B_coarse);
 
-        // compute prolongation operator
-        sa_options.smooth_prolongator(A, sa_levels.back().T, P, sa_levels.back().rho_DinvA);  // TODO if C != A then compute rho_Dinv_C
-    }
+    // compute tenative prolongator and coarse nullspace vector
+    sa_options.fit_candidates(sa_levels.back().aggregates, sa_levels.back().B, sa_levels.back().T, B_coarse);
+
+    // compute prolongation operator
+    sa_options.smooth_prolongator(A, sa_levels.back().T, P, sa_levels.back().rho_DinvA);  // TODO if C != A then compute rho_Dinv_C
 
     // compute restriction operator (transpose of prolongator)
     SetupMatrixType R;
@@ -139,7 +154,6 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverTyp
     sa_options.galerkin_product(R,A,P,RAP);
 
     // Setup components for next level in hierarchy
-    sa_levels.back().aggregates.swap(aggregates);
     sa_levels.push_back(sa_level<SetupMatrixType>());
     sa_levels.back().A_.swap(RAP);
     sa_levels.back().B.swap(B_coarse);

@@ -1,0 +1,107 @@
+/*
+ *  Copyright 2008-2014 NVIDIA Corporation
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
+
+#include <cusp/array1d.h>
+#include <cusp/convert.h>
+#include <cusp/copy.h>
+#include <cusp/csr_matrix.h>
+#include <cusp/format_utils.h>
+
+#include <cusp/detail/functional.h>
+
+#include <thrust/count.h>
+#include <thrust/functional.h>
+#include <thrust/iterator/zip_iterator.h>
+#include <thrust/iterator/permutation_iterator.h>
+
+namespace cusp
+{
+namespace precond
+{
+namespace aggregation
+{
+namespace detail
+{
+
+template <typename ValueType>
+struct is_strong_connection
+{
+    ValueType theta;
+
+    is_strong_connection(const ValueType theta) : theta(theta) {}
+
+    template <typename Tuple>
+    __host__ __device__
+    bool operator()(const Tuple& t) const
+    {
+        ValueType Aij = thrust::get<0>(t);
+        ValueType Aii = thrust::get<1>(t);
+        ValueType Ajj = thrust::get<2>(t);
+
+        // square everything to eliminate the sqrt()
+        return (Aij * Aij) >= (theta * theta) * absolute_value(Aii * Ajj);
+    }
+};
+
+template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
+void symmetric_strength_of_connection(thrust::execution_policy<DerivedPolicy> &exec,
+                                      const MatrixType1& A, MatrixType2& S, const double theta,
+                                      cusp::coo_format)
+{
+    typedef typename MatrixType1::index_type   IndexType;
+    typedef typename MatrixType1::value_type   ValueType;
+    typedef typename MatrixType1::memory_space MemorySpace;
+
+    cusp::array1d<ValueType,MemorySpace> diagonal;
+    cusp::extract_diagonal(exec, A, diagonal);
+
+    is_strong_connection<ValueType> pred(theta);
+
+    // compute number of entries in output
+    IndexType num_entries = thrust::count_if(exec,
+                                             thrust::make_zip_iterator(thrust::make_tuple
+                                                    (A.values.begin(),
+                                                     thrust::make_permutation_iterator(diagonal.begin(), A.row_indices.begin()),
+                                                     thrust::make_permutation_iterator(diagonal.begin(), A.column_indices.begin()))),
+                                             thrust::make_zip_iterator(thrust::make_tuple
+                                                     (A.values.begin(),
+                                                      thrust::make_permutation_iterator(diagonal.begin(), A.row_indices.begin()),
+                                                      thrust::make_permutation_iterator(diagonal.begin(), A.column_indices.begin()))) + A.num_entries,
+                                             pred);
+
+    // this is just zipping up (A[i,j],A[i,i],A[j,j]) and applying is_strong_connection to each tuple
+
+    // resize output
+    S.resize(A.num_rows, A.num_cols, num_entries);
+
+    // copy strong connections to output
+    thrust::copy_if(exec,
+                    thrust::make_zip_iterator(thrust::make_tuple(A.row_indices.begin(), A.column_indices.begin(), A.values.begin())),
+                    thrust::make_zip_iterator(thrust::make_tuple(A.row_indices.begin(), A.column_indices.begin(), A.values.begin())) + A.num_entries,
+                    thrust::make_zip_iterator(thrust::make_tuple
+                            (A.values.begin(),
+                             thrust::make_permutation_iterator(diagonal.begin(), A.row_indices.begin()),
+                             thrust::make_permutation_iterator(diagonal.begin(), A.column_indices.begin()))),
+                    thrust::make_zip_iterator(thrust::make_tuple(S.row_indices.begin(), S.column_indices.begin(), S.values.begin())),
+                    pred);
+}
+
+} // end namespace detail
+} // end namespace aggregation
+} // end namespace precond
+} // end namespace cusp
+

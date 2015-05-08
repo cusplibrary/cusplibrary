@@ -156,10 +156,15 @@ class smoothed_aggregation :
     template <typename MatrixType, typename ArrayType>
     void sa_initialize(const MatrixType& A, const ArrayType& B);
 
+    template <typename DerivedPolicy, typename MatrixType, typename ArrayType>
+    void sa_initialize(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                       const MatrixType& A, const ArrayType& B);
+
 protected:
 
-    template <typename MatrixType>
-    void extend_hierarchy(const MatrixType& A);
+    template <typename DerivedPolicy, typename MatrixType>
+    void extend_hierarchy(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                          const MatrixType& A);
 };
 /*! \}
  */
