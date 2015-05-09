@@ -39,14 +39,14 @@ namespace detail
 
 template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
 void symmetric_strength_of_connection(sequential::execution_policy<DerivedPolicy> &exec,
-                                      const MatrixType1& A, MatrixType2& S, const double theta,
-                                      cusp::csr_format)
+                                      const MatrixType1& A, MatrixType2& S, const double theta)
 {
-    typedef typename MatrixType1::index_type IndexType;
-    typedef typename MatrixType1::value_type ValueType;
+    typedef typename MatrixType1::index_type   IndexType;
+    typedef typename MatrixType1::value_type   ValueType;
+    typedef typename MatrixType1::memory_space MemorySpace;
 
     // extract matrix diagonal
-    cusp::array1d<ValueType,cusp::host_memory> diagonal;
+    cusp::array1d<ValueType,MemorySpace> diagonal;
     cusp::extract_diagonal(exec, A, diagonal);
 
     IndexType num_entries = 0;
@@ -63,7 +63,7 @@ void symmetric_strength_of_connection(sequential::execution_policy<DerivedPolicy
             const ValueType Ajj = diagonal[j];
 
             //  |A(i,j)| >= theta * sqrt(|A(i,i)|*|A(j,j)|)
-            if(Aij*Aij >= (theta * theta) * cusp::detail::absolute_value(Aii * Ajj))
+            if(Aij*Aij >= (theta * theta) * cusp::detail::absolute_value()(Aii * Ajj))
                 num_entries++;
         }
     }
@@ -88,7 +88,7 @@ void symmetric_strength_of_connection(sequential::execution_policy<DerivedPolicy
             const ValueType Ajj = diagonal[j];
 
             //  |A(i,j)| >= theta * sqrt(|A(i,i)|*|A(j,j)|)
-            if(Aij*Aij >= (theta * theta) * cusp::detail::absolute_value(Aii * Ajj))
+            if(Aij*Aij >= (theta * theta) * cusp::detail::absolute_value()(Aii * Ajj))
             {
                 S.column_indices[num_entries] =   j;
                 S.values[num_entries]         = Aij;

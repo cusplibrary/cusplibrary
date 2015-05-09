@@ -53,14 +53,14 @@ struct is_strong_connection
         ValueType Ajj = thrust::get<2>(t);
 
         // square everything to eliminate the sqrt()
-        return (Aij * Aij) >= (theta * theta) * absolute_value(Aii * Ajj);
+        return (Aij * Aij) >= ((theta * theta) * cusp::detail::absolute<ValueType>()(Aii * Ajj));
     }
 };
 
 template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
 void symmetric_strength_of_connection(thrust::execution_policy<DerivedPolicy> &exec,
-                                      const MatrixType1& A, MatrixType2& S, const double theta,
-                                      cusp::coo_format)
+                                      const MatrixType1& A, MatrixType2& S, const double theta)
+                                      // cusp::coo_format)
 {
     typedef typename MatrixType1::index_type   IndexType;
     typedef typename MatrixType1::value_type   ValueType;
