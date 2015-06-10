@@ -45,6 +45,15 @@ void symmetric_strength_of_connection(const thrust::detail::execution_policy_bas
 template <typename MatrixType1, typename MatrixType2>
 void symmetric_strength_of_connection(const MatrixType1& A, MatrixType2& S, const double theta = 0.0);
 
+template<typename DerivedPolicy, typename MatrixType1, typename MatrixType2, typename ArrayType>
+void evolution_strength_of_connection(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                                      const MatrixType1& A, MatrixType2& S, const ArrayType& B,
+                                      const double rho_DinvA = 0.0, const double epsilon = 4.0);
+
+template<typename MatrixType1, typename MatrixType2, typename ArrayType>
+void evolution_strength_of_connection(const MatrixType1& A, MatrixType2& S, const ArrayType& B,
+                                      const double rho_DinvA = 0.0, const double epsilon = 4.0);
+
 /* \cond */
 template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
 void strength_of_connection(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,

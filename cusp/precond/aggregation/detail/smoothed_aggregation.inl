@@ -39,7 +39,7 @@ smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverType,For
                        typename thrust::detail::enable_if_convertible<typename ArrayType::format,cusp::array1d_format>::type*)
 	: ML(), sa_options(sa_options)
 {
-    sa_initialize(A,B);
+    sa_initialize(A, B);
 }
 
 template <typename IndexType, typename ValueType, typename MemorySpace, typename SmootherType, typename SolverType, typename Format>
@@ -58,7 +58,8 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverTyp
 ::sa_initialize(const MatrixType& A)
 {
     cusp::constant_array<ValueType> B(A.num_rows, 1);
-    sa_initialize(A,B);
+
+    sa_initialize(A, B);
 }
 
 template <typename IndexType, typename ValueType, typename MemorySpace, typename SmootherType, typename SolverType, typename Format>
@@ -129,7 +130,7 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverTyp
     {
         // compute stength of connection matrix
         SetupMatrixType C;
-        strength_of_connection(exec, A, C);
+        cusp::precond::aggregation::strength_of_connection(exec, A, C);
 
         // compute aggregates
         sa_levels.back().aggregates.resize(A.num_rows, IndexType(0));
@@ -147,11 +148,11 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverTyp
 
     // compute restriction operator (transpose of prolongator)
     SetupMatrixType R;
-    sa_options.form_restriction(P,R);
+    sa_options.form_restriction(P, R);
 
     // construct Galerkin product R*A*P
     SetupMatrixType RAP;
-    sa_options.galerkin_product(R,A,P,RAP);
+    sa_options.galerkin_product(R, A, P, RAP);
 
     // Setup components for next level in hierarchy
     sa_levels.push_back(sa_level<SetupMatrixType>());
