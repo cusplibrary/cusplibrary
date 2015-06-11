@@ -75,10 +75,17 @@ void evolution_strength_of_connection(const MatrixType1& A, MatrixType2& S, cons
 }
 
 template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
-void strength_of_connection(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+void strength_of_connection(thrust::execution_policy<DerivedPolicy> &exec,
                             const MatrixType1& A, MatrixType2& S)
 {
     cusp::precond::aggregation::symmetric_strength_of_connection(exec, A, S);
+}
+
+template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
+void strength_of_connection(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                            const MatrixType1& A, MatrixType2& S)
+{
+    strength_of_connection(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, S);
 }
 
 template <typename MatrixType1, typename MatrixType2>
