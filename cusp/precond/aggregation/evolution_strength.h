@@ -28,9 +28,10 @@ namespace aggregation
 {
 
 /* \cond */
-template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
-void strength_of_connection(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-                            const MatrixType1& A, MatrixType2& S);
+template<typename DerivedPolicy, typename MatrixType1, typename MatrixType2, typename ArrayType>
+void evolution_strength_of_connection(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                                      const MatrixType1& A, MatrixType2& S, const ArrayType& B,
+                                      const double rho_DinvA = 0.0, const double epsilon = 4.0);
 /* \endcond */
 
 /*  Compute a strength of connection matrix using the standard symmetric measure.
@@ -42,12 +43,13 @@ void strength_of_connection(const thrust::detail::execution_policy_base<DerivedP
  *
  *  Note: explicit diagonal entries are always considered strong.
  */
-template <typename MatrixType1, typename MatrixType2>
-void strength_of_connection(const MatrixType1& A, MatrixType2& S);
+template<typename MatrixType1, typename MatrixType2, typename ArrayType>
+void evolution_strength_of_connection(const MatrixType1& A, MatrixType2& S, const ArrayType& B,
+                                      const double rho_DinvA = 0.0, const double epsilon = 4.0);
 
 } // end namespace aggregation
 } // end namespace precond
 } // end namespace cusp
 
-#include <cusp/precond/aggregation/detail/strength.inl>
+#include <cusp/precond/aggregation/detail/evolution_strength.inl>
 

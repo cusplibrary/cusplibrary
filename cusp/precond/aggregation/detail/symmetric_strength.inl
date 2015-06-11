@@ -16,7 +16,7 @@
 
 #include <cusp/detail/config.h>
 
-#include <cusp/precond/aggregation/symmetric_strength.h>
+#include <cusp/precond/aggregation/system/detail/generic/symmetric_strength.h>
 
 namespace cusp
 {
@@ -26,21 +26,16 @@ namespace aggregation
 {
 
 template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
-void strength_of_connection(thrust::execution_policy<DerivedPolicy> &exec,
-                            const MatrixType1& A, MatrixType2& S)
+void symmetric_strength_of_connection(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                                      const MatrixType1& A, MatrixType2& S, const double theta)
 {
-    cusp::precond::aggregation::symmetric_strength_of_connection(exec, A, S);
-}
+    using cusp::precond::aggregation::detail::symmetric_strength_of_connection;
 
-template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
-void strength_of_connection(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-                            const MatrixType1& A, MatrixType2& S)
-{
-    strength_of_connection(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, S);
+    symmetric_strength_of_connection(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, S, theta);
 }
 
 template <typename MatrixType1, typename MatrixType2>
-void strength_of_connection(const MatrixType1& A, MatrixType2& S)
+void symmetric_strength_of_connection(const MatrixType1& A, MatrixType2& S, const double theta)
 {
     using thrust::system::detail::generic::select_system;
 
@@ -50,7 +45,7 @@ void strength_of_connection(const MatrixType1& A, MatrixType2& S)
     System1 system1;
     System2 system2;
 
-    cusp::precond::aggregation::strength_of_connection(select_system(system1,system2), A, S);
+    cusp::precond::aggregation::symmetric_strength_of_connection(select_system(system1,system2), A, S, theta);
 }
 
 } // end namespace aggregation
