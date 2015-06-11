@@ -105,7 +105,7 @@ int main(int argc, char ** argv)
 
     // solve with smoothed aggregation algebraic multigrid preconditioner and polynomial smoother
     {
-        typedef cusp::precond::aggregation::polynomial_smoother<ValueType,MemorySpace> Smoother;
+        typedef cusp::precond::polynomial_smoother<ValueType,MemorySpace> Smoother;
         std::cout << "\nSolving with smoothed aggregation preconditioner and polynomial smoother" << std::endl;
 
         timer t0;
@@ -117,7 +117,7 @@ int main(int argc, char ** argv)
 
     // solve with smoothed aggregation algebraic multigrid preconditioner and gauss-seidel smoother
     {
-        typedef cusp::precond::aggregation::gauss_seidel_smoother<ValueType,MemorySpace> Smoother;
+        typedef cusp::precond::gauss_seidel_smoother<ValueType,MemorySpace> Smoother;
         std::cout << "\nSolving with smoothed aggregation preconditioner and gauss-seidel smoother" << std::endl;
 
         // Input matrix must be in CSR format for GS smoother
