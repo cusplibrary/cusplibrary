@@ -130,7 +130,7 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverTyp
     {
         // compute stength of connection matrix
         SetupMatrixType C;
-        cusp::precond::aggregation::strength_of_connection(exec, A, C);
+        cusp::precond::aggregation::strength_of_connection(exec, A, C, sa_levels.back());
 
         // compute aggregates
         sa_levels.back().aggregates.resize(A.num_rows, IndexType(0));

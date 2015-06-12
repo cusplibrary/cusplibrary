@@ -59,8 +59,8 @@ struct is_strong_connection
 
 template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
 void symmetric_strength_of_connection(thrust::execution_policy<DerivedPolicy> &exec,
-                                      const MatrixType1& A, MatrixType2& S, const double theta)
-                                      // cusp::coo_format)
+                                      const MatrixType1& A, MatrixType2& S, const double theta,
+                                      cusp::coo_format)
 {
     typedef typename MatrixType1::index_type   IndexType;
     typedef typename MatrixType1::value_type   ValueType;
@@ -98,6 +98,40 @@ void symmetric_strength_of_connection(thrust::execution_policy<DerivedPolicy> &e
                              thrust::make_permutation_iterator(diagonal.begin(), A.column_indices.begin()))),
                     thrust::make_zip_iterator(thrust::make_tuple(S.row_indices.begin(), S.column_indices.begin(), S.values.begin())),
                     pred);
+}
+
+template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
+void symmetric_strength_of_connection(thrust::execution_policy<DerivedPolicy> &exec,
+                                      const MatrixType1& A, MatrixType2& S, const double theta,
+                                      cusp::csr_format)
+{
+    typedef typename MatrixType1::index_type IndexType;
+    typedef typename MatrixType1::value_type ValueType;
+    typedef typename MatrixType1::memory_space MemorySpace;
+    typedef typename MatrixType1::const_view MatrixViewType;
+
+    cusp::array1d<IndexType, MemorySpace> A_row_indices(A.num_entries);
+    cusp::offsets_to_indices(A.row_offsets, A_row_indices);
+
+    cusp::coo_matrix<IndexType, ValueType, MemorySpace> S_;
+
+    symmetric_strength_of_connection(exec,
+                                     cusp::make_coo_matrix_view(A.num_rows, A.num_cols, A.num_entries,
+                                                                A_row_indices, A.column_indices, A.values),
+                                     S_, theta, cusp::coo_format());
+
+    S = S_;
+}
+
+template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
+void symmetric_strength_of_connection(thrust::execution_policy<DerivedPolicy> &exec,
+                                      const MatrixType1& A, MatrixType2& S, const double theta)
+{
+    typedef typename MatrixType1::format Format;
+
+    Format format;
+
+    symmetric_strength_of_connection(exec, A, S, theta, format);
 }
 
 } // end namespace detail

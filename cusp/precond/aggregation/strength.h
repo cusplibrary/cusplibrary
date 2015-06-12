@@ -27,10 +27,17 @@ namespace precond
 namespace aggregation
 {
 
+// Forward definition
+template<typename> struct sa_level;
+
 /* \cond */
 template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
 void strength_of_connection(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
                             const MatrixType1& A, MatrixType2& S);
+
+template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2, typename MatrixType3>
+void strength_of_connection(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                            const MatrixType1& A, MatrixType2& S, sa_level<MatrixType3>& level);
 /* \endcond */
 
 /*  Compute a strength of connection matrix using the standard symmetric measure.
@@ -44,6 +51,9 @@ void strength_of_connection(const thrust::detail::execution_policy_base<DerivedP
  */
 template <typename MatrixType1, typename MatrixType2>
 void strength_of_connection(const MatrixType1& A, MatrixType2& S);
+
+template <typename MatrixType1, typename MatrixType2, typename MatrixType3>
+void strength_of_connection(const MatrixType1& A, MatrixType2& S, sa_level<MatrixType3>& level);
 
 } // end namespace aggregation
 } // end namespace precond

@@ -154,9 +154,10 @@ void apply_distance_filter(MatrixType& A)
 }
 
 template<typename DerivedPolicy, typename MatrixType1, typename MatrixType2, typename ArrayType>
-void evolution_strength_of_connection(thrust::execution_policy<DerivedPolicy> &exec,
-                                      const MatrixType1& A, MatrixType2& S, const ArrayType& B,
-                                      const double rho_DinvA, const double epsilon)
+typename thrust::detail::enable_if_convertible<typename ArrayType::format,cusp::array1d_format>::type
+evolution_strength_of_connection(thrust::execution_policy<DerivedPolicy> &exec,
+                                 const MatrixType1& A, MatrixType2& S, const ArrayType& B,
+                                 double rho_DinvA, const double epsilon, cusp::coo_format)
 {
     using namespace thrust::placeholders;
 
@@ -169,25 +170,25 @@ void evolution_strength_of_connection(thrust::execution_policy<DerivedPolicy> &e
     const size_t M = A.num_entries;
 
     cusp::array1d<ValueType, MemorySpace> D(N);
-    cusp::array1d<ValueType, MemorySpace> Dinv_A_values(A.values);
-    cusp::array1d<ValueType, MemorySpace> Atilde_values(M, 0);
-    cusp::array1d<ValueType, MemorySpace> Bmat_forscaling(B);
     cusp::array1d<ValueType, MemorySpace> DAtilde(N);
+    cusp::array1d<ValueType, MemorySpace> largest_per_row(N, 0);
+
     cusp::array1d<ValueType, MemorySpace> data(M);
     cusp::array1d<ValueType, MemorySpace> angle(M);
-    cusp::array1d<ValueType, MemorySpace> largest_per_row(N, 0);
     cusp::array1d<ValueType, MemorySpace> Atilde_symmetric(M);
+    cusp::array1d<ValueType, MemorySpace> Atilde_values(M, 0);
+
+    cusp::array1d<ValueType, MemorySpace> Bmat_forscaling(B);
+    cusp::array1d<ValueType, MemorySpace> Dinv_A_values(A.values);
 
     cusp::array1d<IndexType, MemorySpace> permutation(M);
     cusp::array1d<IndexType, MemorySpace> indices(M);
     cusp::array1d<IndexType, MemorySpace> A_row_offsets(N + 1);
 
-    MatrixViewType Dinv_A(A.num_rows, A.num_cols, A.num_entries, A_row_offsets, A.column_indices, Dinv_A_values);
-    MatrixViewType Atilde(A.num_rows, A.num_cols, A.num_entries, A_row_offsets, A.column_indices, Atilde_values);
+    MatrixViewType Dinv_A(A.num_rows, A.num_cols, A.num_entries, A.row_indices, A.column_indices, Dinv_A_values);
+    MatrixViewType Atilde(A.num_rows, A.num_cols, A.num_entries, A.row_indices, A.column_indices, Atilde_values);
 
     cusp::extract_diagonal(exec, A, D);
-
-    cusp::indices_to_offsets(exec, A.row_indices, A_row_offsets);
 
     // scale the rows of D_inv_S by D^-1
     thrust::transform(exec,
@@ -195,6 +196,14 @@ void evolution_strength_of_connection(thrust::execution_policy<DerivedPolicy> &e
                       thrust::make_permutation_iterator(D.begin(), A.row_indices.begin()),
                       Dinv_A_values.begin(),
                       thrust::divides<ValueType>());
+
+    if(rho_DinvA == 0.0)
+    {
+      rho_DinvA = cusp::eigen::ritz_spectral_radius(Dinv_A, 20);
+      std::cout << "rho(D^-1A) = " << rho_DinvA << std::endl;
+    }
+
+    cusp::indices_to_offsets(exec, A.row_indices, A_row_offsets);
 
     thrust::transform(exec,
                       thrust::make_zip_iterator(thrust::make_tuple(A.row_indices.begin(), A.column_indices.begin(), Dinv_A_values.begin())),
@@ -253,7 +262,7 @@ void evolution_strength_of_connection(thrust::execution_policy<DerivedPolicy> &e
 
     if(epsilon != std::numeric_limits<ValueType>::infinity())
     {
-        MatrixViewType Atilde_symmetric_matrix(A.num_rows, A.num_cols, A.num_entries, A_row_offsets, A.column_indices, Atilde_symmetric);
+        MatrixViewType Atilde_symmetric_matrix(A.num_rows, A.num_cols, A.num_entries, A.row_indices, A.column_indices, Atilde_symmetric);
         apply_distance_filter(Atilde_symmetric_matrix);
     }
 
@@ -282,6 +291,43 @@ void evolution_strength_of_connection(thrust::execution_policy<DerivedPolicy> &e
 
     cusp::copy(exec, A, S);
     cusp::copy(exec, Atilde_symmetric, S.values);
+}
+
+template<typename DerivedPolicy, typename MatrixType1, typename MatrixType2, typename ArrayType>
+typename thrust::detail::enable_if_convertible<typename ArrayType::format,cusp::array1d_format>::type
+evolution_strength_of_connection(thrust::execution_policy<DerivedPolicy> &exec,
+                                 const MatrixType1& A, MatrixType2& S, const ArrayType& B,
+                                 double rho_DinvA, const double epsilon, cusp::csr_format)
+{
+    typedef typename MatrixType1::index_type IndexType;
+    typedef typename MatrixType1::value_type ValueType;
+    typedef typename MatrixType1::memory_space MemorySpace;
+    typedef typename MatrixType1::const_view MatrixViewType;
+
+    cusp::array1d<IndexType, MemorySpace> A_row_indices(A.num_entries + 1);
+    cusp::offsets_to_indices(A.row_offsets, A_row_indices);
+
+    cusp::coo_matrix<IndexType, ValueType, MemorySpace> S_;
+
+    evolution_strength_of_connection(exec,
+                                     cusp::make_coo_matrix_view(A.num_rows, A.num_cols, A.num_entries,
+                                                                A_row_indices, A.column_indices, A.values),
+                                     S_, B, rho_DinvA, epsilon, cusp::coo_format());
+
+    S = S_;
+}
+
+template<typename DerivedPolicy, typename MatrixType1, typename MatrixType2, typename ArrayType>
+typename thrust::detail::enable_if_convertible<typename ArrayType::format,cusp::array1d_format>::type
+evolution_strength_of_connection(thrust::execution_policy<DerivedPolicy> &exec,
+                                 const MatrixType1& A, MatrixType2& S, const ArrayType& B,
+                                 double rho_DinvA, const double epsilon)
+{
+    typedef typename MatrixType1::format Format;
+
+    Format format;
+
+    evolution_strength_of_connection(exec, A, S, B, rho_DinvA, epsilon, format);
 }
 
 } // end namespace detail

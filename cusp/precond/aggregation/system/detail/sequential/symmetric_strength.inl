@@ -38,8 +38,9 @@ namespace detail
 {
 
 template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
-void symmetric_strength_of_connection(sequential::execution_policy<DerivedPolicy> &exec,
-                                      const MatrixType1& A, MatrixType2& S, const double theta)
+void symmetric_strength_of_connection(thrust::system::detail::sequential::execution_policy<DerivedPolicy> &exec,
+                                      const MatrixType1& A, MatrixType2& S,
+                                      const double theta, cusp::csr_format)
 {
     typedef typename MatrixType1::index_type   IndexType;
     typedef typename MatrixType1::value_type   ValueType;
@@ -63,7 +64,7 @@ void symmetric_strength_of_connection(sequential::execution_policy<DerivedPolicy
             const ValueType Ajj = diagonal[j];
 
             //  |A(i,j)| >= theta * sqrt(|A(i,i)|*|A(j,j)|)
-            if(Aij*Aij >= (theta * theta) * cusp::detail::absolute_value()(Aii * Ajj))
+            if(Aij*Aij >= (theta * theta) * cusp::detail::absolute<ValueType>()(Aii * Ajj))
                 num_entries++;
         }
     }
@@ -88,7 +89,7 @@ void symmetric_strength_of_connection(sequential::execution_policy<DerivedPolicy
             const ValueType Ajj = diagonal[j];
 
             //  |A(i,j)| >= theta * sqrt(|A(i,i)|*|A(j,j)|)
-            if(Aij*Aij >= (theta * theta) * cusp::detail::absolute_value()(Aii * Ajj))
+            if(Aij*Aij >= (theta * theta) * cusp::detail::absolute<ValueType>()(Aii * Ajj))
             {
                 S.column_indices[num_entries] =   j;
                 S.values[num_entries]         = Aij;

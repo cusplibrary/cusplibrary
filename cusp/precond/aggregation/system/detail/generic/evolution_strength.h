@@ -28,9 +28,10 @@ namespace detail
 {
 
 template<typename DerivedPolicy, typename MatrixType1, typename MatrixType2, typename ArrayType>
-void evolution_strength_of_connection(thrust::execution_policy<DerivedPolicy> &exec,
-                                      const MatrixType1& A, MatrixType2& S, const ArrayType& B,
-                                      const double rho_DinvA, const double epsilon);
+typename thrust::detail::enable_if_convertible<typename ArrayType::format,cusp::array1d_format>::type
+evolution_strength_of_connection(thrust::execution_policy<DerivedPolicy> &exec,
+                                 const MatrixType1& A, MatrixType2& S, const ArrayType& B,
+                                 const double rho_DinvA, const double epsilon);
 
 } // end namespace detail
 } // end namespace aggregation
