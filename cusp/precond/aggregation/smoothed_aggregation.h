@@ -138,7 +138,7 @@ class smoothed_aggregation :
     const SAOptionsType sa_options;
     std::vector< sa_level<SetupMatrixType> > sa_levels;
 
-    smoothed_aggregation(void) {}
+    smoothed_aggregation(const SAOptionsType& sa_options = SAOptionsType()) : sa_options(sa_options) {};
 
     template <typename MatrixType>
     smoothed_aggregation(const MatrixType& A, const SAOptionsType& sa_options = SAOptionsType());

@@ -18,6 +18,7 @@
 #include <cusp/format_utils.h>
 #include <cusp/linear_operator.h>
 #include <cusp/multiply.h>
+#include <cusp/transpose.h>
 
 #include <cusp/eigen/spectral_radius.h>
 
@@ -76,16 +77,17 @@ struct conditional_invert : public thrust::unary_function<ValueType,ValueType>
 };
 
 template<typename ValueType>
-struct filter_small_ratios_and_large_angles : public thrust::unary_function<ValueType,ValueType>
+struct filter_small_ratios_and_large_angles
 {
     template<typename Tuple>
     __host__ __device__
     ValueType operator()(const Tuple& t) const
     {
-        ValueType angle = thrust::get<0>(t);
-        ValueType ratio = thrust::get<1>(t);
+        ValueType val = thrust::get<0>(t);
+        bool angle    = thrust::get<1>(t);
+        bool ratio    = thrust::get<2>(t);
 
-        return ((angle < 0.0) || (abs(ratio) < 1e-4)) ? 0 : ratio;
+        return (angle || ratio) ? 0 : val;
     }
 };
 
@@ -94,7 +96,7 @@ struct set_perfect : public thrust::unary_function<ValueType,ValueType>
 {
     const ValueType eps;
 
-    set_perfect(void) : eps(std::sqrt(std::numeric_limits<ValueType>::epsilon())) {}
+    set_perfect(void) : eps(std::sqrt(std::numeric_limits<float>::epsilon())) {}
 
     __host__ __device__
     ValueType operator()(const ValueType val) const
@@ -106,21 +108,32 @@ struct set_perfect : public thrust::unary_function<ValueType,ValueType>
 template<typename T>
 struct distance_filter_functor
 {
-  __host__ __device__
-  T operator()(const T& A_val, const T& S_val) const
-  {
-      return A_val >= S_val ? 0 : A_val;
-  }
+    __host__ __device__
+    T operator()(const T& A_val, const T& S_val) const
+    {
+        return A_val >= S_val ? 0 : A_val;
+    }
+};
+
+template<typename T>
+struct non_zero_minimum
+{
+    __host__ __device__ T operator()(const T &lhs, const T &rhs) const
+    {
+        if(lhs == 0) return rhs;
+        if(rhs == 0) return lhs;
+        return lhs < rhs ? lhs : rhs;
+    }
 };
 
 template<typename ValueType>
 struct incomplete_inner_functor
 {
     const int *Ap, *Aj;
-    const ValueType *Ax;
+    const ValueType *Ax, *Ax_t;
 
-    incomplete_inner_functor(const int *Ap, const int *Aj, const ValueType *Ax)
-        : Ap(Ap), Aj(Aj), Ax(Ax)
+    incomplete_inner_functor(const int *Ap, const int *Aj, const ValueType *Ax, const ValueType *Ax_t)
+        : Ap(Ap), Aj(Aj), Ax(Ax), Ax_t(Ax_t)
     {}
 
     template <typename Tuple>
@@ -143,7 +156,7 @@ struct incomplete_inner_functor
             int B_j = Aj[B_pos];
 
             if(A_j == B_j) {
-                sum += Ax[A_pos] * Ax[B_pos];
+                sum += Ax[A_pos] * Ax_t[B_pos];
                 A_pos++;
                 B_pos++;
             } else if (A_j < B_j) {
@@ -157,34 +170,6 @@ struct incomplete_inner_functor
         return sum;
     }
 };
-
-template<typename MatrixType>
-void apply_distance_filter(const double epsilon, MatrixType A)
-{
-    using namespace thrust::placeholders;
-
-    typedef typename MatrixType::index_type IndexType;
-    typedef typename MatrixType::value_type ValueType;
-    typedef typename MatrixType::memory_space MemorySpace;
-
-    const size_t N = A.num_rows;
-
-    cusp::array1d<ValueType, MemorySpace> smallest_per_row(N, ValueType(0));
-
-    thrust::reduce_by_key(A.row_indices.begin(), A.row_indices.end(), A.values.begin(),
-                          thrust::make_discard_iterator(), smallest_per_row.begin(),
-                          thrust::equal_to<IndexType>(), thrust::minimum<ValueType>());
-
-    thrust::transform(smallest_per_row.begin(), smallest_per_row.end(),
-                      thrust::constant_iterator<ValueType>(epsilon),
-                      smallest_per_row.begin(),
-                      thrust::multiplies<ValueType>());
-
-    thrust::transform(A.values.begin(), A.values.end(),
-                      thrust::make_permutation_iterator(smallest_per_row.begin(), A.row_indices.begin()),
-                      A.values.begin(),
-                      distance_filter_functor<ValueType>());
-}
 
 template<typename DerivedPolicy, typename MatrixType1, typename MatrixType2, typename ArrayType>
 typename thrust::detail::enable_if_convertible<typename ArrayType::format,cusp::array1d_format>::type
@@ -204,24 +189,31 @@ evolution_strength_of_connection(thrust::execution_policy<DerivedPolicy> &exec,
 
     cusp::array1d<ValueType, MemorySpace> D(N);
     cusp::array1d<ValueType, MemorySpace> DAtilde(N);
-    // cusp::array1d<ValueType, MemorySpace> largest_per_row(N, 0);
+    cusp::array1d<ValueType, MemorySpace> smallest_per_row(N, std::numeric_limits<ValueType>::max());
 
     cusp::array1d<ValueType, MemorySpace> data(M);
     cusp::array1d<ValueType, MemorySpace> angle(M);
     cusp::array1d<ValueType, MemorySpace> Atilde_symmetric(M);
     cusp::array1d<ValueType, MemorySpace> Atilde_values(M);
 
-    cusp::array1d<bool, MemorySpace> filter(M);
+    cusp::array1d<bool, MemorySpace> weak_ratio(M, false);
+    cusp::array1d<bool, MemorySpace> neg_angle(M, false);
 
     cusp::array1d<ValueType, MemorySpace> Bmat_forscaling(B);
     cusp::array1d<ValueType, MemorySpace> Dinv_A_values(A.values);
+    cusp::array1d<ValueType, MemorySpace> Dinv_A_T_values(M);
 
-    cusp::array1d<IndexType, MemorySpace> permutation(M);
-    cusp::array1d<IndexType, MemorySpace> indices(M);
     cusp::array1d<IndexType, MemorySpace> A_row_offsets(N + 1);
+    cusp::array1d<IndexType, MemorySpace> permutation(M);
 
-    MatrixViewType Dinv_A(N, N, M, A.row_indices, A.column_indices, Dinv_A_values);
-    MatrixViewType Atilde(N, N, M, A.row_indices, A.column_indices, Atilde_values);
+    // compute symmetric permutation
+    {
+      cusp::array1d<IndexType, MemorySpace> indices(M);
+
+      thrust::sequence(exec, permutation.begin(), permutation.end());
+      cusp::copy(exec, A.column_indices, indices);
+      thrust::sort_by_key(exec, indices.begin(), indices.end(), permutation.begin());
+    }
 
     cusp::extract_diagonal(exec, A, D);
 
@@ -234,8 +226,9 @@ evolution_strength_of_connection(thrust::execution_policy<DerivedPolicy> &exec,
 
     if(rho_DinvA == 0.0)
     {
-      rho_DinvA = cusp::eigen::ritz_spectral_radius(Dinv_A, 8);
-      std::cout << "rho(D^-1A) = " << rho_DinvA << std::endl;
+        MatrixViewType Dinv_A(N, N, M, A.row_indices, A.column_indices, Dinv_A_values);
+
+        rho_DinvA = cusp::eigen::ritz_spectral_radius(Dinv_A, 8);
     }
 
     cusp::indices_to_offsets(exec, A.row_indices, A_row_offsets);
@@ -245,9 +238,15 @@ evolution_strength_of_connection(thrust::execution_policy<DerivedPolicy> &exec,
                       thrust::make_zip_iterator(thrust::make_tuple(A.row_indices.begin(), A.column_indices.begin(), Dinv_A_values.begin())) + M,
                       Dinv_A_values.begin(), Atilde_functor<ValueType>(rho_DinvA));
 
+    // Form A^T
+    thrust::gather(exec, permutation.begin(), permutation.end(), Dinv_A_values.begin(), Dinv_A_T_values.begin());
+
+    // Use computational shortcut to calculate Atilde^k only at sparsity
+    // pattern of A
     incomplete_inner_functor<ValueType> incomp_op(thrust::raw_pointer_cast(&A_row_offsets[0]),
-                                                  thrust::raw_pointer_cast(&A.column_indices[0]),
-                                                  thrust::raw_pointer_cast(&Dinv_A_values[0]));
+            thrust::raw_pointer_cast(&A.column_indices[0]),
+            thrust::raw_pointer_cast(&Dinv_A_values[0]),
+            thrust::raw_pointer_cast(&Dinv_A_T_values[0]));
 
     thrust::transform(exec,
                       thrust::make_zip_iterator(thrust::make_tuple(A.row_indices.begin(), A.column_indices.begin())),
@@ -257,57 +256,72 @@ evolution_strength_of_connection(thrust::execution_policy<DerivedPolicy> &exec,
 
     thrust::replace(exec, Bmat_forscaling.begin(), Bmat_forscaling.end(), 0, 1);
 
+    MatrixViewType Atilde(N, N, M, A.row_indices, A.column_indices, Atilde_values);
     cusp::extract_diagonal(exec, Atilde, DAtilde);
 
     cusp::copy(exec, Atilde_values, data);
 
+    // Scale rows
     thrust::transform(exec,
                       thrust::constant_iterator<ValueType>(1), thrust::constant_iterator<ValueType>(1) + M,
                       thrust::make_permutation_iterator(DAtilde.begin(), A.row_indices.begin()),
                       Atilde_values.begin(),
                       thrust::multiplies<ValueType>());
 
+    // Scale columns
     thrust::transform(exec,
                       Atilde_values.begin(), Atilde_values.end(),
                       thrust::make_permutation_iterator(Bmat_forscaling.begin(), A.column_indices.begin()),
                       Atilde_values.begin(),
                       thrust::multiplies<ValueType>());
 
-    // Calculate approximation ratio
+    // Calculate angle
     cusp::blas::xmy(exec, data, Atilde_values, angle);
-    thrust::transform(exec, angle.begin(), angle.end(), thrust::constant_iterator<ValueType>(0), filter.begin(), thrust::less<ValueType>());
+    thrust::transform(exec, angle.begin(), angle.end(), thrust::constant_iterator<ValueType>(0), neg_angle.begin(), thrust::less<ValueType>());
 
+    // Calculate approximation ratio
     thrust::transform(exec, Atilde_values.begin(), Atilde_values.end(), data.begin(), Atilde_values.begin(), thrust::divides<ValueType>());
-
-    // Set small ratios and large angles to weak
-    thrust::transform(exec,
-                      thrust::make_zip_iterator(thrust::make_tuple(angle.begin(), weak_ratios.begin())),
-                      thrust::make_zip_iterator(thrust::make_tuple(angle.begin(), weak_ratios.begin())) + M,
-                      Atilde_values.begin(),
-                      filter_small_ratios_and_large_angles<ValueType>());
+    thrust::transform(exec, Atilde_values.begin(), Atilde_values.end(), thrust::constant_iterator<ValueType>(1e-4), weak_ratio.begin(), thrust::less<ValueType>());
 
     // Calculate approximation error
     thrust::transform(exec, Atilde_values.begin(), Atilde_values.end(), Atilde_values.begin(), approx_error<ValueType>());
+
+    // Set small ratios and large angles to weak
+    thrust::transform(exec,
+                      thrust::make_zip_iterator(thrust::make_tuple(Atilde_values.begin(), neg_angle.begin(), weak_ratio.begin())),
+                      thrust::make_zip_iterator(thrust::make_tuple(Atilde_values.begin(), neg_angle.begin(), weak_ratio.begin())) + M,
+                      Atilde_values.begin(),
+                      filter_small_ratios_and_large_angles<ValueType>());
 
     // Set near perfect connections to 1e-4
     thrust::transform(exec, Atilde_values.begin(), Atilde_values.end(), Atilde_values.begin(), set_perfect<ValueType>());
 
     // symmetrize measure
-    thrust::sequence(exec, permutation.begin(), permutation.end());
-    cusp::copy(exec, A.column_indices, indices);
-    thrust::sort_by_key(exec, indices.begin(), indices.end(), permutation.begin());
-
+    thrust::scatter(exec, Atilde_values.begin(), Atilde_values.end(), permutation.begin(), Dinv_A_T_values.begin());
     thrust::transform(exec,
                       Atilde_values.begin(), Atilde_values.end(),
-                      thrust::make_permutation_iterator(Atilde_values.begin(), permutation.begin()),
+                      Dinv_A_T_values.begin(),
                       Atilde_symmetric.begin(),
                       0.5 * (_1 + _2));
+
+    thrust::scatter(exec, Atilde_symmetric.begin(), Atilde_symmetric.end(), permutation.begin(), Dinv_A_T_values.begin());
 
     // Apply distance filter
     if(epsilon != std::numeric_limits<ValueType>::infinity())
     {
-        apply_distance_filter(epsilon,
-                              cusp::make_coo_matrix_view(N, N, M, A.row_indices, A.column_indices, Atilde_symmetric));
+        thrust::reduce_by_key(A.row_indices.begin(), A.row_indices.end(), Atilde_symmetric.begin(),
+                              thrust::make_discard_iterator(), smallest_per_row.begin(),
+                              thrust::equal_to<IndexType>(), non_zero_minimum<ValueType>());
+
+        thrust::transform(smallest_per_row.begin(), smallest_per_row.end(),
+                          thrust::constant_iterator<ValueType>(epsilon),
+                          smallest_per_row.begin(),
+                          thrust::multiplies<ValueType>());
+
+        thrust::transform(Atilde_symmetric.begin(), Atilde_symmetric.end(),
+                          thrust::make_permutation_iterator(smallest_per_row.begin(), A.row_indices.begin()),
+                          Atilde_symmetric.begin(),
+                          distance_filter_functor<ValueType>());
     }
 
     // Set diagonal to 1.0, as each point is strongly connected to itself
@@ -318,28 +332,24 @@ evolution_strength_of_connection(thrust::execution_policy<DerivedPolicy> &exec,
                                  thrust::make_tuple(A.row_indices.begin(), A.column_indices.begin())),
                              cusp::detail::equal_tuple_functor<IndexType>()),
                          Atilde_symmetric.begin(),
-                         _1 = 1, thrust::identity<bool>());
+                         _1 = ValueType(1), thrust::identity<bool>());
 
-    // // Standardized strength values require small values be weak and large values be strong (invert).
-    // thrust::transform(exec, Atilde_symmetric.begin(), Atilde_symmetric.end(), Atilde_symmetric.begin(), conditional_invert<ValueType>());
-    //
-    // thrust::reduce_by_key(exec,
-    //                       A.row_indices.begin(), A.row_indices.end(), Atilde_symmetric.begin(),
-    //                       thrust::make_discard_iterator(), largest_per_row.begin(),
-    //                       thrust::equal_to<IndexType>(), thrust::maximum<ValueType>());
-    //
-    // thrust::transform(exec,
-    //                   Atilde_symmetric.begin(), Atilde_symmetric.end(),
-    //                   thrust::make_permutation_iterator(largest_per_row.begin(), A.row_indices.begin()),
-    //                   Atilde_symmetric.begin(),
-    //                   thrust::divides<ValueType>());
+    thrust::scatter(exec, Atilde_symmetric.begin(), Atilde_symmetric.end(), permutation.begin(), Dinv_A_T_values.begin());
+    thrust::transform(exec,
+                      Atilde_symmetric.begin(), Atilde_symmetric.end(),
+                      Dinv_A_T_values.begin(),
+                      Atilde_symmetric.begin(),
+                      _1 + _2);
 
     size_t num_zeros = thrust::count(Atilde_symmetric.begin(), Atilde_symmetric.end(), ValueType(0));
-    std::cout << "Filtered " << num_zeros << " edges" << std::endl;
 
     S.resize(N, N, M - num_zeros);
-    thrust::copy_if(exec, A.row_indices.begin(), A.row_indices.end(), Atilde_symmetric.begin(), S.row_indices.begin(), _1 != 0);
-    thrust::copy_if(exec, A.column_indices.begin(), A.column_indices.end(), Atilde_symmetric.begin(), S.column_indices.begin(), _1 != 0);
+    thrust::copy_if(exec,
+                    thrust::make_zip_iterator(thrust::make_tuple(A.row_indices.begin(), A.column_indices.begin())),
+                    thrust::make_zip_iterator(thrust::make_tuple(A.row_indices.begin(), A.column_indices.begin())) + A.num_entries,
+                    Atilde_symmetric.begin(),
+                    thrust::make_zip_iterator(thrust::make_tuple(S.row_indices.begin(), S.column_indices.begin())),
+                    _1 != 0);
 }
 
 template<typename DerivedPolicy, typename MatrixType1, typename MatrixType2, typename ArrayType>
@@ -353,14 +363,14 @@ evolution_strength_of_connection(thrust::execution_policy<DerivedPolicy> &exec,
     typedef typename MatrixType1::memory_space MemorySpace;
     typedef typename MatrixType1::const_view MatrixViewType;
 
-    cusp::array1d<IndexType, MemorySpace> A_row_indices(A.num_entries + 1);
+    cusp::array1d<IndexType, MemorySpace> A_row_indices(A.num_entries);
     cusp::offsets_to_indices(A.row_offsets, A_row_indices);
 
     cusp::coo_matrix<IndexType, ValueType, MemorySpace> S_;
 
     evolution_strength_of_connection(exec,
                                      cusp::make_coo_matrix_view(A.num_rows, A.num_cols, A.num_entries,
-                                                                A_row_indices, A.column_indices, A.values),
+                                             A_row_indices, A.column_indices, A.values),
                                      S_, B, rho_DinvA, epsilon, cusp::coo_format());
 
     S = S_;
@@ -383,4 +393,5 @@ evolution_strength_of_connection(thrust::execution_policy<DerivedPolicy> &exec,
 } // end namespace aggregation
 } // end namespace precond
 } // end namespace cusp
+
 
