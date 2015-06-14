@@ -54,7 +54,7 @@ namespace cuda
 //
 
 
-template <typename IndexType, typename ValueType, unsigned int BLOCK_SIZE>
+template <typename IndexType, typename ValueType, typename UnaryFunction, typename BinaryFunction1, typename BinaryFunction2, unsigned int BLOCK_SIZE>
 __launch_bounds__(BLOCK_SIZE,1)
 __global__ void
 spmv_dia_kernel(const IndexType num_rows,
@@ -64,7 +64,10 @@ spmv_dia_kernel(const IndexType num_rows,
                 const IndexType * diagonal_offsets,
                 const ValueType * values,
                 const ValueType * x,
-                ValueType * y)
+                ValueType * y,
+                UnaryFunction initialize,
+                BinaryFunction1 combine,
+                BinaryFunction2 reduce)
 {
     __shared__ IndexType offsets[BLOCK_SIZE];
 
@@ -84,7 +87,7 @@ spmv_dia_kernel(const IndexType num_rows,
         // process chunk
         for(IndexType row = thread_id; row < num_rows; row += grid_size)
         {
-            ValueType sum = (base == 0) ? ValueType(0) : y[row];
+            ValueType sum = (base == 0) ? initialize(y[row]) : y[row];
 
             // index into values array
             IndexType idx = row + pitch * base;
@@ -96,7 +99,7 @@ spmv_dia_kernel(const IndexType num_rows,
                 if(col >= 0 && col < num_cols)
                 {
                     const ValueType A_ij = values[idx];
-                    sum += A_ij * x[col];
+                    sum = reduce(sum, combine(A_ij, x[col]));
                 }
 
                 idx += pitch;
@@ -133,7 +136,9 @@ void multiply(cuda::execution_policy<DerivedPolicy>& exec,
     typedef typename MatrixType::value_type ValueType;
 
     const size_t BLOCK_SIZE = 256;
-    const size_t MAX_BLOCKS = cusp::system::cuda::detail::max_active_blocks(spmv_dia_kernel<IndexType, ValueType, BLOCK_SIZE>, BLOCK_SIZE, (size_t) sizeof(IndexType) * BLOCK_SIZE);
+    const size_t MAX_BLOCKS = cusp::system::cuda::detail::max_active_blocks(
+                               spmv_dia_kernel<IndexType, ValueType, UnaryFunction, BinaryFunction1, BinaryFunction2, BLOCK_SIZE>,
+                               BLOCK_SIZE, (size_t) sizeof(IndexType) * BLOCK_SIZE);
     const size_t NUM_BLOCKS = std::min<size_t>(MAX_BLOCKS, DIVIDE_INTO(A.num_rows, BLOCK_SIZE));
 
     const IndexType num_diagonals = A.values.num_cols;
@@ -154,8 +159,8 @@ void multiply(cuda::execution_policy<DerivedPolicy>& exec,
 
     cudaStream_t s = stream(thrust::detail::derived_cast(exec));
 
-    spmv_dia_kernel<IndexType, ValueType, BLOCK_SIZE> <<<NUM_BLOCKS, BLOCK_SIZE, 0, s>>>
-    (A.num_rows, A.num_cols, num_diagonals, pitch, D, V, x_ptr, y_ptr);
+    spmv_dia_kernel<IndexType, ValueType, UnaryFunction, BinaryFunction1, BinaryFunction2, BLOCK_SIZE> <<<NUM_BLOCKS, BLOCK_SIZE, 0, s>>>
+    (A.num_rows, A.num_cols, num_diagonals, pitch, D, V, x_ptr, y_ptr, initialize, combine, reduce);
 }
 
 } // end namespace cuda

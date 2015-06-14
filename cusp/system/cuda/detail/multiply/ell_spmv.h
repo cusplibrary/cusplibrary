@@ -35,7 +35,7 @@ namespace system
 namespace cuda
 {
 
-template <typename IndexType, typename ValueType, size_t BLOCK_SIZE>
+template <typename IndexType, typename ValueType, typename UnaryFunction, typename BinaryFunction1, typename BinaryFunction2, size_t BLOCK_SIZE>
 __launch_bounds__(BLOCK_SIZE,1)
 __global__ void
 spmv_ell_kernel(const IndexType num_rows,
@@ -45,7 +45,10 @@ spmv_ell_kernel(const IndexType num_rows,
                 const IndexType * Aj,
                 const ValueType * Ax,
                 const ValueType * x,
-                ValueType * y)
+                ValueType * y,
+                UnaryFunction initialize,
+                BinaryFunction1 combine,
+                BinaryFunction2 reduce)
 {
     const IndexType invalid_index = cusp::ell_matrix<IndexType, ValueType, cusp::device_memory>::invalid_index;
 
@@ -54,7 +57,7 @@ spmv_ell_kernel(const IndexType num_rows,
 
     for(IndexType row = thread_id; row < num_rows; row += grid_size)
     {
-        ValueType sum = 0;
+        ValueType sum = initialize(y[row]);
 
         IndexType offset = row;
 
@@ -65,7 +68,7 @@ spmv_ell_kernel(const IndexType num_rows,
             if (col != invalid_index)
             {
                 const ValueType A_ij = Ax[offset];
-                sum += A_ij * x[col];
+                sum = reduce(sum, combine(A_ij, x[col]));
             }
 
             offset += pitch;
@@ -98,7 +101,8 @@ void multiply(cuda::execution_policy<DerivedPolicy>& exec,
     typedef typename MatrixType::value_type ValueType;
 
     const size_t BLOCK_SIZE = 256;
-    const size_t MAX_BLOCKS = cusp::system::cuda::detail::max_active_blocks(spmv_ell_kernel<IndexType,ValueType,BLOCK_SIZE>, BLOCK_SIZE, (size_t) 0);
+    const size_t MAX_BLOCKS = cusp::system::cuda::detail::max_active_blocks(
+        spmv_ell_kernel<IndexType,ValueType,UnaryFunction,BinaryFunction1,BinaryFunction2,BLOCK_SIZE>, BLOCK_SIZE, (size_t) 0);
     const size_t NUM_BLOCKS = std::min<size_t>(MAX_BLOCKS, DIVIDE_INTO(A.num_rows, BLOCK_SIZE));
 
     const IndexType pitch               = A.column_indices.pitch;
@@ -116,7 +120,7 @@ void multiply(cuda::execution_policy<DerivedPolicy>& exec,
     cudaStream_t s = stream(thrust::detail::derived_cast(exec));
 
     spmv_ell_kernel<IndexType,ValueType,BLOCK_SIZE> <<<NUM_BLOCKS, BLOCK_SIZE, 0, s>>>
-    (A.num_rows, A.num_cols, num_entries_per_row, pitch, J, V, x_ptr, y_ptr);
+    (A.num_rows, A.num_cols, num_entries_per_row, pitch, J, V, x_ptr, y_ptr, initialize, combine, reduce);
 }
 
 } // end namespace cuda
