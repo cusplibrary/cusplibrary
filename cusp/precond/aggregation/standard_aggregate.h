@@ -25,14 +25,24 @@ namespace precond
 namespace aggregation
 {
 
-template <typename MatrixType, typename ArrayType>
-void aggregate(const MatrixType& C, ArrayType& aggregates);
+/* \cond */
+template <typename DerivedPolicy, typename MatrixType, typename ArrayType>
+void standard_aggregation(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                          const MatrixType& C, ArrayType& aggregates);
+
+template <typename DerivedPolicy, typename MatrixType, typename ArrayType>
+void standard_aggregation(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                          const MatrixType& C, ArrayType& aggregates, ArrayType& roots);
+/* \endcond */
 
 template <typename MatrixType, typename ArrayType>
-void aggregate(const MatrixType& C, ArrayType& aggregates, ArrayType& roots);
+void standard_aggregation(const MatrixType& C, ArrayType& aggregates);
+
+template <typename MatrixType, typename ArrayType>
+void standard_aggregation(const MatrixType& C, ArrayType& aggregates, ArrayType& roots);
 
 } // end namespace aggregation
 } // end namespace precond
 } // end namespace cusp
 
-#include <cusp/precond/aggregation/detail/aggregate.inl>
+#include <cusp/precond/aggregation/detail/standard_aggregate.inl>

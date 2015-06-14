@@ -15,6 +15,8 @@
  */
 
 #include <cusp/array1d.h>
+#include <cusp/precond/aggregation/strength.h>
+#include <cusp/precond/aggregation/aggregate.h>
 
 namespace cusp
 {
@@ -134,7 +136,7 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverTyp
 
         // compute aggregates
         sa_levels.back().aggregates.resize(A.num_rows, IndexType(0));
-        sa_options.aggregate(C, sa_levels.back().aggregates);
+        cusp::precond::aggregation::aggregate(exec, C, sa_levels.back().aggregates);
     }
 
     SetupMatrixType P;

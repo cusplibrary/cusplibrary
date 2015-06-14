@@ -103,22 +103,15 @@ void symmetric_strength_of_connection(thrust::execution_policy<DerivedPolicy> &e
 template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
 void symmetric_strength_of_connection(thrust::execution_policy<DerivedPolicy> &exec,
                                       const MatrixType1& A, MatrixType2& S, const double theta,
-                                      cusp::csr_format)
+                                      cusp::known_format)
 {
-    typedef typename MatrixType1::index_type IndexType;
-    typedef typename MatrixType1::value_type ValueType;
-    typedef typename MatrixType1::memory_space MemorySpace;
-    typedef typename MatrixType1::const_view MatrixViewType;
+    typedef typename MatrixType1::const_coo_view_type MatrixViewType;
+    typedef typename cusp::detail::as_coo_type<MatrixType2>::type CooType;
 
-    cusp::array1d<IndexType, MemorySpace> A_row_indices(A.num_entries);
-    cusp::offsets_to_indices(A.row_offsets, A_row_indices);
+    MatrixViewType A_(A);
+    CooType S_;
 
-    cusp::coo_matrix<IndexType, ValueType, MemorySpace> S_;
-
-    symmetric_strength_of_connection(exec,
-                                     cusp::make_coo_matrix_view(A.num_rows, A.num_cols, A.num_entries,
-                                                                A_row_indices, A.column_indices, A.values),
-                                     S_, theta, cusp::coo_format());
+    symmetric_strength_of_connection(exec, A_ , S_, theta, cusp::coo_format());
 
     S = S_;
 }

@@ -26,10 +26,9 @@ namespace aggregation
 {
 
 template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2, typename ArrayType>
-typename thrust::detail::enable_if_convertible<typename ArrayType::format,cusp::array1d_format>::type
-evolution_strength_of_connection(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-                                 const MatrixType1& A, MatrixType2& S, const ArrayType& B,
-                                 const double rho_DinvA, const double epsilon)
+void evolution_strength_of_connection(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                                      const MatrixType1& A, MatrixType2& S, const ArrayType& B,
+                                      const double rho_DinvA, const double epsilon)
 {
     using cusp::precond::aggregation::detail::evolution_strength_of_connection;
 
@@ -37,9 +36,8 @@ evolution_strength_of_connection(const thrust::detail::execution_policy_base<Der
 }
 
 template <typename MatrixType1, typename MatrixType2, typename ArrayType>
-typename thrust::detail::enable_if_convertible<typename ArrayType::format,cusp::array1d_format>::type
-evolution_strength_of_connection(const MatrixType1& A, MatrixType2& S, const ArrayType& B,
-                                 const double rho_DinvA, const double epsilon)
+void evolution_strength_of_connection(const MatrixType1& A, MatrixType2& S, const ArrayType& B,
+                                      const double rho_DinvA, const double epsilon)
 {
     using thrust::system::detail::generic::select_system;
 

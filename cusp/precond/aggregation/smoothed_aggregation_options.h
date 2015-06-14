@@ -159,11 +159,6 @@ public:
         : theta(M.theta), omega(M.omega), min_level_size(M.min_level_size), max_levels(M.max_levels)
     {}
 
-    virtual void aggregate(const MatrixType& C, IndexArray& aggregates) const
-    {
-        cusp::precond::aggregation::standard_aggregation(C, aggregates);
-    }
-
     virtual void fit_candidates(const IndexArray& aggregates, const ValueArray& B, MatrixType& T, ValueArray& B_coarse) const
     {
         cusp::precond::aggregation::fit_candidates(aggregates, B, T, B_coarse);

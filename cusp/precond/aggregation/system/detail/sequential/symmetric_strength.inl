@@ -39,9 +39,13 @@ namespace detail
 
 template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
 void symmetric_strength_of_connection(thrust::system::detail::sequential::execution_policy<DerivedPolicy> &exec,
-                                      const MatrixType1& A, MatrixType2& S,
-                                      const double theta, cusp::csr_format)
+                                      const MatrixType1& A,
+                                      MatrixType2& S,
+                                      const double theta,
+                                      cusp::csr_format)
 {
+    std::cout << "Calling sequential symmetric strength" << std::endl;
+
     typedef typename MatrixType1::index_type   IndexType;
     typedef typename MatrixType1::value_type   ValueType;
     typedef typename MatrixType1::memory_space MemorySpace;

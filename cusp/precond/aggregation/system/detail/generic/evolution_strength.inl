@@ -35,28 +35,6 @@ namespace detail
 {
 
 template<typename ValueType>
-struct Atilde_functor
-{
-    const ValueType rho_DinvA;
-
-    Atilde_functor(const ValueType rho_DinvA)
-        : rho_DinvA(rho_DinvA)
-    {}
-
-    template <typename Tuple>
-    __host__ __device__
-    ValueType operator()(const Tuple& t) const
-    {
-        int row = thrust::get<0>(t);
-        int col = thrust::get<1>(t);
-        ValueType val = thrust::get<2>(t);
-        ValueType temp = row == col;
-
-        return temp - (1.0/rho_DinvA)*val;
-    }
-};
-
-template<typename ValueType>
 struct approx_error : public thrust::unary_function<ValueType,ValueType>
 {
     __host__ __device__
@@ -72,7 +50,32 @@ struct conditional_invert : public thrust::unary_function<ValueType,ValueType>
     __host__ __device__
     ValueType operator()(const ValueType val) const
     {
-        return val != 0.0 ? 1.0/val : val;
+        return (val != 0.0) ? 1.0 / val : val;
+    }
+};
+
+template<typename T>
+struct distance_filter_functor
+{
+    T epsilon;
+
+    distance_filter_functor(T epsilon) : epsilon(epsilon) {}
+
+    __host__ __device__
+    T operator()(const T& A_val, const T& S_val) const
+    {
+        return A_val >= S_val ? 0 : A_val;
+    }
+};
+
+template<typename T>
+struct non_zero_minimum
+{
+    __host__ __device__ T operator()(const T &lhs, const T &rhs) const
+    {
+        if(lhs == 0) return rhs;
+        if(rhs == 0) return lhs;
+        return lhs < rhs ? lhs : rhs;
     }
 };
 
@@ -105,24 +108,25 @@ struct set_perfect : public thrust::unary_function<ValueType,ValueType>
     }
 };
 
-template<typename T>
-struct distance_filter_functor
+template<typename ValueType>
+struct Atilde_functor
 {
-    __host__ __device__
-    T operator()(const T& A_val, const T& S_val) const
-    {
-        return A_val >= S_val ? 0 : A_val;
-    }
-};
+    const ValueType rho_DinvA;
 
-template<typename T>
-struct non_zero_minimum
-{
-    __host__ __device__ T operator()(const T &lhs, const T &rhs) const
+    Atilde_functor(const ValueType rho_DinvA)
+        : rho_DinvA(rho_DinvA)
+    {}
+
+    template <typename Tuple>
+    __host__ __device__
+    ValueType operator()(const Tuple& t) const
     {
-        if(lhs == 0) return rhs;
-        if(rhs == 0) return lhs;
-        return lhs < rhs ? lhs : rhs;
+        int row = thrust::get<0>(t);
+        int col = thrust::get<1>(t);
+        ValueType val = thrust::get<2>(t);
+        ValueType temp = row == col;
+
+        return temp - (1.0/rho_DinvA)*val;
     }
 };
 
@@ -236,7 +240,8 @@ evolution_strength_of_connection(thrust::execution_policy<DerivedPolicy> &exec,
     thrust::transform(exec,
                       thrust::make_zip_iterator(thrust::make_tuple(A.row_indices.begin(), A.column_indices.begin(), Dinv_A_values.begin())),
                       thrust::make_zip_iterator(thrust::make_tuple(A.row_indices.begin(), A.column_indices.begin(), Dinv_A_values.begin())) + M,
-                      Dinv_A_values.begin(), Atilde_functor<ValueType>(rho_DinvA));
+                      Dinv_A_values.begin(),
+                      Atilde_functor<ValueType>(rho_DinvA));
 
     // Form A^T
     thrust::gather(exec, permutation.begin(), permutation.end(), Dinv_A_values.begin(), Dinv_A_T_values.begin());
@@ -244,9 +249,9 @@ evolution_strength_of_connection(thrust::execution_policy<DerivedPolicy> &exec,
     // Use computational shortcut to calculate Atilde^k only at sparsity
     // pattern of A
     incomplete_inner_functor<ValueType> incomp_op(thrust::raw_pointer_cast(&A_row_offsets[0]),
-            thrust::raw_pointer_cast(&A.column_indices[0]),
-            thrust::raw_pointer_cast(&Dinv_A_values[0]),
-            thrust::raw_pointer_cast(&Dinv_A_T_values[0]));
+                                                  thrust::raw_pointer_cast(&A.column_indices[0]),
+                                                  thrust::raw_pointer_cast(&Dinv_A_values[0]),
+                                                  thrust::raw_pointer_cast(&Dinv_A_T_values[0]));
 
     thrust::transform(exec,
                       thrust::make_zip_iterator(thrust::make_tuple(A.row_indices.begin(), A.column_indices.begin())),
@@ -313,15 +318,10 @@ evolution_strength_of_connection(thrust::execution_policy<DerivedPolicy> &exec,
                               thrust::make_discard_iterator(), smallest_per_row.begin(),
                               thrust::equal_to<IndexType>(), non_zero_minimum<ValueType>());
 
-        thrust::transform(smallest_per_row.begin(), smallest_per_row.end(),
-                          thrust::constant_iterator<ValueType>(epsilon),
-                          smallest_per_row.begin(),
-                          thrust::multiplies<ValueType>());
-
         thrust::transform(Atilde_symmetric.begin(), Atilde_symmetric.end(),
                           thrust::make_permutation_iterator(smallest_per_row.begin(), A.row_indices.begin()),
                           Atilde_symmetric.begin(),
-                          distance_filter_functor<ValueType>());
+                          distance_filter_functor<ValueType>(epsilon));
     }
 
     // Set diagonal to 1.0, as each point is strongly connected to itself
@@ -334,6 +334,7 @@ evolution_strength_of_connection(thrust::execution_policy<DerivedPolicy> &exec,
                          Atilde_symmetric.begin(),
                          _1 = ValueType(1), thrust::identity<bool>());
 
+    // Symmetrize the final result
     thrust::scatter(exec, Atilde_symmetric.begin(), Atilde_symmetric.end(), permutation.begin(), Dinv_A_T_values.begin());
     thrust::transform(exec,
                       Atilde_symmetric.begin(), Atilde_symmetric.end(),
@@ -341,6 +342,7 @@ evolution_strength_of_connection(thrust::execution_policy<DerivedPolicy> &exec,
                       Atilde_symmetric.begin(),
                       _1 + _2);
 
+    // Count the number of zeros and copy entries into output matrix
     size_t num_zeros = thrust::count(Atilde_symmetric.begin(), Atilde_symmetric.end(), ValueType(0));
 
     S.resize(N, N, M - num_zeros);

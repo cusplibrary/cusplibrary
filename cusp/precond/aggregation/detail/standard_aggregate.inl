@@ -14,9 +14,9 @@
  *  limitations under the License.
  */
 
-#pragma once
-
 #include <cusp/detail/config.h>
+
+#include <cusp/precond/aggregation/system/detail/generic/standard_aggregate.h>
 
 namespace cusp
 {
@@ -25,14 +25,28 @@ namespace precond
 namespace aggregation
 {
 
-template <typename MatrixType, typename ArrayType>
-void aggregate(const MatrixType& C, ArrayType& aggregates);
+template <typename DerivedPolicy, typename MatrixType, typename ArrayType>
+void standard_aggregate(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                        const MatrixType& A, ArrayType& aggregates, ArrayType& roots)
+{
+    using cusp::precond::aggregation::detail::standard_aggregate;
+
+    standard_aggregate(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, aggregates, roots);
+}
 
 template <typename MatrixType, typename ArrayType>
-void aggregate(const MatrixType& C, ArrayType& aggregates, ArrayType& roots);
+void standard_aggregate(const MatrixType& A, ArrayType& aggregates, ArrayType& roots)
+{
+    using thrust::system::detail::generic::select_system;
+
+    typedef typename MatrixType::memory_space System;
+
+    System system;
+
+    cusp::precond::aggregation::standard_aggregate(select_system(system), A, aggregates, roots);
+}
 
 } // end namespace aggregation
 } // end namespace precond
 } // end namespace cusp
 
-#include <cusp/precond/aggregation/detail/aggregate.inl>
