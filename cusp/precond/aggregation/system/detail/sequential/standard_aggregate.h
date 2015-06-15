@@ -16,18 +16,9 @@
 
 #include <cusp/coo_matrix.h>
 #include <cusp/csr_matrix.h>
+#include <cusp/format_utils.h>
 
 #include <cusp/multiply.h>
-#include <cusp/graph/maximal_independent_set.h>
-
-#include <thrust/count.h>
-#include <thrust/fill.h>
-#include <thrust/scan.h>
-#include <thrust/gather.h>
-#include <thrust/transform.h>
-#include <thrust/iterator/zip_iterator.h>
-#include <thrust/iterator/constant_iterator.h>
-#include <thrust/iterator/counting_iterator.h>
 
 namespace cusp
 {

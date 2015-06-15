@@ -14,11 +14,9 @@
  *  limitations under the License.
  */
 
+#pragma once
+
 #include <cusp/detail/config.h>
-
-#include <cusp/execution_policy.h>
-
-#include <cusp/precond/aggregation/system/detail/sequential/standard_aggregate.h>
 
 namespace cusp
 {
@@ -27,23 +25,24 @@ namespace precond
 namespace aggregation
 {
 
+/* \cond */
+template <typename DerivedPolicy, typename MatrixType, typename ArrayType>
+void mis_aggregation(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                     const MatrixType& C, ArrayType& aggregates);
+
+template <typename DerivedPolicy, typename MatrixType, typename ArrayType>
+void mis_aggregation(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                     const MatrixType& C, ArrayType& aggregates, ArrayType& roots);
+/* \endcond */
+
 template <typename MatrixType, typename ArrayType>
-void standard_aggregate(const MatrixType& A, ArrayType& aggregates, ArrayType& roots);
+void mis_aggregation(const MatrixType& C, ArrayType& aggregates);
 
-namespace detail
-{
+template <typename MatrixType, typename ArrayType>
+void mis_aggregation(const MatrixType& C, ArrayType& aggregates, ArrayType& roots);
 
-template <typename DerivedPolicy, typename MatrixType, typename ArrayType>
-void standard_aggregate(thrust::system::detail::sequential::execution_policy<DerivedPolicy> &exec,
-                        const MatrixType& A, ArrayType& S, ArrayType& roots);
-
-template <typename DerivedPolicy, typename MatrixType, typename ArrayType>
-void standard_aggregate(thrust::execution_policy<DerivedPolicy> &exec,
-                        const MatrixType& A, ArrayType& S, ArrayType& roots);
-
-} // end namespace detail
 } // end namespace aggregation
 } // end namespace precond
 } // end namespace cusp
 
-#include <cusp/precond/aggregation/system/detail/generic/standard_aggregate.inl>
+#include <cusp/precond/aggregation/detail/mis_aggregate.inl>

@@ -18,6 +18,8 @@
 
 #include <cusp/execution_policy.h>
 
+#include <cusp/precond/aggregation/system/detail/sequential/symmetric_strength.h>
+
 namespace cusp
 {
 namespace precond
@@ -42,5 +44,4 @@ void symmetric_strength_of_connection(thrust::execution_policy<DerivedPolicy> &e
 } // end namespace precond
 } // end namespace cusp
 
-#include <cusp/precond/aggregation/system/detail/sequential/symmetric_strength.inl>
 #include <cusp/precond/aggregation/system/detail/generic/symmetric_strength.inl>
