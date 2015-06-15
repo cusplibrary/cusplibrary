@@ -103,12 +103,12 @@ void mis_to_aggregates(const cusp::coo_matrix<IndexType,ValueType,MemorySpace>& 
     thrust::gather(idx2.begin(), idx2.end(), mis_enum.begin(), aggregates.begin());
 } // mis_to_aggregates()
 
-template <typename Matrix, typename Array>
-void standard_aggregation(const Matrix& C,
-                          Array& aggregates,
-                          Array& mis,
-                          cusp::coo_format,
-                          cusp::device_memory)
+template <typename DerivedPolicy, typename Matrix, typename Array>
+void mis_aggregation(thrust::execution_policy<DerivedPolicy> &exec,
+                     const Matrix& C,
+                     Array& aggregates,
+                     Array& mis,
+                     cusp::coo_format)
 {
     typedef typename Matrix::index_type IndexType;
 
@@ -157,143 +157,7 @@ void standard_aggregation(const Matrix& C,
     }
 }
 
-template <typename Matrix, typename Array>
-void standard_aggregation(const Matrix& C,
-                          Array& aggregates,
-                          Array& roots,
-                          cusp::csr_format,
-                          cusp::host_memory)
-{
-    typedef typename Matrix::index_type IndexType;
-
-    IndexType next_aggregate = 1; // number of aggregates + 1
-
-    // initialize aggregates to 0
-    thrust::fill(aggregates.begin(), aggregates.end(), 0);
-
-    IndexType n_row = C.num_rows;
-
-    //Pass #1
-    for (IndexType i = 0; i < n_row; i++)
-    {
-        if (aggregates[i]) {
-            continue;    //already marked
-        }
-
-        const IndexType row_start = C.row_offsets[i];
-        const IndexType row_end   = C.row_offsets[i+1];
-
-        //Determine whether all neighbors of this node are free (not already aggregates)
-        bool has_aggregated_neighbors = false;
-        bool has_neighbors            = false;
-
-        for (IndexType jj = row_start; jj < row_end; jj++)
-        {
-            const IndexType j = C.column_indices[jj];
-            if ( i != j )
-            {
-                has_neighbors = true;
-                if ( aggregates[j] )
-                {
-                    has_aggregated_neighbors = true;
-                    break;
-                }
-            }
-        }
-
-        if (!has_neighbors)
-        {
-            //isolated node, do not aggregate
-            aggregates[i] = -n_row;
-        }
-        else if (!has_aggregated_neighbors)
-        {
-            //Make an aggregate out of this node and its neighbors
-            aggregates[i] = next_aggregate;
-            roots[next_aggregate-1] = i;
-            for (IndexType jj = row_start; jj < row_end; jj++) {
-                aggregates[C.column_indices[jj]] = next_aggregate;
-            }
-            next_aggregate++;
-        }
-    }
-
-    //Pass #2
-    // Add unaggregated nodes to any neighboring aggregate
-    for (IndexType i = 0; i < n_row; i++) {
-        if (aggregates[i]) {
-            continue;    //already marked
-        }
-
-        for (IndexType jj = C.row_offsets[i]; jj < C.row_offsets[i+1]; jj++) {
-            const IndexType j = C.column_indices[jj];
-
-            const IndexType tj = aggregates[j];
-            if (tj > 0) {
-                aggregates[i] = -tj;
-                break;
-            }
-        }
-    }
-
-    next_aggregate--;
-
-    //Pass #3
-    for (IndexType i = 0; i < n_row; i++) {
-        const IndexType ti = aggregates[i];
-
-        if (ti != 0) {
-            // node i has been aggregated
-            if (ti > 0)
-                aggregates[i] = ti - 1;
-            else if (ti == -n_row)
-                aggregates[i] = -1;
-            else
-                aggregates[i] = -ti - 1;
-            continue;
-        }
-
-        // node i has not been aggregated
-        const IndexType row_start = C.row_offsets[i];
-        const IndexType row_end   = C.row_offsets[i+1];
-
-        aggregates[i] = next_aggregate;
-        roots[next_aggregate] = i;
-
-        for (IndexType jj = row_start; jj < row_end; jj++) {
-            const IndexType j = C.column_indices[jj];
-
-            if (aggregates[j] == 0) { //unmarked neighbors
-                aggregates[j] = next_aggregate;
-            }
-        }
-        next_aggregate++;
-    }
-
-    if ( next_aggregate == 0 ) {
-        thrust::fill( aggregates.begin(), aggregates.end(), 0 );
-    }
-}
-
 } // end namespace detail
-
-template <typename Matrix, typename Array>
-void standard_aggregation(const Matrix& C,
-                          Array& aggregates)
-{
-    Array roots(C.num_rows);
-    detail::standard_aggregation(C, aggregates, roots, typename Matrix::format(), typename Matrix::memory_space());
-}
-
-template <typename Matrix, typename Array>
-void standard_aggregation(const Matrix& C,
-                          Array& aggregates,
-                          Array& roots)
-{
-    detail::standard_aggregation(C, aggregates, roots, typename Matrix::format(), typename Matrix::memory_space());
-}
-
-
 } // end namespace aggregation
 } // end namespace precond
 } // end namespace cusp

@@ -24,13 +24,16 @@ namespace precond
 {
 namespace aggregation
 {
+
+template <typename MatrixType, typename ArrayType>
+void standard_aggregate(const MatrixType& A, ArrayType& aggregates, ArrayType& roots);
+
 namespace detail
 {
 
 template <typename DerivedPolicy, typename MatrixType, typename ArrayType>
 void standard_aggregate(thrust::system::detail::sequential::execution_policy<DerivedPolicy> &exec,
-                        const MatrixType& A, ArrayType& S, ArrayType& roots,
-                        cusp::csr_format);
+                        const MatrixType& A, ArrayType& S, ArrayType& roots);
 
 template <typename DerivedPolicy, typename MatrixType, typename ArrayType>
 void standard_aggregate(thrust::execution_policy<DerivedPolicy> &exec,

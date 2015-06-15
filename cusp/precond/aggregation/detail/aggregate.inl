@@ -43,7 +43,7 @@ template <typename DerivedPolicy, typename MatrixType, typename ArrayType>
 void aggregate(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
                const MatrixType& A, ArrayType& aggregates)
 {
-    ArrayType roots;
+    ArrayType roots(A.num_rows);
 
     aggregate(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, aggregates, roots);
 }
@@ -61,11 +61,11 @@ void aggregate(const MatrixType& A, ArrayType& aggregates, ArrayType& roots)
 }
 
 template <typename MatrixType, typename ArrayType>
-void aggregate(const MatrixType& C, ArrayType& aggregates)
+void aggregate(const MatrixType& A, ArrayType& aggregates)
 {
-    ArrayType roots;
+    ArrayType roots(A.num_rows);
 
-    aggregate(C, aggregates, roots);
+    aggregate(A, aggregates, roots);
 }
 
 } // end namespace aggregation

@@ -64,7 +64,7 @@ struct distance_filter_functor
     __host__ __device__
     T operator()(const T& A_val, const T& S_val) const
     {
-        return A_val >= S_val ? 0 : A_val;
+        return (A_val >= (epsilon*S_val)) ? 0 : A_val;
     }
 };
 
@@ -99,7 +99,7 @@ struct set_perfect : public thrust::unary_function<ValueType,ValueType>
 {
     const ValueType eps;
 
-    set_perfect(void) : eps(std::sqrt(std::numeric_limits<float>::epsilon())) {}
+    set_perfect(void) : eps(std::sqrt(std::numeric_limits<ValueType>::epsilon())) {}
 
     __host__ __device__
     ValueType operator()(const ValueType val) const
@@ -126,7 +126,7 @@ struct Atilde_functor
         ValueType val = thrust::get<2>(t);
         ValueType temp = row == col;
 
-        return temp - (1.0/rho_DinvA)*val;
+        return temp - (1.0 / rho_DinvA) * val;
     }
 };
 
@@ -255,7 +255,7 @@ evolution_strength_of_connection(thrust::execution_policy<DerivedPolicy> &exec,
 
     thrust::transform(exec,
                       thrust::make_zip_iterator(thrust::make_tuple(A.row_indices.begin(), A.column_indices.begin())),
-                      thrust::make_zip_iterator(thrust::make_tuple(A.row_indices.begin(), A.column_indices.begin())) + A.num_entries,
+                      thrust::make_zip_iterator(thrust::make_tuple(A.row_indices.begin(), A.column_indices.begin())) + M,
                       Atilde_values.begin(),
                       incomp_op);
 
@@ -375,7 +375,7 @@ evolution_strength_of_connection(thrust::execution_policy<DerivedPolicy> &exec,
                                              A_row_indices, A.column_indices, A.values),
                                      S_, B, rho_DinvA, epsilon, cusp::coo_format());
 
-    S = S_;
+    cusp::convert(S_, S);
 }
 
 template<typename DerivedPolicy, typename MatrixType1, typename MatrixType2, typename ArrayType>
