@@ -154,9 +154,10 @@ multiply(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
  *
  *  int main(void)
  *  {
- *      typedef cusp::detail::zero_function<float> initialize;
- *      typedef thrust::multiplies<float>          combine;
- *      typedef thrust::plus<float>                reduce;
+ *      // define multiply functors
+ *      cusp::detail::zero_function<float> initialize;
+ *      thrust::multiplies<float>          combine;
+ *      thrust::plus<float>                reduce;
  *
  *      // initialize matrix
  *      cusp::array2d<float, cusp::host_memory> A(2,2);
@@ -242,6 +243,10 @@ void generalized_spmv(const thrust::detail::execution_policy_base<DerivedPolicy>
  *
  *  int main(void)
  *  {
+ *      // define multiply functors
+ *      thrust::multiplies<float>          combine;
+ *      thrust::plus<float>                reduce;
+ *
  *      // initialize matrix
  *      cusp::array2d<float, cusp::host_memory> A(2,2);
  *      A(0,0) = 10;  A(0,1) = 20;
@@ -259,9 +264,7 @@ void generalized_spmv(const thrust::detail::execution_policy_base<DerivedPolicy>
  *      cusp::array1d<float, cusp::host_memory> z(2);
  *
  *      // compute z = y + (A * x)
- *      cusp::generalized_spmv(A, x, y, z);
- *      thrust::multiplies<float>(),
- *      thrust::plus<float>());
+ *      cusp::generalized_spmv(A, x, y, z, combine, reduce);
  *
  *      // print z
  *      cusp::print(z);

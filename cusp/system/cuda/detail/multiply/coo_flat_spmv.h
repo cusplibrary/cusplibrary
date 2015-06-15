@@ -34,96 +34,96 @@ namespace cuda
 {
 
 // segmented reduction in shared memory
-template <typename IndexType, typename ValueType>
-__device__ ValueType segreduce_warp(const IndexType thread_lane, IndexType row, ValueType val, IndexType * rows, ValueType * vals)
+template <typename IndexType, typename ValueType, typename BinaryFunction>
+__device__ ValueType segreduce_warp(const IndexType thread_lane, IndexType row, ValueType val, IndexType * rows, ValueType * vals, BinaryFunction reduce)
 {
     rows[threadIdx.x] = row;
     vals[threadIdx.x] = val;
 
     if( thread_lane >=  1 && row == rows[threadIdx.x -  1] ) {
-        vals[threadIdx.x] = val = val + vals[threadIdx.x -  1];
+        vals[threadIdx.x] = val = reduce(val, vals[threadIdx.x -  1]);
     }
     if( thread_lane >=  2 && row == rows[threadIdx.x -  2] ) {
-        vals[threadIdx.x] = val = val + vals[threadIdx.x -  2];
+        vals[threadIdx.x] = val = reduce(val, vals[threadIdx.x -  2]);
     }
     if( thread_lane >=  4 && row == rows[threadIdx.x -  4] ) {
-        vals[threadIdx.x] = val = val + vals[threadIdx.x -  4];
+        vals[threadIdx.x] = val = reduce(val, vals[threadIdx.x -  4]);
     }
     if( thread_lane >=  8 && row == rows[threadIdx.x -  8] ) {
-        vals[threadIdx.x] = val = val + vals[threadIdx.x -  8];
+        vals[threadIdx.x] = val = reduce(val, vals[threadIdx.x -  8]);
     }
     if( thread_lane >= 16 && row == rows[threadIdx.x - 16] ) {
-        vals[threadIdx.x] = val = val + vals[threadIdx.x - 16];
+        vals[threadIdx.x] = val = reduce(val, vals[threadIdx.x - 16]);
     }
 
     return val;
 }
 
-template <typename IndexType, typename ValueType>
-__device__ void segreduce_block(const IndexType * idx, ValueType * val)
+template <typename IndexType, typename ValueType, typename BinaryFunction>
+__device__ void segreduce_block(const IndexType * idx, ValueType * val, BinaryFunction reduce)
 {
     ValueType left = 0;
     if( threadIdx.x >=   1 && idx[threadIdx.x] == idx[threadIdx.x -   1] ) {
         left = val[threadIdx.x -   1];
     }
     __syncthreads();
-    val[threadIdx.x] += left;
+    val[threadIdx.x] = reduce(val[threadIdx.x], left);
     left = 0;
     __syncthreads();
     if( threadIdx.x >=   2 && idx[threadIdx.x] == idx[threadIdx.x -   2] ) {
         left = val[threadIdx.x -   2];
     }
     __syncthreads();
-    val[threadIdx.x] += left;
+    val[threadIdx.x] = reduce(val[threadIdx.x], left);
     left = 0;
     __syncthreads();
     if( threadIdx.x >=   4 && idx[threadIdx.x] == idx[threadIdx.x -   4] ) {
         left = val[threadIdx.x -   4];
     }
     __syncthreads();
-    val[threadIdx.x] += left;
+    val[threadIdx.x] = reduce(val[threadIdx.x], left);
     left = 0;
     __syncthreads();
     if( threadIdx.x >=   8 && idx[threadIdx.x] == idx[threadIdx.x -   8] ) {
         left = val[threadIdx.x -   8];
     }
     __syncthreads();
-    val[threadIdx.x] += left;
+    val[threadIdx.x] = reduce(val[threadIdx.x], left);
     left = 0;
     __syncthreads();
     if( threadIdx.x >=  16 && idx[threadIdx.x] == idx[threadIdx.x -  16] ) {
         left = val[threadIdx.x -  16];
     }
     __syncthreads();
-    val[threadIdx.x] += left;
+    val[threadIdx.x] = reduce(val[threadIdx.x], left);
     left = 0;
     __syncthreads();
     if( threadIdx.x >=  32 && idx[threadIdx.x] == idx[threadIdx.x -  32] ) {
         left = val[threadIdx.x -  32];
     }
     __syncthreads();
-    val[threadIdx.x] += left;
+    val[threadIdx.x] = reduce(val[threadIdx.x], left);
     left = 0;
     __syncthreads();
     if( threadIdx.x >=  64 && idx[threadIdx.x] == idx[threadIdx.x -  64] ) {
         left = val[threadIdx.x -  64];
     }
     __syncthreads();
-    val[threadIdx.x] += left;
+    val[threadIdx.x] = reduce(val[threadIdx.x], left);
     left = 0;
     __syncthreads();
     if( threadIdx.x >= 128 && idx[threadIdx.x] == idx[threadIdx.x - 128] ) {
         left = val[threadIdx.x - 128];
     }
     __syncthreads();
-    val[threadIdx.x] += left;
+    val[threadIdx.x] = reduce(val[threadIdx.x], left);
     left = 0;
     __syncthreads();
     if( threadIdx.x >= 256 && idx[threadIdx.x] == idx[threadIdx.x - 256] ) {
         left = val[threadIdx.x - 256];
     }
     __syncthreads();
-    val[threadIdx.x] += left;
+    val[threadIdx.x] = reduce(val[threadIdx.x], left);
     left = 0;
     __syncthreads();
 }
@@ -220,7 +220,7 @@ __device__ void segreduce_block(const IndexType * idx, ValueType * val)
 //  The carry values at the end of each interval are written to arrays
 //  temp_rows and temp_vals, which are processed by a second kernel.
 //
-template <typename IndexType, typename ValueType, unsigned int BLOCK_SIZE>
+template <typename IndexType, typename ValueType, typename BinaryFunction1, typename BinaryFunction2, unsigned int BLOCK_SIZE>
 __launch_bounds__(BLOCK_SIZE,1)
 __global__ void
 spmv_coo_flat_kernel(const IndexType num_nonzeros,
@@ -231,7 +231,9 @@ spmv_coo_flat_kernel(const IndexType num_nonzeros,
                      const ValueType * x,
                      ValueType * y,
                      IndexType * temp_rows,
-                     ValueType * temp_vals)
+                     ValueType * temp_vals,
+                     BinaryFunction1 combine,
+                     BinaryFunction2 reduce)
 {
     __shared__ volatile IndexType rows[48 *(BLOCK_SIZE/32)];
     __shared__ volatile ValueType vals[BLOCK_SIZE];
@@ -260,37 +262,37 @@ spmv_coo_flat_kernel(const IndexType num_nonzeros,
     for(IndexType n = interval_begin + thread_lane; n < interval_end; n += WARP_SIZE)
     {
         IndexType row = I[n];                                         // row index (i)
-        ValueType val = V[n] * x[ J[n] ];            // A(i,j) * x(j)
+        ValueType val = combine(V[n], x[ J[n] ]);            // A(i,j) * x(j)
 
         if (thread_lane == 0)
         {
             if(row == rows[idx + 31])
-                val += vals[threadIdx.x + 31];                        // row continues
+                val = reduce(val, ValueType(vals[threadIdx.x + 31]));                        // row continues
             else
-                y[rows[idx + 31]] += vals[threadIdx.x + 31];  // row terminated
+                y[rows[idx + 31]] = reduce(y[rows[idx + 31]], ValueType(vals[threadIdx.x + 31]));  // row terminated
         }
 
         rows[idx]         = row;
         vals[threadIdx.x] = val;
 
         if(row == rows[idx -  1]) {
-            vals[threadIdx.x] = val = val + vals[threadIdx.x -  1];
+            vals[threadIdx.x] = val = reduce(val, ValueType(vals[threadIdx.x -  1]));
         }
         if(row == rows[idx -  2]) {
-            vals[threadIdx.x] = val = val + vals[threadIdx.x -  2];
+            vals[threadIdx.x] = val = reduce(val, ValueType(vals[threadIdx.x -  2]));
         }
         if(row == rows[idx -  4]) {
-            vals[threadIdx.x] = val = val + vals[threadIdx.x -  4];
+            vals[threadIdx.x] = val = reduce(val, ValueType(vals[threadIdx.x -  4]));
         }
         if(row == rows[idx -  8]) {
-            vals[threadIdx.x] = val = val + vals[threadIdx.x -  8];
+            vals[threadIdx.x] = val = reduce(val, ValueType(vals[threadIdx.x -  8]));
         }
         if(row == rows[idx - 16]) {
-            vals[threadIdx.x] = val = val + vals[threadIdx.x - 16];
+            vals[threadIdx.x] = val = reduce(val, ValueType(vals[threadIdx.x - 16]));
         }
 
         if(thread_lane < 31 && row != rows[idx + 1])
-            y[row] += vals[threadIdx.x];                                            // row terminated
+            y[row] = reduce(y[row], ValueType(vals[threadIdx.x]));                                            // row terminated
     }
 
     if(thread_lane == 31)
@@ -303,13 +305,14 @@ spmv_coo_flat_kernel(const IndexType num_nonzeros,
 
 
 // The second level of the segmented reduction operation
-template <typename IndexType, typename ValueType, unsigned int BLOCK_SIZE>
+template <typename IndexType, typename ValueType, typename BinaryFunction, unsigned int BLOCK_SIZE>
 __launch_bounds__(BLOCK_SIZE,1)
 __global__ void
 spmv_coo_reduce_update_kernel(const IndexType num_warps,
                               const IndexType * temp_rows,
                               const ValueType * temp_vals,
-                              ValueType * y)
+                              ValueType * y,
+                              BinaryFunction reduce)
 {
     __shared__ IndexType rows[BLOCK_SIZE + 1];
     __shared__ ValueType vals[BLOCK_SIZE + 1];
@@ -334,10 +337,10 @@ spmv_coo_reduce_update_kernel(const IndexType num_warps,
 
         __syncthreads();
 
-        segreduce_block(rows, vals);
+        segreduce_block(rows, vals, reduce);
 
         if (rows[threadIdx.x] != rows[threadIdx.x + 1])
-            y[rows[threadIdx.x]] += vals[threadIdx.x];
+            y[rows[threadIdx.x]] = reduce(y[rows[threadIdx.x]], vals[threadIdx.x]);
 
         __syncthreads();
 
@@ -355,11 +358,11 @@ spmv_coo_reduce_update_kernel(const IndexType num_warps,
 
         __syncthreads();
 
-        segreduce_block(rows, vals);
+        segreduce_block(rows, vals, reduce);
 
         if (i < num_warps)
             if (rows[threadIdx.x] != rows[threadIdx.x + 1])
-                y[rows[threadIdx.x]] += vals[threadIdx.x];
+                y[rows[threadIdx.x]] = reduce(y[rows[threadIdx.x]], vals[threadIdx.x]);
     }
 }
 
@@ -400,13 +403,13 @@ void __spmv_coo_flat(cuda::execution_policy<DerivedPolicy>& exec,
     else if (A.num_entries < static_cast<size_t>(WARP_SIZE))
     {
         // small matrix
-        spmv_coo_serial_kernel<IndexType,ValueType> <<<1,1>>>
-        (A.num_entries, I, J, V, x_ptr, y_ptr);
+        spmv_coo_serial_kernel<IndexType, ValueType, BinaryFunction1, BinaryFunction2> <<<1,1>>>
+        (A.num_entries, I, J, V, x_ptr, y_ptr, combine, reduce);
         return;
     }
 
     const unsigned int BLOCK_SIZE = 256;
-    const unsigned int MAX_BLOCKS = cusp::system::cuda::detail::max_active_blocks(spmv_coo_flat_kernel<IndexType, ValueType, BLOCK_SIZE>, BLOCK_SIZE, (size_t) 0);
+    const unsigned int MAX_BLOCKS = cusp::system::cuda::detail::max_active_blocks(spmv_coo_flat_kernel<IndexType, ValueType, BinaryFunction1, BinaryFunction2, BLOCK_SIZE>, BLOCK_SIZE, (size_t) 0);
     const unsigned int WARPS_PER_BLOCK = BLOCK_SIZE / WARP_SIZE;
 
     const unsigned int num_units  = A.num_entries / WARP_SIZE;
@@ -428,14 +431,14 @@ void __spmv_coo_flat(cuda::execution_policy<DerivedPolicy>& exec,
 
     cudaStream_t s = stream(thrust::detail::derived_cast(exec));
 
-    spmv_coo_flat_kernel<IndexType, ValueType, BLOCK_SIZE> <<<num_blocks, BLOCK_SIZE, 0, s>>>
-    (tail, interval_size, I, J, V, x_ptr, y_ptr, temp_rows_ptr, temp_vals_ptr);
+    spmv_coo_flat_kernel<IndexType, ValueType, BinaryFunction1, BinaryFunction2, BLOCK_SIZE> <<<num_blocks, BLOCK_SIZE, 0, s>>>
+    (tail, interval_size, I, J, V, x_ptr, y_ptr, temp_rows_ptr, temp_vals_ptr, combine, reduce);
 
-    spmv_coo_reduce_update_kernel<IndexType, ValueType, BLOCK_SIZE> <<<1, BLOCK_SIZE, 0, s>>>
-    (active_warps, temp_rows_ptr, temp_vals_ptr, y_ptr);
+    spmv_coo_reduce_update_kernel<IndexType, ValueType, BinaryFunction2, BLOCK_SIZE> <<<1, BLOCK_SIZE, 0, s>>>
+    (active_warps, temp_rows_ptr, temp_vals_ptr, y_ptr, reduce);
 
-    spmv_coo_serial_kernel<IndexType,ValueType> <<<1,1,0,s>>>
-    (A.num_entries - tail, I + tail, J + tail, V + tail, x_ptr, y_ptr);
+    spmv_coo_serial_kernel<IndexType, ValueType, BinaryFunction1, BinaryFunction2> <<<1,1,0,s>>>
+    (A.num_entries - tail, I + tail, J + tail, V + tail, x_ptr, y_ptr, combine, reduce);
 }
 
 template <typename DerivedPolicy,
