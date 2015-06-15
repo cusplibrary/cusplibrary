@@ -12,25 +12,6 @@
 
 using namespace cusp::precond::aggregation;
 
-template<typename IndexType, typename ValueType, typename MemorySpace>
-class unsmoothed_aggregation_options
-    : public smoothed_aggregation_options<IndexType,ValueType,MemorySpace>
-{
-protected:
-
-    typedef smoothed_aggregation_options<IndexType,ValueType,MemorySpace> Parent;
-    typedef typename Parent::MatrixType MatrixType;
-
-public:
-
-    unsmoothed_aggregation_options() : Parent() {}
-
-    virtual void smooth_prolongator(const MatrixType& A, const MatrixType& T, MatrixType& P, ValueType& rho_DinvA) const
-    {
-        P = T;
-    }
-};
-
 template<typename MatrixType, typename Prec>
 void run_amg(const MatrixType& A, Prec& M)
 {
@@ -131,17 +112,17 @@ int main(int argc, char ** argv)
     }
 
     // solve with unsmoothed aggregation algebraic multigrid preconditioner and polynomial smoother
-    {
-        std::cout << "\nSolving with unsmoothed aggregation preconditioner" << std::endl;
-
-        unsmoothed_aggregation_options<IndexType,ValueType,MemorySpace> opts;
-
-        timer t0;
-        cusp::precond::aggregation::smoothed_aggregation<IndexType, ValueType, MemorySpace> M(A,opts);
-        std::cout << "constructed hierarchy in " << t0.milliseconds_elapsed() << " ms " << std::endl;
-
-        run_amg(A,M);
-    }
+    /* { */
+    /*     std::cout << "\nSolving with unsmoothed aggregation preconditioner" << std::endl; */
+    /*  */
+    /*     unsmoothed_aggregation_options<IndexType,ValueType,MemorySpace> opts; */
+    /*  */
+    /*     timer t0; */
+    /*     cusp::precond::aggregation::smoothed_aggregation<IndexType, ValueType, MemorySpace> M(A,opts); */
+    /*     std::cout << "constructed hierarchy in " << t0.milliseconds_elapsed() << " ms " << std::endl; */
+    /*  */
+    /*     run_amg(A,M); */
+    /* } */
 
     return 0;
 }

@@ -131,10 +131,10 @@ class smoothed_aggregation :
     typedef typename select_sa_matrix_type<IndexType,ValueType,MemorySpace>::type	SetupMatrixType;
     typedef typename cusp::multilevel<IndexType,ValueType,MemorySpace,Format,SmootherType,SolverType>::container ML;
 
+  public:
+
     size_t min_level_size;
     size_t max_levels;
-
-  public:
 
     std::vector< sa_level<SetupMatrixType> > sa_levels;
 
