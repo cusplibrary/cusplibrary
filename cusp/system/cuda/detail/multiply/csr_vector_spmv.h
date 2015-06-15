@@ -116,11 +116,11 @@ spmv_csr_vector_kernel(const IndexType num_rows,
         sdata[threadIdx.x] = sum;
 
         // reduce local sums to row sum
-        if (THREADS_PER_VECTOR > 16) sdata[threadIdx.x] = sum = reduce(sum, sdata[threadIdx.x + 16]);
-        if (THREADS_PER_VECTOR >  8) sdata[threadIdx.x] = sum = reduce(sum, sdata[threadIdx.x +  8]);
-        if (THREADS_PER_VECTOR >  4) sdata[threadIdx.x] = sum = reduce(sum, sdata[threadIdx.x +  4]);
-        if (THREADS_PER_VECTOR >  2) sdata[threadIdx.x] = sum = reduce(sum, sdata[threadIdx.x +  2]);
-        if (THREADS_PER_VECTOR >  1) sdata[threadIdx.x] = sum = reduce(sum, sdata[threadIdx.x +  1]);
+        if (THREADS_PER_VECTOR > 16) sdata[threadIdx.x] = sum = reduce(sum, ValueType(sdata[threadIdx.x + 16]));
+        if (THREADS_PER_VECTOR >  8) sdata[threadIdx.x] = sum = reduce(sum, ValueType(sdata[threadIdx.x +  8]));
+        if (THREADS_PER_VECTOR >  4) sdata[threadIdx.x] = sum = reduce(sum, ValueType(sdata[threadIdx.x +  4]));
+        if (THREADS_PER_VECTOR >  2) sdata[threadIdx.x] = sum = reduce(sum, ValueType(sdata[threadIdx.x +  2]));
+        if (THREADS_PER_VECTOR >  1) sdata[threadIdx.x] = sum = reduce(sum, ValueType(sdata[threadIdx.x +  1]));
 
         // first thread writes the result
         if (thread_lane == 0)

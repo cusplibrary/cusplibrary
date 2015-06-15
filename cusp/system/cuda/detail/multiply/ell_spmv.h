@@ -119,7 +119,7 @@ void multiply(cuda::execution_policy<DerivedPolicy>& exec,
 
     cudaStream_t s = stream(thrust::detail::derived_cast(exec));
 
-    spmv_ell_kernel<IndexType,ValueType,BLOCK_SIZE> <<<NUM_BLOCKS, BLOCK_SIZE, 0, s>>>
+    spmv_ell_kernel<IndexType,ValueType,UnaryFunction,BinaryFunction1,BinaryFunction2,BLOCK_SIZE> <<<NUM_BLOCKS, BLOCK_SIZE, 0, s>>>
     (A.num_rows, A.num_cols, num_entries_per_row, pitch, J, V, x_ptr, y_ptr, initialize, combine, reduce);
 }
 

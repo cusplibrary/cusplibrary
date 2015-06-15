@@ -30,28 +30,34 @@ namespace cuda
 // *extremely* small matrices, or a few elements at the end of a
 // larger matrix
 
-template <typename IndexType, typename ValueType>
+template <typename IndexType, typename ValueType, typename BinaryFunction1, typename BinaryFunction2>
 __global__ void
 spmv_coo_serial_kernel(const IndexType num_entries,
                        const IndexType * I,
                        const IndexType * J,
                        const ValueType * V,
                        const ValueType * x,
-                       ValueType * y)
+                       ValueType * y,
+                       BinaryFunction1 combine,
+                       BinaryFunction2 reduce)
 {
     for(IndexType n = 0; n < num_entries; n++)
     {
-        y[I[n]] += V[n] * x[J[n]];
+        y[I[n]] = reduce(y[I[n]], combine(V[n], x[J[n]]));
     }
 }
 
 
 template <typename Matrix,
           typename Array1,
-          typename Array2>
+          typename Array2,
+          typename BinaryFunction1,
+          typename BinaryFunction2>
 void spmv_coo_serial_device(const Matrix& A,
                             const Array1& x,
-                                  Array2& y)
+                                  Array2& y,
+                            BinaryFunction1 combine,
+                            BinaryFunction2 reduce)
 {
     typedef typename Matrix::index_type IndexType;
     typedef typename Matrix::value_type ValueType;
@@ -63,8 +69,8 @@ void spmv_coo_serial_device(const Matrix& A,
     const ValueType * x_ptr = thrust::raw_pointer_cast(&x[0]);
     ValueType * y_ptr = thrust::raw_pointer_cast(&y[0]);
 
-    spmv_coo_serial_kernel<IndexType,ValueType> <<<1,1>>>
-    (A.num_entries, I, J, V, x_ptr, y_ptr);
+    spmv_coo_serial_kernel<IndexType,ValueType,BinaryFunction1,BinaryFunction2> <<<1,1>>>
+    (A.num_entries, I, J, V, x_ptr, y_ptr, combine, reduce);
 }
 
 } // end namespace cuda
