@@ -21,17 +21,12 @@
 #include <cusp/coo_matrix.h>
 #include <cusp/csr_matrix.h>
 #include <cusp/hyb_matrix.h>
-#include <cusp/transpose.h>
 #include <cusp/multiply.h>
 #include <cusp/linear_operator.h>
 
-#include <cusp/eigen/arnoldi.h>
+#include <cusp/eigen/spectral_radius.h>
 
 #include <cusp/precond/diagonal.h>
-#include <cusp/precond/aggregation/aggregate.h>
-#include <cusp/precond/aggregation/smooth.h>
-#include <cusp/precond/aggregation/strength.h>
-#include <cusp/precond/aggregation/tentative.h>
 
 namespace cusp
 {
@@ -131,61 +126,7 @@ struct sa_level
     {}
 };
 
-template<typename IndexType, typename ValueType, typename MemorySpace>
-class smoothed_aggregation_options
-{
-protected:
-
-    typedef typename select_sa_matrix_type<IndexType,ValueType,MemorySpace>::type MatrixType;
-    typedef cusp::array1d<IndexType,MemorySpace> IndexArray;
-    typedef cusp::array1d<ValueType,MemorySpace> ValueArray;
-
-public:
-
-    ValueType theta;
-    ValueType omega;
-    size_t min_level_size;
-    size_t max_levels;
-
-    smoothed_aggregation_options(const ValueType theta = 0.0,
-                                 const ValueType omega = 4.0/3.0,
-                                 const size_t min_level_size = 100,
-                                 const size_t max_levels = 20)
-        : theta(theta), omega(omega), min_level_size(min_level_size), max_levels(max_levels)
-    {}
-
-    template<typename MemorySpace2>
-    smoothed_aggregation_options(const smoothed_aggregation_options<IndexType,ValueType,MemorySpace2>& M)
-        : theta(M.theta), omega(M.omega), min_level_size(M.min_level_size), max_levels(M.max_levels)
-    {}
-
-    virtual void fit_candidates(const IndexArray& aggregates, const ValueArray& B, MatrixType& T, ValueArray& B_coarse) const
-    {
-        cusp::precond::aggregation::fit_candidates(aggregates, B, T, B_coarse);
-    }
-
-    virtual void smooth_prolongator(const MatrixType& A, const MatrixType& T, MatrixType& P, ValueType& rho_DinvA) const
-    {
-        // compute spectral radius of diag(C)^-1 * C
-        rho_DinvA = detail::estimate_rho_Dinv_A(A);
-
-        cusp::precond::aggregation::smooth_prolongator(A, T, P, omega, rho_DinvA);
-    }
-
-    virtual void form_restriction(const MatrixType& P, MatrixType& R) const
-    {
-        cusp::transpose(P,R);
-    }
-
-    virtual void galerkin_product(const MatrixType& R, const MatrixType& A, const MatrixType& P, MatrixType& RAP) const
-    {
-        // TODO test speed of R * (A * P) vs. (R * A) * P
-        MatrixType AP;
-        cusp::multiply(A, P, AP);
-        cusp::multiply(R, AP, RAP);
-    }
-};
-
 } // end namespace aggregation
 } // end namespace precond
 } // end namespace cusp
+

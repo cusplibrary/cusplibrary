@@ -25,8 +25,20 @@ namespace precond
 namespace aggregation
 {
 
+/* \cond */
+template <typename DerivedPolicy, typename MatrixType, typename ArrayType>
+void aggregate(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+               const MatrixType& A, ArrayType& aggregates);
+/* \endcond */
+
 template <typename MatrixType, typename ArrayType>
 void aggregate(const MatrixType& C, ArrayType& aggregates);
+
+/* \cond */
+template <typename DerivedPolicy, typename MatrixType, typename ArrayType>
+void aggregate(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+               const MatrixType& A, ArrayType& aggregates, ArrayType& roots);
+/* \endcond */
 
 template <typename MatrixType, typename ArrayType>
 void aggregate(const MatrixType& C, ArrayType& aggregates, ArrayType& roots);

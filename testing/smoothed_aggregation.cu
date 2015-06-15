@@ -86,7 +86,7 @@ void TestFitCandidates(void)
         SetupMatrixType Q;
         cusp::array1d<float,MemorySpace> R(2);
 
-        cusp::precond::aggregation::detail::fit_candidates(aggregates, B, Q, R);
+        cusp::precond::aggregation::fit_candidates(aggregates, B, Q, R);
 
         ASSERT_EQUAL(R[0], 1.0f);
         ASSERT_EQUAL(R[1], 5.0f);
@@ -114,7 +114,7 @@ void TestFitCandidates(void)
         SetupMatrixType Q;
         cusp::array1d<float,MemorySpace> R(4);
 
-        cusp::precond::aggregation::detail::fit_candidates(aggregates, B, Q, R);
+        cusp::precond::aggregation::fit_candidates(aggregates, B, Q, R);
 
         ASSERT_ALMOST_EQUAL(R[0], 1.41421f);
         ASSERT_ALMOST_EQUAL(R[1], 2.00000f);

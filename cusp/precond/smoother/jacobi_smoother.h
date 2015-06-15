@@ -24,7 +24,7 @@
 #include <cusp/detail/config.h>
 
 #include <cusp/format_utils.h>
-#include <cusp/precond/aggregation/smoothed_aggregation_options.h>
+#include <cusp/precond/aggregation/smoothed_aggregation_helper.h>
 #include <cusp/relaxation/jacobi.h>
 
 #include <thrust/transform.h>

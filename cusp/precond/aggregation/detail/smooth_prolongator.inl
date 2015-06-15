@@ -43,16 +43,19 @@ namespace detail
 
 using namespace thrust::placeholders;
 
-template <typename MatrixType, typename ValueType>
-void smooth_prolongator(const MatrixType& S,
-                        const MatrixType& T,
-                        MatrixType& P,
-                        const ValueType omega,
+template <typename MatrixType1,
+          typename MatrixType2,
+          typename MatrixType3,
+          typename ValueType>
+void smooth_prolongator(const MatrixType1& S,
+                        const MatrixType2& T,
+                        MatrixType3& P,
                         const ValueType rho_Dinv_S,
+                        const ValueType omega,
                         cusp::coo_format,
                         cusp::device_memory)
 {
-    typedef typename MatrixType::index_type IndexType;
+    typedef typename MatrixType3::index_type IndexType;
 
     // TODO handle case with unaggregated nodes more gracefully
     if (T.num_entries == T.num_rows) {
@@ -60,7 +63,7 @@ void smooth_prolongator(const MatrixType& S,
         const ValueType lambda = omega / rho_Dinv_S;
 
         // temp <- -lambda * S(i,j) * T(j,k)
-        MatrixType temp(S.num_rows, T.num_cols, S.num_entries + T.num_entries);
+        MatrixType3 temp(S.num_rows, T.num_cols, S.num_entries + T.num_entries);
         thrust::copy(S.row_indices.begin(), S.row_indices.end(), temp.row_indices.begin());
         thrust::gather(S.column_indices.begin(), S.column_indices.end(), T.column_indices.begin(), temp.column_indices.begin());
         thrust::transform(S.values.begin(), S.values.end(),
@@ -113,7 +116,7 @@ void smooth_prolongator(const MatrixType& S,
         cusp::extract_diagonal(S, D);
 
         // create D_inv_S by copying S then scaling
-        MatrixType D_inv_S(S);
+        MatrixType3 D_inv_S(S);
         // scale the rows of D_inv_S by D^-1
         thrust::transform(D_inv_S.values.begin(), D_inv_S.values.begin() + S.num_entries,
                           thrust::make_permutation_iterator(D.begin(), S.row_indices.begin()),
@@ -123,29 +126,32 @@ void smooth_prolongator(const MatrixType& S,
         const ValueType lambda = omega / rho_Dinv_S;
         cusp::blas::scal( D_inv_S.values, lambda );
 
-        MatrixType temp;
+        MatrixType3 temp;
         cusp::multiply( D_inv_S, T, temp );
         cusp::subtract( T, temp, P );
 
     }
 }
 
-template <typename MatrixType, typename ValueType>
-void smooth_prolongator(const MatrixType& S,
-                        const MatrixType& T,
-                        MatrixType& P,
-                        const ValueType omega,
+template <typename MatrixType1,
+          typename MatrixType2,
+          typename MatrixType3,
+          typename ValueType>
+void smooth_prolongator(const MatrixType1& S,
+                        const MatrixType2& T,
+                        MatrixType3& P,
                         const ValueType rho_Dinv_S,
+                        const ValueType omega,
                         cusp::csr_format,
                         cusp::host_memory)
 {
-    typedef typename MatrixType::index_type IndexType;
+    typedef typename MatrixType3::index_type IndexType;
 
     cusp::array1d<ValueType, cusp::host_memory> D(S.num_rows);
     cusp::extract_diagonal(S, D);
 
     // create D_inv_S by copying S then scaling
-    MatrixType D_inv_S(S);
+    MatrixType3 D_inv_S(S);
     // scale the rows of D_inv_S by D^-1
     for ( size_t row = 0; row < D_inv_S.num_rows; row++ )
     {
@@ -160,24 +166,35 @@ void smooth_prolongator(const MatrixType& S,
     const ValueType lambda = omega / rho_Dinv_S;
     cusp::blas::scal( D_inv_S.values, lambda );
 
-    MatrixType temp;
+    MatrixType3 temp;
     cusp::multiply( D_inv_S, T, temp );
     cusp::subtract( T, temp, P );
 }
 
 } // end namespace detail
 
-template <typename MatrixType, typename ValueType>
-void smooth_prolongator(const MatrixType& S,
-                        const MatrixType& T,
-                        MatrixType& P,
-                        const ValueType omega,
-                        const ValueType rho_Dinv_S)
+template <typename MatrixType1, typename MatrixType2, typename MatrixType3, typename ValueType>
+void smooth_prolongator(const MatrixType1& S,
+                        const MatrixType2& T,
+                        MatrixType3& P,
+                        const ValueType rho_Dinv_S,
+                        const ValueType omega)
 {
-    detail::smooth_prolongator(S, T, P, omega, rho_Dinv_S, typename MatrixType::format(), typename MatrixType::memory_space());
+    ValueType rho = rho_Dinv_S;
+
+    if(rho == 0)
+    {
+        // compute spectral radius of diag(C)^-1 * C
+        rho = detail::estimate_rho_Dinv_A(S);
+    }
+
+    cusp::precond::aggregation::detail::smooth_prolongator(S, T, P, rho, omega,
+            typename MatrixType1::format(),
+            typename MatrixType1::memory_space());
 }
 
 } // end namespace aggregation
 } // end namespace precond
 } // end namespace cusp
+
 

@@ -18,6 +18,8 @@
 
 #include <cusp/detail/config.h>
 
+#include <cusp/execution_policy.h>
+
 namespace cusp
 {
 namespace precond
@@ -27,29 +29,16 @@ namespace aggregation
 
 /* \cond */
 template <typename DerivedPolicy,
-          typename Array1,
-          typename Array2,
-          typename MatrixType,
-          typename Array3>
-void fit_candidates(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-                    const Array1& aggregates,
-                    const Array2& B,
-                    MatrixType& Q,
-                    Array3& R);
+          typename MatrixType>
+void form_restriction(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                      const MatrixType& P, MatrixType& R);
 /* \endcond */
 
-template <typename Array1,
-          typename Array2,
-          typename MatrixType,
-          typename Array3>
-void fit_candidates(const Array1& aggregates,
-                    const Array2& B,
-                    MatrixType& Q,
-                    Array3& R);
+template <typename MatrixType>
+void form_restriction(const MatrixType& P, MatrixType& R);
 
 } // end namespace aggregation
 } // end namespace precond
 } // end namespace cusp
 
-#include <cusp/precond/aggregation/detail/tentative.inl>
-
+#include <cusp/precond/aggregation/detail/restrict.inl>

@@ -17,6 +17,10 @@
 #include <cusp/array1d.h>
 #include <cusp/precond/aggregation/strength.h>
 #include <cusp/precond/aggregation/aggregate.h>
+#include <cusp/precond/aggregation/tentative.h>
+#include <cusp/precond/aggregation/smooth_prolongator.h>
+#include <cusp/precond/aggregation/restrict.h>
+#include <cusp/precond/aggregation/galerkin_product.h>
 
 namespace cusp
 {
@@ -28,8 +32,8 @@ namespace aggregation
 template <typename IndexType, typename ValueType, typename MemorySpace, typename SmootherType, typename SolverType, typename Format>
 template <typename MatrixType>
 smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverType,Format>
-::smoothed_aggregation(const MatrixType& A, const SAOptionsType& sa_options)
-	: ML(), sa_options(sa_options)
+::smoothed_aggregation(const MatrixType& A)
+    : ML(), min_level_size(500), max_levels(10)
 {
     sa_initialize(A);
 }
@@ -37,9 +41,9 @@ smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverType,For
 template <typename IndexType, typename ValueType, typename MemorySpace, typename SmootherType, typename SolverType, typename Format>
 template <typename MatrixType, typename ArrayType>
 smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverType,Format>
-::smoothed_aggregation(const MatrixType& A, const ArrayType& B, const SAOptionsType& sa_options,
+::smoothed_aggregation(const MatrixType& A, const ArrayType& B,
                        typename thrust::detail::enable_if_convertible<typename ArrayType::format,cusp::array1d_format>::type*)
-	: ML(), sa_options(sa_options)
+    : ML(), min_level_size(500), max_levels(10)
 {
     sa_initialize(A, B);
 }
@@ -48,10 +52,24 @@ template <typename IndexType, typename ValueType, typename MemorySpace, typename
 template <typename MemorySpace2, typename SmootherType2, typename SolverType2, typename Format2>
 smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverType,Format>
 ::smoothed_aggregation(const smoothed_aggregation<IndexType,ValueType,MemorySpace2,SmootherType2,SolverType2,Format2>& M)
-    : ML(M), sa_options(M.sa_options)
+    : ML(M), min_level_size(M.min_level_size), max_levels(M.max_levels)
 {
     for( size_t lvl = 0; lvl < M.sa_levels.size(); lvl++ )
         sa_levels.push_back(M.sa_levels[lvl]);
+}
+
+template <typename IndexType, typename ValueType, typename MemorySpace, typename SmootherType, typename SolverType, typename Format>
+void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverType,Format>
+::set_min_level_size(size_t min_size)
+{
+    min_level_size = min_size;
+}
+
+template <typename IndexType, typename ValueType, typename MemorySpace, typename SmootherType, typename SolverType, typename Format>
+void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverType,Format>
+::set_max_levels(size_t max_depth)
+{
+    max_levels = max_depth;
 }
 
 template <typename IndexType, typename ValueType, typename MemorySpace, typename SmootherType, typename SolverType, typename Format>
@@ -67,7 +85,8 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverTyp
 template <typename IndexType, typename ValueType, typename MemorySpace, typename SmootherType, typename SolverType, typename Format>
 template <typename MatrixType, typename ArrayType>
 void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverType,Format>
-::sa_initialize(const MatrixType& A, const ArrayType& B)
+::sa_initialize(const MatrixType& A, const ArrayType& B,
+                typename thrust::detail::enable_if_convertible<typename MatrixType::format,cusp::known_format>::type*)
 {
     using thrust::system::detail::generic::select_system;
 
@@ -76,6 +95,17 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverTyp
     System system;
 
     sa_initialize(select_system(system), A, B);
+}
+
+template <typename IndexType, typename ValueType, typename MemorySpace, typename SmootherType, typename SolverType, typename Format>
+template <typename DerivedPolicy, typename MatrixType>
+void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverType,Format>
+::sa_initialize(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                const MatrixType& A)
+{
+    cusp::constant_array<ValueType> B(A.num_rows, 1);
+
+    sa_initialize(exec, A, B);
 }
 
 template <typename IndexType, typename ValueType, typename MemorySpace, typename SmootherType, typename SolverType, typename Format>
@@ -94,14 +124,14 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverTyp
     }
 
     ML::resize(A.num_rows, A.num_cols, A.num_entries);
-    ML::levels.reserve(sa_options.max_levels); // avoid reallocations which force matrix copies
+    ML::levels.reserve(max_levels); // avoid reallocations which force matrix copies
     ML::levels.push_back(Level());
 
     sa_levels.push_back(sa_level<SetupMatrixType>());
     sa_levels.back().B = B;
 
     // Setup the first level using a COO view
-    if(A.num_rows > sa_options.min_level_size)
+    if(A.num_rows > min_level_size)
     {
         View A_(A);
         extend_hierarchy(exec, A_);
@@ -109,13 +139,13 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverTyp
     }
 
     // Iteratively setup lower levels until stopping criteria are reached
-    while ((sa_levels.back().A_.num_rows > sa_options.min_level_size) &&
-            (sa_levels.size() < sa_options.max_levels))
+    while ((sa_levels.back().A_.num_rows > min_level_size) &&
+            (sa_levels.size() < max_levels))
         extend_hierarchy(exec, sa_levels.back().A_);
 
     // Setup multilevel arrays and matrices on each level
     for( size_t lvl = 1; lvl < sa_levels.size(); lvl++ )
-      ML::setup_level(lvl, sa_levels[lvl].A_, sa_levels[lvl]);
+        ML::setup_level(lvl, sa_levels[lvl].A_, sa_levels[lvl]);
 
     // Initialize coarse solver
     ML::initialize_coarse_solver();
@@ -132,29 +162,29 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverTyp
     {
         // compute stength of connection matrix
         SetupMatrixType C;
-        cusp::precond::aggregation::strength_of_connection(exec, A, C, sa_levels.back());
+        strength_of_connection(exec, A, C, sa_levels.back());
 
         // compute aggregates
         sa_levels.back().aggregates.resize(A.num_rows, IndexType(0));
-        cusp::precond::aggregation::aggregate(exec, C, sa_levels.back().aggregates);
+        aggregate(exec, C, sa_levels.back().aggregates);
     }
 
     SetupMatrixType P;
     cusp::array1d<ValueType,MemorySpace>  B_coarse;
 
     // compute tenative prolongator and coarse nullspace vector
-    sa_options.fit_candidates(sa_levels.back().aggregates, sa_levels.back().B, sa_levels.back().T, B_coarse);
+    fit_candidates(exec, sa_levels.back().aggregates, sa_levels.back().B, sa_levels.back().T, B_coarse);
 
     // compute prolongation operator
-    sa_options.smooth_prolongator(A, sa_levels.back().T, P, sa_levels.back().rho_DinvA);  // TODO if C != A then compute rho_Dinv_C
+    smooth_prolongator(A, sa_levels.back().T, P, sa_levels.back().rho_DinvA);  // TODO if C != A then compute rho_Dinv_C
 
     // compute restriction operator (transpose of prolongator)
     SetupMatrixType R;
-    sa_options.form_restriction(P, R);
+    form_restriction(exec, P, R);
 
     // construct Galerkin product R*A*P
     SetupMatrixType RAP;
-    sa_options.galerkin_product(R, A, P, RAP);
+    galerkin_product(exec, R, A, P, RAP);
 
     // Setup components for next level in hierarchy
     sa_levels.push_back(sa_level<SetupMatrixType>());
@@ -169,4 +199,5 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverTyp
 } // end namespace aggregation
 } // end namespace precond
 } // end namespace cusp
+
 
