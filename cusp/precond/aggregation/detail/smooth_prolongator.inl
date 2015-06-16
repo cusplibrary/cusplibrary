@@ -188,9 +188,9 @@ void smooth_prolongator(const MatrixType1& S,
         rho = detail::estimate_rho_Dinv_A(S);
     }
 
-    cusp::precond::aggregation::detail::smooth_prolongator(S, T, P, rho, omega,
-            typename MatrixType1::format(),
-            typename MatrixType1::memory_space());
+    detail::smooth_prolongator(S, T, P, rho, omega,
+                               typename MatrixType1::format(),
+                               typename MatrixType1::memory_space());
 }
 
 } // end namespace aggregation

@@ -46,6 +46,23 @@ void standard_aggregate(const MatrixType& A, ArrayType& aggregates, ArrayType& r
     cusp::precond::aggregation::standard_aggregate(select_system(system), A, aggregates, roots);
 }
 
+template <typename DerivedPolicy, typename MatrixType, typename ArrayType>
+void standard_aggregate(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                        const MatrixType& A, ArrayType& aggregates)
+{
+    ArrayType roots(A.num_rows);
+
+    standard_aggregate(exec, A, aggregates, roots);
+}
+
+template <typename MatrixType, typename ArrayType>
+void standard_aggregate(const MatrixType& A, ArrayType& aggregates)
+{
+    ArrayType roots(A.num_rows);
+
+    standard_aggregate(A, aggregates, roots);
+}
+
 } // end namespace aggregation
 } // end namespace precond
 } // end namespace cusp

@@ -220,13 +220,13 @@ __device__ void segreduce_block(const IndexType * idx, ValueType * val)
 //  The carry values at the end of each interval are written to arrays
 //  temp_rows and temp_vals, which are processed by a second kernel.
 //
-template <typename RowIterator, typename ColumnIterator, typename ValueIterator1,
-          typename ValueIterator2, typename ValueIterator3, typename IndexIterator,
-          typename ValueIterator4, unsigned int BLOCK_SIZE>
+template <typename IndexType, typename RowIterator, typename ColumnIterator,
+          typename ValueIterator1, typename ValueIterator2, typename ValueIterator3,
+          typename IndexIterator, typename ValueIterator4, unsigned int BLOCK_SIZE>
 __launch_bounds__(BLOCK_SIZE,1)
 __global__ void
-spmv_coo_flat_kernel(const int num_nonzeros,
-                     const int interval_size,
+spmv_coo_flat_kernel(const IndexType num_nonzeros,
+                     const IndexType interval_size,
                      const RowIterator    I,
                      const ColumnIterator J,
                      const ValueIterator1  V,
@@ -235,7 +235,6 @@ spmv_coo_flat_kernel(const int num_nonzeros,
                      IndexIterator temp_rows,
                      ValueIterator4 temp_vals)
 {
-    typedef typename thrust::iterator_value<RowIterator>::type IndexType;
     typedef typename thrust::iterator_value<ValueIterator1>::type ValueType;
 
     __shared__ volatile IndexType rows[48 *(BLOCK_SIZE/32)];
@@ -246,7 +245,7 @@ spmv_coo_flat_kernel(const int num_nonzeros,
     const IndexType warp_id     = thread_id   / WARP_SIZE;                                       // global warp index
 
     const IndexType interval_begin = warp_id * interval_size;                                    // warp's offset into I,J,V
-    const IndexType interval_end   = thrust::min(interval_begin + interval_size, IndexType(num_nonzeros));  // end of warps's work
+    const IndexType interval_end   = thrust::min(interval_begin + interval_size, num_nonzeros);  // end of warps's work
 
     const IndexType idx = 16 * (threadIdx.x/32 + 1) + threadIdx.x;                               // thread's index into padded rows array
 
@@ -311,7 +310,7 @@ spmv_coo_flat_kernel(const int num_nonzeros,
 template <typename IndexIterator, typename ValueIterator1, typename ValueIterator2, unsigned int BLOCK_SIZE>
 __launch_bounds__(BLOCK_SIZE,1)
 __global__ void
-spmv_coo_reduce_update_kernel(const int num_warps,
+spmv_coo_reduce_update_kernel(const unsigned int num_warps,
                               const IndexIterator temp_rows,
                               const ValueIterator1 temp_vals,
                               ValueIterator2 y)
@@ -420,7 +419,7 @@ void __spmv_coo_flat(cuda::execution_policy<DerivedPolicy>& exec,
 
     const unsigned int BLOCK_SIZE = 256;
     const unsigned int MAX_BLOCKS = cusp::system::cuda::detail::max_active_blocks(
-        spmv_coo_flat_kernel<RowIterator, ColumnIterator, ValueIterator1, ValueIterator2, ValueIterator3, IndexIterator, ValueIterator4, BLOCK_SIZE>, BLOCK_SIZE, (size_t) 0);
+        spmv_coo_flat_kernel<IndexType, RowIterator, ColumnIterator, ValueIterator1, ValueIterator2, ValueIterator3, IndexIterator, ValueIterator4, BLOCK_SIZE>, BLOCK_SIZE, (size_t) 0);
     const unsigned int WARPS_PER_BLOCK = BLOCK_SIZE / WARP_SIZE;
 
     const unsigned int num_units  = A.num_entries / WARP_SIZE;
@@ -437,7 +436,7 @@ void __spmv_coo_flat(cuda::execution_policy<DerivedPolicy>& exec,
     cusp::array1d<IndexType,cusp::device_memory> temp_rows(active_warps);
     cusp::array1d<ValueType,cusp::device_memory> temp_vals(active_warps);
 
-    spmv_coo_flat_kernel<RowIterator, ColumnIterator, ValueIterator1, ValueIterator2, ValueIterator3, IndexIterator, ValueIterator4, BLOCK_SIZE> <<<num_blocks, BLOCK_SIZE, 0, s>>>
+    spmv_coo_flat_kernel<IndexType, RowIterator, ColumnIterator, ValueIterator1, ValueIterator2, ValueIterator3, IndexIterator, ValueIterator4, BLOCK_SIZE> <<<num_blocks, BLOCK_SIZE, 0, s>>>
     (tail, interval_size, A.row_indices.begin(), A.column_indices.begin(), A.values.begin(), x.begin(), y.begin(), temp_rows.begin(), temp_vals.begin());
 
     spmv_coo_reduce_update_kernel<IndexIterator, ValueIterator4, ValueIterator3, BLOCK_SIZE> <<<1, BLOCK_SIZE, 0, s>>>

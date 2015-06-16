@@ -24,7 +24,7 @@ void TestStandardAggregation(void)
     cusp::gallery::poisson5pt(A, 10, 10);
 
     cusp::array1d<int,MemorySpace> aggregates(A.num_rows);
-    cusp::precond::aggregation::standard_aggregation(A, aggregates);
+    cusp::precond::aggregation::standard_aggregate(A, aggregates);
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestStandardAggregation);
 
@@ -177,7 +177,7 @@ void TestSmoothProlongator(void)
 
         SetupMatrixType _P;
 
-        cusp::precond::aggregation::smooth_prolongator(S, T, _P, 4.0f, 2.0f);
+        cusp::precond::aggregation::smooth_prolongator(S, T, _P, 2.0f, 4.0f);
 
         cusp::coo_matrix<int,float,MemorySpace> P(_P);
 
@@ -252,7 +252,7 @@ void TestSmoothProlongator(void)
 
         SetupMatrixType _P;
 
-        cusp::precond::aggregation::smooth_prolongator(S, T, _P, 4.0f/3.0f, 1.8090169943749472f);
+        cusp::precond::aggregation::smooth_prolongator(S, T, _P, 1.8090169943749472f, 4.0f/3.0f);
 
         cusp::coo_matrix<int,float,MemorySpace> P(_P);
         P.sort_by_row_and_column();

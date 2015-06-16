@@ -111,19 +111,6 @@ int main(int argc, char ** argv)
         run_amg(A_csr,M);
     }
 
-    // solve with unsmoothed aggregation algebraic multigrid preconditioner and polynomial smoother
-    /* { */
-    /*     std::cout << "\nSolving with unsmoothed aggregation preconditioner" << std::endl; */
-    /*  */
-    /*     unsmoothed_aggregation_options<IndexType,ValueType,MemorySpace> opts; */
-    /*  */
-    /*     timer t0; */
-    /*     cusp::precond::aggregation::smoothed_aggregation<IndexType, ValueType, MemorySpace> M(A,opts); */
-    /*     std::cout << "constructed hierarchy in " << t0.milliseconds_elapsed() << " ms " << std::endl; */
-    /*  */
-    /*     run_amg(A,M); */
-    /* } */
-
     return 0;
 }
 
