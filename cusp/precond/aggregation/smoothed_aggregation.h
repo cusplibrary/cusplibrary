@@ -24,9 +24,9 @@
 #include <cusp/detail/config.h>
 #include <cusp/detail/multilevel.h>
 
-#include <cusp/eigen/spectral_radius.h>
 #include <cusp/precond/aggregation/smoothed_aggregation_helper.h>
 
+#include <thrust/execution_policy.h>
 #include <thrust/detail/use_default.h>
 
 #include <vector> // TODO replace with host_vector
