@@ -18,12 +18,46 @@
 
 #include <cusp/detail/config.h>
 
+#include <cusp/execution_policy.h>
+
 namespace cusp
 {
 namespace precond
 {
 namespace aggregation
 {
+
+/* \cond */
+template <typename DerivedPolicy, typename MatrixType, typename ArrayType>
+void standard_aggregation(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                          const MatrixType& C, ArrayType& aggregates);
+
+template <typename DerivedPolicy, typename MatrixType, typename ArrayType>
+void standard_aggregation(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                          const MatrixType& C, ArrayType& aggregates, ArrayType& roots);
+/* \endcond */
+
+template <typename MatrixType, typename ArrayType>
+void standard_aggregation(const MatrixType& C, ArrayType& aggregates);
+
+template <typename MatrixType, typename ArrayType>
+void standard_aggregation(const MatrixType& C, ArrayType& aggregates, ArrayType& roots);
+
+/* \cond */
+template <typename DerivedPolicy, typename MatrixType, typename ArrayType>
+void mis_aggregation(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                     const MatrixType& C, ArrayType& aggregates);
+
+template <typename DerivedPolicy, typename MatrixType, typename ArrayType>
+void mis_aggregation(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                     const MatrixType& C, ArrayType& aggregates, ArrayType& roots);
+/* \endcond */
+
+template <typename MatrixType, typename ArrayType>
+void mis_aggregation(const MatrixType& C, ArrayType& aggregates);
+
+template <typename MatrixType, typename ArrayType>
+void mis_aggregation(const MatrixType& C, ArrayType& aggregates, ArrayType& roots);
 
 /* \cond */
 template <typename DerivedPolicy, typename MatrixType, typename ArrayType>

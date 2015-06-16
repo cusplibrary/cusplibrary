@@ -16,7 +16,8 @@
 
 #include <cusp/detail/config.h>
 
-#include <cusp/precond/aggregation/symmetric_strength.h>
+#include <cusp/precond/aggregation/system/detail/generic/symmetric_strength.h>
+#include <cusp/precond/aggregation/system/detail/generic/evolution_strength.h>
 
 namespace cusp
 {
@@ -24,6 +25,55 @@ namespace precond
 {
 namespace aggregation
 {
+
+template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
+void symmetric_strength_of_connection(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                                      const MatrixType1& A, MatrixType2& S, const double theta)
+{
+    using cusp::precond::aggregation::detail::symmetric_strength_of_connection;
+
+    symmetric_strength_of_connection(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, S, theta);
+}
+
+template <typename MatrixType1, typename MatrixType2>
+void symmetric_strength_of_connection(const MatrixType1& A, MatrixType2& S, const double theta)
+{
+    using thrust::system::detail::generic::select_system;
+
+    typedef typename MatrixType1::memory_space System1;
+    typedef typename MatrixType2::memory_space System2;
+
+    System1 system1;
+    System2 system2;
+
+    cusp::precond::aggregation::symmetric_strength_of_connection(select_system(system1,system2), A, S, theta);
+}
+
+template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2, typename ArrayType>
+void evolution_strength_of_connection(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                                      const MatrixType1& A, MatrixType2& S, const ArrayType& B,
+                                      const double rho_DinvA, const double epsilon)
+{
+    using cusp::precond::aggregation::detail::evolution_strength_of_connection;
+
+    evolution_strength_of_connection(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, S, B, rho_DinvA, epsilon);
+}
+
+template <typename MatrixType1, typename MatrixType2, typename ArrayType>
+void evolution_strength_of_connection(const MatrixType1& A, MatrixType2& S, const ArrayType& B,
+                                      const double rho_DinvA, const double epsilon)
+{
+    using thrust::system::detail::generic::select_system;
+
+    typedef typename MatrixType1::memory_space System1;
+    typedef typename MatrixType2::memory_space System2;
+
+    System1 system1;
+    System2 system2;
+
+    cusp::precond::aggregation::evolution_strength_of_connection(select_system(system1,system2), A, S, B, rho_DinvA, epsilon);
+}
+
 
 template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
 void strength_of_connection(thrust::execution_policy<DerivedPolicy> &exec,

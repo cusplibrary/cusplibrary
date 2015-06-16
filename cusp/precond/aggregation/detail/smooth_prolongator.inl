@@ -43,17 +43,17 @@ namespace detail
 
 using namespace thrust::placeholders;
 
-template <typename MatrixType1,
+template <typename DerivedPolicy,
+          typename MatrixType1,
           typename MatrixType2,
           typename MatrixType3,
           typename ValueType>
-void smooth_prolongator(const MatrixType1& S,
+void smooth_prolongator(thrust::execution_policy<DerivedPolicy> &exec,
+                        const MatrixType1& S,
                         const MatrixType2& T,
                         MatrixType3& P,
                         const ValueType rho_Dinv_S,
-                        const ValueType omega,
-                        cusp::coo_format,
-                        cusp::device_memory)
+                        const ValueType omega)
 {
     typedef typename MatrixType3::index_type IndexType;
 
@@ -133,17 +133,17 @@ void smooth_prolongator(const MatrixType1& S,
     }
 }
 
-template <typename MatrixType1,
+template <typename DerivedPolicy,
+          typename MatrixType1,
           typename MatrixType2,
           typename MatrixType3,
           typename ValueType>
-void smooth_prolongator(const MatrixType1& S,
+void smooth_prolongator(thrust::system::detail::sequential::execution_policy<DerivedPolicy> &exec,
+                        const MatrixType1& S,
                         const MatrixType2& T,
                         MatrixType3& P,
                         const ValueType rho_Dinv_S,
-                        const ValueType omega,
-                        cusp::csr_format,
-                        cusp::host_memory)
+                        const ValueType omega)
 {
     typedef typename MatrixType3::index_type IndexType;
 
@@ -173,13 +173,20 @@ void smooth_prolongator(const MatrixType1& S,
 
 } // end namespace detail
 
-template <typename MatrixType1, typename MatrixType2, typename MatrixType3, typename ValueType>
-void smooth_prolongator(const MatrixType1& S,
+template <typename DerivedPolicy,
+          typename MatrixType1,
+          typename MatrixType2,
+          typename MatrixType3,
+          typename ValueType>
+void smooth_prolongator(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                        const MatrixType1& S,
                         const MatrixType2& T,
                         MatrixType3& P,
                         const ValueType rho_Dinv_S,
                         const ValueType omega)
 {
+    using detail::smooth_prolongator;
+
     ValueType rho = rho_Dinv_S;
 
     if(rho == 0)
@@ -188,13 +195,30 @@ void smooth_prolongator(const MatrixType1& S,
         rho = detail::estimate_rho_Dinv_A(S);
     }
 
-    detail::smooth_prolongator(S, T, P, rho, omega,
-                               typename MatrixType1::format(),
-                               typename MatrixType1::memory_space());
+    smooth_prolongator(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), S, T, P, rho, omega);
+}
+
+template <typename MatrixType1, typename MatrixType2, typename MatrixType3, typename ValueType>
+void smooth_prolongator(const MatrixType1& S,
+                        const MatrixType2& T,
+                        MatrixType3& P,
+                        const ValueType rho_Dinv_S,
+                        const ValueType omega)
+{
+    using thrust::system::detail::generic::select_system;
+
+    typedef typename MatrixType1::memory_space System1;
+    typedef typename MatrixType2::memory_space System2;
+    typedef typename MatrixType3::memory_space System3;
+
+    System1 system1;
+    System2 system2;
+    System3 system3;
+
+    smooth_prolongator(select_system(system1,system2,system3), S, T, P, rho_Dinv_S, omega);
 }
 
 } // end namespace aggregation
 } // end namespace precond
 } // end namespace cusp
-
 
