@@ -91,7 +91,7 @@ void mis_aggregate(const MatrixType& A, ArrayType& aggregates, ArrayType& roots)
 
     System system;
 
-    cusp::precond::aggregation::mis_aggregate(select_system(system), A, aggregates, roots);
+    mis_aggregate(select_system(system), A, aggregates, roots);
 }
 
 template <typename MatrixType, typename ArrayType>
@@ -103,10 +103,19 @@ void mis_aggregate(const MatrixType& A, ArrayType& aggregates)
 }
 
 template <typename DerivedPolicy, typename MatrixType, typename ArrayType>
-void aggregate(thrust::execution_policy<DerivedPolicy> &exec,
-               const MatrixType& A, ArrayType& aggregates, ArrayType& roots)
+typename thrust::detail::enable_if_convertible<typename MatrixType::memory_space,cusp::host_memory>::type
+aggregate(thrust::execution_policy<DerivedPolicy> &exec,
+          const MatrixType& A, ArrayType& aggregates, ArrayType& roots)
 {
-    cusp::precond::aggregation::standard_aggregate(exec, A, aggregates, roots);
+    standard_aggregate(exec, A, aggregates, roots);
+}
+
+template <typename DerivedPolicy, typename MatrixType, typename ArrayType>
+typename thrust::detail::disable_if_convertible<typename MatrixType::memory_space,cusp::host_memory>::type
+aggregate(thrust::execution_policy<DerivedPolicy> &exec,
+          const MatrixType& A, ArrayType& aggregates, ArrayType& roots)
+{
+    mis_aggregate(exec, A, aggregates, roots);
 }
 
 template <typename DerivedPolicy, typename MatrixType, typename ArrayType>

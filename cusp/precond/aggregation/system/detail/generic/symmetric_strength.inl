@@ -71,33 +71,54 @@ void symmetric_strength_of_connection(thrust::execution_policy<DerivedPolicy> &e
 
     is_strong_connection<ValueType> pred(theta);
 
-    // compute number of entries in output
-    IndexType num_entries = thrust::count_if(exec,
-                                             thrust::make_zip_iterator(thrust::make_tuple
-                                                    (A.values.begin(),
-                                                     thrust::make_permutation_iterator(diagonal.begin(), A.row_indices.begin()),
-                                                     thrust::make_permutation_iterator(diagonal.begin(), A.column_indices.begin()))),
-                                             thrust::make_zip_iterator(thrust::make_tuple
-                                                     (A.values.begin(),
-                                                      thrust::make_permutation_iterator(diagonal.begin(), A.row_indices.begin()),
-                                                      thrust::make_permutation_iterator(diagonal.begin(), A.column_indices.begin()))) + A.num_entries,
-                                             pred);
+    cusp::array1d<bool,MemorySpace> copyflags(A.num_entries);
 
     // this is just zipping up (A[i,j],A[i,i],A[j,j]) and applying is_strong_connection to each tuple
+    thrust::transform(exec,
+                      thrust::make_zip_iterator(thrust::make_tuple(A.values.begin(),
+                                                thrust::make_permutation_iterator(diagonal.begin(), A.row_indices.begin()),
+                                                thrust::make_permutation_iterator(diagonal.begin(), A.column_indices.begin()))),
+                      thrust::make_zip_iterator(thrust::make_tuple(A.values.begin(),
+                                                thrust::make_permutation_iterator(diagonal.begin(), A.row_indices.begin()),
+                                                thrust::make_permutation_iterator(diagonal.begin(), A.column_indices.begin()))) + A.num_entries,
+                      copyflags.begin(),
+                      pred);
+
+
+    // compute number of entries in output
+    IndexType num_entries = thrust::count(exec, copyflags.begin(), copyflags.end(), true);
 
     // resize output
     S.resize(A.num_rows, A.num_cols, num_entries);
 
     // copy strong connections to output
+    // thrust::copy_if(exec,
+    //                 thrust::make_zip_iterator(thrust::make_tuple(A.row_indices.begin(), A.column_indices.begin(), A.values.begin())),
+    //                 thrust::make_zip_iterator(thrust::make_tuple(A.row_indices.begin(), A.column_indices.begin(), A.values.begin())) + A.num_entries,
+    //                 copyflags.begin(),
+    //                 thrust::make_zip_iterator(thrust::make_tuple(S.row_indices.begin(), S.column_indices.begin(), S.values.begin())),
+    //                 thrust::identity<bool>());
+
+    // WAR for runtime error "cudaFuncGetAttributes: invalid device function"
+    // using zip_iterators
     thrust::copy_if(exec,
-                    thrust::make_zip_iterator(thrust::make_tuple(A.row_indices.begin(), A.column_indices.begin(), A.values.begin())),
-                    thrust::make_zip_iterator(thrust::make_tuple(A.row_indices.begin(), A.column_indices.begin(), A.values.begin())) + A.num_entries,
-                    thrust::make_zip_iterator(thrust::make_tuple
-                            (A.values.begin(),
-                             thrust::make_permutation_iterator(diagonal.begin(), A.row_indices.begin()),
-                             thrust::make_permutation_iterator(diagonal.begin(), A.column_indices.begin()))),
-                    thrust::make_zip_iterator(thrust::make_tuple(S.row_indices.begin(), S.column_indices.begin(), S.values.begin())),
-                    pred);
+                    A.row_indices.begin(),
+                    A.row_indices.begin() + A.num_entries,
+                    copyflags.begin(),
+                    S.row_indices.begin(),
+                    thrust::identity<bool>());
+    thrust::copy_if(exec,
+                    A.column_indices.begin(),
+                    A.column_indices.begin() + A.num_entries,
+                    copyflags.begin(),
+                    S.column_indices.begin(),
+                    thrust::identity<bool>());
+    thrust::copy_if(exec,
+                    A.values.begin(),
+                    A.values.begin() + A.num_entries,
+                    copyflags.begin(),
+                    S.values.begin(),
+                    thrust::identity<bool>());
 }
 
 template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>

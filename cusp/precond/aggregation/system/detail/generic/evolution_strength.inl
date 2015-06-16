@@ -193,7 +193,7 @@ evolution_strength_of_connection(thrust::execution_policy<DerivedPolicy> &exec,
 
     cusp::array1d<ValueType, MemorySpace> D(N);
     cusp::array1d<ValueType, MemorySpace> DAtilde(N);
-    cusp::array1d<ValueType, MemorySpace> smallest_per_row(N, std::numeric_limits<ValueType>::max());
+    cusp::array1d<ValueType, MemorySpace> smallest_per_row(N);
 
     cusp::array1d<ValueType, MemorySpace> data(M);
     cusp::array1d<ValueType, MemorySpace> angle(M);
@@ -212,11 +212,11 @@ evolution_strength_of_connection(thrust::execution_policy<DerivedPolicy> &exec,
 
     // compute symmetric permutation
     {
-      cusp::array1d<IndexType, MemorySpace> indices(M);
+        cusp::array1d<IndexType, MemorySpace> indices(M);
 
-      thrust::sequence(exec, permutation.begin(), permutation.end());
-      cusp::copy(exec, A.column_indices, indices);
-      thrust::sort_by_key(exec, indices.begin(), indices.end(), permutation.begin());
+        thrust::sequence(exec, permutation.begin(), permutation.end());
+        cusp::copy(exec, A.column_indices, indices);
+        thrust::sort_by_key(exec, indices.begin(), indices.end(), permutation.begin());
     }
 
     cusp::extract_diagonal(exec, A, D);
@@ -230,9 +230,9 @@ evolution_strength_of_connection(thrust::execution_policy<DerivedPolicy> &exec,
 
     if(rho_DinvA == 0.0)
     {
-        MatrixViewType Dinv_A(N, N, M, A.row_indices, A.column_indices, Dinv_A_values);
-
-        rho_DinvA = cusp::eigen::ritz_spectral_radius(Dinv_A, 8);
+        rho_DinvA = cusp::eigen::ritz_spectral_radius(
+                        cusp::make_coo_matrix_view(A.num_rows, A.num_cols, A.num_entries,
+                                A.row_indices, A.column_indices, Dinv_A_values), 8);
     }
 
     cusp::indices_to_offsets(exec, A.row_indices, A_row_offsets);
@@ -248,21 +248,27 @@ evolution_strength_of_connection(thrust::execution_policy<DerivedPolicy> &exec,
 
     // Use computational shortcut to calculate Atilde^k only at sparsity
     // pattern of A
-    incomplete_inner_functor<ValueType> incomp_op(thrust::raw_pointer_cast(&A_row_offsets[0]),
-                                                  thrust::raw_pointer_cast(&A.column_indices[0]),
-                                                  thrust::raw_pointer_cast(&Dinv_A_values[0]),
-                                                  thrust::raw_pointer_cast(&Dinv_A_T_values[0]));
+    {
+        cusp::array1d<IndexType,MemorySpace> A_column_indices(A.column_indices);
 
-    thrust::transform(exec,
-                      thrust::make_zip_iterator(thrust::make_tuple(A.row_indices.begin(), A.column_indices.begin())),
-                      thrust::make_zip_iterator(thrust::make_tuple(A.row_indices.begin(), A.column_indices.begin())) + M,
-                      Atilde_values.begin(),
-                      incomp_op);
+        incomplete_inner_functor<ValueType> incomp_op(thrust::raw_pointer_cast(&A_row_offsets[0]),
+                thrust::raw_pointer_cast(&A_column_indices[0]),
+                thrust::raw_pointer_cast(&Dinv_A_values[0]),
+                thrust::raw_pointer_cast(&Dinv_A_T_values[0]));
+
+        thrust::transform(exec,
+                          thrust::make_zip_iterator(thrust::make_tuple(A.row_indices.begin(), A.column_indices.begin())),
+                          thrust::make_zip_iterator(thrust::make_tuple(A.row_indices.begin(), A.column_indices.begin())) + M,
+                          Atilde_values.begin(),
+                          incomp_op);
+    }
 
     thrust::replace(exec, Bmat_forscaling.begin(), Bmat_forscaling.end(), 0, 1);
 
-    MatrixViewType Atilde(N, N, M, A.row_indices, A.column_indices, Atilde_values);
-    cusp::extract_diagonal(exec, Atilde, DAtilde);
+    cusp::extract_diagonal(exec,
+                           cusp::make_coo_matrix_view(A.num_rows, A.num_cols, A.num_entries,
+                                   A.row_indices, A.column_indices, Atilde_values),
+                           DAtilde);
 
     cusp::copy(exec, Atilde_values, data);
 
@@ -314,11 +320,15 @@ evolution_strength_of_connection(thrust::execution_policy<DerivedPolicy> &exec,
     // Apply distance filter
     if(epsilon != std::numeric_limits<ValueType>::infinity())
     {
-        thrust::reduce_by_key(A.row_indices.begin(), A.row_indices.end(), Atilde_symmetric.begin(),
+        thrust::fill(exec, smallest_per_row.begin(), smallest_per_row.end(), std::numeric_limits<ValueType>::max());
+
+        thrust::reduce_by_key(exec,
+                              A.row_indices.begin(), A.row_indices.end(), Atilde_symmetric.begin(),
                               thrust::make_discard_iterator(), smallest_per_row.begin(),
                               thrust::equal_to<IndexType>(), non_zero_minimum<ValueType>());
 
-        thrust::transform(Atilde_symmetric.begin(), Atilde_symmetric.end(),
+        thrust::transform(exec,
+                          Atilde_symmetric.begin(), Atilde_symmetric.end(),
                           thrust::make_permutation_iterator(smallest_per_row.begin(), A.row_indices.begin()),
                           Atilde_symmetric.begin(),
                           distance_filter_functor<ValueType>(epsilon));
@@ -395,5 +405,6 @@ evolution_strength_of_connection(thrust::execution_policy<DerivedPolicy> &exec,
 } // end namespace aggregation
 } // end namespace precond
 } // end namespace cusp
+
 
 
