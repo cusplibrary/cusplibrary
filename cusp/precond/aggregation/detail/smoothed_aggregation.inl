@@ -176,7 +176,7 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverTyp
     fit_candidates(exec, sa_levels.back().aggregates, sa_levels.back().B, sa_levels.back().T, B_coarse);
 
     // compute prolongation operator
-    smooth_prolongator(A, sa_levels.back().T, P, sa_levels.back().rho_DinvA);  // TODO if C != A then compute rho_Dinv_C
+    smooth_prolongator(exec, A, sa_levels.back().T, P, sa_levels.back().rho_DinvA);  // TODO if C != A then compute rho_Dinv_C
 
     // compute restriction operator (transpose of prolongator)
     SetupMatrixType R;
@@ -191,8 +191,8 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverTyp
     sa_levels.back().A_.swap(RAP);
     sa_levels.back().B.swap(B_coarse);
 
-    ML::copy_or_swap_matrix( ML::levels.back().R, R );
-    ML::copy_or_swap_matrix( ML::levels.back().P, P );
+    ML::copy_or_swap_matrix(ML::levels.back().R, R);
+    ML::copy_or_swap_matrix(ML::levels.back().P, P);
     ML::levels.push_back(Level());
 }
 
