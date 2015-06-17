@@ -220,21 +220,26 @@ __device__ void segreduce_block(const IndexType * idx, ValueType * val, BinaryFu
 //  The carry values at the end of each interval are written to arrays
 //  temp_rows and temp_vals, which are processed by a second kernel.
 //
-template <typename IndexType, typename ValueType, typename BinaryFunction1, typename BinaryFunction2, unsigned int BLOCK_SIZE>
+template <typename IndexType,       typename RowIterator,     typename ColumnIterator,
+          typename ValueIterator1,  typename ValueIterator2,  typename ValueIterator3,
+          typename IndexIterator,   typename ValueIterator4,
+          typename BinaryFunction1, typename BinaryFunction2, unsigned int BLOCK_SIZE>
 __launch_bounds__(BLOCK_SIZE,1)
 __global__ void
 spmv_coo_flat_kernel(const IndexType num_nonzeros,
                      const IndexType interval_size,
-                     const IndexType * I,
-                     const IndexType * J,
-                     const ValueType * V,
-                     const ValueType * x,
-                     ValueType * y,
-                     IndexType * temp_rows,
-                     ValueType * temp_vals,
+                     const RowIterator    I,
+                     const ColumnIterator J,
+                     const ValueIterator1  V,
+                     const ValueIterator2 x,
+                     ValueIterator3 y,
+                     IndexIterator temp_rows,
+                     ValueIterator4 temp_vals,
                      BinaryFunction1 combine,
                      BinaryFunction2 reduce)
 {
+    typedef typename thrust::iterator_value<ValueIterator1>::type ValueType;
+
     __shared__ volatile IndexType rows[48 *(BLOCK_SIZE/32)];
     __shared__ volatile ValueType vals[BLOCK_SIZE];
 
@@ -298,22 +303,25 @@ spmv_coo_flat_kernel(const IndexType num_nonzeros,
     if(thread_lane == 31)
     {
         // write the carry out values
-        temp_rows[warp_id] = rows[idx];
-        temp_vals[warp_id] = vals[threadIdx.x];
+        temp_rows[warp_id] = IndexType(rows[idx]);
+        temp_vals[warp_id] = ValueType(vals[threadIdx.x]);
     }
 }
 
 
 // The second level of the segmented reduction operation
-template <typename IndexType, typename ValueType, typename BinaryFunction, unsigned int BLOCK_SIZE>
+template <typename IndexIterator, typename ValueIterator1, typename ValueIterator2, typename BinaryFunction, unsigned int BLOCK_SIZE>
 __launch_bounds__(BLOCK_SIZE,1)
 __global__ void
-spmv_coo_reduce_update_kernel(const IndexType num_warps,
-                              const IndexType * temp_rows,
-                              const ValueType * temp_vals,
-                              ValueType * y,
+spmv_coo_reduce_update_kernel(const unsigned int num_warps,
+                              const IndexIterator temp_rows,
+                              const ValueIterator1 temp_vals,
+                              ValueIterator2 y,
                               BinaryFunction reduce)
 {
+    typedef typename thrust::iterator_value<IndexIterator>::type IndexType;
+    typedef typename thrust::iterator_value<ValueIterator1>::type ValueType;
+
     __shared__ IndexType rows[BLOCK_SIZE + 1];
     __shared__ ValueType vals[BLOCK_SIZE + 1];
 
@@ -375,25 +383,30 @@ template <bool InitializeY,
           typename BinaryFunction1,
           typename BinaryFunction2>
 void __spmv_coo_flat(cuda::execution_policy<DerivedPolicy>& exec,
-                     MatrixType& A,
-                     VectorType1& x,
+                     const MatrixType& A,
+                     const VectorType1& x,
                      VectorType2& y,
                      UnaryFunction   initialize,
                      BinaryFunction1 combine,
                      BinaryFunction2 reduce)
 {
-    typedef typename MatrixType::index_type IndexType;
-    typedef typename MatrixType::value_type ValueType;
+    typedef typename MatrixType::index_type                                 IndexType;
+    typedef typename VectorType2::value_type                                ValueType;
 
-    const IndexType * I = thrust::raw_pointer_cast(&A.row_indices[0]);
-    const IndexType * J = thrust::raw_pointer_cast(&A.column_indices[0]);
-    const ValueType * V = thrust::raw_pointer_cast(&A.values[0]);
+    typedef typename MatrixType::row_indices_array_type::const_iterator     RowIterator;
+    typedef typename MatrixType::column_indices_array_type::const_iterator  ColumnIterator;
+    typedef typename MatrixType::values_array_type::const_iterator          ValueIterator1;
 
-    const ValueType * x_ptr = thrust::raw_pointer_cast(&x[0]);
-    ValueType * y_ptr = thrust::raw_pointer_cast(&y[0]);
+    typedef typename VectorType1::const_iterator                            ValueIterator2;
+    typedef typename VectorType2::iterator                                  ValueIterator3;
+
+    typedef typename cusp::array1d<IndexType,cusp::device_memory>::iterator IndexIterator;
+    typedef typename cusp::array1d<ValueType,cusp::device_memory>::iterator ValueIterator4;
 
     if (InitializeY)
         thrust::fill(y.begin(), y.begin() + A.num_rows, ValueType(0));
+
+    cudaStream_t s = stream(thrust::detail::derived_cast(exec));
 
     if(A.num_entries == 0)
     {
@@ -403,13 +416,17 @@ void __spmv_coo_flat(cuda::execution_policy<DerivedPolicy>& exec,
     else if (A.num_entries < static_cast<size_t>(WARP_SIZE))
     {
         // small matrix
-        spmv_coo_serial_kernel<IndexType, ValueType, BinaryFunction1, BinaryFunction2> <<<1,1>>>
-        (A.num_entries, I, J, V, x_ptr, y_ptr, combine, reduce);
+        spmv_coo_serial_kernel<RowIterator, ColumnIterator, ValueIterator1, ValueIterator2, ValueIterator3, BinaryFunction1, BinaryFunction2> <<<1,1,0,s>>>
+        (A.num_entries, A.row_indices.begin(), A.column_indices.begin(), A.values.begin(), x.begin(), y.begin(), combine, reduce);
         return;
     }
 
     const unsigned int BLOCK_SIZE = 256;
-    const unsigned int MAX_BLOCKS = cusp::system::cuda::detail::max_active_blocks(spmv_coo_flat_kernel<IndexType, ValueType, BinaryFunction1, BinaryFunction2, BLOCK_SIZE>, BLOCK_SIZE, (size_t) 0);
+    const unsigned int MAX_BLOCKS = cusp::system::cuda::detail::max_active_blocks(
+        spmv_coo_flat_kernel<IndexType, RowIterator, ColumnIterator,
+                             ValueIterator1, ValueIterator2, ValueIterator3,
+                             IndexIterator, ValueIterator4,
+                             BinaryFunction1, BinaryFunction2, BLOCK_SIZE>, BLOCK_SIZE, (size_t) 0);
     const unsigned int WARPS_PER_BLOCK = BLOCK_SIZE / WARP_SIZE;
 
     const unsigned int num_units  = A.num_entries / WARP_SIZE;
@@ -426,19 +443,21 @@ void __spmv_coo_flat(cuda::execution_policy<DerivedPolicy>& exec,
     cusp::array1d<IndexType,cusp::device_memory> temp_rows(active_warps);
     cusp::array1d<ValueType,cusp::device_memory> temp_vals(active_warps);
 
-    IndexType * temp_rows_ptr = thrust::raw_pointer_cast(&temp_rows[0]);
-    ValueType * temp_vals_ptr = thrust::raw_pointer_cast(&temp_vals[0]);
+    spmv_coo_flat_kernel<IndexType, RowIterator, ColumnIterator,
+                         ValueIterator1, ValueIterator2, ValueIterator3,
+                         IndexIterator, ValueIterator4,
+                         BinaryFunction1, BinaryFunction2, BLOCK_SIZE> <<<num_blocks, BLOCK_SIZE, 0, s>>>
+    (tail, interval_size,
+     A.row_indices.begin(), A.column_indices.begin(), A.values.begin(),
+     x.begin(), y.begin(),
+     temp_rows.begin(), temp_vals.begin(),
+     combine, reduce);
 
-    cudaStream_t s = stream(thrust::detail::derived_cast(exec));
+    spmv_coo_reduce_update_kernel<IndexIterator, ValueIterator4, ValueIterator3, BinaryFunction2, BLOCK_SIZE> <<<1, BLOCK_SIZE, 0, s>>>
+    (active_warps, temp_rows.begin(), temp_vals.begin(), y.begin(), reduce);
 
-    spmv_coo_flat_kernel<IndexType, ValueType, BinaryFunction1, BinaryFunction2, BLOCK_SIZE> <<<num_blocks, BLOCK_SIZE, 0, s>>>
-    (tail, interval_size, I, J, V, x_ptr, y_ptr, temp_rows_ptr, temp_vals_ptr, combine, reduce);
-
-    spmv_coo_reduce_update_kernel<IndexType, ValueType, BinaryFunction2, BLOCK_SIZE> <<<1, BLOCK_SIZE, 0, s>>>
-    (active_warps, temp_rows_ptr, temp_vals_ptr, y_ptr, reduce);
-
-    spmv_coo_serial_kernel<IndexType, ValueType, BinaryFunction1, BinaryFunction2> <<<1,1,0,s>>>
-    (A.num_entries - tail, I + tail, J + tail, V + tail, x_ptr, y_ptr, combine, reduce);
+    spmv_coo_serial_kernel<RowIterator, ColumnIterator, ValueIterator1, ValueIterator2, ValueIterator3, BinaryFunction1, BinaryFunction2> <<<1,1,0,s>>>
+    (A.num_entries - tail, A.row_indices.begin() + tail, A.column_indices.begin() + tail, A.values.begin() + tail, x.begin(), y.begin(), combine, reduce);
 }
 
 template <typename DerivedPolicy,

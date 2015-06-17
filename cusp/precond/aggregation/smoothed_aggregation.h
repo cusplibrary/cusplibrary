@@ -24,9 +24,9 @@
 #include <cusp/detail/config.h>
 #include <cusp/detail/multilevel.h>
 
-#include <cusp/eigen/spectral_radius.h>
-#include <cusp/precond/aggregation/smoothed_aggregation_options.h>
+#include <cusp/precond/aggregation/smoothed_aggregation_helper.h>
 
+#include <thrust/execution_policy.h>
 #include <thrust/detail/use_default.h>
 
 #include <vector> // TODO replace with host_vector
@@ -128,38 +128,56 @@ class smoothed_aggregation :
 {
   private:
 
-    typedef typename select_sa_matrix_type<IndexType,ValueType,MemorySpace>::type								  SetupMatrixType;
-    typedef typename cusp::multilevel<IndexType,ValueType,MemorySpace,Format,SmootherType,SolverType>::container  ML;
+    typedef typename select_sa_matrix_type<IndexType,ValueType,MemorySpace>::type	SetupMatrixType;
+    typedef typename cusp::multilevel<IndexType,ValueType,MemorySpace,Format,SmootherType,SolverType>::container ML;
 
   public:
 
-    typedef smoothed_aggregation_options<IndexType,ValueType,MemorySpace>                      SAOptionsType;
-    const SAOptionsType & sa_options;
+    size_t min_level_size;
+    size_t max_levels;
+
     std::vector< sa_level<SetupMatrixType> > sa_levels;
 
-    smoothed_aggregation(void)
-      : sa_options(SAOptionsType()) {}
+    smoothed_aggregation(void) : min_level_size(500), max_levels(10) {};
 
     template <typename MatrixType>
-    smoothed_aggregation(const MatrixType& A, const SAOptionsType& sa_options = SAOptionsType());
+    smoothed_aggregation(const MatrixType& A);
 
     template <typename MatrixType,typename ArrayType>
-    smoothed_aggregation(const MatrixType& A, const ArrayType& B, const SAOptionsType& sa_options = SAOptionsType(),
+    smoothed_aggregation(const MatrixType& A, const ArrayType& B,
                          typename thrust::detail::enable_if_convertible<typename ArrayType::format,cusp::array1d_format>::type* = 0);
 
     template <typename MemorySpace2,typename SmootherType2,typename SolverType2,typename Format2>
     smoothed_aggregation(const smoothed_aggregation<IndexType,ValueType,MemorySpace2,SmootherType2,SolverType2,Format2>& M);
 
+    void set_min_level_size(size_t min_size);
+
+    void set_max_levels(size_t max_depth);
+
     template <typename MatrixType>
     void sa_initialize(const MatrixType& A);
 
     template <typename MatrixType, typename ArrayType>
-    void sa_initialize(const MatrixType& A, const ArrayType& B);
+    void sa_initialize(const MatrixType& A, const ArrayType& B,
+                       typename thrust::detail::enable_if_convertible<typename MatrixType::format,cusp::known_format>::type* = 0);
+
+    /* \cond */
+    template <typename DerivedPolicy, typename MatrixType>
+    void sa_initialize(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                       const MatrixType& A);
+
+    template <typename DerivedPolicy, typename MatrixType, typename ArrayType>
+    void sa_initialize(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                       const MatrixType& A, const ArrayType& B);
+    /* \endcond */
 
 protected:
 
-    template <typename MatrixType>
-    void extend_hierarchy(const MatrixType& A);
+    /* \cond */
+    template <typename DerivedPolicy, typename MatrixType>
+    void extend_hierarchy(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                          const MatrixType& A);
+    /* \endcond */
 };
 /*! \}
  */

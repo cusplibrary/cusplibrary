@@ -30,17 +30,21 @@ namespace cuda
 // *extremely* small matrices, or a few elements at the end of a
 // larger matrix
 
-template <typename IndexType, typename ValueType, typename BinaryFunction1, typename BinaryFunction2>
+template <typename RowIterator,     typename ColumnIterator,
+          typename ValueIterator1,  typename ValueIterator2, typename ValueIterator3,
+          typename BinaryFunction1, typename BinaryFunction2>
 __global__ void
-spmv_coo_serial_kernel(const IndexType num_entries,
-                       const IndexType * I,
-                       const IndexType * J,
-                       const ValueType * V,
-                       const ValueType * x,
-                       ValueType * y,
+spmv_coo_serial_kernel(const int num_entries,
+                       const RowIterator I,
+                       const ColumnIterator J,
+                       const ValueIterator1 V,
+                       const ValueIterator2 x,
+                       ValueIterator3 y,
                        BinaryFunction1 combine,
                        BinaryFunction2 reduce)
 {
+    typedef typename thrust::iterator_value<RowIterator>::type IndexType;
+
     for(IndexType n = 0; n < num_entries; n++)
     {
         y[I[n]] = reduce(y[I[n]], combine(V[n], x[J[n]]));
@@ -59,18 +63,14 @@ void spmv_coo_serial_device(const Matrix& A,
                             BinaryFunction1 combine,
                             BinaryFunction2 reduce)
 {
-    typedef typename Matrix::index_type IndexType;
-    typedef typename Matrix::value_type ValueType;
+    typedef typename Matrix::row_indices_array_type::const_iterator    RowIterator;
+    typedef typename Matrix::column_indices_array_type::const_iterator ColumnIterator;
+    typedef typename Matrix::values_array_type::const_iterator         ValueIterator1;
+    typedef typename Array1::const_iterator                            ValueIterator2;
+    typedef typename Array2::iterator                                  ValueIterator3;
 
-    const IndexType * I = thrust::raw_pointer_cast(&A.row_indices[0]);
-    const IndexType * J = thrust::raw_pointer_cast(&A.column_indices[0]);
-    const ValueType * V = thrust::raw_pointer_cast(&A.values[0]);
-
-    const ValueType * x_ptr = thrust::raw_pointer_cast(&x[0]);
-    ValueType * y_ptr = thrust::raw_pointer_cast(&y[0]);
-
-    spmv_coo_serial_kernel<IndexType,ValueType,BinaryFunction1,BinaryFunction2> <<<1,1>>>
-    (A.num_entries, I, J, V, x_ptr, y_ptr, combine, reduce);
+    spmv_coo_serial_kernel<RowIterator,ColumnIterator,ValueIterator1,ValueIterator2,ValueIterator3,BinaryFunction1,BinaryFunction2> <<<1,1>>>
+    (A.num_entries, A.row_indices.begin(), A.column_indices.begin(), A.values.begin(), x.begin(), y.begin(), combine, reduce);
 }
 
 } // end namespace cuda

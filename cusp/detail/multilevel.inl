@@ -163,7 +163,7 @@ void multilevel<IndexType,ValueType,MemorySpace,Format,SmootherType,SolverType>
         cusp::array1d<ValueType,cusp::host_memory> temp_b(b);
         cusp::array1d<ValueType,cusp::host_memory> temp_x(x.size());
         solver(temp_b, temp_x);
-        x = temp_x;
+        cusp::copy(temp_x, x);
     }
     else
     {

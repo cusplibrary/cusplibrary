@@ -18,38 +18,34 @@
 
 #include <cusp/detail/config.h>
 
+#include <cusp/execution_policy.h>
+
+#include <cusp/precond/aggregation/system/detail/sequential/smooth_prolongator.h>
+
 namespace cusp
 {
 namespace precond
 {
 namespace aggregation
 {
+namespace detail
+{
 
-/* \cond */
 template <typename DerivedPolicy,
-          typename Array1,
-          typename Array2,
-          typename MatrixType,
-          typename Array3>
-void fit_candidates(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-                    const Array1& aggregates,
-                    const Array2& B,
-                    MatrixType& Q,
-                    Array3& R);
-/* \endcond */
+          typename MatrixType1,
+          typename MatrixType2,
+          typename MatrixType3,
+          typename ValueType>
+void smooth_prolongator(thrust::execution_policy<DerivedPolicy> &exec,
+                        const MatrixType1& S,
+                        const MatrixType2& T,
+                              MatrixType3& P,
+                        const ValueType rho_Dinv_S,
+                        const ValueType omega);
 
-template <typename Array1,
-          typename Array2,
-          typename MatrixType,
-          typename Array3>
-void fit_candidates(const Array1& aggregates,
-                    const Array2& B,
-                    MatrixType& Q,
-                    Array3& R);
-
+} // end namespace detail
 } // end namespace aggregation
 } // end namespace precond
 } // end namespace cusp
 
-#include <cusp/precond/aggregation/detail/tentative.inl>
-
+#include <cusp/precond/aggregation/system/detail/generic/smooth_prolongator.inl>

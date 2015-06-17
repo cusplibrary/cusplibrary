@@ -41,18 +41,22 @@ namespace aggregation
 namespace detail
 {
 
-using namespace thrust::placeholders;
-
-template <typename MatrixType, typename ValueType>
-void smooth_prolongator(const MatrixType& S,
-                        const MatrixType& T,
-                        MatrixType& P,
-                        const ValueType omega,
+template <typename DerivedPolicy,
+          typename MatrixType1,
+          typename MatrixType2,
+          typename MatrixType3,
+          typename ValueType>
+void smooth_prolongator(thrust::execution_policy<DerivedPolicy> &exec,
+                        const MatrixType1& S,
+                        const MatrixType2& T,
+                        MatrixType3& P,
                         const ValueType rho_Dinv_S,
-                        cusp::coo_format,
-                        cusp::device_memory)
+                        const ValueType omega,
+                        cusp::coo_format)
 {
-    typedef typename MatrixType::index_type IndexType;
+    using namespace thrust::placeholders;
+
+    typedef typename MatrixType3::index_type IndexType;
 
     // TODO handle case with unaggregated nodes more gracefully
     if (T.num_entries == T.num_rows) {
@@ -60,7 +64,7 @@ void smooth_prolongator(const MatrixType& S,
         const ValueType lambda = omega / rho_Dinv_S;
 
         // temp <- -lambda * S(i,j) * T(j,k)
-        MatrixType temp(S.num_rows, T.num_cols, S.num_entries + T.num_entries);
+        MatrixType3 temp(S.num_rows, T.num_cols, S.num_entries + T.num_entries);
         thrust::copy(S.row_indices.begin(), S.row_indices.end(), temp.row_indices.begin());
         thrust::gather(S.column_indices.begin(), S.column_indices.end(), T.column_indices.begin(), temp.column_indices.begin());
         thrust::transform(S.values.begin(), S.values.end(),
@@ -113,7 +117,8 @@ void smooth_prolongator(const MatrixType& S,
         cusp::extract_diagonal(S, D);
 
         // create D_inv_S by copying S then scaling
-        MatrixType D_inv_S(S);
+        MatrixType3 D_inv_S(S);
+
         // scale the rows of D_inv_S by D^-1
         thrust::transform(D_inv_S.values.begin(), D_inv_S.values.begin() + S.num_entries,
                           thrust::make_permutation_iterator(D.begin(), S.row_indices.begin()),
@@ -123,60 +128,59 @@ void smooth_prolongator(const MatrixType& S,
         const ValueType lambda = omega / rho_Dinv_S;
         cusp::blas::scal( D_inv_S.values, lambda );
 
-        MatrixType temp;
+        MatrixType3 temp;
         cusp::multiply( D_inv_S, T, temp );
         cusp::subtract( T, temp, P );
 
     }
 }
 
-template <typename MatrixType, typename ValueType>
-void smooth_prolongator(const MatrixType& S,
-                        const MatrixType& T,
-                        MatrixType& P,
-                        const ValueType omega,
+template <typename DerivedPolicy,
+          typename MatrixType1,
+          typename MatrixType2,
+          typename MatrixType3,
+          typename ValueType>
+void smooth_prolongator(thrust::execution_policy<DerivedPolicy> &exec,
+                        const MatrixType1& S,
+                        const MatrixType2& T,
+                        MatrixType3& P,
                         const ValueType rho_Dinv_S,
-                        cusp::csr_format,
-                        cusp::host_memory)
+                        const ValueType omega,
+                        cusp::known_format)
 {
-    typedef typename MatrixType::index_type IndexType;
+    typedef typename MatrixType1::const_coo_view_type CooViewType1;
+    typedef typename MatrixType2::const_coo_view_type CooViewType2;
+    typedef typename cusp::detail::as_coo_type<MatrixType3>::type CooType3;
 
-    cusp::array1d<ValueType, cusp::host_memory> D(S.num_rows);
-    cusp::extract_diagonal(S, D);
+    CooViewType1 S_(S);
+    CooViewType2 T_(T);
+    CooType3 P_;
 
-    // create D_inv_S by copying S then scaling
-    MatrixType D_inv_S(S);
-    // scale the rows of D_inv_S by D^-1
-    for ( size_t row = 0; row < D_inv_S.num_rows; row++ )
-    {
-        const IndexType row_start = D_inv_S.row_offsets[row];
-        const IndexType row_end   = D_inv_S.row_offsets[row+1];
-        const ValueType diagonal  = D[row];
+    smooth_prolongator(exec, S_, T_, P_, rho_Dinv_S, omega, cusp::coo_format());
 
-        for ( IndexType index = row_start; index < row_end; index++ )
-            D_inv_S.values[index] /= diagonal;
-    }
+    cusp::convert(P_, P);
+}
 
-    const ValueType lambda = omega / rho_Dinv_S;
-    cusp::blas::scal( D_inv_S.values, lambda );
+template <typename DerivedPolicy,
+          typename MatrixType1,
+          typename MatrixType2,
+          typename MatrixType3,
+          typename ValueType>
+void smooth_prolongator(thrust::execution_policy<DerivedPolicy> &exec,
+                        const MatrixType1& S,
+                        const MatrixType2& T,
+                        MatrixType3& P,
+                        const ValueType rho_Dinv_S,
+                        const ValueType omega)
+{
+    typedef typename MatrixType1::format Format;
 
-    MatrixType temp;
-    cusp::multiply( D_inv_S, T, temp );
-    cusp::subtract( T, temp, P );
+    Format format;
+
+    smooth_prolongator(exec, S, T, P, rho_Dinv_S, omega, format);
 }
 
 } // end namespace detail
-
-template <typename MatrixType, typename ValueType>
-void smooth_prolongator(const MatrixType& S,
-                        const MatrixType& T,
-                        MatrixType& P,
-                        const ValueType omega,
-                        const ValueType rho_Dinv_S)
-{
-    detail::smooth_prolongator(S, T, P, omega, rho_Dinv_S, typename MatrixType::format(), typename MatrixType::memory_space());
-}
-
 } // end namespace aggregation
 } // end namespace precond
 } // end namespace cusp

@@ -14,9 +14,9 @@
  *  limitations under the License.
  */
 
-#pragma once
-
 #include <cusp/detail/config.h>
+
+#include <cusp/execution_policy.h>
 
 namespace cusp
 {
@@ -24,32 +24,16 @@ namespace precond
 {
 namespace aggregation
 {
+namespace detail
+{
 
-/* \cond */
-template <typename DerivedPolicy,
-          typename Array1,
-          typename Array2,
-          typename MatrixType,
-          typename Array3>
-void fit_candidates(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-                    const Array1& aggregates,
-                    const Array2& B,
-                    MatrixType& Q,
-                    Array3& R);
-/* \endcond */
+template <typename DerivedPolicy, typename MatrixType, typename ArrayType>
+void mis_aggregate(thrust::execution_policy<DerivedPolicy> &exec,
+                   const MatrixType& A, ArrayType& S, ArrayType& roots);
 
-template <typename Array1,
-          typename Array2,
-          typename MatrixType,
-          typename Array3>
-void fit_candidates(const Array1& aggregates,
-                    const Array2& B,
-                    MatrixType& Q,
-                    Array3& R);
-
+} // end namespace detail
 } // end namespace aggregation
 } // end namespace precond
 } // end namespace cusp
 
-#include <cusp/precond/aggregation/detail/tentative.inl>
-
+#include <cusp/precond/aggregation/system/detail/generic/mis_aggregate.inl>

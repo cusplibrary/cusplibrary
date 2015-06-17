@@ -18,6 +18,8 @@
 
 #include <cusp/detail/config.h>
 
+#include <cusp/execution_policy.h>
+
 namespace cusp
 {
 namespace precond
@@ -27,29 +29,20 @@ namespace aggregation
 
 /* \cond */
 template <typename DerivedPolicy,
-          typename Array1,
-          typename Array2,
-          typename MatrixType,
-          typename Array3>
-void fit_candidates(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-                    const Array1& aggregates,
-                    const Array2& B,
-                    MatrixType& Q,
-                    Array3& R);
+          typename MatrixType1,
+          typename MatrixType2,
+          typename MatrixType3>
+void galerkin_product(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                      const MatrixType1& R, const MatrixType2& A, const MatrixType1& P, MatrixType3& RAP);
 /* \endcond */
 
-template <typename Array1,
-          typename Array2,
-          typename MatrixType,
-          typename Array3>
-void fit_candidates(const Array1& aggregates,
-                    const Array2& B,
-                    MatrixType& Q,
-                    Array3& R);
+template <typename MatrixType1,
+          typename MatrixType2,
+          typename MatrixType3>
+void galerkin_product(const MatrixType1& R, const MatrixType2& A, const MatrixType1& P, MatrixType3& RAP);
 
 } // end namespace aggregation
 } // end namespace precond
 } // end namespace cusp
 
-#include <cusp/precond/aggregation/detail/tentative.inl>
-
+#include <cusp/precond/aggregation/detail/galerkin_product.inl>

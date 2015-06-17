@@ -12,25 +12,6 @@
 
 using namespace cusp::precond::aggregation;
 
-template<typename IndexType, typename ValueType, typename MemorySpace>
-class unsmoothed_aggregation_options
-    : public smoothed_aggregation_options<IndexType,ValueType,MemorySpace>
-{
-protected:
-
-    typedef smoothed_aggregation_options<IndexType,ValueType,MemorySpace> Parent;
-    typedef typename Parent::MatrixType MatrixType;
-
-public:
-
-    unsmoothed_aggregation_options() : Parent() {}
-
-    virtual void smooth_prolongator(const MatrixType& A, const MatrixType& T, MatrixType& P, ValueType& rho_DinvA) const
-    {
-        P = T;
-    }
-};
-
 template<typename MatrixType, typename Prec>
 void run_amg(const MatrixType& A, Prec& M)
 {
@@ -105,7 +86,7 @@ int main(int argc, char ** argv)
 
     // solve with smoothed aggregation algebraic multigrid preconditioner and polynomial smoother
     {
-        typedef cusp::precond::aggregation::polynomial_smoother<ValueType,MemorySpace> Smoother;
+        typedef cusp::precond::polynomial_smoother<ValueType,MemorySpace> Smoother;
         std::cout << "\nSolving with smoothed aggregation preconditioner and polynomial smoother" << std::endl;
 
         timer t0;
@@ -117,7 +98,7 @@ int main(int argc, char ** argv)
 
     // solve with smoothed aggregation algebraic multigrid preconditioner and gauss-seidel smoother
     {
-        typedef cusp::precond::aggregation::gauss_seidel_smoother<ValueType,MemorySpace> Smoother;
+        typedef cusp::precond::gauss_seidel_smoother<ValueType,MemorySpace> Smoother;
         std::cout << "\nSolving with smoothed aggregation preconditioner and gauss-seidel smoother" << std::endl;
 
         // Input matrix must be in CSR format for GS smoother
@@ -128,19 +109,6 @@ int main(int argc, char ** argv)
         std::cout << "constructed hierarchy in " << t0.milliseconds_elapsed() << " ms " << std::endl;
 
         run_amg(A_csr,M);
-    }
-
-    // solve with unsmoothed aggregation algebraic multigrid preconditioner and polynomial smoother
-    {
-        std::cout << "\nSolving with unsmoothed aggregation preconditioner" << std::endl;
-
-        unsmoothed_aggregation_options<IndexType,ValueType,MemorySpace> opts;
-
-        timer t0;
-        cusp::precond::aggregation::smoothed_aggregation<IndexType, ValueType, MemorySpace> M(A,opts);
-        std::cout << "constructed hierarchy in " << t0.milliseconds_elapsed() << " ms " << std::endl;
-
-        run_amg(A,M);
     }
 
     return 0;

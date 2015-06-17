@@ -23,7 +23,7 @@
 
 #include <cusp/detail/config.h>
 
-#include <cusp/precond/aggregation/smoothed_aggregation_options.h>
+#include <cusp/precond/aggregation/smoothed_aggregation_helper.h>
 #include <cusp/relaxation/sor.h>
 
 namespace cusp

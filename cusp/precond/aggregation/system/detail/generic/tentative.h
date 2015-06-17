@@ -14,9 +14,10 @@
  *  limitations under the License.
  */
 
-#pragma once
 
 #include <cusp/detail/config.h>
+
+#include <cusp/execution_policy.h>
 
 namespace cusp
 {
@@ -24,19 +25,23 @@ namespace precond
 {
 namespace aggregation
 {
+namespace detail
+{
 
-//   Smoothed (final) prolongator defined by P = (I - omega/rho(K) K) * T
-//   where K = diag(S)^-1 * S and rho(K) is an approximation to the
-//   spectral radius of K.
-template <typename MatrixType, typename ValueType>
-void smooth_prolongator(const MatrixType& S,
-                        const MatrixType& T,
-                        MatrixType& P,
-                        const ValueType omega,
-                        const ValueType rho_Dinv_S);
+template <typename DerivedPolicy,
+          typename Array1,
+          typename Array2,
+          typename MatrixType,
+          typename Array3>
+void fit_candidates(thrust::execution_policy<DerivedPolicy> &exec,
+                    const Array1& aggregates,
+                    const Array2& B,
+                    MatrixType& Q_,
+                    Array3& R);
 
+} // end namepace detail
 } // end namespace aggregation
 } // end namespace precond
 } // end namespace cusp
 
-#include <cusp/precond/aggregation/detail/smooth.inl>
+#include <cusp/precond/aggregation/system/detail/generic/tentative.inl>
