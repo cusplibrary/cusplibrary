@@ -189,6 +189,15 @@ class join_iterator
     /*! \cond */
 };
 
+template <typename Iterator1, typename Iterator2, typename IndexIterator>
+typename join_iterator<Iterator1,Iterator2,IndexIterator>::iterator
+make_join_iterator(const size_t first_num_entries, const size_t second_num_entries, Iterator1 first_begin, Iterator2 second_begin, IndexIterator indices_begin)
+{
+    return join_iterator<Iterator1,Iterator2,IndexIterator>(first_begin, first_begin + first_num_entries,
+                                                            second_begin, second_begin + second_num_entries,
+                                                            indices_begin).begin();
+}
+
 /*! \} // end iterators
  */
 
