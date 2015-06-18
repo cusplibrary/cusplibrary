@@ -207,7 +207,7 @@ void multilevel<IndexType,ValueType,MemorySpace,Format,SmootherType,SolverType>
 ::print( void )
 {
     size_t num_levels = levels.size();
-    double nnz = A_ptr->num_entries;
+    double nnz = this->num_entries;
 
     std::cout << "\tNumber of Levels    :\t" << num_levels << std::endl;
     std::cout << "\tOperator Complexity :\t" << operator_complexity() << std::endl;
@@ -217,10 +217,10 @@ void multilevel<IndexType,ValueType,MemorySpace,Format,SmootherType,SolverType>
     for(size_t index = 1; index < num_levels; index++)
         nnz += levels[index].A.num_entries;
 
-    double percent = A_ptr->num_entries / nnz;
+    double percent = this->num_entries / nnz;
 
-    std::cout << "\t" << 0 << "\t" << std::setw(8) << std::right << A_ptr->num_cols << "\t" \
-              << std::setw(8) << std::right << A_ptr->num_entries << "  [" << 100*percent << "%]" \
+    std::cout << "\t" << 0 << "\t" << std::setw(8) << std::right << this->num_cols << "\t" \
+              << std::setw(8) << std::right << this->num_entries << "  [" << 100*percent << "%]" \
               << std::endl;
 
     for(size_t index = 1; index < num_levels; index++)
@@ -236,26 +236,25 @@ template <typename IndexType, typename ValueType, typename MemorySpace, typename
 double multilevel<IndexType,ValueType,MemorySpace,Format,SmootherType,SolverType>
 ::operator_complexity( void )
 {
-    size_t nnz = A_ptr->num_entries;
+    size_t nnz = this->num_entries;
 
     for(size_t index = 1; index < levels.size(); index++)
         nnz += levels[index].A.num_entries;
 
-    return (double) nnz / (double) A_ptr->num_entries;
+    return (double) nnz / (double) this->num_entries;
 }
 
 template <typename IndexType, typename ValueType, typename MemorySpace, typename Format, typename SmootherType, typename SolverType>
 double multilevel<IndexType,ValueType,MemorySpace,Format,SmootherType,SolverType>
 ::grid_complexity( void )
 {
-    size_t unknowns = A_ptr->num_rows;
+    size_t unknowns = this->num_rows;
 
     for(size_t index = 1; index < levels.size(); index++)
         unknowns += levels[index].A.num_rows;
 
-    return (double) unknowns / (double) A_ptr->num_rows;
+    return (double) unknowns / (double) this->num_rows;
 }
 
 } // end namespace cusp
-
 

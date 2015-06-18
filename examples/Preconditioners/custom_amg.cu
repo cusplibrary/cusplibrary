@@ -21,9 +21,10 @@ template <typename MatrixType, typename ArrayType>
 void aggregate(custom_amg_policy, const MatrixType& C, ArrayType& aggregates, ArrayType& roots)
 {
     std::cout << "Calling my aggregation" << std::endl;
-    cusp::precond::aggregation::standard_aggregate(C, aggregates);
+    cusp::precond::aggregation::standard_aggregate(C, aggregates, roots);
 }
 
+// Use default fit_candidates
 template <typename ArrayType1, typename ArrayType2, typename MatrixType, typename ArrayType3>
 void fit_candidates(custom_amg_policy, const ArrayType1& aggregates, const ArrayType2& B, MatrixType& Q, ArrayType3& R)
 {
@@ -31,6 +32,7 @@ void fit_candidates(custom_amg_policy, const ArrayType1& aggregates, const Array
     cusp::precond::aggregation::fit_candidates(aggregates, B, Q, R);
 }
 
+// Use default prolongator smoother
 template <typename MatrixType1, typename MatrixType2, typename MatrixType3, typename ValueType>
 void smooth_prolongator(custom_amg_policy, const MatrixType1& S, const MatrixType2& T, MatrixType3& P,
                         const ValueType rho_Dinv_S, const ValueType omega)
@@ -39,6 +41,7 @@ void smooth_prolongator(custom_amg_policy, const MatrixType1& S, const MatrixTyp
     cusp::precond::aggregation::smooth_prolongator(S, T, P, rho_Dinv_S, omega);
 }
 
+// Use default Galerkin product to form coarse grid
 template <typename MatrixType1, typename MatrixType2, typename MatrixType3>
 void galerkin_product(custom_amg_policy, const MatrixType1& R, const MatrixType2& A, const MatrixType1& P, MatrixType3& RAP)
 {
@@ -67,9 +70,6 @@ int main(void)
 
     // allocate storage for solution (x)
     cusp::array1d<ValueType, MemorySpace> x(x0);
-
-    // reset the monitor
-    monitor.reset(b);
 
     // setup preconditioner
     cusp::precond::aggregation::smoothed_aggregation<IndexType, ValueType, MemorySpace> M;

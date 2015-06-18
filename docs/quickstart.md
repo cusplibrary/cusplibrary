@@ -190,6 +190,7 @@ We strongly encourage users to subscribe to the [cusp-users](http://groups.googl
 \example ainv.cu
 \example diagonal.cu
 \example smoothed_aggregation.cu
+\example custom_amg.cu
 <!-- include Solver examples  -->
 \example bicgstab.cu
 \example cg.cu
