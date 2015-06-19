@@ -43,7 +43,7 @@ namespace cusp
  * entries.
  * \tparam Iterator2 The iterator type used to encapsulate the second set of
  * entries.
- * \tparam IndexIterator The iterator type used to order concatenated entries
+ * \tparam Iterator3 The iterator type used to order concatenated entries
  * from two separate iterators.
  *
  * \par Overview
@@ -92,44 +92,39 @@ namespace cusp
  *  }
  *  \endcode
  */
-template <typename Iterator1, typename Iterator2, typename IndexIterator>
+template <typename Tuple>
 class join_iterator
 {
     public:
 
     /*! \cond */
-    typedef typename thrust::iterator_value<Iterator1>::type                       value_type;
-    typedef typename thrust::iterator_pointer<Iterator1>::type                     pointer;
-    typedef typename thrust::iterator_reference<Iterator1>::type                   reference;
-    typedef typename thrust::iterator_difference<Iterator1>::type                  difference_type;
-    typedef typename thrust::iterator_difference<Iterator1>::type                  size_type;
+    typedef typename thrust::tuple_element<0,Tuple>::type          Iterator1;
+    typedef typename thrust::iterator_value<Iterator1>::type       value_type;
+    typedef typename thrust::iterator_pointer<Iterator1>::type     pointer;
+    typedef typename thrust::iterator_reference<Iterator1>::type   reference;
+    typedef typename thrust::iterator_difference<Iterator1>::type  difference_type;
+    typedef typename thrust::iterator_difference<Iterator1>::type  size_type;
+    typedef typename thrust::iterator_system<Iterator1>::type      memory_space;
 
-    typedef typename cusp::minimum_space<
-            typename thrust::iterator_system<Iterator1>::type,
-            typename thrust::iterator_system<Iterator2>::type,
-            typename thrust::iterator_system<IndexIterator>::type>::type           memory_space;
+    typedef thrust::tuple<size_t, size_t> SizesTuple;
 
     struct join_select_functor : public thrust::unary_function<difference_type,value_type>
     {
-        Iterator1 first;
-        Iterator2 second;
-        difference_type first_size;
+        const SizesTuple& t1;
+        const Tuple& t2;
 
         __host__ __device__
-        join_select_functor(void){}
-
-        __host__ __device__
-        join_select_functor(Iterator1 first, Iterator2 second, difference_type first_size)
-            : first(first), second(second-first_size), first_size(first_size) {}
+        join_select_functor(const SizesTuple& t1, const Tuple& t2)
+            : t1(t1), t2(t2) {}
 
         __host__ __device__
         value_type operator()(const difference_type& i) const
         {
-            return i < first_size ? first[i] : second[i];
+            return i;
         }
     };
 
-    typedef typename thrust::transform_iterator<join_select_functor, IndexIterator> TransformIterator;
+    typedef typename thrust::transform_iterator<join_select_functor, typename thrust::tuple_element<2,Tuple>::type> TransformIterator;
     /*! \endcond */
 
     // type of the join_iterator
@@ -143,12 +138,8 @@ class join_iterator
      *  \param indices_begin The permutation indices used to order entries
      *  from the two joined iterators.
      */
-    join_iterator(Iterator1 first_begin, Iterator1 first_end,
-                  Iterator2 second_begin, Iterator2 second_end,
-                  IndexIterator indices_begin)
-        : first_begin(first_begin), first_end(first_end),
-          second_begin(second_begin), second_end(second_end),
-          indices_begin(indices_begin) {}
+    join_iterator(const SizesTuple& t1, const Tuple& t2)
+      : t1(t1), t2(t2) {}
 
     /*! \brief This method returns an iterator pointing to the beginning of
      *  this joined sequence of permuted entries.
@@ -156,7 +147,7 @@ class join_iterator
      */
     iterator begin(void) const
     {
-        return TransformIterator(indices_begin, join_select_functor(first_begin, second_begin, thrust::distance(first_begin,first_end)));
+        return TransformIterator(thrust::get<2>(t2), join_select_functor(t1, t2));
     }
 
     /*! \brief This method returns an iterator pointing to one element past
@@ -165,7 +156,7 @@ class join_iterator
      */
     iterator end(void) const
     {
-        return begin() + thrust::distance(first_begin,first_end) + thrust::distance(second_begin,second_end);
+        return begin();
     }
 
     /*! \brief Subscript access to the data contained in this iterator.
@@ -184,22 +175,18 @@ class join_iterator
     protected:
 
     /*! \cond */
-    Iterator1 first_begin;
-    Iterator1 first_end;
-    Iterator2 second_begin;
-    Iterator2 second_end;
-
-    IndexIterator indices_begin;
+    const SizesTuple& t1;
+    const Tuple& t2;
     /*! \cond */
 };
 
-template <typename Iterator1, typename Iterator2, typename IndexIterator>
-typename join_iterator<Iterator1,Iterator2,IndexIterator>::iterator
-make_join_iterator(const size_t first_num_entries, const size_t second_num_entries, Iterator1 first_begin, Iterator2 second_begin, IndexIterator indices_begin)
+template <typename T1, typename T2, typename T3>
+typename join_iterator< thrust::tuple<T1,T2,T3> >::iterator
+make_join_iterator(const size_t s1, const size_t s2, const T1& t1, const T2& t2, const T3& t3)
 {
-    return join_iterator<Iterator1,Iterator2,IndexIterator>(first_begin, first_begin + first_num_entries,
-                                                            second_begin, second_begin + second_num_entries,
-                                                            indices_begin).begin();
+    typedef thrust::tuple<T1,T2,T3>  Tuple;
+
+    return join_iterator<Tuple>(thrust::make_tuple(s1, s2), thrust::make_tuple(t1, t2, t3)).begin();
 }
 
 /*! \} // end iterators
