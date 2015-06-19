@@ -90,11 +90,13 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverTyp
 {
     using thrust::system::detail::generic::select_system;
 
-    typedef typename MatrixType::memory_space System;
+    typedef typename MatrixType::memory_space System1;
+    typedef typename ArrayType::memory_space  System2;
 
-    System system;
+    System1 system1;
+    System2 system2;
 
-    sa_initialize(select_system(system), A, B);
+    sa_initialize(select_system(system1,system2), A, B);
 }
 
 template <typename IndexType, typename ValueType, typename MemorySpace, typename SmootherType, typename SolverType, typename Format>

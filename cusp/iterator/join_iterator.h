@@ -99,11 +99,15 @@ class join_iterator
 
     /*! \cond */
     typedef typename thrust::iterator_value<Iterator1>::type                       value_type;
-    typedef typename thrust::iterator_system<Iterator1>::type                      memory_space;
     typedef typename thrust::iterator_pointer<Iterator1>::type                     pointer;
     typedef typename thrust::iterator_reference<Iterator1>::type                   reference;
     typedef typename thrust::iterator_difference<Iterator1>::type                  difference_type;
     typedef typename thrust::iterator_difference<Iterator1>::type                  size_type;
+
+    typedef typename cusp::minimum_space<
+            typename thrust::iterator_system<Iterator1>::type,
+            typename thrust::iterator_system<Iterator2>::type,
+            typename thrust::iterator_system<IndexIterator>::type>::type           memory_space;
 
     struct join_select_functor : public thrust::unary_function<difference_type,value_type>
     {

@@ -40,7 +40,8 @@ typedef thrust::any_space_tag                    any_memory;
 template<typename T, typename MemorySpace>
 struct default_memory_allocator;
 
-template <typename MemorySpace1, typename MemorySpace2=any_memory, typename MemorySpace3=any_memory>
+template <typename MemorySpace1, typename MemorySpace2=any_memory,
+          typename MemorySpace3=any_memory, typename MemorySpace4=any_memory>
 struct minimum_space;
 
 

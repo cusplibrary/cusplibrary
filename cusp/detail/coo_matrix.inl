@@ -298,15 +298,15 @@ void coo_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>
 
     // TODO : Remove this WAR when Thrust v1.9 is released, related to issue #635
 // #if THRUST_VERSION >= 100900
-//     thrust::merge_by_key(thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, perm_column_indices_begin)),
-//                          thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, perm_column_indices_begin)) + ell_num_entries,
-//                          thrust::make_zip_iterator(thrust::make_tuple(matrix.coo.row_indices.begin(), matrix.coo.column_indices.begin())),
-//                          thrust::make_zip_iterator(thrust::make_tuple(matrix.coo.row_indices.begin(), matrix.coo.column_indices.begin())) + coo_num_entries,
-//                          thrust::counting_iterator<IndexType>(0),
-//                          thrust::counting_iterator<IndexType>(ell_num_entries),
-//                          thrust::make_discard_iterator(),
-//                          indices.begin(),
-//                          coo_tuple_comp<IndexType>());
+    // thrust::merge_by_key(thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, perm_column_indices_begin)),
+    //                      thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, perm_column_indices_begin)) + ell_num_entries,
+    //                      thrust::make_zip_iterator(thrust::make_tuple(matrix.coo.row_indices.begin(), matrix.coo.column_indices.begin())),
+    //                      thrust::make_zip_iterator(thrust::make_tuple(matrix.coo.row_indices.begin(), matrix.coo.column_indices.begin())) + coo_num_entries,
+    //                      thrust::counting_iterator<IndexType>(0),
+    //                      thrust::counting_iterator<IndexType>(ell_num_entries),
+    //                      thrust::make_discard_iterator(),
+    //                      indices.begin(),
+    //                      coo_tuple_comp<IndexType>());
 // #else
     {
         cusp::array1d<IndexType,MemorySpace> temp_row_indices(row_indices_begin, row_indices_begin + ell_num_entries);

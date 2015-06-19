@@ -52,7 +52,9 @@ void bicg(LinearOperator& A,
           Monitor& monitor)
 {
     typedef typename LinearOperator::value_type   ValueType;
-    typedef typename LinearOperator::memory_space MemorySpace;
+    typedef typename cusp::minimum_space<
+            typename LinearOperator::memory_space,
+            typename Vector::memory_space>::type  MemorySpace;
 
     cusp::identity_operator<ValueType,MemorySpace> M(A.num_rows, A.num_cols);
 
@@ -71,8 +73,11 @@ void bicg(LinearOperator& A,
           Preconditioner& M,
           Preconditioner& Mt)
 {
-    typedef typename LinearOperator::value_type   ValueType;
-    typedef typename LinearOperator::memory_space MemorySpace;
+    typedef typename LinearOperator::value_type           ValueType;
+    typedef typename cusp::minimum_space<
+            typename LinearOperator::memory_space,
+            typename Vector::memory_space,
+            typename Preconditioner::memory_space>::type  MemorySpace;
 
     assert(A.num_rows == A.num_cols);        // sanity check
 

@@ -35,10 +35,10 @@ struct default_memory_allocator
         >
 {};
 
-template <typename MemorySpace1, typename MemorySpace2, typename MemorySpace3>
+template <typename MemorySpace1, typename MemorySpace2, typename MemorySpace3, typename MemorySpace4>
 struct minimum_space
 {
-    typedef typename thrust::detail::minimum_system<MemorySpace1, MemorySpace2, MemorySpace3>::type type;
+    typedef typename thrust::detail::minimum_system<MemorySpace1, MemorySpace2, MemorySpace3, MemorySpace4>::type type;
 };
 
 } // end namespace cusp
