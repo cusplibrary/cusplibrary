@@ -106,7 +106,14 @@ class join_iterator
     typedef typename thrust::iterator_difference<Iterator1>::type  size_type;
     typedef typename thrust::iterator_system<Iterator1>::type      memory_space;
 
-    typedef thrust::tuple<size_t, size_t> SizesTuple;
+    const static size_t tuple_size = thrust::tuple_size<Tuple>::value;
+
+    // forward definition
+    struct join_select_functor;
+
+    typedef thrust::tuple<size_t, size_t>                                 SizesTuple;
+    typedef typename thrust::tuple_element<tuple_size-1,Tuple>::type      IndexIterator;
+    typedef thrust::transform_iterator<join_select_functor,IndexIterator> TransformIterator;
 
     struct join_select_functor : public thrust::unary_function<difference_type,value_type>
     {
@@ -123,8 +130,6 @@ class join_iterator
             return i;
         }
     };
-
-    typedef typename thrust::transform_iterator<join_select_functor, typename thrust::tuple_element<2,Tuple>::type> TransformIterator;
     /*! \endcond */
 
     // type of the join_iterator
