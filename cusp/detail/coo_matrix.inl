@@ -278,9 +278,9 @@ void coo_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>
     typedef typename hyb_view_type::EllColumnIndexIterator           PermColumnIndexIterator;
     typedef typename hyb_view_type::EllValueIterator                 PermValueIterator;
 
-    typedef typename hyb_view_type::JoinRowIterator                  JoinRowIterator;
-    typedef typename hyb_view_type::JoinColumnIterator               JoinColumnIterator;
-    typedef typename hyb_view_type::JoinValueIterator                JoinValueIterator;
+    typedef typename hyb_view_type::JoinRowIterator::iterator        JoinRowIterator;
+    typedef typename hyb_view_type::JoinColumnIterator::iterator     JoinColumnIterator;
+    typedef typename hyb_view_type::JoinValueIterator::iterator      JoinValueIterator;
 
     const int    X               = MatrixType::ell_matrix_type::invalid_index;
     const size_t ell_num_entries = matrix.ell.column_indices.num_entries;
@@ -324,23 +324,23 @@ void coo_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>
     }
 // #endif
 
-    JoinRowIterator    rows_iter(row_indices_begin, row_indices_begin + ell_num_entries,
-                                 matrix.coo.row_indices.begin(), matrix.coo.row_indices.end(),
-                                 indices.begin());
-    JoinColumnIterator cols_iter(perm_column_indices_begin, perm_column_indices_begin + ell_num_entries,
-                                 matrix.coo.column_indices.begin(), matrix.coo.column_indices.end(),
-                                 indices.begin());
-    JoinValueIterator  vals_iter(perm_values_begin, perm_values_begin + ell_num_entries,
-                                 matrix.coo.values.begin(), matrix.coo.values.end(),
-                                 indices.begin());
+    JoinRowIterator    rows_iter = cusp::make_join_iterator(ell_num_entries, coo_num_entries, row_indices_begin,         matrix.coo.row_indices.begin(),    indices.begin());
+    JoinColumnIterator cols_iter = cusp::make_join_iterator(ell_num_entries, coo_num_entries, perm_column_indices_begin, matrix.coo.column_indices.begin(), indices.begin());
+    JoinValueIterator  vals_iter = cusp::make_join_iterator(ell_num_entries, coo_num_entries, perm_values_begin,         matrix.coo.values.begin(),         indices.begin());
+    // JoinColumnIterator cols_iter(perm_column_indices_begin, perm_column_indices_begin + ell_num_entries,
+    //                              matrix.coo.column_indices.begin(), matrix.coo.column_indices.end(),
+    //                              indices.begin());
+    // JoinValueIterator  vals_iter(perm_values_begin, perm_values_begin + ell_num_entries,
+    //                              matrix.coo.values.begin(), matrix.coo.values.end(),
+    //                              indices.begin());
 
     cusp::array1d<IndexType,MemorySpace> temp_indices(indices);
-    thrust::remove_if(temp_indices.begin(), temp_indices.end(), cols_iter.begin(), thrust::placeholders::_1 == X);
+    thrust::remove_if(temp_indices.begin(), temp_indices.end(), cols_iter, thrust::placeholders::_1 == X);
     thrust::copy(temp_indices.begin(), temp_indices.begin() + matrix.num_entries, indices.begin());
 
-    row_indices_array_type    rows_array(rows_iter.begin(), rows_iter.begin()+matrix.num_entries);
-    column_indices_array_type cols_array(cols_iter.begin(), cols_iter.begin()+matrix.num_entries);
-    values_array_type         vals_array(vals_iter.begin(), vals_iter.begin()+matrix.num_entries);
+    row_indices_array_type    rows_array(rows_iter, rows_iter + matrix.num_entries);
+    column_indices_array_type cols_array(cols_iter, cols_iter + matrix.num_entries);
+    values_array_type         vals_array(vals_iter, vals_iter + matrix.num_entries);
 
     row_indices    = rows_array;
     column_indices = cols_array;
