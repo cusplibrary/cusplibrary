@@ -94,20 +94,44 @@ namespace cusp
  */
 
 template <int size, typename T>
-struct constant_tuple {
-    using thrust::detail;
+struct constant_tuple
+{
+    typedef thrust::detail::identity_<T>                 T_;
+    typedef thrust::detail::identity_<thrust::null_type> N_;
 
     typedef
-    thrust::tuple<typename eval_if<(size > 0),identity_<T>,identity_<thrust::null_type> >::type,
-                  typename eval_if<(size > 1),identity_<T>,identity_<thrust::null_type> >::type,
-                  typename eval_if<(size > 2),identity_<T>,identity_<thrust::null_type> >::type,
-                  typename eval_if<(size > 3),identity_<T>,identity_<thrust::null_type> >::type,
-                  typename eval_if<(size > 4),identity_<T>,identity_<thrust::null_type> >::type,
-                  typename eval_if<(size > 5),identity_<T>,identity_<thrust::null_type> >::type,
-                  typename eval_if<(size > 6),identity_<T>,identity_<thrust::null_type> >::type,
-                  typename eval_if<(size > 7),identity_<T>,identity_<thrust::null_type> >::type,
-                  typename eval_if<(size > 8),identity_<T>,identity_<thrust::null_type> >::type,
-                  typename eval_if<(size > 9),identity_<T>,identity_<thrust::null_type> >::type> type;
+    thrust::tuple<typename thrust::detail::eval_if<(size > 0),T_,N_>::type,
+           typename thrust::detail::eval_if<(size > 1),T_,N_>::type,
+           typename thrust::detail::eval_if<(size > 2),T_,N_>::type,
+           typename thrust::detail::eval_if<(size > 3),T_,N_>::type,
+           typename thrust::detail::eval_if<(size > 4),T_,N_>::type,
+           typename thrust::detail::eval_if<(size > 5),T_,N_>::type,
+           typename thrust::detail::eval_if<(size > 6),T_,N_>::type,
+           typename thrust::detail::eval_if<(size > 7),T_,N_>::type,
+           typename thrust::detail::eval_if<(size > 8),T_,N_>::type,
+           typename thrust::detail::eval_if<(size > 9),T_,N_>::type> type;
+};
+
+template<typename T, typename V, int SIZE>
+struct join_search
+{
+    template<typename SizesTuple, typename Tuple>
+    __host__ __device__
+    V operator()(const SizesTuple&t1, const Tuple& t2, const T i) const
+    {
+        return i >= thrust::get<SIZE-2>(t1) ? thrust::get<SIZE-1>(t2)[i] : join_search<T,V,SIZE-1>()(t1,t2,i);
+    }
+};
+
+template<typename T, typename V>
+struct join_search<T,V,2>
+{
+    template<typename SizesTuple, typename Tuple>
+    __host__ __device__
+    V operator()(const SizesTuple&t1, const Tuple& t2, const T i) const
+    {
+        return i >= thrust::get<0>(t1) ? thrust::get<1>(t2)[i] : thrust::get<0>(t2)[i];
+    }
 };
 
 template <typename Tuple>
@@ -145,7 +169,7 @@ public:
         __host__ __device__
         value_type operator()(const difference_type& i)
         {
-            return i < thrust::get<0>(t1) ? thrust::get<0>(t2)[i] : i < thrust::get<1>(t1) ? thrust::get<1>(t2)[i] : thrust::get<2>(t2)[i];
+            return join_search<difference_type,value_type,tuple_size>()(t1,t2,i);
         }
     };
     /*! \endcond */
