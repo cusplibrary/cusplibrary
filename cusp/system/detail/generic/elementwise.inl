@@ -109,12 +109,12 @@ void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
     typedef thrust::zip_iterator<IteratorTuple2>                                    ZipIterator2;
 
     typedef typename cusp::array1d<IndexType,MemorySpace>::iterator                 IndexIterator;
-    typedef cusp::join_iterator<ZipIterator1, ZipIterator2, IndexIterator>          JoinIndexIterator;
+    typedef cusp::join_iterator< thrust::tuple<ZipIterator1, ZipIterator2, IndexIterator> >         JoinIndexIterator;
 
     typedef typename elementwise_detail::ops<BinaryFunction>::unary_op_type         UnaryOp;
     typedef typename elementwise_detail::ops<BinaryFunction>::binary_op_type        BinaryOp;
     typedef thrust::transform_iterator<UnaryOp, ValueIterator2>                     TransValueIterator;
-    typedef cusp::join_iterator<ValueIterator1, TransValueIterator, IndexIterator>  JoinValueIterator;
+    typedef cusp::join_iterator< thrust::tuple<ValueIterator1, TransValueIterator, IndexIterator> >  JoinValueIterator;
 
     size_t A_nnz = A.num_entries;
     size_t B_nnz = B.num_entries;

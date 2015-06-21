@@ -12,14 +12,11 @@ void TestJoinIterator(void)
     typedef typename Vector::value_type T;
     typedef thrust::counting_iterator<T> CountingIterator;
     typedef thrust::constant_iterator<T> ConstantIterator;
-    typedef cusp::join_iterator<CountingIterator,ConstantIterator,CountingIterator> JoinIterator;
+    typedef typename cusp::join_iterator< thrust::tuple<CountingIterator,ConstantIterator,CountingIterator> >::iterator JoinIterator;
 
     // construct join_iterator
-    JoinIterator iter(CountingIterator(0), CountingIterator(5),
-                      ConstantIterator(9), ConstantIterator(9) + 5,
-                      CountingIterator(0));
+    JoinIterator iter = cusp::make_join_iterator(5, 5, CountingIterator(0), ConstantIterator(9), CountingIterator(0));
 
-    ASSERT_EQUAL(thrust::distance(iter.begin(), iter.end()), 10);
     ASSERT_EQUAL(iter[0], 0);
     ASSERT_EQUAL(iter[1], 1);
     ASSERT_EQUAL(iter[4], 4);

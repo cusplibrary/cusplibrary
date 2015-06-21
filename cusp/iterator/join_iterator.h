@@ -43,7 +43,7 @@ namespace cusp
  * entries.
  * \tparam Iterator2 The iterator type used to encapsulate the second set of
  * entries.
- * \tparam IndexIterator The iterator type used to order concatenated entries
+ * \tparam Iterator3 The iterator type used to order concatenated entries
  * from two separate iterators.
  *
  * \par Overview
@@ -92,44 +92,89 @@ namespace cusp
  *  }
  *  \endcode
  */
-template <typename Iterator1, typename Iterator2, typename IndexIterator>
+
+template <int size, typename T>
+struct constant_tuple
+{
+    typedef thrust::detail::identity_<T>                 T_;
+    typedef thrust::detail::identity_<thrust::null_type> N_;
+
+    typedef
+    thrust::tuple<typename thrust::detail::eval_if<(size > 0),T_,N_>::type,
+           typename thrust::detail::eval_if<(size > 1),T_,N_>::type,
+           typename thrust::detail::eval_if<(size > 2),T_,N_>::type,
+           typename thrust::detail::eval_if<(size > 3),T_,N_>::type,
+           typename thrust::detail::eval_if<(size > 4),T_,N_>::type,
+           typename thrust::detail::eval_if<(size > 5),T_,N_>::type,
+           typename thrust::detail::eval_if<(size > 6),T_,N_>::type,
+           typename thrust::detail::eval_if<(size > 7),T_,N_>::type,
+           typename thrust::detail::eval_if<(size > 8),T_,N_>::type,
+           typename thrust::detail::eval_if<(size > 9),T_,N_>::type> type;
+};
+
+template<typename T, typename V, int SIZE>
+struct join_search
+{
+    template<typename SizesTuple, typename Tuple>
+    __host__ __device__
+    V operator()(const SizesTuple&t1, const Tuple& t2, const T i) const
+    {
+        return i >= thrust::get<SIZE-2>(t1) ? thrust::get<SIZE-1>(t2)[i] : join_search<T,V,SIZE-1>()(t1,t2,i);
+    }
+};
+
+template<typename T, typename V>
+struct join_search<T,V,2>
+{
+    template<typename SizesTuple, typename Tuple>
+    __host__ __device__
+    V operator()(const SizesTuple&t1, const Tuple& t2, const T i) const
+    {
+        return i >= thrust::get<0>(t1) ? thrust::get<1>(t2)[i] : thrust::get<0>(t2)[i];
+    }
+};
+
+template <typename Tuple>
 class join_iterator
 {
-    public:
+public:
 
     /*! \cond */
-    typedef typename thrust::iterator_value<Iterator1>::type                       value_type;
-    typedef typename thrust::iterator_pointer<Iterator1>::type                     pointer;
-    typedef typename thrust::iterator_reference<Iterator1>::type                   reference;
-    typedef typename thrust::iterator_difference<Iterator1>::type                  difference_type;
-    typedef typename thrust::iterator_difference<Iterator1>::type                  size_type;
+    typedef typename thrust::tuple_element<0,Tuple>::type          Iterator1;
+    typedef typename thrust::iterator_value<Iterator1>::type       value_type;
+    typedef typename thrust::iterator_pointer<Iterator1>::type     pointer;
+    typedef typename thrust::iterator_reference<Iterator1>::type   reference;
+    typedef typename thrust::iterator_difference<Iterator1>::type  difference_type;
+    typedef typename thrust::iterator_difference<Iterator1>::type  size_type;
+    typedef typename thrust::iterator_system<Iterator1>::type      memory_space;
 
-    typedef typename cusp::minimum_space<
-            typename thrust::iterator_system<Iterator1>::type,
-            typename thrust::iterator_system<Iterator2>::type,
-            typename thrust::iterator_system<IndexIterator>::type>::type           memory_space;
+    const static size_t tuple_size = thrust::tuple_size<Tuple>::value;
+
+    // forward definition
+    struct join_select_functor;
+
+    typedef typename constant_tuple<tuple_size-1,size_t>::type            SizesTuple;
+    typedef typename thrust::tuple_element<tuple_size-1,Tuple>::type      IndexIterator;
+    typedef thrust::transform_iterator<join_select_functor,IndexIterator> TransformIterator;
 
     struct join_select_functor : public thrust::unary_function<difference_type,value_type>
     {
-        Iterator1 first;
-        Iterator2 second;
-        difference_type first_size;
+        SizesTuple t1;
+        Tuple t2;
 
         __host__ __device__
-        join_select_functor(void){}
+        join_select_functor(void) {}
 
         __host__ __device__
-        join_select_functor(Iterator1 first, Iterator2 second, difference_type first_size)
-            : first(first), second(second-first_size), first_size(first_size) {}
+        join_select_functor(const SizesTuple& t1, const Tuple& t2)
+            : t1(t1), t2(t2) {}
 
         __host__ __device__
-        value_type operator()(const difference_type& i) const
+        value_type operator()(const difference_type& i)
         {
-            return i < first_size ? first[i] : second[i];
+            return join_search<difference_type,value_type,tuple_size>()(t1,t2,i);
         }
     };
-
-    typedef typename thrust::transform_iterator<join_select_functor, IndexIterator> TransformIterator;
     /*! \endcond */
 
     // type of the join_iterator
@@ -143,12 +188,7 @@ class join_iterator
      *  \param indices_begin The permutation indices used to order entries
      *  from the two joined iterators.
      */
-    join_iterator(Iterator1 first_begin, Iterator1 first_end,
-                  Iterator2 second_begin, Iterator2 second_end,
-                  IndexIterator indices_begin)
-        : first_begin(first_begin), first_end(first_end),
-          second_begin(second_begin), second_end(second_end),
-          indices_begin(indices_begin) {}
+    join_iterator(const SizesTuple& t1, const Tuple& t2) : t1(t1), t2(t2) {}
 
     /*! \brief This method returns an iterator pointing to the beginning of
      *  this joined sequence of permuted entries.
@@ -156,7 +196,7 @@ class join_iterator
      */
     iterator begin(void) const
     {
-        return TransformIterator(indices_begin, join_select_functor(first_begin, second_begin, thrust::distance(first_begin,first_end)));
+        return TransformIterator(thrust::get<tuple_size-1>(t2), join_select_functor(t1,t2));
     }
 
     /*! \brief This method returns an iterator pointing to one element past
@@ -165,7 +205,7 @@ class join_iterator
      */
     iterator end(void) const
     {
-        return begin() + thrust::distance(first_begin,first_end) + thrust::distance(second_begin,second_end);
+        return begin() + thrust::get<tuple_size-2>(t1);
     }
 
     /*! \brief Subscript access to the data contained in this iterator.
@@ -181,25 +221,91 @@ class join_iterator
         return *(begin() + n);
     }
 
-    protected:
+protected:
 
     /*! \cond */
-    Iterator1 first_begin;
-    Iterator1 first_end;
-    Iterator2 second_begin;
-    Iterator2 second_end;
-
-    IndexIterator indices_begin;
+    const SizesTuple& t1;
+    const Tuple& t2;
     /*! \cond */
 };
 
-template <typename Iterator1, typename Iterator2, typename IndexIterator>
-typename join_iterator<Iterator1,Iterator2,IndexIterator>::iterator
-make_join_iterator(const size_t first_num_entries, const size_t second_num_entries, Iterator1 first_begin, Iterator2 second_begin, IndexIterator indices_begin)
+template <typename T1, typename T2, typename T3>
+typename join_iterator< thrust::tuple<T1,T2,T3> >::iterator
+make_join_iterator(const size_t s1, const size_t s2, const T1& t1, const T2& t2, const T3& t3)
 {
-    return join_iterator<Iterator1,Iterator2,IndexIterator>(first_begin, first_begin + first_num_entries,
-                                                            second_begin, second_begin + second_num_entries,
-                                                            indices_begin).begin();
+    typedef thrust::tuple<T1,T2,T3>  Tuple;
+    return join_iterator<Tuple>(thrust::make_tuple(s1, s1+s2),
+                                thrust::make_tuple(t1, t2-s1, t3)).begin();
+}
+
+template <typename T1, typename T2, typename T3, typename T4>
+typename join_iterator< thrust::tuple<T1,T2,T3,T4> >::iterator
+make_join_iterator(const size_t s1, const size_t s2, const size_t s3,
+                   const T1& t1, const T2& t2, const T3& t3, const T4& t4)
+{
+    typedef thrust::tuple<T1,T2,T3,T4>  Tuple;
+    return join_iterator<Tuple>(thrust::make_tuple(s1, s1+s2, s1+s2+s3),
+                                thrust::make_tuple(t1, t2-s1, t3-s1-s2, t4)).begin();
+}
+
+template <typename T1, typename T2, typename T3, typename T4, typename T5>
+typename join_iterator< thrust::tuple<T1,T2,T3,T4,T5> >::iterator
+make_join_iterator(const size_t s1, const size_t s2, const size_t s3, const size_t s4,
+                   const T1& t1, const T2& t2, const T3& t3, const T4& t4, const T5& t5)
+{
+    typedef thrust::tuple<T1,T2,T3,T4,T5>  Tuple;
+    return join_iterator<Tuple>(thrust::make_tuple(s1, s1+s2, s1+s2+s3, s1+s2+s3+s4),
+                                thrust::make_tuple(t1, t2-s1, t3-s1-s2, t4-s1-s2-s3, t5)).begin();
+}
+
+template <typename T1, typename T2, typename T3, typename T4, typename T5, typename T6>
+typename join_iterator< thrust::tuple<T1,T2,T3,T4,T5,T6> >::iterator
+make_join_iterator(const size_t s1, const size_t s2, const size_t s3, const size_t s4, const size_t s5,
+                   const T1& t1, const T2& t2, const T3& t3, const T4& t4, const T5& t5, const T6& t6)
+{
+    typedef thrust::tuple<T1,T2,T3,T4,T5,T6>  Tuple;
+    return join_iterator<Tuple>(thrust::make_tuple(s1, s1+s2, s1+s2+s3, s1+s2+s3+s4, s1+s2+s3+s4+s5),
+                                thrust::make_tuple(t1, t2-s1, t3-s1-s2, t4-s1-s2-s3, t5-s1-s2-s3-s4, t6)).begin();
+}
+
+template <typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7>
+typename join_iterator< thrust::tuple<T1,T2,T3,T4,T5,T6,T7> >::iterator
+make_join_iterator(const size_t s1, const size_t s2, const size_t s3, const size_t s4, const size_t s5, const size_t s6,
+                   const T1& t1, const T2& t2, const T3& t3, const T4& t4, const T5& t5, const T6& t6, const T7& t7)
+{
+    typedef thrust::tuple<T1,T2,T3,T4,T5,T6,T7>  Tuple;
+    return join_iterator<Tuple>(thrust::make_tuple(s1, s1+s2, s1+s2+s3, s1+s2+s3+s4, s1+s2+s3+s4+s5, s1+s2+s3+s4+s5+s6),
+                                thrust::make_tuple(t1, t2-s1, t3-s1-s2, t4-s1-s2-s3, t5-s1-s2-s3-s4, t6-s1-s2-s3-s4-s5, t7)).begin();
+}
+
+template <typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8>
+typename join_iterator< thrust::tuple<T1,T2,T3,T4,T5,T6,T7,T8> >::iterator
+make_join_iterator(const size_t s1, const size_t s2, const size_t s3, const size_t s4, const size_t s5, const size_t s6, const size_t s7,
+                   const T1& t1, const T2& t2, const T3& t3, const T4& t4, const T5& t5, const T6& t6, const T7& t7, const T8& t8)
+{
+    typedef thrust::tuple<T1,T2,T3,T4,T5,T6,T7,T8>  Tuple;
+    return join_iterator<Tuple>(thrust::make_tuple(s1, s1+s2, s1+s2+s3, s1+s2+s3+s4, s1+s2+s3+s4+s5, s1+s2+s3+s4+s5+s6, s1+s2+s3+s4+s5+s6+s7),
+                                thrust::make_tuple(t1, t2-s1, t3-s1-s2, t4-s1-s2-s3, t5-s1-s2-s3-s4, t6-s1-s2-s3-s4-s5, t7-s1-s2-s3-s4-s5-s6, t8)).begin();
+}
+
+template <typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8, typename T9>
+typename join_iterator< thrust::tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9> >::iterator
+make_join_iterator(const size_t s1, const size_t s2, const size_t s3, const size_t s4, const size_t s5, const size_t s6, const size_t s7, const size_t s8,
+                   const T1& t1, const T2& t2, const T3& t3, const T4& t4, const T5& t5, const T6& t6, const T7& t7, const T8& t8, const T9& t9)
+{
+    typedef thrust::tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9>  Tuple;
+    return join_iterator<Tuple>(thrust::make_tuple(s1, s1+s2, s1+s2+s3, s1+s2+s3+s4, s1+s2+s3+s4+s5, s1+s2+s3+s4+s5+s6, s1+s2+s3+s4+s5+s6+s7, s1+s2+s3+s4+s5+s6+s7+s8),
+                                thrust::make_tuple(t1, t2-s1, t3-s1-s2, t4-s1-s2-s3, t5-s1-s2-s3-s4, t6-s1-s2-s3-s4-s5, t7-s1-s2-s3-s4-s5-s6, t8-s1-s2-s3-s4-s5-s6-s7, t9)).begin();
+}
+
+template <typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8, typename T9, typename T10>
+typename join_iterator< thrust::tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9,T10> >::iterator
+make_join_iterator(const size_t s1, const size_t s2, const size_t s3, const size_t s4, const size_t s5, const size_t s6, const size_t s7, const size_t s8, const size_t s9,
+                   const T1& t1, const T2& t2, const T3& t3, const T4& t4, const T5& t5, const T6& t6, const T7& t7, const T8& t8, const T9& t9, const T10& t10)
+{
+    typedef thrust::tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9,T10>  Tuple;
+    return join_iterator<Tuple>(thrust::make_tuple(s1, s1+s2, s1+s2+s3, s1+s2+s3+s4, s1+s2+s3+s4+s5, s1+s2+s3+s4+s5+s6, s1+s2+s3+s4+s5+s6+s7, s1+s2+s3+s4+s5+s6+s7+s8, s1+s2+s3+s4+s5+s6+s7+s8+s9),
+                                thrust::make_tuple(t1, t2-s1, t3-s1-s2, t4-s1-s2-s3, t5-s1-s2-s3-s4, t6-s1-s2-s3-s4-s5, t7-s1-s2-s3-s4-s5-s6, t8-s1-s2-s3-s4-s5-s6-s7, t9-s1-s2-s3-s4-s5-s6-s7-s8, t10)).begin();
 }
 
 /*! \} // end iterators
