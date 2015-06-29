@@ -40,30 +40,30 @@ namespace detail
 namespace generic
 {
 
-template <typename Matrix1,
-         typename Matrix2,
-         typename Matrix3,
-         typename Array1,
-         typename Array2>
+template <typename MatrixType1,
+          typename MatrixType2,
+          typename MatrixType3,
+          typename ArrayType1,
+          typename ArrayType2>
 void coo_spmm_helper(size_t workspace_size,
                      size_t begin_row,
                      size_t end_row,
                      size_t begin_segment,
                      size_t end_segment,
-                     const Matrix1& A,
-                     const Matrix2& B,
-                     Matrix3& C,
-                     const Array1& B_row_offsets,
-                     const Array1& segment_lengths,
-                     const Array1& output_ptr,
-                     Array1& A_gather_locations,
-                     Array1& B_gather_locations,
-                     Array1& I,
-                     Array1& J,
-                     Array2& V)
+                     const MatrixType1& A,
+                     const MatrixType2& B,
+                     MatrixType3& C,
+                     const ArrayType1& B_row_offsets,
+                     const ArrayType1& segment_lengths,
+                     const ArrayType1& output_ptr,
+                     ArrayType1& A_gather_locations,
+                     ArrayType1& B_gather_locations,
+                     ArrayType1& I,
+                     ArrayType1& J,
+                     ArrayType2& V)
 {
-    typedef typename Array1::value_type IndexType;
-    typedef typename Array2::value_type ValueType;
+    typedef typename ArrayType1::value_type IndexType;
+    typedef typename ArrayType2::value_type ValueType;
 
     A_gather_locations.resize(workspace_size);
     B_gather_locations.resize(workspace_size);
@@ -137,20 +137,20 @@ void coo_spmm_helper(size_t workspace_size,
 }
 
 template <typename DerivedPolicy,
-          typename Matrix1,
-          typename Matrix2,
-          typename Matrix3>
+          typename MatrixType1,
+          typename MatrixType2,
+          typename MatrixType3>
 void multiply(thrust::execution_policy<DerivedPolicy>& exec,
-              const Matrix1& A,
-              const Matrix2& B,
-              Matrix3& C,
+              const MatrixType1& A,
+              const MatrixType2& B,
+              MatrixType3& C,
               coo_format,
               coo_format,
               coo_format)
 {
-    typedef typename Matrix3::index_type   IndexType;
-    typedef typename Matrix3::value_type   ValueType;
-    typedef typename Matrix3::memory_space MemorySpace;
+    typedef typename MatrixType3::index_type   IndexType;
+    typedef typename MatrixType3::value_type   ValueType;
+    typedef typename MatrixType3::memory_space MemorySpace;
 
     // check whether matrices are empty
     if (A.num_entries == 0 || B.num_entries == 0)
@@ -312,13 +312,13 @@ void multiply(thrust::execution_policy<DerivedPolicy>& exec,
 }
 
 template <typename DerivedPolicy,
-          typename Matrix1,
-          typename Matrix2,
-          typename Matrix3>
+          typename MatrixType1,
+          typename MatrixType2,
+          typename MatrixType3>
 void multiply(thrust::execution_policy<DerivedPolicy>& exec,
-              const Matrix1& A,
-              const Matrix2& B,
-              Matrix3& C,
+              const MatrixType1& A,
+              const MatrixType2& B,
+              MatrixType3& C,
               sparse_format,
               sparse_format,
               sparse_format)
@@ -326,11 +326,11 @@ void multiply(thrust::execution_policy<DerivedPolicy>& exec,
     using namespace thrust::placeholders;
 
     // other formats use COO * COO
-    typedef typename cusp::detail::as_coo_type<Matrix1>::type CooMatrix1;
-    typedef typename cusp::detail::as_coo_type<Matrix2>::type CooMatrix2;
-    typedef typename cusp::detail::as_coo_type<Matrix3>::type CooMatrix3;
+    typedef typename MatrixType1::const_coo_view_type             CooMatrix1;
+    typedef typename MatrixType2::const_coo_view_type             CooMatrix2;
+    typedef typename cusp::detail::as_coo_type<MatrixType3>::type CooMatrix3;
 
-    typedef typename Matrix3::value_type ValueType;
+    typedef typename MatrixType3::value_type ValueType;
 
     CooMatrix1 A_(A);
     CooMatrix2 B_(B);
