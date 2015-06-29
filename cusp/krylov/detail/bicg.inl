@@ -16,10 +16,11 @@
 
 
 #include <cusp/array1d.h>
-#include <cusp/blas/blas.h>
 #include <cusp/multiply.h>
 #include <cusp/monitor.h>
 #include <cusp/linear_operator.h>
+
+#include <cusp/blas/blas.h>
 
 namespace blas = cusp::blas;
 
@@ -27,45 +28,16 @@ namespace cusp
 {
 namespace krylov
 {
-
-template <class LinearOperator,
-         class Vector>
-void bicg(LinearOperator& A,
-          LinearOperator& At,
-          Vector& x,
-          Vector& b)
+namespace bicg_detail
 {
-    typedef typename LinearOperator::value_type   ValueType;
 
-    cusp::monitor<ValueType> monitor(b);
-
-    cusp::krylov::bicg(A, At, x, b, monitor);
-}
-
-template <class LinearOperator,
-         class Vector,
-         class Monitor>
-void bicg(LinearOperator& A,
-          LinearOperator& At,
-          Vector& x,
-          Vector& b,
-          Monitor& monitor)
-{
-    typedef typename LinearOperator::value_type   ValueType;
-    typedef typename cusp::minimum_space<
-            typename LinearOperator::memory_space,
-            typename Vector::memory_space>::type  MemorySpace;
-
-    cusp::identity_operator<ValueType,MemorySpace> M(A.num_rows, A.num_cols);
-
-    cusp::krylov::bicg(A, At, x, b, monitor, M, M);
-}
-
-template <class LinearOperator,
-         class Vector,
-         class Monitor,
-         class Preconditioner>
-void bicg(LinearOperator& A,
+template <typename DerivedPolicy,
+          class LinearOperator,
+          class Vector,
+          class Monitor,
+          class Preconditioner>
+void bicg(thrust::execution_policy<DerivedPolicy> &exec,
+          LinearOperator& A,
           LinearOperator& At,
           Vector& x,
           Vector& b,
@@ -96,62 +68,68 @@ void bicg(LinearOperator& A,
     cusp::array1d<ValueType,MemorySpace>   z_star(N);
 
     // y <- Ax
-    cusp::multiply(A, x, y);
+    cusp::multiply(exec, A, x, y);
 
     // r <- b - A*x
-    blas::axpby(b, y, r, ValueType(1), ValueType(-1));
+    blas::axpby(exec, b, y, r, ValueType(1), ValueType(-1));
+
     if(monitor.finished(r)) {
         return;
     }
 
     // r_star <- r
-    blas::copy(r, r_star);
+    blas::copy(exec, r, r_star);
 
     // z = M r
-    cusp::multiply(M, r, z);
+    cusp::multiply(exec, M, r, z);
+
     // z_star = Mt r_star
-    cusp::multiply(Mt, r_star, z_star);
+    cusp::multiply(exec, Mt, r_star, z_star);
 
     // rho = (z,r_star)
-    ValueType rho = blas::dotc(z, r_star);
+    ValueType rho = blas::dotc(exec, z, r_star);
 
     // p <- z
-    blas::copy(z, p);
+    blas::copy(exec, z, p);
 
     // p_star <- r
-    blas::copy(z_star, p_star);
+    blas::copy(exec, z_star, p_star);
 
     while (1)
     {
         // q = A p
-        cusp::multiply(A, p, q);
+        cusp::multiply(exec, A, p, q);
+
         // q_star = At p_star
-        cusp::multiply(At, p_star, q_star);
+        cusp::multiply(exec, At, p_star, q_star);
 
         // alpha = (rho) / (p_star, q)
-        ValueType alpha = rho / blas::dotc(p_star, q);
+        ValueType alpha = rho / blas::dotc(exec, p_star, q);
 
         // x += alpha*p
-        blas::axpby(x, p, x, ValueType(1), ValueType(alpha));
+        blas::axpby(exec, x, p, x, ValueType(1), ValueType(alpha));
 
         // r -= alpha*q
-        blas::axpby(r, q, r, ValueType(1), ValueType(-alpha));
+        blas::axpby(exec, r, q, r, ValueType(1), ValueType(-alpha));
 
         // r_star -= alpha*q_star
-        blas::axpby(r_star, q_star, r_star, ValueType(1), ValueType(-alpha));
+        blas::axpby(exec, r_star, q_star, r_star, ValueType(1), ValueType(-alpha));
 
         if (monitor.finished(r)) {
             break;
         }
 
         // z = M r
-        cusp::multiply(M, r, z);
+        cusp::multiply(exec, M, r, z);
+
         // z_star = Mt r_star
-        cusp::multiply(Mt, r_star, z_star);
+        cusp::multiply(exec, Mt, r_star, z_star);
 
         ValueType prev_rho = rho;
+
         // rho = (z,r_star)
-        rho = blas::dotc(z, r_star);
+        rho = blas::dotc(exec, z, r_star);
+
         if(rho == ValueType(0)) {
             // Failure!
             // TODO: Make the failure more apparent to the user
@@ -161,12 +139,101 @@ void bicg(LinearOperator& A,
         ValueType beta = rho/prev_rho;
 
         // p = beta*p + z
-        blas::axpby(p, z, p, ValueType(beta), ValueType(1));
+        blas::axpby(exec, p, z, p, ValueType(beta), ValueType(1));
 
         // p_star = beta*p_star + z_star
-        blas::axpby(p_star, z_star, p_star, ValueType(beta), ValueType(1));
+        blas::axpby(exec, p_star, z_star, p_star, ValueType(beta), ValueType(1));
+
         ++monitor;
     }
+}
+
+} // end bicg_detail namespace
+
+template <typename DerivedPolicy,
+          class LinearOperator,
+          class Vector>
+void bicg(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+          LinearOperator& A,
+          LinearOperator& At,
+          Vector& x,
+          Vector& b)
+{
+    typedef typename LinearOperator::value_type   ValueType;
+
+    cusp::monitor<ValueType> monitor(b);
+
+    cusp::krylov::bicg(A, At, x, b, monitor);
+}
+
+template <class LinearOperator,
+          class Vector>
+void bicg(LinearOperator& A,
+          LinearOperator& At,
+          Vector& x,
+          Vector& b)
+{
+    typedef typename LinearOperator::value_type   ValueType;
+
+    cusp::monitor<ValueType> monitor(b);
+
+    cusp::krylov::bicg(A, At, x, b, monitor);
+}
+
+template <typename DerivedPolicy,
+          class LinearOperator,
+          class Vector,
+          class Monitor>
+void bicg(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+          LinearOperator& A,
+          LinearOperator& At,
+          Vector& x,
+          Vector& b,
+          Monitor& monitor)
+{
+    typedef typename LinearOperator::value_type   ValueType;
+    typedef typename cusp::minimum_space<
+            typename LinearOperator::memory_space,
+            typename Vector::memory_space>::type  MemorySpace;
+
+    cusp::identity_operator<ValueType,MemorySpace> M(A.num_rows, A.num_cols);
+
+    cusp::krylov::bicg(A, At, x, b, monitor, M, M);
+}
+
+template <class LinearOperator,
+          class Vector,
+          class Monitor>
+void bicg(LinearOperator& A,
+          LinearOperator& At,
+          Vector& x,
+          Vector& b,
+          Monitor& monitor)
+{
+    typedef typename LinearOperator::value_type   ValueType;
+    typedef typename cusp::minimum_space<
+            typename LinearOperator::memory_space,
+            typename Vector::memory_space>::type  MemorySpace;
+
+    cusp::identity_operator<ValueType,MemorySpace> M(A.num_rows, A.num_cols);
+
+    cusp::krylov::bicg(A, At, x, b, monitor, M, M);
+}
+
+template <typename DerivedPolicy,
+          class LinearOperator,
+          class Vector,
+          class Monitor,
+          class Preconditioner>
+void bicg(thrust::execution_policy<DerivedPolicy> &exec,
+          LinearOperator& A,
+          LinearOperator& At,
+          Vector& x,
+          Vector& b,
+          Monitor& monitor,
+          Preconditioner& M,
+          Preconditioner& Mt)
+{
 }
 
 } // end namespace krylov
