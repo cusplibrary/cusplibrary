@@ -50,6 +50,8 @@ namespace cusp
 {
 namespace krylov
 {
+namespace cg_detail
+{
 
 // structs in this namespace do things that are somewhat blas-like, but
 // are not usual blas operations (e.g. they aren't all linear in all arguments)
@@ -224,7 +226,7 @@ void compute_zb_m(InputIterator1 z_0_s_b, InputIterator1 z_0_s_e,
     thrust::for_each(
         thrust::make_zip_iterator(thrust::make_tuple(z_1_s_b,b_0_s_b,z_0_s_b,z_m1_s_b,sig_b)),
         thrust::make_zip_iterator(thrust::make_tuple(z_1_s_b,b_0_s_b,z_0_s_b,z_m1_s_b,sig_b))+N,
-        cusp::krylov::detail_m::KERNEL_ZB<ScalarType>(beta_m1,beta_0,alpha_0)
+        cusp::krylov::cg_detail::detail_m::KERNEL_ZB<ScalarType>(beta_m1,beta_0,alpha_0)
     );
 }
 
@@ -240,7 +242,7 @@ void compute_zb_m(const Array1& z_0_s, const Array2& z_m1_s,
     cusp::assert_same_dimensions(z_1_s,b_0_s,sig);
 
     // compute
-    cusp::krylov::trans_m::compute_zb_m(z_0_s.begin(),z_0_s.end(),
+    cusp::krylov::cg_detail::trans_m::compute_zb_m(z_0_s.begin(),z_0_s.end(),
                                         z_m1_s.begin(),sig.begin(),z_1_s.begin(),b_0_s.begin(),
                                         beta_m1,beta_0,alpha_0);
 
@@ -260,7 +262,7 @@ void compute_a_m(InputIterator1 z_0_s_b, InputIterator1 z_0_s_e,
     thrust::for_each(
         thrust::make_zip_iterator(thrust::make_tuple(alpha_0_s_b,z_0_s_b,z_1_s_b,beta_0_s_b)),
         thrust::make_zip_iterator(thrust::make_tuple(alpha_0_s_b,z_0_s_b,z_1_s_b,beta_0_s_b))+N,
-        cusp::krylov::detail_m::KERNEL_A<ScalarType>(beta_0,alpha_0));
+        cusp::krylov::cg_detail::detail_m::KERNEL_A<ScalarType>(beta_0,alpha_0));
 }
 
 // compute \alpha_0^\sigma, and swap \zeta_i^\sigma using arrays
@@ -275,7 +277,7 @@ void compute_a_m(const Array1& z_0_s, const Array2& z_1_s,
     cusp::assert_same_dimensions(z_0_s,alpha_0_s,beta_0_s);
 
     // compute
-    cusp::krylov::trans_m::compute_a_m(z_0_s.begin(), z_0_s.end(),
+    cusp::krylov::cg_detail::trans_m::compute_a_m(z_0_s.begin(), z_0_s.end(),
                                        z_1_s.begin(), beta_0_s.begin(), alpha_0_s.begin(),
                                        beta_0, alpha_0);
 }
@@ -312,7 +314,7 @@ void compute_xp_m(const Array1& alpha_0_s, const Array2& z_1_s,
     thrust::for_each(
         thrust::make_zip_iterator(thrust::make_tuple(x_0_s.begin(),p_0_s.begin(),counter)),
         thrust::make_zip_iterator(thrust::make_tuple(x_0_s.begin(),p_0_s.begin(),counter))+N_t,
-        cusp::krylov::detail_m::KERNEL_XP<ScalarType>(N,raw_ptr_alpha_0_s,raw_ptr_beta_0_s,raw_ptr_z_1_s,raw_ptr_r_0));
+        cusp::krylov::cg_detail::detail_m::KERNEL_XP<ScalarType>(N,raw_ptr_alpha_0_s,raw_ptr_beta_0_s,raw_ptr_z_1_s,raw_ptr_r_0));
 }
 
 template <typename Array1, typename Array2, typename Array3>
@@ -326,7 +328,7 @@ void doublecopy(const Array1& s, Array2& sd, Array3& d)
     thrust::for_each(
         thrust::make_zip_iterator(thrust::make_tuple(s.begin(),sd.begin(),d.begin())),
         thrust::make_zip_iterator(thrust::make_tuple(s.begin(),sd.begin(),d.begin()))+N,
-        cusp::krylov::detail_m::KERNEL_DCOPY());
+        cusp::krylov::cg_detail::detail_m::KERNEL_DCOPY());
 }
 
 // multiple copy of array to another array
@@ -349,7 +351,7 @@ void vectorize_copy(const Array1& source, Array2& dest)
 
     // compute
     thrust::transform(counter,counter+N_t,dest.begin(),
-                      cusp::krylov::detail_m::KERNEL_VCOPY<ScalarType>(N,raw_ptr_source));
+                      cusp::krylov::cg_detail::detail_m::KERNEL_VCOPY<ScalarType>(N,raw_ptr_source));
 
 }
 
@@ -372,37 +374,21 @@ void xpay(const Array1& x,
           ScalarType alpha)
 {
     cusp::assert_same_dimensions(x, y);
-    cusp::krylov::trans_m::xpay(x.begin(), x.end(), y.begin(), alpha);
+    cusp::krylov::cg_detail::trans_m::xpay(x.begin(), x.end(), y.begin(), alpha);
 }
 
 
 } // end namespace trans_m
 
-
-// CG-M routine that uses the default monitor to determine completion
-template <class LinearOperator,
-         class VectorType1,
-         class VectorType2,
-         class VectorType3>
-void cg_m(LinearOperator& A,
-          VectorType1& x,
-          VectorType2& b,
-          VectorType3& sigma)
-{
-    typedef typename LinearOperator::value_type   ValueType;
-
-    cusp::monitor<ValueType> monitor(b);
-
-    return cg_m(A, x, b, sigma, monitor);
-}
-
 // CG-M routine that takes a user specified monitor
-template <class LinearOperator,
-         class VectorType1,
-         class VectorType2,
-         class VectorType3,
-         class Monitor>
-void cg_m(LinearOperator& A,
+template <typename DerivedPolicy,
+          class LinearOperator,
+          class VectorType1,
+          class VectorType2,
+          class VectorType3,
+          class Monitor>
+void cg_m(thrust::execution_policy<DerivedPolicy> &exec,
+          LinearOperator& A,
           VectorType1& x,
           VectorType2& b,
           VectorType3& sigma,
@@ -463,16 +449,16 @@ void cg_m(LinearOperator& A,
     ValueType rsq_0, rsq_1;
 
     // set up the initial conditions for the iteration
-    cusp::blas::copy(b,r_0);
-    rsq_1=cusp::blas::dotc(r_0,r_0);
+    cusp::blas::copy(exec, b, r_0);
+    rsq_1 = cusp::blas::dotc(exec, r_0, r_0);
 
     // set up the intitial guess
     //  cusp::blas::fill(x.begin(),x.end(),ValueType(0));
-    cusp::blas::fill(x,ValueType(0));
+    cusp::blas::fill(exec, x, ValueType(0));
 
     // set up initial value of p_0 and p_0^\sigma
-    cusp::krylov::trans_m::vectorize_copy(b,p_0_s);
-    cusp::blas::copy(b,p_0);
+    cusp::krylov::cg_detail::trans_m::vectorize_copy(b, p_0_s);
+    cusp::blas::copy(exec, b, p_0);
 
     //
     // Initialization is done. Solve iteratively
@@ -484,42 +470,131 @@ void cg_m(LinearOperator& A,
         beta_m1 = beta_0;
 
         // compute the matrix-vector product Ap
-        cusp::multiply(A,p_0,Ap);
+        cusp::multiply(exec, A, p_0, Ap);
 
         // compute the inner product (p,Ap)
-        pAp=cusp::blas::dotc(p_0,Ap);
+        pAp = cusp::blas::dotc(exec, p_0, Ap);
 
         // compute \beta_0
         beta_0 = -rsq_0/pAp;
 
         // compute the new residual
-        cusp::blas::axpy(Ap,r_0,beta_0);
+        cusp::blas::axpy(exec, Ap, r_0, beta_0);
 
         // compute \zeta_1^\sigma, \beta_0^\sigma
-        cusp::krylov::trans_m::compute_zb_m(z_0_s, z_m1_s, sigma, z_1_s, beta_0_s,
+        cusp::krylov::cg_detail::trans_m::compute_zb_m(z_0_s, z_m1_s, sigma, z_1_s, beta_0_s,
                                             beta_m1, beta_0, alpha_0);
 
         // compute \alpha_0
-        rsq_1 = cusp::blas::dotc(r_0,r_0);
+        rsq_1 = cusp::blas::dotc(exec, r_0, r_0);
         alpha_0 = rsq_1/rsq_0;
-        cusp::krylov::trans_m::xpay(r_0,p_0,alpha_0);
+        cusp::krylov::cg_detail::trans_m::xpay(r_0,p_0,alpha_0);
 
         // calculate \alpha_0^\sigma
-        cusp::krylov::trans_m::compute_a_m(z_0_s, z_1_s, beta_0_s,
+        cusp::krylov::cg_detail::trans_m::compute_a_m(z_0_s, z_1_s, beta_0_s,
                                            alpha_0_s, beta_0, alpha_0);
 
         // compute x_0^\sigma, p_0^\sigma
-        cusp::krylov::trans_m::compute_xp_m(alpha_0_s, z_1_s, beta_0_s, r_0,
+        cusp::krylov::cg_detail::trans_m::compute_xp_m(alpha_0_s, z_1_s, beta_0_s, r_0,
                                             x, p_0_s);
 
         // recycle \zeta_i^\sigma
-        cusp::krylov::trans_m::doublecopy(z_1_s,z_0_s,z_m1_s);
+        cusp::krylov::cg_detail::trans_m::doublecopy(z_1_s,z_0_s,z_m1_s);
 
         ++monitor;
 
     }// finished iteration
 
 } // end cg_m
+
+} // end cg_detail namespace
+
+// CG-M routine that uses the default monitor to determine completion
+template <typename DerivedPolicy,
+          class LinearOperator,
+          class VectorType1,
+          class VectorType2,
+          class VectorType3>
+void cg_m(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+          LinearOperator& A,
+          VectorType1& x,
+          VectorType2& b,
+          VectorType3& sigma)
+{
+    typedef typename LinearOperator::value_type   ValueType;
+
+    cusp::monitor<ValueType> monitor(b);
+
+    cusp::krylov::cg_m(exec, A, x, b, sigma, monitor);
+}
+
+template <class LinearOperator,
+          class VectorType1,
+          class VectorType2,
+          class VectorType3>
+void cg_m(LinearOperator& A,
+          VectorType1& x,
+          VectorType2& b,
+          VectorType3& sigma)
+{
+    using thrust::system::detail::generic::select_system;
+
+    typedef typename LinearOperator::memory_space System1;
+    typedef typename VectorType1::memory_space    System2;
+    typedef typename VectorType2::memory_space    System3;
+    typedef typename VectorType3::memory_space    System4;
+
+    System1 system1;
+    System2 system2;
+    System3 system3;
+    System4 system4;
+
+    cusp::krylov::cg_m(select_system(system1,system2,system3,system4), A, x, b, sigma);
+}
+
+// CG-M routine that uses the default monitor to determine completion
+template <typename DerivedPolicy,
+          class LinearOperator,
+          class VectorType1,
+          class VectorType2,
+          class VectorType3,
+          class Monitor>
+void cg_m(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+          LinearOperator& A,
+          VectorType1& x,
+          VectorType2& b,
+          VectorType3& sigma,
+          Monitor& monitor)
+{
+    cusp::krylov::cg_detail::cg_m(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
+                                  A, x, b, sigma, monitor);
+}
+
+template <class LinearOperator,
+          class VectorType1,
+          class VectorType2,
+          class VectorType3,
+          class Monitor>
+void cg_m(LinearOperator& A,
+          VectorType1& x,
+          VectorType2& b,
+          VectorType3& sigma,
+          Monitor& monitor)
+{
+    using thrust::system::detail::generic::select_system;
+
+    typedef typename LinearOperator::memory_space System1;
+    typedef typename VectorType1::memory_space    System2;
+    typedef typename VectorType2::memory_space    System3;
+    typedef typename VectorType3::memory_space    System4;
+
+    System1 system1;
+    System2 system2;
+    System3 system3;
+    System4 system4;
+
+    cusp::krylov::cg_m(select_system(system1,system2,system3,system4), A, x, b, sigma, monitor);
+}
 
 } // end namespace krylov
 } // end namespace cusp
