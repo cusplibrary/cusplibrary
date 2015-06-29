@@ -22,6 +22,8 @@
 
 #include <cusp/detail/config.h>
 
+#include <cusp/memory.h>
+
 #include <thrust/distance.h>
 #include <thrust/functional.h>
 
