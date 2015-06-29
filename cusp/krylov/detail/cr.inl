@@ -14,12 +14,12 @@
  *  limitations under the License.
  */
 
-
 #include <cusp/array1d.h>
-#include <cusp/blas/blas.h>
 #include <cusp/multiply.h>
 #include <cusp/monitor.h>
 #include <cusp/linear_operator.h>
+
+#include <cusp/blas/blas.h>
 
 namespace blas = cusp::blas;
 
@@ -27,48 +27,26 @@ namespace cusp
 {
 namespace krylov
 {
-
-template <class LinearOperator,
-         class Vector>
-void cr(LinearOperator& A,
-        Vector& x,
-        Vector& b)
+namespace cr_detail
 {
-    typedef typename LinearOperator::value_type   ValueType;
 
-    cusp::monitor<ValueType> monitor(b);
-
-    cusp::krylov::cr(A, x, b, monitor);
-}
-
-template <class LinearOperator,
-         class Vector,
-         class Monitor>
-void cr(LinearOperator& A,
-        Vector& x,
-        Vector& b,
-        Monitor& monitor)
-{
-    typedef typename LinearOperator::value_type   ValueType;
-    typedef typename LinearOperator::memory_space MemorySpace;
-
-    cusp::identity_operator<ValueType,MemorySpace> M(A.num_rows, A.num_cols);
-
-    cusp::krylov::cr(A, x, b, monitor, M);
-}
-
-template <class LinearOperator,
+template <typename DerivedPolicy,
+         class LinearOperator,
          class Vector,
          class Monitor,
          class Preconditioner>
-void cr(LinearOperator& A,
+void cr(thrust::execution_policy<DerivedPolicy> &exec,
+        LinearOperator& A,
         Vector& x,
         Vector& b,
         Monitor& monitor,
         Preconditioner& M)
 {
-    typedef typename LinearOperator::value_type   ValueType;
-    typedef typename LinearOperator::memory_space MemorySpace;
+    typedef typename LinearOperator::value_type           ValueType;
+    typedef typename cusp::minimum_space<
+    typename LinearOperator::memory_space,
+             typename Vector::memory_space,
+             typename Preconditioner::memory_space>::type  MemorySpace;
 
     assert(A.num_rows == A.num_cols);        // sanity check
 
@@ -84,33 +62,33 @@ void cr(LinearOperator& A,
     cusp::array1d<ValueType,MemorySpace> Ax(N);
 
     // y <- A*x
-    cusp::multiply(A, x, Ax);
+    cusp::multiply(exec, A, x, Ax);
 
     // r <- b - A*x
-    blas::axpby(b, Ax, r, ValueType(1), ValueType(-1));
+    blas::axpby(exec, b, Ax, r, ValueType(1), ValueType(-1));
 
     // z <- M*r
-    cusp::multiply(M, r, z);
+    cusp::multiply(exec, M, r, z);
 
     // p <- z
-    blas::copy(z, p);
+    blas::copy(exec, z, p);
 
     // y <- A*p
-    cusp::multiply(A, p, y);
+    cusp::multiply(exec, A, p, y);
 
     // Az <- A*z
-    cusp::multiply(A, z, Az);
+    cusp::multiply(exec, A, z, Az);
 
     // rz = <r^H, z>
-    ValueType rz = blas::dotc(r, Az);
+    ValueType rz = blas::dotc(exec, r, Az);
 
     while (!monitor.finished(r))
     {
         // alpha <- <r,z>/<y,p>
-        ValueType alpha =  rz / blas::dotc(y, y);
+        ValueType alpha =  rz / blas::dotc(exec, y, y);
 
         // x <- x + alpha * p
-        blas::axpy(p, x, alpha);
+        blas::axpy(exec, p, x, alpha);
 
         size_t iter = monitor.iteration_count();
         if( (iter % recompute_r) && (iter > 0) )
@@ -121,17 +99,17 @@ void cr(LinearOperator& A,
         else
         {
             // y <- A*x
-            cusp::multiply(A, x, Ax);
+            cusp::multiply(exec, A, x, Ax);
 
             // r <- b - A*x
-            blas::axpby(b, Ax, r, ValueType(1), ValueType(-1));
+            blas::axpby(exec, b, Ax, r, ValueType(1), ValueType(-1));
         }
 
         // z <- M*r
-        cusp::multiply(M, r, z);
+        cusp::multiply(exec, M, r, z);
 
-    	// Az <- A*z
-    	cusp::multiply(A, z, Az);
+        // Az <- A*z
+        cusp::multiply(exec, A, z, Az);
 
         ValueType rz_old = rz;
 
@@ -142,13 +120,121 @@ void cr(LinearOperator& A,
         ValueType beta = rz / rz_old;
 
         // p <- r + beta*p
-        blas::axpby(z, p, p, ValueType(1), beta);
+        blas::axpby(exec, z, p, p, ValueType(1), beta);
 
         // y <- z + beta*p
-        blas::axpby(Az, y, y, ValueType(1), beta);
+        blas::axpby(exec, Az, y, y, ValueType(1), beta);
 
         ++monitor;
     }
+}
+
+} // end cr_detail namespace
+
+template <typename DerivedPolicy,
+         class LinearOperator,
+         class Vector>
+void cr(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+        LinearOperator& A,
+        Vector& x,
+        Vector& b)
+{
+    typedef typename LinearOperator::value_type   ValueType;
+
+    cusp::monitor<ValueType> monitor(b);
+
+    cusp::krylov::cr(exec, A, x, b, monitor);
+}
+
+template <class LinearOperator,
+         class Vector>
+void cr(LinearOperator& A,
+        Vector& x,
+        Vector& b)
+{
+    using thrust::system::detail::generic::select_system;
+
+    typedef typename LinearOperator::memory_space System1;
+    typedef typename Vector::memory_space         System2;
+
+    System1 system1;
+    System2 system2;
+
+    cusp::krylov::cr(select_system(system1,system2), A, x, b);
+}
+
+template <typename DerivedPolicy,
+         class LinearOperator,
+         class Vector,
+         class Monitor>
+void cr(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+        LinearOperator& A,
+        Vector& x,
+        Vector& b,
+        Monitor& monitor)
+{
+    typedef typename LinearOperator::value_type   ValueType;
+    typedef typename LinearOperator::memory_space MemorySpace;
+
+    cusp::identity_operator<ValueType,MemorySpace> M(A.num_rows, A.num_cols);
+
+    cusp::krylov::cr(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, x, b, monitor, M);
+}
+
+template <class LinearOperator,
+         class Vector,
+         class Monitor>
+void cr(LinearOperator& A,
+        Vector& x,
+        Vector& b,
+        Monitor& monitor)
+{
+    using thrust::system::detail::generic::select_system;
+
+    typedef typename LinearOperator::memory_space System1;
+    typedef typename Vector::memory_space         System2;
+
+    System1 system1;
+    System2 system2;
+
+    cusp::krylov::cr(select_system(system1,system2), A, x, b, monitor);
+}
+
+template <typename DerivedPolicy,
+         class LinearOperator,
+         class Vector,
+         class Monitor,
+         class Preconditioner>
+void cr(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+        LinearOperator& A,
+        Vector& x,
+        Vector& b,
+        Monitor& monitor,
+        Preconditioner& M)
+{
+    cusp::krylov::cr_detail::cr(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
+                                A, x, b, monitor, M);
+}
+
+template <class LinearOperator,
+         class Vector,
+         class Monitor,
+         class Preconditioner>
+void cr(LinearOperator& A,
+        Vector& x,
+        Vector& b,
+        Monitor& monitor,
+        Preconditioner& M)
+{
+    using thrust::system::detail::generic::select_system;
+
+    typedef typename LinearOperator::memory_space System1;
+    typedef typename Vector::memory_space         System2;
+
+    System1 system1;
+    System2 system2;
+
+    cusp::krylov::cr(select_system(system1,system2), A, x, b, monitor, M);
 }
 
 } // end namespace krylov

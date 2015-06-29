@@ -34,6 +34,15 @@ namespace krylov
  */
 
 /* \cond */
+
+template <typename DerivedPolicy,
+          class LinearOperator,
+          class Vector>
+void cr(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+        LinearOperator& A,
+        Vector& x,
+        Vector& b);
+
 /*! \p cr : Conjugate Residual method
  *
  * Computes least squares solution of semi-definite linear system A x = b
@@ -56,6 +65,28 @@ void cr(LinearOperator& A,
         Vector& x,
         Vector& b,
         Monitor& monitor);
+
+template <typename DerivedPolicy,
+          class LinearOperator,
+          class Vector,
+          class Monitor>
+void cr(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+        LinearOperator& A,
+        Vector& x,
+        Vector& b,
+        Monitor& monitor);
+
+template <typename DerivedPolicy,
+          class LinearOperator,
+          class Vector,
+          class Monitor,
+          class Preconditioner>
+void cr(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+        LinearOperator& A,
+        Vector& x,
+        Vector& b,
+        Monitor& monitor,
+        Preconditioner& M);
 /* \endcond */
 
 /**

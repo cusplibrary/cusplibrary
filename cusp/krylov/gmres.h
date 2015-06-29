@@ -36,6 +36,15 @@ namespace krylov
  */
 
 /* \cond */
+template <typename DerivedPolicy,
+          class LinearOperator,
+          class Vector>
+void gmres(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+        LinearOperator& A,
+        Vector& x,
+        Vector& b,
+        const size_t restart);
+
 /*! \p gmres : GMRES method
  *
  * Solves the nonsymmetric, linear system A x = b
@@ -46,6 +55,17 @@ void gmres(LinearOperator& A,
            Vector& x,
            Vector& b,
            const size_t restart);
+
+template <typename DerivedPolicy,
+          class LinearOperator,
+          class Vector,
+          class Monitor>
+void gmres(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+           LinearOperator& A,
+           Vector& x,
+           Vector& b,
+           const size_t restart,
+           Monitor& monitor);
 
 /*! \p gmres : GMRES method
  *
@@ -59,6 +79,19 @@ void gmres(LinearOperator& A,
            Vector& b,
            const size_t restart,
            Monitor& monitor);
+
+template <typename DerivedPolicy,
+          class LinearOperator,
+          class Vector,
+          class Monitor,
+          class Preconditioner>
+void gmres(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+           LinearOperator& A,
+           Vector& x,
+           Vector& b,
+           const size_t restart,
+           Monitor& monitor,
+           Preconditioner& M);
 /* \endcond */
 
 /**
