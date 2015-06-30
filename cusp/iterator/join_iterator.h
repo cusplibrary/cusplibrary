@@ -121,7 +121,7 @@ struct join_search
     __host__ __device__
     V operator()(const SizesTuple&t1, const Tuple& t2, const T i) const
     {
-        return i >= thrust::get<SIZE-2>(t1) ? thrust::get<SIZE-1>(t2)[i] : join_search<T,V,SIZE-1>()(t1,t2,i);
+        return i >= T(thrust::get<SIZE-2>(t1)) ? thrust::get<SIZE-1>(t2)[i] : join_search<T,V,SIZE-1>()(t1,t2,i);
     }
 };
 
@@ -132,7 +132,7 @@ struct join_search<T,V,2>
     __host__ __device__
     V operator()(const SizesTuple&t1, const Tuple& t2, const T i) const
     {
-        return i >= thrust::get<0>(t1) ? thrust::get<1>(t2)[i] : thrust::get<0>(t2)[i];
+        return i >= T(thrust::get<0>(t1)) ? thrust::get<1>(t2)[i] : thrust::get<0>(t2)[i];
     }
 };
 
