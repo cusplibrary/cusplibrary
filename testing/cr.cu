@@ -3,10 +3,10 @@
 #include <cusp/gallery/poisson.h>
 #include <cusp/csr_matrix.h>
 #include <cusp/multiply.h>
-#include <cusp/krylov/bicgstab.h>
+#include <cusp/krylov/cr.h>
 
 template <class MemorySpace>
-void TestBiConjugateGradientStabilized(void)
+void TestConjugateResidual(void)
 {
     cusp::csr_matrix<int, float, MemorySpace> A;
 
@@ -17,7 +17,7 @@ void TestBiConjugateGradientStabilized(void)
 
     cusp::monitor<float> monitor(b, 20, 1e-4);
 
-    cusp::krylov::bicgstab(A, x, b, monitor);
+    cusp::krylov::cr(A, x, b, monitor);
 
     // check residual norm
     cusp::array1d<float, MemorySpace> residual(A.num_rows, 0.0f);
@@ -26,11 +26,11 @@ void TestBiConjugateGradientStabilized(void)
 
     ASSERT_EQUAL(cusp::blas::nrm2(residual) < 1e-4 * cusp::blas::nrm2(b), true);
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestBiConjugateGradientStabilized);
+DECLARE_HOST_DEVICE_UNITTEST(TestConjugateResidual);
 
 
 template <class MemorySpace>
-void TestBiConjugateGradientStabilizedZeroResidual(void)
+void TestConjugateResidualZeroResidual(void)
 {
     cusp::array2d<float, MemorySpace> M(2,2);
     M(0,0) = 8;
@@ -47,7 +47,7 @@ void TestBiConjugateGradientStabilizedZeroResidual(void)
 
     cusp::monitor<float> monitor(b, 20, 0.0f);
 
-    cusp::krylov::bicgstab(A, x, b, monitor);
+    cusp::krylov::cr(A, x, b, monitor);
 
     // check residual norm
     cusp::array1d<float, MemorySpace> residual(A.num_rows, 0.0f);
@@ -58,5 +58,5 @@ void TestBiConjugateGradientStabilizedZeroResidual(void)
     ASSERT_EQUAL(monitor.iteration_count(),     0);
     ASSERT_EQUAL(cusp::blas::nrm2(residual), 0.0f);
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestBiConjugateGradientStabilizedZeroResidual);
+DECLARE_HOST_DEVICE_UNITTEST(TestConjugateResidualZeroResidual);
 

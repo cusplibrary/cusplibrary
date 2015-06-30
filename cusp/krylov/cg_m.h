@@ -35,6 +35,17 @@ namespace krylov
  */
 
 /* \cond */
+template <typename DerivedPolicy,
+          class LinearOperator,
+          class VectorType1,
+          class VectorType2,
+          class VectorType3>
+void cg_m(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+          LinearOperator& A,
+          VectorType1& x,
+          VectorType2& b,
+          VectorType3& sigma);
+
 /*! \p cg_m : Multi-mass Conjugate Gradient method
  *
  * Solves the symmetric, positive-definited linear system (A+\sigma) x = b
@@ -48,13 +59,26 @@ namespace krylov
  *
  */
 template <class LinearOperator,
-         class VectorType1,
-         class VectorType2,
-         class VectorType3>
+          class VectorType1,
+          class VectorType2,
+          class VectorType3>
 void cg_m(LinearOperator& A,
           VectorType1& x,
           VectorType2& b,
           VectorType3& sigma);
+
+template <typename DerivedPolicy,
+          class LinearOperator,
+          class VectorType1,
+          class VectorType2,
+          class VectorType3,
+          class Monitor>
+void cg_m(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+          LinearOperator& A,
+          VectorType1& x,
+          VectorType2& b,
+          VectorType3& sigma,
+          Monitor& monitor);
 /* \endcond */
 
 /**
@@ -122,10 +146,10 @@ void cg_m(LinearOperator& A,
  *  \see \p monitor
  */
 template <class LinearOperator,
-         class VectorType1,
-         class VectorType2,
-         class VectorType3,
-         class Monitor>
+          class VectorType1,
+          class VectorType2,
+          class VectorType3,
+          class Monitor>
 void cg_m(LinearOperator& A,
           VectorType1& x,
           VectorType2& b,

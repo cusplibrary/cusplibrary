@@ -36,28 +36,58 @@ namespace krylov
  */
 
 /* \cond */
+template <typename DerivedPolicy,
+          class LinearOperator,
+          class Vector>
+void cg(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+        LinearOperator& A,
+        Vector& x,
+        Vector& b);
+
 /*! \p cg : Conjugate Gradient method
  *
  * Solves the symmetric, positive-definite linear system A x = b
  * using the default convergence criteria.
  */
 template <class LinearOperator,
-         class Vector>
+          class Vector>
 void cg(LinearOperator& A,
         Vector& x,
         Vector& b);
+
+template <typename DerivedPolicy,
+          class LinearOperator,
+          class Vector,
+          class Monitor>
+void cg(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+        LinearOperator& A,
+        Vector& x,
+        Vector& b,
+        Monitor& monitor);
 
 /*! \p cg : Conjugate Gradient method
  *
  * Solves the symmetric, positive-definite linear system A x = b without preconditioning.
  */
 template <class LinearOperator,
-         class Vector,
-         class Monitor>
+          class Vector,
+          class Monitor>
 void cg(LinearOperator& A,
         Vector& x,
         Vector& b,
         Monitor& monitor);
+
+template <typename DerivedPolicy,
+          class LinearOperator,
+          class Vector,
+          class Monitor,
+          class Preconditioner>
+void cg(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+        LinearOperator& A,
+        Vector& x,
+        Vector& b,
+        Monitor& monitor,
+        Preconditioner& M);
 /* \endcond */
 
 /**
@@ -123,9 +153,9 @@ void cg(LinearOperator& A,
  *
  */
 template <class LinearOperator,
-         class Vector,
-         class Monitor,
-         class Preconditioner>
+          class Vector,
+          class Monitor,
+          class Preconditioner>
 void cg(LinearOperator& A,
         Vector& x,
         Vector& b,
@@ -138,4 +168,3 @@ void cg(LinearOperator& A,
 } // end namespace cusp
 
 #include <cusp/krylov/detail/cg.inl>
-

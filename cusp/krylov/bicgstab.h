@@ -33,27 +33,57 @@ namespace krylov
  */
 
 /* \cond */
+template <typename DerivedPolicy,
+          class LinearOperator,
+          class Vector>
+void bicgstab(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+              LinearOperator& A,
+              Vector& x,
+              Vector& b);
+
 /*! \p bicgstab : Biconjugate Gradient Stabilized method
  *
  * Solves the linear system A x = b using the default convergence criteria.
  */
 template <class LinearOperator,
-         class Vector>
+          class Vector>
 void bicgstab(LinearOperator& A,
               Vector& x,
               Vector& b);
+
+template <typename DerivedPolicy,
+          class LinearOperator,
+          class Vector,
+          class Monitor>
+void bicgstab(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+              LinearOperator& A,
+              Vector& x,
+              Vector& b,
+              Monitor& monitor);
 
 /*! \p bicgstab : Biconjugate Gradient Stabilized method
  *
  * Solves the linear system A x = b without preconditioning.
  */
 template <class LinearOperator,
-         class Vector,
-         class Monitor>
+          class Vector,
+          class Monitor>
 void bicgstab(LinearOperator& A,
               Vector& x,
               Vector& b,
               Monitor& monitor);
+
+template <typename DerivedPolicy,
+          class LinearOperator,
+          class Vector,
+          class Monitor,
+          class Preconditioner>
+void bicgstab(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+              LinearOperator& A,
+              Vector& x,
+              Vector& b,
+              Monitor& monitor,
+              Preconditioner& M);
 /* \endcond */
 
 /**

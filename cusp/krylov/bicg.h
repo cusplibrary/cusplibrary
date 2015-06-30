@@ -22,6 +22,8 @@
 
 #include <cusp/detail/config.h>
 
+#include <cusp/execution_policy.h>
+
 namespace cusp
 {
 namespace krylov
@@ -33,29 +35,63 @@ namespace krylov
  */
 
 /* \cond */
+template <typename DerivedPolicy,
+          class LinearOperator,
+          class Vector>
+void bicg(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+          LinearOperator& A,
+          LinearOperator& At,
+          Vector& x,
+          Vector& b);
+
 /*! \p bicg : Biconjugate Gradient method
  *
  * Solves the linear system A x = b using the default convergence criteria.
  */
 template <class LinearOperator,
-         class Vector>
+          class Vector>
 void bicg(LinearOperator& A,
           LinearOperator& At,
           Vector& x,
           Vector& b);
+
+template <typename DerivedPolicy,
+          class LinearOperator,
+          class Vector,
+          class Monitor>
+void bicg(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+          LinearOperator& A,
+          LinearOperator& At,
+          Vector& x,
+          Vector& b,
+          Monitor& monitor);
 
 /*! \p bicgstab : Biconjugate Gradient method
  *
  * Solves the linear system A x = b without preconditioning.
  */
 template <class LinearOperator,
-         class Vector,
-         class Monitor>
+          class Vector,
+          class Monitor>
 void bicg(LinearOperator& A,
           LinearOperator& At,
           Vector& x,
           Vector& b,
           Monitor& monitor);
+
+template <typename DerivedPolicy,
+          class LinearOperator,
+          class Vector,
+          class Monitor,
+          class Preconditioner>
+void bicg(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+          LinearOperator& A,
+          LinearOperator& At,
+          Vector& x,
+          Vector& b,
+          Monitor& monitor,
+          Preconditioner& M,
+          Preconditioner& Mt);
 /* \endcond */
 
 /**
@@ -122,9 +158,9 @@ void bicg(LinearOperator& A,
  *  \see \p monitor
  */
 template <class LinearOperator,
-         class Vector,
-         class Monitor,
-         class Preconditioner>
+          class Vector,
+          class Monitor,
+          class Preconditioner>
 void bicg(LinearOperator& A,
           LinearOperator& At,
           Vector& x,
