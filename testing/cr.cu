@@ -1,9 +1,72 @@
 #include <unittest/unittest.h>
 
-#include <cusp/gallery/poisson.h>
 #include <cusp/csr_matrix.h>
 #include <cusp/multiply.h>
+
+#include <cusp/gallery/poisson.h>
 #include <cusp/krylov/cr.h>
+
+template <class LinearOperator, class Vector>
+void cr(my_system& system, LinearOperator& A, Vector& x, Vector& b)
+{
+    system.validate_dispatch();
+    return;
+}
+
+template <class LinearOperator, class Vector, class Monitor>
+void cr(my_system& system, LinearOperator& A, Vector& x, Vector& b, Monitor& monitor)
+{
+    system.validate_dispatch();
+    return;
+}
+
+template <class LinearOperator, class Vector, class Monitor, class Preconditioner>
+void cr(my_system& system, LinearOperator& A, Vector& x, Vector& b, Monitor& monitor, Preconditioner& M)
+{
+    system.validate_dispatch();
+    return;
+}
+
+void TestConjugateResidualDispatch()
+{
+    // initialize testing variables
+    cusp::csr_matrix<int, float, cusp::device_memory> A;
+    cusp::gallery::poisson5pt(A, 10, 10);
+    cusp::array1d<float, cusp::device_memory> x(A.num_rows, 0.0f);
+    cusp::monitor<float> monitor(x, 20, 1e-4);
+    cusp::identity_operator<float,cusp::device_memory> M(A.num_rows, A.num_cols);
+
+    {
+        my_system sys(0);
+
+        // call with explicit dispatching
+        cusp::krylov::cr(sys, A, x, x);
+
+        // check if dispatch policy was used
+        ASSERT_EQUAL(true, sys.is_valid());
+    }
+
+    {
+        my_system sys(0);
+
+        // call with explicit dispatching
+        cusp::krylov::cr(sys, A, x, x, monitor);
+
+        // check if dispatch policy was used
+        ASSERT_EQUAL(true, sys.is_valid());
+    }
+
+    {
+        my_system sys(0);
+
+        // call with explicit dispatching
+        cusp::krylov::cr(sys, A, x, x, monitor, M);
+
+        // check if dispatch policy was used
+        ASSERT_EQUAL(true, sys.is_valid());
+    }
+}
+DECLARE_UNITTEST(TestConjugateResidualDispatch);
 
 template <class MemorySpace>
 void TestConjugateResidual(void)

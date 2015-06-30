@@ -107,7 +107,23 @@ void cg(thrust::execution_policy<DerivedPolicy> &exec,
     }
 }
 
-} // end cg_detail namespace
+template <typename DerivedPolicy,
+          class LinearOperator,
+          class Vector,
+          class Monitor>
+void cg(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+        LinearOperator& A,
+        Vector& x,
+        Vector& b,
+        Monitor& monitor)
+{
+    typedef typename LinearOperator::value_type   ValueType;
+    typedef typename LinearOperator::memory_space MemorySpace;
+
+    cusp::identity_operator<ValueType,MemorySpace> M(A.num_rows, A.num_cols);
+
+    cusp::krylov::cg_detail::cg(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, x, b, monitor, M);
+}
 
 template <typename DerivedPolicy,
           class LinearOperator,
@@ -121,7 +137,23 @@ void cg(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 
     cusp::monitor<ValueType> monitor(b);
 
-    cusp::krylov::cg(exec, A, x, b, monitor);
+    cusp::krylov::cg_detail::cg(exec, A, x, b, monitor);
+}
+
+} // end cg_detail namespace
+
+template <typename DerivedPolicy,
+          class LinearOperator,
+          class Vector>
+void cg(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+        LinearOperator& A,
+        Vector& x,
+        Vector& b)
+{
+    using cusp::krylov::cg_detail::cg;
+
+    cg(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
+       A, x, b);
 }
 
 template <class LinearOperator,
@@ -151,12 +183,10 @@ void cg(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
         Vector& b,
         Monitor& monitor)
 {
-    typedef typename LinearOperator::value_type   ValueType;
-    typedef typename LinearOperator::memory_space MemorySpace;
+    using cusp::krylov::cg_detail::cg;
 
-    cusp::identity_operator<ValueType,MemorySpace> M(A.num_rows, A.num_cols);
-
-    cusp::krylov::cg(exec, A, x, b, monitor, M);
+    cg(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
+       A, x, b, monitor);
 }
 
 template <class LinearOperator,
@@ -190,8 +220,10 @@ void cg(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
         Monitor& monitor,
         Preconditioner& M)
 {
-    cusp::krylov::cg_detail::cg(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
-                                A, x, b, monitor, M);
+    using cusp::krylov::cg_detail::cg;
+
+    cg(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
+       A, x, b, monitor, M);
 }
 
 template <class LinearOperator,

@@ -150,11 +150,12 @@ template <class LinearOperator,
           class VectorType2,
           class VectorType3,
           class Monitor>
-void cg_m(LinearOperator& A,
-          VectorType1& x,
-          VectorType2& b,
-          VectorType3& sigma,
-          Monitor& monitor);
+typename thrust::detail::enable_if_convertible<typename LinearOperator::format,cusp::known_format>::type
+cg_m(LinearOperator& A,
+     VectorType1& x,
+     VectorType2& b,
+     VectorType3& sigma,
+     Monitor& monitor);
 /*! \}
  */
 

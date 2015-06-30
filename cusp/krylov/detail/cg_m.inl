@@ -16,8 +16,10 @@
 
 
 #include <cusp/array1d.h>
+#include <cusp/linear_operator.h>
 #include <cusp/multiply.h>
 #include <cusp/monitor.h>
+
 #include <cusp/blas/blas.h>
 
 #include <thrust/copy.h>
@@ -507,9 +509,6 @@ void cg_m(thrust::execution_policy<DerivedPolicy> &exec,
 
 } // end cg_m
 
-} // end cg_detail namespace
-
-// CG-M routine that uses the default monitor to determine completion
 template <typename DerivedPolicy,
           class LinearOperator,
           class VectorType1,
@@ -525,17 +524,38 @@ void cg_m(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 
     cusp::monitor<ValueType> monitor(b);
 
-    cusp::krylov::cg_m(exec, A, x, b, sigma, monitor);
+    cusp::krylov::cg_detail::cg_m(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, x, b, sigma, monitor);
+}
+
+} // end cg_detail namespace
+
+// CG-M routine that uses the default monitor to determine completion
+template <typename DerivedPolicy,
+          class LinearOperator,
+          class VectorType1,
+          class VectorType2,
+          class VectorType3>
+void cg_m(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+          LinearOperator& A,
+          VectorType1& x,
+          VectorType2& b,
+          VectorType3& sigma)
+{
+    using cusp::krylov::cg_detail::cg_m;
+
+    cg_m(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
+         A, x, b, sigma);
 }
 
 template <class LinearOperator,
           class VectorType1,
           class VectorType2,
           class VectorType3>
-void cg_m(LinearOperator& A,
-          VectorType1& x,
-          VectorType2& b,
-          VectorType3& sigma)
+typename thrust::detail::enable_if_convertible<typename LinearOperator::format,cusp::known_format>::type
+cg_m(LinearOperator& A,
+     VectorType1& x,
+     VectorType2& b,
+     VectorType3& sigma)
 {
     using thrust::system::detail::generic::select_system;
 
@@ -566,8 +586,10 @@ void cg_m(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
           VectorType3& sigma,
           Monitor& monitor)
 {
-    cusp::krylov::cg_detail::cg_m(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
-                                  A, x, b, sigma, monitor);
+    using cusp::krylov::cg_detail::cg_m;
+
+    cg_m(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
+         A, x, b, sigma, monitor);
 }
 
 template <class LinearOperator,
@@ -575,11 +597,12 @@ template <class LinearOperator,
           class VectorType2,
           class VectorType3,
           class Monitor>
-void cg_m(LinearOperator& A,
-          VectorType1& x,
-          VectorType2& b,
-          VectorType3& sigma,
-          Monitor& monitor)
+typename thrust::detail::enable_if_convertible<typename LinearOperator::format,cusp::known_format>::type
+cg_m(LinearOperator& A,
+     VectorType1& x,
+     VectorType2& b,
+     VectorType3& sigma,
+     Monitor& monitor)
 {
     using thrust::system::detail::generic::select_system;
 

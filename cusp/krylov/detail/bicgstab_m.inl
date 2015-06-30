@@ -826,8 +826,6 @@ void bicgstab_m(thrust::execution_policy<DerivedPolicy> &exec,
 
 } // end bicgstab_m
 
-} // end bicg_detail namespace
-
 template <typename DerivedPolicy, class LinearOperator,
           class VectorType1, class VectorType2, class VectorType3>
 void bicgstab_m(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
@@ -838,14 +836,29 @@ void bicgstab_m(const thrust::detail::execution_policy_base<DerivedPolicy> &exec
 
     cusp::monitor<ValueType> monitor(b);
 
-    bicgstab_m(exec, A, x, b, sigma, monitor);
+    cusp::krylov::bicg_detail::bicgstab_m(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, x, b, sigma, monitor);
+}
+
+} // end bicg_detail namespace
+
+template <typename DerivedPolicy, class LinearOperator,
+          class VectorType1, class VectorType2, class VectorType3>
+void bicgstab_m(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                LinearOperator& A,
+                VectorType1& x, VectorType2& b, VectorType3& sigma)
+{
+    using cusp::krylov::bicg_detail::bicgstab_m;
+
+    bicgstab_m(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
+               A, x, b, sigma);
 }
 
 // BiCGStab-M routine that uses the default monitor to determine completion
 template <class LinearOperator,
           class VectorType1, class VectorType2, class VectorType3>
-void bicgstab_m(LinearOperator& A,
-                VectorType1& x, VectorType2& b, VectorType3& sigma)
+typename thrust::detail::enable_if_convertible<typename LinearOperator::format,cusp::known_format>::type
+bicgstab_m(LinearOperator& A,
+           VectorType1& x, VectorType2& b, VectorType3& sigma)
 {
     using thrust::system::detail::generic::select_system;
 
@@ -870,17 +883,20 @@ void bicgstab_m(const thrust::detail::execution_policy_base<DerivedPolicy> &exec
                 VectorType1& x, VectorType2& b, VectorType3& sigma,
                 Monitor& monitor)
 {
-    cusp::krylov::bicg_detail::bicgstab_m(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
-                                          A, x, b, sigma, monitor);
+    using cusp::krylov::bicg_detail::bicgstab_m;
+
+    bicgstab_m(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
+               A, x, b, sigma, monitor);
 }
 
 // BiCGStab-M routine that takes a user specified monitor
 template <class LinearOperator,
           class VectorType1, class VectorType2, class VectorType3,
           class Monitor>
-void bicgstab_m(LinearOperator& A,
-                VectorType1& x, VectorType2& b, VectorType3& sigma,
-                Monitor& monitor)
+typename thrust::detail::enable_if_convertible<typename LinearOperator::format,cusp::known_format>::type
+bicgstab_m(LinearOperator& A,
+           VectorType1& x, VectorType2& b, VectorType3& sigma,
+           Monitor& monitor)
 {
     using thrust::system::detail::generic::select_system;
 

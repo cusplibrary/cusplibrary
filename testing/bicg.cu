@@ -6,7 +6,68 @@
 #include <cusp/gallery/poisson.h>
 #include <cusp/krylov/bicg.h>
 #include <cusp/krylov/bicgstab.h>
-#include <cusp/krylov/bicgstab_m.h>
+
+template <class LinearOperator, class Vector>
+void bicg(my_system& system, LinearOperator& A, LinearOperator& At, Vector& x, Vector& b)
+{
+    system.validate_dispatch();
+    return;
+}
+
+template <class LinearOperator, class Vector, class Monitor>
+void bicg(my_system& system, LinearOperator& A, LinearOperator& At, Vector& x, Vector& b, Monitor& monitor)
+{
+    system.validate_dispatch();
+    return;
+}
+
+template <class LinearOperator, class Vector, class Monitor, class Preconditioner>
+void bicg(my_system& system, LinearOperator& A, LinearOperator& At, Vector& x, Vector& b, Monitor& monitor, Preconditioner& M, Preconditioner& Mt)
+{
+    system.validate_dispatch();
+    return;
+}
+
+void TestBiConjugateGradientDispatch()
+{
+    // initialize testing variables
+    cusp::csr_matrix<int, float, cusp::device_memory> A;
+    cusp::gallery::poisson5pt(A, 10, 10);
+    cusp::array1d<float, cusp::device_memory> x(A.num_rows, 0.0f);
+    cusp::monitor<float> monitor(x, 20, 1e-4);
+    cusp::identity_operator<float,cusp::device_memory> M(A.num_rows, A.num_cols);
+
+    {
+        my_system sys(0);
+
+        // call with explicit dispatching
+        cusp::krylov::bicg(sys, A, A, x, x);
+
+        // check if dispatch policy was used
+        ASSERT_EQUAL(true, sys.is_valid());
+    }
+
+    {
+        my_system sys(0);
+
+        // call with explicit dispatching
+        cusp::krylov::bicg(sys, A, A, x, x, monitor);
+
+        // check if dispatch policy was used
+        ASSERT_EQUAL(true, sys.is_valid());
+    }
+
+    {
+        my_system sys(0);
+
+        // call with explicit dispatching
+        cusp::krylov::bicg(sys, A, A, x, x, monitor, M, M);
+
+        // check if dispatch policy was used
+        ASSERT_EQUAL(true, sys.is_valid());
+    }
+}
+DECLARE_UNITTEST(TestBiConjugateGradientDispatch);
 
 template <class MemorySpace>
 void TestBiConjugateGradient(void)
@@ -30,7 +91,6 @@ void TestBiConjugateGradient(void)
     ASSERT_EQUAL(cusp::blas::nrm2(residual) < 1e-4 * cusp::blas::nrm2(b), true);
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestBiConjugateGradient);
-
 
 template <class MemorySpace>
 void TestBiConjugateGradientZeroResidual(void)
@@ -62,6 +122,68 @@ void TestBiConjugateGradientZeroResidual(void)
     ASSERT_EQUAL(cusp::blas::nrm2(residual), 0.0f);
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestBiConjugateGradientZeroResidual);
+
+template <class LinearOperator, class Vector>
+void bicgstab(my_system& system, LinearOperator& A, Vector& x, Vector& b)
+{
+    system.validate_dispatch();
+    return;
+}
+
+template <class LinearOperator, class Vector, class Monitor>
+void bicgstab(my_system& system, LinearOperator& A, Vector& x, Vector& b, Monitor& monitor)
+{
+    system.validate_dispatch();
+    return;
+}
+
+template <class LinearOperator, class Vector, class Monitor, class Preconditioner>
+void bicgstab(my_system& system, LinearOperator& A, Vector& x, Vector& b, Monitor& monitor, Preconditioner& M)
+{
+    system.validate_dispatch();
+    return;
+}
+
+void TestBiConjugateGradientStabilizedDispatch()
+{
+    // initialize testing variables
+    cusp::csr_matrix<int, float, cusp::device_memory> A;
+    cusp::gallery::poisson5pt(A, 10, 10);
+    cusp::array1d<float, cusp::device_memory> x(A.num_rows, 0.0f);
+    cusp::monitor<float> monitor(x, 20, 1e-4);
+    cusp::identity_operator<float,cusp::device_memory> M(A.num_rows, A.num_cols);
+
+    {
+        my_system sys(0);
+
+        // call with explicit dispatching
+        cusp::krylov::bicgstab(sys, A, x, x);
+
+        // check if dispatch policy was used
+        ASSERT_EQUAL(true, sys.is_valid());
+    }
+
+    {
+        my_system sys(0);
+
+        // call with explicit dispatching
+        cusp::krylov::bicgstab(sys, A, x, x, monitor);
+
+        // check if dispatch policy was used
+        ASSERT_EQUAL(true, sys.is_valid());
+    }
+
+    {
+        my_system sys(0);
+
+        // call with explicit dispatching
+        cusp::krylov::bicgstab(sys, A, x, x, monitor, M);
+
+        // check if dispatch policy was used
+        ASSERT_EQUAL(true, sys.is_valid());
+    }
+}
+DECLARE_UNITTEST(TestBiConjugateGradientStabilizedDispatch);
 
 template <class MemorySpace>
 void TestBiConjugateGradientStabilized(void)
