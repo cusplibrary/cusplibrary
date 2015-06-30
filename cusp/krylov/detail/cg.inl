@@ -15,9 +15,10 @@
  */
 
 #include <cusp/array1d.h>
+#include <cusp/linear_operator.h>
 #include <cusp/multiply.h>
 #include <cusp/monitor.h>
-#include <cusp/linear_operator.h>
+
 #include <cusp/blas/blas.h>
 
 namespace blas = cusp::blas;
@@ -155,7 +156,7 @@ void cg(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 
     cusp::identity_operator<ValueType,MemorySpace> M(A.num_rows, A.num_cols);
 
-    cusp::krylov::cg(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, x, b, monitor, M);
+    cusp::krylov::cg(exec, A, x, b, monitor, M);
 }
 
 template <class LinearOperator,

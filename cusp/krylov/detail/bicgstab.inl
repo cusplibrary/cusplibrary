@@ -174,7 +174,7 @@ void bicgstab(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 
     cusp::identity_operator<ValueType,MemorySpace> M(A.num_rows, A.num_cols);
 
-    cusp::krylov::bicgstab(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, x, b, monitor, M);
+    cusp::krylov::bicgstab(exec, A, x, b, monitor, M);
 }
 
 template <class LinearOperator,

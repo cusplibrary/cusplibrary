@@ -206,7 +206,7 @@ void gmres(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
   cusp::identity_operator<ValueType, MemorySpace> M(A.num_rows, A.num_cols);
 
   cusp::krylov::gmres(
-      thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, x, b,
+      exec, A, x, b,
       restart, monitor, M);
 }
 
