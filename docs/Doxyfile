@@ -883,6 +883,7 @@ EXCLUDE_SYMBOLS        =
 
 EXAMPLE_PATH            = ../examples/Algorithms
 EXAMPLE_PATH           += ../examples/Gallery
+EXAMPLE_PATH           += ../examples/Graph
 EXAMPLE_PATH           += ../examples/InputOutput
 EXAMPLE_PATH           += ../examples/LinearOperator
 EXAMPLE_PATH           += ../examples/MatrixAssembly
