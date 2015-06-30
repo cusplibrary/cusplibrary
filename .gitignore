@@ -82,6 +82,7 @@ examples/Preconditioners/diagonal
 examples/Preconditioners/smoothed_aggregation
 examples/Solvers/gmres
 examples/Solvers/bicgstab
+examples/Solvers/bicgstab_m
 examples/Solvers/cg_m
 examples/Solvers/cg
 examples/Solvers/cr
