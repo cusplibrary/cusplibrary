@@ -144,3 +144,37 @@ void TestGeneralizedSpMV()
 }
 DECLARE_SPARSE_MATRIX_UNITTEST(TestGeneralizedSpMV);
 
+template <typename LinearOperator,
+         typename Vector1,
+         typename Vector2,
+         typename Vector3,
+         typename BinaryFunction1,
+         typename BinaryFunction2>
+void generalized_spmv(my_system &system,
+                      const LinearOperator&  A,
+                      const Vector1& x,
+                      const Vector2& y,
+                      Vector3& z,
+                      BinaryFunction1 combine,
+                      BinaryFunction2 reduce)
+{
+    system.validate_dispatch();
+    return;
+}
+
+void TestGeneralizedSpMVDispatch()
+{
+    // initialize testing variables
+    cusp::csr_matrix<int, float, cusp::device_memory> A, B, C;
+    cusp::array1d<float, cusp::device_memory> x;
+
+    my_system sys(0);
+
+    // call with explicit dispatching
+    cusp::generalized_spmv(sys, A, x, x, x, thrust::multiplies<float>(), thrust::plus<float>());
+
+    // check if dispatch policy was used
+    ASSERT_EQUAL(true, sys.is_valid());
+}
+DECLARE_UNITTEST(TestGeneralizedSpMVDispatch);
+

@@ -550,7 +550,7 @@ void multiply(my_system& system, const MatrixType1& A, const MatrixType2& B, Mat
     return;
 }
 
-void TestMultiplyDispatch()
+void TestMatrixMatrixMultiplyDispatch()
 {
     // initialize testing variables
     cusp::csr_matrix<int, float, cusp::device_memory> A, B, C;
@@ -563,5 +563,51 @@ void TestMultiplyDispatch()
     // check if dispatch policy was used
     ASSERT_EQUAL(true, sys.is_valid());
 }
-DECLARE_UNITTEST(TestMultiplyDispatch);
+DECLARE_UNITTEST(TestMatrixMatrixMultiplyDispatch);
+
+template <typename LinearOperator,
+         typename MatrixOrVector1,
+         typename MatrixOrVector2,
+         typename UnaryFunction,
+         typename BinaryFunction1,
+         typename BinaryFunction2>
+void multiply(my_system& system,
+              const LinearOperator&  A,
+              const MatrixOrVector1& B,
+              MatrixOrVector2& C,
+              UnaryFunction  initialize,
+              BinaryFunction1 combine,
+              BinaryFunction2 reduce)
+{
+    system.validate_dispatch();
+    return;
+}
+
+void TestMatrixVectorMultiplyDispatch()
+{
+    // initialize testing variables
+    cusp::csr_matrix<int, float, cusp::device_memory> A, B, C;
+    cusp::array1d<float, cusp::device_memory> x;
+
+    {
+        my_system sys(0);
+
+        // call with explicit dispatching
+        cusp::multiply(sys, A, x, x);
+
+        // check if dispatch policy was used
+        ASSERT_EQUAL(true, sys.is_valid());
+    }
+
+    {
+        my_system sys(0);
+
+        // call with explicit dispatching
+        cusp::multiply(sys, A, x, x, cusp::detail::zero_function<float>(), thrust::multiplies<float>(), thrust::plus<float>());
+
+        // check if dispatch policy was used
+        ASSERT_EQUAL(true, sys.is_valid());
+    }
+}
+DECLARE_UNITTEST(TestMatrixVectorMultiplyDispatch);
 
