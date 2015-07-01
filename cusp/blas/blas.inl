@@ -146,14 +146,12 @@ void axpby(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
                  ScalarType1 alpha,
                  ScalarType2 beta)
 {
+    using cusp::blas::thrustblas::axpby;
+
     cusp::assert_same_dimensions(x, y, z);
 
-    size_t N = x.size();
-
-    thrust::for_each(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
-                     thrust::make_zip_iterator(thrust::make_tuple(x.begin(), y.begin(), z.begin())),
-                     thrust::make_zip_iterator(thrust::make_tuple(x.begin(), y.begin(), z.begin())) + N,
-                     cusp::detail::AXPBY<ScalarType1,ScalarType2>(alpha, beta));
+    axpby(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
+          x, y, z, alpha, beta);
 }
 
 template <typename Array1,
@@ -203,14 +201,12 @@ void axpbypcz(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
                     ScalarType2 beta,
                     ScalarType3 gamma)
 {
+    using cusp::blas::thrustblas::axpbypcz;
+
     cusp::assert_same_dimensions(x, y, z, output);
 
-    size_t N = x.size();
-
-    thrust::for_each(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
-                     thrust::make_zip_iterator(thrust::make_tuple(x.begin(), y.begin(), z.begin(), output.begin())),
-                     thrust::make_zip_iterator(thrust::make_tuple(x.begin(), y.begin(), z.begin(), output.begin())) + N,
-                     cusp::detail::AXPBYPCZ<ScalarType1,ScalarType2,ScalarType3>(alpha, beta, gamma));
+    axpbypcz(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
+             x, y, z, output, alpha, beta, gamma);
 }
 
 template <typename Array1,
@@ -242,12 +238,11 @@ void xmy(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
          const Array2& y,
                Array3& z)
 {
-    typedef typename Array3::value_type ValueType;
+    using cusp::blas::thrustblas::xmy;
 
     cusp::assert_same_dimensions(x, y, z);
 
-    thrust::transform(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
-                      x.begin(), x.end(), y.begin(), z.begin(), cusp::detail::XMY<ValueType>());
+    xmy(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), x, y, z);
 }
 
 template <typename Array1,
@@ -398,7 +393,7 @@ void fill(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 {
     using cusp::blas::thrustblas::fill;
 
-    fill(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), x.begin(), x.end(), alpha);
+    fill(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), x, alpha);
 }
 
 template <typename Array>

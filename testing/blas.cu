@@ -509,3 +509,529 @@ void TestScal(void)
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestScal);
 
+template <class MemorySpace>
+void TestGemm(void)
+{
+    typedef typename cusp::array2d<float, MemorySpace> Array;
+
+    Array A(6,6);
+
+    ASSERT_THROWS(cusp::blas::gemm(A, A, A), cusp::not_implemented_exception);
+}
+DECLARE_HOST_DEVICE_UNITTEST(TestGemm);
+
+template <class MemorySpace>
+void TestSymm(void)
+{
+    typedef typename cusp::array2d<float, MemorySpace> Array;
+
+    Array A(6,6);
+
+    ASSERT_THROWS(cusp::blas::symm(A, A, A), cusp::not_implemented_exception);
+}
+DECLARE_HOST_DEVICE_UNITTEST(TestSymm);
+
+template <class MemorySpace>
+void TestSyrk(void)
+{
+    typedef typename cusp::array2d<float, MemorySpace> Array;
+
+    Array A(6,6);
+
+    ASSERT_THROWS(cusp::blas::syrk(A, A), cusp::not_implemented_exception);
+}
+DECLARE_HOST_DEVICE_UNITTEST(TestSyrk);
+
+template <class MemorySpace>
+void TestSyr2k(void)
+{
+    typedef typename cusp::array2d<float, MemorySpace> Array;
+
+    Array A(6,6);
+
+    ASSERT_THROWS(cusp::blas::syr2k(A, A, A), cusp::not_implemented_exception);
+}
+DECLARE_HOST_DEVICE_UNITTEST(TestSyr2k);
+
+template <class MemorySpace>
+void TestTrmm(void)
+{
+    typedef typename cusp::array2d<float, MemorySpace> Array;
+
+    Array A(6,6);
+
+    ASSERT_THROWS(cusp::blas::trmm(A, A, A), cusp::not_implemented_exception);
+}
+DECLARE_HOST_DEVICE_UNITTEST(TestTrmm);
+
+template <class MemorySpace>
+void TestTrsm(void)
+{
+    typedef typename cusp::array2d<float, MemorySpace> Array;
+
+    Array A(6,6);
+
+    ASSERT_THROWS(cusp::blas::trsm(A, A, A), cusp::not_implemented_exception);
+}
+DECLARE_HOST_DEVICE_UNITTEST(TestTrsm);
+
+template <typename Array>
+int amax(my_system& system, const Array& x)
+{
+    system.validate_dispatch();
+    return 0;
+}
+
+template <typename Array>
+typename cusp::detail::norm_type<typename Array::value_type>::type
+asum(my_system& system, const Array& x)
+{
+    system.validate_dispatch();
+    return 0;
+}
+
+template <typename Array1, typename Array2, typename ScalarType>
+void axpy(my_system& system, const Array1& x, Array2& y, const ScalarType alpha)
+{
+    system.validate_dispatch();
+    return;
+}
+
+template <typename Array1, typename Array2, typename Array3,
+          typename ScalarType1, typename ScalarType2>
+void axpby(my_system& system, const Array1& x, const Array2& y, Array3& output,
+           ScalarType1 alpha, ScalarType2 beta)
+{
+    system.validate_dispatch();
+    return;
+}
+
+template <typename Array1, typename Array2, typename Array3, typename Array4,
+          typename ScalarType1, typename ScalarType2, typename ScalarType3>
+void axpbypcz(my_system& system, const Array1& x, const Array2& y, const Array3& z, Array4& output,
+              ScalarType1 alpha, ScalarType2 beta, ScalarType3 gamma)
+{
+    system.validate_dispatch();
+    return;
+}
+
+template <typename Array1, typename Array2, typename Array3>
+void xmy(my_system& system, const Array1& x, const Array2& y, Array3& output)
+{
+    system.validate_dispatch();
+    return;
+}
+
+template <typename Array1, typename Array2>
+void copy(my_system& system, const Array1& x, Array2& y)
+{
+    system.validate_dispatch();
+    return;
+}
+
+template <typename Array1, typename Array2>
+typename Array1::value_type
+dot(my_system& system, const Array1& x, const Array2& y)
+{
+    system.validate_dispatch();
+    return 0;
+}
+
+template <typename Array1, typename Array2>
+typename Array1::value_type
+dotc(my_system& system, const Array1& x, const Array2& y)
+{
+    system.validate_dispatch();
+    return 0;
+}
+
+template <typename Array, typename ScalarType>
+void fill(my_system& system, Array& array, const ScalarType alpha)
+{
+    system.validate_dispatch();
+    return;
+}
+
+template <typename Array>
+typename cusp::detail::norm_type<typename Array::value_type>::type
+nrm1(my_system& system, const Array& array)
+{
+    system.validate_dispatch();
+    return 0;
+}
+
+template <typename Array>
+typename cusp::detail::norm_type<typename Array::value_type>::type
+nrm2(my_system& system, const Array& array)
+{
+    system.validate_dispatch();
+    return 0;
+}
+
+template <typename Array>
+typename cusp::detail::norm_type<typename Array::value_type>::type
+nrmmax(my_system& system, const Array& array)
+{
+    system.validate_dispatch();
+    return 0;
+}
+
+template <typename Array, typename ScalarType>
+void scal(my_system& system, Array& x, const ScalarType alpha)
+{
+    system.validate_dispatch();
+    return;
+}
+
+template<typename Array2d1, typename Array1d1, typename Array1d2>
+void gemv(my_system& system, const Array2d1& A, const Array1d1& x, Array1d2& y)
+{
+    system.validate_dispatch();
+    return;
+}
+
+template<typename Array1d1, typename Array1d2, typename Array2d1>
+void ger(my_system& system, const Array1d1& x, const Array1d2& y, Array2d1& A)
+{
+    system.validate_dispatch();
+    return;
+}
+
+template <typename Array2d1, typename Array1d1, typename Array1d2>
+void symv(my_system& system, const Array2d1& A, const Array1d1& x, Array1d2& y)
+{
+    system.validate_dispatch();
+    return;
+}
+
+template <typename Array1d, typename Array2d>
+void syr(my_system& system, const Array1d& x, Array2d& A)
+{
+    system.validate_dispatch();
+    return;
+}
+
+template<typename Array2d, typename Array1d>
+void trmv(my_system& system, const Array2d& A, Array1d& x)
+{
+    system.validate_dispatch();
+    return;
+}
+
+template<typename Array2d, typename Array1d>
+void trsv(my_system& system, const Array2d& A, Array1d& x)
+{
+    system.validate_dispatch();
+    return;
+}
+
+template<typename Array2d1, typename Array2d2, typename Array2d3>
+void gemm(my_system& system, const Array2d1& A, const Array2d2& B, Array2d3& C)
+{
+    system.validate_dispatch();
+    return;
+}
+
+template<typename Array2d1, typename Array2d2, typename Array2d3>
+void symm(my_system& system, const Array2d1& A, const Array2d2& B, Array2d3& C)
+{
+    system.validate_dispatch();
+    return;
+}
+
+template<typename Array2d1, typename Array2d2>
+void syrk(my_system& system, const Array2d1& A, Array2d2& B)
+{
+    system.validate_dispatch();
+    return;
+}
+
+template<typename Array2d1, typename Array2d2, typename Array2d3>
+void syr2k(my_system& system, const Array2d1& A, const Array2d2& B, Array2d3& C)
+{
+    system.validate_dispatch();
+    return;
+}
+
+template<typename Array2d1, typename Array2d2, typename Array2d3>
+void trmm(my_system& system, const Array2d1& A, const Array2d2& B, Array2d3& C)
+{
+    system.validate_dispatch();
+    return;
+}
+
+template<typename Array2d1, typename Array2d2, typename Array2d3>
+void trsm(my_system& system, const Array2d1& A, const Array2d2& B, Array2d3& C)
+{
+    system.validate_dispatch();
+    return;
+}
+
+void TestBlasDispatch()
+{
+    // initialize testing variables
+    cusp::array2d<float, cusp::device_memory> A;
+    cusp::array1d<float, cusp::device_memory> x;
+
+    {
+        my_system sys(0);
+
+        // call with explicit dispatching
+        cusp::blas::amax(sys, x);
+
+        // check if dispatch policy was used
+        ASSERT_EQUAL(true, sys.is_valid());
+    }
+
+    {
+        my_system sys(0);
+
+        // call with explicit dispatching
+        cusp::blas::asum(sys, x);
+
+        // check if dispatch policy was used
+        ASSERT_EQUAL(true, sys.is_valid());
+    }
+
+    {
+        my_system sys(0);
+
+        // call with explicit dispatching
+        cusp::blas::axpy(sys, x, x, 1);
+
+        // check if dispatch policy was used
+        ASSERT_EQUAL(true, sys.is_valid());
+    }
+
+    {
+        my_system sys(0);
+
+        // call with explicit dispatching
+        cusp::blas::axpby(sys, x, x, x, 1, 1);
+
+        // check if dispatch policy was used
+        ASSERT_EQUAL(true, sys.is_valid());
+    }
+
+    {
+        my_system sys(0);
+
+        // call with explicit dispatching
+        cusp::blas::axpbypcz(sys, x, x, x, x, 1, 1, 1);
+
+        // check if dispatch policy was used
+        ASSERT_EQUAL(true, sys.is_valid());
+    }
+
+    {
+        my_system sys(0);
+
+        // call with explicit dispatching
+        cusp::blas::xmy(sys, x, x, x);
+
+        // check if dispatch policy was used
+        ASSERT_EQUAL(true, sys.is_valid());
+    }
+
+    {
+        my_system sys(0);
+
+        // call with explicit dispatching
+        cusp::blas::copy(sys, x, x);
+
+        // check if dispatch policy was used
+        ASSERT_EQUAL(true, sys.is_valid());
+    }
+
+    {
+        my_system sys(0);
+
+        // call with explicit dispatching
+        cusp::blas::dot(sys, x, x);
+
+        // check if dispatch policy was used
+        ASSERT_EQUAL(true, sys.is_valid());
+    }
+
+    {
+        my_system sys(0);
+
+        // call with explicit dispatching
+        cusp::blas::dotc(sys, x, x);
+
+        // check if dispatch policy was used
+        ASSERT_EQUAL(true, sys.is_valid());
+    }
+
+    {
+        my_system sys(0);
+
+        // call with explicit dispatching
+        cusp::blas::fill(sys, x, 1);
+
+        // check if dispatch policy was used
+        ASSERT_EQUAL(true, sys.is_valid());
+    }
+
+    {
+        my_system sys(0);
+
+        // call with explicit dispatching
+        cusp::blas::nrm1(sys, x);
+
+        // check if dispatch policy was used
+        ASSERT_EQUAL(true, sys.is_valid());
+    }
+
+    {
+        my_system sys(0);
+
+        // call with explicit dispatching
+        cusp::blas::nrm2(sys, x);
+
+        // check if dispatch policy was used
+        ASSERT_EQUAL(true, sys.is_valid());
+    }
+
+    {
+        my_system sys(0);
+
+        // call with explicit dispatching
+        cusp::blas::nrmmax(sys, x);
+
+        // check if dispatch policy was used
+        ASSERT_EQUAL(true, sys.is_valid());
+    }
+
+    {
+        my_system sys(0);
+
+        // call with explicit dispatching
+        cusp::blas::scal(sys, x, 0);
+
+        // check if dispatch policy was used
+        ASSERT_EQUAL(true, sys.is_valid());
+    }
+
+    {
+        my_system sys(0);
+
+        // call with explicit dispatching
+        cusp::blas::gemv(sys, A, x, x);
+
+        // check if dispatch policy was used
+        ASSERT_EQUAL(true, sys.is_valid());
+    }
+
+    {
+        my_system sys(0);
+
+        // call with explicit dispatching
+        cusp::blas::ger(sys, x, x, A);
+
+        // check if dispatch policy was used
+        ASSERT_EQUAL(true, sys.is_valid());
+    }
+
+    {
+        my_system sys(0);
+
+        // call with explicit dispatching
+        cusp::blas::symv(sys, A, x, x);
+
+        // check if dispatch policy was used
+        ASSERT_EQUAL(true, sys.is_valid());
+    }
+
+    {
+        my_system sys(0);
+
+        // call with explicit dispatching
+        cusp::blas::syr(sys, x, A);
+
+        // check if dispatch policy was used
+        ASSERT_EQUAL(true, sys.is_valid());
+    }
+
+    {
+        my_system sys(0);
+
+        // call with explicit dispatching
+        cusp::blas::trmv(sys, A, x);
+
+        // check if dispatch policy was used
+        ASSERT_EQUAL(true, sys.is_valid());
+    }
+
+    {
+        my_system sys(0);
+
+        // call with explicit dispatching
+        cusp::blas::trsv(sys, A, x);
+
+        // check if dispatch policy was used
+        ASSERT_EQUAL(true, sys.is_valid());
+    }
+
+    {
+        my_system sys(0);
+
+        // call with explicit dispatching
+        cusp::blas::gemm(sys, A, A, A);
+
+        // check if dispatch policy was used
+        ASSERT_EQUAL(true, sys.is_valid());
+    }
+
+    {
+        my_system sys(0);
+
+        // call with explicit dispatching
+        cusp::blas::symm(sys, A, A, A);
+
+        // check if dispatch policy was used
+        ASSERT_EQUAL(true, sys.is_valid());
+    }
+
+    {
+        my_system sys(0);
+
+        // call with explicit dispatching
+        cusp::blas::syrk(sys, A, A);
+
+        // check if dispatch policy was used
+        ASSERT_EQUAL(true, sys.is_valid());
+    }
+
+    {
+        my_system sys(0);
+
+        // call with explicit dispatching
+        cusp::blas::syr2k(sys, A, A, A);
+
+        // check if dispatch policy was used
+        ASSERT_EQUAL(true, sys.is_valid());
+    }
+
+    {
+        my_system sys(0);
+
+        // call with explicit dispatching
+        cusp::blas::trmm(sys, A, A, A);
+
+        // check if dispatch policy was used
+        ASSERT_EQUAL(true, sys.is_valid());
+    }
+
+    {
+        my_system sys(0);
+
+        // call with explicit dispatching
+        cusp::blas::trsm(sys, A, A, A);
+
+        // check if dispatch policy was used
+        ASSERT_EQUAL(true, sys.is_valid());
+    }
+}
+DECLARE_UNITTEST(TestBlasDispatch);
+

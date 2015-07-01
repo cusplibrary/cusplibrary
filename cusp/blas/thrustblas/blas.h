@@ -91,6 +91,67 @@ void axpy(thrust::execution_policy<DerivedPolicy>& exec,
 
 template <typename DerivedPolicy,
           typename Array1,
+          typename Array2,
+          typename Array3,
+          typename ScalarType1,
+          typename ScalarType2>
+void axpby(thrust::execution_policy<DerivedPolicy> &exec,
+           const Array1& x,
+           const Array2& y,
+                 Array3& z,
+                 ScalarType1 alpha,
+                 ScalarType2 beta)
+{
+    size_t N = x.size();
+
+    thrust::for_each(exec,
+                     thrust::make_zip_iterator(thrust::make_tuple(x.begin(), y.begin(), z.begin())),
+                     thrust::make_zip_iterator(thrust::make_tuple(x.begin(), y.begin(), z.begin())) + N,
+                     cusp::detail::AXPBY<ScalarType1,ScalarType2>(alpha, beta));
+}
+
+template <typename DerivedPolicy,
+          typename Array1,
+          typename Array2,
+          typename Array3,
+          typename Array4,
+          typename ScalarType1,
+          typename ScalarType2,
+          typename ScalarType3>
+void axpbypcz(thrust::execution_policy<DerivedPolicy> &exec,
+              const Array1& x,
+              const Array2& y,
+              const Array3& z,
+                    Array4& output,
+                    ScalarType1 alpha,
+                    ScalarType2 beta,
+                    ScalarType3 gamma)
+{
+    size_t N = x.size();
+
+    thrust::for_each(exec,
+                     thrust::make_zip_iterator(thrust::make_tuple(x.begin(), y.begin(), z.begin(), output.begin())),
+                     thrust::make_zip_iterator(thrust::make_tuple(x.begin(), y.begin(), z.begin(), output.begin())) + N,
+                     cusp::detail::AXPBYPCZ<ScalarType1,ScalarType2,ScalarType3>(alpha, beta, gamma));
+}
+
+template <typename DerivedPolicy,
+          typename Array1,
+          typename Array2,
+          typename Array3>
+void xmy(thrust::execution_policy<DerivedPolicy> &exec,
+         const Array1& x,
+         const Array2& y,
+               Array3& z)
+{
+    typedef typename Array3::value_type ValueType;
+
+    thrust::transform(exec,
+                      x.begin(), x.end(), y.begin(), z.begin(), cusp::detail::XMY<ValueType>());
+}
+
+template <typename DerivedPolicy,
+          typename Array1,
           typename Array2>
 void copy(thrust::execution_policy<DerivedPolicy>& exec,
           const Array1& x,
