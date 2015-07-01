@@ -115,6 +115,38 @@ void transpose(thrust::execution_policy<DerivedPolicy>& exec,
     cusp::convert(exec, At_coo, At);
 }
 
+template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2, typename Format>
+void transpose(thrust::execution_policy<DerivedPolicy>& exec,
+               const MatrixType1& A, MatrixType2& At, Format, Format)
+{
+    transpose(exec, A, At, Format());
+}
+
+template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2, typename Format1, typename Format2>
+void transpose(thrust::execution_policy<DerivedPolicy>& exec,
+               const MatrixType1& A, MatrixType2& At, Format1, Format2)
+{
+    typedef typename MatrixType1::const_coo_view_type              View;
+    typedef typename cusp::detail::as_coo_type<MatrixType2>::type  CooType;
+
+    View A_coo(A);
+    CooType At_coo;
+
+    cusp::transpose(exec, A_coo, At_coo);
+
+    cusp::convert(exec, At_coo, At);
+}
+
+template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
+void transpose(thrust::execution_policy<DerivedPolicy>& exec,
+               const MatrixType1& A, MatrixType2& At)
+{
+    typename MatrixType1::format format1;
+    typename MatrixType2::format format2;
+
+    transpose(exec, A, At, format1, format2);
+}
+
 } // end namespace generic
 } // end namespace detail
 } // end namespace system

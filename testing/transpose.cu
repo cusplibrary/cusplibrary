@@ -54,7 +54,6 @@ void verify_result(const MatrixType& matrix)
     ASSERT_EQUAL(dense(2,3),  0.00);
 }
 
-
 template <typename Matrix1, typename Matrix2>
 void TestTranspose(void)
 {
@@ -92,8 +91,6 @@ void TestTranspose(void)
         verify_result(Vt);
     }
 }
-
-
 
 ///////////////////////
 // Instantiate Tests //
@@ -201,4 +198,26 @@ void TestTranspose(void)
     TestTranspose<Matrix, Matrix>();
 }
 DECLARE_MATRIX_UNITTEST(TestTranspose);
+
+template <typename MatrixType1, typename MatrixType2>
+void transpose(my_system& system, const MatrixType1& A, MatrixType2& At)
+{
+    system.validate_dispatch();
+    return;
+}
+
+void TestTransposeDispatch()
+{
+    // initialize testing variables
+    cusp::csr_matrix<int, float, cusp::device_memory> A, At;
+
+    my_system sys(0);
+
+    // call with explicit dispatching
+    cusp::transpose(sys, A, At);
+
+    // check if dispatch policy was used
+    ASSERT_EQUAL(true, sys.is_valid());
+}
+DECLARE_UNITTEST(TestTransposeDispatch);
 
