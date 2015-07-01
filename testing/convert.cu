@@ -664,3 +664,26 @@ void TestConversionFromPitchedArray2dToArray1d(void)
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestConversionFromPitchedArray2dToArray1d);
 
+template <typename MatrixType1, typename MatrixType2>
+void convert(my_system& system, const MatrixType1& A, MatrixType2& At)
+{
+    system.validate_dispatch();
+    return;
+}
+
+void TestConvertDispatch()
+{
+    // initialize testing variables
+    cusp::csr_matrix<int, float, cusp::device_memory> A;
+    cusp::hyb_matrix<int, float, cusp::device_memory> B;
+
+    my_system sys(0);
+
+    // call with explicit dispatching
+    cusp::convert(sys, A, B);
+
+    // check if dispatch policy was used
+    ASSERT_EQUAL(true, sys.is_valid());
+}
+DECLARE_UNITTEST(TestConvertDispatch);
+

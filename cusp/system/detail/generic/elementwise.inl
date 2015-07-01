@@ -68,6 +68,8 @@ template <typename DerivedPolicy,
 void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
                  const MatrixType1& A, const MatrixType2& B, MatrixType3& C,
                  BinaryFunction op,
+                 cusp::array2d_format,
+                 cusp::array2d_format,
                  cusp::array2d_format)
 {
     C.resize(A.num_rows, A.num_cols);
@@ -85,6 +87,8 @@ template <typename DerivedPolicy,
 void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
                  const MatrixType1& A, const MatrixType2& B, MatrixType3& C,
                  BinaryFunction op,
+                 cusp::coo_format,
+                 cusp::coo_format,
                  cusp::coo_format)
 {
     using namespace thrust::placeholders;
@@ -234,14 +238,13 @@ void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
 template <typename DerivedPolicy,
           typename MatrixType1, typename MatrixType2, typename MatrixType3,
           typename BinaryFunction,
-          typename Format>
+          typename Format1, typename Format2, typename Format3>
 void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
                  const MatrixType1& A, const MatrixType2& B, MatrixType3& C,
-                 BinaryFunction op,
-                 Format)
+                 BinaryFunction op, Format1, Format2, Format3)
 {
-    typedef typename cusp::detail::coo_view_type<MatrixType1>::view View1;
-    typedef typename cusp::detail::coo_view_type<MatrixType2>::view View2;
+    typedef typename MatrixType1::const_coo_view_type             View1;
+    typedef typename MatrixType2::const_coo_view_type             View2;
     typedef typename cusp::detail::as_coo_type<MatrixType3>::type CooMatrixType;
 
     View1 A_coo(A);
@@ -250,11 +253,45 @@ void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
 
     cusp::elementwise(exec, A_coo, B_coo, C_coo, op);
 
-    cusp::convert(C_coo, C);
+    cusp::convert(exec, C_coo, C);
+}
+
+template <typename DerivedPolicy,
+          typename MatrixType1, typename MatrixType2, typename MatrixType3,
+          typename BinaryFunction>
+void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
+                 const MatrixType1& A, const MatrixType2& B, MatrixType3& C,
+                 BinaryFunction op)
+{
+    typedef typename MatrixType1::format Format1;
+    typedef typename MatrixType2::format Format2;
+    typedef typename MatrixType3::format Format3;
+
+    Format1 format1;
+    Format2 format2;
+    Format3 format3;
+
+    cusp::elementwise(exec, A, B, C, op, format1, format2, format3);
 }
 
 } // end namespace generic
 } // end namespace detail
 } // end namespace system
+
+template <typename DerivedPolicy,
+          typename MatrixType1, typename MatrixType2, typename MatrixType3,
+          typename BinaryFunction,
+          typename Format1, typename Format2, typename Format3>
+void elementwise(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
+                 const MatrixType1& A, const MatrixType2& B, MatrixType3& C,
+                 BinaryFunction op,
+                 Format1, Format2, Format3)
+{
+    using cusp::system::detail::generic::elementwise;
+
+    elementwise(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, B, C, op,
+                Format1(), Format2(), Format3());
+}
+
 } // end namespace cusp
 

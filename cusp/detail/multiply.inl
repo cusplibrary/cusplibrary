@@ -37,17 +37,8 @@ void multiply(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 {
     using cusp::system::detail::generic::multiply;
 
-    typedef typename LinearOperator::format  Format1;
-    typedef typename MatrixOrVector1::format Format2;
-    typedef typename MatrixOrVector2::format Format3;
-
-    Format1 format1;
-    Format2 format2;
-    Format3 format3;
-
     multiply(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
-             A, B, C,
-             format1, format2, format3);
+             A, B, C);
 }
 
 template <typename LinearOperator,
@@ -88,18 +79,8 @@ multiply(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 {
     using cusp::system::detail::generic::multiply;
 
-    typedef typename LinearOperator::format  Format1;
-    typedef typename MatrixOrVector1::format Format2;
-    typedef typename MatrixOrVector2::format Format3;
-
-    Format1 format1;
-    Format2 format2;
-    Format3 format3;
-
     multiply(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
-             A, B, C,
-             initialize, combine, reduce,
-             format1, format2, format3);
+             A, B, C, initialize, combine, reduce);
 }
 
 template <typename LinearOperator,
@@ -146,20 +127,8 @@ void generalized_spmv(const thrust::detail::execution_policy_base<DerivedPolicy>
 {
     using cusp::system::detail::generic::generalized_spmv;
 
-    typedef typename LinearOperator::format  Format1;
-    typedef typename Vector1::format         Format2;
-    typedef typename Vector2::format         Format3;
-    typedef typename Vector3::format         Format4;
-
-    Format1 format1;
-    Format2 format2;
-    Format3 format3;
-    Format4 format4;
-
     generalized_spmv(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
-                     A, x, y, z,
-                     combine, reduce,
-                     format1, format2, format3, format4);
+                     A, x, y, z, combine, reduce);
 }
 
 template <typename LinearOperator,

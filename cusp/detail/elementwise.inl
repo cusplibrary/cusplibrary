@@ -29,45 +29,6 @@
 
 namespace cusp
 {
-namespace detail
-{
-
-template <typename DerivedPolicy,
-          typename MatrixType1, typename MatrixType2, typename MatrixType3,
-          typename BinaryFunction, typename Format>
-void elementwise(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
-                 const MatrixType1& A, const MatrixType2& B, MatrixType3& C,
-                 BinaryFunction op,
-                 Format, Format, Format)
-{
-    using cusp::system::detail::generic::elementwise;
-
-    elementwise(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, B, C, op, Format());
-}
-
-template <typename DerivedPolicy,
-          typename MatrixType1, typename MatrixType2, typename MatrixType3,
-          typename BinaryFunction,
-          typename Format1, typename Format2, typename Format3>
-void elementwise(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
-                 const MatrixType1& A, const MatrixType2& B, MatrixType3& C,
-                 BinaryFunction op,
-                 Format1, Format2, Format3)
-{
-    typedef typename cusp::detail::coo_view_type<MatrixType1>::const_view View1;
-    typedef typename cusp::detail::coo_view_type<MatrixType2>::const_view View2;
-    typedef typename cusp::detail::as_coo_type<MatrixType3>::type CooMatrixType;
-
-    View1 A_coo(A);
-    View2 B_coo(B);
-    CooMatrixType C_coo;
-
-    cusp::elementwise(exec, A_coo, B_coo, C_coo, op);
-
-    cusp::convert(exec, C_coo, C);
-}
-
-} // end namespace detail
 
 template <typename DerivedPolicy,
           typename MatrixType1, typename MatrixType2, typename MatrixType3,
@@ -76,14 +37,12 @@ void elementwise(const thrust::detail::execution_policy_base<DerivedPolicy>& exe
                  const MatrixType1& A, const MatrixType2& B, MatrixType3& C,
                  BinaryFunction op)
 {
-    typename MatrixType1::format format1;
-    typename MatrixType2::format format2;
-    typename MatrixType3::format format3;
+    using cusp::system::detail::generic::elementwise;
 
     if(A.num_rows != B.num_rows || A.num_cols != B.num_cols)
         throw cusp::invalid_input_exception("matrix dimensions do not match");
 
-    cusp::detail::elementwise(exec, A, B, C, op, format1, format2, format3);
+    elementwise(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, B, C, op);
 }
 
 template <typename MatrixType1, typename MatrixType2, typename MatrixType3,

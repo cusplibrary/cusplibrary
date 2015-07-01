@@ -24,6 +24,17 @@
 
 namespace cusp
 {
+
+template <typename DerivedPolicy,
+          typename SourceType,
+          typename DestinationType,
+          typename Format1,
+          typename Format2>
+void convert(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
+             const SourceType& src,
+             DestinationType& dst,
+             Format1, Format2);
+
 namespace system
 {
 namespace detail
@@ -32,15 +43,39 @@ namespace generic
 {
 
 template <typename DerivedPolicy,
-          typename SourceType,
-          typename DestinationType,
-          typename Format1,
-          typename Format2>
+         typename SourceType,
+         typename DestinationType,
+         typename Format>
 void convert(thrust::execution_policy<DerivedPolicy>& exec,
              const SourceType& src,
              DestinationType& dst,
-             Format1&,
-             Format2&);
+             Format&, Format&);
+
+template <typename DerivedPolicy,
+         typename SourceType,
+         typename DestinationType,
+         typename Format1,
+         typename Format2>
+typename cusp::detail::enable_if_same_system<SourceType,DestinationType>::type
+convert(thrust::execution_policy<DerivedPolicy>& exec,
+        const SourceType& src,
+        DestinationType& dst,
+        Format1&, Format2&);
+
+template <typename DerivedPolicy,
+         typename SourceType,
+         typename DestinationType,
+         typename Format1,
+         typename Format2>
+typename cusp::detail::enable_if_different_system<SourceType,DestinationType>::type
+convert(thrust::execution_policy<DerivedPolicy>& exec,
+        const SourceType& src,
+        DestinationType& dst,
+        Format1&, Format2&);
+
+template <typename DerivedPolicy, typename SourceType, typename DestinationType>
+void convert(thrust::execution_policy<DerivedPolicy> &exec,
+             const SourceType& src, DestinationType& dst);
 
 } // end namespace generic
 } // end namespace detail

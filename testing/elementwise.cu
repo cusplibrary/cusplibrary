@@ -178,3 +178,25 @@ void TestSubtract(void)
 }
 DECLARE_SPARSE_MATRIX_UNITTEST(TestSubtract);
 
+template <typename MatrixType1, typename MatrixType2, typename MatrixType3, typename BinaryFunction>
+void elementwise(my_system& system, const MatrixType1& A, const MatrixType2& B, MatrixType3& C, BinaryFunction op)
+{
+    system.validate_dispatch();
+    return;
+}
+
+void TestElementwiseDispatch()
+{
+    // initialize testing variables
+    cusp::csr_matrix<int, float, cusp::device_memory> A, B, C;
+
+    my_system sys(0);
+
+    // call with explicit dispatching
+    cusp::elementwise(sys, A, B, C, thrust::plus<float>());
+
+    // check if dispatch policy was used
+    ASSERT_EQUAL(true, sys.is_valid());
+}
+DECLARE_UNITTEST(TestElementwiseDispatch);
+

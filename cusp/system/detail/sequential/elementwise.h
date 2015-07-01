@@ -46,10 +46,11 @@ void elementwise(sequential::execution_policy<DerivedPolicy>& exec,
                  const MatrixType2& B,
                  MatrixType3& C,
                  BinaryFunction op,
+                 cusp::csr_format,
+                 cusp::csr_format,
                  cusp::csr_format)
 {
     //Method that works for duplicate and/or unsorted indices
-
     typedef typename MatrixType3::index_type IndexType;
     typedef typename MatrixType3::value_type ValueType;
 

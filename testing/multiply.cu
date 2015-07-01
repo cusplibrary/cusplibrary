@@ -543,3 +543,25 @@ void TestPermutationMatrixMultiply(void)
 }
 DECLARE_SPARSE_MATRIX_UNITTEST(TestPermutationMatrixMultiply);
 
+template <typename MatrixType1, typename MatrixType2, typename MatrixType3>
+void multiply(my_system& system, const MatrixType1& A, const MatrixType2& B, MatrixType3& C)
+{
+    system.validate_dispatch();
+    return;
+}
+
+void TestMultiplyDispatch()
+{
+    // initialize testing variables
+    cusp::csr_matrix<int, float, cusp::device_memory> A, B, C;
+
+    my_system sys(0);
+
+    // call with explicit dispatching
+    cusp::multiply(sys, A, B, C);
+
+    // check if dispatch policy was used
+    ASSERT_EQUAL(true, sys.is_valid());
+}
+DECLARE_UNITTEST(TestMultiplyDispatch);
+

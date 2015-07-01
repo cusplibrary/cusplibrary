@@ -36,8 +36,6 @@ namespace detail
 {
 namespace generic
 {
-namespace detail
-{
 
 template <typename DerivedPolicy,
          typename SourceType,
@@ -94,23 +92,33 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     cusp::copy(tmp, dst);
 }
 
-} // end namespace detail
-
-template <typename DerivedPolicy,
-         typename SourceType,
-         typename DestinationType,
-         typename Format1,
-         typename Format2>
-void convert(thrust::execution_policy<DerivedPolicy>& exec,
-             const SourceType& src,
-             DestinationType& dst,
-             Format1& format1,
-             Format2& format2)
+template <typename DerivedPolicy, typename SourceType, typename DestinationType>
+void convert(thrust::execution_policy<DerivedPolicy> &exec,
+             const SourceType& src, DestinationType& dst)
 {
-    detail::convert(exec, src, dst, format1, format2);
+    typedef typename SourceType::format      Format1;
+    typedef typename DestinationType::format Format2;
+
+    Format1 format1;
+    Format2 format2;
+
+    cusp::convert(exec, src, dst, format1, format2);
 }
 
 } // end namespace generic
 } // end namespace detail
 } // end namespace system
+
+template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2,
+          typename Format1, typename Format2>
+void convert(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
+             const MatrixType1& A, MatrixType2& B, Format1 format1, Format2 format2)
+{
+    using cusp::system::detail::generic::convert;
+
+    convert(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, B,
+            format1, format2);
+}
+
 } // end namespace cusp
+
