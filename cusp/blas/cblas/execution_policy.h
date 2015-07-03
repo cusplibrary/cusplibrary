@@ -27,18 +27,13 @@ namespace cblas
 {
 
 class execution_policy
-  : public thrust::system::cpp::detail::execution_policy<execution_policy>
+  : public thrust::host_execution_policy<execution_policy>
 {};
 
 } // end cblas
 } // end blas
 
-// alias items at top-level
-namespace cblas
-{
+static const blas::cblas::execution_policy cblas;
 
-using cusp::blas::cblas::execution_policy;
-
-} // end cblas
 } // end cusp
 
