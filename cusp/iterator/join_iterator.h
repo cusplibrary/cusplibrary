@@ -228,7 +228,7 @@ protected:
     /*! \cond */
     const SizesTuple& t1;
     const Tuple& t2;
-    /*! \cond */
+    /*! \endcond */
 };
 
 template <typename T1, typename T2, typename T3>
