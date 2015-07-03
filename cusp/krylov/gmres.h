@@ -22,6 +22,8 @@
 
 #include <cusp/detail/config.h>
 
+#include <thrust/execution_policy.h>
+
 #include <cstddef>
 
 namespace cusp
