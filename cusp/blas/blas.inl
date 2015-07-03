@@ -811,37 +811,31 @@ void syr2k(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 }
 
 template<typename Array2d1,
-         typename Array2d2,
-         typename Array2d3>
+         typename Array2d2>
 void trmm(const Array2d1& A,
-          const Array2d2& B,
-                Array2d3& C)
+                Array2d2& B)
 {
     using thrust::system::detail::generic::select_system;
 
     typedef typename Array2d1::memory_space System1;
     typedef typename Array2d2::memory_space System2;
-    typedef typename Array2d3::memory_space System3;
 
     System1 system1;
     System2 system2;
-    System3 system3;
 
-    cusp::blas::trmm(select_system(system1,system2,system3), A, B, C);
+    cusp::blas::trmm(select_system(system1,system2), A, B);
 }
 
 template <typename DerivedPolicy,
           typename Array2d1,
-          typename Array2d2,
-          typename Array2d3>
+          typename Array2d2>
 void trmm(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
           const Array2d1& A,
-          const Array2d2& B,
-                Array2d3& C)
+                Array2d2& B)
 {
     using cusp::blas::thrustblas::trmm;
 
-    trmm(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, B, C);
+    trmm(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, B);
 }
 
 template<typename Array2d1,

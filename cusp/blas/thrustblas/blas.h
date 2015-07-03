@@ -348,24 +348,20 @@ void syr2k(thrust::execution_policy<DerivedPolicy>& exec,
 
 template<typename DerivedPolicy,
          typename Array2d1,
-         typename Array2d2,
-         typename Array2d3>
+         typename Array2d2>
 void trmm(thrust::execution_policy<DerivedPolicy>& exec,
           const Array2d1& A,
-          const Array2d2& B,
-                Array2d3& C)
+                Array2d2& B)
 {
     throw cusp::not_implemented_exception("CUSP TRMM not implemented");
 }
 
 template<typename DerivedPolicy,
          typename Array2d1,
-         typename Array2d2,
-         typename Array2d3>
+         typename Array2d2>
 void trsm(thrust::execution_policy<DerivedPolicy>& exec,
           const Array2d1& A,
-          const Array2d2& B,
-                Array2d3& C)
+                Array2d2& B)
 {
     throw cusp::not_implemented_exception("CUSP TRSM not implemented");
 }

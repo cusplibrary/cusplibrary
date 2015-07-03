@@ -50,6 +50,8 @@ typename cusp::detail::norm_type<typename Array::value_type>::type
 asum(cblas::execution_policy& exec,
      const Array& x)
 {
+    std::cout << "Calling CBLAS asum" << std::endl;
+
     typedef typename Array::value_type ValueType;
 
     int n = x.size();
@@ -336,9 +338,12 @@ void gemm(cblas::execution_policy& exec,
     enum CBLAS_TRANSPOSE transa = CblasNoTrans;
     enum CBLAS_TRANSPOSE transb = CblasNoTrans;
 
-    int m = A.num_rows;
-    int n = B.num_cols;
+    int m = C.num_rows;
+    int n = C.num_cols;
     int k = B.num_rows;
+    int lda = A.pitch;
+    int ldb = B.pitch;
+    int ldc = C.pitch;
 
     ValueType alpha = 1.0;
     ValueType beta = 0.0;
@@ -348,8 +353,8 @@ void gemm(cblas::execution_policy& exec,
     ValueType * C_p = thrust::raw_pointer_cast(&C(0,0));
 
     cblas::detail::gemm(order, transa, transb,
-                        m, n, k, alpha, A_p, m,
-                        B_p, k, beta, C_p, m);
+                        m, n, k, alpha, A_p, lda,
+                        B_p, ldb, beta, C_p, ldc);
 }
 
 template<typename Array2d1,
@@ -366,8 +371,8 @@ void symm(cblas::execution_policy& exec,
     enum CBLAS_SIDE  side  = CblasLeft;
     enum CBLAS_UPLO  uplo  = CblasUpper;
 
-    int m = A.num_rows;
-    int n = B.num_cols;
+    int m = C.num_rows;
+    int n = C.num_cols;
     int lda = A.pitch;
     int ldb = B.pitch;
     int ldc = C.pitch;
@@ -441,7 +446,7 @@ void syr2k(cblas::execution_policy& exec,
 
     cblas::detail::syr2k(order, uplo, trans,
                          n, k, alpha, A_p, lda,
-                         beta, B_p, ldb, C_p, ldc);
+                         B_p, ldb, beta, C_p, ldc);
 }
 
 template<typename Array2d1,
@@ -452,19 +457,19 @@ void trmm(cblas::execution_policy& exec,
 {
     typedef typename Array2d1::value_type ValueType;
 
-    enum CBLAS_ORDER order = Orientation<typename Array2d1::orientation>::type;
-    enum CBLAS_SIDE  side  = CblasLeft;
-    enum CBLAS_UPLO  uplo  = CblasUpper;
+    enum CBLAS_ORDER order     = Orientation<typename Array2d1::orientation>::type;
+    enum CBLAS_SIDE  side      = CblasLeft;
+    enum CBLAS_UPLO  uplo      = CblasUpper;
     enum CBLAS_TRANSPOSE trans = CblasNoTrans;
-    enum CBLAS_DIAG  diag  = CblasNonUnit;
+    enum CBLAS_DIAG  diag      = CblasNonUnit;
 
-    int m = A.num_rows;
-    int n = A.num_cols;
+    int m   = B.num_rows;
+    int n   = B.num_cols;
     int lda = A.pitch;
     int ldb = B.pitch;
 
     ValueType alpha = 1.0;
-    ValueType beta = 0.0;
+    ValueType beta  = 0.0;
 
     const ValueType * A_p = thrust::raw_pointer_cast(&A(0,0));
     ValueType * B_p = thrust::raw_pointer_cast(&B(0,0));
@@ -481,14 +486,14 @@ void trsm(cblas::execution_policy& exec,
 {
     typedef typename Array2d1::value_type ValueType;
 
-    enum CBLAS_ORDER order = Orientation<typename Array2d1::orientation>::type;
-    enum CBLAS_SIDE  side  = CblasLeft;
-    enum CBLAS_UPLO  uplo  = CblasUpper;
+    enum CBLAS_ORDER order     = Orientation<typename Array2d1::orientation>::type;
+    enum CBLAS_SIDE  side      = CblasLeft;
+    enum CBLAS_UPLO  uplo      = CblasUpper;
     enum CBLAS_TRANSPOSE trans = CblasNoTrans;
-    enum CBLAS_DIAG  diag  = CblasNonUnit;
+    enum CBLAS_DIAG  diag      = CblasNonUnit;
 
-    int m = A.num_rows;
-    int n = A.num_cols;
+    int m   = B.num_rows;
+    int n   = B.num_cols;
     int lda = A.pitch;
     int ldb = B.pitch;
 
@@ -534,6 +539,21 @@ nrmmax(cblas::execution_policy& exec,
 }
 
 } // end namespace cblas
+
+using cblas::gemv;
+using cblas::symv;
+using cblas::ger;
+using cblas::syr;
+using cblas::trmv;
+using cblas::trsv;
+
+using cblas::gemm;
+using cblas::symm;
+using cblas::syrk;
+using cblas::syr2k;
+using cblas::trmm;
+using cblas::trsm;
+
 } // end namespace blas
 } // end namespace cusp
 

@@ -523,12 +523,10 @@ void syr2k(cublas::execution_policy& exec,
 }
 
 template<typename Array2d1,
-         typename Array2d2,
-         typename Array2d3>
+         typename Array2d2>
 void trmm(cublas::execution_policy& exec,
           const Array2d1& A,
-          const Array2d2& B,
-                Array2d3& C)
+                Array2d2& B)
 {
     typedef typename Array2d1::value_type ValueType;
 
@@ -537,21 +535,20 @@ void trmm(cublas::execution_policy& exec,
     cublasOperation_t trans = CUBLAS_OP_N;
     cublasDiagType_t  diag  = CUBLAS_DIAG_NON_UNIT;
 
-    int n = A.num_rows;
-    int k = A.num_cols;
+    int m   = B.num_rows;
+    int n   = B.num_cols;
     int lda = A.pitch;
     int ldb = B.pitch;
-    int ldc = C.pitch;
 
     ValueType alpha = 1.0;
 
     const ValueType * A_p = thrust::raw_pointer_cast(&A(0,0));
     const ValueType * B_p = thrust::raw_pointer_cast(&B(0,0));
-    ValueType * C_p = thrust::raw_pointer_cast(&C(0,0));
+    ValueType * C_p = thrust::raw_pointer_cast(&B(0,0));
 
     cublasStatus_t result =
         cublas::detail::trmm(exec.get_handle(), side, uplo, trans, diag,
-                              n, k, alpha, A_p, lda,
+                              m, n, alpha, A_p, lda,
                               B_p, ldb, C_p, ldc);
 
     if(result != CUBLAS_STATUS_SUCCESS)
@@ -571,8 +568,8 @@ void trsm(cublas::execution_policy& exec,
     cublasOperation_t trans = CUBLAS_OP_N;
     cublasDiagType_t  diag  = CUBLAS_DIAG_NON_UNIT;
 
-    int n = A.num_rows;
-    int k = A.num_cols;
+    int n   = B.num_rows;
+    int k   = B.num_cols;
     int lda = A.pitch;
     int ldb = B.pitch;
 

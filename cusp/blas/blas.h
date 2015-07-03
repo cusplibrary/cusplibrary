@@ -487,12 +487,51 @@ void trsm(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
                 Array2d3& C);
 /*! \endcond */
 
+/**
+ * \brief Solve a triangular matrix equation
+ *
+ * \tparam Array2d1 Type of the first input matrix
+ * \tparam Array2d2 Type of the output matrix
+ *
+ * \param A Contains the upper or lower triangle of a symmetric matrix
+ * \param B Contains block of right-hand side vectors
+ *
+ * \par Example
+ * \code
+ * #include <cusp/array2d.h>
+ * #include <cusp/print.h>
+ *
+ * #include <cusp/gallery/poisson.h>
+ *
+ * // include cusp blas header file
+ * #include <cusp/blas/blas.h>
+ *
+ * int main()
+ * {
+ *   // create an empty dense matrix structure
+ *   cusp::array2d<float,cusp::host_memory> A;
+ *
+ *   // create 2D Poisson problem
+ *   cusp::gallery::poisson5pt(A, 4, 4);
+ *
+ *   // create a set of random RHS vectors
+ *   cusp::array2d<float,cusp::host_memory> B(A.num_rows, 5);
+ *   // fill B with random values
+ *   cusp::random_array<float> rand(B.num_entries);
+ *   cusp::blas::copy(rand, B.values);
+ *
+ *   // solve multiple RHS vectors
+ *   cusp::blas::trsm(A, B);
+ *
+ *   // print the contents of B
+ *   cusp::print(B);
+ * }
+ * \endcode
+ */
 template<typename Array2d1,
-         typename Array2d2,
-         typename Array2d3>
+         typename Array2d2>
 void trsm(const Array2d1& A,
-          const Array2d2& B,
-                Array2d3& C);
+                Array2d2& C);
 
 /*! \}
  */
