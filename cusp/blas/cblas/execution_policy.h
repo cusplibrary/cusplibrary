@@ -26,9 +26,11 @@ namespace blas
 namespace cblas
 {
 
-class execution_policy
-  : public thrust::host_execution_policy<execution_policy>
-{};
+struct execution_policy
+        : public thrust::host_execution_policy<execution_policy>
+{
+    execution_policy(void) {}
+};
 
 } // end cblas
 } // end blas

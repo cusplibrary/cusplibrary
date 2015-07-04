@@ -81,12 +81,14 @@ void axpy(thrust::execution_policy<DerivedPolicy>& exec,
                 Array2& y,
           const ScalarType alpha)
 {
+    typedef typename Array1::value_type ValueType;
+
     size_t N = x.size();
 
     thrust::for_each(exec,
                      thrust::make_zip_iterator(thrust::make_tuple(x.begin(), y.begin())),
                      thrust::make_zip_iterator(thrust::make_tuple(x.begin(), y.begin())) + N,
-                     detail::AXPY<ScalarType>(alpha));
+                     detail::AXPY<ValueType>(alpha));
 }
 
 template <typename DerivedPolicy,
@@ -102,12 +104,14 @@ void axpby(thrust::execution_policy<DerivedPolicy> &exec,
                  ScalarType1 alpha,
                  ScalarType2 beta)
 {
+    typedef typename Array1::value_type ValueType;
+
     size_t N = x.size();
 
     thrust::for_each(exec,
                      thrust::make_zip_iterator(thrust::make_tuple(x.begin(), y.begin(), z.begin())),
                      thrust::make_zip_iterator(thrust::make_tuple(x.begin(), y.begin(), z.begin())) + N,
-                     cusp::detail::AXPBY<ScalarType1,ScalarType2>(alpha, beta));
+                     cusp::detail::AXPBY<ValueType,ValueType>(alpha, beta));
 }
 
 template <typename DerivedPolicy,
@@ -127,12 +131,14 @@ void axpbypcz(thrust::execution_policy<DerivedPolicy> &exec,
                     ScalarType2 beta,
                     ScalarType3 gamma)
 {
+    typedef typename Array1::value_type ValueType;
+
     size_t N = x.size();
 
     thrust::for_each(exec,
                      thrust::make_zip_iterator(thrust::make_tuple(x.begin(), y.begin(), z.begin(), output.begin())),
                      thrust::make_zip_iterator(thrust::make_tuple(x.begin(), y.begin(), z.begin(), output.begin())) + N,
-                     cusp::detail::AXPBYPCZ<ScalarType1,ScalarType2,ScalarType3>(alpha, beta, gamma));
+                     cusp::detail::AXPBYPCZ<ValueType,ValueType,ValueType>(alpha, beta, gamma));
 }
 
 template <typename DerivedPolicy,

@@ -467,7 +467,6 @@ void trmm(cblas::execution_policy& exec,
     int ldb = B.pitch;
 
     ValueType alpha = 1.0;
-    ValueType beta  = 0.0;
 
     const ValueType * A_p = thrust::raw_pointer_cast(&A(0,0));
     ValueType * B_p = thrust::raw_pointer_cast(&B(0,0));
@@ -496,7 +495,6 @@ void trsm(cblas::execution_policy& exec,
     int ldb = B.pitch;
 
     ValueType alpha = 1.0;
-    ValueType beta = 0.0;
 
     const ValueType * A_p = thrust::raw_pointer_cast(&A(0,0));
     ValueType * B_p = thrust::raw_pointer_cast(&B(0,0));

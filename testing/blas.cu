@@ -560,7 +560,7 @@ void TestTrmm(void)
 
     Array A(6,6);
 
-    ASSERT_THROWS(cusp::blas::trmm(A, A, A), cusp::not_implemented_exception);
+    ASSERT_THROWS(cusp::blas::trmm(A, A), cusp::not_implemented_exception);
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestTrmm);
 
@@ -571,7 +571,7 @@ void TestTrsm(void)
 
     Array A(6,6);
 
-    ASSERT_THROWS(cusp::blas::trsm(A, A, A), cusp::not_implemented_exception);
+    ASSERT_THROWS(cusp::blas::trsm(A, A), cusp::not_implemented_exception);
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestTrsm);
 
@@ -753,15 +753,15 @@ void syr2k(my_system& system, const Array2d1& A, const Array2d2& B, Array2d3& C)
     return;
 }
 
-template<typename Array2d1, typename Array2d2, typename Array2d3>
-void trmm(my_system& system, const Array2d1& A, const Array2d2& B, Array2d3& C)
+template<typename Array2d1, typename Array2d2>
+void trmm(my_system& system, const Array2d1& A, Array2d2& B)
 {
     system.validate_dispatch();
     return;
 }
 
-template<typename Array2d1, typename Array2d2, typename Array2d3>
-void trsm(my_system& system, const Array2d1& A, const Array2d2& B, Array2d3& C)
+template<typename Array2d1, typename Array2d2>
+void trsm(my_system& system, const Array2d1& A, Array2d2& B)
 {
     system.validate_dispatch();
     return;
@@ -1017,7 +1017,7 @@ void TestBlasDispatch()
         my_system sys(0);
 
         // call with explicit dispatching
-        cusp::blas::trmm(sys, A, A, A);
+        cusp::blas::trmm(sys, A, A);
 
         // check if dispatch policy was used
         ASSERT_EQUAL(true, sys.is_valid());
@@ -1027,7 +1027,7 @@ void TestBlasDispatch()
         my_system sys(0);
 
         // call with explicit dispatching
-        cusp::blas::trsm(sys, A, A, A);
+        cusp::blas::trsm(sys, A, A);
 
         // check if dispatch policy was used
         ASSERT_EQUAL(true, sys.is_valid());

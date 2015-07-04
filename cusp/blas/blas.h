@@ -40,15 +40,45 @@ namespace blas
 
 /*! \cond */
 template <typename DerivedPolicy,
-          typename Array>
+          typename ArrayType>
 int amax(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-         const Array& x);
+         const ArrayType& x);
 /*! \endcond */
 
-/*! \p amax : index of the largest element in a array
+/**
+ * \brief index of the largest element in a array
+ *
+ * \tparam ArrayType Type of the input array
+ *
+ * \param x The input array to find max value
+ *
+ * \par Example
+ * \code
+ * #include <cusp/array1d.h>
+ * #include <cusp/print.h>
+ *
+ * // include cusp blas header file
+ * #include <cusp/blas/blas.h>
+ *
+ * int main()
+ * {
+ *   // create an array
+ *   cusp::array1d<float,cusp::host_memory> x(10);
+ *
+ *   // fill x array with random values
+ *   cusp::random_array<float> rand(10);
+ *
+ *   // find index of max absolute value in x
+ *   int index = cusp::blas::amax(x);
+ *
+ *   std::cout << "Max value at pos: " << index << std::endl;
+ *
+ *   return 0;
+ * }
+ * \endcode
  */
-template <typename Array>
-int amax(const Array& x);
+template <typename ArrayType>
+int amax(const ArrayType& x);
 
 /*! \cond */
 template <typename DerivedPolicy,
@@ -58,30 +88,90 @@ asum(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
      const Array& x);
 /*! \endcond */
 
-/*! \p asum : sum of absolute value of all entries in array
+/**
+ * \brief sum of absolute value of all entries in array
+ *
+ * \tparam ArrayType Type of the input array
+ *
+ * \param x The input array to compute sum of absolute values
+ *
+ * \par Example
+ * \code
+ * #include <cusp/array1d.h>
+ * #include <cusp/print.h>
+ *
+ * // include cusp blas header file
+ * #include <cusp/blas/blas.h>
+ *
+ * int main()
+ * {
+ *   // create an array
+ *   cusp::array1d<float,cusp::host_memory> x(10);
+ *
+ *   // fill x array with random values
+ *   cusp::random_array<float> rand(10);
+ *
+ *   // find index of max absolute value in x
+ *   float sum = cusp::blas::asum(x);
+ *
+ *   std::cout << "asum(x) =" << sum << std::endl;
+ *
+ *   return 0;
+ * }
+ * \endcode
  */
-template <typename Array>
-typename cusp::detail::norm_type<typename Array::value_type>::type
-asum(const Array& x);
+template <typename ArrayType>
+typename cusp::detail::norm_type<typename ArrayType::value_type>::type
+asum(const ArrayType& x);
 
 /*! \cond */
 template <typename DerivedPolicy,
-          typename Array1,
-          typename Array2,
+          typename ArrayType1,
+          typename ArrayType2,
           typename ScalarType>
 void axpy(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-          const Array1& x,
-                Array2& y,
+          const ArrayType1& x,
+                ArrayType2& y,
           const ScalarType alpha);
 /*! \endcond */
 
-/*! \p axpy : scaled vector addition (y = alpha * x + y)
+/**
+ * \brief scaled vector addition (y = alpha * x + y)
+ *
+ * \tparam ArrayType Type of the input array
+ *
+ * \param x The input array to compute sum of absolute values
+ *
+ * \par Example
+ * \code
+ * #include <cusp/array1d.h>
+ * #include <cusp/print.h>
+ *
+ * // include cusp blas header file
+ * #include <cusp/blas/blas.h>
+ *
+ * int main()
+ * {
+ *   // create an array
+ *   cusp::array1d<float,cusp::host_memory> x(10);
+ *
+ *   // fill x array with random values
+ *   cusp::random_array<float> rand(10);
+ *
+ *   // find index of max absolute value in x
+ *   float sum = cusp::blas::asum(x);
+ *
+ *   std::cout << "asum(x) =" << sum << std::endl;
+ *
+ *   return 0;
+ * }
+ * \endcode
  */
-template <typename Array1,
-          typename Array2,
+template <typename ArrayType1,
+          typename ArrayType2,
           typename ScalarType>
-void axpy(const Array1& x,
-                Array2& y,
+void axpy(const ArrayType1& x,
+                ArrayType2& y,
           const ScalarType alpha);
 
 /*! \cond */
@@ -222,18 +312,45 @@ dotc(const Array1& x,
 
 /*! \cond */
 template <typename DerivedPolicy,
-          typename Array,
+          typename ArrayType,
           typename ScalarType>
 void fill(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-          Array& array,
+          ArrayType& array,
           const ScalarType alpha);
 /*! \endcond */
 
-/*! \p fill : vector fill (x[i] = alpha)
+/**
+ * \brief vector fill (x[i] = alpha)
+ *
+ * \tparam ArrayType Type of the input array
+ * \tparam ScalarType Type of the fill value
+ *
+ * \param x The input array to fill
+ * \param alpha Value to fill array x
+ *
+ * \par Example
+ * \code
+ * #include <cusp/array1d.h>
+ * #include <cusp/print.h>
+ *
+ * // include cusp blas header file
+ * #include <cusp/blas/blas.h>
+ *
+ * int main()
+ * {
+ *   // create an array
+ *   cusp::array1d<float,cusp::host_memory> x(10);
+ *
+ *   // fill x array with 1s
+ *   cusp::blas::fill(x, 1);
+ *
+ *   return 0;
+ * }
+ * \endcode
  */
-template <typename Array,
+template <typename ArrayType,
           typename ScalarType>
-void fill(Array& array,
+void fill(ArrayType& x,
           const ScalarType alpha);
 
 /*! \cond */
@@ -244,54 +361,168 @@ nrm1(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
      const Array& array);
 /*! \endcond */
 
-/*! \p nrm1 : vector 1-norm (sum abs(x[i]))
+/**
+ * \brief vector 1-norm (sum abs(x[i]))
+ *
+ * \tparam ArrayType Type of the input array
+ *
+ * \param x The input array to find 2-norm
+ *
+ * \par Example
+ * \code
+ * #include <cusp/array1d.h>
+ * #include <cusp/print.h>
+ *
+ * // include cusp blas header file
+ * #include <cusp/blas/blas.h>
+ *
+ * int main()
+ * {
+ *   // create an array initially filled with random values
+ *   cusp::array1d<float,cusp::host_memory> x(10);
+ *   cusp::random_array<float> rand(10);
+ *   cusp::blas::copy(rand, x);
+ *
+ *   // compute and print 1-norm
+ *   float nrm_x = cusp::blas::nrm1(x);
+ *   std::cout << "nrm1(x) = " << nrm_x << std::endl;
+ *
+ *   return 0;
+ * }
+ * \endcode
  */
-template <typename Array>
-typename cusp::detail::norm_type<typename Array::value_type>::type
-nrm1(const Array& array);
+template <typename ArrayType>
+typename cusp::detail::norm_type<typename ArrayType::value_type>::type
+nrm1(const ArrayType& x);
 
 /*! \cond */
 template <typename DerivedPolicy,
-          typename Array>
-typename cusp::detail::norm_type<typename Array::value_type>::type
+          typename ArrayType>
+typename cusp::detail::norm_type<typename ArrayType::value_type>::type
 nrm2(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-     const Array& array);
+     const ArrayType& x);
 /*! \endcond */
 
-/*! \p nrm2 : vector 2-norm (sqrt(sum x[i] * x[i] )
+/**
+ * \brief vector 2-norm (sqrt(sum x[i] * x[i] )
+ *
+ * \tparam ArrayType Type of the input array
+ *
+ * \param x The input array to find 2-norm
+ *
+ * \par Example
+ * \code
+ * #include <cusp/array1d.h>
+ * #include <cusp/print.h>
+ *
+ * // include cusp blas header file
+ * #include <cusp/blas/blas.h>
+ *
+ * int main()
+ * {
+ *   // create an array initially filled with random values
+ *   cusp::array1d<float,cusp::host_memory> x(10);
+ *   cusp::random_array<float> rand(10);
+ *   cusp::blas::copy(rand, x);
+ *
+ *   // compute and print 2-norm
+ *   float nrm_x = cusp::blas::nrm2(x);
+ *   std::cout << "nrm2(x) = " << nrm_x << std::endl;
+ *
+ *   return 0;
+ * }
+ * \endcode
  */
-template <typename Array>
-typename cusp::detail::norm_type<typename Array::value_type>::type
-nrm2(const Array& array);
+template <typename ArrayType>
+typename cusp::detail::norm_type<typename ArrayType::value_type>::type
+nrm2(const ArrayType& x);
 
 /*! \cond */
 template <typename DerivedPolicy,
-          typename Array>
-typename Array::value_type
+          typename ArrayType>
+typename ArrayType::value_type
 nrmmax(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-       const Array& array);
+       const ArrayType& x);
 /*! \endcond */
 
-/*! \p nrmmax : vector infinity norm
+/**
+ * \brief vector infinity norm
+ *
+ * \tparam ArrayType Type of the input array
+ *
+ * \param x The input array to find infinity norm
+ *
+ * \par Example
+ * \code
+ * #include <cusp/array1d.h>
+ * #include <cusp/print.h>
+ *
+ * // include cusp blas header file
+ * #include <cusp/blas/blas.h>
+ *
+ * int main()
+ * {
+ *   // create an array initially filled with random values
+ *   cusp::array1d<float,cusp::host_memory> x(10);
+ *   cusp::random_array<float> rand(10);
+ *   cusp::blas::copy(rand, x);
+ *
+ *   // compute and print infinity norm
+ *   float nrm_x = cusp::blas::nrmmax(x);
+ *   std::cout << "nrmmax(x) = " << nrm_x << std::endl;
+ *
+ *   return 0;
+ * }
+ * \endcode
  */
-template <typename Array>
-typename Array::value_type
-nrmmax(const Array& array);
+template <typename ArrayType>
+typename ArrayType::value_type
+nrmmax(const ArrayType& x);
 
 /*! \cond */
 template <typename DerivedPolicy,
-          typename Array,
+          typename ArrayType,
           typename ScalarType>
 void scal(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-          Array& x,
+          ArrayType& x,
           const ScalarType alpha);
 /*! \endcond */
 
-/*! \p scal : scale vector (x[i] = alpha * x[i])
+/**
+ * \brief scale vector (x[i] = alpha * x[i])
+ *
+ * \tparam ArrayType  Type of the input array
+ * \tparam ScalarType Type of the scalar value
+ *
+ * \param x The input array to scale
+ * \param alpha The scale factor
+ *
+ * \par Example
+ * \code
+ * #include <cusp/array1d.h>
+ * #include <cusp/print.h>
+ *
+ * // include cusp blas header file
+ * #include <cusp/blas/blas.h>
+ *
+ * int main()
+ * {
+ *   // create an array initially filled with 2s
+ *   cusp::array1d<float,cusp::host_memory> x(10, 2);
+ *
+ *   // scal x by 2
+ *   cusp::blas::scal(x, 2);
+ *
+ *   // print the scaled vector
+ *   cusp::print(x);
+ *
+ *   return 0;
+ * }
+ * \endcode
  */
-template <typename Array,
+template <typename ArrayType,
           typename ScalarType>
-void scal(Array& x,
+void scal(ArrayType& x,
           const ScalarType alpha);
 
 /*! \cond */
@@ -956,6 +1187,7 @@ void trsm(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
  *
  *   // create a set of random RHS vectors
  *   cusp::array2d<float,cusp::host_memory> B(A.num_rows, 5);
+ *
  *   // fill B with random values
  *   cusp::random_array<float> rand(B.num_entries);
  *   cusp::blas::copy(rand, B.values);
