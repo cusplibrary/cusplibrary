@@ -18,7 +18,6 @@
  *  \brief BLAS-like functions
  */
 
-
 #pragma once
 
 #include <cusp/detail/config.h>
@@ -82,10 +81,10 @@ int amax(const ArrayType& x);
 
 /*! \cond */
 template <typename DerivedPolicy,
-          typename Array>
-typename cusp::detail::norm_type<typename Array::value_type>::type
+          typename ArrayType>
+typename cusp::detail::norm_type<typename ArrayType::value_type>::type
 asum(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-     const Array& x);
+     const ArrayType& x);
 /*! \endcond */
 
 /**
@@ -138,9 +137,13 @@ void axpy(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 /**
  * \brief scaled vector addition (y = alpha * x + y)
  *
- * \tparam ArrayType Type of the input array
+ * \tparam ArrayType1 Type of the first input array
+ * \tparam ArrayType2 Type of the second input array
+ * \tparam ScalarType Type of the scale factor
  *
- * \param x The input array to compute sum of absolute values
+ * \param x The input array
+ * \param y The output array to store the result
+ * \param alpha The scale factor applied to array x
  *
  * \par Example
  * \code
@@ -152,16 +155,18 @@ void axpy(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
  *
  * int main()
  * {
- *   // create an array
+ *   // create an empty source array
  *   cusp::array1d<float,cusp::host_memory> x(10);
+ *
+ *   // create a destination array filled with 1s
+ *   cusp::array1d<float,cusp::host_memory> y(10, 1);
  *
  *   // fill x array with random values
  *   cusp::random_array<float> rand(10);
+ *   cusp::blas::copy(rand, x);
  *
- *   // find index of max absolute value in x
- *   float sum = cusp::blas::asum(x);
- *
- *   std::cout << "asum(x) =" << sum << std::endl;
+ *   // compute y += 1.5*x
+ *   cusp::blas::axpy(x, y, 1.5);
  *
  *   return 0;
  * }
@@ -176,139 +181,363 @@ void axpy(const ArrayType1& x,
 
 /*! \cond */
 template <typename DerivedPolicy,
-          typename Array1,
-          typename Array2,
-          typename Array3,
+          typename ArrayType1,
+          typename ArrayType2,
+          typename ArrayType3,
           typename ScalarType1,
           typename ScalarType2>
 void axpby(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-           const Array1& x,
-           const Array2& y,
-                 Array3& output,
+           const ArrayType1& x,
+           const ArrayType2& y,
+                 ArrayType3& z,
                  ScalarType1 alpha,
                  ScalarType2 beta);
 /*! \endcond */
 
-/*! \p axpby : linear combination of two vectors (output = alpha * x + beta * y)
+/**
+ * \brief compute linear combination of two vectors (z = alpha * x + beta * y)
+ *
+ * \tparam ArrayType1 Type of the first input array
+ * \tparam ArrayType2 Type of the second input array
+ * \tparam ArrayType3 Type of the third input array
+ * \tparam ScalarType1 Type of the first scale factor
+ * \tparam ScalarType2 Type of the second scale factor
+ *
+ * \param x The first input array
+ * \param y The second input array
+ * \param z The output array to store the result
+ * \param alpha The scale factor applied to array x
+ * \param beta The scale factor applied to array y
+ *
+ * \par Example
+ * \code
+ * #include <cusp/array1d.h>
+ * #include <cusp/print.h>
+ *
+ * // include cusp blas header file
+ * #include <cusp/blas/blas.h>
+ *
+ * int main()
+ * {
+ *   // create two empty source arrays
+ *   cusp::array1d<float,cusp::host_memory> x(10);
+ *   cusp::array1d<float,cusp::host_memory> y(10);
+ *
+ *   // create a destination array
+ *   cusp::array1d<float,cusp::host_memory> z(10);
+ *
+ *   // fill x array with random values
+ *   cusp::random_array<float> rand1(10, 0);
+ *   cusp::blas::copy(rand1, x);
+ *
+ *   // fill y array with random values
+ *   cusp::random_array<float> rand2(10, 7);
+ *   cusp::blas::copy(rand2, y);
+ *
+ *   // compute z = 1.5*x + 2.0*y
+ *   cusp::blas::axpby(x, y, z, 1.5, 2.0);
+ *
+ *   return 0;
+ * }
+ * \endcode
  */
-template <typename Array1,
-          typename Array2,
-          typename Array3,
+template <typename ArrayType1,
+          typename ArrayType2,
+          typename ArrayType3,
           typename ScalarType1,
           typename ScalarType2>
-void axpby(const Array1& x,
-           const Array2& y,
-                 Array3& output,
+void axpby(const ArrayType1& x,
+           const ArrayType2& y,
+                 ArrayType3& z,
                  ScalarType1 alpha,
                  ScalarType2 beta);
 
 /*! \cond */
 template <typename DerivedPolicy,
-          typename Array1,
-          typename Array2,
-          typename Array3,
-          typename Array4,
+          typename ArrayType1,
+          typename ArrayType2,
+          typename ArrayType3,
+          typename ArrayType4,
           typename ScalarType1,
           typename ScalarType2,
           typename ScalarType3>
 void axpbypcz(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-              const Array1& x,
-              const Array2& y,
-              const Array3& z,
-                    Array4& output,
+              const ArrayType1& x,
+              const ArrayType2& y,
+              const ArrayType3& z,
+                    ArrayType4& output,
               ScalarType1 alpha,
               ScalarType2 beta,
               ScalarType3 gamma);
 /*! \endcond */
 
-/*! \p axpbycz : linear combination of three vectors (output = alpha * x + beta * y + gamma * z)
+/**
+ * \brief compute linear combination of three vectors (output = alpha * x + beta * y + gamma * z)
+ *
+ * \tparam ArrayType1 Type of the first input array
+ * \tparam ArrayType2 Type of the second input array
+ * \tparam ArrayType3 Type of the third input array
+ * \tparam ArrayType4 Type of the input/output array
+ * \tparam ScalarType1 Type of the first scale factor
+ * \tparam ScalarType2 Type of the second scale factor
+ * \tparam ScalarType3 Type of the third scale factor
+ *
+ * \param x The first input array
+ * \param y The second input array
+ * \param z The third input array
+ * \param w The output array to store the result
+ * \param alpha The scale factor applied to array x
+ * \param beta The scale factor applied to array y
+ * \param gamma The scale factor applied to array z
+ *
+ * \par Example
+ * \code
+ * #include <cusp/array1d.h>
+ * #include <cusp/print.h>
+ *
+ * // include cusp blas header file
+ * #include <cusp/blas/blas.h>
+ *
+ * int main()
+ * {
+ *   // create two empty source arrays
+ *   cusp::array1d<float,cusp::host_memory> x(10);
+ *   cusp::array1d<float,cusp::host_memory> y(10);
+ *   cusp::array1d<float,cusp::host_memory> z(10);
+ *
+ *   // create a destination array
+ *   cusp::array1d<float,cusp::host_memory> w(10);
+ *
+ *   // fill x array with random values
+ *   cusp::random_array<float> rand1(10, 0);
+ *   cusp::blas::copy(rand1, x);
+ *
+ *   // fill y array with random values
+ *   cusp::random_array<float> rand2(10, 7);
+ *   cusp::blas::copy(rand2, y);
+ *
+ *   // fill z array with random values
+ *   cusp::random_array<float> rand3(10, 4);
+ *   cusp::blas::copy(rand3, z);
+ *
+ *   // compute w = 1.5*x + 2.0*y + 2.1*z
+ *   cusp::blas::axpbypcz(x, y, z, w, 1.5, 2.0, 2.1);
+ *
+ *   return 0;
+ * }
+ * \endcode
  */
-template <typename Array1,
-          typename Array2,
-          typename Array3,
-          typename Array4,
+template <typename ArrayType1,
+          typename ArrayType2,
+          typename ArrayType3,
+          typename ArrayType4,
           typename ScalarType1,
           typename ScalarType2,
           typename ScalarType3>
-void axpbypcz(const Array1& x,
-              const Array2& y,
-              const Array3& z,
-                    Array4& output,
+void axpbypcz(const ArrayType1& x,
+              const ArrayType2& y,
+              const ArrayType3& z,
+                    ArrayType4& w,
               ScalarType1 alpha,
               ScalarType2 beta,
               ScalarType3 gamma);
 
 /*! \cond */
 template <typename DerivedPolicy,
-          typename Array1,
-          typename Array2,
-          typename Array3>
+          typename ArrayType1,
+          typename ArrayType2,
+          typename ArrayType3>
 void xmy(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-         const Array1& x,
-         const Array2& y,
-               Array3& output);
+         const ArrayType1& x,
+         const ArrayType2& y,
+               ArrayType3& z);
 /*! \endcond */
 
-/*! \p xmy : elementwise multiplication of two vectors (output[i] = x[i] * y[i])
+/**
+ * \brief elementwise multiplication of two vectors (z[i] = x[i] * y[i])
+ *
+ * \tparam ArrayType1 Type of the first input array
+ * \tparam ArrayType2 Type of the second input array
+ * \tparam ArrayType3 Type of the output array
+ *
+ * \param x The first input array
+ * \param y The second input array
+ * \param z The output array
+ *
+ * \par Example
+ * \code
+ * #include <cusp/array1d.h>
+ * #include <cusp/print.h>
+ *
+ * // include cusp blas header file
+ * #include <cusp/blas/blas.h>
+ *
+ * int main()
+ * {
+ *   // create an array filled with 2s
+ *   cusp::array1d<float,cusp::host_memory> x(10, 2);
+ *
+ *   // create an array filled with 3s
+ *   cusp::array1d<float,cusp::host_memory> y(10, 3);
+ *
+ *   // create an empty array
+ *   cusp::array1d<float,cusp::host_memory> z(10);
+ *
+ *   // multiply arrays x and y
+ *   cusp::blas::xmy(x, y, z);
+ *
+ *   return 0;
+ * }
+ * \endcode
  */
-template <typename Array1,
-          typename Array2,
-          typename Array3>
-void xmy(const Array1& x,
-         const Array2& y,
-               Array3& output);
+template <typename ArrayType1,
+          typename ArrayType2,
+          typename ArrayType3>
+void xmy(const ArrayType1& x,
+         const ArrayType2& y,
+               ArrayType3& z);
 
 /*! \cond */
 template <typename DerivedPolicy,
-          typename Array1,
-          typename Array2>
+          typename ArrayType1,
+          typename ArrayType2>
 void copy(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-          const Array1& x,
-                Array2& y);
+          const ArrayType1& x,
+                ArrayType2& y);
 /*! \endcond */
 
-/*! \p copy : vector copy (y = x)
+/**
+ * \brief vector copy (y = x)
+ *
+ * \tparam ArrayType1 Type of the input array
+ * \tparam ArrayType2 Type of the output array
+ *
+ * \param x The input array
+ * \param y The output array
+ *
+ * \par Example
+ * \code
+ * #include <cusp/array1d.h>
+ * #include <cusp/print.h>
+ *
+ * // include cusp blas header file
+ * #include <cusp/blas/blas.h>
+ *
+ * int main()
+ * {
+ *   // create an array filled with 2s
+ *   cusp::array1d<float,cusp::host_memory> x(10, 2);
+ *
+ *   // create an empty array
+ *   cusp::array1d<float,cusp::host_memory> y(10);
+ *
+ *   // copy array x into y
+ *   cusp::blas::copy(x, y);
+ *
+ *   return 0;
+ * }
+ * \endcode
  */
-template <typename Array1,
-          typename Array2>
-void copy(const Array1& x,
-                Array2& y);
+template <typename ArrayType1,
+          typename ArrayType2>
+void copy(const ArrayType1& x,
+                ArrayType2& y);
 
 /*! \cond */
 template <typename DerivedPolicy,
-          typename Array1,
-          typename Array2>
-typename Array1::value_type
+          typename ArrayType1,
+          typename ArrayType2>
+typename ArrayType1::value_type
 dot(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-    const Array1& x,
-    const Array2& y);
+    const ArrayType1& x,
+    const ArrayType2& y);
 /*! \endcond */
 
-/*! \p dot : dot product (x^T * y)
+/**
+ * \brief dot product (x^T * y)
+ *
+ * \tparam ArrayType1 Type of the first input array
+ * \tparam ArrayType2 Type of the second input array
+ *
+ * \param x The first input array
+ * \param y The second input array
+ *
+ * \par Example
+ * \code
+ * #include <cusp/array1d.h>
+ * #include <cusp/print.h>
+ *
+ * // include cusp blas header file
+ * #include <cusp/blas/blas.h>
+ *
+ * int main()
+ * {
+ *   // create an array filled with 2s
+ *   cusp::array1d<float,cusp::host_memory> x(10, 2);
+ *
+ *   // create an array filled with 3s
+ *   cusp::array1d<float,cusp::host_memory> y(10, 3);
+ *
+ *   // compute dot product of array x into y
+ *   float value = cusp::blas::dot(x, y);
+ *
+ *   return 0;
+ * }
+ * \endcode
  */
-template <typename Array1,
-          typename Array2>
-typename Array1::value_type
-dot(const Array1& x,
-    const Array2& y);
+template <typename ArrayType1,
+          typename ArrayType2>
+typename ArrayType1::value_type
+dot(const ArrayType1& x,
+    const ArrayType2& y);
 
 /*! \cond */
 template <typename DerivedPolicy,
-          typename Array1,
-          typename Array2>
-typename Array1::value_type
+          typename ArrayType1,
+          typename ArrayType2>
+typename ArrayType1::value_type
 dotc(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-     const Array1& x,
-     const Array2& y);
+     const ArrayType1& x,
+     const ArrayType2& y);
 /*! \endcond */
 
-/*! \p dotc : conjugate dot product (conjugate(x)^T * y)
+/**
+ * \brief conjugate dot product (conjugate(x)^T * y)
+ *
+ * \tparam ArrayType1 Type of the first input array
+ * \tparam ArrayType2 Type of the second input array
+ *
+ * \param x The first input array
+ * \param y The second input array
+ *
+ * \par Example
+ * \code
+ * #include <cusp/array1d.h>
+ * #include <cusp/print.h>
+ *
+ * // include cusp blas header file
+ * #include <cusp/blas/blas.h>
+ *
+ * int main()
+ * {
+ *   // create an array filled with 2s
+ *   cusp::array1d<float,cusp::host_memory> x(10, 2);
+ *
+ *   // create an array filled with 3s
+ *   cusp::array1d<float,cusp::host_memory> y(10, 3);
+ *
+ *   // compute dot product of array x into y
+ *   float value = cusp::blas::dotc(x, y);
+ *
+ *   return 0;
+ * }
+ * \endcode
  */
-template <typename Array1,
-          typename Array2>
-typename Array1::value_type
-dotc(const Array1& x,
-     const Array2& y);
+template <typename ArrayType1,
+          typename ArrayType2>
+typename ArrayType1::value_type
+dotc(const ArrayType1& x,
+     const ArrayType2& y);
 
 /*! \cond */
 template <typename DerivedPolicy,
@@ -355,10 +584,10 @@ void fill(ArrayType& x,
 
 /*! \cond */
 template <typename DerivedPolicy,
-          typename Array>
-typename cusp::detail::norm_type<typename Array::value_type>::type
+          typename ArrayType>
+typename cusp::detail::norm_type<typename ArrayType::value_type>::type
 nrm1(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-     const Array& array);
+     const ArrayType& array);
 /*! \endcond */
 
 /**
@@ -537,13 +766,15 @@ void gemv(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 /*! \endcond */
 
 /**
- * \brief Solve a triangular matrix equation
+ * \brief Computes a matrix-vector product using a general matrix
  *
- * \tparam Array2d Type of the first input matrix
- * \tparam Array1d Type of the output matrix
+ * \tparam Array2d1 Type of the input matrix
+ * \tparam Array1d1 Type of the input vector
+ * \tparam Array1d2 Type of the output vector
  *
- * \param A Contains the upper or lower triangle of a symmetric matrix
- * \param x Contains block of right-hand side vectors
+ * \param A General matrix
+ * \param x Input vector
+ * \param x Output vector
  *
  * \par Example
  * \code
@@ -571,7 +802,7 @@ void gemv(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
  *   // create an empty output array
  *   cusp::array1d<float,cusp::host_memory> y(A.num_rows);
  *
- *   // solve multiple RHS vectors
+ *   // multiply A and x to produce y
  *   cusp::blas::gemv(A, x, y);
  *
  *   // print the contents of y
@@ -600,13 +831,15 @@ void ger(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 /*! \endcond */
 
 /**
- * \brief Solve a triangular matrix equation
+ * \brief Performs a rank-1 update of a general matrix.
  *
- * \tparam Array2d Type of the first input matrix
- * \tparam Array1d Type of the output matrix
+ * \tparam Array1d1 Type of the first input array
+ * \tparam Array1d2 Type of the second input array
+ * \tparam Array2d1 Type of the output matrix
  *
- * \param A Contains the upper or lower triangle of a symmetric matrix
- * \param x Contains block of right-hand side vectors
+ * \param x First n-element array
+ * \param y Second n-element array
+ * \param A An n-by-n general matrix
  *
  * \par Example
  * \code
@@ -621,17 +854,17 @@ void ger(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
  *
  * int main()
  * {
+ *   // create 2 random dense arrays
+ *   cusp::random_array<float> rand1(10, 0);
+ *   cusp::array1d<float,cusp::host_memory> x(rand1);
+ *
+ *   cusp::random_array<float> rand2(10, 7);
+ *   cusp::array1d<float,cusp::host_memory> y(rand2);
+ *
  *   // create an empty dense matrix structure
  *   cusp::array2d<float,cusp::host_memory> A(10,10);
  *
- *   // create 2 random dense arrays
- *   cusp::random_array<float> rand1(A.num_rows, 0);
- *   cusp::array1d<float,cusp::host_memory> x(rand1);
- *
- *   cusp::random_array<float> rand2(A.num_rows, 7);
- *   cusp::array1d<float,cusp::host_memory> y(rand2);
- *
- *   // solve multiple RHS vectors
+ *   // compute n-by-n general update
  *   cusp::blas::ger(x, y, A);
  *
  *   // print the contents of A
@@ -660,13 +893,15 @@ void symv(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 /*! \endcond */
 
 /**
- * \brief Solve a triangular matrix equation
+ * \brief Computes a matrix-vector product using a symmetric matrix
  *
- * \tparam Array2d Type of the first input matrix
- * \tparam Array1d Type of the output matrix
+ * \tparam Array2d1 Type of the input matrix
+ * \tparam Array1d1 Type of the input vector
+ * \tparam Array1d2 Type of the output vector
  *
- * \param A Contains the upper or lower triangle of a symmetric matrix
- * \param x Contains block of right-hand side vectors
+ * \param A Symmetric matrix
+ * \param x Input vector
+ * \param x Output vector
  *
  * \par Example
  * \code
@@ -694,7 +929,7 @@ void symv(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
  *   // create an empty output array
  *   cusp::array1d<float,cusp::host_memory> y(A.num_rows);
  *
- *   // solve multiple RHS vectors
+ *   // multiply A and x to produce y
  *   cusp::blas::symv(A, x, y);
  *
  *   // print the contents of y
@@ -721,13 +956,13 @@ void syr(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 /*! \endcond */
 
 /**
- * \brief Solve a triangular matrix equation
+ * \brief Performs a rank-1 update of a symmetric matrix.
  *
- * \tparam Array2d Type of the first input matrix
- * \tparam Array1d Type of the output matrix
+ * \tparam Array1d Type of the input array
+ * \tparam Array2d Type of the output matrix
  *
- * \param A Contains the upper or lower triangle of a symmetric matrix
- * \param x Contains block of right-hand side vectors
+ * \param x An n-element array
+ * \param A An n-by-n symmetric matrix
  *
  * \par Example
  * \code
@@ -742,14 +977,14 @@ void syr(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
  *
  * int main()
  * {
+ *   // create an random dense array
+ *   cusp::random_array<float> rand(10);
+ *   cusp::array1d<float,cusp::host_memory> x(rand);
+ *
  *   // create an empty dense matrix structure
  *   cusp::array2d<float,cusp::host_memory> A(10,10);
  *
- *   // create an random dense array
- *   cusp::random_array<float> rand(A.num_rows);
- *   cusp::array1d<float,cusp::host_memory> x(rand);
- *
- *   // solve multiple RHS vectors
+ *   // compute rank-1 update
  *   cusp::blas::syr(x, A);
  *
  *   // print the contents of A
@@ -774,13 +1009,15 @@ void trmv(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 /*! \endcond */
 
 /**
- * \brief Solve a triangular matrix equation
+ * \brief Computes a matrix-vector product using a triangular matrix
  *
- * \tparam Array2d Type of the first input matrix
- * \tparam Array1d Type of the output matrix
+ * \tparam Array2d1 Type of the input matrix
+ * \tparam Array1d1 Type of the input vector
+ * \tparam Array1d2 Type of the output vector
  *
- * \param A Contains the upper or lower triangle of a symmetric matrix
- * \param x Contains block of right-hand side vectors
+ * \param A Triangular matrix
+ * \param x Input vector
+ * \param x Output vector
  *
  * \par Example
  * \code
@@ -805,11 +1042,14 @@ void trmv(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
  *   cusp::random_array<float> rand(A.num_rows);
  *   cusp::array1d<float,cusp::host_memory> x(rand);
  *
- *   // solve multiple RHS vectors
- *   cusp::blas::trmv(A, x);
+ *   // create an empty output array
+ *   cusp::array1d<float,cusp::host_memory> y(A.num_rows);
  *
- *   // print the contents of x
- *   cusp::print(x);
+ *   // multiply A and x to produce y
+ *   cusp::blas::trmv(A, x, y);
+ *
+ *   // print the contents of y
+ *   cusp::print(y);
  *
  *   return 0;
  * }
@@ -832,11 +1072,11 @@ void trsv(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 /**
  * \brief Solve a triangular matrix equation
  *
- * \tparam Array2d Type of the first input matrix
- * \tparam Array1d Type of the output matrix
+ * \tparam Array2d Type of the symmetric input matrix
+ * \tparam Array1d Type of the input right-hand side
  *
- * \param A Contains the upper or lower triangle of a symmetric matrix
- * \param x Contains block of right-hand side vectors
+ * \param A Upper or lower triangle of a symmetric matrix
+ * \param x Right-hand side vector
  *
  * \par Example
  * \code
@@ -861,7 +1101,7 @@ void trsv(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
  *   cusp::random_array<float> rand(A.num_rows);
  *   cusp::array1d<float,cusp::host_memory> x(rand);
  *
- *   // solve multiple RHS vectors
+ *   // solve for RHS vector
  *   cusp::blas::trsv(A, x);
  *
  *   // print the contents of x
@@ -888,15 +1128,15 @@ void gemm(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 /*! \endcond */
 
 /**
- * \brief Solve a triangular matrix equation
+ * \brief Computes a matrix-matrix product with general matrices.
  *
  * \tparam Array2d1 Type of the first input matrix
  * \tparam Array2d2 Type of the second input matrix
  * \tparam Array2d3 Type of the output matrix
  *
- * \param A Contains the upper or lower triangle of a symmetric matrix
- * \param B Contains the upper or lower triangle of a symmetric matrix
- * \param C Contains block of right-hand side vectors
+ * \param A First input matrix
+ * \param B Second input matrix
+ * \param C Output matrix
  *
  * \par Example
  * \code
@@ -911,12 +1151,15 @@ void gemm(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
  * int main()
  * {
  *   // create an empty dense matrix structure
- *   cusp::array2d<float,cusp::host_memory> A, B;
+ *   cusp::array2d<float,cusp::host_memory> A
  *
  *   // create 2D Poisson problem
  *   cusp::gallery::poisson5pt(A, 4, 4);
  *
- *   // solve multiple RHS vectors
+ *   // allocate space for output matrix
+ *   cusp::array2d<float,cusp::host_memory> B(A.num_rows, A.num_cols);
+ *
+ *   // compute output matrix
  *   cusp::blas::gemm(A, A, B);
  *
  *   // print the contents of B
@@ -945,15 +1188,15 @@ void symm(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 /*! \endcond */
 
 /**
- * \brief Solve a triangular matrix equation
+ * \brief Computes a matrix-matrix product where one input matrix is symmetric.
  *
- * \tparam Array2d1 Type of the first input matrix
+ * \tparam Array2d1 Type of the first symmetric input matrix
  * \tparam Array2d2 Type of the second input matrix
  * \tparam Array2d3 Type of the output matrix
  *
- * \param A Contains the upper or lower triangle of a symmetric matrix
- * \param B Contains the upper or lower triangle of a symmetric matrix
- * \param C Contains block of right-hand side vectors
+ * \param A First symmetric input matrix
+ * \param B Second input matrix
+ * \param C Output matrix
  *
  * \par Example
  * \code
@@ -968,12 +1211,15 @@ void symm(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
  * int main()
  * {
  *   // create an empty dense matrix structure
- *   cusp::array2d<float,cusp::host_memory> A, B;
+ *   cusp::array2d<float,cusp::host_memory> A
  *
  *   // create 2D Poisson problem
  *   cusp::gallery::poisson5pt(A, 4, 4);
  *
- *   // solve multiple RHS vectors
+ *   // allocate space for output matrix
+ *   cusp::array2d<float,cusp::host_memory> B(A.num_rows, A.num_cols);
+ *
+ *   // compute output matrix
  *   cusp::blas::symm(A, A, B);
  *
  *   // print the contents of B
@@ -1000,13 +1246,15 @@ void syrk(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 /*! \endcond */
 
 /**
- * \brief Solve a triangular matrix equation
+ * \brief Performs a symmetric rank-k update.
  *
  * \tparam Array2d1 Type of the first input matrix
- * \tparam Array2d2 Type of the output matrix
+ * \tparam Array2d2 Type of the second input matrix
+ * \tparam Array2d3 Type of the output matrix
  *
- * \param A Contains the upper or lower triangle of a symmetric matrix
- * \param B Contains block of right-hand side vectors
+ * \param A First input matrix
+ * \param B Second input matrix
+ * \param C Output matrix
  *
  * \par Example
  * \code
@@ -1021,12 +1269,15 @@ void syrk(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
  * int main()
  * {
  *   // create an empty dense matrix structure
- *   cusp::array2d<float,cusp::host_memory> A, B;
+ *   cusp::array2d<float,cusp::host_memory> A;
  *
  *   // create 2D Poisson problem
  *   cusp::gallery::poisson5pt(A, 4, 4);
  *
- *   // solve multiple RHS vectors
+ *   // allocate space for output matrix
+ *   cusp::array2d<float,cusp::host_memory> B(A.num_rows, A.num_cols);
+ *
+ *   // compute rank-k update
  *   cusp::blas::syrk(A, B);
  *
  *   // print the contents of B
@@ -1053,15 +1304,15 @@ void syr2k(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 /*! \endcond */
 
 /**
- * \brief Solve a triangular matrix equation
+ * \brief Performs a symmetric rank-2k update.
  *
  * \tparam Array2d1 Type of the first input matrix
  * \tparam Array2d2 Type of the second input matrix
  * \tparam Array2d3 Type of the output matrix
  *
- * \param A Contains the upper or lower triangle of a symmetric matrix
- * \param B Contains the upper or lower triangle of a symmetric matrix
- * \param C Contains block of right-hand side vectors
+ * \param A First input matrix
+ * \param B Second input matrix
+ * \param C Output matrix
  *
  * \par Example
  * \code
@@ -1076,12 +1327,15 @@ void syr2k(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
  * int main()
  * {
  *   // create an empty dense matrix structure
- *   cusp::array2d<float,cusp::host_memory> A, B;
+ *   cusp::array2d<float,cusp::host_memory> A;
  *
  *   // create 2D Poisson problem
  *   cusp::gallery::poisson5pt(A, 4, 4);
  *
- *   // solve multiple RHS vectors
+ *   // allocate space for output matrix
+ *   cusp::array2d<float,cusp::host_memory> B(A.num_rows, A.num_cols);
+ *
+ *   // compute rank-2 update
  *   cusp::blas::syr2k(A, A, B);
  *
  *   // print the contents of B
@@ -1108,13 +1362,15 @@ void trmm(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 /*! \endcond */
 
 /**
- * \brief Solve a triangular matrix equation
+ * \brief Computes a matrix-matrix product where one input matrix is triangular.
  *
- * \tparam Array2d1 Type of the first input matrix
- * \tparam Array2d2 Type of the output matrix
+ * \tparam Array2d1 Type of the first triangular input matrix
+ * \tparam Array2d2 Type of the second input matrix
+ * \tparam Array2d3 Type of the output matrix
  *
- * \param A Contains the upper or lower triangle of a symmetric matrix
- * \param B Contains block of right-hand side vectors
+ * \param A First triangular input matrix
+ * \param B Second input matrix
+ * \param C Output matrix
  *
  * \par Example
  * \code
@@ -1129,13 +1385,16 @@ void trmm(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
  * int main()
  * {
  *   // create an empty dense matrix structure
- *   cusp::array2d<float,cusp::host_memory> A, B;
+ *   cusp::array2d<float,cusp::host_memory> A
  *
  *   // create 2D Poisson problem
  *   cusp::gallery::poisson5pt(A, 4, 4);
  *
- *   // solve multiple RHS vectors
- *   cusp::blas::trmm(A, B);
+ *   // allocate space for output matrix
+ *   cusp::array2d<float,cusp::host_memory> B(A.num_rows, A.num_cols);
+ *
+ *   // compute output matrix
+ *   cusp::blas::trmm(A, A, B);
  *
  *   // print the contents of B
  *   cusp::print(B);

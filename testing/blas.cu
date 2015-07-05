@@ -510,6 +510,84 @@ void TestScal(void)
 DECLARE_HOST_DEVICE_UNITTEST(TestScal);
 
 template <class MemorySpace>
+void TestGemv(void)
+{
+    typedef typename cusp::array2d<float, MemorySpace> Array2d;
+    typedef typename cusp::array1d<float, MemorySpace> Array1d;
+
+    Array2d A(6,6);
+    Array1d x(6);
+
+    ASSERT_THROWS(cusp::blas::gemv(A, x, x), cusp::not_implemented_exception);
+}
+DECLARE_HOST_DEVICE_UNITTEST(TestGemv);
+
+template <class MemorySpace>
+void TestGer(void)
+{
+    typedef typename cusp::array2d<float, MemorySpace> Array2d;
+    typedef typename cusp::array1d<float, MemorySpace> Array1d;
+
+    Array2d A(6,6);
+    Array1d x(6);
+
+    ASSERT_THROWS(cusp::blas::ger(x, x, A), cusp::not_implemented_exception);
+}
+DECLARE_HOST_DEVICE_UNITTEST(TestGer);
+
+template <class MemorySpace>
+void TestSymv(void)
+{
+    typedef typename cusp::array2d<float, MemorySpace> Array2d;
+    typedef typename cusp::array1d<float, MemorySpace> Array1d;
+
+    Array2d A(6,6);
+    Array1d x(6);
+
+    ASSERT_THROWS(cusp::blas::symv(A, x, x), cusp::not_implemented_exception);
+}
+DECLARE_HOST_DEVICE_UNITTEST(TestSymv);
+
+template <class MemorySpace>
+void TestSyr(void)
+{
+    typedef typename cusp::array2d<float, MemorySpace> Array2d;
+    typedef typename cusp::array1d<float, MemorySpace> Array1d;
+
+    Array2d A(6,6);
+    Array1d x(6);
+
+    ASSERT_THROWS(cusp::blas::syr(x, A), cusp::not_implemented_exception);
+}
+DECLARE_HOST_DEVICE_UNITTEST(TestSyr);
+
+template <class MemorySpace>
+void TestTrmv(void)
+{
+    typedef typename cusp::array2d<float, MemorySpace> Array2d;
+    typedef typename cusp::array1d<float, MemorySpace> Array1d;
+
+    Array2d A(6,6);
+    Array1d x(6);
+
+    ASSERT_THROWS(cusp::blas::trmv(A, x), cusp::not_implemented_exception);
+}
+DECLARE_HOST_DEVICE_UNITTEST(TestTrmv);
+
+template <class MemorySpace>
+void TestTrsv(void)
+{
+    typedef typename cusp::array2d<float, MemorySpace> Array2d;
+    typedef typename cusp::array1d<float, MemorySpace> Array1d;
+
+    Array2d A(6,6);
+    Array1d x(6);
+
+    ASSERT_THROWS(cusp::blas::trsv(A, x), cusp::not_implemented_exception);
+}
+DECLARE_HOST_DEVICE_UNITTEST(TestTrsv);
+
+template <class MemorySpace>
 void TestGemm(void)
 {
     typedef typename cusp::array2d<float, MemorySpace> Array;
