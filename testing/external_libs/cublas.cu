@@ -5,7 +5,7 @@
 #include <cusp/blas/blas.h>
 
 template<typename ValueType>
-void TestCUBLASamax(void)
+void TestCublasAmax(void)
 {
     typedef cusp::array1d<ValueType, cusp::device_memory>  Array;
     typedef typename Array::view                           View;
@@ -38,10 +38,10 @@ void TestCUBLASamax(void)
       throw cusp::runtime_exception("cublasDestroy failed");
     }
 }
-DECLARE_NUMERIC_UNITTEST(TestCUBLASamax);
+DECLARE_NUMERIC_UNITTEST(TestCublasAmax);
 
 template<typename ValueType>
-void TestCUBLASasum(void)
+void TestCublasAsum(void)
 {
     typedef cusp::array1d<ValueType, cusp::device_memory>  Array;
     typedef typename Array::view                           View;
@@ -74,10 +74,10 @@ void TestCUBLASasum(void)
       throw cusp::runtime_exception("cublasDestroy failed");
     }
 }
-DECLARE_NUMERIC_UNITTEST(TestCUBLASasum);
+DECLARE_NUMERIC_UNITTEST(TestCublasAsum);
 
 template<typename ValueType>
-void TestCUBLASaxpy(void)
+void TestCublasAxpy(void)
 {
     typedef cusp::array1d<ValueType, cusp::device_memory>  Array;
     typedef typename Array::view                           View;
@@ -125,10 +125,10 @@ void TestCUBLASaxpy(void)
       throw cusp::runtime_exception("cublasDestroy failed");
     }
 }
-DECLARE_NUMERIC_UNITTEST(TestCUBLASaxpy);
+DECLARE_NUMERIC_UNITTEST(TestCublasAxpy);
 
 template<typename ValueType>
-void TestCUBLAScopy(void)
+void TestCublasCopy(void)
 {
     typedef cusp::array1d<ValueType, cusp::device_memory>  Array;
     typedef typename Array::view                           View;
@@ -168,10 +168,10 @@ void TestCUBLAScopy(void)
       throw cusp::runtime_exception("cublasDestroy failed");
     }
 }
-DECLARE_NUMERIC_UNITTEST(TestCUBLAScopy);
+DECLARE_NUMERIC_UNITTEST(TestCublasCopy);
 
 template<typename ValueType>
-void TestCUBLASdot(void)
+void TestCublasDot(void)
 {
     typedef cusp::array1d<ValueType, cusp::device_memory>  Array;
     typedef typename Array::view                           View;
@@ -212,10 +212,10 @@ void TestCUBLASdot(void)
       throw cusp::runtime_exception("cublasDestroy failed");
     }
 }
-DECLARE_REAL_UNITTEST(TestCUBLASdot);
+DECLARE_REAL_UNITTEST(TestCublasDot);
 
 template<typename ValueType>
-void TestCUBLASnrm2(void)
+void TestCublasNrm2(void)
 {
     typedef cusp::array1d<ValueType, cusp::device_memory>  Array;
     typedef typename Array::view                           View;
@@ -242,10 +242,10 @@ void TestCUBLASnrm2(void)
 
     ASSERT_EQUAL(cusp::blas::nrm2(cublas, View(x)), 10.0f);
 }
-DECLARE_NUMERIC_UNITTEST(TestCUBLASnrm2);
+DECLARE_NUMERIC_UNITTEST(TestCublasNrm2);
 
 template<typename ValueType>
-void TestCUBLASscal(void)
+void TestCublasScal(void)
 {
     typedef cusp::array1d<ValueType, cusp::device_memory>      Array;
     typedef typename Array::view                               View;
@@ -292,10 +292,10 @@ void TestCUBLASscal(void)
       throw cusp::runtime_exception("cublasDestroy failed");
     }
 }
-DECLARE_NUMERIC_UNITTEST(TestCUBLASscal);
+DECLARE_NUMERIC_UNITTEST(TestCublasScal);
 
 template<typename ValueType>
-void TestCUBLASgemv(void)
+void TestCublasGemv(void)
 {
     typedef cusp::array2d<ValueType, cusp::device_memory> Array2d;
     typedef cusp::array1d<ValueType, cusp::device_memory> Array1d;
@@ -342,5 +342,152 @@ void TestCUBLASgemv(void)
       throw cusp::runtime_exception("cublasDestroy failed");
     }
 }
-DECLARE_NUMERIC_UNITTEST(TestCUBLASgemv);
+DECLARE_NUMERIC_UNITTEST(TestCublasGemv);
+
+template<typename ValueType>
+void TestCublasSymv(void)
+{
+    typedef cusp::array2d<ValueType, cusp::device_memory> Array2d;
+    typedef cusp::array1d<ValueType, cusp::device_memory> Array1d;
+
+    cublasHandle_t handle;
+
+    if(cublasCreate(&handle) != CUBLAS_STATUS_SUCCESS)
+    {
+      throw cusp::runtime_exception("cublasCreate failed");
+    }
+
+    cusp::cublas::execution_policy cublas(handle);
+
+    Array2d A;
+    Array1d x(9);
+    Array1d y(9);
+
+    cusp::gallery::poisson5pt(A, 3, 3);
+
+    x[0] =  7.0f;
+    x[1] =  5.0f;
+    x[2] =  4.0f;
+    x[3] = -3.0f;
+    x[4] =  0.0f;
+    x[5] =  4.0f;
+    x[6] = -3.0f;
+    x[7] =  0.0f;
+    x[8] =  4.0f;
+
+    cusp::blas::symv(cublas, A, x, y);
+
+    ASSERT_EQUAL(y[0],  26.0);
+    ASSERT_EQUAL(y[1],   9.0);
+    ASSERT_EQUAL(y[2],   7.0);
+    ASSERT_EQUAL(y[3], -16.0);
+    ASSERT_EQUAL(y[4],  -6.0);
+    ASSERT_EQUAL(y[5],   8.0);
+    ASSERT_EQUAL(y[6],  -9.0);
+    ASSERT_EQUAL(y[7],  -1.0);
+    ASSERT_EQUAL(y[8],  12.0);
+
+    if(cublasDestroy(handle) != CUBLAS_STATUS_SUCCESS)
+    {
+      throw cusp::runtime_exception("cublasDestroy failed");
+    }
+}
+DECLARE_REAL_UNITTEST(TestCublasSymv);
+
+template<typename ValueType>
+void TestCublasTrmv(void)
+{
+    typedef cusp::array2d<ValueType, cusp::device_memory> Array2d;
+    typedef cusp::array1d<ValueType, cusp::device_memory> Array1d;
+
+    cublasHandle_t handle;
+
+    if(cublasCreate(&handle) != CUBLAS_STATUS_SUCCESS)
+    {
+      throw cusp::runtime_exception("cublasCreate failed");
+    }
+
+    cusp::cublas::execution_policy cublas(handle);
+
+    Array2d A;
+    Array1d x(9);
+    Array1d expected(9);
+
+    cusp::gallery::poisson5pt(A, 3, 3);
+
+    // set lower diagonal entries to zero
+    for(int j = 0; j < 9; j++)
+      for(int i = j + 1; i < 9; i++)
+          A(i,j) = ValueType(0);
+
+    x[0] =  7.0f;
+    x[1] =  5.0f;
+    x[2] =  4.0f;
+    x[3] = -3.0f;
+    x[4] =  0.0f;
+    x[5] =  4.0f;
+    x[6] = -3.0f;
+    x[7] =  0.0f;
+    x[8] =  4.0f;
+
+    cusp::blas::gemv(cublas, A, x, expected);
+    cusp::blas::trmv(cublas, A, x);
+
+    ASSERT_ALMOST_EQUAL(x, expected);
+
+    if(cublasDestroy(handle) != CUBLAS_STATUS_SUCCESS)
+    {
+      throw cusp::runtime_exception("cublasDestroy failed");
+    }
+}
+DECLARE_NUMERIC_UNITTEST(TestCublasTrmv);
+
+template<typename ValueType>
+void TestCublasTrsv(void)
+{
+    typedef cusp::array2d<ValueType, cusp::device_memory> Array2d;
+    typedef cusp::array1d<ValueType, cusp::device_memory> Array1d;
+
+    cublasHandle_t handle;
+
+    if(cublasCreate(&handle) != CUBLAS_STATUS_SUCCESS)
+    {
+      throw cusp::runtime_exception("cublasCreate failed");
+    }
+
+    cusp::cublas::execution_policy cublas(handle);
+
+    Array2d A;
+    Array1d x(9);
+
+    cusp::gallery::poisson5pt(A, 3, 3);
+
+    x[0] =  7.0f;
+    x[1] =  5.0f;
+    x[2] =  4.0f;
+    x[3] = -3.0f;
+    x[4] =  0.0f;
+    x[5] =  4.0f;
+    x[6] = -3.0f;
+    x[7] =  0.0f;
+    x[8] =  4.0f;
+
+    Array1d b(x);
+
+    cusp::blas::trsv(cublas, A, x);
+
+    // check residual norm
+    cusp::array1d<ValueType, cusp::device_memory> residual(x);
+    cusp::blas::trmv(cublas, A, residual);
+    cusp::blas::axpby(residual, b, residual, -1.0f, 1.0f);
+
+    ASSERT_EQUAL(cusp::blas::nrm2(residual) < 1e-7, true);
+
+    if(cublasDestroy(handle) != CUBLAS_STATUS_SUCCESS)
+    {
+      throw cusp::runtime_exception("cublasDestroy failed");
+    }
+}
+DECLARE_NUMERIC_UNITTEST(TestCublasTrsv);
+
 

@@ -539,6 +539,7 @@ void trmm(cublas::execution_policy& exec,
     int n   = B.num_cols;
     int lda = A.pitch;
     int ldb = B.pitch;
+    int ldc = B.pitch;
 
     ValueType alpha = 1.0;
 
