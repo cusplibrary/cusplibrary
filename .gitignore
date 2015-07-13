@@ -65,6 +65,7 @@ examples/Graph/symmetric_rcm
 examples/Graph/vertex_coloring
 examples/InputOutput/matrix_market
 examples/LinearOperator/stencil
+examples/LinearOperator/block_matrix
 examples/MatrixFormats/csr
 examples/MatrixFormats/ell
 examples/MatrixFormats/hyb
