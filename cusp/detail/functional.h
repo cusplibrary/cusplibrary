@@ -64,6 +64,15 @@ struct base_functor
 };
 
 template <typename T>
+struct plus_value : public base_functor< thrust::plus<T> >
+{
+    typedef base_functor< thrust::plus<T> > Parent;
+
+    __host__ __device__
+    plus_value(const T value = T(0)) : Parent(value) {}
+};
+
+template <typename T>
 struct divide_value : public base_functor< thrust::divides<T> >
 {
     typedef base_functor< thrust::divides<T> > Parent;
