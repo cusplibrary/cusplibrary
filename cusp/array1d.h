@@ -693,9 +693,9 @@ public:
 template <typename Iterator>
 array1d_view<Iterator> make_array1d_view(Iterator first, Iterator last)
 {
-    array1d_view<Iterator> ret(first, last);
+    array1d_view<Iterator> view(first, last);
 
-	return ret;
+    return view;
 }
 
 /**

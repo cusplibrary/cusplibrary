@@ -37,6 +37,10 @@ def get_cuda_paths():
         lib_path += '64'
 
     # override with environement variables
+    if 'CUDA_PATH' in os.environ:
+	bin_path = os.path.abspath(os.environ['CUDA_PATH']) + '\\bin'
+	lib_path = os.path.abspath(os.environ['CUDA_PATH']) + '\\lib\\x64'
+	inc_path = os.path.abspath(os.environ['CUDA_PATH']) + '\\include'
     if 'CUDA_BIN_PATH' in os.environ:
         bin_path = os.path.abspath(os.environ['CUDA_BIN_PATH'])
     if 'CUDA_LIB_PATH' in os.environ:

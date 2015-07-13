@@ -439,9 +439,10 @@ make_csr_matrix_view(size_t num_rows,
                      ArrayType2 column_indices,
                      ArrayType3 values)
 {
-    return csr_matrix_view<ArrayType1,ArrayType2,ArrayType3>
-           (num_rows, num_cols, num_entries,
-            row_offsets, column_indices, values);
+    csr_matrix_view<ArrayType1,ArrayType2,ArrayType3>
+           view(num_rows, num_cols, num_entries, row_offsets, column_indices, values);
+
+	return view;
 }
 
 /**

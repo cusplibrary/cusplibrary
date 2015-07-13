@@ -103,12 +103,12 @@ void symmetric_strength_of_connection(thrust::system::detail::sequential::execut
     S.row_offsets[S.num_rows] = num_entries;
 }
 
-template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
+template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2, typename Format>
 void symmetric_strength_of_connection(thrust::system::detail::sequential::execution_policy<DerivedPolicy> &exec,
                                       const MatrixType1& A,
                                             MatrixType2& S,
                                       const double theta,
-                                      cusp::known_format)
+                                      Format format)
 {
     typedef typename MatrixType1::index_type          IndexType;
     typedef typename MatrixType1::memory_space        MemorySpace;

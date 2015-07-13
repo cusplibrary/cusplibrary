@@ -449,9 +449,10 @@ ell_matrix_view<ArrayType1,ArrayType2>
 make_ell_matrix_view(size_t num_rows, size_t num_cols, size_t num_entries,
                      ArrayType1 column_indices, ArrayType2 values)
 {
-    return ell_matrix_view<ArrayType1,ArrayType2>
-           (num_rows, num_cols, num_entries,
-            column_indices, values);
+    ell_matrix_view<ArrayType1,ArrayType2>
+           view(num_rows, num_cols, num_entries, column_indices, values);
+
+    return view;
 }
 
 /**

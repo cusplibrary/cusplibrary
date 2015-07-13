@@ -54,19 +54,24 @@ namespace cuda
 //  Note: THREADS_PER_VECTOR must be one of [2,4,8,16,32]
 
 
-template <typename IndexType, typename ValueType, typename UnaryFunction, typename BinaryFunction1, typename BinaryFunction2,
+template <typename RowIterator, typename ColumnIterator, typename ValueIterator1,
+	  typename ValueIterator2, typename ValueIterator3,
+	  typename UnaryFunction, typename BinaryFunction1, typename BinaryFunction2,
           unsigned int VECTORS_PER_BLOCK, unsigned int THREADS_PER_VECTOR>
 __global__ void
-spmv_csr_vector_kernel(const IndexType num_rows,
-                       const IndexType * Ap,
-                       const IndexType * Aj,
-                       const ValueType * Ax,
-                       const ValueType * x,
-                       ValueType * y,
+spmv_csr_vector_kernel(const unsigned int num_rows,
+                       const RowIterator    Ap,
+                       const ColumnIterator Aj,
+                       const ValueIterator1 Ax,
+                       const ValueIterator2  x,
+                       ValueIterator3        y,
                        UnaryFunction initialize,
                        BinaryFunction1 combine,
                        BinaryFunction2 reduce)
 {
+    typedef typename thrust::iterator_value<RowIterator>::type    IndexType;
+    typedef typename thrust::iterator_value<ValueIterator1>::type ValueType;
+
     __shared__ volatile ValueType sdata[VECTORS_PER_BLOCK * THREADS_PER_VECTOR + THREADS_PER_VECTOR / 2];  // padded to avoid reduction conditionals
     __shared__ volatile IndexType ptrs[VECTORS_PER_BLOCK][2];
 
@@ -89,7 +94,7 @@ spmv_csr_vector_kernel(const IndexType num_rows,
         const IndexType row_end   = ptrs[vector_lane][1];                   //same as: row_end   = Ap[row+1];
 
         // initialize local sum
-        ValueType sum = (thread_lane == 0) ? initialize(y[row]) : 0;
+        ValueType sum = (thread_lane == 0) ? initialize(y[row]) : ValueType(0);
 
         if (THREADS_PER_VECTOR == 32 && row_end - row_start > 32)
         {
@@ -115,16 +120,19 @@ spmv_csr_vector_kernel(const IndexType num_rows,
         // store local sum in shared memory
         sdata[threadIdx.x] = sum;
 
+	// TODO: remove temp var WAR for MSVC
+	ValueType temp; 
+
         // reduce local sums to row sum
-        if (THREADS_PER_VECTOR > 16) sdata[threadIdx.x] = sum = reduce(sum, ValueType(sdata[threadIdx.x + 16]));
-        if (THREADS_PER_VECTOR >  8) sdata[threadIdx.x] = sum = reduce(sum, ValueType(sdata[threadIdx.x +  8]));
-        if (THREADS_PER_VECTOR >  4) sdata[threadIdx.x] = sum = reduce(sum, ValueType(sdata[threadIdx.x +  4]));
-        if (THREADS_PER_VECTOR >  2) sdata[threadIdx.x] = sum = reduce(sum, ValueType(sdata[threadIdx.x +  2]));
-        if (THREADS_PER_VECTOR >  1) sdata[threadIdx.x] = sum = reduce(sum, ValueType(sdata[threadIdx.x +  1]));
+        if (THREADS_PER_VECTOR > 16) {temp = sdata[threadIdx.x + 16]; sdata[threadIdx.x] = sum = reduce(sum, temp);}
+        if (THREADS_PER_VECTOR >  8) {temp = sdata[threadIdx.x +  8]; sdata[threadIdx.x] = sum = reduce(sum, temp);}
+        if (THREADS_PER_VECTOR >  4) {temp = sdata[threadIdx.x +  4]; sdata[threadIdx.x] = sum = reduce(sum, temp);}
+        if (THREADS_PER_VECTOR >  2) {temp = sdata[threadIdx.x +  2]; sdata[threadIdx.x] = sum = reduce(sum, temp);}
+        if (THREADS_PER_VECTOR >  1) {temp = sdata[threadIdx.x +  1]; sdata[threadIdx.x] = sum = reduce(sum, temp);}
 
         // first thread writes the result
         if (thread_lane == 0)
-            y[row] = sdata[threadIdx.x];
+            y[row] = ValueType(sdata[threadIdx.x]);
     }
 }
 
@@ -147,25 +155,29 @@ void __spmv_csr_vector(cuda::execution_policy<DerivedPolicy>& exec,
     typedef typename MatrixType::index_type IndexType;
     typedef typename MatrixType::value_type ValueType;
 
+    typedef typename MatrixType::row_offsets_array_type::const_iterator     RowIterator;
+    typedef typename MatrixType::column_indices_array_type::const_iterator  ColumnIterator;
+    typedef typename MatrixType::values_array_type::const_iterator          ValueIterator1;
+
+    typedef typename VectorType1::const_iterator                            ValueIterator2;
+    typedef typename VectorType2::iterator                                  ValueIterator3;
+
     const size_t THREADS_PER_BLOCK  = 128;
     const size_t VECTORS_PER_BLOCK  = THREADS_PER_BLOCK / THREADS_PER_VECTOR;
 
     const size_t MAX_BLOCKS = cusp::system::cuda::detail::max_active_blocks(
-        spmv_csr_vector_kernel<IndexType, ValueType, UnaryFunction, BinaryFunction1, BinaryFunction2,
+        spmv_csr_vector_kernel<RowIterator, ColumnIterator, ValueIterator1, ValueIterator2, ValueIterator3,
+			       UnaryFunction, BinaryFunction1, BinaryFunction2,
                                VECTORS_PER_BLOCK, THREADS_PER_VECTOR>, THREADS_PER_BLOCK, (size_t) 0);
     const size_t NUM_BLOCKS = std::min<size_t>(MAX_BLOCKS, DIVIDE_INTO(A.num_rows, VECTORS_PER_BLOCK));
 
-    const IndexType * R = thrust::raw_pointer_cast(&A.row_offsets[0]);
-    const IndexType * J = thrust::raw_pointer_cast(&A.column_indices[0]);
-    const ValueType * V = thrust::raw_pointer_cast(&A.values[0]);
-    const ValueType * x_ptr = thrust::raw_pointer_cast(&x[0]);
-          ValueType * y_ptr = thrust::raw_pointer_cast(&y[0]);
-
     cudaStream_t s = stream(thrust::detail::derived_cast(exec));
 
-    spmv_csr_vector_kernel<IndexType, ValueType, UnaryFunction, BinaryFunction1, BinaryFunction2,
+    spmv_csr_vector_kernel<RowIterator, ColumnIterator, ValueIterator1, ValueIterator2, ValueIterator3,
+	    	 	   UnaryFunction, BinaryFunction1, BinaryFunction2,
                            VECTORS_PER_BLOCK, THREADS_PER_VECTOR> <<<NUM_BLOCKS, THREADS_PER_BLOCK, 0, s>>>
-                          (A.num_rows, R, J, V, x_ptr, y_ptr, initialize, combine, reduce);
+                          (A.num_rows, A.row_offsets.begin(), A.column_indices.begin(), A.values.begin(), x.begin(), y.begin(),
+			   initialize, combine, reduce);
 }
 
 template <typename DerivedPolicy,
