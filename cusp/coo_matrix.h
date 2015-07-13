@@ -518,9 +518,10 @@ make_coo_matrix_view(const size_t num_rows,
                      ArrayType2 column_indices,
                      ArrayType3 values)
 {
-    return coo_matrix_view<ArrayType1,ArrayType2,ArrayType3>
-           (num_rows, num_cols, num_entries,
-            row_indices, column_indices, values);
+    coo_matrix_view<ArrayType1,ArrayType2,ArrayType3>
+           view(num_rows, num_cols, num_entries, row_indices, column_indices, values);
+
+    return view;
 }
 
 /**

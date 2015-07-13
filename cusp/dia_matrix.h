@@ -464,9 +464,10 @@ make_dia_matrix_view(size_t num_rows,
                      ArrayType1 diagonal_offsets,
                      ArrayType2 values)
 {
-    return dia_matrix_view<ArrayType1,ArrayType2>
-           (num_rows, num_cols, num_entries,
-            diagonal_offsets, values);
+    dia_matrix_view<ArrayType1,ArrayType2>
+           view(num_rows, num_cols, num_entries, diagonal_offsets, values);
+
+    return view;
 }
 
 /**

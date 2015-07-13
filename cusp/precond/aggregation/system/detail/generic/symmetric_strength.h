@@ -29,11 +29,6 @@ namespace aggregation
 namespace detail
 {
 
-template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
-void symmetric_strength_of_connection(thrust::system::detail::sequential::execution_policy<DerivedPolicy> &exec,
-                                      const MatrixType1& A, MatrixType2& S,
-                                      const double theta, cusp::csr_format);
-
 template<typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
 void symmetric_strength_of_connection(thrust::execution_policy<DerivedPolicy> &exec,
                                       const MatrixType1& A, MatrixType2& S,
