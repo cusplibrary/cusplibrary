@@ -69,7 +69,7 @@ protected:
 public:
 
 	// Allows display to stdout of search details
-	bool DEBUG;
+	bool B40C_DEBUG;
 
 	FrontierType GetFrontierType() { return frontier_type;}
 
@@ -78,9 +78,9 @@ protected:
 	/**
 	 * Constructor.
 	 */
-	EnactorBase(FrontierType frontier_type, bool DEBUG) :
+	EnactorBase(FrontierType frontier_type, bool B40C_DEBUG) :
 		frontier_type(frontier_type),
-		DEBUG(DEBUG)
+		B40C_DEBUG(B40C_DEBUG)
 	{
 		// Setup work progress (only needs doing once since we maintain
 		// it in our kernel code)

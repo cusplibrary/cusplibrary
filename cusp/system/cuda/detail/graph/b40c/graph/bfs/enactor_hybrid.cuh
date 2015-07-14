@@ -218,8 +218,8 @@ public:
     /**
      * Constructor
      */
-    EnactorHybrid(bool DEBUG = false) :
-        EnactorBase(EDGE_FRONTIERS, DEBUG),
+    EnactorHybrid(bool B40C_DEBUG = false) :
+        EnactorBase(EDGE_FRONTIERS, B40C_DEBUG),
         d_iteration(NULL),
         h_iteration(0),
         total_queued(0),
@@ -300,7 +300,7 @@ public:
             int contract_min_occupancy		= ContractPolicy::CTA_OCCUPANCY;
             int contract_grid_size 			= MaxGridSize(contract_min_occupancy, max_grid_size);
 
-            if (DEBUG) {
+            if (B40C_DEBUG) {
                 printf("BFS fused min occupancy %d, level-grid size %d\n",
                        fused_min_occupancy, fused_grid_size);
                 printf("BFS expand min occupancy %d, level-grid size %d\n",
@@ -355,7 +355,7 @@ public:
                     fused_kernel_stats,
                     (VertexId *) d_iteration);
 
-                if (DEBUG && (retval = util::B40CPerror<0>(cudaThreadSynchronize(), "contract_expand_atomic::KernelGlobalBarrier failed ", __FILE__, __LINE__))) break;
+                if (B40C_DEBUG && (retval = util::B40CPerror<0>(cudaThreadSynchronize(), "contract_expand_atomic::KernelGlobalBarrier failed ", __FILE__, __LINE__))) break;
                 cudaEventQuery(throttle_event);	// give host memory mapped visibility to GPU updates
 
                 // Retrieve output iteration
@@ -381,7 +381,7 @@ public:
                 // Update queue index by the number of elapsed iterations
                 queue_index += (iteration - one_phase_iteration);
 
-                if (DEBUG) {
+                if (B40C_DEBUG) {
                     if (retval = work_progress.GetQueueLength(queue_index, queue_length)) break;
                     printf("\n%lld, , , %lld", (long long) iteration, (long long) queue_length);
                 }
@@ -397,7 +397,7 @@ public:
                 VertexId two_phase_iteration = iteration;
                 while (done[0] < 0) {
 
-                    if (DEBUG) printf("\n%lld", (long long) iteration);
+                    if (B40C_DEBUG) printf("\n%lld", (long long) iteration);
 
                     //
                     // Filter
@@ -418,13 +418,13 @@ public:
                         graph_slice->frontier_elements[selector ^ 1],			// max vertex frontier vertices
                         this->filter_kernel_stats);
 
-                    if (DEBUG && (retval = util::B40CPerror<0>(cudaThreadSynchronize(), "filter_atomic::Kernel failed ", __FILE__, __LINE__))) break;
+                    if (B40C_DEBUG && (retval = util::B40CPerror<0>(cudaThreadSynchronize(), "filter_atomic::Kernel failed ", __FILE__, __LINE__))) break;
                     cudaEventQuery(throttle_event);	// give host memory mapped visibility to GPU updates
 
                     queue_index++;
                     selector ^= 1;
 
-                    if (DEBUG) {
+                    if (B40C_DEBUG) {
                         if (retval = work_progress.GetQueueLength(queue_index, queue_length)) break;
                         printf(", %lld", (long long) queue_length);
                     }
@@ -461,13 +461,13 @@ public:
                         graph_slice->frontier_elements[selector ^ 1],			// max out vertices
                         contract_kernel_stats);
 
-                    if (DEBUG && (retval = util::B40CPerror<0>(cudaThreadSynchronize(), "contract_atomic::Kernel failed ", __FILE__, __LINE__))) break;
+                    if (B40C_DEBUG && (retval = util::B40CPerror<0>(cudaThreadSynchronize(), "contract_atomic::Kernel failed ", __FILE__, __LINE__))) break;
                     cudaEventQuery(throttle_event);	// give host memory mapped visibility to GPU updates
 
                     queue_index++;
                     selector ^= 1;
 
-                    if (DEBUG) {
+                    if (B40C_DEBUG) {
                         if (work_progress.GetQueueLength(queue_index, queue_length)) break;
                         printf(", %lld", (long long) queue_length);
                     }
@@ -509,17 +509,17 @@ public:
                         graph_slice->frontier_elements[selector ^ 1],		// max out vertices
                         expand_kernel_stats);
 
-                    if (DEBUG && (retval = util::B40CPerror<0>(cudaThreadSynchronize(), "expand_atomic::Kernel failed ", __FILE__, __LINE__))) break;
+                    if (B40C_DEBUG && (retval = util::B40CPerror<0>(cudaThreadSynchronize(), "expand_atomic::Kernel failed ", __FILE__, __LINE__))) break;
                     cudaEventQuery(throttle_event);	// give host memory mapped visibility to GPU updates
 
                     queue_index++;
                     selector ^= 1;
                     iteration++;
 
-                    if (INSTRUMENT || DEBUG) {
+                    if (INSTRUMENT || B40C_DEBUG) {
                         if (work_progress.GetQueueLength(queue_index, queue_length)) break;
                         total_queued += queue_length;
-                        if (DEBUG) printf(", %lld", (long long) queue_length);
+                        if (B40C_DEBUG) printf(", %lld", (long long) queue_length);
                         if (INSTRUMENT) {
                             expand_kernel_stats.Accumulate(
                                 expand_grid_size,
@@ -543,7 +543,7 @@ public:
 
         } while (0);
 
-        if (DEBUG) printf("\n");
+        if (B40C_DEBUG) printf("\n");
 
         return retval;
     }
