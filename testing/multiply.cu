@@ -398,6 +398,138 @@ void TestSparseMatrixVectorMultiply()
 }
 DECLARE_SPARSE_MATRIX_UNITTEST(TestSparseMatrixVectorMultiply);
 
+template <typename SparseMatrixType, typename DenseMatrixType>
+void CompareScaledSparseMatrixVectorMultiply(DenseMatrixType A)
+{
+    typedef typename SparseMatrixType::memory_space MemorySpace;
+
+    // setup reference input
+    cusp::array1d<float, cusp::host_memory> x(A.num_cols);
+    cusp::array1d<float, cusp::host_memory> y(A.num_rows, 10);
+    for(size_t i = 0; i < x.size(); i++)
+        x[i] = i % 10;
+
+    thrust::identity<float>   initialize;
+    thrust::multiplies<float> combine;
+    thrust::plus<float>       reduce;
+
+    // compute reference output
+    cusp::multiply(A, x, y, initialize, combine, reduce);
+
+    // test container
+    {
+        SparseMatrixType _A(A);
+        cusp::array1d<float, MemorySpace> _x(x);
+        cusp::array1d<float, MemorySpace> _y(A.num_rows, 10);
+
+        cusp::multiply(_A, _x, _y, initialize, combine, reduce);
+
+        ASSERT_EQUAL(_y, y);
+    }
+
+    // test matrix view
+    {
+        SparseMatrixType _A(A);
+        cusp::array1d<float, MemorySpace> _x(x);
+        cusp::array1d<float, MemorySpace> _y(A.num_rows, 10);
+
+        typename SparseMatrixType::view _V(_A);
+        cusp::multiply(_V, _x, _y, initialize, combine, reduce);
+
+        ASSERT_EQUAL(_y, y);
+    }
+
+    // test array view
+    {
+        SparseMatrixType _A(A);
+        cusp::array1d<float, MemorySpace> _x(x);
+        cusp::array1d<float, MemorySpace> _y(A.num_rows, 10);
+
+        typename cusp::array1d<float, MemorySpace> _Vx(_x), _Vy(_y);
+        cusp::multiply(_A, _Vx, _Vy, initialize, combine, reduce);
+
+        ASSERT_EQUAL(_Vy, y);
+    }
+}
+
+template <class TestMatrix>
+void TestScaledSparseMatrixVectorMultiply()
+{
+    typedef typename TestMatrix::memory_space MemorySpace;
+
+    cusp::array2d<float, cusp::host_memory> A(5,4);
+    A(0,0) = 13;
+    A(0,1) = 80;
+    A(0,2) =  0;
+    A(0,3) =  0;
+    A(1,0) =  0;
+    A(1,1) = 27;
+    A(1,2) =  0;
+    A(1,3) =  0;
+    A(2,0) = 55;
+    A(2,1) =  0;
+    A(2,2) = 24;
+    A(2,3) = 42;
+    A(3,0) =  0;
+    A(3,1) = 69;
+    A(3,2) =  0;
+    A(3,3) = 83;
+    A(4,0) =  0;
+    A(4,1) =  0;
+    A(4,2) = 27;
+    A(4,3) =  0;
+
+    cusp::array2d<float,cusp::host_memory> B(2,4);
+    B(0,0) = 0.0;
+    B(0,1) = 2.0;
+    B(0,2) = 3.0;
+    B(0,3) = 4.0;
+    B(1,0) = 5.0;
+    B(1,1) = 0.0;
+    B(1,2) = 0.0;
+    B(1,3) = 8.0;
+
+    cusp::array2d<float,cusp::host_memory> C(2,2);
+    C(0,0) = 0.0;
+    C(0,1) = 0.0;
+    C(1,0) = 3.0;
+    C(1,1) = 5.0;
+
+    cusp::array2d<float,cusp::host_memory> D(2,1);
+    D(0,0) = 2.0;
+    D(1,0) = 3.0;
+
+    cusp::array2d<float,cusp::host_memory> E(2,2);
+    E(0,0) = 0.0;
+    E(0,1) = 0.0;
+    E(1,0) = 0.0;
+    E(1,1) = 0.0;
+
+    cusp::array2d<float,cusp::host_memory> F(2,3);
+    F(0,0) = 0.0;
+    F(0,1) = 1.5;
+    F(0,2) = 3.0;
+    F(1,0) = 0.5;
+    F(1,1) = 0.0;
+    F(1,2) = 0.0;
+
+    cusp::array2d<float,cusp::host_memory> G;
+    cusp::gallery::poisson5pt(G, 4, 6);
+
+    cusp::array2d<float,cusp::host_memory> H;
+    cusp::gallery::poisson5pt(H, 8, 3);
+
+    CompareScaledSparseMatrixVectorMultiply<TestMatrix>(A);
+    CompareScaledSparseMatrixVectorMultiply<TestMatrix>(B);
+    CompareScaledSparseMatrixVectorMultiply<TestMatrix>(C);
+    CompareScaledSparseMatrixVectorMultiply<TestMatrix>(D);
+    CompareScaledSparseMatrixVectorMultiply<TestMatrix>(E);
+    CompareScaledSparseMatrixVectorMultiply<TestMatrix>(F);
+    CompareScaledSparseMatrixVectorMultiply<TestMatrix>(G);
+    CompareScaledSparseMatrixVectorMultiply<TestMatrix>(H);
+}
+DECLARE_SPARSE_MATRIX_UNITTEST(TestScaledSparseMatrixVectorMultiply);
+
 //////////////////////////////
 // General Linear Operators //
 //////////////////////////////
@@ -603,7 +735,7 @@ void TestMatrixVectorMultiplyDispatch()
         my_system sys(0);
 
         // call with explicit dispatching
-        cusp::multiply(sys, A, x, x, cusp::detail::zero_function<float>(), thrust::multiplies<float>(), thrust::plus<float>());
+        cusp::multiply(sys, A, x, x, cusp::detail::zero_functor<float>(), thrust::multiplies<float>(), thrust::plus<float>());
 
         // check if dispatch policy was used
         ASSERT_EQUAL(true, sys.is_valid());

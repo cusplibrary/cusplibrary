@@ -77,7 +77,7 @@ void fit_candidates(thrust::execution_policy<DerivedPolicy> &exec,
 
         // compute sum of squares for each column of Q (rows of Qt)
         cusp::array1d<IndexType, MemorySpace> temp(num_aggregates);
-        thrust::transform(Qt.values.begin(), Qt.values.end(), Qt.values.begin(), cusp::detail::square<ValueType>());
+        thrust::transform(Qt.values.begin(), Qt.values.end(), Qt.values.begin(), cusp::detail::square_functor<ValueType>());
         thrust::reduce_by_key(Qt.row_indices.begin(), Qt.row_indices.end(),
                               Qt.values.begin(),
                               temp.begin(),
