@@ -382,7 +382,9 @@ template <typename ArrayType>
 permutation_matrix_view<ArrayType>
 make_permutation_matrix_view(size_t num_rows, ArrayType permutation)
 {
-    return permutation_matrix_view<ArrayType>(num_rows, permutation);
+    permutation_matrix_view<ArrayType> view(num_rows, permutation);
+
+    return view;
 }
 
 /**

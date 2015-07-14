@@ -198,8 +198,12 @@ struct row_or_column_view<Iterator,true>
 
     template< typename Array >
     static ArrayType get_array(Array& A, size_t i) {
-        return ArrayType(A.values.begin() + A.pitch * i,
-                         A.values.begin() + A.pitch * i + cusp::detail::minor_dimension(A.num_rows, A.num_cols, typename Array::orientation()));
+
+        ArrayType x(A.values.begin() + A.pitch * i,
+                    A.values.begin() + A.pitch * i +
+                    cusp::detail::minor_dimension(A.num_rows, A.num_cols, typename Array::orientation()));
+
+        return x;
     }
 };
 
@@ -211,9 +215,15 @@ struct row_or_column_view<Iterator,false>
 
     template< typename Array >
     static ArrayType get_array(Array& A, size_t i) {
+
         cusp::strided_iterator<Iterator> strided_range(A.values.begin() + i,
-                A.values.begin() + A.pitch * cusp::detail::major_dimension(A.num_rows, A.num_cols, typename Array::orientation()), A.pitch);
-        return ArrayType(strided_range.begin(), strided_range.end());
+                                                       A.values.begin() + A.pitch *
+                                                       cusp::detail::major_dimension(A.num_rows, A.num_cols, typename Array::orientation()),
+                                                       A.pitch);
+
+        ArrayType x(strided_range.begin(), strided_range.end());
+
+        return x;
     }
 };
 
