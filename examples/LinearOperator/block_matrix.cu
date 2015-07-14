@@ -89,7 +89,7 @@ public:
                                         thrust::make_transform_iterator(B.column_indices.cbegin(), ShiftOp(col)) + B.num_entries),
                                 cusp::make_array1d_view(B.values));
 
-            // compute row lengths of D matrix
+            // compute row lengths of C matrix
             cusp::array1d<IndexType,MemorySpace> C_row_lengths(C_list[i].num_rows + 1, 0);
             thrust::reduce_by_key(C_list[i].row_indices.begin(), C_list[i].row_indices.end(),
                                   thrust::constant_iterator<IndexType>(1),
@@ -191,6 +191,79 @@ public:
 
             cusp::array1d<IndexType,MemorySpace> B_t_row_offsets(num_rows + 1);
             cusp::indices_to_offsets(B_t.row_indices, B_t_row_offsets);
+
+            const MatrixType& E = D_list.back();
+
+            // compute row lengths of D matrix
+            cusp::array1d<IndexType,MemorySpace> E_row_lengths(num_rows + 1, 0);
+            thrust::reduce_by_key(E.row_indices.begin(), E.row_indices.end(),
+                                  thrust::constant_iterator<IndexType>(1),
+                                  thrust::make_discard_iterator(),
+                                  E_row_lengths.begin() + row);
+
+            // compute row lengths of D matrix
+            cusp::array1d<IndexType,MemorySpace> B_t_row_lengths(num_rows + 1, 0);
+            thrust::reduce_by_key(B_t.row_indices.begin(), B_t.row_indices.end(),
+                                  thrust::constant_iterator<IndexType>(1),
+                                  thrust::make_discard_iterator(),
+                                  B_t_row_lengths.begin() + row);
+
+            // compute combined operator offsets
+            cusp::array1d<IndexType,MemorySpace> K_row_offsets(num_rows + 1, 0);
+            thrust::transform(E_row_lengths.begin(), E_row_lengths.end(),
+                              B_t_row_lengths.begin(), K_row_offsets.begin(),
+                              thrust::plus<IndexType>());
+            thrust::exclusive_scan(K_row_offsets.begin(), K_row_offsets.end(), K_row_offsets.begin(), 0);
+
+            // transform D_row_lengths to D_row_offsets for scattering into D_map
+            thrust::exclusive_scan(B_t_row_lengths.begin(), B_t_row_lengths.end(), B_t_row_lengths.begin(), 0);
+
+            // allocate array of ones for mapping D nonzeros to K operator
+            cusp::array1d<IndexType,MemorySpace> B_t_map(B_t.num_entries, 1);
+            // scatter starting offsets with respect to K operator into D_map
+            thrust::scatter(K_row_offsets.begin(), K_row_offsets.end(), B_t_row_lengths.begin(), B_t_map.begin());
+            // run segmented scan over indices to construct running offsets of D matrix nonzeros
+            thrust::inclusive_scan_by_key(B_t.row_indices.begin(),
+                                          B_t.row_indices.end(),
+                                          B_t_map.begin(),
+                                          B_t_map.begin());
+
+            cusp::print(K_row_offsets);
+            cusp::print(B_t_row_lengths);
+            cusp::print(B_t_map);
+            // scatter final index offsets into indices array
+            thrust::scatter(thrust::counting_iterator<IndexType>(C_offset + D_offset),
+                            thrust::counting_iterator<IndexType>(C_offset + D_offset + B_t.num_entries),
+                            B_t_map.begin(),
+                            indices.begin() + C_offset + D_offset);
+
+            // shift K_row_offsets by D_row_offsets
+            /* cusp::blas::fill(E_row_lengths, 0); */
+            /* thrust::reduce_by_key(E.row_indices.begin(), E.row_indices.end(), */
+            /*                       thrust::constant_iterator<IndexType>(1), */
+            /*                       thrust::make_discard_iterator(), */
+            /*                       E_row_lengths.begin()); */
+            /* thrust::transform(B_t_row_lengths.begin(), B_t_row_lengths.end(), */
+            /*                   K_row_offsets.begin(), K_row_offsets.begin(), */
+            /*                   thrust::plus<IndexType>()); */
+            /*  */
+            /* // transform C_row_lengths to C_row_offsets for scattering into C_map */
+            /* thrust::exclusive_scan(E_row_lengths.begin(), E_row_lengths.end(), E_row_lengths.begin(), 0); */
+            /*  */
+            /* // allocate array of ones for mapping C nonzeros to K operator */
+            /* cusp::array1d<IndexType,MemorySpace> C_map(E.num_entries, 1); */
+            /* // scatter starting offsets with respect to K operator into C_map */
+            /* thrust::scatter(K_row_offsets.begin(), K_row_offsets.end(), E_row_lengths.begin(), C_map.begin()); */
+            /* // run segmented scan over indices to construct running offsets of D matrix nonzeros */
+            /* thrust::inclusive_scan_by_key(E.row_indices.begin(), */
+            /*                               E.row_indices.end(), */
+            /*                               C_map.begin(), */
+            /*                               C_map.begin()); */
+            /* // scatter final index offsets into indices array */
+            /* thrust::scatter(thrust::counting_iterator<IndexType>(C_offset + D_offset), */
+            /*                 thrust::counting_iterator<IndexType>(C_offset + D_offset + E.num_entries), */
+            /*                 C_map.begin(), */
+            /*                 indices.begin() + C_offset + D_offset + E.num_entries); */
         }
     }
 };
