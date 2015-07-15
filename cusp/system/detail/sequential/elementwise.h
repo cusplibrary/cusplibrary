@@ -107,7 +107,7 @@ void elementwise(sequential::execution_policy<DerivedPolicy>& exec,
         {
             ValueType result = op(A_row[head], B_row[head]);
 
-            if(result != 0)
+            if(result != ValueType(0))
             {
                 temp.column_indices[nnz] = head;
                 temp.values[nnz]         = result;

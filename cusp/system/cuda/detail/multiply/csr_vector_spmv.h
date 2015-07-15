@@ -55,9 +55,9 @@ namespace cuda
 
 
 template <typename RowIterator, typename ColumnIterator, typename ValueIterator1,
-	  typename ValueIterator2, typename ValueIterator3,
-	  typename UnaryFunction, typename BinaryFunction1, typename BinaryFunction2,
-          unsigned int VECTORS_PER_BLOCK, unsigned int THREADS_PER_VECTOR>
+         typename ValueIterator2, typename ValueIterator3,
+         typename UnaryFunction, typename BinaryFunction1, typename BinaryFunction2,
+         unsigned int VECTORS_PER_BLOCK, unsigned int THREADS_PER_VECTOR>
 __global__ void
 spmv_csr_vector_kernel(const unsigned int num_rows,
                        const RowIterator    Ap,
@@ -120,15 +120,30 @@ spmv_csr_vector_kernel(const unsigned int num_rows,
         // store local sum in shared memory
         sdata[threadIdx.x] = sum;
 
-	// TODO: remove temp var WAR for MSVC
-	ValueType temp; 
+        // TODO: remove temp var WAR for MSVC
+        ValueType temp;
 
         // reduce local sums to row sum
-        if (THREADS_PER_VECTOR > 16) {temp = sdata[threadIdx.x + 16]; sdata[threadIdx.x] = sum = reduce(sum, temp);}
-        if (THREADS_PER_VECTOR >  8) {temp = sdata[threadIdx.x +  8]; sdata[threadIdx.x] = sum = reduce(sum, temp);}
-        if (THREADS_PER_VECTOR >  4) {temp = sdata[threadIdx.x +  4]; sdata[threadIdx.x] = sum = reduce(sum, temp);}
-        if (THREADS_PER_VECTOR >  2) {temp = sdata[threadIdx.x +  2]; sdata[threadIdx.x] = sum = reduce(sum, temp);}
-        if (THREADS_PER_VECTOR >  1) {temp = sdata[threadIdx.x +  1]; sdata[threadIdx.x] = sum = reduce(sum, temp);}
+        if (THREADS_PER_VECTOR > 16) {
+            temp = sdata[threadIdx.x + 16];
+            sdata[threadIdx.x] = sum = reduce(sum, temp);
+        }
+        if (THREADS_PER_VECTOR >  8) {
+            temp = sdata[threadIdx.x +  8];
+            sdata[threadIdx.x] = sum = reduce(sum, temp);
+        }
+        if (THREADS_PER_VECTOR >  4) {
+            temp = sdata[threadIdx.x +  4];
+            sdata[threadIdx.x] = sum = reduce(sum, temp);
+        }
+        if (THREADS_PER_VECTOR >  2) {
+            temp = sdata[threadIdx.x +  2];
+            sdata[threadIdx.x] = sum = reduce(sum, temp);
+        }
+        if (THREADS_PER_VECTOR >  1) {
+            temp = sdata[threadIdx.x +  1];
+            sdata[threadIdx.x] = sum = reduce(sum, temp);
+        }
 
         // first thread writes the result
         if (thread_lane == 0)
@@ -166,18 +181,18 @@ void __spmv_csr_vector(cuda::execution_policy<DerivedPolicy>& exec,
     const size_t VECTORS_PER_BLOCK  = THREADS_PER_BLOCK / THREADS_PER_VECTOR;
 
     const size_t MAX_BLOCKS = cusp::system::cuda::detail::max_active_blocks(
-        spmv_csr_vector_kernel<RowIterator, ColumnIterator, ValueIterator1, ValueIterator2, ValueIterator3,
-			       UnaryFunction, BinaryFunction1, BinaryFunction2,
-                               VECTORS_PER_BLOCK, THREADS_PER_VECTOR>, THREADS_PER_BLOCK, (size_t) 0);
+                                  spmv_csr_vector_kernel<RowIterator, ColumnIterator, ValueIterator1, ValueIterator2, ValueIterator3,
+                                  UnaryFunction, BinaryFunction1, BinaryFunction2,
+                                  VECTORS_PER_BLOCK, THREADS_PER_VECTOR>, THREADS_PER_BLOCK, (size_t) 0);
     const size_t NUM_BLOCKS = std::min<size_t>(MAX_BLOCKS, DIVIDE_INTO(A.num_rows, VECTORS_PER_BLOCK));
 
     cudaStream_t s = stream(thrust::detail::derived_cast(exec));
 
     spmv_csr_vector_kernel<RowIterator, ColumnIterator, ValueIterator1, ValueIterator2, ValueIterator3,
-	    	 	   UnaryFunction, BinaryFunction1, BinaryFunction2,
+                           UnaryFunction, BinaryFunction1, BinaryFunction2,
                            VECTORS_PER_BLOCK, THREADS_PER_VECTOR> <<<NUM_BLOCKS, THREADS_PER_BLOCK, 0, s>>>
-                          (A.num_rows, A.row_offsets.begin(), A.column_indices.begin(), A.values.begin(), x.begin(), y.begin(),
-			   initialize, combine, reduce);
+                           (A.num_rows, A.row_offsets.begin(), A.column_indices.begin(), A.values.begin(), x.begin(), y.begin(),
+                            initialize, combine, reduce);
 }
 
 template <typename DerivedPolicy,

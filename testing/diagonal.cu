@@ -14,9 +14,10 @@
 template <class MatrixType>
 void _TestDiagonalPreconditioner(void)
 {
+    typedef typename MatrixType::value_type   ValueType;
     typedef typename MatrixType::memory_space Space;
 
-    cusp::array2d<float, Space> A(5,5);
+    cusp::array2d<ValueType, Space> A(5,5);
     A(0,0) = 1.0;
     A(0,1) = 1.0;
     A(0,2) = 2.0;
@@ -43,18 +44,18 @@ void _TestDiagonalPreconditioner(void)
     A(4,3) = 0.0;
     A(4,4) = 0.25;
 
-    cusp::array1d<float, Space> input(5, 1.0);
-    cusp::array1d<float, Space> expected(5);
+    cusp::array1d<ValueType, Space> input(5, 1.0);
+    cusp::array1d<ValueType, Space> expected(5);
     expected[0] = 1.00;
     expected[1] = 0.50;
     expected[2] = 2.00;
     expected[3] = 0.25;
     expected[4] = 4.00;
 
-    cusp::array1d<float, Space> output(5, 0.0f);
+    cusp::array1d<ValueType, Space> output(5, 0.0f);
 
     MatrixType M(A);
-    cusp::precond::diagonal<float, Space> D(M);
+    cusp::precond::diagonal<ValueType, Space> D(M);
 
     ASSERT_EQUAL(D.num_rows,    5);
     ASSERT_EQUAL(D.num_cols,    5);

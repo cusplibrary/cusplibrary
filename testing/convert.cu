@@ -375,13 +375,15 @@ void TestConversionToMatrixFormat(void)
 template <typename Matrix>
 void TestConversionToMatrix(void)
 {
-    TestConversionToMatrixFormat<Matrix, cusp::coo_matrix<int, float, cusp::host_memory> >();
-    TestConversionToMatrixFormat<Matrix, cusp::csr_matrix<int, float, cusp::host_memory> >();
-    TestConversionToMatrixFormat<Matrix, cusp::dia_matrix<int, float, cusp::host_memory> >();
-    TestConversionToMatrixFormat<Matrix, cusp::ell_matrix<int, float, cusp::host_memory> >();
-    TestConversionToMatrixFormat<Matrix, cusp::hyb_matrix<int, float, cusp::host_memory> >();
-    TestConversionToMatrixFormat<Matrix, cusp::array2d<float, cusp::host_memory, cusp::row_major>    >();
-    TestConversionToMatrixFormat<Matrix, cusp::array2d<float, cusp::host_memory, cusp::column_major> >();
+    typedef typename Matrix::value_type ValueType;
+
+    TestConversionToMatrixFormat<Matrix, cusp::coo_matrix<int, ValueType, cusp::host_memory> >();
+    TestConversionToMatrixFormat<Matrix, cusp::csr_matrix<int, ValueType, cusp::host_memory> >();
+    TestConversionToMatrixFormat<Matrix, cusp::dia_matrix<int, ValueType, cusp::host_memory> >();
+    TestConversionToMatrixFormat<Matrix, cusp::ell_matrix<int, ValueType, cusp::host_memory> >();
+    TestConversionToMatrixFormat<Matrix, cusp::hyb_matrix<int, ValueType, cusp::host_memory> >();
+    TestConversionToMatrixFormat<Matrix, cusp::array2d<ValueType, cusp::host_memory, cusp::row_major>    >();
+    TestConversionToMatrixFormat<Matrix, cusp::array2d<ValueType, cusp::host_memory, cusp::column_major> >();
 }
 
 ///////////////////////////

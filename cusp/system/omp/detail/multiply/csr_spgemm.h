@@ -115,7 +115,8 @@ size_t spmm_csr_pass2(const size_t num_rows, const size_t num_cols,
                 {
                     IndexType k = B_column_indices[kk];
 
-                    sums[k] += v * B_values[kk];
+                    ValueType b = B_values[kk];
+                    sums[k] += v * b;
 
                     if(next[k] == unseen)
                     {
@@ -132,7 +133,8 @@ size_t spmm_csr_pass2(const size_t num_rows, const size_t num_cols,
                 for(IndexType jj = 0; jj < length; jj++)
                 {
                     //MW: remove explicit zeros is serial work
-                    if(sums[head] != ValueType(0))
+                    ValueType shead = sums[head];
+                    if(shead != ValueType(0))
                     {
                         C_column_indices[num_nonzeros] = head;
                         C_values[num_nonzeros]         = sums[head];
