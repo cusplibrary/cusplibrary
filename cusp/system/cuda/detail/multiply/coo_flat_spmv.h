@@ -238,10 +238,14 @@ spmv_coo_flat_kernel(const IndexType num_nonzeros,
                      BinaryFunction1 combine,
                      BinaryFunction2 reduce)
 {
+    using namespace thrust::system::cuda::detail::cub_;
+
     typedef typename thrust::iterator_value<ValueIterator1>::type ValueType;
+    typedef WarpReduce<ValueType> WarpReduce;
 
     __shared__ volatile IndexType rows[48 *(BLOCK_SIZE/32)];
-    __shared__ volatile ValueType vals[BLOCK_SIZE];
+    __shared__ typename WarpReduce::TempStorage temp_storage[BLOCK_SIZE/WARP_SIZE];
+    // __shared__ volatile ValueType vals[BLOCK_SIZE];
 
     const IndexType thread_id   = BLOCK_SIZE * blockIdx.x + threadIdx.x;                         // global thread index
     const IndexType thread_lane = threadIdx.x & (WARP_SIZE-1);                                   // thread index within the warp
@@ -280,24 +284,24 @@ spmv_coo_flat_kernel(const IndexType num_nonzeros,
         rows[idx]         = row;
         vals[threadIdx.x] = val;
 
-        if(row == rows[idx -  1]) {
-            vals[threadIdx.x] = val = reduce(val, ValueType(vals[threadIdx.x -  1]));
-        }
-        if(row == rows[idx -  2]) {
-            vals[threadIdx.x] = val = reduce(val, ValueType(vals[threadIdx.x -  2]));
-        }
-        if(row == rows[idx -  4]) {
-            vals[threadIdx.x] = val = reduce(val, ValueType(vals[threadIdx.x -  4]));
-        }
-        if(row == rows[idx -  8]) {
-            vals[threadIdx.x] = val = reduce(val, ValueType(vals[threadIdx.x -  8]));
-        }
-        if(row == rows[idx - 16]) {
-            vals[threadIdx.x] = val = reduce(val, ValueType(vals[threadIdx.x - 16]));
-        }
-
-        if(thread_lane < 31 && row != rows[idx + 1])
-            y[row] = reduce(y[row], ValueType(vals[threadIdx.x]));                                            // row terminated
+        // if(row == rows[idx -  1]) {
+        //     vals[threadIdx.x] = val = reduce(val, ValueType(vals[threadIdx.x -  1]));
+        // }
+        // if(row == rows[idx -  2]) {
+        //     vals[threadIdx.x] = val = reduce(val, ValueType(vals[threadIdx.x -  2]));
+        // }
+        // if(row == rows[idx -  4]) {
+        //     vals[threadIdx.x] = val = reduce(val, ValueType(vals[threadIdx.x -  4]));
+        // }
+        // if(row == rows[idx -  8]) {
+        //     vals[threadIdx.x] = val = reduce(val, ValueType(vals[threadIdx.x -  8]));
+        // }
+        // if(row == rows[idx - 16]) {
+        //     vals[threadIdx.x] = val = reduce(val, ValueType(vals[threadIdx.x - 16]));
+        // }
+        //
+        // if(thread_lane < 31 && row != rows[idx + 1])
+        //     y[row] = reduce(y[row], ValueType(vals[threadIdx.x]));                                            // row terminated
     }
 
     if(thread_lane == 31)
