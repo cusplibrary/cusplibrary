@@ -15,8 +15,10 @@
 template <typename Matrix>
 void TestPrintMatrix(void)
 {
+    typedef typename Matrix::value_type ValueType;
+
     // initialize a 2x3 matrix
-    cusp::array2d<float, cusp::host_memory> A(2,3);
+    cusp::array2d<ValueType, cusp::host_memory> A(2,3);
     A(0,0) = 42;
     A(0,1) =  0;
     A(0,2) = 53;
