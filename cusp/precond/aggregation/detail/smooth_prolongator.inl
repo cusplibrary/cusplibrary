@@ -29,20 +29,19 @@ namespace aggregation
 template <typename DerivedPolicy,
           typename MatrixType1,
           typename MatrixType2,
-          typename MatrixType3,
-          typename ValueType>
+          typename MatrixType3>
 void smooth_prolongator(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
                         const MatrixType1& S,
                         const MatrixType2& T,
                         MatrixType3& P,
-                        const ValueType rho_Dinv_S,
-                        const ValueType omega)
+                        const double rho_Dinv_S,
+                        const double omega)
 {
     using cusp::precond::aggregation::detail::smooth_prolongator;
 
-    ValueType rho = rho_Dinv_S;
+    double rho = rho_Dinv_S;
 
-    if(rho == ValueType(0))
+    if(rho == double(0))
     {
         // compute spectral radius of diag(C)^-1 * C
         rho = detail::estimate_rho_Dinv_A(S);
@@ -51,12 +50,14 @@ void smooth_prolongator(const thrust::detail::execution_policy_base<DerivedPolic
     smooth_prolongator(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), S, T, P, rho, omega);
 }
 
-template <typename MatrixType1, typename MatrixType2, typename MatrixType3, typename ValueType>
+template <typename MatrixType1,
+          typename MatrixType2,
+          typename MatrixType3>
 void smooth_prolongator(const MatrixType1& S,
                         const MatrixType2& T,
                         MatrixType3& P,
-                        const ValueType rho_Dinv_S,
-                        const ValueType omega)
+                        const double rho_Dinv_S,
+                        const double omega)
 {
     using thrust::system::detail::generic::select_system;
 

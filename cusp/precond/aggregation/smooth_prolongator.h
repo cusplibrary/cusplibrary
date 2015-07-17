@@ -31,14 +31,13 @@ namespace aggregation
 template <typename DerivedPolicy,
           typename MatrixType1,
           typename MatrixType2,
-          typename MatrixType3,
-          typename ValueType>
+          typename MatrixType3>
 void smooth_prolongator(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
                         const MatrixType1& S,
                         const MatrixType2& T,
                               MatrixType3& P,
-                        const ValueType rho_Dinv_S = 0.0,
-                        const ValueType omega = 4.0/3.0);
+                        const double rho_Dinv_S = 0.0,
+                        const double omega = 4.0/3.0);
 /* \endcond */
 
 //   Smoothed (final) prolongator defined by P = (I - omega/rho(K) K) * T
@@ -46,13 +45,12 @@ void smooth_prolongator(const thrust::detail::execution_policy_base<DerivedPolic
 //   spectral radius of K.
 template <typename MatrixType1,
           typename MatrixType2,
-          typename MatrixType3,
-          typename ValueType>
+          typename MatrixType3>
 void smooth_prolongator(const MatrixType1& S,
                         const MatrixType2& T,
                               MatrixType3& P,
-                        const ValueType rho_Dinv_S = 0.0,
-                        const ValueType omega = 4.0/3.0);
+                        const double rho_Dinv_S = 0.0,
+                        const double omega = 4.0/3.0);
 
 } // end namespace aggregation
 } // end namespace precond

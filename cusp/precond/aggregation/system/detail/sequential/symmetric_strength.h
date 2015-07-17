@@ -62,13 +62,13 @@ void symmetric_strength_of_connection(thrust::system::detail::sequential::execut
     // count num_entries in output
     for(size_t i = 0; i < A.num_rows; i++)
     {
-        const NormType nAii = cusp::norm(diagonal[i]);
+        const NormType nAii = cusp::norm(ValueType(diagonal[i]));
 
         for(IndexType jj = A.row_offsets[i]; jj < A.row_offsets[i + 1]; jj++)
         {
             const IndexType   j  = A.column_indices[jj];
             const ValueType Aij  = A.values[jj];
-            const NormType  nAjj = cusp::norm(diagonal[j]);
+            const NormType  nAjj = cusp::norm(ValueType(diagonal[j]));
 
             //  |A(i,j)| >= theta * sqrt(|A(i,i)|*|A(j,j)|)
             if(cusp::norm(Aij) >= cusp::norm(theta) * sqrt(nAii * nAjj))
@@ -85,7 +85,7 @@ void symmetric_strength_of_connection(thrust::system::detail::sequential::execut
     // copy strong connections to output
     for(size_t i = 0; i < A.num_rows; i++)
     {
-        const NormType nAii = cusp::norm(diagonal[i]);
+        const NormType nAii = cusp::norm(ValueType(diagonal[i]));
 
         S.row_offsets[i] = num_entries;
 
@@ -93,7 +93,7 @@ void symmetric_strength_of_connection(thrust::system::detail::sequential::execut
         {
             const IndexType   j  = A.column_indices[jj];
             const ValueType Aij  = A.values[jj];
-            const NormType  nAjj = cusp::norm(diagonal[j]);
+            const NormType  nAjj = cusp::norm(ValueType(diagonal[j]));
 
             //  |A(i,j)| >= theta * sqrt(|A(i,i)|*|A(j,j)|)
 
