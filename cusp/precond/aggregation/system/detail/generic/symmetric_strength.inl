@@ -16,6 +16,7 @@
 
 
 #include <cusp/array1d.h>
+#include <cusp/complex.h>
 #include <cusp/convert.h>
 #include <cusp/copy.h>
 #include <cusp/csr_matrix.h>
@@ -40,20 +41,22 @@ namespace detail
 template <typename ValueType>
 struct is_strong_connection
 {
-    ValueType theta;
+    typedef typename cusp::detail::norm_type<ValueType>::type NormType;
 
-    is_strong_connection(const ValueType theta) : theta(theta) {}
+    NormType theta;
+
+    is_strong_connection(const NormType theta) : theta(theta) {}
 
     template <typename Tuple>
     __host__ __device__
     bool operator()(const Tuple& t) const
     {
-        ValueType Aij = thrust::get<0>(t);
-        ValueType Aii = thrust::get<1>(t);
-        ValueType Ajj = thrust::get<2>(t);
+        NormType nAij = cusp::norm(thrust::get<0>(t));
+        NormType nAii = cusp::norm(thrust::get<1>(t));
+        NormType nAjj = cusp::norm(thrust::get<2>(t));
 
         // square everything to eliminate the sqrt()
-        return (Aij * Aij) >= ((theta * theta) * cusp::detail::absolute<ValueType>()(Aii * Ajj));
+        return nAij >= (cusp::norm(theta) * (nAii * nAjj));
     }
 };
 

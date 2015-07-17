@@ -34,6 +34,7 @@ void arnoldi(const Matrix& A, Array2d& H, size_t k)
 {
     typedef typename Matrix::value_type   ValueType;
     typedef typename Matrix::memory_space MemorySpace;
+    typedef typename cusp::detail::norm_type<ValueType>::type NormType;
 
     size_t N = A.num_rows;
 
@@ -52,6 +53,8 @@ void arnoldi(const Matrix& A, Array2d& H, size_t k)
     // normalize v0
     cusp::blas::scal(V[0], ValueType(1) / cusp::blas::nrm2(V[0]));
 
+    NormType beta = 0.0;
+
     size_t j;
 
     for(j = 0; j < maxiter; j++)
@@ -60,14 +63,15 @@ void arnoldi(const Matrix& A, Array2d& H, size_t k)
 
         for(size_t i = 0; i <= j; i++)
         {
-            H_(i,j) = cusp::blas::dot(V[i], V[j + 1]);
+            H_(i,j) = cusp::blas::dotc(V[i], V[j + 1]);
 
             cusp::blas::axpy(V[i], V[j + 1], -H_(i,j));
         }
 
-        H_(j+1,j) = cusp::blas::nrm2(V[j + 1]);
+        beta = cusp::blas::nrm2(V[j + 1]);
+        H_(j + 1, j) = beta;
 
-        if(H_(j+1,j) < 1e-10) break;
+        if(beta < 1e-10) break;
 
         cusp::blas::scal(V[j + 1], ValueType(1) / H_(j+1,j));
     }

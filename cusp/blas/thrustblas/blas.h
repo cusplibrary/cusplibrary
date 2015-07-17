@@ -357,7 +357,7 @@ dotc(thrust::execution_policy<DerivedPolicy>& exec,
 
     return thrust::inner_product(exec,
                                  thrust::make_transform_iterator(x.begin(), detail::conjugate<OutputType>()),
-                                 thrust::make_transform_iterator(x.end(),  detail::conjugate<OutputType>()),
+                                 thrust::make_transform_iterator(x.end(),   detail::conjugate<OutputType>()),
                                  y.begin(),
                                  OutputType(0));
 }

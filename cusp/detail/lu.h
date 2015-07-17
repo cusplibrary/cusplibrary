@@ -34,6 +34,8 @@ int lu_factor(cusp::array2d<ValueType,MemorySpace,Orientation>& A,
     using thrust::abs;
     using std::abs;
 
+    typedef typename cusp::detail::norm_type<ValueType>::type NormType;
+
     const int n = A.num_rows;
 
     // For each row and column, k = 0, ..., n-1,
@@ -41,7 +43,7 @@ int lu_factor(cusp::array2d<ValueType,MemorySpace,Orientation>& A,
     {
         // find the pivot row
         pivot[k] = k;
-        ValueType max = abs(A(k,k));
+        NormType max = abs(A(k,k));
 
         for (int j = k + 1; j < n; j++)
         {
@@ -59,7 +61,7 @@ int lu_factor(cusp::array2d<ValueType,MemorySpace,Orientation>& A,
                 std::swap(A(k,j), A(pivot[k],j));
 
         // and if the matrix is singular, return error
-        if (A(k,k) == Valuetype(0))
+        if (A(k,k) == ValueType(0))
             return -1;
 
         // otherwise find the lower triangular matrix elements for column k.

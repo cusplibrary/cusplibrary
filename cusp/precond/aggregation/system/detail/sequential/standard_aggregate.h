@@ -34,7 +34,7 @@ void standard_aggregate(thrust::system::detail::sequential::execution_policy<Der
                         const MatrixType& A, ArrayType& aggregates, ArrayType& roots,
                         cusp::csr_format)
 {
-    typedef typename MatrixType::value_type IndexType;
+    typedef typename MatrixType::index_type IndexType;
 
     IndexType next_aggregate = 1; // number of aggregates + 1
 

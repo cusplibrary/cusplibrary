@@ -32,6 +32,21 @@ namespace cusp
 {
 
 using thrust::complex;
+using thrust::norm;
+
+template <typename ValueType>
+__host__ __device__
+inline ValueType norm(const ValueType& z) {
+    return z*z;
+}
+
+template <typename ValueType>
+__host__ __device__
+inline ValueType normsq(const ValueType& z) {
+    using thrust::sqrt;
+    using std::sqrt;
+    return sqrt(norm(z));
+}
 
 // define complex type for the purpose of Doxygenating it
 // it is actually defined in Thrust
@@ -633,3 +648,4 @@ template <typename T> __host__ __device__ inline bool operator!=(const complex<T
  */
 
 } // end namespace cusp
+

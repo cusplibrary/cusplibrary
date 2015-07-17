@@ -70,13 +70,13 @@ public:
     jacobi_smoother(const jacobi_smoother<ValueType2,MemorySpace2>& A) : num_iters(A.num_iters), M(A.M) {}
 
     template <typename MatrixType, typename Level>
-    jacobi_smoother(const MatrixType& A, const Level& L, ValueType weight=4.0/3.0)
+    jacobi_smoother(const MatrixType& A, const Level& L, double weight=4.0/3.0)
     {
         initialize(A, L, weight);
     }
 
     template <typename MatrixType, typename Level>
-    void initialize(const MatrixType& A, const Level& L, ValueType weight=4.0/3.0)
+    void initialize(const MatrixType& A, const Level& L, double weight=4.0/3.0)
     {
         num_iters = L.num_iters;
 

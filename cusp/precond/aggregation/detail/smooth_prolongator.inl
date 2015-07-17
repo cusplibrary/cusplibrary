@@ -42,7 +42,7 @@ void smooth_prolongator(const thrust::detail::execution_policy_base<DerivedPolic
 
     ValueType rho = rho_Dinv_S;
 
-    if(rho == 0)
+    if(rho == ValueType(0))
     {
         // compute spectral radius of diag(C)^-1 * C
         rho = detail::estimate_rho_Dinv_A(S);

@@ -75,6 +75,7 @@ void lanczos_estimate(const Matrix& A, Array2d& H, size_t k)
 {
     typedef typename Matrix::value_type   ValueType;
     typedef typename Matrix::memory_space MemorySpace;
+    typedef typename cusp::detail::norm_type<ValueType>::type NormType;
 
     size_t N = A.num_cols;
     size_t maxiter = std::min(N, k);
@@ -91,7 +92,8 @@ void lanczos_estimate(const Matrix& A, Array2d& H, size_t k)
 
     Array2d H_(maxiter + 1, maxiter, 0);
 
-    ValueType alpha = 0.0, beta = 0.0;
+    ValueType alpha = 0.0;
+    NormType beta = 0.0;
 
     size_t j;
 
@@ -105,7 +107,7 @@ void lanczos_estimate(const Matrix& A, Array2d& H, size_t k)
             cusp::blas::axpy(v0, w, -beta);
         }
 
-        alpha = cusp::blas::dot(w, v1);
+        alpha = cusp::blas::dotc(w, v1);
         H_(j,j) = alpha;
 
         cusp::blas::axpy(v1, w, -alpha);
@@ -159,6 +161,7 @@ template <typename Matrix>
 double ritz_spectral_radius(const Matrix& A, size_t k, bool symmetric)
 {
     typedef typename Matrix::value_type ValueType;
+    typedef typename cusp::detail::norm_type<ValueType>::type NormType;
 
     cusp::array2d<ValueType,cusp::host_memory> H;
 
