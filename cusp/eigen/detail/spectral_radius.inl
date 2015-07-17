@@ -47,18 +47,23 @@ double disks_spectral_radius(const Matrix& A, coo_format)
     typedef typename Matrix::index_type   IndexType;
     typedef typename Matrix::value_type   ValueType;
     typedef typename Matrix::memory_space MemorySpace;
+    typedef typename cusp::detail::norm_type<ValueType>::type NormType;
 
     const IndexType N = A.num_rows;
 
     // compute sum of absolute values for each row of A
-    cusp::array1d<IndexType, MemorySpace> row_sums(N);
+    cusp::array1d<NormType, MemorySpace> row_sums(N, NormType(0));
+    cusp::array1d<NormType, MemorySpace> abs_values(A.num_entries);
+    // thrust::transform(A.values.begin(), A.values.end(), abs_values.begin(), cusp::detail::absolute<ValueType>());
 
-    cusp::array1d<IndexType, MemorySpace> temp(N);
     thrust::reduce_by_key
     (A.row_indices.begin(), A.row_indices.end(),
-     thrust::make_transform_iterator(A.values.begin(), cusp::detail::absolute<ValueType>()),
-     temp.begin(),
-     row_sums.begin());
+     // thrust::make_transform_iterator(A.values.begin(), cusp::detail::absolute<ValueType>()),
+     abs_values.begin(),
+     thrust::make_discard_iterator(),
+     row_sums.begin(),
+     thrust::equal_to<IndexType>(),
+     thrust::plus<NormType>());
 
     return *thrust::max_element(row_sums.begin(), row_sums.end());
 }
@@ -66,7 +71,10 @@ double disks_spectral_radius(const Matrix& A, coo_format)
 template <typename Matrix>
 double disks_spectral_radius(const Matrix& A, sparse_format)
 {
-    typename cusp::detail::as_coo_type<Matrix>::type A_coo(A);
+    typedef typename Matrix::const_coo_view_type CooView;
+
+    CooView A_coo(A);
+
     return disks_spectral_radius(A_coo, coo_format());
 }
 

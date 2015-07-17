@@ -69,11 +69,15 @@ spmv_csr_vector_kernel(const unsigned int num_rows,
                        BinaryFunction1 combine,
                        BinaryFunction2 reduce)
 {
+    using namespace thrust::system::cuda::detail::cub_;
+
     typedef typename thrust::iterator_value<RowIterator>::type    IndexType;
     typedef typename thrust::iterator_value<ValueIterator1>::type ValueType;
+    typedef WarpReduce<ValueType,THREADS_PER_VECTOR> WarpReduce;
 
-    __shared__ volatile ValueType sdata[VECTORS_PER_BLOCK * THREADS_PER_VECTOR + THREADS_PER_VECTOR / 2];  // padded to avoid reduction conditionals
+    // __shared__ volatile ValueType sdata[VECTORS_PER_BLOCK * THREADS_PER_VECTOR + THREADS_PER_VECTOR / 2];  // padded to avoid reduction conditionals
     __shared__ volatile IndexType ptrs[VECTORS_PER_BLOCK][2];
+    __shared__ typename WarpReduce::TempStorage temp_storage[VECTORS_PER_BLOCK];
 
     const IndexType THREADS_PER_BLOCK = VECTORS_PER_BLOCK * THREADS_PER_VECTOR;
 
@@ -117,37 +121,43 @@ spmv_csr_vector_kernel(const unsigned int num_rows,
                 sum = reduce(sum, combine(Ax[jj], x[Aj[jj]]));
         }
 
-        // store local sum in shared memory
-        sdata[threadIdx.x] = sum;
-
-        // TODO: remove temp var WAR for MSVC
-        ValueType temp;
-
-        // reduce local sums to row sum
-        if (THREADS_PER_VECTOR > 16) {
-            temp = sdata[threadIdx.x + 16];
-            sdata[threadIdx.x] = sum = reduce(sum, temp);
-        }
-        if (THREADS_PER_VECTOR >  8) {
-            temp = sdata[threadIdx.x +  8];
-            sdata[threadIdx.x] = sum = reduce(sum, temp);
-        }
-        if (THREADS_PER_VECTOR >  4) {
-            temp = sdata[threadIdx.x +  4];
-            sdata[threadIdx.x] = sum = reduce(sum, temp);
-        }
-        if (THREADS_PER_VECTOR >  2) {
-            temp = sdata[threadIdx.x +  2];
-            sdata[threadIdx.x] = sum = reduce(sum, temp);
-        }
-        if (THREADS_PER_VECTOR >  1) {
-            temp = sdata[threadIdx.x +  1];
-            sdata[threadIdx.x] = sum = reduce(sum, temp);
-        }
+        ValueType aggregate = WarpReduce(temp_storage[vector_lane]).Reduce(sum, reduce);
 
         // first thread writes the result
         if (thread_lane == 0)
-            y[row] = ValueType(sdata[threadIdx.x]);
+            y[row] = aggregate;
+
+        // // store local sum in shared memory
+        // sdata[threadIdx.x] = sum;
+        //
+        // // TODO: remove temp var WAR for MSVC
+        // ValueType temp;
+        //
+        // // reduce local sums to row sum
+        // if (THREADS_PER_VECTOR > 16) {
+        //     temp = sdata[threadIdx.x + 16];
+        //     sdata[threadIdx.x] = sum = reduce(sum, temp);
+        // }
+        // if (THREADS_PER_VECTOR >  8) {
+        //     temp = sdata[threadIdx.x +  8];
+        //     sdata[threadIdx.x] = sum = reduce(sum, temp);
+        // }
+        // if (THREADS_PER_VECTOR >  4) {
+        //     temp = sdata[threadIdx.x +  4];
+        //     sdata[threadIdx.x] = sum = reduce(sum, temp);
+        // }
+        // if (THREADS_PER_VECTOR >  2) {
+        //     temp = sdata[threadIdx.x +  2];
+        //     sdata[threadIdx.x] = sum = reduce(sum, temp);
+        // }
+        // if (THREADS_PER_VECTOR >  1) {
+        //     temp = sdata[threadIdx.x +  1];
+        //     sdata[threadIdx.x] = sum = reduce(sum, temp);
+        // }
+        //
+        // // first thread writes the result
+        // if (thread_lane == 0)
+        //     y[row] = ValueType(sdata[threadIdx.x]);
     }
 }
 

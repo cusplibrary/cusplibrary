@@ -27,6 +27,30 @@ namespace cusp
 namespace detail
 {
 
+#if THRUST_VERSION < 100800
+struct print_marshall
+{
+    template<typename T, typename Stream>
+    void operator()(const T& val, Stream& s)
+    {
+        s << " "  << std::setw(14) << "(" << val << ")\n";
+    }
+
+    template<typename T, typename Stream>
+    void operator()(const thrust::complex<T>& val, Stream& s)
+    {
+        s << " "  << std::setw(14) << "(" << val.real() << ", " << val.imag() << ")\n";
+    }
+
+    template<typename T, typename Stream>
+    void operator()(const thrust::device_reference<T>& val, Stream& s)
+    {
+        T cval(val);
+        operator()(cval, s);
+    }
+};
+#endif
+
 template <typename Printable, typename Stream>
 void print(const Printable& p, Stream& s, cusp::coo_format)
 {
@@ -36,7 +60,11 @@ void print(const Printable& p, Stream& s, cusp::coo_format)
     {
         s << " " << std::setw(14) << p.row_indices[n];
         s << " " << std::setw(14) << p.column_indices[n];
-        s << " " << std::setw(14) << p.values[n] << "\n";
+        #if THRUST_VERSION < 100800
+        print_marshall()(p.values[n], s);
+        #else
+        s << " " << std::setw(14) << p.values[n];
+        #endif
     }
 }
 
@@ -57,7 +85,11 @@ void print(const Printable& p, Stream& s, cusp::array2d_format)
     {
         for(size_t j = 0; j < p.num_cols; j++)
         {
+            #if THRUST_VERSION < 100800
+            print_marshall()(p(i,j), s);
+            #else
             s << std::setw(14) << p(i,j);
+            #endif
         }
 
         s << "\n";
@@ -70,7 +102,11 @@ void print(const Printable& p, Stream& s, cusp::array1d_format)
     s << "array1d <" << p.size() << ">\n";
 
     for(size_t i = 0; i < p.size(); i++)
+        #if THRUST_VERSION < 100800
+        print_marshall()(p[i], s);
+        #else
         s << std::setw(14) << p[i] << "\n";
+        #endif
 }
 
 } // end namespace detail

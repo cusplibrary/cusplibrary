@@ -1,7 +1,8 @@
 #pragma once
 
 #include <cusp/array1d.h>
-#include <thrust/complex.h>
+#include <cusp/complex.h>
+
 #include <thrust/host_vector.h>
 #include <thrust/device_vector.h>
 #include <thrust/iterator/iterator_traits.h>

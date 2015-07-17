@@ -42,10 +42,12 @@ namespace detail
 
 // absolute<T> computes the absolute value of a number f(x) -> |x|
 template <typename T>
-struct absolute : public thrust::unary_function<T,T>
+struct absolute : public thrust::unary_function<T, typename cusp::detail::norm_type<T>::type>
 {
+    typedef typename cusp::detail::norm_type<T>::type NormType;
+
     __host__ __device__
-    T operator()(const T& x)
+    NormType operator()(const T& x)
     {
         using thrust::abs;
         using std::abs;
