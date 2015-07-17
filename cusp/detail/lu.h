@@ -31,6 +31,9 @@ template <typename IndexType, typename ValueType, typename MemorySpace, typename
 int lu_factor(cusp::array2d<ValueType,MemorySpace,Orientation>& A,
               cusp::array1d<IndexType,MemorySpace>& pivot)
 {
+    using thrust::abs;
+    using std::abs;
+
     const int n = A.num_rows;
 
     // For each row and column, k = 0, ..., n-1,
@@ -38,13 +41,13 @@ int lu_factor(cusp::array2d<ValueType,MemorySpace,Orientation>& A,
     {
         // find the pivot row
         pivot[k] = k;
-        ValueType max = std::fabs(A(k,k));
+        ValueType max = abs(A(k,k));
 
         for (int j = k + 1; j < n; j++)
         {
-            if (max < std::fabs(A(j,k)))
+            if (max < abs(A(j,k)))
             {
-                max = std::fabs(A(j,k));
+                max = abs(A(j,k));
                 pivot[k] = j;
             }
         }
@@ -56,7 +59,7 @@ int lu_factor(cusp::array2d<ValueType,MemorySpace,Orientation>& A,
                 std::swap(A(k,j), A(pivot[k],j));
 
         // and if the matrix is singular, return error
-        if (A(k,k) == 0.0)
+        if (A(k,k) == Valuetype(0))
             return -1;
 
         // otherwise find the lower triangular matrix elements for column k.
@@ -103,7 +106,7 @@ int lu_solve(const cusp::array2d<ValueType,MemorySpace,Orientation>& A,
         for (int i = k + 1; i < n; i++)
             x[k] -= A(k,i) * x[i];
 
-        if (A(k,k) == 0)
+        if (A(k,k) == ValueType(0))
             return -1;
 
         x[k] /= A(k,k);
