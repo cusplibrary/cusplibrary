@@ -158,9 +158,11 @@ struct PartialProduct<int, double>
 /**
  * Reduce-value-by-row scan operator
  */
-template <typename PartialType>
+template <typename PartialType, typename BinaryFunction>
 struct ReduceByKeyOp
 {
+    BinaryFunction reduce_op;
+
     __device__ __forceinline__ PartialType operator()(
         const PartialType &first,
         const PartialType &second)
@@ -169,7 +171,7 @@ struct ReduceByKeyOp
 
         retval.partial = (second.row != first.row) ?
                          second.partial :
-                         first.partial + second.partial;
+                         reduce_op(first.partial, second.partial);
 
         retval.row = second.row;
         return retval;
@@ -180,12 +182,12 @@ struct ReduceByKeyOp
 /**
  * Stateful block-wide prefix operator for BlockScan
  */
-template <typename PartialProduct>
+template <typename PartialProduct, typename BinaryFunction>
 struct BlockPrefixCallbackOp
 {
     // Running block-wide prefix
     PartialProduct running_prefix;
-    ReduceByKeyOp<PartialProduct> scan_op;
+    ReduceByKeyOp<PartialProduct,BinaryFunction> scan_op;
 
     /**
      * Returns the block-wide running_prefix in thread-0
@@ -233,7 +235,9 @@ template <
     typename        ColumnIterator,
     typename        ValueIterator1,
     typename        ValueIterator2,
-    typename        ValueIterator3>
+    typename        ValueIterator3,
+    typename        BinaryFunction1,
+    typename        BinaryFunction2>
 struct PersistentBlockSpmv
 {
     //---------------------------------------------------------------------
@@ -292,7 +296,7 @@ struct PersistentBlockSpmv
     //---------------------------------------------------------------------
 
     TempStorage                     &temp_storage;
-    BlockPrefixCallbackOp<PartialProduct>   prefix_op;
+    BlockPrefixCallbackOp<PartialProduct,BinaryFunction2>   prefix_op;
     RowIterator                     d_rows;
     ColumnIterator                  d_columns;
     ValueIterator1                  d_values;
@@ -301,7 +305,8 @@ struct PersistentBlockSpmv
     PartialIterator                 d_block_partials;
     int                             block_offset;
     int                             block_end;
-
+    BinaryFunction1                 combine_op;
+    BinaryFunction2                 reduce_op;
 
     //---------------------------------------------------------------------
     // Operations
@@ -320,7 +325,9 @@ struct PersistentBlockSpmv
         ValueIterator3              d_result,
         PartialIterator             d_block_partials,
         int                         block_offset,
-        int                         block_end)
+        int                         block_end,
+        BinaryFunction1             combine_op,
+        BinaryFunction2             reduce_op)
         :
         temp_storage(temp_storage),
         d_rows(d_rows),
@@ -330,7 +337,9 @@ struct PersistentBlockSpmv
         d_result(d_result),
         d_block_partials(d_block_partials),
         block_offset(block_offset),
-        block_end(block_end)
+        block_end(block_end),
+        combine_op(combine_op),
+        reduce_op(reduce_op)
     {
         // Initialize scalar shared memory values
         if (threadIdx.x == 0)
@@ -386,12 +395,8 @@ struct PersistentBlockSpmv
 #pragma unroll
         for (int ITEM = 0; ITEM < ITEMS_PER_THREAD; ITEM++)
         {
-#if CUB_PTX_ARCH >= 350
-            values[ITEM] *= ThreadLoad<LOAD_LDG>(d_vector + columns[ITEM]);
-#else
             // values[ITEM] *= TexVector<ValueType>::Load(columns[ITEM]);
-            values[ITEM] *= d_vector[columns[ITEM]];
-#endif
+            values[ITEM] = combine_op(values[ITEM], d_vector[columns[ITEM]]);
         }
 
         // Transpose from warp-striped to blocked arrangement
@@ -429,7 +434,7 @@ struct PersistentBlockSpmv
             partial_sums,                   // Scan input
             partial_sums,                   // Scan output
             identity,
-            ReduceByKeyOp<PartialProduct>(),// Scan operator
+            ReduceByKeyOp<PartialProduct,BinaryFunction2>(),// Scan operator
             block_aggregate,                // Block-wide total (unused)
             prefix_op);                     // Prefix operator for seeding the block-wide scan with the running total
 
@@ -442,7 +447,7 @@ struct PersistentBlockSpmv
         {
             if (head_flags[ITEM])
             {
-                d_result[partial_sums[ITEM].row] = partial_sums[ITEM].partial;
+                d_result[partial_sums[ITEM].row] = reduce_op(d_result[partial_sums[ITEM].row], partial_sums[ITEM].partial);
 
                 // Save off the first partial product that this thread block will scatter
                 if (partial_sums[ITEM].row == temp_storage.first_block_row)
@@ -479,7 +484,7 @@ struct PersistentBlockSpmv
             if (gridDim.x == 1)
             {
                 // Scatter the final aggregate (this kernel contains only 1 threadblock)
-                d_result[prefix_op.running_prefix.row] = prefix_op.running_prefix.partial;
+                d_result[prefix_op.running_prefix.row] = reduce_op(d_result[prefix_op.running_prefix.row], prefix_op.running_prefix.partial);
             }
             else
             {
@@ -505,7 +510,8 @@ template <
     int             BLOCK_THREADS,
     int             ITEMS_PER_THREAD,
     typename        PartialIterator,
-    typename        ValueIterator>
+    typename        ValueIterator,
+    typename        BinaryFunction>
 struct FinalizeSpmvBlock
 {
     //---------------------------------------------------------------------
@@ -546,10 +552,11 @@ struct FinalizeSpmvBlock
     //---------------------------------------------------------------------
 
     TempStorage                             &temp_storage;
-    BlockPrefixCallbackOp<PartialProduct>   prefix_op;
+    BlockPrefixCallbackOp<PartialProduct,BinaryFunction>   prefix_op;
     ValueIterator                           d_result;
     PartialIterator                         d_block_partials;
     int                                     num_partials;
+    BinaryFunction                          reduce_op;
 
 
     //---------------------------------------------------------------------
@@ -564,12 +571,14 @@ struct FinalizeSpmvBlock
         TempStorage                 &temp_storage,
         ValueIterator               d_result,
         PartialIterator             d_block_partials,
-        int                         num_partials)
+        int                         num_partials,
+        BinaryFunction              reduce_op)
         :
         temp_storage(temp_storage),
         d_result(d_result),
         d_block_partials(d_block_partials),
-        num_partials(num_partials)
+        num_partials(num_partials),
+        reduce_op(reduce_op)
     {
         // Initialize scalar shared memory values
         if (threadIdx.x == 0)
@@ -604,11 +613,7 @@ struct FinalizeSpmvBlock
         if (FULL_TILE)
         {
             // Full tile
-#if CUB_PTX_ARCH >= 350
-            LoadDirectBlocked<LOAD_LDG>(threadIdx.x, d_block_partials + block_offset, partial_sums);
-#else
             LoadDirectBlocked(threadIdx.x, d_block_partials + block_offset, partial_sums);
-#endif
         }
         else
         {
@@ -617,11 +622,7 @@ struct FinalizeSpmvBlock
             default_sum.row = temp_storage.last_block_row;
             default_sum.partial = ValueType(0);
 
-#if CUB_PTX_ARCH >= 350
-            LoadDirectBlocked<LOAD_LDG>(threadIdx.x, d_block_partials + block_offset, partial_sums, guarded_items, default_sum);
-#else
             LoadDirectBlocked(threadIdx.x, d_block_partials + block_offset, partial_sums, guarded_items, default_sum);
-#endif
         }
 
         // Copy out row IDs for row-head flagging
@@ -647,7 +648,7 @@ struct FinalizeSpmvBlock
             partial_sums,                   // Scan input
             partial_sums,                   // Scan input
             identity,
-            ReduceByKeyOp<PartialProduct>(),// Scan operator
+            ReduceByKeyOp<PartialProduct,BinaryFunction>(),// Scan operator
             block_aggregate,                // Block-wide total (unused)
             prefix_op);                     // Prefix operator for seeding the block-wide scan with the running total
 
@@ -657,7 +658,7 @@ struct FinalizeSpmvBlock
         {
             if (head_flags[ITEM])
             {
-                d_result[partial_sums[ITEM].row] = partial_sums[ITEM].partial;
+                d_result[partial_sums[ITEM].row] = reduce_op(d_result[partial_sums[ITEM].row], partial_sums[ITEM].partial);
             }
         }
     }
@@ -687,7 +688,7 @@ struct FinalizeSpmvBlock
         // Scatter the final aggregate (this kernel contains only 1 threadblock)
         if (threadIdx.x == 0)
         {
-            d_result[prefix_op.running_prefix.row] = prefix_op.running_prefix.partial;
+            d_result[prefix_op.running_prefix.row] = reduce_op(d_result[prefix_op.running_prefix.row], prefix_op.running_prefix.partial);
         }
     }
 };
@@ -710,7 +711,9 @@ template <
     typename                        ColumnIterator,
     typename                        ValueIterator1,
     typename                        ValueIterator2,
-    typename                        ValueIterator3>
+    typename                        ValueIterator3,
+    typename                        BinaryFunction1,
+    typename                        BinaryFunction2>
 __launch_bounds__ (BLOCK_THREADS)
 __global__ void CooKernel(
     GridEvenShare<int>                    even_share,
@@ -719,10 +722,12 @@ __global__ void CooKernel(
     const ColumnIterator                  d_columns,
     const ValueIterator1                  d_values,
     const ValueIterator2                  d_vector,
-    ValueIterator3                        d_result)
+    ValueIterator3                        d_result,
+    BinaryFunction1                       combine_op,
+    BinaryFunction2                       reduce_op)
 {
     // Specialize SpMV threadblock abstraction type
-    typedef PersistentBlockSpmv<BLOCK_THREADS, ITEMS_PER_THREAD, PartialIterator, RowIterator, ColumnIterator, ValueIterator1, ValueIterator2, ValueIterator3> PersistentBlockSpmv;
+    typedef PersistentBlockSpmv<BLOCK_THREADS, ITEMS_PER_THREAD, PartialIterator, RowIterator, ColumnIterator, ValueIterator1, ValueIterator2, ValueIterator3, BinaryFunction1, BinaryFunction2> PersistentBlockSpmv;
 
     // Shared memory allocation
     __shared__ typename PersistentBlockSpmv::TempStorage temp_storage;
@@ -740,7 +745,9 @@ __global__ void CooKernel(
         d_result,
         d_block_partials,
         even_share.block_offset,
-        even_share.block_end);
+        even_share.block_end,
+        combine_op,
+        reduce_op);
 
     // Process input tiles
     persistent_block.ProcessTiles();
@@ -754,21 +761,23 @@ template <
     int                             BLOCK_THREADS,
     int                             ITEMS_PER_THREAD,
     typename                        PartialIterator,
-    typename                        ValueIterator>
+    typename                        ValueIterator,
+    typename                        BinaryFunction>
 __launch_bounds__ (BLOCK_THREADS,  1)
 __global__ void CooFinalizeKernel(
     PartialIterator                      d_block_partials,
     int                                  num_partials,
-    ValueIterator                        d_result)
+    ValueIterator                        d_result,
+    BinaryFunction                       reduce_op)
 {
     // Specialize "fix-up" threadblock abstraction type
-    typedef FinalizeSpmvBlock<BLOCK_THREADS, ITEMS_PER_THREAD, PartialIterator, ValueIterator> FinalizeSpmvBlock;
+    typedef FinalizeSpmvBlock<BLOCK_THREADS, ITEMS_PER_THREAD, PartialIterator, ValueIterator, BinaryFunction> FinalizeSpmvBlock;
 
     // Shared memory allocation
     __shared__ typename FinalizeSpmvBlock::TempStorage temp_storage;
 
     // Construct persistent thread block
-    FinalizeSpmvBlock persistent_block(temp_storage, d_result, d_block_partials, num_partials);
+    FinalizeSpmvBlock persistent_block(temp_storage, d_result, d_block_partials, num_partials, reduce_op);
 
     // Process input tiles
     persistent_block.ProcessTiles();
@@ -809,6 +818,12 @@ void __spmv_coo_flat(cuda::execution_policy<DerivedPolicy>& exec,
     if (InitializeY)
         thrust::fill(y.begin(), y.begin() + A.num_rows, ValueType(0));
 
+    if(A.num_entries == 0)
+    {
+        // empty matrix
+        return;
+    }
+
     cudaStream_t s = stream(thrust::detail::derived_cast(exec));
 
     // Parameterization for SM35
@@ -830,7 +845,10 @@ void __spmv_coo_flat(cuda::execution_policy<DerivedPolicy>& exec,
     // Determine launch configuration from kernel properties
     int coo_sm_occupancy = 0;
     MaxSmOccupancy(coo_sm_occupancy,
-                   CooKernel<COO_BLOCK_THREADS, COO_ITEMS_PER_THREAD, PartialIterator, RowIterator, ColumnIterator, ValueIterator1, ValueIterator2, ValueIterator3>,
+                   CooKernel<COO_BLOCK_THREADS, COO_ITEMS_PER_THREAD,
+                             PartialIterator, RowIterator, ColumnIterator,
+                             ValueIterator1, ValueIterator2, ValueIterator3,
+                             BinaryFunction1, BinaryFunction2>,
                    COO_BLOCK_THREADS);
 
     int sm_count;
@@ -858,7 +876,9 @@ void __spmv_coo_flat(cuda::execution_policy<DerivedPolicy>& exec,
         A.column_indices.begin(),
         A.values.begin(),
         x.begin(),
-        y.begin());
+        y.begin(),
+        combine,
+        reduce);
 
     if (coo_grid_size > 1)
     {
@@ -866,7 +886,8 @@ void __spmv_coo_flat(cuda::execution_policy<DerivedPolicy>& exec,
         CooFinalizeKernel<FINALIZE_BLOCK_THREADS, FINALIZE_ITEMS_PER_THREAD><<<1, FINALIZE_BLOCK_THREADS, 0, s>>>(
             thrust::raw_pointer_cast(&block_partials[0]),
             num_partials,
-            y.begin());
+            y.begin(),
+            reduce);
     }
 }
 

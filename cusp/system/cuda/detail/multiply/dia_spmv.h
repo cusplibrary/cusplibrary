@@ -157,7 +157,7 @@ void multiply(cuda::execution_policy<DerivedPolicy>& exec,
     if (num_diagonals == 0)
     {
         // empty matrix
-        thrust::fill(exec, y.begin(), y.begin() + A.num_rows, ValueType(0));
+        thrust::transform(exec, y.begin(), y.begin() + A.num_rows, y.begin(), initialize);
         return;
     }
 
