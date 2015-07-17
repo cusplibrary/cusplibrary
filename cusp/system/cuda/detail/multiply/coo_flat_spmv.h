@@ -14,6 +14,39 @@
  *  limitations under the License.
  */
 
+/******************************************************************************
+ * Copyright (c) 2011, Duane Merrill.  All rights reserved.
+ * Copyright (c) 2011-2014, NVIDIA CORPORATION.  All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of the NVIDIA CORPORATION nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL NVIDIA CORPORATION BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ ******************************************************************************/
+
+/******************************************************************************
+ * An implementation of COO SpMV using prefix scan to implement a
+ * reduce-value-by-row strategy
+ ******************************************************************************/
+
 #pragma once
 
 #include <thrust/extrema.h>
@@ -24,8 +57,6 @@
 
 #include <thrust/device_ptr.h>
 
-// Note: Unlike the other kernels this kernel implements y += A*x
-
 namespace cusp
 {
 namespace system
@@ -33,349 +64,714 @@ namespace system
 namespace cuda
 {
 
-// segmented reduction in shared memory
-template <typename IndexType, typename ValueType, typename BinaryFunction>
-__device__ ValueType segreduce_warp(const IndexType thread_lane, IndexType row, ValueType val, IndexType * rows, ValueType * vals, BinaryFunction reduce)
+using namespace thrust::system::cuda::detail::cub_;
+
+/******************************************************************************
+ * Texture referencing
+ ******************************************************************************/
+
+/**
+ * Templated texture reference type for multiplicand vector
+ */
+template <typename ValueType>
+struct TexVector
 {
-    rows[threadIdx.x] = row;
-    vals[threadIdx.x] = val;
+    // Texture type to actually use (e.g., because CUDA doesn't load doubles as texture items)
+    typedef typename If<(Equals<ValueType, double>::VALUE), uint2, ValueType>::Type CastType;
 
-    if( thread_lane >=  1 && row == rows[threadIdx.x -  1] ) {
-        vals[threadIdx.x] = val = reduce(val, vals[threadIdx.x -  1]);
-    }
-    if( thread_lane >=  2 && row == rows[threadIdx.x -  2] ) {
-        vals[threadIdx.x] = val = reduce(val, vals[threadIdx.x -  2]);
-    }
-    if( thread_lane >=  4 && row == rows[threadIdx.x -  4] ) {
-        vals[threadIdx.x] = val = reduce(val, vals[threadIdx.x -  4]);
-    }
-    if( thread_lane >=  8 && row == rows[threadIdx.x -  8] ) {
-        vals[threadIdx.x] = val = reduce(val, vals[threadIdx.x -  8]);
-    }
-    if( thread_lane >= 16 && row == rows[threadIdx.x - 16] ) {
-        vals[threadIdx.x] = val = reduce(val, vals[threadIdx.x - 16]);
-    }
+    // Texture reference type
+    typedef texture<CastType, cudaTextureType1D, cudaReadModeElementType> TexRef;
 
-    return val;
-}
+    static TexRef ref;
 
-template <typename IndexType, typename ValueType, typename BinaryFunction>
-__device__ void segreduce_block(const IndexType * idx, ValueType * val, BinaryFunction reduce)
-{
-    ValueType left = 0;
-    if( threadIdx.x >=   1 && idx[threadIdx.x] == idx[threadIdx.x -   1] ) {
-        left = val[threadIdx.x -   1];
-    }
-    __syncthreads();
-    val[threadIdx.x] = reduce(val[threadIdx.x], left);
-    left = 0;
-    __syncthreads();
-    if( threadIdx.x >=   2 && idx[threadIdx.x] == idx[threadIdx.x -   2] ) {
-        left = val[threadIdx.x -   2];
-    }
-    __syncthreads();
-    val[threadIdx.x] = reduce(val[threadIdx.x], left);
-    left = 0;
-    __syncthreads();
-    if( threadIdx.x >=   4 && idx[threadIdx.x] == idx[threadIdx.x -   4] ) {
-        left = val[threadIdx.x -   4];
-    }
-    __syncthreads();
-    val[threadIdx.x] = reduce(val[threadIdx.x], left);
-    left = 0;
-    __syncthreads();
-    if( threadIdx.x >=   8 && idx[threadIdx.x] == idx[threadIdx.x -   8] ) {
-        left = val[threadIdx.x -   8];
-    }
-    __syncthreads();
-    val[threadIdx.x] = reduce(val[threadIdx.x], left);
-    left = 0;
-    __syncthreads();
-    if( threadIdx.x >=  16 && idx[threadIdx.x] == idx[threadIdx.x -  16] ) {
-        left = val[threadIdx.x -  16];
-    }
-    __syncthreads();
-    val[threadIdx.x] = reduce(val[threadIdx.x], left);
-    left = 0;
-    __syncthreads();
-    if( threadIdx.x >=  32 && idx[threadIdx.x] == idx[threadIdx.x -  32] ) {
-        left = val[threadIdx.x -  32];
-    }
-    __syncthreads();
-    val[threadIdx.x] = reduce(val[threadIdx.x], left);
-    left = 0;
-    __syncthreads();
-    if( threadIdx.x >=  64 && idx[threadIdx.x] == idx[threadIdx.x -  64] ) {
-        left = val[threadIdx.x -  64];
-    }
-    __syncthreads();
-    val[threadIdx.x] = reduce(val[threadIdx.x], left);
-    left = 0;
-    __syncthreads();
-    if( threadIdx.x >= 128 && idx[threadIdx.x] == idx[threadIdx.x - 128] ) {
-        left = val[threadIdx.x - 128];
-    }
-    __syncthreads();
-    val[threadIdx.x] = reduce(val[threadIdx.x], left);
-    left = 0;
-    __syncthreads();
-    if( threadIdx.x >= 256 && idx[threadIdx.x] == idx[threadIdx.x - 256] ) {
-        left = val[threadIdx.x - 256];
-    }
-    __syncthreads();
-    val[threadIdx.x] = reduce(val[threadIdx.x], left);
-    left = 0;
-    __syncthreads();
-}
-
-
-//////////////////////////////////////////////////////////////////////////////
-// COO SpMV kernel which flattens data irregularity (segmented reduction)
-//////////////////////////////////////////////////////////////////////////////
-//
-// spmv_coo_flat
-//   The input coo_matrix must be sorted by row.  Columns within each row
-//   may appear in any order and duplicate entries are also acceptable.
-//   This sorted COO format is easily obtained by expanding the row pointer
-//   of a CSR matrix (csr.Ap) into proper row indices and then copying
-//   the arrays containing the CSR column indices (csr.Aj) and nonzero values
-//   (csr.Ax) verbatim.  A segmented reduction is used to compute the per-row
-//   sums.
-//
-// spmv_coo_flat_tex
-//   Same as spmv_coo_flat, except that the texture cache is
-//   used for accessing the x vector.
-//
-
-
-// spmv_coo_flat_kernel
-//
-// In this kernel each warp processes an interval of the nonzero values.
-// For example, if the matrix contains 128 nonzero values and there are
-// two warps and interval_size is 64, then the first warp (warp_id == 0)
-// will process the first set of 64 values (interval [0, 64)) and the
-// second warp will process // the second set of 64 values
-// (interval [64, 128)).  Note that the  number of nonzeros is not always
-// a multiple of 32 (the warp size) or 32 * the number of active warps,
-// so the last active warp will not always process a "full" interval of
-// interval_size.
-//
-// The first thread in each warp (thread_lane == 0) has a special role:
-// it is responsible for keeping track of the "carry" values from one
-// iteration to the next.  The carry values consist of the row index and
-// partial sum from the previous batch of 32 elements.  In the example
-// mentioned before with two warps and 128 nonzero elements, the first
-// warp iterates twice and looks at the carry of the first iteration to
-// decide whether to include this partial sum into the current batch.
-// Specifically, if a row extends over a 32-element boundary, then the
-// partial sum is carried over into the new 32-element batch.  If,
-// on the other hand, the _last_ row index of the previous batch (the carry)
-// differs from the _first_ row index of the current batch (the row
-// read by the thread with thread_lane == 0), then the partial sum
-// is written out to memory.
-//
-// Each warp iterates over its interval, processing 32 elements at a time.
-// For each batch of 32 elements, the warp does the following
-//  1) Fetch the row index, column index, and value for a matrix entry.  These
-//     values are loaded from I[n], J[n], and V[n] respectively.
-//     The row entry is stored in the shared memory array idx.
-//  2) Fetch the corresponding entry from the input vector.  Specifically, for a
-//     nonzero entry (i,j) in the matrix, the thread must load the value x[j]
-//     from memory.  We use the function fetch_x to control whether the texture
-//     cache is used to load the value (UseCache == True) or whether a normal
-//     global load is used (UseCache == False).
-//  3) The matrix value A(i,j) (which was stored in V[n]) is multiplied by the
-//     value x[j] and stored in the shared memory array val.
-//  4) The first thread in the warp (thread_lane == 0) considers the "carry"
-//     row index and either includes the carried sum in its own sum, or it
-//     updates the output vector (y) with the carried sum.
-//  5) With row indices in the shared array idx and sums in the shared array
-//     val, the warp conducts a segmented scan.  The segmented scan operation
-//     looks at the row entries for each thread (stored in idx) to see whether
-//     two values belong to the same segment (segments correspond to matrix rows).
-//     Consider the following example which consists of 3 segments
-//     (note: this example uses a warp size of 16 instead of the usual 32)
-//
-//           0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15   # thread_lane
-//     idx [ 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2]  # row indices
-//     val [ 4, 6, 5, 0, 8, 3, 2, 8, 3, 1, 4, 9, 2, 5, 2, 4]  # A(i,j) * x(j)
-//
-//     After the segmented scan the result will be
-//
-//     val [ 4,10,15,15,23,26, 2,10,13,14, 4,13,15,20,22,26]  # A(i,j) * x(j)
-//
-//  6) After the warp computes the segmented scan operation
-//     each thread except for the last (thread_lane == 31) looks
-//     at the row index of the next thread (threadIdx.x + 1) to
-//     see if the segment ends here, or continues into the
-//     next thread.  The thread at the end of the segment writes
-//     the sum into the output vector (y) at the corresponding row
-//     index.
-//  7) The last thread in each warp (thread_lane == 31) writes
-//     its row index and partial sum into the designated spote in the
-//     carry_idx and carry_val arrays.  The carry arrays are indexed
-//     by warp_lane which is a number in [0, BLOCK_SIZE / 32).
-//
-//  These steps are repeated until the warp reaches the end of its interval.
-//  The carry values at the end of each interval are written to arrays
-//  temp_rows and temp_vals, which are processed by a second kernel.
-//
-template <typename IndexType,       typename RowIterator,     typename ColumnIterator,
-          typename ValueIterator1,  typename ValueIterator2,  typename ValueIterator3,
-          typename IndexIterator,   typename ValueIterator4,
-          typename BinaryFunction1, typename BinaryFunction2, unsigned int BLOCK_SIZE>
-__launch_bounds__(BLOCK_SIZE,1)
-__global__ void
-spmv_coo_flat_kernel(const IndexType num_nonzeros,
-                     const IndexType interval_size,
-                     const RowIterator    I,
-                     const ColumnIterator J,
-                     const ValueIterator1  V,
-                     const ValueIterator2 x,
-                     ValueIterator3 y,
-                     IndexIterator temp_rows,
-                     ValueIterator4 temp_vals,
-                     BinaryFunction1 combine,
-                     BinaryFunction2 reduce)
-{
-    using namespace thrust::system::cuda::detail::cub_;
-
-    typedef typename thrust::iterator_value<ValueIterator1>::type ValueType;
-    typedef WarpReduce<ValueType> WarpReduce;
-
-    __shared__ volatile IndexType rows[48 *(BLOCK_SIZE/32)];
-    __shared__ typename WarpReduce::TempStorage temp_storage[BLOCK_SIZE/WARP_SIZE];
-    // __shared__ volatile ValueType vals[BLOCK_SIZE];
-
-    const IndexType thread_id   = BLOCK_SIZE * blockIdx.x + threadIdx.x;                         // global thread index
-    const IndexType thread_lane = threadIdx.x & (WARP_SIZE-1);                                   // thread index within the warp
-    const IndexType warp_id     = thread_id   / WARP_SIZE;                                       // global warp index
-
-    const IndexType interval_begin = warp_id * interval_size;                                    // warp's offset into I,J,V
-    const IndexType interval_end   = thrust::min(interval_begin + interval_size, num_nonzeros);  // end of warps's work
-
-    const IndexType idx = 16 * (threadIdx.x/32 + 1) + threadIdx.x;                               // thread's index into padded rows array
-
-    rows[idx - 16] = -1;                                                                         // fill padding with invalid row index
-
-    if(interval_begin >= interval_end)                                                           // warp has no work to do
-        return;
-
-    if (thread_lane == 31)
+    /**
+     * Bind textures
+     */
+    static void BindTexture(void *d_in, int elements)
     {
-        // initialize the carry in values
-        rows[idx] = I[interval_begin];
-        vals[threadIdx.x] = ValueType(0);
-    }
-
-    for(IndexType n = interval_begin + thread_lane; n < interval_end; n += WARP_SIZE)
-    {
-        IndexType row = I[n];                                         // row index (i)
-        ValueType val = combine(V[n], x[ J[n] ]);            // A(i,j) * x(j)
-
-        if (thread_lane == 0)
+        cudaChannelFormatDesc tex_desc = cudaCreateChannelDesc<CastType>();
+        if (d_in)
         {
-            if(row == rows[idx + 31])
-                val = reduce(val, ValueType(vals[threadIdx.x + 31]));                        // row continues
-            else
-                y[rows[idx + 31]] = reduce(y[rows[idx + 31]], ValueType(vals[threadIdx.x + 31]));  // row terminated
+            size_t offset;
+            size_t bytes = sizeof(CastType) * elements;
+            cudaBindTexture(&offset, ref, d_in, tex_desc, bytes);
+        }
+    }
+
+    /**
+     * Unbind textures
+     */
+    static void UnbindTexture()
+    {
+        cudaUnbindTexture(ref);
+    }
+
+    /**
+     * Load
+     */
+    static __device__ __forceinline__ ValueType Load(int offset)
+    {
+        ValueType output;
+        reinterpret_cast<typename TexVector<ValueType>::CastType &>(output) = tex1Dfetch(TexVector<ValueType>::ref, offset);
+        return output;
+    }
+};
+
+// Texture reference definitions
+template <typename ValueType>
+typename TexVector<ValueType>::TexRef TexVector<ValueType>::ref = 0;
+
+
+/******************************************************************************
+ * Utility types
+ ******************************************************************************/
+
+
+/**
+ * A partial dot-product sum paired with a corresponding row-id
+ */
+template <typename IndexType, typename ValueType>
+struct PartialProduct
+{
+    typedef IndexType index_type;
+    typedef ValueType value_type;
+
+    IndexType    row;            /// Row-id
+    ValueType    partial;        /// PartialProduct sum
+};
+
+
+/**
+ * A partial dot-product sum paired with a corresponding row-id (specialized for double-int pairings)
+ */
+template <>
+struct PartialProduct<int, double>
+{
+    typedef long long index_type;
+    typedef double    value_type;
+
+    long long   row;            /// Row-id
+    double      partial;        /// PartialProduct sum
+};
+
+
+/**
+ * Reduce-value-by-row scan operator
+ */
+template <typename PartialType>
+struct ReduceByKeyOp
+{
+    __device__ __forceinline__ PartialType operator()(
+        const PartialType &first,
+        const PartialType &second)
+    {
+        PartialType retval;
+
+        retval.partial = (second.row != first.row) ?
+                         second.partial :
+                         first.partial + second.partial;
+
+        retval.row = second.row;
+        return retval;
+    }
+};
+
+
+/**
+ * Stateful block-wide prefix operator for BlockScan
+ */
+template <typename PartialProduct>
+struct BlockPrefixCallbackOp
+{
+    // Running block-wide prefix
+    PartialProduct running_prefix;
+    ReduceByKeyOp<PartialProduct> scan_op;
+
+    /**
+     * Returns the block-wide running_prefix in thread-0
+     */
+    __device__ __forceinline__ PartialProduct operator()(
+        const PartialProduct &block_aggregate)              ///< The aggregate sum of the BlockScan inputs
+    {
+        PartialProduct retval = running_prefix;
+        running_prefix = scan_op(running_prefix, block_aggregate);
+        return retval;
+    }
+};
+
+
+/**
+ * Operator for detecting discontinuities in a list of row identifiers.
+ */
+struct NewRowOp
+{
+    /// Returns true if row_b is the start of a new row
+    template <typename IndexType>
+    __device__ __forceinline__ bool operator()(
+        const IndexType& row_a,
+        const IndexType& row_b)
+    {
+        return (row_a != row_b);
+    }
+};
+
+
+
+/******************************************************************************
+ * Persistent thread block types
+ ******************************************************************************/
+
+/**
+ * SpMV threadblock abstraction for processing a contiguous segment of
+ * sparse COO tiles.
+ */
+template <
+    int             BLOCK_THREADS,
+    int             ITEMS_PER_THREAD,
+    typename        PartialIterator,
+    typename        RowIterator,
+    typename        ColumnIterator,
+    typename        ValueIterator1,
+    typename        ValueIterator2,
+    typename        ValueIterator3>
+struct PersistentBlockSpmv
+{
+    //---------------------------------------------------------------------
+    // Types and constants
+    //---------------------------------------------------------------------
+
+    // Constants
+    enum
+    {
+        TILE_ITEMS = BLOCK_THREADS * ITEMS_PER_THREAD,
+    };
+
+    // Head flag type
+    typedef int HeadFlag;
+
+    // Partial dot product type
+    typedef typename thrust::iterator_value<PartialIterator>::type    PartialProduct;
+
+    // base types
+    typedef typename thrust::iterator_value<ValueIterator1>::type     ValueType;
+    typedef typename PartialProduct::index_type                       IndexType;
+
+    // Parameterized BlockScan type for reduce-value-by-row scan
+    typedef BlockScan<PartialProduct, BLOCK_THREADS, BLOCK_SCAN_RAKING_MEMOIZE> BlockScan;
+
+    // Parameterized BlockExchange type for exchanging rows between warp-striped -> blocked arrangements
+    typedef BlockExchange<IndexType, BLOCK_THREADS, ITEMS_PER_THREAD, true> BlockExchangeRows;
+
+    // Parameterized BlockExchange type for exchanging values between warp-striped -> blocked arrangements
+    typedef BlockExchange<ValueType, BLOCK_THREADS, ITEMS_PER_THREAD, true> BlockExchangeValueTypes;
+
+    // Parameterized BlockDiscontinuity type for setting head-flags for each new row segment
+    typedef BlockDiscontinuity<IndexType, BLOCK_THREADS> BlockDiscontinuity;
+
+    // Shared memory type for this threadblock
+    struct TempStorage
+    {
+        union
+        {
+            typename BlockExchangeRows::TempStorage         exchange_rows;      // Smem needed for BlockExchangeRows
+            typename BlockExchangeValueTypes::TempStorage   exchange_values;    // Smem needed for BlockExchangeValueTypes
+            struct
+            {
+                typename BlockScan::TempStorage             scan;               // Smem needed for BlockScan
+                typename BlockDiscontinuity::TempStorage    discontinuity;      // Smem needed for BlockDiscontinuity
+            };
+        };
+
+        IndexType        first_block_row;    ///< The first row-ID seen by this thread block
+        IndexType        last_block_row;     ///< The last row-ID seen by this thread block
+        ValueType        first_product;      ///< The first dot-product written by this thread block
+    };
+
+    //---------------------------------------------------------------------
+    // Thread fields
+    //---------------------------------------------------------------------
+
+    TempStorage                     &temp_storage;
+    BlockPrefixCallbackOp<PartialProduct>   prefix_op;
+    RowIterator                     d_rows;
+    ColumnIterator                  d_columns;
+    ValueIterator1                  d_values;
+    ValueIterator2                  d_vector;
+    ValueIterator3                  d_result;
+    PartialIterator                 d_block_partials;
+    int                             block_offset;
+    int                             block_end;
+
+
+    //---------------------------------------------------------------------
+    // Operations
+    //---------------------------------------------------------------------
+
+    /**
+     * Constructor
+     */
+    __device__ __forceinline__
+    PersistentBlockSpmv(
+        TempStorage                 &temp_storage,
+        RowIterator                 d_rows,
+        ColumnIterator              d_columns,
+        ValueIterator1              d_values,
+        ValueIterator2              d_vector,
+        ValueIterator3              d_result,
+        PartialIterator             d_block_partials,
+        int                         block_offset,
+        int                         block_end)
+        :
+        temp_storage(temp_storage),
+        d_rows(d_rows),
+        d_columns(d_columns),
+        d_values(d_values),
+        d_vector(d_vector),
+        d_result(d_result),
+        d_block_partials(d_block_partials),
+        block_offset(block_offset),
+        block_end(block_end)
+    {
+        // Initialize scalar shared memory values
+        if (threadIdx.x == 0)
+        {
+            IndexType first_block_row           = d_rows[block_offset];
+            IndexType last_block_row            = d_rows[block_end - 1];
+
+            temp_storage.first_block_row        = first_block_row;
+            temp_storage.last_block_row         = last_block_row;
+            temp_storage.first_product          = ValueType(0);
+
+            // Initialize prefix_op to identity
+            prefix_op.running_prefix.row        = first_block_row;
+            prefix_op.running_prefix.partial    = ValueType(0);
         }
 
-        rows[idx]         = row;
-        vals[threadIdx.x] = val;
-
-        // if(row == rows[idx -  1]) {
-        //     vals[threadIdx.x] = val = reduce(val, ValueType(vals[threadIdx.x -  1]));
-        // }
-        // if(row == rows[idx -  2]) {
-        //     vals[threadIdx.x] = val = reduce(val, ValueType(vals[threadIdx.x -  2]));
-        // }
-        // if(row == rows[idx -  4]) {
-        //     vals[threadIdx.x] = val = reduce(val, ValueType(vals[threadIdx.x -  4]));
-        // }
-        // if(row == rows[idx -  8]) {
-        //     vals[threadIdx.x] = val = reduce(val, ValueType(vals[threadIdx.x -  8]));
-        // }
-        // if(row == rows[idx - 16]) {
-        //     vals[threadIdx.x] = val = reduce(val, ValueType(vals[threadIdx.x - 16]));
-        // }
-        //
-        // if(thread_lane < 31 && row != rows[idx + 1])
-        //     y[row] = reduce(y[row], ValueType(vals[threadIdx.x]));                                            // row terminated
+        __syncthreads();
     }
 
-    if(thread_lane == 31)
+
+    /**
+     * Processes a COO input tile of edges, outputting dot products for each row
+     */
+    template <bool FULL_TILE>
+    __device__ __forceinline__ void ProcessTile(
+        int block_offset,
+        int guarded_items = 0)
     {
-        // write the carry out values
-        temp_rows[warp_id] = IndexType(rows[idx]);
-        temp_vals[warp_id] = ValueType(vals[threadIdx.x]);
+        IndexType       columns[ITEMS_PER_THREAD];
+        IndexType       rows[ITEMS_PER_THREAD];
+        ValueType       values[ITEMS_PER_THREAD];
+        PartialProduct  partial_sums[ITEMS_PER_THREAD];
+        HeadFlag        head_flags[ITEMS_PER_THREAD];
+
+        // Load a threadblock-striped tile of A (sparse row-ids, column-ids, and values)
+        if (FULL_TILE)
+        {
+            // Unguarded loads
+            LoadDirectWarpStriped(threadIdx.x, d_columns + block_offset, columns);
+            LoadDirectWarpStriped(threadIdx.x, d_values + block_offset, values);
+            LoadDirectWarpStriped(threadIdx.x, d_rows + block_offset, rows);
+        }
+        else
+        {
+            // This is a partial-tile (e.g., the last tile of input).  Extend the coordinates of the last
+            // vertex for out-of-bound items, but zero-valued
+            LoadDirectWarpStriped(threadIdx.x, d_columns + block_offset, columns, guarded_items, IndexType(0));
+            LoadDirectWarpStriped(threadIdx.x, d_values + block_offset, values, guarded_items, ValueType(0));
+            LoadDirectWarpStriped(threadIdx.x, d_rows + block_offset, rows, guarded_items, temp_storage.last_block_row);
+        }
+
+        // Load the referenced values from x and compute the dot product partials sums
+#pragma unroll
+        for (int ITEM = 0; ITEM < ITEMS_PER_THREAD; ITEM++)
+        {
+#if CUB_PTX_ARCH >= 350
+            values[ITEM] *= ThreadLoad<LOAD_LDG>(d_vector + columns[ITEM]);
+#else
+            // values[ITEM] *= TexVector<ValueType>::Load(columns[ITEM]);
+            values[ITEM] *= d_vector[columns[ITEM]];
+#endif
+        }
+
+        // Transpose from warp-striped to blocked arrangement
+        BlockExchangeValueTypes(temp_storage.exchange_values).WarpStripedToBlocked(values);
+
+        __syncthreads();
+
+        // Transpose from warp-striped to blocked arrangement
+        BlockExchangeRows(temp_storage.exchange_rows).WarpStripedToBlocked(rows);
+
+        // Barrier for smem reuse and coherence
+        __syncthreads();
+
+        // Flag row heads by looking for discontinuities
+        BlockDiscontinuity(temp_storage.discontinuity).FlagHeads(
+            head_flags,                     // (Out) Head flags
+            rows,                           // Original row ids
+            NewRowOp(),                     // Functor for detecting start of new rows
+            prefix_op.running_prefix.row);  // Last row ID from previous tile to compare with first row ID in this tile
+
+        // Assemble partial product structures
+#pragma unroll
+        for (int ITEM = 0; ITEM < ITEMS_PER_THREAD; ITEM++)
+        {
+            partial_sums[ITEM].partial = values[ITEM];
+            partial_sums[ITEM].row = rows[ITEM];
+        }
+
+        // Reduce reduce-value-by-row across partial_sums using exclusive prefix scan
+        PartialProduct block_aggregate;
+        PartialProduct identity;
+        identity.row = -1;
+        identity.partial = ValueType(0);
+        BlockScan(temp_storage.scan).ExclusiveScan(
+            partial_sums,                   // Scan input
+            partial_sums,                   // Scan output
+            identity,
+            ReduceByKeyOp<PartialProduct>(),// Scan operator
+            block_aggregate,                // Block-wide total (unused)
+            prefix_op);                     // Prefix operator for seeding the block-wide scan with the running total
+
+        // Barrier for smem reuse and coherence
+        __syncthreads();
+
+        // Scatter an accumulated dot product if it is the head of a valid row
+#pragma unroll
+        for (int ITEM = 0; ITEM < ITEMS_PER_THREAD; ITEM++)
+        {
+            if (head_flags[ITEM])
+            {
+                d_result[partial_sums[ITEM].row] = partial_sums[ITEM].partial;
+
+                // Save off the first partial product that this thread block will scatter
+                if (partial_sums[ITEM].row == temp_storage.first_block_row)
+                {
+                    temp_storage.first_product = partial_sums[ITEM].partial;
+                }
+            }
+        }
     }
+
+
+    /**
+     * Iterate over input tiles belonging to this thread block
+     */
+    __device__ __forceinline__
+    void ProcessTiles()
+    {
+        // Process full tiles
+        while (block_offset <= block_end - TILE_ITEMS)
+        {
+            ProcessTile<true>(block_offset);
+            block_offset += TILE_ITEMS;
+        }
+
+        // Process the last, partially-full tile (if present)
+        int guarded_items = block_end - block_offset;
+        if (guarded_items)
+        {
+            ProcessTile<false>(block_offset, guarded_items);
+        }
+
+        if (threadIdx.x == 0)
+        {
+            if (gridDim.x == 1)
+            {
+                // Scatter the final aggregate (this kernel contains only 1 threadblock)
+                d_result[prefix_op.running_prefix.row] = prefix_op.running_prefix.partial;
+            }
+            else
+            {
+                // Write the first and last partial products from this thread block so
+                // that they can be subsequently "fixed up" in the next kernel.
+
+                PartialProduct first_product;
+                first_product.row       = temp_storage.first_block_row;
+                first_product.partial   = temp_storage.first_product;
+
+                d_block_partials[blockIdx.x * 2]          = first_product;
+                d_block_partials[(blockIdx.x * 2) + 1]    = prefix_op.running_prefix;
+            }
+        }
+    }
+};
+
+
+/**
+ * Threadblock abstraction for "fixing up" an array of interblock SpMV partial products.
+ */
+template <
+    int             BLOCK_THREADS,
+    int             ITEMS_PER_THREAD,
+    typename        PartialIterator,
+    typename        ValueIterator>
+struct FinalizeSpmvBlock
+{
+    //---------------------------------------------------------------------
+    // Types and constants
+    //---------------------------------------------------------------------
+
+    // Constants
+    enum
+    {
+        TILE_ITEMS = BLOCK_THREADS * ITEMS_PER_THREAD,
+    };
+
+    typedef typename thrust::iterator_value<PartialIterator>::type    PartialProduct;
+    typedef typename thrust::iterator_value<ValueIterator>::type      ValueType;
+    typedef typename PartialProduct::index_type                       IndexType;
+
+    // Head flag type
+    typedef int HeadFlag;
+
+    // Parameterized BlockScan type for reduce-value-by-row scan
+    typedef BlockScan<PartialProduct, BLOCK_THREADS, BLOCK_SCAN_RAKING_MEMOIZE> BlockScan;
+
+    // Parameterized BlockDiscontinuity type for setting head-flags for each new row segment
+    typedef BlockDiscontinuity<HeadFlag, BLOCK_THREADS> BlockDiscontinuity;
+
+    // Shared memory type for this threadblock
+    struct TempStorage
+    {
+        typename BlockScan::TempStorage           scan;               // Smem needed for reduce-value-by-row scan
+        typename BlockDiscontinuity::TempStorage  discontinuity;      // Smem needed for head-flagging
+
+        IndexType last_block_row;
+    };
+
+
+    //---------------------------------------------------------------------
+    // Thread fields
+    //---------------------------------------------------------------------
+
+    TempStorage                             &temp_storage;
+    BlockPrefixCallbackOp<PartialProduct>   prefix_op;
+    ValueIterator                           d_result;
+    PartialIterator                         d_block_partials;
+    int                                     num_partials;
+
+
+    //---------------------------------------------------------------------
+    // Operations
+    //---------------------------------------------------------------------
+
+    /**
+     * Constructor
+     */
+    __device__ __forceinline__
+    FinalizeSpmvBlock(
+        TempStorage                 &temp_storage,
+        ValueIterator               d_result,
+        PartialIterator             d_block_partials,
+        int                         num_partials)
+        :
+        temp_storage(temp_storage),
+        d_result(d_result),
+        d_block_partials(d_block_partials),
+        num_partials(num_partials)
+    {
+        // Initialize scalar shared memory values
+        if (threadIdx.x == 0)
+        {
+            IndexType first_block_row           = d_block_partials[0].row;
+            IndexType last_block_row            = d_block_partials[num_partials - 1].row;
+            temp_storage.last_block_row         = last_block_row;
+
+            // Initialize prefix_op to identity
+            prefix_op.running_prefix.row        = first_block_row;
+            prefix_op.running_prefix.partial    = ValueType(0);
+        }
+
+        __syncthreads();
+    }
+
+
+    /**
+     * Processes a COO input tile of edges, outputting dot products for each row
+     */
+    template <bool FULL_TILE>
+    __device__ __forceinline__
+    void ProcessTile(
+        int block_offset,
+        int guarded_items = 0)
+    {
+        IndexType       rows[ITEMS_PER_THREAD];
+        PartialProduct  partial_sums[ITEMS_PER_THREAD];
+        HeadFlag        head_flags[ITEMS_PER_THREAD];
+
+        // Load a tile of block partials from previous kernel
+        if (FULL_TILE)
+        {
+            // Full tile
+#if CUB_PTX_ARCH >= 350
+            LoadDirectBlocked<LOAD_LDG>(threadIdx.x, d_block_partials + block_offset, partial_sums);
+#else
+            LoadDirectBlocked(threadIdx.x, d_block_partials + block_offset, partial_sums);
+#endif
+        }
+        else
+        {
+            // Partial tile (extend zero-valued coordinates of the last partial-product for out-of-bounds items)
+            PartialProduct default_sum;
+            default_sum.row = temp_storage.last_block_row;
+            default_sum.partial = ValueType(0);
+
+#if CUB_PTX_ARCH >= 350
+            LoadDirectBlocked<LOAD_LDG>(threadIdx.x, d_block_partials + block_offset, partial_sums, guarded_items, default_sum);
+#else
+            LoadDirectBlocked(threadIdx.x, d_block_partials + block_offset, partial_sums, guarded_items, default_sum);
+#endif
+        }
+
+        // Copy out row IDs for row-head flagging
+#pragma unroll
+        for (int ITEM = 0; ITEM < ITEMS_PER_THREAD; ITEM++)
+        {
+            rows[ITEM] = partial_sums[ITEM].row;
+        }
+
+        // Flag row heads by looking for discontinuities
+        BlockDiscontinuity(temp_storage.discontinuity).FlagHeads(
+            rows,                           // Original row ids
+            head_flags,                     // (Out) Head flags
+            NewRowOp(),                     // Functor for detecting start of new rows
+            prefix_op.running_prefix.row);   // Last row ID from previous tile to compare with first row ID in this tile
+
+        // Reduce reduce-value-by-row across partial_sums using exclusive prefix scan
+        PartialProduct block_aggregate;
+        PartialProduct identity;
+        identity.row = -1;
+        identity.partial = ValueType(0);
+        BlockScan(temp_storage.scan).ExclusiveScan(
+            partial_sums,                   // Scan input
+            partial_sums,                   // Scan input
+            identity,
+            ReduceByKeyOp<PartialProduct>(),// Scan operator
+            block_aggregate,                // Block-wide total (unused)
+            prefix_op);                     // Prefix operator for seeding the block-wide scan with the running total
+
+        // Scatter an accumulated dot product if it is the head of a valid row
+#pragma unroll
+        for (int ITEM = 0; ITEM < ITEMS_PER_THREAD; ITEM++)
+        {
+            if (head_flags[ITEM])
+            {
+                d_result[partial_sums[ITEM].row] = partial_sums[ITEM].partial;
+            }
+        }
+    }
+
+
+    /**
+     * Iterate over input tiles belonging to this thread block
+     */
+    __device__ __forceinline__
+    void ProcessTiles()
+    {
+        // Process full tiles
+        int block_offset = 0;
+        while (block_offset <= num_partials - TILE_ITEMS)
+        {
+            ProcessTile<true>(block_offset);
+            block_offset += TILE_ITEMS;
+        }
+
+        // Process final partial tile (if present)
+        int guarded_items = num_partials - block_offset;
+        if (guarded_items)
+        {
+            ProcessTile<false>(block_offset, guarded_items);
+        }
+
+        // Scatter the final aggregate (this kernel contains only 1 threadblock)
+        if (threadIdx.x == 0)
+        {
+            d_result[prefix_op.running_prefix.row] = prefix_op.running_prefix.partial;
+        }
+    }
+};
+
+
+/******************************************************************************
+ * Kernel entrypoints
+ ******************************************************************************/
+
+
+
+/**
+ * SpMV kernel whose thread blocks each process a contiguous segment of sparse COO tiles.
+ */
+template <
+    int                             BLOCK_THREADS,
+    int                             ITEMS_PER_THREAD,
+    typename                        PartialIterator,
+    typename                        RowIterator,
+    typename                        ColumnIterator,
+    typename                        ValueIterator1,
+    typename                        ValueIterator2,
+    typename                        ValueIterator3>
+__launch_bounds__ (BLOCK_THREADS)
+__global__ void CooKernel(
+    GridEvenShare<int>                    even_share,
+    PartialIterator                       d_block_partials,
+    const RowIterator                     d_rows,
+    const ColumnIterator                  d_columns,
+    const ValueIterator1                  d_values,
+    const ValueIterator2                  d_vector,
+    ValueIterator3                        d_result)
+{
+    // Specialize SpMV threadblock abstraction type
+    typedef PersistentBlockSpmv<BLOCK_THREADS, ITEMS_PER_THREAD, PartialIterator, RowIterator, ColumnIterator, ValueIterator1, ValueIterator2, ValueIterator3> PersistentBlockSpmv;
+
+    // Shared memory allocation
+    __shared__ typename PersistentBlockSpmv::TempStorage temp_storage;
+
+    // Initialize threadblock even-share to tell us where to start and stop our tile-processing
+    even_share.BlockInit();
+
+    // Construct persistent thread block
+    PersistentBlockSpmv persistent_block(
+        temp_storage,
+        d_rows,
+        d_columns,
+        d_values,
+        d_vector,
+        d_result,
+        d_block_partials,
+        even_share.block_offset,
+        even_share.block_end);
+
+    // Process input tiles
+    persistent_block.ProcessTiles();
 }
 
 
-// The second level of the segmented reduction operation
-template <typename IndexIterator, typename ValueIterator1, typename ValueIterator2, typename BinaryFunction, unsigned int BLOCK_SIZE>
-__launch_bounds__(BLOCK_SIZE,1)
-__global__ void
-spmv_coo_reduce_update_kernel(const unsigned int num_warps,
-                              const IndexIterator temp_rows,
-                              const ValueIterator1 temp_vals,
-                              ValueIterator2 y,
-                              BinaryFunction reduce)
+/**
+ * Kernel for "fixing up" an array of interblock SpMV partial products.
+ */
+template <
+    int                             BLOCK_THREADS,
+    int                             ITEMS_PER_THREAD,
+    typename                        PartialIterator,
+    typename                        ValueIterator>
+__launch_bounds__ (BLOCK_THREADS,  1)
+__global__ void CooFinalizeKernel(
+    PartialIterator                      d_block_partials,
+    int                                  num_partials,
+    ValueIterator                        d_result)
 {
-    typedef typename thrust::iterator_value<IndexIterator>::type IndexType;
-    typedef typename thrust::iterator_value<ValueIterator1>::type ValueType;
+    // Specialize "fix-up" threadblock abstraction type
+    typedef FinalizeSpmvBlock<BLOCK_THREADS, ITEMS_PER_THREAD, PartialIterator, ValueIterator> FinalizeSpmvBlock;
 
-    __shared__ IndexType rows[BLOCK_SIZE + 1];
-    __shared__ ValueType vals[BLOCK_SIZE + 1];
+    // Shared memory allocation
+    __shared__ typename FinalizeSpmvBlock::TempStorage temp_storage;
 
-    const IndexType end = num_warps - (num_warps & (BLOCK_SIZE - 1));
+    // Construct persistent thread block
+    FinalizeSpmvBlock persistent_block(temp_storage, d_result, d_block_partials, num_partials);
 
-    if (threadIdx.x == 0)
-    {
-        rows[BLOCK_SIZE] = (IndexType) -1;
-        vals[BLOCK_SIZE] = (ValueType)  0;
-    }
-
-    __syncthreads();
-
-    IndexType i = threadIdx.x;
-
-    while (i < end)
-    {
-        // do full blocks
-        rows[threadIdx.x] = temp_rows[i];
-        vals[threadIdx.x] = temp_vals[i];
-
-        __syncthreads();
-
-        segreduce_block(rows, vals, reduce);
-
-        if (rows[threadIdx.x] != rows[threadIdx.x + 1])
-            y[rows[threadIdx.x]] = reduce(y[rows[threadIdx.x]], vals[threadIdx.x]);
-
-        __syncthreads();
-
-        i += BLOCK_SIZE;
-    }
-
-    if (end < num_warps) {
-        if (i < num_warps) {
-            rows[threadIdx.x] = temp_rows[i];
-            vals[threadIdx.x] = temp_vals[i];
-        } else {
-            rows[threadIdx.x] = (IndexType) -1;
-            vals[threadIdx.x] = (ValueType)  0;
-        }
-
-        __syncthreads();
-
-        segreduce_block(rows, vals, reduce);
-
-        if (i < num_warps)
-            if (rows[threadIdx.x] != rows[threadIdx.x + 1])
-                y[rows[threadIdx.x]] = reduce(y[rows[threadIdx.x]], vals[threadIdx.x]);
-    }
+    // Process input tiles
+    persistent_block.ProcessTiles();
 }
 
 template <bool InitializeY,
@@ -396,6 +792,8 @@ void __spmv_coo_flat(cuda::execution_policy<DerivedPolicy>& exec,
 {
     typedef typename MatrixType::index_type                                 IndexType;
     typedef typename VectorType2::value_type                                ValueType;
+    typedef typename VectorType2::memory_space                              MemorySpace;
+    typedef PartialProduct<IndexType, ValueType>                            PartialProduct;
 
     typedef typename MatrixType::row_indices_array_type::const_iterator     RowIterator;
     typedef typename MatrixType::column_indices_array_type::const_iterator  ColumnIterator;
@@ -404,6 +802,7 @@ void __spmv_coo_flat(cuda::execution_policy<DerivedPolicy>& exec,
     typedef typename VectorType1::const_iterator                            ValueIterator2;
     typedef typename VectorType2::iterator                                  ValueIterator3;
 
+    typedef typename cusp::array1d<PartialProduct,cusp::device_memory>::iterator PartialIterator;
     typedef typename cusp::array1d<IndexType,cusp::device_memory>::iterator IndexIterator;
     typedef typename cusp::array1d<ValueType,cusp::device_memory>::iterator ValueIterator4;
 
@@ -412,65 +811,92 @@ void __spmv_coo_flat(cuda::execution_policy<DerivedPolicy>& exec,
 
     cudaStream_t s = stream(thrust::detail::derived_cast(exec));
 
-    if(A.num_entries == 0)
+    // Parameterization for SM35
+    enum
     {
-        // empty matrix
-        return;
-    }
-    else if (A.num_entries < static_cast<size_t>(WARP_SIZE))
+        COO_BLOCK_THREADS           = 64,
+        COO_ITEMS_PER_THREAD        = 10,
+        COO_SUBSCRIPTION_FACTOR     = 4,
+        FINALIZE_BLOCK_THREADS      = 256,
+        FINALIZE_ITEMS_PER_THREAD   = 4,
+    };
+
+    const int COO_TILE_SIZE = COO_BLOCK_THREADS * COO_ITEMS_PER_THREAD;
+
+    // Create SOA version of coo_graph on host
+    // int num_cols    = A.num_cols;
+    int num_edges   = A.num_entries;
+
+    // Determine launch configuration from kernel properties
+    int coo_sm_occupancy = 0;
+    MaxSmOccupancy(coo_sm_occupancy,
+                   CooKernel<COO_BLOCK_THREADS, COO_ITEMS_PER_THREAD, PartialIterator, RowIterator, ColumnIterator, ValueIterator1, ValueIterator2, ValueIterator3>,
+                   COO_BLOCK_THREADS);
+
+    int sm_count;
+    cudaDeviceGetAttribute (&sm_count, cudaDevAttrMultiProcessorCount, 0);
+    int max_coo_grid_size   = sm_count * coo_sm_occupancy * COO_SUBSCRIPTION_FACTOR;
+
+    // Construct an even-share work distribution
+    GridEvenShare<int> even_share(num_edges, max_coo_grid_size, COO_TILE_SIZE);
+    int coo_grid_size  = even_share.grid_size;
+    int num_partials   = coo_grid_size * 2;
+
+    cusp::array1d<PartialProduct, MemorySpace> block_partials(num_partials);
+
+    // Bind textures
+    // void *d_x = (void *) thrust::raw_pointer_cast(&x[0]);
+    // TexVector<ValueType>::BindTexture(d_x, num_cols);
+
+    // cudaDeviceSetSharedMemConfig(cudaSharedMemBankSizeEightByte);
+
+    // Run the COO kernel
+    CooKernel<COO_BLOCK_THREADS, COO_ITEMS_PER_THREAD><<<coo_grid_size, COO_BLOCK_THREADS, 0, s>>>(
+        even_share,
+        thrust::raw_pointer_cast(&block_partials[0]),
+        A.row_indices.begin(),
+        A.column_indices.begin(),
+        A.values.begin(),
+        x.begin(),
+        y.begin());
+
+    if (coo_grid_size > 1)
     {
-        // small matrix
-        spmv_coo_serial_kernel<RowIterator, ColumnIterator, ValueIterator1, ValueIterator2, ValueIterator3, BinaryFunction1, BinaryFunction2> <<<1,1,0,s>>>
-        (A.num_entries, A.row_indices.begin(), A.column_indices.begin(), A.values.begin(), x.begin(), y.begin(), combine, reduce);
-        return;
+        // Run the COO finalize kernel
+        CooFinalizeKernel<FINALIZE_BLOCK_THREADS, FINALIZE_ITEMS_PER_THREAD><<<1, FINALIZE_BLOCK_THREADS, 0, s>>>(
+            thrust::raw_pointer_cast(&block_partials[0]),
+            num_partials,
+            y.begin());
     }
-
-    const unsigned int BLOCK_SIZE = 256;
-    const unsigned int MAX_BLOCKS = cusp::system::cuda::detail::max_active_blocks(
-        spmv_coo_flat_kernel<IndexType, RowIterator, ColumnIterator,
-                             ValueIterator1, ValueIterator2, ValueIterator3,
-                             IndexIterator, ValueIterator4,
-                             BinaryFunction1, BinaryFunction2, BLOCK_SIZE>, BLOCK_SIZE, (size_t) 0);
-    const unsigned int WARPS_PER_BLOCK = BLOCK_SIZE / WARP_SIZE;
-
-    const unsigned int num_units  = A.num_entries / WARP_SIZE;
-    const unsigned int num_warps  = std::min(num_units, WARPS_PER_BLOCK * MAX_BLOCKS);
-    const unsigned int num_blocks = DIVIDE_INTO(num_warps, WARPS_PER_BLOCK);
-    const unsigned int num_iters  = DIVIDE_INTO(num_units, num_warps);
-
-    const unsigned int interval_size = WARP_SIZE * num_iters;
-
-    const IndexType tail = num_units * WARP_SIZE; // do the last few nonzeros separately (fewer than WARP_SIZE elements)
-
-    const unsigned int active_warps = (interval_size == 0) ? 0 : DIVIDE_INTO(tail, interval_size);
-
-    cusp::array1d<IndexType,cusp::device_memory> temp_rows(active_warps);
-    cusp::array1d<ValueType,cusp::device_memory> temp_vals(active_warps);
-
-    spmv_coo_flat_kernel<IndexType, RowIterator, ColumnIterator,
-                         ValueIterator1, ValueIterator2, ValueIterator3,
-                         IndexIterator, ValueIterator4,
-                         BinaryFunction1, BinaryFunction2, BLOCK_SIZE> <<<num_blocks, BLOCK_SIZE, 0, s>>>
-    (tail, interval_size,
-     A.row_indices.begin(), A.column_indices.begin(), A.values.begin(),
-     x.begin(), y.begin(),
-     temp_rows.begin(), temp_vals.begin(),
-     combine, reduce);
-
-    spmv_coo_reduce_update_kernel<IndexIterator, ValueIterator4, ValueIterator3, BinaryFunction2, BLOCK_SIZE> <<<1, BLOCK_SIZE, 0, s>>>
-    (active_warps, temp_rows.begin(), temp_vals.begin(), y.begin(), reduce);
-
-    spmv_coo_serial_kernel<RowIterator, ColumnIterator, ValueIterator1, ValueIterator2, ValueIterator3, BinaryFunction1, BinaryFunction2> <<<1,1,0,s>>>
-    (A.num_entries - tail, A.row_indices.begin() + tail, A.column_indices.begin() + tail, A.values.begin() + tail, x.begin(), y.begin(), combine, reduce);
 }
 
 template <typename DerivedPolicy,
-         typename MatrixType,
-         typename VectorType1,
-         typename VectorType2,
-         typename UnaryFunction,
-         typename BinaryFunction1,
-         typename BinaryFunction2>
+          typename MatrixType,
+          typename VectorType1,
+          typename VectorType2,
+          typename BinaryFunction1,
+          typename BinaryFunction2>
+void multiply(cuda::execution_policy<DerivedPolicy>& exec,
+              const MatrixType& A,
+              const VectorType1& x,
+              VectorType2& y,
+              thrust::identity<typename MatrixType::value_type> initialize,
+              BinaryFunction1 combine,
+              BinaryFunction2 reduce,
+              coo_format,
+              array1d_format,
+              array1d_format)
+{
+    __spmv_coo_flat<false>(exec, A, x, y, initialize, combine, reduce);
+}
+
+template <typename DerivedPolicy,
+          typename MatrixType,
+          typename VectorType1,
+          typename VectorType2,
+          typename UnaryFunction,
+          typename BinaryFunction1,
+          typename BinaryFunction2>
 void multiply(cuda::execution_policy<DerivedPolicy>& exec,
               const MatrixType& A,
               const VectorType1& x,
@@ -482,12 +908,7 @@ void multiply(cuda::execution_policy<DerivedPolicy>& exec,
               array1d_format,
               array1d_format)
 {
-    typedef typename MatrixType::value_type ValueType;
-
-    if(thrust::detail::is_same< UnaryFunction, thrust::identity<ValueType> >::value)
-      __spmv_coo_flat<false>(exec, A, x, y, initialize, combine, reduce);
-    else
-      __spmv_coo_flat<true>(exec, A, x, y, initialize, combine, reduce);
+    __spmv_coo_flat<true>(exec, A, x, y, initialize, combine, reduce);
 }
 
 } // end namespace cuda
