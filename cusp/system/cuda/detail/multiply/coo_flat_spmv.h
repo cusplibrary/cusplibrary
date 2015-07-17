@@ -63,6 +63,8 @@ namespace system
 {
 namespace cuda
 {
+namespace cub_coo_spmv_detail
+{
 
 using namespace thrust::system::cuda::detail::cub_;
 
@@ -228,16 +230,16 @@ struct NewRowOp
  * sparse COO tiles.
  */
 template <
-    int             BLOCK_THREADS,
-    int             ITEMS_PER_THREAD,
-    typename        PartialIterator,
-    typename        RowIterator,
-    typename        ColumnIterator,
-    typename        ValueIterator1,
-    typename        ValueIterator2,
-    typename        ValueIterator3,
-    typename        BinaryFunction1,
-    typename        BinaryFunction2>
+int             BLOCK_THREADS,
+                int             ITEMS_PER_THREAD,
+                typename        PartialIterator,
+                typename        RowIterator,
+                typename        ColumnIterator,
+                typename        ValueIterator1,
+                typename        ValueIterator2,
+                typename        ValueIterator3,
+                typename        BinaryFunction1,
+                typename        BinaryFunction2>
 struct PersistentBlockSpmv
 {
     //---------------------------------------------------------------------
@@ -507,11 +509,11 @@ struct PersistentBlockSpmv
  * Threadblock abstraction for "fixing up" an array of interblock SpMV partial products.
  */
 template <
-    int             BLOCK_THREADS,
-    int             ITEMS_PER_THREAD,
-    typename        PartialIterator,
-    typename        ValueIterator,
-    typename        BinaryFunction>
+int             BLOCK_THREADS,
+                int             ITEMS_PER_THREAD,
+                typename        PartialIterator,
+                typename        ValueIterator,
+                typename        BinaryFunction>
 struct FinalizeSpmvBlock
 {
     //---------------------------------------------------------------------
@@ -704,16 +706,16 @@ struct FinalizeSpmvBlock
  * SpMV kernel whose thread blocks each process a contiguous segment of sparse COO tiles.
  */
 template <
-    int                             BLOCK_THREADS,
-    int                             ITEMS_PER_THREAD,
-    typename                        PartialIterator,
-    typename                        RowIterator,
-    typename                        ColumnIterator,
-    typename                        ValueIterator1,
-    typename                        ValueIterator2,
-    typename                        ValueIterator3,
-    typename                        BinaryFunction1,
-    typename                        BinaryFunction2>
+int                             BLOCK_THREADS,
+                                int                             ITEMS_PER_THREAD,
+                                typename                        PartialIterator,
+                                typename                        RowIterator,
+                                typename                        ColumnIterator,
+                                typename                        ValueIterator1,
+                                typename                        ValueIterator2,
+                                typename                        ValueIterator3,
+                                typename                        BinaryFunction1,
+                                typename                        BinaryFunction2>
 __launch_bounds__ (BLOCK_THREADS)
 __global__ void CooKernel(
     GridEvenShare<int>                    even_share,
@@ -758,11 +760,11 @@ __global__ void CooKernel(
  * Kernel for "fixing up" an array of interblock SpMV partial products.
  */
 template <
-    int                             BLOCK_THREADS,
-    int                             ITEMS_PER_THREAD,
-    typename                        PartialIterator,
-    typename                        ValueIterator,
-    typename                        BinaryFunction>
+int                             BLOCK_THREADS,
+                                int                             ITEMS_PER_THREAD,
+                                typename                        PartialIterator,
+                                typename                        ValueIterator,
+                                typename                        BinaryFunction>
 __launch_bounds__ (BLOCK_THREADS,  1)
 __global__ void CooFinalizeKernel(
     PartialIterator                      d_block_partials,
@@ -784,20 +786,20 @@ __global__ void CooFinalizeKernel(
 }
 
 template <bool InitializeY,
-          typename DerivedPolicy,
-          typename MatrixType,
-          typename VectorType1,
-          typename VectorType2,
-          typename UnaryFunction,
-          typename BinaryFunction1,
-          typename BinaryFunction2>
-void __spmv_coo_flat(cuda::execution_policy<DerivedPolicy>& exec,
-                     const MatrixType& A,
-                     const VectorType1& x,
-                     VectorType2& y,
-                     UnaryFunction   initialize,
-                     BinaryFunction1 combine,
-                     BinaryFunction2 reduce)
+         typename DerivedPolicy,
+         typename MatrixType,
+         typename VectorType1,
+         typename VectorType2,
+         typename UnaryFunction,
+         typename BinaryFunction1,
+         typename BinaryFunction2>
+void spmv_coo(cuda::execution_policy<DerivedPolicy>& exec,
+              const MatrixType& A,
+              const VectorType1& x,
+              VectorType2& y,
+              UnaryFunction   initialize,
+              BinaryFunction1 combine,
+              BinaryFunction2 reduce)
 {
     typedef typename MatrixType::index_type                                 IndexType;
     typedef typename VectorType2::value_type                                ValueType;
@@ -846,9 +848,9 @@ void __spmv_coo_flat(cuda::execution_policy<DerivedPolicy>& exec,
     int coo_sm_occupancy = 0;
     MaxSmOccupancy(coo_sm_occupancy,
                    CooKernel<COO_BLOCK_THREADS, COO_ITEMS_PER_THREAD,
-                             PartialIterator, RowIterator, ColumnIterator,
-                             ValueIterator1, ValueIterator2, ValueIterator3,
-                             BinaryFunction1, BinaryFunction2>,
+                   PartialIterator, RowIterator, ColumnIterator,
+                   ValueIterator1, ValueIterator2, ValueIterator3,
+                   BinaryFunction1, BinaryFunction2>,
                    COO_BLOCK_THREADS);
 
     int sm_count;
@@ -891,12 +893,14 @@ void __spmv_coo_flat(cuda::execution_policy<DerivedPolicy>& exec,
     }
 }
 
+} // end namespace cub_coo_spmv_detail
+
 template <typename DerivedPolicy,
-          typename MatrixType,
-          typename VectorType1,
-          typename VectorType2,
-          typename BinaryFunction1,
-          typename BinaryFunction2>
+         typename MatrixType,
+         typename VectorType1,
+         typename VectorType2,
+         typename BinaryFunction1,
+         typename BinaryFunction2>
 void multiply(cuda::execution_policy<DerivedPolicy>& exec,
               const MatrixType& A,
               const VectorType1& x,
@@ -908,16 +912,16 @@ void multiply(cuda::execution_policy<DerivedPolicy>& exec,
               array1d_format,
               array1d_format)
 {
-    __spmv_coo_flat<false>(exec, A, x, y, initialize, combine, reduce);
+    cub_coo_spmv_detail::spmv_coo<false>(exec, A, x, y, initialize, combine, reduce);
 }
 
 template <typename DerivedPolicy,
-          typename MatrixType,
-          typename VectorType1,
-          typename VectorType2,
-          typename UnaryFunction,
-          typename BinaryFunction1,
-          typename BinaryFunction2>
+         typename MatrixType,
+         typename VectorType1,
+         typename VectorType2,
+         typename UnaryFunction,
+         typename BinaryFunction1,
+         typename BinaryFunction2>
 void multiply(cuda::execution_policy<DerivedPolicy>& exec,
               const MatrixType& A,
               const VectorType1& x,
@@ -929,7 +933,7 @@ void multiply(cuda::execution_policy<DerivedPolicy>& exec,
               array1d_format,
               array1d_format)
 {
-    __spmv_coo_flat<true>(exec, A, x, y, initialize, combine, reduce);
+    cub_coo_spmv_detail::spmv_coo<true>(exec, A, x, y, initialize, combine, reduce);
 }
 
 } // end namespace cuda
