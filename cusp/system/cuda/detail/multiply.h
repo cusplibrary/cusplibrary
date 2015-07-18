@@ -19,7 +19,7 @@
 #include <cusp/detail/config.h>
 
 #if THRUST_VERSION >= 100800
-#include <cusp/system/cuda/detail/multiply/coo_flat_spmv_cub.h>
+#include <cusp/system/cuda/detail/multiply/coo_spmv_cub.h>
 #include <cusp/system/cuda/detail/multiply/csr_vector_spmv_cub.h>
 #else
 #include <cusp/system/cuda/detail/multiply/coo_flat_spmv.h>
