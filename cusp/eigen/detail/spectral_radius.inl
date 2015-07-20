@@ -53,13 +53,10 @@ double disks_spectral_radius(const Matrix& A, coo_format)
 
     // compute sum of absolute values for each row of A
     cusp::array1d<NormType, MemorySpace> row_sums(N, NormType(0));
-    cusp::array1d<NormType, MemorySpace> abs_values(A.num_entries);
-    // thrust::transform(A.values.begin(), A.values.end(), abs_values.begin(), cusp::detail::absolute<ValueType>());
 
     thrust::reduce_by_key
     (A.row_indices.begin(), A.row_indices.end(),
-     // thrust::make_transform_iterator(A.values.begin(), cusp::detail::absolute<ValueType>()),
-     abs_values.begin(),
+     thrust::make_transform_iterator(A.values.begin(), cusp::detail::absolute<ValueType>()),
      thrust::make_discard_iterator(),
      row_sums.begin(),
      thrust::equal_to<IndexType>(),

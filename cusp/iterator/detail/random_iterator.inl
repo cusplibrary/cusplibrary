@@ -17,11 +17,13 @@
 #pragma once
 
 #include <cusp/complex.h>
+#include <cusp/detail/type_traits.h>
 
 #include <thrust/iterator/counting_iterator.h>
 #include <thrust/iterator/iterator_traits.h>
 #include <thrust/detail/numeric_traits.h>
 #include <thrust/detail/type_traits.h>
+
 #include <cstddef>
 
 namespace cusp
@@ -33,10 +35,10 @@ template<typename T>
 struct random_iterator_type
 {
     typedef typename thrust::detail::eval_if<
-    sizeof(T) <= 4,
+           sizeof(T) <= 4,
            thrust::detail::identity_< unsigned int >,
            thrust::detail::identity_< unsigned long long >
-           >::type type;
+        >::type type;
 };
 
 template <typename Real>
@@ -52,18 +54,19 @@ struct integer_to_real : public thrust::unary_function<typename random_iterator_
     }
 };
 
-template <>
-struct integer_to_real< thrust::complex<float> > : public thrust::unary_function<typename random_iterator_type<float>::type, float>
+template <typename Complex>
+struct integer_to_complex : public thrust::unary_function<typename random_iterator_type<Complex>::type,Complex>
 {
-    typedef float Real;
-    typedef typename random_iterator_type<Real>::type UnsignedInteger;
+    typedef typename random_iterator_type<Complex>::type UnsignedInteger;
+    typedef typename cusp::detail::norm_type<Complex>::type Real;
+    typedef integer_to_real<Real> IntegerToRealGenerator;
+
+    IntegerToRealGenerator generator;
 
     __host__ __device__
-    // thrust::complex<Real> operator()(const UnsignedInteger i) const
-    thrust::complex<Real> operator()(const UnsignedInteger i) const
+    Complex operator()(const UnsignedInteger i) const
     {
-        const Real integer_bound = Real(UnsignedInteger(1) << (4 * sizeof(UnsignedInteger))) * Real(UnsignedInteger(1) << (4 * sizeof(UnsignedInteger)));
-        return thrust::complex<Real>(Real(i) / integer_bound, Real(i)/ integer_bound);
+        return Complex(generator(i), generator(i + (1<<20)-1));
     }
 };
 
@@ -71,16 +74,12 @@ template<typename T>
 struct random_functor_type
 {
     typedef typename thrust::detail::eval_if<
-           thrust::detail::is_floating_point<T>::value,
-           thrust::detail::identity_< integer_to_real<T> >,
+           thrust::detail::is_floating_point<typename cusp::detail::norm_type<T>::type>::value,
+              thrust::detail::eval_if<thrust::detail::is_convertible<thrust::complex<float>,T>::value,
+                thrust::detail::identity_< integer_to_complex<T> >,
+                thrust::detail::identity_< integer_to_real<T> > >,
            thrust::detail::identity_< thrust::identity<T> >
            >::type type;
-};
-
-template<>
-struct random_functor_type< thrust::complex<float> >
-{
-    typedef integer_to_real< thrust::complex<float> > type;
 };
 
 // Integer hash functions

@@ -109,8 +109,5 @@ struct TestRandomReals
         ASSERT_ALMOST_EQUAL(h, d);
     }
 };
-SimpleUnitTest<TestRandomReals, unittest::type_list<float> > TestRandomFloatRealsInstance;
-SimpleUnitTest<TestRandomReals, unittest::type_list<double> > TestRandomDoubleRealsInstance;
-SimpleUnitTest<TestRandomReals, unittest::type_list< cusp::complex<float> > > TestRandomComplexFloatRealsInstance;
-SimpleUnitTest<TestRandomReals, unittest::type_list< cusp::complex<double> > > TestRandomComplexDoubleRealsInstance;
+SimpleUnitTest<TestRandomReals, unittest::type_list<float, double, cusp::complex<float>, cusp::complex<double> > >  TestRandomRealsInstance;
 

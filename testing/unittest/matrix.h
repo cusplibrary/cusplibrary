@@ -54,4 +54,3 @@ void VTEST##Fmt##MatrixViewDevice(void) { VTEST< cusp::fmt##_matrix<int,float,cu
 DECLARE_UNITTEST(VTEST##Fmt##MatrixViewHost);                                                                                                                                                  \
 DECLARE_UNITTEST(VTEST##Fmt##MatrixViewDevice);
 
-

@@ -83,22 +83,22 @@ class random_iterator
 public:
 
     /*! \cond */
-    typedef T                                                                            value_type;
-    typedef T*                                                                           pointer;
-    typedef T&                                                                           reference;
-    typedef size_t                                                                       difference_type;
-    typedef size_t                                                                       size_type;
-    typedef thrust::random_access_traversal_tag                                          iterator_category;
+    typedef T                                                                              value_type;
+    typedef T*                                                                             pointer;
+    typedef T&                                                                             reference;
+    typedef size_t                                                                         difference_type;
+    typedef size_t                                                                         size_type;
+    typedef thrust::random_access_traversal_tag                                            iterator_category;
 
-    typedef std::ptrdiff_t                                                               IndexType;
-    typedef detail::random_integer_functor<IndexType,T>                                  IndexFunctor;
-    typedef typename thrust::counting_iterator<IndexType>                                CountingIterator;
-    typedef typename thrust::transform_iterator<IndexFunctor, CountingIterator,  T>      RandomCountingIterator;
+    typedef std::ptrdiff_t                                                                 IndexType;
+    typedef detail::random_integer_functor<IndexType,T>                                    IndexFunctor;
+    typedef typename thrust::counting_iterator<IndexType>                                  CountingIterator;
+    typedef typename thrust::transform_iterator<IndexFunctor, CountingIterator, IndexType> RandomCountingIterator;
 
     // type of the random_range iterator
-    typedef typename detail::random_functor_type<T>::type                                Functor;
-    typedef typename thrust::transform_iterator<Functor, RandomCountingIterator, T>      RandomTransformIterator;
-    typedef RandomTransformIterator                                                      iterator;
+    typedef typename detail::random_functor_type<T>::type                                  Functor;
+    typedef typename thrust::transform_iterator<Functor, RandomCountingIterator, T>        RandomTransformIterator;
+    typedef RandomTransformIterator                                                        iterator;
     /*! \endcond */
 
     /*! \brief This constructor builds a \p random_iterator using a specified seed.
