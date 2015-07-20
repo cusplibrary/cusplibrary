@@ -110,7 +110,7 @@ struct TestRandomReals
     }
 };
 SimpleUnitTest<TestRandomReals, unittest::type_list<float> > TestRandomFloatRealsInstance;
-#if __CUDA_ARCH__ >= 200
 SimpleUnitTest<TestRandomReals, unittest::type_list<double> > TestRandomDoubleRealsInstance;
-#endif
+SimpleUnitTest<TestRandomReals, unittest::type_list< cusp::complex<float> > > TestRandomComplexFloatRealsInstance;
+SimpleUnitTest<TestRandomReals, unittest::type_list< cusp::complex<double> > > TestRandomComplexDoubleRealsInstance;
 

@@ -446,7 +446,7 @@ nrm2(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 }
 
 template <typename ArrayType>
-typename ArrayType::value_type
+typename cusp::detail::norm_type<typename ArrayType::value_type>::type
 nrmmax(const ArrayType& x)
 {
     using thrust::system::detail::generic::select_system;
@@ -460,7 +460,7 @@ nrmmax(const ArrayType& x)
 
 template <typename DerivedPolicy,
           typename ArrayType>
-typename ArrayType::value_type
+typename cusp::detail::norm_type<typename ArrayType::value_type>::type
 nrmmax(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
        const ArrayType& x)
 {

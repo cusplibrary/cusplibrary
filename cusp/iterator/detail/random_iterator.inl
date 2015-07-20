@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include <cusp/complex.h>
+
 #include <thrust/iterator/counting_iterator.h>
 #include <thrust/iterator/iterator_traits.h>
 #include <thrust/detail/numeric_traits.h>
@@ -50,14 +52,35 @@ struct integer_to_real : public thrust::unary_function<typename random_iterator_
     }
 };
 
+template <>
+struct integer_to_real< thrust::complex<float> > : public thrust::unary_function<typename random_iterator_type<float>::type, float>
+{
+    typedef float Real;
+    typedef typename random_iterator_type<Real>::type UnsignedInteger;
+
+    __host__ __device__
+    // thrust::complex<Real> operator()(const UnsignedInteger i) const
+    thrust::complex<Real> operator()(const UnsignedInteger i) const
+    {
+        const Real integer_bound = Real(UnsignedInteger(1) << (4 * sizeof(UnsignedInteger))) * Real(UnsignedInteger(1) << (4 * sizeof(UnsignedInteger)));
+        return thrust::complex<Real>(Real(i) / integer_bound, Real(i)/ integer_bound);
+    }
+};
+
 template<typename T>
 struct random_functor_type
 {
     typedef typename thrust::detail::eval_if<
-    thrust::detail::is_floating_point<T>::value,
+           thrust::detail::is_floating_point<T>::value,
            thrust::detail::identity_< integer_to_real<T> >,
            thrust::detail::identity_< thrust::identity<T> >
            >::type type;
+};
+
+template<>
+struct random_functor_type< thrust::complex<float> >
+{
+    typedef integer_to_real< thrust::complex<float> > type;
 };
 
 // Integer hash functions

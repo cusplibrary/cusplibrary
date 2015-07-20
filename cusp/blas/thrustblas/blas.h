@@ -19,6 +19,7 @@
 #include <cusp/array1d.h>
 #include <cusp/exception.h>
 #include <cusp/detail/functional.h>
+#include <cusp/print.h>
 
 #include <thrust/copy.h>
 #include <thrust/fill.h>
@@ -559,16 +560,20 @@ nrm1(thrust::execution_policy<DerivedPolicy>& exec,
 
 template <typename DerivedPolicy,
           typename Array>
-typename Array::value_type
+typename cusp::detail::norm_type<typename Array::value_type>::type
 nrmmax(thrust::execution_policy<DerivedPolicy>& exec,
        const Array& x)
 {
     typedef typename Array::value_type ValueType;
+    typedef typename Array::memory_space MemorySpace;
+    typedef typename cusp::detail::norm_type<typename Array::value_type>::type NormType;
+
+    if(x.size() == 0) return NormType(0);
 
     detail::absolute<ValueType>  unary_op;
-    detail::maximum<ValueType>   binary_op;
+    detail::maximum<NormType>   binary_op;
 
-    ValueType init = 0;
+    NormType init = 0;
 
     return thrust::transform_reduce(exec, x.begin(), x.end(), unary_op, init, binary_op);
 }
@@ -576,5 +581,4 @@ nrmmax(thrust::execution_policy<DerivedPolicy>& exec,
 } // end namespace thrustblas
 } // end namespace blas
 } // end namespace cusp
-
 

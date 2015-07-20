@@ -22,14 +22,14 @@ void VTEST##Array2dColumnMajorDevice(void) { VTEST< cusp::array2d<float,cusp::de
 DECLARE_UNITTEST(VTEST##Array2dRowMajorHost);                                                                           \
 DECLARE_UNITTEST(VTEST##Array2dRowMajorDevice);                                                                         \
 DECLARE_UNITTEST(VTEST##Array2dColumnMajorHost);                                                                        \
-DECLARE_UNITTEST(VTEST##Array2dColumnMajorDevice);                                                                                                         
+DECLARE_UNITTEST(VTEST##Array2dColumnMajorDevice);
 
-// Sparse Matrix Containers 
+// Sparse Matrix Containers
 #define DECLARE_SPARSE_FORMAT_UNITTEST(VTEST,Fmt,fmt)                                                                                                                           \
 void VTEST##Fmt##MatrixHost(void)   { VTEST< cusp::fmt##_matrix<int,float,cusp::host_memory> >();    VTEST< cusp::fmt##_matrix<long long,float,cusp::host_memory> >();   VTEST< cusp::fmt##_matrix<int,cusp::complex<float>,cusp::host_memory> >(); }  \
 void VTEST##Fmt##MatrixDevice(void) { VTEST< cusp::fmt##_matrix<int,float,cusp::device_memory> >();  VTEST< cusp::fmt##_matrix<long long,float,cusp::device_memory> >(); VTEST< cusp::fmt##_matrix<int,cusp::complex<float>,cusp::device_memory> >();}  \
 DECLARE_UNITTEST(VTEST##Fmt##MatrixHost);                                                                                                                                       \
-DECLARE_UNITTEST(VTEST##Fmt##MatrixDevice);                                                                                                                                     
+DECLARE_UNITTEST(VTEST##Fmt##MatrixDevice);
 
 #define DECLARE_SPARSE_MATRIX_UNITTEST(VTEST) \
 DECLARE_SPARSE_FORMAT_UNITTEST(VTEST,Coo,coo) \
@@ -38,7 +38,7 @@ DECLARE_SPARSE_FORMAT_UNITTEST(VTEST,Dia,dia) \
 DECLARE_SPARSE_FORMAT_UNITTEST(VTEST,Ell,ell) \
 DECLARE_SPARSE_FORMAT_UNITTEST(VTEST,Hyb,hyb)
 
-// All Matrix Containers 
+// All Matrix Containers
 #define DECLARE_MATRIX_UNITTEST(VTEST) \
 DECLARE_DENSE_MATRIX_UNITTEST(VTEST);  \
 DECLARE_SPARSE_MATRIX_UNITTEST(VTEST);
@@ -52,6 +52,6 @@ DECLARE_SPARSE_MATRIX_UNITTEST(VTEST);
 void VTEST##Fmt##MatrixViewHost(void)   { VTEST< cusp::fmt##_matrix<int,float,cusp::host_memory>::view   >(); VTEST< cusp::fmt##_matrix<long long,float,cusp::host_memory  >::view >(); }  \
 void VTEST##Fmt##MatrixViewDevice(void) { VTEST< cusp::fmt##_matrix<int,float,cusp::device_memory>::view >(); VTEST< cusp::fmt##_matrix<long long,float,cusp::device_memory>::view >(); }  \
 DECLARE_UNITTEST(VTEST##Fmt##MatrixViewHost);                                                                                                                                                  \
-DECLARE_UNITTEST(VTEST##Fmt##MatrixViewDevice);                                                                                                                                     
+DECLARE_UNITTEST(VTEST##Fmt##MatrixViewDevice);
 
 

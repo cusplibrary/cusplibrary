@@ -146,6 +146,7 @@ double estimate_spectral_radius(const Matrix& A, size_t k)
     typedef typename Matrix::index_type   IndexType;
     typedef typename Matrix::value_type   ValueType;
     typedef typename Matrix::memory_space MemorySpace;
+    typedef typename cusp::detail::norm_type<ValueType>::type NormType;
 
     const IndexType N = A.num_rows;
 
@@ -157,7 +158,7 @@ double estimate_spectral_radius(const Matrix& A, size_t k)
 
     for(size_t i = 0; i < k; i++)
     {
-        cusp::blas::scal(x, ValueType(1.0) / cusp::blas::nrmmax(x));
+        cusp::blas::scal(x, NormType(1.0) / cusp::blas::nrmmax(x));
         cusp::multiply(A, x, y);
         x.swap(y);
     }

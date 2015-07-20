@@ -63,7 +63,7 @@ void print(const Printable& p, Stream& s, cusp::coo_format)
         #if THRUST_VERSION < 100800
         print_marshall()(p.values[n], s);
         #else
-        s << " " << std::setw(14) << p.values[n];
+        s << " " << std::setw(14) << p.values[n] << "\n";
         #endif
     }
 }
