@@ -19,6 +19,7 @@
 
 #include <cusp/array1d.h>
 #include <cusp/array2d.h>
+#include <cusp/complex.h>
 #include <cusp/format_utils.h>
 #include <cusp/multiply.h>
 
@@ -56,7 +57,7 @@ double disks_spectral_radius(const Matrix& A, coo_format)
 
     thrust::reduce_by_key
     (A.row_indices.begin(), A.row_indices.end(),
-     thrust::make_transform_iterator(A.values.begin(), cusp::detail::absolute<ValueType>()),
+     thrust::make_transform_iterator(A.values.begin(), cusp::blas::thrustblas::detail::absolute<ValueType>()),
      thrust::make_discard_iterator(),
      row_sums.begin(),
      thrust::equal_to<IndexType>(),
@@ -172,9 +173,9 @@ double ritz_spectral_radius(const Matrix& A, size_t k, bool symmetric)
     cusp::array2d<ValueType,cusp::host_memory> H;
 
     if(symmetric)
-      detail::lanczos_estimate(A, H, k);
+        detail::lanczos_estimate(A, H, k);
     else
-      cusp::eigen::arnoldi(A, H, k);
+        cusp::eigen::arnoldi(A, H, k);
 
     return estimate_spectral_radius(H);
 }

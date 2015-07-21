@@ -30,8 +30,23 @@
 
 namespace cusp
 {
+namespace detail
+{
+  // forward definition
+  template<typename T> struct norm_type;
+}
 
 using thrust::complex;
+
+template <typename ValueType>
+__host__ __device__
+inline typename cusp::detail::norm_type<ValueType>::type
+sqrt(const ValueType& z) {
+    using thrust::sqrt;
+    using std::sqrt;
+    return sqrt(z);
+}
+
 using thrust::norm;
 
 template <typename ValueType>
@@ -42,10 +57,9 @@ inline ValueType norm(const ValueType& z) {
 
 template <typename ValueType>
 __host__ __device__
-inline ValueType normsq(const ValueType& z) {
-    using thrust::sqrt;
-    using std::sqrt;
-    return sqrt(norm(z));
+inline typename cusp::detail::norm_type<ValueType>::type
+normsq(const ValueType& z) {
+    return cusp::sqrt(cusp::norm(z));
 }
 
 // define complex type for the purpose of Doxygenating it
