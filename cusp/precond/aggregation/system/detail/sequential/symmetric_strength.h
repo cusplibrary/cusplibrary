@@ -16,6 +16,7 @@
 
 
 #include <cusp/array1d.h>
+#include <cusp/complex.h>
 #include <cusp/convert.h>
 #include <cusp/copy.h>
 #include <cusp/csr_matrix.h>
@@ -44,9 +45,13 @@ void symmetric_strength_of_connection(thrust::system::detail::sequential::execut
                                       const double theta,
                                       cusp::csr_format)
 {
+    using thrust::sqrt;
+    using std::sqrt;
+
     typedef typename MatrixType1::index_type   IndexType;
     typedef typename MatrixType1::value_type   ValueType;
     typedef typename MatrixType1::memory_space MemorySpace;
+    typedef typename cusp::detail::norm_type<ValueType>::type NormType;
 
     // extract matrix diagonal
     cusp::array1d<ValueType,MemorySpace> diagonal;
@@ -57,16 +62,16 @@ void symmetric_strength_of_connection(thrust::system::detail::sequential::execut
     // count num_entries in output
     for(size_t i = 0; i < A.num_rows; i++)
     {
-        const ValueType Aii = diagonal[i];
+        const NormType nAii = cusp::norm(ValueType(diagonal[i]));
 
         for(IndexType jj = A.row_offsets[i]; jj < A.row_offsets[i + 1]; jj++)
         {
-            const IndexType   j = A.column_indices[jj];
-            const ValueType Aij = A.values[jj];
-            const ValueType Ajj = diagonal[j];
+            const IndexType   j  = A.column_indices[jj];
+            const ValueType Aij  = A.values[jj];
+            const NormType  nAjj = cusp::norm(ValueType(diagonal[j]));
 
             //  |A(i,j)| >= theta * sqrt(|A(i,i)|*|A(j,j)|)
-            if(Aij*Aij >= (theta * theta) * cusp::detail::absolute<ValueType>()(Aii * Ajj))
+            if(cusp::norm(Aij) >= cusp::norm(theta) * sqrt(nAii * nAjj))
                 num_entries++;
         }
     }
@@ -80,18 +85,19 @@ void symmetric_strength_of_connection(thrust::system::detail::sequential::execut
     // copy strong connections to output
     for(size_t i = 0; i < A.num_rows; i++)
     {
-        const ValueType Aii = diagonal[i];
+        const NormType nAii = cusp::norm(ValueType(diagonal[i]));
 
         S.row_offsets[i] = num_entries;
 
         for(IndexType jj = A.row_offsets[i]; jj < A.row_offsets[i + 1]; jj++)
         {
-            const IndexType   j = A.column_indices[jj];
-            const ValueType Aij = A.values[jj];
-            const ValueType Ajj = diagonal[j];
+            const IndexType   j  = A.column_indices[jj];
+            const ValueType Aij  = A.values[jj];
+            const NormType  nAjj = cusp::norm(ValueType(diagonal[j]));
 
             //  |A(i,j)| >= theta * sqrt(|A(i,i)|*|A(j,j)|)
-            if(Aij*Aij >= (theta * theta) * cusp::detail::absolute<ValueType>()(Aii * Ajj))
+
+            if(cusp::norm(Aij) >= cusp::norm(theta) * sqrt(nAii * nAjj))
             {
                 S.column_indices[num_entries] =   j;
                 S.values[num_entries]         = Aij;

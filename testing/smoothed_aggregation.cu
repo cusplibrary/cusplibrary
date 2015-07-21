@@ -372,26 +372,27 @@ DECLARE_UNITTEST(TestSmoothedAggregationHostToDevice);
 template <typename SparseMatrix>
 void TestSymmetricStrengthOfConnection(void)
 {
-    typedef cusp::array2d<float,cusp::host_memory> Matrix;
+    typedef typename SparseMatrix::value_type ValueType;
+    typedef cusp::array2d<ValueType,cusp::host_memory> Matrix;
 
     // input
     Matrix M(4,4);
-    M(0,0) =  3;
-    M(0,1) =  0;
-    M(0,2) =  1;
-    M(0,3) =  2;
-    M(1,0) =  0;
-    M(1,1) =  4;
-    M(1,2) =  3;
-    M(1,3) =  4;
-    M(2,0) = -1;
-    M(2,1) = -3;
-    M(2,2) =  5;
-    M(2,3) =  5;
-    M(3,0) = -2;
-    M(3,1) = -4;
-    M(3,2) = -5;
-    M(3,3) =  6;
+    M(0,0) =  3.0;
+    M(0,1) =  0.0;
+    M(0,2) =  1.0;
+    M(0,3) =  2.0;
+    M(1,0) =  0.0;
+    M(1,1) =  4.0;
+    M(1,2) =  3.0;
+    M(1,3) =  4.0;
+    M(2,0) = -1.0;
+    M(2,1) = -3.0;
+    M(2,2) =  5.0;
+    M(2,3) =  5.0;
+    M(3,0) = -2.0;
+    M(3,1) = -4.0;
+    M(3,2) = -5.0;
+    M(3,3) =  6.0;
 
     // default: all connections are strong
     {
@@ -420,22 +421,22 @@ void TestSymmetricStrengthOfConnection(void)
 
         // expected output
         Matrix N(4,4);
-        N(0,0) =  3;
-        N(0,1) =  0;
-        N(0,2) =  0;
-        N(0,3) =  0;
-        N(1,0) =  0;
-        N(1,1) =  4;
-        N(1,2) =  3;
-        N(1,3) =  4;
-        N(2,0) =  0;
-        N(2,1) = -3;
-        N(2,2) =  5;
-        N(2,3) =  5;
-        N(3,0) =  0;
-        N(3,1) = -4;
-        N(3,2) = -5;
-        N(3,3) =  6;
+        N(0,0) =  3.0;
+        N(0,1) =  0.0;
+        N(0,2) =  0.0;
+        N(0,3) =  0.0;
+        N(1,0) =  0.0;
+        N(1,1) =  4.0;
+        N(1,2) =  3.0;
+        N(1,3) =  4.0;
+        N(2,0) =  0.0;
+        N(2,1) = -3.0;
+        N(2,2) =  5.0;
+        N(2,3) =  5.0;
+        N(3,0) =  0.0;
+        N(3,1) = -4.0;
+        N(3,2) = -5.0;
+        N(3,3) =  6.0;
         ASSERT_EQUAL(result == N, true);
     }
 
@@ -448,22 +449,22 @@ void TestSymmetricStrengthOfConnection(void)
 
         // expected output
         Matrix N(4,4);
-        N(0,0) =  3;
-        N(0,1) =  0;
-        N(0,2) =  0;
-        N(0,3) =  0;
-        N(1,0) =  0;
-        N(1,1) =  4;
-        N(1,2) =  0;
-        N(1,3) =  4;
-        N(2,0) =  0;
-        N(2,1) =  0;
-        N(2,2) =  5;
-        N(2,3) =  5;
-        N(3,0) =  0;
-        N(3,1) = -4;
-        N(3,2) = -5;
-        N(3,3) =  6;
+        N(0,0) =  3.0;
+        N(0,1) =  0.0;
+        N(0,2) =  0.0;
+        N(0,3) =  0.0;
+        N(1,0) =  0.0;
+        N(1,1) =  4.0;
+        N(1,2) =  0.0;
+        N(1,3) =  4.0;
+        N(2,0) =  0.0;
+        N(2,1) =  0.0;
+        N(2,2) =  5.0;
+        N(2,3) =  5.0;
+        N(3,0) =  0.0;
+        N(3,1) = -4.0;
+        N(3,2) = -5.0;
+        N(3,3) =  6.0;
         ASSERT_EQUAL(result == N, true);
     }
 
@@ -476,22 +477,22 @@ void TestSymmetricStrengthOfConnection(void)
 
         // expected output
         Matrix N(4,4);
-        N(0,0) =  3;
-        N(0,1) =  0;
-        N(0,2) =  0;
-        N(0,3) =  0;
-        N(1,0) =  0;
-        N(1,1) =  4;
-        N(1,2) =  0;
-        N(1,3) =  0;
-        N(2,0) =  0;
-        N(2,1) =  0;
-        N(2,2) =  5;
-        N(2,3) =  5;
-        N(3,0) =  0;
-        N(3,1) =  0;
-        N(3,2) = -5;
-        N(3,3) =  6;
+        N(0,0) =  3.0;
+        N(0,1) =  0.0;
+        N(0,2) =  0.0;
+        N(0,3) =  0.0;
+        N(1,0) =  0.0;
+        N(1,1) =  4.0;
+        N(1,2) =  0.0;
+        N(1,3) =  0.0;
+        N(2,0) =  0.0;
+        N(2,1) =  0.0;
+        N(2,2) =  5.0;
+        N(2,3) =  5.0;
+        N(3,0) =  0.0;
+        N(3,1) =  0.0;
+        N(3,2) = -5.0;
+        N(3,3) =  6.0;
         ASSERT_EQUAL(result == N, true);
     }
 

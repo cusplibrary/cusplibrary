@@ -62,6 +62,7 @@ bool is_valid_mis(MatrixType& A, ArrayType& stencil)
 template <typename TestMatrix, typename ExampleMatrix>
 void _TestMaximalIndependentSet(const ExampleMatrix& example_matrix)
 {
+    typedef typename TestMatrix::value_type   ValueType;
     typedef typename TestMatrix::memory_space MemorySpace;
 
     // initialize test matrix
@@ -93,8 +94,8 @@ void _TestMaximalIndependentSet(const ExampleMatrix& example_matrix)
         size_t num_nodes = cusp::graph::maximal_independent_set(test_matrix, stencil, 2);
 
         // check MIS(2)
-        cusp::coo_matrix<int,float,MemorySpace> A(example_matrix);
-        cusp::coo_matrix<int,float,MemorySpace> A2;
+        cusp::coo_matrix<int,ValueType,MemorySpace> A(example_matrix);
+        cusp::coo_matrix<int,ValueType,MemorySpace> A2;
         cusp::multiply(A, A, A2);
 
         ASSERT_EQUAL(is_valid_mis(A2, stencil), true);
@@ -105,10 +106,12 @@ void _TestMaximalIndependentSet(const ExampleMatrix& example_matrix)
 template <typename TestMatrix>
 void TestMaximalIndependentSet(void)
 {
+    typedef typename TestMatrix::value_type   ValueType;
+
     // note: examples should be {0,1} matrices with 1s on the diagonal
 
     // two components of two nodes
-    cusp::array2d<float,cusp::host_memory> A(4,4);
+    cusp::array2d<ValueType,cusp::host_memory> A(4,4);
     A(0,0) = 1;
     A(0,1) = 1;
     A(0,2) = 0;
@@ -127,7 +130,7 @@ void TestMaximalIndependentSet(void)
     A(3,3) = 1;
 
     // linear graph
-    cusp::array2d<float,cusp::host_memory> B(4,4);
+    cusp::array2d<ValueType,cusp::host_memory> B(4,4);
     B(0,0) = 1;
     B(0,1) = 1;
     B(0,2) = 0;
@@ -146,24 +149,24 @@ void TestMaximalIndependentSet(void)
     B(3,3) = 1;
 
     // complete graph
-    cusp::array2d<float,cusp::host_memory> C(6,6,1);
+    cusp::array2d<ValueType,cusp::host_memory> C(6,6,1);
 
     // empty graph
-    cusp::array2d<float,cusp::host_memory> D(6,6,0);
+    cusp::array2d<ValueType,cusp::host_memory> D(6,6,0);
 
-    cusp::coo_matrix<int,float,cusp::host_memory> E;
+    cusp::coo_matrix<int,ValueType,cusp::host_memory> E;
     cusp::gallery::poisson5pt(E, 3, 3);
     thrust::fill(E.values.begin(), E.values.end(), 1.0f);
 
-    cusp::coo_matrix<int,float,cusp::host_memory> F;
+    cusp::coo_matrix<int,ValueType,cusp::host_memory> F;
     cusp::gallery::poisson5pt(F, 13, 17);
     thrust::fill(F.values.begin(), F.values.end(), 1.0f);
 
-    cusp::coo_matrix<int,float,cusp::host_memory> G;
+    cusp::coo_matrix<int,ValueType,cusp::host_memory> G;
     cusp::gallery::poisson5pt(G, 23, 24);
     thrust::fill(G.values.begin(), G.values.end(), 1.0f);
 
-    cusp::coo_matrix<int,float,cusp::host_memory> H;
+    cusp::coo_matrix<int,ValueType,cusp::host_memory> H;
     cusp::gallery::poisson5pt(H, 105, 107);
     thrust::fill(H.values.begin(), H.values.end(), 1.0f);
 

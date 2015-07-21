@@ -1,7 +1,8 @@
 #pragma once
 
 #include <cusp/array1d.h>
-#include <thrust/complex.h>
+#include <cusp/complex.h>
+
 #include <thrust/host_vector.h>
 #include <thrust/device_vector.h>
 #include <thrust/iterator/iterator_traits.h>
@@ -108,7 +109,7 @@ void assert_gequal(const T1& a, const T2& b,
 }
 
 template<typename T1, typename T2>
-bool almost_equal(const T1 a, const T2 b, const double a_tol, const double r_tol)
+bool almost_equal(const T1& a, const T2& b, const double a_tol, const double r_tol)
 {
     using std::abs;
 
@@ -118,8 +119,8 @@ bool almost_equal(const T1 a, const T2 b, const double a_tol, const double r_tol
         return true;
 }
 
-template<typename T>
-bool almost_equal(const thrust::complex<T> a, const thrust::complex<T> b, const double a_tol, const double r_tol)
+template <typename T1, typename T2>
+bool almost_equal(const thrust::complex<T1>& a, const thrust::complex<T2>& b, const double a_tol, const double r_tol)
 {
     using thrust::abs;
 
@@ -139,6 +140,21 @@ void assert_almost_equal(const T1& a, const T2& b,
         unittest::UnitTestFailure f;
         f << "[" << filename << ":" << lineno << "] ";
         f << "values are not approximately equal: " << (double) a << " " << (double) b;
+        f << " [type='" << type_name<T1>() << "']";
+        throw f;
+    }
+}
+
+template <typename T1, typename T2>
+void assert_almost_equal(const thrust::complex<T1>& a, const thrust::complex<T2>& b,
+                         const std::string& filename = "unknown", int lineno = -1,
+                         double a_tol = DEFAULT_ABSOLUTE_TOL, double r_tol = DEFAULT_RELATIVE_TOL)
+
+{
+    if(!almost_equal(a, b, a_tol, r_tol)) {
+        unittest::UnitTestFailure f;
+        f << "[" << filename << ":" << lineno << "] ";
+        f << "values are not approximately equal: " << a << " " << b;
         f << " [type='" << type_name<T1>() << "']";
         throw f;
     }

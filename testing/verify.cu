@@ -273,7 +273,9 @@ DECLARE_HOST_DEVICE_UNITTEST(TestIsValidMatrixArray2d);
 template <typename MatrixType>
 void TestAssertIsValidMatrix(void)
 {
-    cusp::array2d<float, cusp::host_memory> A(3,3);
+    typedef typename MatrixType::value_type ValueType;
+
+    cusp::array2d<ValueType, cusp::host_memory> A(3,3);
     A(0,0) = 0;
     A(0,1) = 1;
     A(0,2) = 0;

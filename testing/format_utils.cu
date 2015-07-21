@@ -82,17 +82,17 @@ void TestExtractDiagonal(void)
     typedef typename Matrix::memory_space Space;
 
     {
-        cusp::array2d<float, Space> A(2,2);
+        cusp::array2d<ValueType, Space> A(2,2);
         A(0,0) = 1.0;
         A(0,1) = 2.0;
         A(1,0) = 3.0;
         A(1,1) = 4.0;
 
-        cusp::array1d<float, Space> expected(2);
+        cusp::array1d<ValueType, Space> expected(2);
         expected[0] = 1.0;
         expected[1] = 4.0;
 
-        cusp::array1d<float, Space> output;
+        cusp::array1d<ValueType, Space> output;
 
         cusp::extract_diagonal(Matrix(A), output);
 
@@ -100,7 +100,7 @@ void TestExtractDiagonal(void)
     }
 
     {
-        cusp::array2d<float, Space> A(3,4);
+        cusp::array2d<ValueType, Space> A(3,4);
         A(0,0) = 0.0;
         A(0,1) = 0.0;
         A(0,2) = 4.0;
@@ -114,12 +114,12 @@ void TestExtractDiagonal(void)
         A(2,2) = 5.0;
         A(2,3) = 0.0;
 
-        cusp::array1d<float, Space> expected(3);
+        cusp::array1d<ValueType, Space> expected(3);
         expected[0] = 0.0;
         expected[1] = 2.0;
         expected[2] = 5.0;
 
-        cusp::array1d<float, Space> output;
+        cusp::array1d<ValueType, Space> output;
 
         cusp::extract_diagonal(Matrix(A), output);
 
@@ -127,7 +127,7 @@ void TestExtractDiagonal(void)
     }
 
     {
-        cusp::array2d<float, Space> A(5,5);
+        cusp::array2d<ValueType, Space> A(5,5);
         A(0,0) = 1.0;
         A(0,1) = 1.0;
         A(0,2) = 2.0;
@@ -154,14 +154,14 @@ void TestExtractDiagonal(void)
         A(4,3) = 0.0;
         A(4,4) = 9.0;
 
-        cusp::array1d<float, Space> expected(5);
+        cusp::array1d<ValueType, Space> expected(5);
         expected[0] = 1.0;
         expected[1] = 4.0;
         expected[2] = 0.0;
         expected[3] = 8.0;
         expected[4] = 9.0;
 
-        cusp::array1d<float, Space> output;
+        cusp::array1d<ValueType, Space> output;
 
         cusp::extract_diagonal(Matrix(A), output);
 

@@ -37,17 +37,17 @@ namespace detail
 template <typename DerivedPolicy,
           typename MatrixType1,
           typename MatrixType2,
-          typename MatrixType3,
-          typename ValueType>
+          typename MatrixType3>
 void smooth_prolongator(thrust::system::detail::sequential::execution_policy<DerivedPolicy> &exec,
                         const MatrixType1& S,
                         const MatrixType2& T,
                         MatrixType3& P,
-                        const ValueType rho_Dinv_S,
-                        const ValueType omega,
+                        const double rho_Dinv_S,
+                        const double omega,
                         cusp::csr_format)
 {
     typedef typename MatrixType3::index_type IndexType;
+    typedef typename MatrixType3::value_type ValueType;
 
     cusp::array1d<ValueType, cusp::host_memory> D(S.num_rows);
     cusp::extract_diagonal(S, D);
@@ -77,17 +77,17 @@ void smooth_prolongator(thrust::system::detail::sequential::execution_policy<Der
 template <typename DerivedPolicy,
           typename MatrixType1,
           typename MatrixType2,
-          typename MatrixType3,
-          typename ValueType>
+          typename MatrixType3>
 void smooth_prolongator(thrust::system::detail::sequential::execution_policy<DerivedPolicy> &exec,
                         const MatrixType1& S,
                         const MatrixType2& T,
                         MatrixType3& P,
-                        const ValueType rho_Dinv_S,
-                        const ValueType omega,
+                        const double rho_Dinv_S,
+                        const double omega,
                         cusp::known_format)
 {
     typedef typename MatrixType1::index_type    IndexType;
+    typedef typename MatrixType1::value_type    ValueType;
     typedef typename MatrixType1::memory_space  MemorySpace;
 
     typedef typename MatrixType1::const_coo_view_type             CooViewType1;
@@ -116,14 +116,13 @@ void smooth_prolongator(thrust::system::detail::sequential::execution_policy<Der
 template <typename DerivedPolicy,
           typename MatrixType1,
           typename MatrixType2,
-          typename MatrixType3,
-          typename ValueType>
+          typename MatrixType3>
 void smooth_prolongator(thrust::system::detail::sequential::execution_policy<DerivedPolicy> &exec,
                         const MatrixType1& S,
                         const MatrixType2& T,
                         MatrixType3& P,
-                        const ValueType rho_Dinv_S,
-                        const ValueType omega)
+                        const double rho_Dinv_S,
+                        const double omega)
 {
     typedef typename MatrixType1::format Format;
 

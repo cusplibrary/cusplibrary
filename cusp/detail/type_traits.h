@@ -279,7 +279,7 @@ struct coo_view_type<MatrixType,hyb_format>
     typedef typename coo_view::values_array_type::iterator                                               CooValueIterator;
 
     typedef typename cusp::array1d<TempType,MemorySpace>::iterator                                       IndexIterator;
-    typedef cusp::join_iterator< thrust::tuple<EllRowIndexIterator,CooRowIndexIterator,IndexIterator> >   JoinRowIterator;
+    typedef cusp::join_iterator< thrust::tuple<EllRowIndexIterator,CooRowIndexIterator,IndexIterator> >  JoinRowIterator;
     typedef cusp::join_iterator< thrust::tuple<EllColumnIndexIterator,CooColumnIndexIterator,IndexIterator> >             JoinColumnIterator;
     typedef cusp::join_iterator< thrust::tuple<EllValueIterator,CooValueIterator,IndexIterator> >                         JoinValueIterator;
 

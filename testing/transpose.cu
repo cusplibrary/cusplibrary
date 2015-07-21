@@ -12,7 +12,9 @@
 template <typename MatrixType>
 void initialize_matrix(MatrixType& matrix)
 {
-    cusp::array2d<float, cusp::host_memory> D(4,3);
+    typedef typename MatrixType::value_type ValueType;
+
+    cusp::array2d<ValueType, cusp::host_memory> D(4,3);
 
     D(0,0) = 10.25;
     D(0,1) = 11.00;

@@ -54,21 +54,24 @@ namespace cuda
 //
 
 
-template <typename IndexType, typename ValueType, typename UnaryFunction, typename BinaryFunction1, typename BinaryFunction2, unsigned int BLOCK_SIZE>
+template <typename OffsetsIterator, typename ValueIterator1, typename ValueIterator2, typename ValueIterator3, typename UnaryFunction, typename BinaryFunction1, typename BinaryFunction2, unsigned int BLOCK_SIZE>
 __launch_bounds__(BLOCK_SIZE,1)
 __global__ void
-spmv_dia_kernel(const IndexType num_rows,
-                const IndexType num_cols,
-                const IndexType num_diagonals,
-                const IndexType pitch,
-                const IndexType * diagonal_offsets,
-                const ValueType * values,
-                const ValueType * x,
-                ValueType * y,
+spmv_dia_kernel(const int num_rows,
+                const int num_cols,
+                const int num_diagonals,
+                const int pitch,
+                const OffsetsIterator diagonal_offsets,
+                const ValueIterator1 values,
+                const ValueIterator2 x,
+                ValueIterator3 y,
                 UnaryFunction initialize,
                 BinaryFunction1 combine,
                 BinaryFunction2 reduce)
 {
+    typedef typename thrust::iterator_value<OffsetsIterator>::type IndexType;
+    typedef typename thrust::iterator_value<ValueIterator1>::type  ValueType;
+
     __shared__ IndexType offsets[BLOCK_SIZE];
 
     const IndexType thread_id = BLOCK_SIZE * blockIdx.x + threadIdx.x;
@@ -87,7 +90,7 @@ spmv_dia_kernel(const IndexType num_rows,
         // process chunk
         for(IndexType row = thread_id; row < num_rows; row += grid_size)
         {
-            ValueType sum = (base == 0) ? initialize(y[row]) : y[row];
+            ValueType sum = (base == 0) ? initialize(y[row]) : ValueType(0);
 
             // index into values array
             IndexType idx = row + pitch * base;
@@ -135,9 +138,15 @@ void multiply(cuda::execution_policy<DerivedPolicy>& exec,
     typedef typename MatrixType::index_type IndexType;
     typedef typename MatrixType::value_type ValueType;
 
+    typedef typename MatrixType::diagonal_offsets_array_type::const_iterator          OffsetsIterator;
+    typedef typename MatrixType::values_array_type::values_array_type::const_iterator ValueIterator1;
+
+    typedef typename VectorType1::const_iterator                                      ValueIterator2;
+    typedef typename VectorType2::iterator                                            ValueIterator3;
+
     const size_t BLOCK_SIZE = 256;
     const size_t MAX_BLOCKS = cusp::system::cuda::detail::max_active_blocks(
-                               spmv_dia_kernel<IndexType, ValueType, UnaryFunction, BinaryFunction1, BinaryFunction2, BLOCK_SIZE>,
+                               spmv_dia_kernel<OffsetsIterator, ValueIterator1, ValueIterator2, ValueIterator3, UnaryFunction, BinaryFunction1, BinaryFunction2, BLOCK_SIZE>,
                                BLOCK_SIZE, (size_t) sizeof(IndexType) * BLOCK_SIZE);
     const size_t NUM_BLOCKS = std::min<size_t>(MAX_BLOCKS, DIVIDE_INTO(A.num_rows, BLOCK_SIZE));
 
@@ -148,23 +157,17 @@ void multiply(cuda::execution_policy<DerivedPolicy>& exec,
     if (num_diagonals == 0)
     {
         // empty matrix
-        thrust::fill(exec, y.begin(), y.begin() + A.num_rows, ValueType(0));
+        thrust::transform(exec, y.begin(), y.begin() + A.num_rows, y.begin(), initialize);
         return;
     }
 
-    const IndexType * D = thrust::raw_pointer_cast(&A.diagonal_offsets[0]);
-    const ValueType * V = thrust::raw_pointer_cast(&A.values(0,0));
-    const ValueType * x_ptr = thrust::raw_pointer_cast(&x[0]);
-    ValueType * y_ptr = thrust::raw_pointer_cast(&y[0]);
-
     cudaStream_t s = stream(thrust::detail::derived_cast(exec));
 
-    spmv_dia_kernel<IndexType, ValueType, UnaryFunction, BinaryFunction1, BinaryFunction2, BLOCK_SIZE> <<<NUM_BLOCKS, BLOCK_SIZE, 0, s>>>
-    (A.num_rows, A.num_cols, num_diagonals, pitch, D, V, x_ptr, y_ptr, initialize, combine, reduce);
+    spmv_dia_kernel<OffsetsIterator, ValueIterator1, ValueIterator2, ValueIterator3, UnaryFunction, BinaryFunction1, BinaryFunction2, BLOCK_SIZE> <<<NUM_BLOCKS, BLOCK_SIZE, 0, s>>>
+    (A.num_rows, A.num_cols, num_diagonals, pitch, A.diagonal_offsets.begin(), A.values.values.begin(), x.begin(), y.begin(), initialize, combine, reduce);
 }
 
 } // end namespace cuda
 } // end namespace system
 } // end namespace cusp
-
 

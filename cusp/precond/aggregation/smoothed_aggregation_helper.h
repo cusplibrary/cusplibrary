@@ -107,14 +107,15 @@ struct sa_level
     typedef typename MatrixType::index_type IndexType;
     typedef typename MatrixType::value_type ValueType;
     typedef typename MatrixType::memory_space MemorySpace;
+    typedef typename cusp::detail::norm_type<ValueType>::type NormType;
 
     MatrixType A_; 					                              // matrix
     MatrixType T; 					                              // matrix
     cusp::array1d<IndexType,MemorySpace> aggregates;      // aggregates
     cusp::array1d<ValueType,MemorySpace> B;               // near-nullspace candidates
 
-    size_t    num_iters;
-    ValueType rho_DinvA;
+    size_t   num_iters;
+    NormType rho_DinvA;
 
     sa_level(void) : num_iters(1), rho_DinvA(0) {}
 

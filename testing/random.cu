@@ -109,8 +109,5 @@ struct TestRandomReals
         ASSERT_ALMOST_EQUAL(h, d);
     }
 };
-SimpleUnitTest<TestRandomReals, unittest::type_list<float> > TestRandomFloatRealsInstance;
-#if __CUDA_ARCH__ >= 200
-SimpleUnitTest<TestRandomReals, unittest::type_list<double> > TestRandomDoubleRealsInstance;
-#endif
+SimpleUnitTest<TestRandomReals, unittest::type_list<float, double, cusp::complex<float>, cusp::complex<double> > >  TestRandomRealsInstance;
 

@@ -464,6 +464,26 @@ template <typename DerivedPolicy,
          typename MatrixType,
          typename VectorType1,
          typename VectorType2,
+         typename BinaryFunction1,
+         typename BinaryFunction2>
+void multiply(cuda::execution_policy<DerivedPolicy>& exec,
+              const MatrixType& A,
+              const VectorType1& x,
+              VectorType2& y,
+              thrust::identity<typename MatrixType::value_type> initialize,
+              BinaryFunction1 combine,
+              BinaryFunction2 reduce,
+              coo_format,
+              array1d_format,
+              array1d_format)
+{
+    __spmv_coo_flat<false>(exec, A, x, y, initialize, combine, reduce);
+}
+
+template <typename DerivedPolicy,
+         typename MatrixType,
+         typename VectorType1,
+         typename VectorType2,
          typename UnaryFunction,
          typename BinaryFunction1,
          typename BinaryFunction2>
@@ -478,12 +498,7 @@ void multiply(cuda::execution_policy<DerivedPolicy>& exec,
               array1d_format,
               array1d_format)
 {
-    typedef typename MatrixType::value_type ValueType;
-
-    if(thrust::detail::is_same< UnaryFunction, thrust::identity<ValueType> >::value)
-      __spmv_coo_flat<false>(exec, A, x, y, initialize, combine, reduce);
-    else
-      __spmv_coo_flat<true>(exec, A, x, y, initialize, combine, reduce);
+    __spmv_coo_flat<true>(exec, A, x, y, initialize, combine, reduce);
 }
 
 } // end namespace cuda

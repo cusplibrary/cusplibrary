@@ -86,7 +86,7 @@ polynomial<ValueType,MemorySpace>
     default_coefficients.resize( default_coefficients.size() - 1 );
 
     for( size_t index = 0; index < default_coefficients.size(); index++ )
-        default_coefficients[index] *= -1;
+        default_coefficients[index] *= -1.0;
 }
 
 template <typename ValueType, typename MemorySpace>
@@ -98,7 +98,7 @@ polynomial<ValueType,MemorySpace>
     size_t default_size = coefficients.size()-1;
     default_coefficients.resize( default_size );
     for( size_t index = 0; index < default_size; index++ )
-        default_coefficients[index] = -coefficients[index];
+        default_coefficients[index] = -ValueType(coefficients[index]);
 }
 
 // linear_operator

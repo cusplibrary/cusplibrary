@@ -19,6 +19,7 @@
 #include <cusp/array1d.h>
 #include <cusp/exception.h>
 #include <cusp/detail/functional.h>
+#include <cusp/print.h>
 
 #include <thrust/copy.h>
 #include <thrust/fill.h>
@@ -37,6 +38,172 @@ namespace blas
 {
 namespace thrustblas
 {
+namespace detail
+{
+
+// absolute<T> computes the absolute value of a number f(x) -> |x|
+template <typename T>
+struct absolute : public thrust::unary_function<T, typename cusp::detail::norm_type<T>::type>
+{
+    typedef typename cusp::detail::norm_type<T>::type NormType;
+
+    __host__ __device__
+    NormType operator()(const T& x)
+    {
+        using thrust::abs;
+        using std::abs;
+
+        return abs(x);
+    }
+};
+
+template <typename T>
+struct reciprocal : public thrust::unary_function<T,T>
+{
+    __host__ __device__
+    T operator()(const T& v)
+    {
+        return T(1.0) / v;
+    }
+};
+
+// maximum<T> returns the largest of two numbers
+template <typename T>
+struct maximum : public thrust::binary_function<T,T,T>
+{
+    __host__ __device__
+    T operator()(T x, T y)
+    {
+        return thrust::maximum<T>()(x,y);
+    }
+};
+
+// maximum<T> returns the number with the largest real part
+template <typename T>
+struct maximum< cusp::complex<T> > : public thrust::binary_function<cusp::complex<T>,cusp::complex<T>,cusp::complex<T> >
+{
+    __host__ __device__
+    cusp::complex<T> operator()(cusp::complex<T> x, cusp::complex<T> y)
+    {
+        return thrust::maximum<T>()(x.real(),y.real());
+    }
+};
+
+// conjugate<T> computes the complex conjugate of a number f(a + b * i) -> a - b * i
+template <typename T>
+struct conjugate : public thrust::unary_function<T,T>
+{
+    __host__ __device__
+    T operator()(T x)
+    {
+        return x;
+    }
+};
+
+template <typename T>
+struct conjugate<cusp::complex<T> > : public thrust::unary_function<cusp::complex<T>,cusp::complex<T> >
+{
+    __host__ __device__
+    cusp::complex<T> operator()(cusp::complex<T> x)
+    {
+        return thrust::conj(x);
+    }
+};
+
+// square<T> computes the square of a number f(x) -> x*conj(x)
+template <typename T>
+struct norm_squared : public thrust::unary_function<T,T>
+{
+    __host__ __device__
+    T operator()(T x)
+    {
+        return x * conjugate<T>()(x);
+    }
+};
+
+template <typename T>
+struct SCAL
+{
+    T alpha;
+
+    SCAL(T _alpha)
+        : alpha(_alpha) {}
+
+    template <typename T2>
+    __host__ __device__
+    void operator()(T2 & x)
+    {
+        x = alpha * x;
+    }
+};
+
+
+template <typename T>
+struct AXPY
+{
+    T alpha;
+
+    AXPY(T _alpha)
+        : alpha(_alpha) {}
+
+    template <typename Tuple>
+    __host__ __device__
+    void operator()(Tuple t)
+    {
+        thrust::get<1>(t) = alpha * thrust::get<0>(t) +
+                            thrust::get<1>(t);
+    }
+};
+
+template <typename T1, typename T2>
+struct AXPBY
+{
+    T1 alpha;
+    T2 beta;
+
+    AXPBY(T1 _alpha, T2 _beta)
+        : alpha(_alpha), beta(_beta) {}
+
+    template <typename Tuple>
+    __host__ __device__
+    void operator()(Tuple t)
+    {
+        thrust::get<2>(t) = alpha * thrust::get<0>(t) +
+                            beta  * thrust::get<1>(t);
+    }
+};
+
+template <typename T1,typename T2,typename T3>
+struct AXPBYPCZ
+{
+    T1 alpha;
+    T2 beta;
+    T3 gamma;
+
+    AXPBYPCZ(T1 _alpha, T2 _beta, T3 _gamma)
+        : alpha(_alpha), beta(_beta), gamma(_gamma) {}
+
+    template <typename Tuple>
+    __host__ __device__
+    void operator()(Tuple t)
+    {
+        thrust::get<3>(t) = alpha * thrust::get<0>(t) +
+                            beta  * thrust::get<1>(t) +
+                            gamma * thrust::get<2>(t);
+    }
+};
+
+template <typename T>
+struct XMY : public thrust::binary_function<T,T,T>
+{
+    __host__ __device__
+    T operator()(T x, T y)
+    {
+        return x * y;
+    }
+};
+
+} // end detail thrustblas
 
 template <typename DerivedPolicy,
           typename Array>
@@ -111,7 +278,7 @@ void axpby(thrust::execution_policy<DerivedPolicy> &exec,
     thrust::for_each(exec,
                      thrust::make_zip_iterator(thrust::make_tuple(x.begin(), y.begin(), z.begin())),
                      thrust::make_zip_iterator(thrust::make_tuple(x.begin(), y.begin(), z.begin())) + N,
-                     cusp::detail::AXPBY<ValueType,ValueType>(alpha, beta));
+                     detail::AXPBY<ValueType,ValueType>(alpha, beta));
 }
 
 template <typename DerivedPolicy,
@@ -138,7 +305,7 @@ void axpbypcz(thrust::execution_policy<DerivedPolicy> &exec,
     thrust::for_each(exec,
                      thrust::make_zip_iterator(thrust::make_tuple(x.begin(), y.begin(), z.begin(), output.begin())),
                      thrust::make_zip_iterator(thrust::make_tuple(x.begin(), y.begin(), z.begin(), output.begin())) + N,
-                     cusp::detail::AXPBYPCZ<ValueType,ValueType,ValueType>(alpha, beta, gamma));
+                     detail::AXPBYPCZ<ValueType,ValueType,ValueType>(alpha, beta, gamma));
 }
 
 template <typename DerivedPolicy,
@@ -153,7 +320,7 @@ void xmy(thrust::execution_policy<DerivedPolicy> &exec,
     typedef typename Array3::value_type ValueType;
 
     thrust::transform(exec,
-                      x.begin(), x.end(), y.begin(), z.begin(), cusp::detail::XMY<ValueType>());
+                      x.begin(), x.end(), y.begin(), z.begin(), detail::XMY<ValueType>());
 }
 
 template <typename DerivedPolicy,
@@ -193,7 +360,7 @@ dotc(thrust::execution_policy<DerivedPolicy>& exec,
 
     return thrust::inner_product(exec,
                                  thrust::make_transform_iterator(x.begin(), detail::conjugate<OutputType>()),
-                                 thrust::make_transform_iterator(x.end(),  detail::conjugate<OutputType>()),
+                                 thrust::make_transform_iterator(x.end(),   detail::conjugate<OutputType>()),
                                  y.begin(),
                                  OutputType(0));
 }
@@ -222,7 +389,7 @@ nrm2(thrust::execution_policy<DerivedPolicy>& exec,
 
     typedef typename Array::value_type ValueType;
 
-    cusp::detail::norm_squared<ValueType> unary_op;
+    detail::norm_squared<ValueType> unary_op;
     thrust::plus<ValueType>   binary_op;
 
     ValueType init = 0;
@@ -393,16 +560,20 @@ nrm1(thrust::execution_policy<DerivedPolicy>& exec,
 
 template <typename DerivedPolicy,
           typename Array>
-typename Array::value_type
+typename cusp::detail::norm_type<typename Array::value_type>::type
 nrmmax(thrust::execution_policy<DerivedPolicy>& exec,
        const Array& x)
 {
     typedef typename Array::value_type ValueType;
+    typedef typename Array::memory_space MemorySpace;
+    typedef typename cusp::detail::norm_type<typename Array::value_type>::type NormType;
+
+    if(x.size() == 0) return NormType(0);
 
     detail::absolute<ValueType>  unary_op;
-    detail::maximum<ValueType>   binary_op;
+    detail::maximum<NormType>   binary_op;
 
-    ValueType init = 0;
+    NormType init = 0;
 
     return thrust::transform_reduce(exec, x.begin(), x.end(), unary_op, init, binary_op);
 }
@@ -410,5 +581,4 @@ nrmmax(thrust::execution_policy<DerivedPolicy>& exec,
 } // end namespace thrustblas
 } // end namespace blas
 } // end namespace cusp
-
 

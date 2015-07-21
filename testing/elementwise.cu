@@ -87,7 +87,8 @@ void example_matrices(Vector& matrices)
 template <typename SparseMatrix>
 void TestAdd(void)
 {
-    typedef cusp::array2d<float,cusp::host_memory> DenseMatrix;
+    typedef typename SparseMatrix::value_type ValueType;
+    typedef cusp::array2d<ValueType,cusp::host_memory> DenseMatrix;
 
     //thrust::host_vector< DenseMatrix > matrices;
     std::vector< DenseMatrix > matrices;
@@ -140,7 +141,8 @@ DECLARE_SPARSE_MATRIX_UNITTEST(TestAdd);
 template <typename SparseMatrix>
 void TestSubtract(void)
 {
-    typedef cusp::array2d<float,cusp::host_memory> DenseMatrix;
+    typedef typename SparseMatrix::value_type ValueType;
+    typedef cusp::array2d<ValueType,cusp::host_memory> DenseMatrix;
 
     std::vector< DenseMatrix > matrices;
 

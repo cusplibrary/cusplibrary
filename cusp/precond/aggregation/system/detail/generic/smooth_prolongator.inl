@@ -44,19 +44,20 @@ namespace detail
 template <typename DerivedPolicy,
           typename MatrixType1,
           typename MatrixType2,
-          typename MatrixType3,
-          typename ValueType>
+          typename MatrixType3>
 void smooth_prolongator(thrust::execution_policy<DerivedPolicy> &exec,
                         const MatrixType1& S,
                         const MatrixType2& T,
                         MatrixType3& P,
-                        const ValueType rho_Dinv_S,
-                        const ValueType omega,
+                        const double rho_Dinv_S,
+                        const double omega,
                         cusp::coo_format)
 {
     using namespace thrust::placeholders;
 
     typedef typename MatrixType3::index_type IndexType;
+    typedef typename MatrixType3::value_type ValueType;
+    typedef typename cusp::detail::norm_type<ValueType>::type NormType;
 
     // TODO handle case with unaggregated nodes more gracefully
     if (T.num_entries == T.num_rows) {
@@ -138,14 +139,13 @@ void smooth_prolongator(thrust::execution_policy<DerivedPolicy> &exec,
 template <typename DerivedPolicy,
           typename MatrixType1,
           typename MatrixType2,
-          typename MatrixType3,
-          typename ValueType>
+          typename MatrixType3>
 void smooth_prolongator(thrust::execution_policy<DerivedPolicy> &exec,
                         const MatrixType1& S,
                         const MatrixType2& T,
                         MatrixType3& P,
-                        const ValueType rho_Dinv_S,
-                        const ValueType omega,
+                        const double rho_Dinv_S,
+                        const double omega,
                         cusp::known_format)
 {
     typedef typename MatrixType1::const_coo_view_type CooViewType1;
@@ -164,14 +164,13 @@ void smooth_prolongator(thrust::execution_policy<DerivedPolicy> &exec,
 template <typename DerivedPolicy,
           typename MatrixType1,
           typename MatrixType2,
-          typename MatrixType3,
-          typename ValueType>
+          typename MatrixType3>
 void smooth_prolongator(thrust::execution_policy<DerivedPolicy> &exec,
                         const MatrixType1& S,
                         const MatrixType2& T,
                         MatrixType3& P,
-                        const ValueType rho_Dinv_S,
-                        const ValueType omega)
+                        const double rho_Dinv_S,
+                        const double omega)
 {
     typedef typename MatrixType1::format Format;
 

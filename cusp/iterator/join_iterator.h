@@ -174,7 +174,7 @@ public:
         __host__ __device__
         value_type operator()(const difference_type& i)
         {
-            return join_search<difference_type,value_type,tuple_size>()(t1,t2,i);
+            return join_search<difference_type,value_type,tuple_size-1>()(t1,t2,i);
         }
     };
     /*! \endcond */

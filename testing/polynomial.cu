@@ -46,7 +46,11 @@ void TestPolynomialRelaxation(void)
 
     cusp::array1d<ValueType, Space> b(5,  0.0);
     cusp::array1d<ValueType, Space> x0(5);
-    thrust::sequence(x0.begin(), x0.end());
+    x0[0] = 0.0;
+    x0[1] = 1.0;
+    x0[2] = 2.0;
+    x0[3] = 3.0;
+    x0[4] = 4.0;
 
     Matrix A(M);
     cusp::array1d<ValueType, Space> residual(A.num_rows);
@@ -109,3 +113,4 @@ void TestChebyshevCoefficients(void)
     ASSERT_ALMOST_EQUAL(coef, expected);
 }
 DECLARE_UNITTEST(TestChebyshevCoefficients);
+
