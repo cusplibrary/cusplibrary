@@ -22,6 +22,8 @@
 
 #include <cusp/detail/config.h>
 
+#include <thrust/functional.h>
+
 #if THRUST_VERSION >= 100800
 #include <thrust/complex.h>
 #else
@@ -32,35 +34,86 @@ namespace cusp
 {
 namespace detail
 {
-  // forward definition
-  template<typename T> struct norm_type;
+// forward definition
+template<typename T> struct norm_type;
 }
 
+using thrust::abs;
 using thrust::complex;
-
-template <typename ValueType>
-__host__ __device__
-inline typename cusp::detail::norm_type<ValueType>::type
-sqrt(const ValueType& z) {
-    using thrust::sqrt;
-    using std::sqrt;
-    return sqrt(z);
-}
-
+using thrust::conj;
 using thrust::norm;
 
-template <typename ValueType>
+template<typename T>
 __host__ __device__
-inline ValueType norm(const ValueType& z) {
-    return z*z;
+inline T
+conj(const T& z)
+{
+    return z;
 }
 
-template <typename ValueType>
+template <typename T>
 __host__ __device__
-inline typename cusp::detail::norm_type<ValueType>::type
-normsq(const ValueType& z) {
-    return cusp::sqrt(cusp::norm(z));
+inline typename cusp::detail::norm_type<T>::type
+abs(const T& z) {
+    return z > 0 ? z : -z;
 }
+
+template <typename T>
+__host__ __device__
+inline typename cusp::detail::norm_type<T>::type
+norm(const T& z) {
+    return cusp::abs(z);
+}
+
+template<typename T>
+struct abs_functor : public thrust::unary_function<T, typename cusp::detail::norm_type<T>::type>
+{
+    typedef typename cusp::detail::norm_type<T>::type NormType;
+
+    __host__ __device__ const NormType operator()(const T& t) const {
+        return cusp::abs(t);
+    }
+};
+
+template<typename T>
+struct abs_squared_functor : public thrust::unary_function<T, typename cusp::detail::norm_type<T>::type>
+{
+    typedef typename cusp::detail::norm_type<T>::type NormType;
+
+    __host__ __device__ const NormType operator()(const T& t) const {
+        NormType n = cusp::abs(t);
+        return n * n;
+    }
+};
+
+template<typename T>
+struct conj_functor : public thrust::unary_function<T,T>
+{
+    __host__ __device__ const T operator()(const T& t) const {
+        return cusp::conj(t);
+    }
+};
+
+template<typename T>
+struct norm_functor : public thrust::unary_function<T, typename cusp::detail::norm_type<T>::type>
+{
+    typedef typename cusp::detail::norm_type<T>::type NormType;
+
+    __host__ __device__ const NormType operator()(const T& t) const {
+        return cusp::norm(t);
+    }
+};
+
+template<typename T>
+struct norm_squared_functor : public thrust::unary_function<T, typename cusp::detail::norm_type<T>::type>
+{
+    typedef typename cusp::detail::norm_type<T>::type NormType;
+
+    __host__ __device__ const NormType operator()(const T& t) const {
+        NormType n = cusp::norm(t);
+        return n * n;
+    }
+};
 
 // define complex type for the purpose of Doxygenating it
 // it is actually defined in Thrust
@@ -662,4 +715,6 @@ template <typename T> __host__ __device__ inline bool operator!=(const complex<T
  */
 
 } // end namespace cusp
+
+
 

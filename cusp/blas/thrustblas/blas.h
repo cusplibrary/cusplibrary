@@ -41,86 +41,6 @@ namespace thrustblas
 namespace detail
 {
 
-// absolute<T> computes the absolute value of a number f(x) -> |x|
-template <typename T>
-struct absolute : public thrust::unary_function<T, typename cusp::detail::norm_type<T>::type>
-{
-    typedef typename cusp::detail::norm_type<T>::type NormType;
-
-    __host__ __device__
-    NormType operator()(const T& x)
-    {
-        using thrust::abs;
-        using std::abs;
-
-        return abs(x);
-    }
-};
-
-template <typename T>
-struct reciprocal : public thrust::unary_function<T,T>
-{
-    __host__ __device__
-    T operator()(const T& v)
-    {
-        return T(1.0) / v;
-    }
-};
-
-// maximum<T> returns the largest of two numbers
-template <typename T>
-struct maximum : public thrust::binary_function<T,T,T>
-{
-    __host__ __device__
-    T operator()(T x, T y)
-    {
-        return thrust::maximum<T>()(x,y);
-    }
-};
-
-// maximum<T> returns the number with the largest real part
-template <typename T>
-struct maximum< cusp::complex<T> > : public thrust::binary_function<cusp::complex<T>,cusp::complex<T>,cusp::complex<T> >
-{
-    __host__ __device__
-    cusp::complex<T> operator()(cusp::complex<T> x, cusp::complex<T> y)
-    {
-        return thrust::maximum<T>()(x.real(),y.real());
-    }
-};
-
-// conjugate<T> computes the complex conjugate of a number f(a + b * i) -> a - b * i
-template <typename T>
-struct conjugate : public thrust::unary_function<T,T>
-{
-    __host__ __device__
-    T operator()(T x)
-    {
-        return x;
-    }
-};
-
-template <typename T>
-struct conjugate<cusp::complex<T> > : public thrust::unary_function<cusp::complex<T>,cusp::complex<T> >
-{
-    __host__ __device__
-    cusp::complex<T> operator()(cusp::complex<T> x)
-    {
-        return thrust::conj(x);
-    }
-};
-
-// square<T> computes the square of a number f(x) -> x*conj(x)
-template <typename T>
-struct norm_squared : public thrust::unary_function<T,T>
-{
-    __host__ __device__
-    T operator()(T x)
-    {
-        return x * conjugate<T>()(x);
-    }
-};
-
 template <typename T>
 struct SCAL
 {
@@ -212,7 +132,7 @@ int amax(thrust::execution_policy<DerivedPolicy>& exec,
 {
     typedef typename Array::value_type ValueType;
 
-    detail::absolute<ValueType> unary_op;
+    cusp::norm_functor<ValueType> unary_op;
 
     return thrust::max_element(exec,
                                thrust::make_transform_iterator(x.begin(), unary_op),
@@ -226,17 +146,16 @@ typename cusp::detail::norm_type<typename Array::value_type>::type
 asum(thrust::execution_policy<DerivedPolicy>& exec,
      const Array& x)
 {
-    using thrust::abs;
-    using std::abs;
-
     typedef typename Array::value_type ValueType;
+    typedef typename Array::memory_space MemorySpace;
+    typedef typename cusp::detail::norm_type<ValueType>::type NormType;
 
-    detail::absolute<ValueType> unary_op;
-    thrust::plus<ValueType>     binary_op;
+    cusp::norm_functor<ValueType>  unary_op;
+    thrust::plus<NormType>         binary_op;
 
-    ValueType init = 0;
+    NormType init = 0;
 
-    return abs(thrust::transform_reduce(exec, x.begin(), x.end(), unary_op, init, binary_op));
+    return std::abs(thrust::transform_reduce(exec, x.begin(), x.end(), unary_op, init, binary_op));
 }
 
 template <typename DerivedPolicy,
@@ -359,8 +278,8 @@ dotc(thrust::execution_policy<DerivedPolicy>& exec,
     typedef typename Array1::value_type OutputType;
 
     return thrust::inner_product(exec,
-                                 thrust::make_transform_iterator(x.begin(), detail::conjugate<OutputType>()),
-                                 thrust::make_transform_iterator(x.end(),   detail::conjugate<OutputType>()),
+                                 thrust::make_transform_iterator(x.begin(), cusp::conj_functor<OutputType>()),
+                                 thrust::make_transform_iterator(x.end(),   cusp::conj_functor<OutputType>()),
                                  y.begin(),
                                  OutputType(0));
 }
@@ -381,20 +300,16 @@ typename cusp::detail::norm_type<typename Array::value_type>::type
 nrm2(thrust::execution_policy<DerivedPolicy>& exec,
      const Array& x)
 {
-    using thrust::sqrt;
-    using thrust::abs;
-
-    using std::sqrt;
-    using std::abs;
-
     typedef typename Array::value_type ValueType;
+    typedef typename Array::memory_space MemorySpace;
+    typedef typename cusp::detail::norm_type<ValueType>::type NormType;
 
-    detail::norm_squared<ValueType> unary_op;
-    thrust::plus<ValueType>   binary_op;
+    cusp::abs_squared_functor<ValueType> unary_op;
+    thrust::plus<NormType>               binary_op;
 
-    ValueType init = 0;
+    NormType init = 0;
 
-    return sqrt( abs( thrust::transform_reduce(exec, x.begin(), x.end(), unary_op, init, binary_op) ) );
+    return std::sqrt(thrust::transform_reduce(exec, x.begin(), x.end(), unary_op, init, binary_op));
 }
 
 template <typename DerivedPolicy,
@@ -545,17 +460,16 @@ typename cusp::detail::norm_type<typename Array::value_type>::type
 nrm1(thrust::execution_policy<DerivedPolicy>& exec,
      const Array& x)
 {
-    using thrust::abs;
-    using std::abs;
-
     typedef typename Array::value_type ValueType;
+    typedef typename Array::memory_space MemorySpace;
+    typedef typename cusp::detail::norm_type<ValueType>::type NormType;
 
-    detail::absolute<ValueType> unary_op;
-    thrust::plus<ValueType>     binary_op;
+    cusp::abs_functor<ValueType> unary_op;
+    thrust::plus<NormType>       binary_op;
 
-    ValueType init = 0;
+    NormType init = 0;
 
-    return abs(thrust::transform_reduce(exec, x.begin(), x.end(), unary_op, init, binary_op));
+    return thrust::transform_reduce(exec, x.begin(), x.end(), unary_op, init, binary_op);
 }
 
 template <typename DerivedPolicy,
@@ -566,12 +480,10 @@ nrmmax(thrust::execution_policy<DerivedPolicy>& exec,
 {
     typedef typename Array::value_type ValueType;
     typedef typename Array::memory_space MemorySpace;
-    typedef typename cusp::detail::norm_type<typename Array::value_type>::type NormType;
+    typedef typename cusp::detail::norm_type<ValueType>::type NormType;
 
-    if(x.size() == 0) return NormType(0);
-
-    detail::absolute<ValueType>  unary_op;
-    detail::maximum<NormType>   binary_op;
+    cusp::abs_functor<ValueType> unary_op;
+    thrust::maximum<NormType>    binary_op;
 
     NormType init = 0;
 

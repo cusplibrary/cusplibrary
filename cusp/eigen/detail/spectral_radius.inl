@@ -57,7 +57,7 @@ double disks_spectral_radius(const Matrix& A, coo_format)
 
     thrust::reduce_by_key
     (A.row_indices.begin(), A.row_indices.end(),
-     thrust::make_transform_iterator(A.values.begin(), cusp::blas::thrustblas::detail::absolute<ValueType>()),
+     thrust::make_transform_iterator(A.values.begin(), cusp::abs_functor<ValueType>()),
      thrust::make_discard_iterator(),
      row_sums.begin(),
      thrust::equal_to<IndexType>(),

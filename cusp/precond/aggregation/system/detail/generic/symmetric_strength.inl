@@ -51,12 +51,12 @@ struct is_strong_connection
     __host__ __device__
     bool operator()(const Tuple& t) const
     {
-        NormType nAij = cusp::norm(thrust::get<0>(t));
-        NormType nAii = cusp::norm(thrust::get<1>(t));
-        NormType nAjj = cusp::norm(thrust::get<2>(t));
+        NormType nAij = cusp::abs(thrust::get<0>(t));
+        NormType nAii = cusp::abs(thrust::get<1>(t));
+        NormType nAjj = cusp::abs(thrust::get<2>(t));
 
         // square everything to eliminate the sqrt()
-        return nAij >= (cusp::norm(theta) * (nAii * nAjj));
+        return (nAij*nAij) >= ((theta*theta) * (nAii * nAjj));
     }
 };
 

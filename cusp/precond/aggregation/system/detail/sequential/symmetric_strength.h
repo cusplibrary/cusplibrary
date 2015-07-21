@@ -62,16 +62,16 @@ void symmetric_strength_of_connection(thrust::system::detail::sequential::execut
     // count num_entries in output
     for(size_t i = 0; i < A.num_rows; i++)
     {
-        const NormType nAii = cusp::norm(ValueType(diagonal[i]));
+        const ValueType Aii = diagonal[i];
 
         for(IndexType jj = A.row_offsets[i]; jj < A.row_offsets[i + 1]; jj++)
         {
-            const IndexType   j  = A.column_indices[jj];
-            const ValueType Aij  = A.values[jj];
-            const NormType  nAjj = cusp::norm(ValueType(diagonal[j]));
+            const IndexType   j = A.column_indices[jj];
+            const ValueType Aij = A.values[jj];
+            const ValueType Ajj = diagonal[j];
 
             //  |A(i,j)| >= theta * sqrt(|A(i,i)|*|A(j,j)|)
-            if(cusp::norm(Aij) >= cusp::norm(theta) * sqrt(nAii * nAjj))
+            if(cusp::abs(Aij) >= theta * sqrt(cusp::abs(Aii) * cusp::abs(Ajj)))
                 num_entries++;
         }
     }
@@ -85,19 +85,18 @@ void symmetric_strength_of_connection(thrust::system::detail::sequential::execut
     // copy strong connections to output
     for(size_t i = 0; i < A.num_rows; i++)
     {
-        const NormType nAii = cusp::norm(ValueType(diagonal[i]));
+        const ValueType Aii = diagonal[i];
 
         S.row_offsets[i] = num_entries;
 
         for(IndexType jj = A.row_offsets[i]; jj < A.row_offsets[i + 1]; jj++)
         {
-            const IndexType   j  = A.column_indices[jj];
-            const ValueType Aij  = A.values[jj];
-            const NormType  nAjj = cusp::norm(ValueType(diagonal[j]));
+            const IndexType   j = A.column_indices[jj];
+            const ValueType Aij = A.values[jj];
+            const ValueType Ajj = diagonal[j];
 
             //  |A(i,j)| >= theta * sqrt(|A(i,i)|*|A(j,j)|)
-
-            if(cusp::norm(Aij) >= cusp::norm(theta) * sqrt(nAii * nAjj))
+            if(cusp::abs(Aij) >= theta * sqrt(cusp::abs(Aii) * cusp::abs(Ajj)))
             {
                 S.column_indices[num_entries] =   j;
                 S.values[num_entries]         = Aij;
