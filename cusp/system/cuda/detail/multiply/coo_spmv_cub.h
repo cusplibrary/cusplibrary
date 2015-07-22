@@ -553,7 +553,7 @@ struct FinalizeSpmvBlock
     typedef BlockScan<PartialProduct, BLOCK_THREADS, BLOCK_SCAN_RAKING_MEMOIZE> BlockScan;
 
     // Parameterized BlockDiscontinuity type for setting head-flags for each new row segment
-    typedef BlockDiscontinuity<HeadFlag, BLOCK_THREADS> BlockDiscontinuity;
+    typedef BlockDiscontinuity<IndexType, BLOCK_THREADS> BlockDiscontinuity;
 
     // Parameterized BlockPrefixCallbackOp type for PartialProduct and BinaryFunction
     typedef BlockPrefixCallbackOp<PartialProduct,BinaryFunction> BlockPrefixOp;
@@ -628,7 +628,7 @@ struct FinalizeSpmvBlock
     {
         IndexType       rows[ITEMS_PER_THREAD];
         PartialProduct  partial_sums[ITEMS_PER_THREAD];
-        HeadFlag        head_flags[ITEMS_PER_THREAD];
+        IndexType       head_flags[ITEMS_PER_THREAD];
 
         // Load a tile of block partials from previous kernel
         if (FULL_TILE)
@@ -655,8 +655,8 @@ struct FinalizeSpmvBlock
 
         // Flag row heads by looking for discontinuities
         BlockDiscontinuity(temp_storage.discontinuity).FlagHeads(
-            rows,                           // Original row ids
             head_flags,                     // (Out) Head flags
+            rows,                           // Original row ids
             NewRowOp(),                     // Functor for detecting start of new rows
             prefix_op.running_prefix.row);   // Last row ID from previous tile to compare with first row ID in this tile
 
@@ -672,6 +672,8 @@ struct FinalizeSpmvBlock
             ReduceByKeyOp<PartialProduct,BinaryFunction>(),// Scan operator
             block_aggregate,                // Block-wide total (unused)
             prefix_op);                     // Prefix operator for seeding the block-wide scan with the running total
+
+        __syncthreads();
 
         // Scatter an accumulated dot product if it is the head of a valid row
 #pragma unroll
@@ -693,7 +695,7 @@ struct FinalizeSpmvBlock
     {
         // Process full tiles
         int block_offset = 0;
-        while (block_offset <= num_partials - TILE_ITEMS)
+        while (block_offset <= (num_partials - TILE_ITEMS))
         {
             ProcessTile<true>(block_offset);
             block_offset += TILE_ITEMS;
