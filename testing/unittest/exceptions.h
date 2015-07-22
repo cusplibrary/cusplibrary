@@ -31,6 +31,13 @@ public:
         return *this;
     }
 
+	template <typename T>
+	UnitTestException& operator<<(const thrust::device_reference<T>& t)
+	{
+		T t_(t);
+		return operator<<(t_);
+	}
+
 #if THRUST_VERSION < 100800
     template <typename T>
     UnitTestException& operator<<(const thrust::complex<T>& t)
