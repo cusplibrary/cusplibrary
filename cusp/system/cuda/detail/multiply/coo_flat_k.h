@@ -22,7 +22,7 @@
 #include <cusp/system/cuda/arch.h>
 #include <cusp/system/cuda/utils.h>
 #include <cusp/system/cuda/detail/multiply/coo_serial.h>
-#include <cusp/system/cuda/detail/multiply/coo_flat_shared.h>
+#include <cusp/system/cuda/detail/multiply/coo_flat_spmv.h>
 
 #include <algorithm>
 

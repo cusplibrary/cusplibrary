@@ -460,6 +460,7 @@ void __spmv_coo_flat(cuda::execution_policy<DerivedPolicy>& exec,
     (A.num_entries - tail, A.row_indices.begin() + tail, A.column_indices.begin() + tail, A.values.begin() + tail, x.begin(), y.begin(), combine, reduce);
 }
 
+#if THRUST_VERSION < 100800
 template <typename DerivedPolicy,
          typename MatrixType,
          typename VectorType1,
@@ -500,6 +501,7 @@ void multiply(cuda::execution_policy<DerivedPolicy>& exec,
 {
     __spmv_coo_flat<true>(exec, A, x, y, initialize, combine, reduce);
 }
+#endif
 
 } // end namespace cuda
 } // end namespace system
