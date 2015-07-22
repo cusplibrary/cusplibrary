@@ -156,6 +156,19 @@ struct PartialProduct<int, double>
     double      partial;        /// PartialProduct sum
 };
 
+/**
+ * A partial dot-product sum paired with a corresponding row-id (specialized for thrust::complex<float>-int pairings)
+ */
+template <>
+struct PartialProduct<int, thrust::complex<float> >
+{
+    typedef long long                 index_type;
+    typedef thrust::complex<float>    value_type;
+
+    long long                   row;          /// Row-id
+    thrust::complex<float>      partial;      /// PartialProduct sum
+};
+
 
 /**
  * Reduce-value-by-row scan operator
@@ -231,15 +244,15 @@ struct NewRowOp
  */
 template <
 int             BLOCK_THREADS,
-                int             ITEMS_PER_THREAD,
-                typename        PartialIterator,
-                typename        RowIterator,
-                typename        ColumnIterator,
-                typename        ValueIterator1,
-                typename        ValueIterator2,
-                typename        ValueIterator3,
-                typename        BinaryFunction1,
-                typename        BinaryFunction2>
+int             ITEMS_PER_THREAD,
+typename        PartialIterator,
+typename        RowIterator,
+typename        ColumnIterator,
+typename        ValueIterator1,
+typename        ValueIterator2,
+typename        ValueIterator3,
+typename        BinaryFunction1,
+typename        BinaryFunction2>
 struct PersistentBlockSpmv
 {
     //---------------------------------------------------------------------
@@ -274,6 +287,9 @@ struct PersistentBlockSpmv
     // Parameterized BlockDiscontinuity type for setting head-flags for each new row segment
     typedef BlockDiscontinuity<IndexType, BLOCK_THREADS> BlockDiscontinuity;
 
+    // Parameterized BlockPrefixCallbackOp type for PartialProduct and BinaryFunction2
+    typedef BlockPrefixCallbackOp<PartialProduct,BinaryFunction2> BlockPrefixOp;
+
     // Shared memory type for this threadblock
     struct TempStorage
     {
@@ -298,7 +314,7 @@ struct PersistentBlockSpmv
     //---------------------------------------------------------------------
 
     TempStorage                     &temp_storage;
-    BlockPrefixCallbackOp<PartialProduct,BinaryFunction2>   prefix_op;
+    BlockPrefixOp                   prefix_op;
     RowIterator                     d_rows;
     ColumnIterator                  d_columns;
     ValueIterator1                  d_values;
@@ -510,10 +526,10 @@ struct PersistentBlockSpmv
  */
 template <
 int             BLOCK_THREADS,
-                int             ITEMS_PER_THREAD,
-                typename        PartialIterator,
-                typename        ValueIterator,
-                typename        BinaryFunction>
+int             ITEMS_PER_THREAD,
+typename        PartialIterator,
+typename        ValueIterator,
+typename        BinaryFunction>
 struct FinalizeSpmvBlock
 {
     //---------------------------------------------------------------------
@@ -539,6 +555,9 @@ struct FinalizeSpmvBlock
     // Parameterized BlockDiscontinuity type for setting head-flags for each new row segment
     typedef BlockDiscontinuity<HeadFlag, BLOCK_THREADS> BlockDiscontinuity;
 
+    // Parameterized BlockPrefixCallbackOp type for PartialProduct and BinaryFunction
+    typedef BlockPrefixCallbackOp<PartialProduct,BinaryFunction> BlockPrefixOp;
+
     // Shared memory type for this threadblock
     struct TempStorage
     {
@@ -554,7 +573,7 @@ struct FinalizeSpmvBlock
     //---------------------------------------------------------------------
 
     TempStorage                             &temp_storage;
-    BlockPrefixCallbackOp<PartialProduct,BinaryFunction>   prefix_op;
+    BlockPrefixOp                           prefix_op;
     ValueIterator                           d_result;
     PartialIterator                         d_block_partials;
     int                                     num_partials;
@@ -660,7 +679,7 @@ struct FinalizeSpmvBlock
         {
             if (head_flags[ITEM])
             {
-                d_result[partial_sums[ITEM].row] = reduce_op(d_result[partial_sums[ITEM].row], partial_sums[ITEM].partial);
+                d_result[partial_sums[ITEM].row] = partial_sums[ITEM].partial;
             }
         }
     }
@@ -690,7 +709,7 @@ struct FinalizeSpmvBlock
         // Scatter the final aggregate (this kernel contains only 1 threadblock)
         if (threadIdx.x == 0)
         {
-            d_result[prefix_op.running_prefix.row] = reduce_op(d_result[prefix_op.running_prefix.row], prefix_op.running_prefix.partial);
+            d_result[prefix_op.running_prefix.row] = prefix_op.running_prefix.partial;
         }
     }
 };
@@ -707,15 +726,15 @@ struct FinalizeSpmvBlock
  */
 template <
 int                             BLOCK_THREADS,
-                                int                             ITEMS_PER_THREAD,
-                                typename                        PartialIterator,
-                                typename                        RowIterator,
-                                typename                        ColumnIterator,
-                                typename                        ValueIterator1,
-                                typename                        ValueIterator2,
-                                typename                        ValueIterator3,
-                                typename                        BinaryFunction1,
-                                typename                        BinaryFunction2>
+int                             ITEMS_PER_THREAD,
+typename                        PartialIterator,
+typename                        RowIterator,
+typename                        ColumnIterator,
+typename                        ValueIterator1,
+typename                        ValueIterator2,
+typename                        ValueIterator3,
+typename                        BinaryFunction1,
+typename                        BinaryFunction2>
 __launch_bounds__ (BLOCK_THREADS)
 __global__ void CooKernel(
     GridEvenShare<int>                    even_share,
@@ -761,10 +780,10 @@ __global__ void CooKernel(
  */
 template <
 int                             BLOCK_THREADS,
-                                int                             ITEMS_PER_THREAD,
-                                typename                        PartialIterator,
-                                typename                        ValueIterator,
-                                typename                        BinaryFunction>
+int                             ITEMS_PER_THREAD,
+typename                        PartialIterator,
+typename                        ValueIterator,
+typename                        BinaryFunction>
 __launch_bounds__ (BLOCK_THREADS,  1)
 __global__ void CooFinalizeKernel(
     PartialIterator                      d_block_partials,
@@ -818,7 +837,7 @@ void spmv_coo(cuda::execution_policy<DerivedPolicy>& exec,
     typedef typename cusp::array1d<ValueType,cusp::device_memory>::iterator ValueIterator4;
 
     if (InitializeY)
-        thrust::fill(y.begin(), y.begin() + A.num_rows, ValueType(0));
+        thrust::transform(y.begin(), y.begin() + A.num_rows, y.begin(), initialize);
 
     if(A.num_entries == 0)
     {
