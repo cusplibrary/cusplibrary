@@ -47,14 +47,6 @@ public:
         message += oss.str();
         return *this;
     }
-
-    template <typename T>
-    UnitTestException& operator<<(const thrust::device_reference<T>& t)
-    {
-        T t_(t);
-
-        return operator<<(t_);
-    }
 #endif
 
 };
