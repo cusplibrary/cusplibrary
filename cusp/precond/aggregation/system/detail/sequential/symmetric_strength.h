@@ -45,9 +45,6 @@ void symmetric_strength_of_connection(thrust::system::detail::sequential::execut
                                       const double theta,
                                       cusp::csr_format)
 {
-    using thrust::sqrt;
-    using std::sqrt;
-
     typedef typename MatrixType1::index_type   IndexType;
     typedef typename MatrixType1::value_type   ValueType;
     typedef typename MatrixType1::memory_space MemorySpace;
@@ -71,7 +68,7 @@ void symmetric_strength_of_connection(thrust::system::detail::sequential::execut
             const ValueType Ajj = diagonal[j];
 
             //  |A(i,j)| >= theta * sqrt(|A(i,i)|*|A(j,j)|)
-            if(cusp::abs(Aij) >= theta * sqrt(cusp::abs(Aii) * cusp::abs(Ajj)))
+            if(cusp::abs(Aij) >= theta * std::sqrt(cusp::abs(Aii) * cusp::abs(Ajj)))
                 num_entries++;
         }
     }

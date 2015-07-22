@@ -36,21 +36,17 @@ void ApplyPlaneRotation(ValueType &dx, ValueType &dy, ValueType &cs,
 }
 
 template <typename ValueType>
-void GeneratePlaneRotation(ValueType &dx, ValueType &dy, ValueType &cs,
-                           ValueType &sn) {
-  using thrust::abs;
-  using std::abs;
-
+void GeneratePlaneRotation(ValueType &dx, ValueType &dy, ValueType &cs, ValueType &sn) {
   if (dy == ValueType(0.0)) {
     cs = 1.0;
     sn = 0.0;
-  } else if (abs(dy) > abs(dx)) {
+  } else if (cusp::abs(dy) > cusp::abs(dx)) {
     ValueType tmp = dx / dy;
-    sn = ValueType(1.0) / sqrt(ValueType(1.0) + tmp * tmp);
+    sn = ValueType(1.0) / std::sqrt(ValueType(1.0) + tmp * tmp);
     cs = tmp * sn;
   } else {
     ValueType tmp = dy / dx;
-    cs = ValueType(1.0) / sqrt(ValueType(1.0) + tmp * tmp);
+    cs = ValueType(1.0) / std::sqrt(ValueType(1.0) + tmp * tmp);
     sn = tmp * cs;
   }
 }
@@ -72,9 +68,6 @@ template <typename DerivedPolicy, class LinearOperator, class Vector,
 void gmres(thrust::execution_policy<DerivedPolicy> &exec, LinearOperator &A,
            Vector &x, Vector &b, const size_t restart, Monitor &monitor,
            Preconditioner &M) {
-
-  using thrust::abs;
-  using std::abs;
 
   typedef typename LinearOperator::value_type ValueType;
   typedef typename cusp::detail::norm_type<ValueType>::type NormType;
@@ -118,7 +111,7 @@ void gmres(thrust::execution_policy<DerivedPolicy> &exec, LinearOperator &A,
     blas::fill(s, ValueType(0.0));
     s[0] = beta;
     i = -1;
-    resid[0] = abs(s[0]);
+    resid[0] = cusp::abs(s[0]);
     if (monitor.finished(resid)) {
       break;
     }
@@ -147,7 +140,7 @@ void gmres(thrust::execution_policy<DerivedPolicy> &exec, LinearOperator &A,
 
       PlaneRotation(H, cs, sn, s, i);
 
-      resid[0] = abs(s[i + 1]);
+      resid[0] = cusp::abs(s[i + 1]);
 
       // check convergence condition
       if (monitor.finished(resid)) {

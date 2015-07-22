@@ -37,20 +37,20 @@ namespace precond
  */
 
 /*! \p scaled_bridson_ainv : Approximate Inverse preconditoner (from Bridson's "outer product" formulation)
- *  The diagonal matrix is folded into the factorization to reduce operation count during 
+ *  The diagonal matrix is folded into the factorization to reduce operation count during
  *  preconditioner application.  Not sure if this is a good idea or not, yet.
  *  This preconditioner allows for a novel dropping strategy, where rather than a fixed
  *  drop tolerance, you can specify now many non-zeroes are allowed per row.  The non-zeroes
  *  will be chosen based on largest magnitude.  This idea has been applied to IC factorization,
  *  but not AINV as far as I'm aware.  See:
- *  Lin, C. and More, J. J. 1999. Incomplete Cholesky Factorizations with Limited Memory. 
- *  SIAM J. Sci. Comput. 21, 1 (Aug. 1999), 24-45. 
- *  This preconditioner will only work for SPD matrices. 
+ *  Lin, C. and More, J. J. 1999. Incomplete Cholesky Factorizations with Limited Memory.
+ *  SIAM J. Sci. Comput. 21, 1 (Aug. 1999), 24-45.
+ *  This preconditioner will only work for SPD matrices.
  *
  */
 template <typename ValueType, typename MemorySpace>
 class scaled_bridson_ainv : public linear_operator<ValueType, MemorySpace>
-{       
+{
     typedef linear_operator<ValueType, MemorySpace> Parent;
 
 public:
@@ -68,7 +68,7 @@ public:
      */
     template<typename MatrixTypeA>
     scaled_bridson_ainv(const MatrixTypeA & A, ValueType drop_tolerance=0.1, int nonzero_per_row=-1, bool lin_dropping=false, int lin_param=1);
-        
+
     /*! apply the preconditioner to vector \p x and store the result in \p y
      *
      * \param x input vector
@@ -93,14 +93,14 @@ public:
  *  drop tolerance, you can specify now many non-zeroes are allowed per row.  The non-zeroes
  *  will be chosen based on largest magnitude.  This idea has been applied to IC factorization,
  *  but not AINV as far as I'm aware.  See:
- *  Lin, C. and More, J. J. 1999. Incomplete Cholesky Factorizations with Limited Memory. 
- *  SIAM J. Sci. Comput. 21, 1 (Aug. 1999), 24-45. 
- *  This preconditioner will only work for SPD matrices. 
+ *  Lin, C. and More, J. J. 1999. Incomplete Cholesky Factorizations with Limited Memory.
+ *  SIAM J. Sci. Comput. 21, 1 (Aug. 1999), 24-45.
+ *  This preconditioner will only work for SPD matrices.
  */
 
 template <typename ValueType, typename MemorySpace>
 class bridson_ainv : public linear_operator<ValueType, MemorySpace>
-{       
+{
     typedef linear_operator<ValueType, MemorySpace> Parent;
 
 public:
@@ -119,7 +119,7 @@ public:
      */
     template<typename MatrixTypeA>
     bridson_ainv(const MatrixTypeA & A, ValueType drop_tolerance=0.1, int nonzero_per_row =-1, bool lin_dropping=false, int lin_param=1);
-        
+
     /*! apply the preconditioner to vector \p x and store the result in \p y
      *
      * \param x input vector
@@ -141,13 +141,13 @@ public:
 
 /*! \p nonsym_bridson_ainv : Approximate Inverse preconditoner (from Bridson's "outer product" formulation)
  *  The non-symmetric form, which is identical to the standard form in the case of symmetric matrices, but
- *  handles non-symmtric matrices as well.  The storage and cost of applying the preconditioner 
+ *  handles non-symmtric matrices as well.  The storage and cost of applying the preconditioner
  *  are about the same, but build time is 2x higher.
  */
 
 template <typename ValueType, typename MemorySpace>
 class nonsym_bridson_ainv : public linear_operator<ValueType, MemorySpace>
-{       
+{
     typedef linear_operator<ValueType, MemorySpace> Parent;
 
 public:
@@ -166,7 +166,7 @@ public:
      */
     template<typename MatrixTypeA>
     nonsym_bridson_ainv(const MatrixTypeA & A, ValueType drop_tolerance=0.1, int nonzero_per_row=-1, bool lin_dropping=false, int lin_param=1);
-        
+
     /*! apply the preconditioner to vector \p x and store the result in \p y
      *
      * \param x input vector
@@ -184,4 +184,5 @@ public:
 } // end namespace cusp
 
 #include <cusp/precond/detail/ainv.inl>
+
 
