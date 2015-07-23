@@ -132,7 +132,7 @@ int amax(thrust::execution_policy<DerivedPolicy>& exec,
 {
     typedef typename Array::value_type ValueType;
 
-    cusp::norm_functor<ValueType> unary_op;
+    cusp::abs_functor<ValueType> unary_op;
 
     return thrust::max_element(exec,
                                thrust::make_transform_iterator(x.begin(), unary_op),
@@ -150,12 +150,12 @@ asum(thrust::execution_policy<DerivedPolicy>& exec,
     typedef typename Array::memory_space MemorySpace;
     typedef typename cusp::detail::norm_type<ValueType>::type NormType;
 
-    cusp::norm_functor<ValueType>  unary_op;
-    thrust::plus<NormType>         binary_op;
+    cusp::abs_functor<ValueType> unary_op;
+    thrust::plus<NormType>       binary_op;
 
     NormType init = 0;
 
-    return std::abs(thrust::transform_reduce(exec, x.begin(), x.end(), unary_op, init, binary_op));
+    return thrust::transform_reduce(exec, x.begin(), x.end(), unary_op, init, binary_op);
 }
 
 template <typename DerivedPolicy,
@@ -460,16 +460,7 @@ typename cusp::detail::norm_type<typename Array::value_type>::type
 nrm1(thrust::execution_policy<DerivedPolicy>& exec,
      const Array& x)
 {
-    typedef typename Array::value_type ValueType;
-    typedef typename Array::memory_space MemorySpace;
-    typedef typename cusp::detail::norm_type<ValueType>::type NormType;
-
-    cusp::abs_functor<ValueType> unary_op;
-    thrust::plus<NormType>       binary_op;
-
-    NormType init = 0;
-
-    return thrust::transform_reduce(exec, x.begin(), x.end(), unary_op, init, binary_op);
+    return cusp::blas::asum(exec, x);
 }
 
 template <typename DerivedPolicy,
