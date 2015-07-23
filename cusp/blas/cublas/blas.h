@@ -610,7 +610,7 @@ nrm1(cublas::execution_policy& exec,
 }
 
 template <typename Array>
-typename cusp::detail::norm_type<typename ArrayType::value_type>::type
+typename cusp::detail::norm_type<typename Array::value_type>::type
 nrmmax(cublas::execution_policy& exec,
        const Array& x)
 {
@@ -627,7 +627,7 @@ nrmmax(cublas::execution_policy& exec,
         throw cusp::runtime_exception("CUBLAS amax failed!");
     }
 
-    return cusp::norm(x[index-1]);
+    return cusp::abs(x[index-1]);
 }
 
 } // end namespace cublas

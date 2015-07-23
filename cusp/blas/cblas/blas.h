@@ -518,7 +518,7 @@ nrm1(cblas::execution_policy& exec,
 }
 
 template <typename Array>
-typename cusp::detail::norm_type<typename ArrayType::value_type>::type
+typename cusp::detail::norm_type<typename Array::value_type>::type
 nrmmax(cblas::execution_policy& exec,
        const Array& x)
 {
@@ -531,7 +531,7 @@ nrmmax(cblas::execution_policy& exec,
 
     int index = cblas::detail::amax(n, x_p, 1);
 
-    return cusp::norm(x[index]);
+    return cusp::abs(x[index]);
 }
 
 } // end namespace cblas
