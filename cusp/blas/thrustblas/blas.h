@@ -137,7 +137,7 @@ int amax(thrust::execution_policy<DerivedPolicy>& exec,
     return thrust::max_element(exec,
                                thrust::make_transform_iterator(x.begin(), unary_op),
                                thrust::make_transform_iterator(x.end(), unary_op))
-           - x.begin();
+           - thrust::make_transform_iterator(x.begin(), unary_op);
 }
 
 template <typename DerivedPolicy,
@@ -470,15 +470,11 @@ nrmmax(thrust::execution_policy<DerivedPolicy>& exec,
        const Array& x)
 {
     typedef typename Array::value_type ValueType;
-    typedef typename Array::memory_space MemorySpace;
-    typedef typename cusp::detail::norm_type<ValueType>::type NormType;
 
-    cusp::abs_functor<ValueType> unary_op;
-    thrust::maximum<NormType>    binary_op;
+    int index = cusp::blas::amax(exec, x);
+    ValueType val = x[index];
 
-    NormType init = 0;
-
-    return thrust::transform_reduce(exec, x.begin(), x.end(), unary_op, init, binary_op);
+    return cusp::abs(val);
 }
 
 } // end namespace thrustblas
