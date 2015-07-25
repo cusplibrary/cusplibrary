@@ -25,6 +25,7 @@
 
 #include <cusp/blas/blas.h>
 #include <cusp/eigen/arnoldi.h>
+#include <cusp/precond/diagonal.h>
 
 #include <thrust/extrema.h>
 #include <thrust/transform.h>
@@ -41,6 +42,29 @@ namespace eigen
 {
 namespace detail
 {
+
+template <typename MatrixType>
+struct Dinv_A : public cusp::linear_operator<typename MatrixType::value_type, typename MatrixType::memory_space>
+{
+    typedef typename MatrixType::value_type   ValueType;
+    typedef typename MatrixType::memory_space MemorySpace;
+
+    const MatrixType& A;
+    const cusp::precond::diagonal<ValueType,MemorySpace> Dinv;
+
+    Dinv_A(const MatrixType& A)
+        : cusp::linear_operator<ValueType,MemorySpace>(A.num_rows, A.num_cols, A.num_entries + A.num_rows),
+          A(A), Dinv(A)
+    {}
+
+    template <typename Array1, typename Array2>
+    void operator()(const Array1& x, Array2& y) const
+    {
+        cusp::multiply(A,x,y);
+        cusp::multiply(Dinv,y,y);
+    }
+};
+
 
 template <typename Matrix>
 double disks_spectral_radius(const Matrix& A, coo_format)
@@ -184,6 +208,14 @@ template <typename Matrix>
 double disks_spectral_radius(const Matrix& A)
 {
     return detail::disks_spectral_radius(A, typename Matrix::format());
+}
+
+template <typename MatrixType>
+double estimate_rho_Dinv_A(const MatrixType& A)
+{
+    detail::Dinv_A<MatrixType> Dinv_A(A);
+
+    return cusp::eigen::ritz_spectral_radius(Dinv_A, 8);
 }
 
 } // end namespace eigen

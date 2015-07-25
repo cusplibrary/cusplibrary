@@ -35,7 +35,7 @@ smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverType,For
 ::smoothed_aggregation(const MatrixType& A)
     : ML(), min_level_size(500), max_levels(10)
 {
-    sa_initialize(A);
+    initialize(A);
 }
 
 template <typename IndexType, typename ValueType, typename MemorySpace, typename SmootherType, typename SolverType, typename Format>
@@ -45,7 +45,7 @@ smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverType,For
                        typename thrust::detail::enable_if_convertible<typename ArrayType::format,cusp::array1d_format>::type*)
     : ML(), min_level_size(500), max_levels(10)
 {
-    sa_initialize(A, B);
+    initialize(A, B);
 }
 
 template <typename IndexType, typename ValueType, typename MemorySpace, typename SmootherType, typename SolverType, typename Format>
@@ -75,17 +75,17 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverTyp
 template <typename IndexType, typename ValueType, typename MemorySpace, typename SmootherType, typename SolverType, typename Format>
 template <typename MatrixType>
 void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverType,Format>
-::sa_initialize(const MatrixType& A)
+::initialize(const MatrixType& A)
 {
     cusp::constant_array<ValueType> B(A.num_rows, 1);
 
-    sa_initialize(A, B);
+    initialize(A, B);
 }
 
 template <typename IndexType, typename ValueType, typename MemorySpace, typename SmootherType, typename SolverType, typename Format>
 template <typename MatrixType, typename ArrayType>
 void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverType,Format>
-::sa_initialize(const MatrixType& A, const ArrayType& B,
+::initialize(const MatrixType& A, const ArrayType& B,
                 typename thrust::detail::enable_if_convertible<typename MatrixType::format,cusp::known_format>::type*)
 {
     using thrust::system::detail::generic::select_system;
@@ -96,27 +96,27 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverTyp
     System1 system1;
     System2 system2;
 
-    sa_initialize(select_system(system1,system2), A, B);
+    initialize(select_system(system1,system2), A, B);
 }
 
 template <typename IndexType, typename ValueType, typename MemorySpace, typename SmootherType, typename SolverType, typename Format>
 template <typename DerivedPolicy, typename MatrixType>
 void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverType,Format>
-::sa_initialize(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+::initialize(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
                 const MatrixType& A)
 {
     cusp::constant_array<ValueType> B(A.num_rows, 1);
 
-    sa_initialize(exec, A, B);
+    initialize(exec, A, B);
 }
 
 template <typename IndexType, typename ValueType, typename MemorySpace, typename SmootherType, typename SolverType, typename Format>
 template <typename DerivedPolicy, typename MatrixType, typename ArrayType>
 void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverType,Format>
-::sa_initialize(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+::initialize(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
                 const MatrixType& A, const ArrayType& B)
 {
-    typedef typename select_sa_matrix_view<MatrixType>::type View;
+    typedef typename detail::select_sa_matrix_view<MatrixType>::type View;
     typedef typename ML::level Level;
 
     if(sa_levels.size() > 0)

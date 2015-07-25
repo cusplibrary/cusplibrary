@@ -24,7 +24,8 @@
 #include <cusp/detail/config.h>
 #include <cusp/detail/multilevel.h>
 
-#include <cusp/precond/aggregation/smoothed_aggregation_helper.h>
+#include <cusp/array1d.h>
+#include <cusp/precond/aggregation/detail/sa_view_traits.h>
 
 #include <thrust/execution_policy.h>
 #include <thrust/detail/use_default.h>
@@ -37,6 +38,38 @@ namespace precond
 {
 namespace aggregation
 {
+
+/* \cond */
+template<typename MatrixType>
+struct sa_level
+{
+    public:
+
+    typedef typename MatrixType::index_type IndexType;
+    typedef typename MatrixType::value_type ValueType;
+    typedef typename MatrixType::memory_space MemorySpace;
+    typedef typename cusp::detail::norm_type<ValueType>::type NormType;
+
+    MatrixType A_; 					                              // matrix
+    MatrixType T; 					                              // matrix
+    cusp::array1d<IndexType,MemorySpace> aggregates;      // aggregates
+    cusp::array1d<ValueType,MemorySpace> B;               // near-nullspace candidates
+
+    size_t   num_iters;
+    NormType rho_DinvA;
+
+    sa_level(void) : num_iters(1), rho_DinvA(0) {}
+
+    template<typename SALevelType>
+    sa_level(const SALevelType& L)
+      : A_(L.A_),
+        aggregates(L.aggregates),
+        B(L.B),
+        num_iters(L.num_iters),
+        rho_DinvA(L.rho_DinvA)
+    {}
+};
+/* \endcond */
 
 /*! \addtogroup iterative_solvers Iterative Solvers
  *  \addtogroup preconditioners Preconditioners
@@ -128,7 +161,7 @@ class smoothed_aggregation :
 {
   private:
 
-    typedef typename select_sa_matrix_type<IndexType,ValueType,MemorySpace>::type	SetupMatrixType;
+    typedef typename detail::select_sa_matrix_type<IndexType,ValueType,MemorySpace>::type	SetupMatrixType;
     typedef typename cusp::multilevel<IndexType,ValueType,MemorySpace,Format,SmootherType,SolverType>::container ML;
 
   public:
@@ -155,20 +188,20 @@ class smoothed_aggregation :
     void set_max_levels(size_t max_depth);
 
     template <typename MatrixType>
-    void sa_initialize(const MatrixType& A);
+    void initialize(const MatrixType& A);
 
     template <typename MatrixType, typename ArrayType>
-    void sa_initialize(const MatrixType& A, const ArrayType& B,
-                       typename thrust::detail::enable_if_convertible<typename MatrixType::format,cusp::known_format>::type* = 0);
+    void initialize(const MatrixType& A, const ArrayType& B,
+                    typename thrust::detail::enable_if_convertible<typename MatrixType::format,cusp::known_format>::type* = 0);
 
     /* \cond */
     template <typename DerivedPolicy, typename MatrixType>
-    void sa_initialize(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-                       const MatrixType& A);
+    void initialize(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                    const MatrixType& A);
 
     template <typename DerivedPolicy, typename MatrixType, typename ArrayType>
-    void sa_initialize(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-                       const MatrixType& A, const ArrayType& B);
+    void initialize(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                    const MatrixType& A, const ArrayType& B);
     /* \endcond */
 
 protected:

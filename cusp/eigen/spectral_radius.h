@@ -35,13 +35,17 @@ namespace eigen
  */
 
 template <typename Matrix>
+double disks_spectral_radius(const Matrix& A);
+
+template <typename Matrix>
 double estimate_spectral_radius(const Matrix& A, size_t k = 20);
 
 template <typename Matrix>
 double ritz_spectral_radius(const Matrix& A, size_t k = 10, bool symmetric=false);
 
-template <typename Matrix>
-double disks_spectral_radius(const Matrix& A);
+template <typename MatrixType>
+double estimate_rho_Dinv_A(const MatrixType& A);
+
 
 /*! \}
  */

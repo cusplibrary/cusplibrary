@@ -18,7 +18,7 @@ void TestStandardAggregation(void)
 {
     // TODO make this test something, possibly disjoint things that must aggregate
 
-    typedef typename cusp::precond::aggregation::select_sa_matrix_type<int,float,MemorySpace>::type SetupMatrixType;
+    typedef typename cusp::precond::aggregation::detail::select_sa_matrix_type<int,float,MemorySpace>::type SetupMatrixType;
 
     SetupMatrixType A;
     cusp::gallery::poisson5pt(A, 10, 10);
@@ -43,7 +43,7 @@ void TestEstimateRhoDinvA(void)
         A.values[0] = -5;
         A.values[1] =  2;
         float rho = 1.0;
-        ASSERT_EQUAL((std::abs(cusp::precond::aggregation::detail::estimate_rho_Dinv_A(A) - rho) / rho) < 0.1f, true);
+        ASSERT_EQUAL((std::abs(cusp::eigen::estimate_rho_Dinv_A(A) - rho) / rho) < 0.1f, true);
     }
 
     // 2x2 Poisson problem
@@ -51,7 +51,7 @@ void TestEstimateRhoDinvA(void)
         cusp::csr_matrix<int, float, MemorySpace> A;
         cusp::gallery::poisson5pt(A, 2, 2);
         float rho = 1.5;
-        ASSERT_EQUAL((std::abs(cusp::precond::aggregation::detail::estimate_rho_Dinv_A(A) - rho) / rho) < 0.1f, true);
+        ASSERT_EQUAL((std::abs(cusp::eigen::estimate_rho_Dinv_A(A) - rho) / rho) < 0.1f, true);
     }
 
     // 4x4 Poisson problem
@@ -59,7 +59,7 @@ void TestEstimateRhoDinvA(void)
         cusp::csr_matrix<int, float, MemorySpace> A;
         cusp::gallery::poisson5pt(A, 4, 4);
         float rho = 1.8090169943749468;
-        ASSERT_EQUAL((std::abs(cusp::precond::aggregation::detail::estimate_rho_Dinv_A(A) - rho) / rho) < 0.1f, true);
+        ASSERT_EQUAL((std::abs(cusp::eigen::estimate_rho_Dinv_A(A) - rho) / rho) < 0.1f, true);
     }
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestEstimateRhoDinvA);
@@ -68,7 +68,7 @@ DECLARE_HOST_DEVICE_UNITTEST(TestEstimateRhoDinvA);
 template <typename MemorySpace>
 void TestFitCandidates(void)
 {
-    typedef typename cusp::precond::aggregation::select_sa_matrix_type<int,float,MemorySpace>::type SetupMatrixType;
+    typedef typename cusp::precond::aggregation::detail::select_sa_matrix_type<int,float,MemorySpace>::type SetupMatrixType;
 
     // 2 aggregates with 2 nodes each
     {
@@ -141,7 +141,7 @@ DECLARE_HOST_DEVICE_UNITTEST(TestFitCandidates);
 template <class MemorySpace>
 void TestSmoothProlongator(void)
 {
-    typedef typename cusp::precond::aggregation::select_sa_matrix_type<int,float,MemorySpace>::type SetupMatrixType;
+    typedef typename cusp::precond::aggregation::detail::select_sa_matrix_type<int,float,MemorySpace>::type SetupMatrixType;
 
     // simple example with diagonal S
     {

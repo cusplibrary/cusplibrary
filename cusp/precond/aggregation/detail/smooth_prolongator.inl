@@ -16,7 +16,7 @@
 
 #include <cusp/detail/config.h>
 
-#include <cusp/precond/aggregation/smoothed_aggregation_helper.h>
+#include <cusp/eigen/spectral_radius.h>
 #include <cusp/precond/aggregation/system/detail/generic/smooth_prolongator.h>
 
 namespace cusp
@@ -44,7 +44,7 @@ void smooth_prolongator(const thrust::detail::execution_policy_base<DerivedPolic
     if(rho == double(0))
     {
         // compute spectral radius of diag(C)^-1 * C
-        rho = detail::estimate_rho_Dinv_A(S);
+        rho = cusp::eigen::estimate_rho_Dinv_A(S);
     }
 
     smooth_prolongator(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), S, T, P, rho, omega);
