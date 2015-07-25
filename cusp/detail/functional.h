@@ -63,138 +63,8 @@ struct base_functor
     }
 };
 
-template <typename T>
-struct plus_value : public base_functor< thrust::plus<T> >
-{
-    typedef base_functor< thrust::plus<T> > Parent;
-
-    __host__ __device__
-    plus_value(const T value = T(0)) : Parent(value) {}
-};
-
-template <typename T>
-struct divide_value : public base_functor< thrust::divides<T> >
-{
-    typedef base_functor< thrust::divides<T> > Parent;
-
-    __host__ __device__
-    divide_value(const T value = T(0)) : Parent(value) {}
-};
-
-template <typename T>
-struct modulus_value : public base_functor< thrust::modulus<T> >
-{
-    typedef base_functor< thrust::modulus<T> > Parent;
-
-    __host__ __device__
-    modulus_value(const T value = T(0)) : Parent(value) {}
-};
-
-template <typename T>
-struct multiplies_value : public base_functor< thrust::multiplies<T> >
-{
-    typedef base_functor< thrust::multiplies<T> > Parent;
-
-    __host__ __device__
-    multiplies_value(const T value) : Parent(value) {}
-};
-
-template <typename T>
-struct greater_value : public base_functor< thrust::greater<T> >
-{
-    typedef base_functor< thrust::greater<T> > Parent;
-
-    __host__ __device__
-    greater_value(const T value) : Parent(value) {}
-};
-
-template <typename T>
-struct greater_equal_value : public base_functor< thrust::greater_equal<T> >
-{
-    typedef base_functor< thrust::greater_equal<T> > Parent;
-
-    __host__ __device__
-    greater_equal_value(const T value) : Parent(value) {}
-};
-
-template <typename T>
-struct less_value : public base_functor< thrust::less<T> >
-{
-    typedef base_functor< thrust::less<T> > Parent;
-
-    __host__ __device__
-    less_value(const T value) : Parent(value) {}
-};
-
-template <typename T>
-struct less_equal_value : public base_functor< thrust::less_equal<T> >
-{
-    typedef base_functor< thrust::less_equal<T> > Parent;
-
-    __host__ __device__
-    less_equal_value(const T value) : Parent(value) {}
-};
-
-template<typename T>
-struct zero_functor : public thrust::unary_function<T,T>
-{
-    __host__ __device__
-    T operator()(const T &x) const
-    {
-        return T(0);
-    }
-};
-
-// square<T> computes the square of a number f(x) -> x*x
-template <typename T>
-struct square_functor : public thrust::unary_function<T,T>
-{
-    __host__ __device__
-    T operator()(T x)
-    {
-        return x * x;
-    }
-};
-
-template <typename T>
-struct sqrt_functor : thrust::unary_function<T,T>
-{
-    __host__ __device__
-    T operator()(const T& x)
-    {
-        using thrust::sqrt;
-        using std::sqrt;
-
-        return sqrt(x);
-    }
-};
-
-// absolute<T> computes the absolute value of a number f(x) -> |x|
-template <typename T>
-struct absolute : public thrust::unary_function<T,T>
-{
-    __host__ __device__
-    T operator()(const T& x)
-    {
-        using thrust::abs;
-        using std::abs;
-
-        return abs(x);
-    }
-};
-
-template <typename T>
-struct reciprocal : public thrust::unary_function<T,T>
-{
-    __host__ __device__
-    T operator()(const T& v)
-    {
-        return T(1.0) / v;
-    }
-};
-
 template<typename IndexType>
-struct coo_tuple_comp
+struct coo_tuple_comp_functor
 {
     template<typename Tuple1, typename Tuple2>
     __host__ __device__
@@ -226,18 +96,6 @@ struct combine_tuple_base_functor
         return op(thrust::get<0>(t),thrust::get<1>(t));
     }
 };
-
-template <typename T>
-struct sum_tuple_functor : public combine_tuple_base_functor< thrust::plus<T> > {};
-
-template <typename T>
-struct divide_tuple_functor : public combine_tuple_base_functor< thrust::divides<T> > {};
-
-template <typename T>
-struct equal_tuple_functor : public combine_tuple_base_functor< thrust::equal_to<T> > {};
-
-template <typename T>
-struct not_equal_tuple_functor : public combine_tuple_base_functor< thrust::not_equal_to<T> > {};
 
 template <typename IndexType>
 struct occupied_diagonal_functor
@@ -300,11 +158,11 @@ struct diagonal_index_functor : public thrust::unary_function<IndexType,IndexTyp
 };
 
 template <typename IndexType>
-struct is_valid_ell_index
+struct is_valid_ell_index_functor
 {
     const IndexType num_rows;
 
-    is_valid_ell_index(const IndexType num_rows)
+    is_valid_ell_index_functor(const IndexType num_rows)
         : num_rows(num_rows) {}
 
     template <typename Tuple>
@@ -319,12 +177,12 @@ struct is_valid_ell_index
 };
 
 template <typename IndexType, typename ValueType>
-struct is_valid_coo_index
+struct is_valid_coo_index_functor
 {
     const IndexType num_rows;
     const IndexType num_cols;
 
-    is_valid_coo_index(const IndexType num_rows, const IndexType num_cols)
+    is_valid_coo_index_functor(const IndexType num_rows, const IndexType num_cols)
         : num_rows(num_rows), num_cols(num_cols) {}
 
     template <typename Tuple>
