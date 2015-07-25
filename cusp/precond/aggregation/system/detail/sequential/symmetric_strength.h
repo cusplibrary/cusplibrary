@@ -21,8 +21,7 @@
 #include <cusp/copy.h>
 #include <cusp/csr_matrix.h>
 #include <cusp/format_utils.h>
-
-#include <cusp/detail/functional.h>
+#include <cusp/functional.h>
 
 #include <thrust/count.h>
 #include <thrust/functional.h>

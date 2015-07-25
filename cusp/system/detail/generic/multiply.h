@@ -18,6 +18,7 @@
 #pragma once
 
 #include <cusp/detail/config.h>
+#include <cusp/detail/format.h>
 
 #include <thrust/execution_policy.h>
 
@@ -37,18 +38,17 @@ template <typename DerivedPolicy,
           typename Vector3,
           typename BinaryFunction1,
           typename BinaryFunction2>
-void generalized_spmv(
-              thrust::execution_policy<DerivedPolicy>& exec,
-              LinearOperator&  A,
-              Vector1& x,
-              Vector2& y,
-              Vector3& z,
-              BinaryFunction1 combine,
-              BinaryFunction2 reduce,
-              sparse_format,
-              array1d_format,
-              array1d_format,
-              array1d_format);
+void generalized_spmv(thrust::execution_policy<DerivedPolicy>& exec,
+                      LinearOperator&  A,
+                      Vector1& x,
+                      Vector2& y,
+                      Vector3& z,
+                      BinaryFunction1 combine,
+                      BinaryFunction2 reduce,
+                      cusp::sparse_format,
+                      cusp::array1d_format,
+                      cusp::array1d_format,
+                      cusp::array1d_format);
 
 } // end namespace generic
 } // end namespace detail

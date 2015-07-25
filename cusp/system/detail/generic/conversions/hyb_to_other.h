@@ -17,11 +17,10 @@
 
 #pragma once
 
+#include <cusp/copy.h>
 #include <cusp/sort.h>
 
 #include <cusp/system/detail/generic/conversions/ell_to_other.h>
-
-#include <thrust/copy.h>
 
 namespace cusp
 {
@@ -33,7 +32,7 @@ namespace generic
 {
 
 template <typename DerivedPolicy, typename SourceType, typename DestinationType>
-typename enable_if_same_system<SourceType,DestinationType>::type
+typename cusp::detail::enable_if_same_system<SourceType,DestinationType>::type
 convert(thrust::execution_policy<DerivedPolicy>& exec,
         const SourceType& src,
         DestinationType& dst,

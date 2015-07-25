@@ -29,7 +29,7 @@
 #include <thrust/iterator/permutation_iterator.h>
 #include <thrust/iterator/transform_iterator.h>
 
-#include <cusp/detail/functional.h>
+#include <cusp/functional.h>
 
 namespace cusp
 {
@@ -87,7 +87,7 @@ public:
     typedef typename thrust::iterator_difference<RandomAccessIterator>::type                  difference_type;
     typedef typename thrust::iterator_difference<RandomAccessIterator>::type                  size_type;
 
-    typedef cusp::detail::multiplies_value<difference_type>                                   StrideFunctor;
+    typedef cusp::multiplies_value<difference_type>                                           StrideFunctor;
     typedef typename thrust::counting_iterator<difference_type>                               CountingIterator;
     typedef typename thrust::transform_iterator<StrideFunctor, CountingIterator>              TransformIterator;
     typedef typename thrust::permutation_iterator<RandomAccessIterator,TransformIterator>     PermutationIterator;

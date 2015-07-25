@@ -23,11 +23,12 @@
 #pragma once
 
 #include <cusp/detail/config.h>
-#include <cusp/detail/format.h>
-#include <cusp/detail/functional.h>
+#include <cusp/functional.h>
 #include <cusp/complex.h>
 
 #include <cusp/iterator/join_iterator.h>
+
+#include <cusp/detail/format.h>
 
 #include <thrust/iterator/counting_iterator.h>
 #include <thrust/iterator/permutation_iterator.h>

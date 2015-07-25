@@ -19,9 +19,9 @@
  */
 
 #include <cusp/format_utils.h>
+#include <cusp/functional.h>
 
 #include <cusp/blas/blas.h>
-#include <cusp/detail/functional.h>
 
 #include <thrust/transform.h>
 
@@ -43,7 +43,7 @@ diagonal<ValueType,MemorySpace>
 
     // invert the entries
     thrust::transform(diagonal_reciprocals.begin(), diagonal_reciprocals.end(),
-                      diagonal_reciprocals.begin(), cusp::detail::reciprocal<ValueType>());
+                      diagonal_reciprocals.begin(), cusp::reciprocal<ValueType>());
 }
 
 // linear operator

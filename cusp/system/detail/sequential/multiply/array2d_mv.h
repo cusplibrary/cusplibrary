@@ -17,9 +17,9 @@
 #pragma once
 
 #include <cusp/detail/config.h>
-#include <cusp/detail/functional.h>
-
 #include <cusp/detail/format.h>
+
+#include <cusp/functional.h>
 
 #include <cusp/system/detail/sequential/execution_policy.h>
 
@@ -46,9 +46,9 @@ void multiply(sequential::execution_policy<DerivedPolicy>& exec,
               UnaryFunction   initialize,
               BinaryFunction1 combine,
               BinaryFunction2 reduce,
-              array2d_format,
-              array1d_format,
-              array1d_format)
+              cusp::array2d_format,
+              cusp::array1d_format,
+              cusp::array1d_format)
 {
     typedef typename VectorType2::value_type ValueType;
 

@@ -18,7 +18,7 @@
 
 #include <cusp/array1d.h>
 #include <cusp/exception.h>
-#include <cusp/detail/functional.h>
+#include <cusp/functional.h>
 #include <cusp/print.h>
 
 #include <thrust/copy.h>
@@ -51,7 +51,7 @@ struct SCAL
 
     template <typename T2>
     __host__ __device__
-    void operator()(T2 & x)
+    void operator()(T2& x)
     {
         x = alpha * x;
     }
@@ -68,7 +68,7 @@ struct AXPY
 
     template <typename Tuple>
     __host__ __device__
-    void operator()(Tuple t)
+    void operator()(Tuple& t)
     {
         thrust::get<1>(t) = alpha * thrust::get<0>(t) +
                             thrust::get<1>(t);
@@ -86,7 +86,7 @@ struct AXPBY
 
     template <typename Tuple>
     __host__ __device__
-    void operator()(Tuple t)
+    void operator()(Tuple& t)
     {
         thrust::get<2>(t) = alpha * thrust::get<0>(t) +
                             beta  * thrust::get<1>(t);
@@ -105,7 +105,7 @@ struct AXPBYPCZ
 
     template <typename Tuple>
     __host__ __device__
-    void operator()(Tuple t)
+    void operator()(Tuple& t)
     {
         thrust::get<3>(t) = alpha * thrust::get<0>(t) +
                             beta  * thrust::get<1>(t) +
@@ -117,7 +117,7 @@ template <typename T>
 struct XMY : public thrust::binary_function<T,T,T>
 {
     __host__ __device__
-    T operator()(T x, T y)
+    T operator()(const T& x, const T& y)
     {
         return x * y;
     }
@@ -238,8 +238,7 @@ void xmy(thrust::execution_policy<DerivedPolicy> &exec,
 {
     typedef typename Array3::value_type ValueType;
 
-    thrust::transform(exec,
-                      x.begin(), x.end(), y.begin(), z.begin(), detail::XMY<ValueType>());
+    thrust::transform(exec, x.begin(), x.end(), y.begin(), z.begin(), detail::XMY<ValueType>());
 }
 
 template <typename DerivedPolicy,

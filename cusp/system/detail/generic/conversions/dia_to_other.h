@@ -18,13 +18,13 @@
 #pragma once
 
 #include <cusp/copy.h>
-#include <cusp/detail/format.h>
+#include <cusp/format_utils.h>
+#include <cusp/functional.h>
 #include <cusp/sort.h>
-#include <cusp/print.h>
 
 #include <cusp/blas/blas.h>
-#include <cusp/format_utils.h>
-#include <cusp/detail/functional.h>
+
+#include <cusp/detail/format.h>
 
 #include <thrust/count.h>
 #include <thrust/gather.h>
@@ -51,7 +51,7 @@ namespace generic
 {
 
 template <typename DerivedPolicy, typename SourceType, typename DestinationType>
-typename enable_if_same_system<SourceType,DestinationType>::type
+typename cusp::detail::enable_if_same_system<SourceType,DestinationType>::type
 convert(thrust::execution_policy<DerivedPolicy>& exec,
         const SourceType& src,
         DestinationType& dst,
@@ -60,38 +60,38 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
 {
     using namespace thrust::placeholders;
 
-    typedef typename SourceType::index_type IndexType;
-    typedef typename SourceType::value_type ValueType;
+    typedef typename SourceType::index_type   IndexType;
+    typedef typename SourceType::value_type   ValueType;
     typedef typename SourceType::memory_space MemorySpace;
 
     // define types used to programatically generate row_indices
-    typedef typename thrust::counting_iterator<IndexType>                                        IndexIterator;
-    typedef typename thrust::transform_iterator<divide_value<IndexType>, IndexIterator>          RowIndexIterator;
+    typedef thrust::counting_iterator<IndexType>                                                 IndexIterator;
+    typedef thrust::transform_iterator<cusp::divide_value<IndexType>, IndexIterator>             RowIndexIterator;
 
     // define types used to programatically generate column_indices
     typedef typename cusp::array1d<IndexType,MemorySpace>::const_iterator                        ConstElementIterator;
-    typedef typename thrust::transform_iterator<modulus_value<IndexType>, IndexIterator>         ModulusIterator;
-    typedef typename thrust::permutation_iterator<ConstElementIterator,ModulusIterator>          OffsetsPermIterator;
-    typedef typename thrust::tuple<OffsetsPermIterator, RowIndexIterator>                        IteratorTuple;
-    typedef typename thrust::zip_iterator<IteratorTuple>                                         ZipIterator;
-    typedef typename thrust::transform_iterator<sum_tuple_functor<IndexType>, ZipIterator>       ColumnIndexIterator;
+    typedef thrust::transform_iterator<cusp::modulus_value<IndexType>, IndexIterator>            ModulusIterator;
+    typedef thrust::permutation_iterator<ConstElementIterator,ModulusIterator>                   OffsetsPermIterator;
+    typedef thrust::tuple<OffsetsPermIterator, RowIndexIterator>                                 IteratorTuple;
+    typedef thrust::zip_iterator<IteratorTuple>                                                  ZipIterator;
+    typedef thrust::transform_iterator<cusp::sum_tuple_functor<IndexType>, ZipIterator>          ColumnIndexIterator;
 
-    typedef logical_to_other_physical_functor<IndexType, cusp::row_major, cusp::column_major>    PermFunctor;
     typedef typename SourceType::values_array_type::values_array_type::const_iterator            ValueIterator;
-    typedef typename thrust::transform_iterator<PermFunctor, IndexIterator>                      PermIndexIterator;
-    typedef typename thrust::permutation_iterator<ValueIterator, PermIndexIterator>              PermValueIterator;
+    typedef logical_to_other_physical_functor<IndexType, cusp::row_major, cusp::column_major>    PermFunctor;
+    typedef thrust::transform_iterator<PermFunctor, IndexIterator>                               PermIndexIterator;
+    typedef thrust::permutation_iterator<ValueIterator, PermIndexIterator>                       PermValueIterator;
 
     // allocate output storage
     dst.resize(src.num_rows, src.num_cols, src.num_entries);
 
     if( src.num_entries == 0 ) return;
 
-    RowIndexIterator row_indices_begin(IndexIterator(0), divide_value<IndexType>(src.values.num_cols));
+    RowIndexIterator row_indices_begin(IndexIterator(0), cusp::divide_value<IndexType>(src.values.num_cols));
 
-    ModulusIterator gather_indices_begin(IndexIterator(0), modulus_value<IndexType>(src.values.num_cols));
+    ModulusIterator gather_indices_begin(IndexIterator(0), cusp::modulus_value<IndexType>(src.values.num_cols));
     OffsetsPermIterator offsets_begin(src.diagonal_offsets.begin(), gather_indices_begin);
     ZipIterator offset_modulus_tuple(thrust::make_tuple(offsets_begin, row_indices_begin));
-    ColumnIndexIterator column_indices_begin(offset_modulus_tuple, sum_tuple_functor<IndexType>());
+    ColumnIndexIterator column_indices_begin(offset_modulus_tuple, cusp::sum_tuple_functor<IndexType>());
 
     PermIndexIterator   perm_indices_begin(IndexIterator(0),   PermFunctor(src.values.num_rows, src.values.num_cols, src.values.pitch));
     PermValueIterator   perm_values_begin(src.values.values.begin(),  perm_indices_begin);
@@ -106,7 +106,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
 }
 
 template <typename DerivedPolicy, typename SourceType, typename DestinationType>
-typename enable_if_same_system<SourceType,DestinationType>::type
+typename cusp::detail::enable_if_same_system<SourceType,DestinationType>::type
 convert(thrust::execution_policy<DerivedPolicy>& exec,
         const SourceType& src,
         DestinationType& dst,
@@ -115,41 +115,41 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
 {
     using namespace thrust::placeholders;
 
-    typedef typename SourceType::index_type IndexType;
-    typedef typename SourceType::value_type ValueType;
+    typedef typename SourceType::index_type   IndexType;
+    typedef typename SourceType::value_type   ValueType;
     typedef typename SourceType::memory_space MemorySpace;
 
     // define types used to programatically generate row_indices
-    typedef typename thrust::counting_iterator<IndexType>                                        IndexIterator;
-    typedef typename thrust::transform_iterator<divide_value<IndexType>, IndexIterator>          RowIndexIterator;
+    typedef thrust::counting_iterator<IndexType>                                                 IndexIterator;
+    typedef thrust::transform_iterator<cusp::divide_value<IndexType>, IndexIterator>             RowIndexIterator;
 
     // define types used to programatically generate column_indices
     typedef typename cusp::array1d<IndexType,MemorySpace>::const_iterator                        ConstElementIterator;
-    typedef typename thrust::transform_iterator<modulus_value<IndexType>, IndexIterator>         ModulusIterator;
-    typedef typename thrust::permutation_iterator<ConstElementIterator,ModulusIterator>          OffsetsPermIterator;
-    typedef typename thrust::tuple<OffsetsPermIterator, RowIndexIterator>                        IteratorTuple;
-    typedef typename thrust::zip_iterator<IteratorTuple>                                         ZipIterator;
-    typedef typename thrust::transform_iterator<sum_tuple_functor<IndexType>, ZipIterator>       ColumnIndexIterator;
+    typedef thrust::transform_iterator<cusp::modulus_value<IndexType>, IndexIterator>            ModulusIterator;
+    typedef thrust::permutation_iterator<ConstElementIterator,ModulusIterator>                   OffsetsPermIterator;
+    typedef thrust::tuple<OffsetsPermIterator, RowIndexIterator>                                 IteratorTuple;
+    typedef thrust::zip_iterator<IteratorTuple>                                                  ZipIterator;
+    typedef thrust::transform_iterator<cusp::sum_tuple_functor<IndexType>, ZipIterator>          ColumnIndexIterator;
 
-    typedef logical_to_other_physical_functor<IndexType, cusp::row_major, cusp::column_major>    PermFunctor;
     typedef typename SourceType::values_array_type::values_array_type::const_iterator            ValueIterator;
-    typedef typename thrust::transform_iterator<PermFunctor, IndexIterator>                      PermIndexIterator;
-    typedef typename thrust::permutation_iterator<ValueIterator, PermIndexIterator>              PermValueIterator;
+    typedef logical_to_other_physical_functor<IndexType, cusp::row_major, cusp::column_major>    PermFunctor;
+    typedef thrust::transform_iterator<PermFunctor, IndexIterator>                               PermIndexIterator;
+    typedef thrust::permutation_iterator<ValueIterator, PermIndexIterator>                       PermValueIterator;
 
     // allocate output storage
     dst.resize(src.num_rows, src.num_cols, src.num_entries);
 
     if( src.num_entries == 0 ) return;
 
-    RowIndexIterator row_indices_begin(IndexIterator(0), divide_value<IndexType>(src.values.num_cols));
+    RowIndexIterator row_indices_begin(IndexIterator(0), cusp::divide_value<IndexType>(src.values.num_cols));
 
-    ModulusIterator gather_indices_begin(IndexIterator(0), modulus_value<IndexType>(src.values.num_cols));
+    ModulusIterator gather_indices_begin(IndexIterator(0), cusp::modulus_value<IndexType>(src.values.num_cols));
     OffsetsPermIterator offsets_begin(src.diagonal_offsets.begin(), gather_indices_begin);
     ZipIterator offset_modulus_tuple(thrust::make_tuple(offsets_begin, row_indices_begin));
-    ColumnIndexIterator column_indices_begin(offset_modulus_tuple, sum_tuple_functor<IndexType>());
+    ColumnIndexIterator column_indices_begin(offset_modulus_tuple, cusp::sum_tuple_functor<IndexType>());
 
-    PermIndexIterator   perm_indices_begin(IndexIterator(0),   PermFunctor(src.values.num_rows, src.values.num_cols, src.values.pitch));
-    PermValueIterator   perm_values_begin(src.values.values.begin(),  perm_indices_begin);
+    PermIndexIterator   perm_indices_begin(IndexIterator(0), PermFunctor(src.values.num_rows, src.values.num_cols, src.values.pitch));
+    PermValueIterator   perm_values_begin(src.values.values.begin(), perm_indices_begin);
 
     cusp::array1d<IndexType, MemorySpace> row_indices(src.num_entries);
 
@@ -174,21 +174,21 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
 {
     using namespace thrust::placeholders;
 
-    typedef typename SourceType::index_type IndexType;
-    typedef typename SourceType::value_type ValueType;
+    typedef typename SourceType::index_type   IndexType;
+    typedef typename SourceType::value_type   ValueType;
     typedef typename SourceType::memory_space MemorySpace;
 
     // define types used to programatically generate row_indices
-    typedef typename thrust::counting_iterator<IndexType> IndexIterator;
-    typedef typename thrust::transform_iterator<modulus_value<IndexType>, IndexIterator> RowIndexIterator;
+    typedef thrust::counting_iterator<IndexType>                                        IndexIterator;
+    typedef thrust::transform_iterator<modulus_value<IndexType>, IndexIterator>         RowIndexIterator;
 
     // define types used to programatically generate column_indices
-    typedef typename cusp::array1d<IndexType,MemorySpace>::const_iterator ConstElementIterator;
-    typedef typename thrust::transform_iterator<divide_value<IndexType>, IndexIterator> DivideIterator;
-    typedef typename thrust::permutation_iterator<ConstElementIterator,DivideIterator> OffsetsPermIterator;
-    typedef typename thrust::tuple<OffsetsPermIterator, RowIndexIterator> IteratorTuple;
-    typedef typename thrust::zip_iterator<IteratorTuple> ZipIterator;
-    typedef typename thrust::transform_iterator<sum_tuple_functor<IndexType>, ZipIterator> ColumnIndexIterator;
+    typedef typename cusp::array1d<IndexType,MemorySpace>::const_iterator               ConstElementIterator;
+    typedef thrust::transform_iterator<divide_value<IndexType>, IndexIterator>          DivideIterator;
+    typedef thrust::permutation_iterator<ConstElementIterator,DivideIterator>           OffsetsPermIterator;
+    typedef thrust::tuple<OffsetsPermIterator, RowIndexIterator>                        IteratorTuple;
+    typedef thrust::zip_iterator<IteratorTuple>                                         ZipIterator;
+    typedef thrust::transform_iterator<cusp::sum_tuple_functor<IndexType>, ZipIterator> ColumnIndexIterator;
 
     if( src.num_entries == 0 )
     {
@@ -202,12 +202,12 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     // allocate output storage
     dst.resize(src.num_rows, src.num_cols, src.num_entries, num_diagonals, src.values.pitch);
 
-    RowIndexIterator row_indices_begin(IndexIterator(0), modulus_value<IndexType>(pitch));
+    RowIndexIterator row_indices_begin(IndexIterator(0), cusp::modulus_value<IndexType>(pitch));
 
-    DivideIterator gather_indices_begin(IndexIterator(0), divide_value<IndexType>(pitch));
+    DivideIterator gather_indices_begin(IndexIterator(0), cusp::divide_value<IndexType>(pitch));
     OffsetsPermIterator offsets_begin(src.diagonal_offsets.begin(), gather_indices_begin);
     ZipIterator offset_modulus_tuple(thrust::make_tuple(offsets_begin, row_indices_begin));
-    ColumnIndexIterator column_indices_begin(offset_modulus_tuple, sum_tuple_functor<IndexType>());
+    ColumnIndexIterator column_indices_begin(offset_modulus_tuple, cusp::sum_tuple_functor<IndexType>());
 
     thrust::replace_copy_if(exec,
                             column_indices_begin,

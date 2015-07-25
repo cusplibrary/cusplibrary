@@ -16,9 +16,9 @@
 
 #include <cusp/array1d.h>
 #include <cusp/array2d.h>
+#include <cusp/functional.h>
 
 #include <cusp/detail/format.h>
-#include <cusp/detail/functional.h>
 
 #include <thrust/adjacent_difference.h>
 #include <thrust/binary_search.h>
@@ -61,7 +61,7 @@ void extract_diagonal(thrust::execution_policy<DerivedPolicy> &exec,
                        thrust::make_transform_iterator(
                            thrust::make_zip_iterator(
                                thrust::make_tuple(A.row_indices.begin(), A.column_indices.begin())),
-                           cusp::detail::equal_tuple_functor<IndexType>()),
+                           cusp::equal_tuple_functor<IndexType>()),
                        output.begin());
 }
 
@@ -89,7 +89,7 @@ void extract_diagonal(thrust::execution_policy<DerivedPolicy> &exec,
                        thrust::make_transform_iterator(
                            thrust::make_zip_iterator(
                                thrust::make_tuple(row_indices.begin(), A.column_indices.begin())),
-                           cusp::detail::equal_tuple_functor<IndexType>()),
+                           cusp::equal_tuple_functor<IndexType>()),
                        output.begin());
 }
 
@@ -135,14 +135,14 @@ void extract_diagonal(thrust::execution_policy<DerivedPolicy> &exec,
     (exec,
      A.values.values.begin(), A.values.values.end(),
      thrust::make_transform_iterator(thrust::counting_iterator<size_t>(0),
-                                     cusp::detail::modulus_value<size_t>(A.column_indices.pitch)),
+                                     cusp::modulus_value<size_t>(A.column_indices.pitch)),
      thrust::make_zip_iterator(thrust::make_tuple
                                (thrust::make_transform_iterator(
                                     thrust::counting_iterator<size_t>(0),
-                                    cusp::detail::modulus_value<size_t>(A.column_indices.pitch)),
+                                    cusp::modulus_value<size_t>(A.column_indices.pitch)),
                                 A.column_indices.values.begin())),
      output.begin(),
-     cusp::detail::equal_tuple_functor<IndexType>());
+     cusp::equal_tuple_functor<IndexType>());
 }
 
 template <typename DerivedPolicy, typename Matrix, typename Array>
@@ -161,13 +161,13 @@ void extract_diagonal(thrust::execution_policy<DerivedPolicy> &exec,
     (exec,
      A.ell.values.values.begin(), A.ell.values.values.end(),
      thrust::make_transform_iterator(
-         thrust::counting_iterator<size_t>(0), cusp::detail::modulus_value<size_t>(A.ell.column_indices.pitch)),
+         thrust::counting_iterator<size_t>(0), cusp::modulus_value<size_t>(A.ell.column_indices.pitch)),
      thrust::make_zip_iterator(thrust::make_tuple(
                                    thrust::make_transform_iterator(
-                                       thrust::counting_iterator<size_t>(0), cusp::detail::modulus_value<size_t>(A.ell.column_indices.pitch)),
+                                       thrust::counting_iterator<size_t>(0), cusp::modulus_value<size_t>(A.ell.column_indices.pitch)),
                                    A.ell.column_indices.values.begin())),
      output.begin(),
-     cusp::detail::equal_tuple_functor<IndexType>());
+     cusp::equal_tuple_functor<IndexType>());
 }
 
 template <typename DerivedPolicy, typename OffsetArray, typename IndexArray>
@@ -178,14 +178,16 @@ void offsets_to_indices(thrust::execution_policy<DerivedPolicy> &exec,
 
     // convert compressed row offsets into uncompressed row indices
     thrust::fill(exec, indices.begin(), indices.end(), OffsetType(0));
+
     thrust::scatter_if( exec,
                         thrust::counting_iterator<OffsetType>(0),
-                        thrust::counting_iterator<OffsetType>(offsets.size()-1),
+                        thrust::counting_iterator<OffsetType>(offsets.size() - 1),
                         offsets.begin(),
                         thrust::make_transform_iterator(
-                            thrust::make_zip_iterator( thrust::make_tuple( offsets.begin(), offsets.begin()+1 ) ),
-                            cusp::detail::not_equal_tuple_functor<OffsetType>()),
+                            thrust::make_zip_iterator( thrust::make_tuple( offsets.begin(), offsets.begin() + 1 ) ),
+                            cusp::not_equal_tuple_functor<OffsetType>()),
                         indices.begin());
+
     thrust::inclusive_scan(exec, indices.begin(), indices.end(), indices.begin(), thrust::maximum<OffsetType>());
 }
 
@@ -221,7 +223,7 @@ size_t count_diagonals(thrust::execution_policy<DerivedPolicy> &exec,
 
     thrust::scatter(exec,
                     thrust::constant_iterator<IndexType>(1),
-                    thrust::constant_iterator<IndexType>(1)+num_entries,
+                    thrust::constant_iterator<IndexType>(1) + num_entries,
                     thrust::make_transform_iterator(
                         thrust::make_zip_iterator(
                             thrust::make_tuple( row_indices.begin(), column_indices.begin() ) ),
@@ -272,7 +274,7 @@ size_t compute_optimal_entries_per_row(thrust::execution_policy<DerivedPolicy> &
     typedef typename ArrayType::value_type IndexType;
     typedef typename ArrayType::memory_space MemorySpace;
 
-    const size_t num_rows = row_offsets.size()-1;
+    const size_t num_rows = row_offsets.size() - 1;
 
     // compute maximum row length
     IndexType max_cols_per_row = compute_max_entries_per_row(exec, row_offsets);
@@ -283,7 +285,7 @@ size_t compute_optimal_entries_per_row(thrust::execution_policy<DerivedPolicy> &
 
     // compute distribution of nnz per row
     thrust::detail::temporary_array<IndexType, DerivedPolicy> entries_per_row(exec, num_rows);
-    thrust::adjacent_difference(exec, row_offsets.begin()+1, row_offsets.end(), entries_per_row.begin());
+    thrust::adjacent_difference(exec, row_offsets.begin() + 1, row_offsets.end(), entries_per_row.begin());
 
     // sort data to bring equal elements together
     thrust::sort(exec, entries_per_row.begin(), entries_per_row.end());
@@ -299,9 +301,9 @@ size_t compute_optimal_entries_per_row(thrust::execution_policy<DerivedPolicy> &
 
     // compute optimal ELL column size
     IndexType num_cols_per_row = thrust::find_if(exec,
-                                 cumulative_histogram.begin(), cumulative_histogram.end()-1,
-                                 cusp::detail::speed_threshold_functor(num_rows, relative_speed, breakeven_threshold))
-                                 - cumulative_histogram.begin();
+                                                 cumulative_histogram.begin(), cumulative_histogram.end() - 1,
+                                                 cusp::detail::speed_threshold_functor(num_rows, relative_speed, breakeven_threshold))
+                                                 - cumulative_histogram.begin();
 
     return num_cols_per_row;
 }

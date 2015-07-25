@@ -19,9 +19,10 @@
 
 #include <cusp/array1d.h>
 #include <cusp/coo_matrix.h>
-#include <cusp/detail/format.h>
 #include <cusp/sort.h>
 #include <cusp/verify.h>
+
+#include <cusp/detail/format.h>
 
 #include <thrust/functional.h>
 #include <thrust/inner_product.h>
@@ -97,27 +98,27 @@ void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
     typedef typename MatrixType3::value_type   ValueType;
     typedef typename MatrixType3::memory_space MemorySpace;
 
-    typedef typename MatrixType1::const_coo_view_type CooView1;
-    typedef typename MatrixType2::const_coo_view_type CooView2;
+    typedef typename MatrixType1::const_coo_view_type                                                CooView1;
+    typedef typename MatrixType2::const_coo_view_type                                                CooView2;
 
-    typedef typename CooView1::row_indices_array_type::const_iterator               RowIterator1;
-    typedef typename CooView1::column_indices_array_type::const_iterator            ColumnIterator1;
-    typedef typename CooView1::values_array_type::const_iterator                    ValueIterator1;
-    typedef thrust::tuple<RowIterator1,ColumnIterator1>                             IteratorTuple1;
-    typedef thrust::zip_iterator<IteratorTuple1>                                    ZipIterator1;
+    typedef typename CooView1::row_indices_array_type::const_iterator                                RowIterator1;
+    typedef typename CooView1::column_indices_array_type::const_iterator                             ColumnIterator1;
+    typedef typename CooView1::values_array_type::const_iterator                                     ValueIterator1;
+    typedef thrust::tuple<RowIterator1,ColumnIterator1>                                              IteratorTuple1;
+    typedef thrust::zip_iterator<IteratorTuple1>                                                     ZipIterator1;
 
-    typedef typename CooView2::row_indices_array_type::const_iterator               RowIterator2;
-    typedef typename CooView2::column_indices_array_type::const_iterator            ColumnIterator2;
-    typedef typename CooView2::values_array_type::const_iterator                    ValueIterator2;
-    typedef thrust::tuple<RowIterator2,ColumnIterator2>                             IteratorTuple2;
-    typedef thrust::zip_iterator<IteratorTuple2>                                    ZipIterator2;
+    typedef typename CooView2::row_indices_array_type::const_iterator                                RowIterator2;
+    typedef typename CooView2::column_indices_array_type::const_iterator                             ColumnIterator2;
+    typedef typename CooView2::values_array_type::const_iterator                                     ValueIterator2;
+    typedef thrust::tuple<RowIterator2,ColumnIterator2>                                              IteratorTuple2;
+    typedef thrust::zip_iterator<IteratorTuple2>                                                     ZipIterator2;
 
-    typedef typename cusp::array1d<IndexType,MemorySpace>::iterator                 IndexIterator;
-    typedef cusp::join_iterator< thrust::tuple<ZipIterator1, ZipIterator2, IndexIterator> >         JoinIndexIterator;
+    typedef typename cusp::array1d<IndexType,MemorySpace>::iterator                                  IndexIterator;
+    typedef cusp::join_iterator< thrust::tuple<ZipIterator1, ZipIterator2, IndexIterator> >          JoinIndexIterator;
 
-    typedef typename elementwise_detail::ops<BinaryFunction>::unary_op_type         UnaryOp;
-    typedef typename elementwise_detail::ops<BinaryFunction>::binary_op_type        BinaryOp;
-    typedef thrust::transform_iterator<UnaryOp, ValueIterator2>                     TransValueIterator;
+    typedef typename elementwise_detail::ops<BinaryFunction>::unary_op_type                          UnaryOp;
+    typedef typename elementwise_detail::ops<BinaryFunction>::binary_op_type                         BinaryOp;
+    typedef thrust::transform_iterator<UnaryOp, ValueIterator2>                                      TransValueIterator;
     typedef cusp::join_iterator< thrust::tuple<ValueIterator1, TransValueIterator, IndexIterator> >  JoinValueIterator;
 
     size_t A_nnz = A.num_entries;
@@ -228,8 +229,8 @@ void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
                     thrust::make_tuple(C.row_indices.end(),   C.column_indices.end(), C.values.end())),
                 C.values.begin(),
                 _1 == ValueType(0)) -
-            thrust::make_zip_iterator(
-                thrust::make_tuple(C.row_indices.begin(), C.column_indices.begin(), C.values.begin()));
+                thrust::make_zip_iterator(
+                  thrust::make_tuple(C.row_indices.begin(), C.column_indices.begin(), C.values.begin()));
 
         C.resize(C.num_rows, C.num_cols, num_reduced_entries);
     }
@@ -289,7 +290,8 @@ void elementwise(const thrust::detail::execution_policy_base<DerivedPolicy>& exe
 {
     using cusp::system::detail::generic::elementwise;
 
-    elementwise(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, B, C, op,
+    elementwise(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
+                A, B, C, op,
                 Format1(), Format2(), Format3());
 }
 

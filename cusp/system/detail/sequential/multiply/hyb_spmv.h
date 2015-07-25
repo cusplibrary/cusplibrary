@@ -17,9 +17,9 @@
 #pragma once
 
 #include <cusp/detail/config.h>
-#include <cusp/detail/functional.h>
-
 #include <cusp/detail/format.h>
+
+#include <cusp/functional.h>
 
 #include <cusp/system/detail/sequential/execution_policy.h>
 
@@ -46,14 +46,14 @@ void multiply(sequential::execution_policy<DerivedPolicy>& exec,
               UnaryFunction   initialize,
               BinaryFunction1 combine,
               BinaryFunction2 reduce,
-              hyb_format,
-              array1d_format,
-              array1d_format)
+              cusp::hyb_format,
+              cusp::array1d_format,
+              cusp::array1d_format)
 {
     typedef typename VectorType2::value_type ValueType;
 
-    multiply(exec, A.ell, x, y, initialize, combine, reduce, ell_format(), array1d_format(), array1d_format());
-    multiply(exec, A.coo, x, y, thrust::identity<ValueType>(), combine, reduce, coo_format(), array1d_format(), array1d_format());
+    multiply(exec, A.ell, x, y, initialize, combine, reduce, cusp::ell_format(), cusp::array1d_format(), cusp::array1d_format());
+    multiply(exec, A.coo, x, y, thrust::identity<ValueType>(), combine, reduce, cusp::coo_format(), cusp::array1d_format(), cusp::array1d_format());
 }
 
 } // end namespace sequential

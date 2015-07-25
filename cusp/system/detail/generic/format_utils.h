@@ -16,9 +16,9 @@
 
 #include <cusp/array1d.h>
 #include <cusp/array2d.h>
+#include <cusp/functional.h>
 
 #include <cusp/detail/format.h>
-#include <cusp/detail/functional.h>
 
 namespace cusp
 {

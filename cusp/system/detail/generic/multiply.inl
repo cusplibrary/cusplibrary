@@ -17,9 +17,9 @@
 #pragma once
 
 #include <thrust/detail/config.h>
-
 #include <cusp/detail/format.h>
-#include <cusp/detail/functional.h>
+
+#include <cusp/functional.h>
 
 #include <cusp/system/detail/generic/multiply/generalized_spmv.h>
 #include <cusp/system/detail/generic/multiply/permute.h>
@@ -45,9 +45,9 @@ void multiply(thrust::execution_policy<DerivedPolicy> &exec,
               const LinearOperator&  A,
               const MatrixOrVector1& B,
               MatrixOrVector2& C,
-              unknown_format,
-              array1d_format,
-              array1d_format)
+              cusp::unknown_format,
+              cusp::array1d_format,
+              cusp::array1d_format)
 {
     // user-defined LinearOperator
     const_cast<LinearOperator&>(A)(B,C);
@@ -61,13 +61,13 @@ void multiply(thrust::execution_policy<DerivedPolicy> &exec,
               const  LinearOperator&  A,
               const  MatrixOrVector1& B,
               MatrixOrVector2& C,
-              known_format,
-              array1d_format,
-              array1d_format)
+              cusp::known_format,
+              cusp::array1d_format,
+              cusp::array1d_format)
 {
     typedef typename LinearOperator::value_type ValueType;
 
-    cusp::detail::zero_functor<ValueType> initialize;
+    cusp::zero_functor<ValueType> initialize;
     thrust::multiplies<ValueType> combine;
     thrust::plus<ValueType> reduce;
 
@@ -75,9 +75,9 @@ void multiply(thrust::execution_policy<DerivedPolicy> &exec,
 }
 
 template <typename DerivedPolicy,
-         typename LinearOperator,
-         typename MatrixOrVector1,
-         typename MatrixOrVector2>
+          typename LinearOperator,
+          typename MatrixOrVector1,
+          typename MatrixOrVector2>
 void multiply(thrust::execution_policy<DerivedPolicy> &exec,
               const LinearOperator&  A,
               const MatrixOrVector1& B,
@@ -99,12 +99,12 @@ void multiply(thrust::execution_policy<DerivedPolicy> &exec,
 }
 
 template <typename DerivedPolicy,
-         typename LinearOperator,
-         typename MatrixOrVector1,
-         typename MatrixOrVector2,
-         typename UnaryFunction,
-         typename BinaryFunction1,
-         typename BinaryFunction2>
+          typename LinearOperator,
+          typename MatrixOrVector1,
+          typename MatrixOrVector2,
+          typename UnaryFunction,
+          typename BinaryFunction1,
+          typename BinaryFunction2>
 typename thrust::detail::disable_if_convertible<UnaryFunction,cusp::known_format,void>::type
 multiply(thrust::execution_policy<DerivedPolicy> &exec,
          const LinearOperator&  A,
@@ -131,12 +131,12 @@ multiply(thrust::execution_policy<DerivedPolicy> &exec,
 }
 
 template <typename DerivedPolicy,
-         typename LinearOperator,
-         typename Vector1,
-         typename Vector2,
-         typename Vector3,
-         typename BinaryFunction1,
-         typename BinaryFunction2>
+          typename LinearOperator,
+          typename Vector1,
+          typename Vector2,
+          typename Vector3,
+          typename BinaryFunction1,
+          typename BinaryFunction2>
 void generalized_spmv(thrust::execution_policy<DerivedPolicy> &exec,
                       const LinearOperator&  A,
                       const Vector1& x,
