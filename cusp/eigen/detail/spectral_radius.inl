@@ -163,6 +163,20 @@ void lanczos_estimate(const Matrix& A, Array2d& H, size_t k)
 } // end detail namespace
 
 template <typename Matrix>
+double disks_spectral_radius(const Matrix& A)
+{
+    return detail::disks_spectral_radius(A, typename Matrix::format());
+}
+
+template <typename MatrixType>
+double estimate_rho_Dinv_A(const MatrixType& A)
+{
+    detail::Dinv_A<MatrixType> Dinv_A(A);
+
+    return cusp::eigen::ritz_spectral_radius(Dinv_A, 8);
+}
+
+template <typename Matrix>
 double estimate_spectral_radius(const Matrix& A, size_t k)
 {
     typedef typename Matrix::index_type   IndexType;
@@ -202,20 +216,6 @@ double ritz_spectral_radius(const Matrix& A, size_t k, bool symmetric)
         cusp::eigen::arnoldi(A, H, k);
 
     return estimate_spectral_radius(H);
-}
-
-template <typename Matrix>
-double disks_spectral_radius(const Matrix& A)
-{
-    return detail::disks_spectral_radius(A, typename Matrix::format());
-}
-
-template <typename MatrixType>
-double estimate_rho_Dinv_A(const MatrixType& A)
-{
-    detail::Dinv_A<MatrixType> Dinv_A(A);
-
-    return cusp::eigen::ritz_spectral_radius(Dinv_A, 8);
 }
 
 } // end namespace eigen
