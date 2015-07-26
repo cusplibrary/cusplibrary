@@ -58,8 +58,6 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
         cusp::dia_format&,
         cusp::coo_format&)
 {
-    using namespace thrust::placeholders;
-
     typedef typename SourceType::index_type   IndexType;
     typedef typename SourceType::value_type   ValueType;
     typedef typename SourceType::memory_space MemorySpace;
@@ -102,7 +100,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
       thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, column_indices_begin, perm_values_begin)) + src.values.num_entries,
       perm_values_begin,
       thrust::make_zip_iterator(thrust::make_tuple(dst.row_indices.begin(), dst.column_indices.begin(), dst.values.begin())),
-      _1 != ValueType(0));
+      thrust::placeholders::_1 != ValueType(0));
 }
 
 template <typename DerivedPolicy, typename SourceType, typename DestinationType>
@@ -113,8 +111,6 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
         cusp::dia_format&,
         cusp::csr_format&)
 {
-    using namespace thrust::placeholders;
-
     typedef typename SourceType::index_type   IndexType;
     typedef typename SourceType::value_type   ValueType;
     typedef typename SourceType::memory_space MemorySpace;
@@ -159,7 +155,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
       thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, column_indices_begin, perm_values_begin)) + src.values.num_entries,
       perm_values_begin,
       thrust::make_zip_iterator(thrust::make_tuple(row_indices.begin(), dst.column_indices.begin(), dst.values.begin())),
-      _1 != ValueType(0));
+      thrust::placeholders::_1 != ValueType(0));
 
     cusp::indices_to_offsets(exec, row_indices, dst.row_offsets);
 }
@@ -172,19 +168,17 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
         cusp::dia_format&,
         cusp::ell_format&)
 {
-    using namespace thrust::placeholders;
-
     typedef typename SourceType::index_type   IndexType;
     typedef typename SourceType::value_type   ValueType;
     typedef typename SourceType::memory_space MemorySpace;
 
     // define types used to programatically generate row_indices
     typedef thrust::counting_iterator<IndexType>                                        IndexIterator;
-    typedef thrust::transform_iterator<modulus_value<IndexType>, IndexIterator>         RowIndexIterator;
+    typedef thrust::transform_iterator<cusp::modulus_value<IndexType>, IndexIterator>   RowIndexIterator;
 
     // define types used to programatically generate column_indices
     typedef typename cusp::array1d<IndexType,MemorySpace>::const_iterator               ConstElementIterator;
-    typedef thrust::transform_iterator<divide_value<IndexType>, IndexIterator>          DivideIterator;
+    typedef thrust::transform_iterator<cusp::divide_value<IndexType>, IndexIterator>    DivideIterator;
     typedef thrust::permutation_iterator<ConstElementIterator,DivideIterator>           OffsetsPermIterator;
     typedef thrust::tuple<OffsetsPermIterator, RowIndexIterator>                        IteratorTuple;
     typedef thrust::zip_iterator<IteratorTuple>                                         ZipIterator;
@@ -214,7 +208,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
                             column_indices_begin + src.values.num_entries,
                             src.values.values.begin(),
                             dst.column_indices.values.begin(),
-                            _1 == ValueType(0), -1);
+                            thrust::placeholders::_1 == ValueType(0), -1);
 
     thrust::copy(exec, src.values.values.begin(), src.values.values.end(), dst.values.values.begin());
 
