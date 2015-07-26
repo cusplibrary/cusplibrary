@@ -148,7 +148,7 @@ struct abs_squared_functor : public thrust::unary_function<T, typename cusp::det
     __host__ __device__
     typename cusp::detail::norm_type<T>::type
     operator()(const T& t) const {
-        return cusp::square_functor()(cusp::abs(t));
+        return cusp::square_functor<typename cusp::detail::norm_type<T>::type>()(cusp::abs(t));
     }
 };
 

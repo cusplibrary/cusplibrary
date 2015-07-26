@@ -133,7 +133,7 @@ int amax(thrust::execution_policy<DerivedPolicy>& exec,
     typedef typename Array::value_type      ValueType;
     typedef typename Array::const_iterator  Iterator;
     typedef cusp::abs_functor<ValueType>    UnaryOp;
-    typedef thrsut::transform_iterator<UnaryOp, Iterator> TransformIterator;
+    typedef thrust::transform_iterator<UnaryOp, Iterator> TransformIterator;
 
     UnaryOp unary_op;
 
