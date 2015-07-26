@@ -15,13 +15,6 @@
  */
 
 
-/*! \file functional.h
- *  \brief Defines templated functors and traits analogous to what
- *         is found in stl and boost's functional.
- */
-
-#pragma once
-
 #include <cusp/detail/config.h>
 
 #include <cusp/complex.h>

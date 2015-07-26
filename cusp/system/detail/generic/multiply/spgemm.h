@@ -40,12 +40,14 @@ namespace detail
 namespace generic
 {
 
-template <typename MatrixType1,
+template <typename DerivedPolicy,
+          typename MatrixType1,
           typename MatrixType2,
           typename MatrixType3,
           typename ArrayType1,
           typename ArrayType2>
-void coo_spmm_helper(size_t workspace_size,
+void coo_spmm_helper(thrust::execution_policy<DerivedPolicy>& exec,
+                     size_t workspace_size,
                      size_t begin_row,
                      size_t end_row,
                      size_t begin_segment,
@@ -79,43 +81,51 @@ void coo_spmm_helper(size_t workspace_size,
     }
 
     // compute gather locations of intermediate format
-    thrust::fill(A_gather_locations.begin(), A_gather_locations.end(), 0);
-    thrust::scatter_if(thrust::counting_iterator<IndexType>(begin_segment), thrust::counting_iterator<IndexType>(end_segment),
+    thrust::fill(exec, A_gather_locations.begin(), A_gather_locations.end(), 0);
+    thrust::scatter_if(exec,
+                       thrust::counting_iterator<IndexType>(begin_segment), thrust::counting_iterator<IndexType>(end_segment),
                        output_ptr.begin() + begin_segment,
                        segment_lengths.begin() + begin_segment,
                        A_gather_locations.begin() - output_ptr[begin_segment]);
-    thrust::inclusive_scan(A_gather_locations.begin(), A_gather_locations.end(), A_gather_locations.begin(), thrust::maximum<IndexType>());
+    thrust::inclusive_scan(exec, A_gather_locations.begin(), A_gather_locations.end(), A_gather_locations.begin(), thrust::maximum<IndexType>());
 
     // compute gather locations of intermediate format
-    thrust::fill(B_gather_locations.begin(), B_gather_locations.end(), 1);
-    thrust::scatter_if(thrust::make_permutation_iterator(B_row_offsets.begin(), A.column_indices.begin()) + begin_segment,
+    thrust::fill(exec, B_gather_locations.begin(), B_gather_locations.end(), 1);
+    thrust::scatter_if(exec,
+                       thrust::make_permutation_iterator(B_row_offsets.begin(), A.column_indices.begin()) + begin_segment,
                        thrust::make_permutation_iterator(B_row_offsets.begin(), A.column_indices.begin()) + end_segment,
                        output_ptr.begin() + begin_segment,
                        segment_lengths.begin() + begin_segment,
                        B_gather_locations.begin() - output_ptr[begin_segment]);
-    thrust::inclusive_scan_by_key(A_gather_locations.begin(), A_gather_locations.end(),
+    thrust::inclusive_scan_by_key(exec,
+                                  A_gather_locations.begin(),
+                                  A_gather_locations.end(),
                                   B_gather_locations.begin(),
                                   B_gather_locations.begin());
 
 
-    thrust::gather(A_gather_locations.begin(), A_gather_locations.end(),
+    thrust::gather(exec,
+                   A_gather_locations.begin(), A_gather_locations.end(),
                    A.row_indices.begin(),
                    I.begin());
-    thrust::gather(B_gather_locations.begin(), B_gather_locations.end(),
+    thrust::gather(exec,
+                   B_gather_locations.begin(), B_gather_locations.end(),
                    B.column_indices.begin(),
                    J.begin());
 
-    thrust::transform(thrust::make_permutation_iterator(A.values.begin(), A_gather_locations.begin()),
+    thrust::transform(exec,
+                      thrust::make_permutation_iterator(A.values.begin(), A_gather_locations.begin()),
                       thrust::make_permutation_iterator(A.values.begin(), A_gather_locations.end()),
                       thrust::make_permutation_iterator(B.values.begin(), B_gather_locations.begin()),
                       V.begin(),
                       thrust::multiplies<ValueType>());
 
     // sort (I,J,V) tuples by (I,J)
-    cusp::sort_by_row_and_column(I, J, V);
+    cusp::sort_by_row_and_column(exec, I, J, V);
 
     // compute unique number of nonzeros in the output
-    IndexType NNZ = thrust::inner_product(thrust::make_zip_iterator(thrust::make_tuple(I.begin(), J.begin())),
+    IndexType NNZ = thrust::inner_product(exec,
+                                          thrust::make_zip_iterator(thrust::make_tuple(I.begin(), J.begin())),
                                           thrust::make_zip_iterator(thrust::make_tuple(I.end (),  J.end()))   - 1,
                                           thrust::make_zip_iterator(thrust::make_tuple(I.begin(), J.begin())) + 1,
                                           IndexType(0),
@@ -127,7 +137,8 @@ void coo_spmm_helper(size_t workspace_size,
 
     // sum values with the same (i,j)
     thrust::reduce_by_key
-    (thrust::make_zip_iterator(thrust::make_tuple(I.begin(), J.begin())),
+    (exec,
+     thrust::make_zip_iterator(thrust::make_tuple(I.begin(), J.begin())),
      thrust::make_zip_iterator(thrust::make_tuple(I.end(),   J.end())),
      V.begin(),
      thrust::make_zip_iterator(thrust::make_tuple(C.row_indices.begin(), C.column_indices.begin())),
@@ -144,9 +155,9 @@ void multiply(thrust::execution_policy<DerivedPolicy>& exec,
               const MatrixType1& A,
               const MatrixType2& B,
               MatrixType3& C,
-              coo_format,
-              coo_format,
-              coo_format)
+              cusp::coo_format,
+              cusp::coo_format,
+              cusp::coo_format)
 {
     typedef typename MatrixType3::index_type   IndexType;
     typedef typename MatrixType3::value_type   ValueType;
@@ -161,23 +172,33 @@ void multiply(thrust::execution_policy<DerivedPolicy>& exec,
 
     // compute row offsets for B
     cusp::array1d<IndexType,MemorySpace> B_row_offsets(B.num_rows + 1);
-    cusp::indices_to_offsets(B.row_indices, B_row_offsets);
+    cusp::indices_to_offsets(exec, B.row_indices, B_row_offsets);
 
     // compute row lengths for B
     cusp::array1d<IndexType,MemorySpace> B_row_lengths(B.num_rows);
-    thrust::transform(B_row_offsets.begin() + 1, B_row_offsets.end(), B_row_offsets.begin(), B_row_lengths.begin(), thrust::minus<IndexType>());
+    thrust::transform(exec,
+                      B_row_offsets.begin() + 1,
+                      B_row_offsets.end(),
+                      B_row_offsets.begin(),
+                      B_row_lengths.begin(),
+                      thrust::minus<IndexType>());
 
     // for each element A(i,j) compute the number of nonzero elements in B(j,:)
     cusp::array1d<IndexType,MemorySpace> segment_lengths(A.num_entries);
-    thrust::gather(A.column_indices.begin(), A.column_indices.end(),
+    thrust::gather(exec,
+                   A.column_indices.begin(),
+                   A.column_indices.end(),
                    B_row_lengths.begin(),
                    segment_lengths.begin());
 
     // output pointer
     cusp::array1d<IndexType,MemorySpace> output_ptr(A.num_entries + 1);
-    thrust::exclusive_scan(segment_lengths.begin(), segment_lengths.end(),
+    thrust::exclusive_scan(exec,
+                           segment_lengths.begin(),
+                           segment_lengths.end(),
                            output_ptr.begin(),
                            IndexType(0));
+
     output_ptr[A.num_entries] = output_ptr[A.num_entries - 1] + segment_lengths[A.num_entries - 1]; // XXX is this necessary?
 
     size_t coo_num_nonzeros = output_ptr[A.num_entries];
@@ -210,7 +231,8 @@ void multiply(thrust::execution_policy<DerivedPolicy>& exec,
         size_t end_segment    = A.num_entries;
         size_t workspace_size = coo_num_nonzeros;
 
-        coo_spmm_helper(workspace_size,
+        coo_spmm_helper(exec,
+                        workspace_size,
                         begin_row, end_row,
                         begin_segment, end_segment,
                         A, B, C,
@@ -230,11 +252,13 @@ void multiply(thrust::execution_policy<DerivedPolicy>& exec,
 
         // compute row offsets for A
         cusp::array1d<IndexType,MemorySpace> A_row_offsets(A.num_rows + 1);
-        cusp::indices_to_offsets(A.row_indices, A_row_offsets);
+        cusp::indices_to_offsets(exec, A.row_indices, A_row_offsets);
 
         // compute worspace requirements for each row
         cusp::array1d<IndexType,MemorySpace> cummulative_row_workspace(A.num_rows);
-        thrust::gather(A_row_offsets.begin() + 1, A_row_offsets.end(),
+        thrust::gather(exec,
+                       A_row_offsets.begin() + 1,
+                       A_row_offsets.end(),
                        output_ptr.begin(),
                        cummulative_row_workspace.begin());
 
@@ -246,7 +270,8 @@ void multiply(thrust::execution_policy<DerivedPolicy>& exec,
             Container C_slice;
 
             // find largest end_row such that the capacity of [begin_row, end_row) fits in the workspace_capacity
-            size_t end_row = thrust::upper_bound(cummulative_row_workspace.begin() + begin_row, cummulative_row_workspace.end(),
+            size_t end_row = thrust::upper_bound(exec,
+                                                 cummulative_row_workspace.begin() + begin_row, cummulative_row_workspace.end(),
                                                  IndexType(total_work + workspace_capacity)) - cummulative_row_workspace.begin();
 
             size_t begin_segment = A_row_offsets[begin_row];
@@ -264,7 +289,8 @@ void multiply(thrust::execution_policy<DerivedPolicy>& exec,
             assert(end_row > begin_row);
             assert(workspace_size <= workspace_capacity);
 
-            coo_spmm_helper(workspace_size,
+            coo_spmm_helper(exec,
+                            workspace_size,
                             begin_row, end_row,
                             begin_segment, end_segment,
                             A, B, C_slice,
@@ -303,9 +329,9 @@ void multiply(thrust::execution_policy<DerivedPolicy>& exec,
         size_t base = 0;
         for(typename ContainerList::iterator iter = slices.begin(); iter != slices.end(); ++iter)
         {
-            thrust::copy(iter->row_indices.begin(),    iter->row_indices.end(),    C.row_indices.begin()    + base);
-            thrust::copy(iter->column_indices.begin(), iter->column_indices.end(), C.column_indices.begin() + base);
-            thrust::copy(iter->values.begin(),         iter->values.end(),         C.values.begin()         + base);
+            thrust::copy(exec, iter->row_indices.begin(),    iter->row_indices.end(),    C.row_indices.begin()    + base);
+            thrust::copy(exec, iter->column_indices.begin(), iter->column_indices.end(), C.column_indices.begin() + base);
+            thrust::copy(exec, iter->values.begin(),         iter->values.end(),         C.values.begin()         + base);
             base += iter->num_entries;
         }
     }
@@ -319,9 +345,9 @@ void multiply(thrust::execution_policy<DerivedPolicy>& exec,
               const MatrixType1& A,
               const MatrixType2& B,
               MatrixType3& C,
-              sparse_format,
-              sparse_format,
-              sparse_format)
+              cusp::sparse_format,
+              cusp::sparse_format,
+              cusp::sparse_format)
 {
     using namespace thrust::placeholders;
 

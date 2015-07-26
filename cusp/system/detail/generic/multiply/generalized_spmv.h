@@ -16,7 +16,15 @@
 
 #pragma once
 
-#include <thrust/detail/config.h>
+#include <cusp/detail/config.h>
+#include <cusp/detail/array2d_format_utils.h>
+#include <cusp/detail/format.h>
+#include <cusp/detail/utils.h>
+
+#include <cusp/coo_matrix.h>
+#include <cusp/csr_matrix.h>
+#include <cusp/functional.h>
+
 #include <thrust/reduce.h>
 
 #include <thrust/system/detail/generic/tag.h>
@@ -24,13 +32,6 @@
 #include <thrust/iterator/discard_iterator.h>
 #include <thrust/iterator/permutation_iterator.h>
 #include <thrust/iterator/transform_iterator.h>
-
-#include <cusp/detail/format.h>
-#include <cusp/coo_matrix.h>
-#include <cusp/csr_matrix.h>
-
-#include <cusp/detail/utils.h>
-#include <cusp/detail/array2d_format_utils.h>
 
 namespace cusp
 {
@@ -81,7 +82,7 @@ void generalized_spmv(thrust::execution_policy<DerivedPolicy> &exec,
 
     // define types used to programatically generate row_indices
     typedef thrust::counting_iterator<IndexType>                                                 IndexIterator;
-    typedef thrust::transform_iterator<divide_value<IndexType>, IndexIterator>                   RowIndexIterator;
+    typedef thrust::transform_iterator<cusp::divide_value<IndexType>, IndexIterator>             RowIndexIterator;
 
     // define types used to programatically generate column_indices
     typedef typename cusp::array1d<IndexType,MemorySpace>::const_iterator                        ConstElementIterator;
@@ -89,7 +90,7 @@ void generalized_spmv(thrust::execution_policy<DerivedPolicy> &exec,
     typedef thrust::permutation_iterator<ConstElementIterator,ModulusIterator>                   OffsetsPermIterator;
     typedef thrust::tuple<OffsetsPermIterator, RowIndexIterator>                                 IteratorTuple;
     typedef thrust::zip_iterator<IteratorTuple>                                                  ZipIterator;
-    typedef thrust::transform_iterator<sum_tuple_functor<IndexType>, ZipIterator>                ColumnIndexIterator;
+    typedef thrust::transform_iterator<cusp::sum_tuple_functor<IndexType>, ZipIterator>          ColumnIndexIterator;
 
     typedef typename LinearOperator::values_array_type::values_array_type::const_iterator        ValueIterator;
     typedef cusp::detail::logical_to_other_physical_functor<IndexType, cusp::row_major, cusp::column_major>    PermFunctor;
@@ -174,7 +175,7 @@ void generalized_spmv(thrust::execution_policy<DerivedPolicy> &exec,
     size_t num_entries_per_row = A.column_indices.num_cols;
     LogicalFunctor logical_functor(A.values.num_rows, A.values.num_cols, A.values.pitch);
 
-    RowIndexIterator row_indices_begin(IndexIterator(0), divide_value<IndexType>(num_entries_per_row));
+    RowIndexIterator row_indices_begin(IndexIterator(0), cusp::divide_value<IndexType>(num_entries_per_row));
     StrideIndexIterator stride_indices_begin(IndexIterator(0), logical_functor);
     thrust::detail::temporary_array<ValueType, DerivedPolicy> vals(exec, A.num_rows);
 
@@ -290,9 +291,9 @@ void generalized_spmv(thrust::execution_policy<DerivedPolicy> &exec,
     cusp::offsets_to_indices(A.row_offsets, row_indices);
 
     cusp::coo_matrix_view<RowView,ColView,ValView> A_coo_view(A.num_rows, A.num_cols, A.num_entries,
-            cusp::make_array1d_view(row_indices),
-            cusp::make_array1d_view(A.column_indices),
-            cusp::make_array1d_view(A.values));
+                                                              cusp::make_array1d_view(row_indices),
+                                                              cusp::make_array1d_view(A.column_indices),
+                                                              cusp::make_array1d_view(A.values));
 
     cusp::generalized_spmv(exec, A_coo_view, x, y, z, combine, reduce);
 }
@@ -331,3 +332,4 @@ void generalized_spmv(thrust::execution_policy<DerivedPolicy> &exec,
 } // end namespace detail
 } // end namespace system
 } // end namespace cusp
+

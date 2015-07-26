@@ -165,7 +165,7 @@ template<typename T>
 struct norm_functor : public thrust::unary_function<T, typename cusp::detail::norm_type<T>::type>
 {
     __host__ __device__
-    const typename cusp::detail::norm_type<T>::type
+    typename cusp::detail::norm_type<T>::type
     operator()(const T& t) const {
         return cusp::norm(t);
     }

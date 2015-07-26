@@ -42,6 +42,7 @@ using namespace thrust::system::cpp;
 // now get all the algorithm definitions
 
 #include <cusp/system/cpp/detail/convert.h>
+#include <cusp/system/cpp/detail/copy.h>
 #include <cusp/system/cpp/detail/elementwise.h>
 #include <cusp/system/cpp/detail/format_utils.h>
 #include <cusp/system/cpp/detail/multiply.h>

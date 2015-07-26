@@ -116,8 +116,7 @@ void convert(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
 {
     using cusp::system::detail::generic::convert;
 
-    convert(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, B,
-            format1, format2);
+    convert(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, B, format1, format2);
 }
 
 } // end namespace cusp

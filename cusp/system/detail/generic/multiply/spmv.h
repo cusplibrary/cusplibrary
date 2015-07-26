@@ -16,7 +16,15 @@
 
 #pragma once
 
-#include <thrust/detail/config.h>
+#include <cusp/detail/config.h>
+#include <cusp/detail/array2d_format_utils.h>
+#include <cusp/detail/format.h>
+#include <cusp/detail/utils.h>
+
+#include <cusp/coo_matrix.h>
+#include <cusp/csr_matrix.h>
+#include <cusp/functional.h>
+
 #include <thrust/reduce.h>
 
 #include <thrust/system/detail/generic/tag.h>
@@ -24,14 +32,6 @@
 #include <thrust/iterator/discard_iterator.h>
 #include <thrust/iterator/permutation_iterator.h>
 #include <thrust/iterator/transform_iterator.h>
-
-#include <cusp/detail/format.h>
-#include <cusp/coo_matrix.h>
-#include <cusp/csr_matrix.h>
-#include <cusp/functional.h>
-
-#include <cusp/detail/utils.h>
-#include <cusp/detail/array2d_format_utils.h>
 
 namespace cusp
 {

@@ -42,6 +42,7 @@ using namespace thrust::system::omp;
 // now get all the algorithm definitions
 
 #include <cusp/system/omp/detail/convert.h>
+#include <cusp/system/omp/detail/copy.h>
 #include <cusp/system/omp/detail/elementwise.h>
 #include <cusp/system/omp/detail/format_utils.h>
 #include <cusp/system/omp/detail/multiply.h>
