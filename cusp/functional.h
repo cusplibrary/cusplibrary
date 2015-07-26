@@ -96,8 +96,7 @@ template<typename T>
 struct zero_functor : public thrust::unary_function<T,T>
 {
     __host__ __device__
-    T operator()(const T& x) const
-    {
+    T operator()(const T& x) const {
         return T(0);
     }
 };
@@ -107,18 +106,16 @@ template <typename T>
 struct square_functor : public thrust::unary_function<T,T>
 {
     __host__ __device__
-    T operator()(const T& x)
-    {
+    T operator()(const T& x) const {
         return x * x;
     }
 };
 
 template <typename T>
-struct sqrt_functor : thrust::unary_function<T,T>
+struct sqrt_functor : public thrust::unary_function<T,T>
 {
     __host__ __device__
-    T operator()(const T& x)
-    {
+    T operator()(const T& x) const {
         using thrust::sqrt;
         using std::sqrt;
 
@@ -130,8 +127,7 @@ template <typename T>
 struct reciprocal : public thrust::unary_function<T,T>
 {
     __host__ __device__
-    T operator()(const T& v)
-    {
+    T operator()(const T& v) const {
         return T(1.0) / v;
     }
 };
@@ -140,7 +136,7 @@ template<typename T>
 struct abs_functor : public thrust::unary_function<T, typename cusp::detail::norm_type<T>::type>
 {
     __host__ __device__
-    const typename cusp::detail::norm_type<T>::type
+    typename cusp::detail::norm_type<T>::type
     operator()(const T& t) const {
         return cusp::abs(t);
     }
@@ -150,10 +146,9 @@ template<typename T>
 struct abs_squared_functor : public thrust::unary_function<T, typename cusp::detail::norm_type<T>::type>
 {
     __host__ __device__
-    const typename cusp::detail::norm_type<T>::type
+    typename cusp::detail::norm_type<T>::type
     operator()(const T& t) const {
-        typename cusp::detail::norm_type<T>::type n = cusp::abs(t);
-        return n * n;
+        return cusp::square_functor()(cusp::abs(t));
     }
 };
 
@@ -161,7 +156,7 @@ template<typename T>
 struct conj_functor : public thrust::unary_function<T,T>
 {
     __host__ __device__
-    const T operator()(const T& t) const {
+    T operator()(const T& t) const {
         return cusp::conj(t);
     }
 };

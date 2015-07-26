@@ -130,15 +130,16 @@ template <typename DerivedPolicy,
 int amax(thrust::execution_policy<DerivedPolicy>& exec,
          const Array& x)
 {
-    typedef typename Array::value_type ValueType;
-    typedef typename Array::const_iterator Iterator;
-    typedef cusp::abs_functor<ValueType> UnaryOp;
+    typedef typename Array::value_type      ValueType;
+    typedef typename Array::const_iterator  Iterator;
+    typedef cusp::abs_functor<ValueType>    UnaryOp;
+    typedef thrsut::transform_iterator<UnaryOp, Iterator> TransformIterator;
 
     UnaryOp unary_op;
 
-    thrust::transform_iterator<UnaryOp, Iterator> abs_iter(x.begin(), unary_op);
+    TransformIterator iter(x.begin(), unary_op);
 
-    int index = thrust::max_element(exec, abs_iter, abs_iter + x.size()) - abs_iter;
+    int index = thrust::max_element(exec, iter, iter + x.size()) - iter;
 
     return index;
 }
@@ -474,7 +475,6 @@ nrmmax(thrust::execution_policy<DerivedPolicy>& exec,
     typedef typename Array::value_type ValueType;
 
     int index = cusp::blas::amax(exec, x);
-    std::cout << "index : " << index << std::endl;
     ValueType val = *(x.begin() + index);
 
     return cusp::abs(val);
