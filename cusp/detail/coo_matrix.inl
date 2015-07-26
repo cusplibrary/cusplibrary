@@ -17,6 +17,7 @@
 #include <cusp/array1d.h>
 #include <cusp/convert.h>
 #include <cusp/format_utils.h>
+#include <cusp/functional.h>
 #include <cusp/sort.h>
 
 #include <cusp/iterator/join_iterator.h>
@@ -152,7 +153,7 @@ coo_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>
 template <typename Array1, typename Array2, typename Array3, typename IndexType, typename ValueType, typename MemorySpace>
 template <typename MatrixType>
 void coo_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>
-::construct_from(MatrixType& matrix, csr_format)
+::construct_from(MatrixType& matrix, cusp::csr_format)
 {
     Parent::resize(matrix.num_rows, matrix.num_cols, matrix.num_entries);
     row_indices.resize(matrix.num_entries);
@@ -165,7 +166,7 @@ void coo_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>
 template <typename Array1, typename Array2, typename Array3, typename IndexType, typename ValueType, typename MemorySpace>
 template <typename MatrixType>
 void coo_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>
-::construct_from(MatrixType& matrix, dia_format)
+::construct_from(MatrixType& matrix, cusp::dia_format)
 {
     typedef cusp::detail::coo_view_type<MatrixType>          dia_view_type;
 
@@ -188,12 +189,12 @@ void coo_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>
 
     Parent::resize(matrix.num_rows, matrix.num_cols, matrix.num_entries);
 
-    RowIndexIterator    row_indices_begin(CountingIterator(0), cusp::detail::divide_value<IndexType>(matrix.values.num_cols));
-    ModulusIterator     gather_indices_begin(CountingIterator(0), cusp::detail::modulus_value<IndexType>(matrix.values.num_cols));
+    RowIndexIterator    row_indices_begin(CountingIterator(0), cusp::divide_value<IndexType>(matrix.values.num_cols));
+    ModulusIterator     gather_indices_begin(CountingIterator(0), cusp::modulus_value<IndexType>(matrix.values.num_cols));
     OffsetsPermIterator offsets_begin(matrix.diagonal_offsets.begin(), gather_indices_begin);
     ZipIterator         offset_modulus_tuple(thrust::make_tuple(offsets_begin, row_indices_begin));
 
-    ColumnIndexIterator column_indices_begin(offset_modulus_tuple, cusp::detail::sum_tuple_functor<IndexType>());
+    ColumnIndexIterator column_indices_begin(offset_modulus_tuple, cusp::sum_tuple_functor<IndexType>());
     PermIndexIterator   perm_indices_begin(CountingIterator(0),   PermFunctor(matrix.values.num_rows, matrix.values.num_cols, matrix.values.pitch));
     PermValueIterator   perm_values_begin(matrix.values.values.begin(), perm_indices_begin);
 
@@ -217,7 +218,7 @@ void coo_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>
 template <typename Array1, typename Array2, typename Array3, typename IndexType, typename ValueType, typename MemorySpace>
 template <typename MatrixType>
 void coo_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>
-::construct_from(MatrixType& matrix, ell_format)
+::construct_from(MatrixType& matrix, cusp::ell_format)
 {
     typedef cusp::detail::coo_view_type<MatrixType>          ell_view_type;
 
@@ -240,7 +241,7 @@ void coo_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>
 
     PermIndexIterator       perm_indices_begin(CountingIterator(0), PermFunctor(matrix.values.num_rows, matrix.values.num_cols, matrix.values.pitch));
 
-    RowIndexIterator        row_indices_begin(CountingIterator(0), cusp::detail::divide_value<IndexType>(matrix.values.num_cols));
+    RowIndexIterator        row_indices_begin(CountingIterator(0), cusp::divide_value<IndexType>(matrix.values.num_cols));
     PermColumnIndexIterator perm_column_indices_begin(matrix.column_indices.values.begin(), perm_indices_begin);
     PermValueIterator       perm_values_begin(matrix.values.values.begin(), perm_indices_begin);
 
@@ -264,7 +265,7 @@ void coo_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>
 template <typename Array1, typename Array2, typename Array3, typename IndexType, typename ValueType, typename MemorySpace>
 template <typename MatrixType>
 void coo_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>
-::construct_from(MatrixType& matrix, hyb_format)
+::construct_from(MatrixType& matrix, cusp::hyb_format)
 {
     using namespace cusp::detail;
 
@@ -290,7 +291,7 @@ void coo_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>
     Parent::resize(matrix.num_rows, matrix.num_cols, matrix.num_entries);
 
     PermIndexIterator       perm_indices_begin(CountingIterator(0), PermFunctor(matrix.ell.values.num_rows, matrix.ell.values.num_cols, matrix.ell.values.pitch));
-    RowIndexIterator        row_indices_begin(CountingIterator(0), divide_value<IndexType>(matrix.ell.values.num_cols));
+    RowIndexIterator        row_indices_begin(CountingIterator(0), cusp::divide_value<IndexType>(matrix.ell.values.num_cols));
     PermColumnIndexIterator perm_column_indices_begin(matrix.ell.column_indices.values.begin(), perm_indices_begin);
     PermValueIterator       perm_values_begin(matrix.ell.values.values.begin(), perm_indices_begin);
 
@@ -320,7 +321,7 @@ void coo_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>
                              thrust::counting_iterator<IndexType>(ell_num_entries),
                              thrust::make_discard_iterator(),
                              indices.begin(),
-                             coo_tuple_comp<IndexType>());
+                             cusp::detail::coo_tuple_comp_functor<IndexType>());
     }
 // #endif
 

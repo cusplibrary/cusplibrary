@@ -18,11 +18,13 @@
 #pragma once
 
 #include <cusp/copy.h>
-#include <cusp/detail/format.h>
+#include <cusp/format_utils.h>
+#include <cusp/functional.h>
 #include <cusp/sort.h>
 
 #include <cusp/blas/blas.h>
-#include <cusp/format_utils.h>
+
+#include <cusp/detail/format.h>
 
 #include <thrust/count.h>
 #include <thrust/gather.h>
@@ -49,7 +51,7 @@ namespace generic
 {
 
 template <typename DerivedPolicy, typename SourceType, typename DestinationType>
-typename enable_if_same_system<SourceType,DestinationType>::type
+typename cusp::detail::enable_if_same_system<SourceType,DestinationType>::type
 convert(thrust::execution_policy<DerivedPolicy>& exec,
              const SourceType& src,
              DestinationType& dst,
@@ -65,7 +67,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     typedef typename thrust::counting_iterator<IndexType> IndexIterator;
     typedef typename thrust::transform_iterator<divide_value<IndexType>, IndexIterator> RowIndexIterator;
 
-    typedef logical_to_other_physical_functor<IndexType, cusp::row_major, cusp::column_major>    PermFunctor;
+    typedef cusp::detail::logical_to_other_physical_functor<IndexType, cusp::row_major, cusp::column_major>    PermFunctor;
     typedef typename thrust::transform_iterator<PermFunctor, IndexIterator>                      PermIndexIterator;
     typedef typename SourceType::column_indices_array_type::values_array_type::const_iterator    IndicesIterator;
     typedef typename SourceType::values_array_type::values_array_type::const_iterator            ValueIterator;
@@ -93,7 +95,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
 }
 
 template <typename DerivedPolicy, typename SourceType, typename DestinationType>
-typename enable_if_same_system<SourceType,DestinationType>::type
+typename cusp::detail::enable_if_same_system<SourceType,DestinationType>::type
 convert(thrust::execution_policy<DerivedPolicy>& exec,
         const SourceType& src,
         DestinationType& dst,
@@ -108,16 +110,16 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
 
     // define types used to programatically generate row_indices
     typedef typename thrust::counting_iterator<IndexType> IndexIterator;
-    typedef typename thrust::transform_iterator<divide_value<IndexType>, IndexIterator> RowIndexIterator;
+    typedef typename thrust::transform_iterator<cusp::divide_value<IndexType>, IndexIterator> RowIndexIterator;
 
-    typedef logical_to_other_physical_functor<IndexType, cusp::row_major, cusp::column_major>    PermFunctor;
+    typedef cusp::detail::logical_to_other_physical_functor<IndexType, cusp::row_major, cusp::column_major>    PermFunctor;
     typedef typename thrust::transform_iterator<PermFunctor, IndexIterator>                      PermIndexIterator;
     typedef typename SourceType::column_indices_array_type::values_array_type::const_iterator    IndicesIterator;
     typedef typename SourceType::values_array_type::values_array_type::const_iterator            ValueIterator;
     typedef typename thrust::permutation_iterator<IndicesIterator, PermIndexIterator>            PermColumnIndicesIterator;
     typedef typename thrust::permutation_iterator<ValueIterator, PermIndexIterator>              PermValueIterator;
 
-    RowIndexIterator    row_indices_begin(IndexIterator(0),    divide_value<IndexType>(src.values.num_cols));
+    RowIndexIterator    row_indices_begin(IndexIterator(0),    cusp::divide_value<IndexType>(src.values.num_cols));
     PermIndexIterator   perm_indices_begin(IndexIterator(0),   PermFunctor(src.values.num_rows, src.values.num_cols, src.values.pitch));
     PermColumnIndicesIterator   perm_column_indices_begin(src.column_indices.values.begin(),  perm_indices_begin);
     PermValueIterator   perm_values_begin(src.values.values.begin(),  perm_indices_begin);
@@ -144,7 +146,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
 }
 
 template <typename DerivedPolicy, typename SourceType, typename DestinationType>
-typename enable_if_same_system<SourceType,DestinationType>::type
+typename cusp::detail::enable_if_same_system<SourceType,DestinationType>::type
 convert(thrust::execution_policy<DerivedPolicy>& exec,
         const SourceType& src,
         DestinationType& dst,

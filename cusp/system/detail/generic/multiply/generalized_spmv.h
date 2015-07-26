@@ -57,12 +57,12 @@ struct valid_index_functor : public thrust::unary_function<T,T>
 };
 
 template <typename DerivedPolicy,
-         typename LinearOperator,
-         typename Vector1,
-         typename Vector2,
-         typename Vector3,
-         typename BinaryFunction1,
-         typename BinaryFunction2>
+          typename LinearOperator,
+          typename Vector1,
+          typename Vector2,
+          typename Vector3,
+          typename BinaryFunction1,
+          typename BinaryFunction2>
 void generalized_spmv(thrust::execution_policy<DerivedPolicy> &exec,
                       const LinearOperator&  A,
                       const Vector1& x,
@@ -70,31 +70,31 @@ void generalized_spmv(thrust::execution_policy<DerivedPolicy> &exec,
                       Vector3& z,
                       BinaryFunction1  combine,
                       BinaryFunction2  reduce,
-                      dia_format,
-                      array1d_format,
-                      array1d_format,
-                      array1d_format)
+                      cusp::dia_format,
+                      cusp::array1d_format,
+                      cusp::array1d_format,
+                      cusp::array1d_format)
 {
-    typedef typename LinearOperator::index_type IndexType;
-    typedef typename LinearOperator::value_type ValueType;
+    typedef typename LinearOperator::index_type   IndexType;
+    typedef typename LinearOperator::value_type   ValueType;
     typedef typename LinearOperator::memory_space MemorySpace;
 
     // define types used to programatically generate row_indices
-    typedef typename thrust::counting_iterator<IndexType>                                        IndexIterator;
-    typedef typename thrust::transform_iterator<divide_value<IndexType>, IndexIterator>          RowIndexIterator;
+    typedef thrust::counting_iterator<IndexType>                                                 IndexIterator;
+    typedef thrust::transform_iterator<divide_value<IndexType>, IndexIterator>                   RowIndexIterator;
 
     // define types used to programatically generate column_indices
     typedef typename cusp::array1d<IndexType,MemorySpace>::const_iterator                        ConstElementIterator;
-    typedef typename thrust::transform_iterator<modulus_value<IndexType>, IndexIterator>         ModulusIterator;
-    typedef typename thrust::permutation_iterator<ConstElementIterator,ModulusIterator>          OffsetsPermIterator;
-    typedef typename thrust::tuple<OffsetsPermIterator, RowIndexIterator>                        IteratorTuple;
-    typedef typename thrust::zip_iterator<IteratorTuple>                                         ZipIterator;
-    typedef typename thrust::transform_iterator<sum_tuple_functor<IndexType>, ZipIterator>       ColumnIndexIterator;
+    typedef thrust::transform_iterator<cusp::modulus_value<IndexType>, IndexIterator>            ModulusIterator;
+    typedef thrust::permutation_iterator<ConstElementIterator,ModulusIterator>                   OffsetsPermIterator;
+    typedef thrust::tuple<OffsetsPermIterator, RowIndexIterator>                                 IteratorTuple;
+    typedef thrust::zip_iterator<IteratorTuple>                                                  ZipIterator;
+    typedef thrust::transform_iterator<sum_tuple_functor<IndexType>, ZipIterator>                ColumnIndexIterator;
 
-    typedef logical_to_other_physical_functor<IndexType, cusp::row_major, cusp::column_major>    PermFunctor;
     typedef typename LinearOperator::values_array_type::values_array_type::const_iterator        ValueIterator;
-    typedef typename thrust::transform_iterator<PermFunctor, IndexIterator>                      PermIndexIterator;
-    typedef typename thrust::permutation_iterator<ValueIterator, PermIndexIterator>              PermValueIterator;
+    typedef cusp::detail::logical_to_other_physical_functor<IndexType, cusp::row_major, cusp::column_major>    PermFunctor;
+    typedef thrust::transform_iterator<PermFunctor, IndexIterator>                               PermIndexIterator;
+    typedef thrust::permutation_iterator<ValueIterator, PermIndexIterator>                       PermValueIterator;
 
     if(A.num_entries == 0)
     {
@@ -102,12 +102,12 @@ void generalized_spmv(thrust::execution_policy<DerivedPolicy> &exec,
         return;
     }
 
-    RowIndexIterator row_indices_begin(IndexIterator(0), divide_value<IndexType>(A.values.num_cols));
+    RowIndexIterator row_indices_begin(IndexIterator(0), cusp::divide_value<IndexType>(A.values.num_cols));
 
-    ModulusIterator gather_indices_begin(IndexIterator(0), modulus_value<IndexType>(A.values.num_cols));
+    ModulusIterator gather_indices_begin(IndexIterator(0), cusp::modulus_value<IndexType>(A.values.num_cols));
     OffsetsPermIterator offsets_begin(A.diagonal_offsets.begin(), gather_indices_begin);
     ZipIterator offset_modulus_tuple(thrust::make_tuple(offsets_begin, row_indices_begin));
-    ColumnIndexIterator column_indices_begin(offset_modulus_tuple, sum_tuple_functor<IndexType>());
+    ColumnIndexIterator column_indices_begin(offset_modulus_tuple, cusp::sum_tuple_functor<IndexType>());
 
     PermIndexIterator   perm_indices_begin(IndexIterator(0),   PermFunctor(A.values.num_rows, A.values.num_cols, A.values.pitch));
     PermValueIterator   perm_values_begin(A.values.values.begin(),  perm_indices_begin);
@@ -126,7 +126,7 @@ void generalized_spmv(thrust::execution_policy<DerivedPolicy> &exec,
                                               thrust::make_transform_iterator(column_indices_begin,
                                                       valid_index_functor<IndexType>(A.num_cols)))
                                   )),
-                              combine_tuple_base_functor<BinaryFunction1>()),
+                              cusp::detail::combine_tuple_base_functor<BinaryFunction1>()),
                           thrust::make_discard_iterator(),
                           vals.begin(),
                           thrust::equal_to<IndexType>(),
@@ -136,12 +136,12 @@ void generalized_spmv(thrust::execution_policy<DerivedPolicy> &exec,
 }
 
 template <typename DerivedPolicy,
-         typename LinearOperator,
-         typename Vector1,
-         typename Vector2,
-         typename Vector3,
-         typename BinaryFunction1,
-         typename BinaryFunction2>
+          typename LinearOperator,
+          typename Vector1,
+          typename Vector2,
+          typename Vector3,
+          typename BinaryFunction1,
+          typename BinaryFunction2>
 void generalized_spmv(thrust::execution_policy<DerivedPolicy> &exec,
                       const LinearOperator&  A,
                       const Vector1& x,
@@ -149,20 +149,20 @@ void generalized_spmv(thrust::execution_policy<DerivedPolicy> &exec,
                       Vector3& z,
                       BinaryFunction1  combine,
                       BinaryFunction2  reduce,
-                      ell_format,
-                      array1d_format,
-                      array1d_format,
-                      array1d_format)
+                      cusp::ell_format,
+                      cusp::array1d_format,
+                      cusp::array1d_format,
+                      cusp::array1d_format)
 {
     typedef typename LinearOperator::index_type IndexType;
     typedef typename LinearOperator::value_type ValueType;
 
-    typedef logical_to_other_physical_functor<IndexType,cusp::row_major,cusp::column_major> LogicalFunctor;
+    typedef cusp::detail::logical_to_other_physical_functor<IndexType,cusp::row_major,cusp::column_major> LogicalFunctor;
 
     // define types used to programatically generate row_indices
-    typedef typename thrust::counting_iterator<IndexType> IndexIterator;
-    typedef typename thrust::transform_iterator<divide_value<IndexType>, IndexIterator> RowIndexIterator;
-    typedef typename thrust::transform_iterator<LogicalFunctor, IndexIterator> StrideIndexIterator;
+    typedef thrust::counting_iterator<IndexType>                                            IndexIterator;
+    typedef thrust::transform_iterator<cusp::divide_value<IndexType>, IndexIterator>        RowIndexIterator;
+    typedef thrust::transform_iterator<LogicalFunctor, IndexIterator>                       StrideIndexIterator;
 
     if(A.num_entries == 0)
     {
@@ -188,7 +188,7 @@ void generalized_spmv(thrust::execution_policy<DerivedPolicy> &exec,
                                           thrust::make_permutation_iterator(x.begin(),
                                               thrust::make_transform_iterator(A.column_indices.values.begin(),
                                                       valid_index_functor<IndexType>(A.num_cols))))),
-                                  combine_tuple_base_functor<BinaryFunction1>()),
+                                  cusp::detail::combine_tuple_base_functor<BinaryFunction1>()),
                               stride_indices_begin),
                           thrust::make_discard_iterator(),
                           vals.begin(),
@@ -199,12 +199,12 @@ void generalized_spmv(thrust::execution_policy<DerivedPolicy> &exec,
 }
 
 template <typename DerivedPolicy,
-         typename LinearOperator,
-         typename Vector1,
-         typename Vector2,
-         typename Vector3,
-         typename BinaryFunction1,
-         typename BinaryFunction2>
+          typename LinearOperator,
+          typename Vector1,
+          typename Vector2,
+          typename Vector3,
+          typename BinaryFunction1,
+          typename BinaryFunction2>
 void generalized_spmv(thrust::execution_policy<DerivedPolicy> &exec,
                       const LinearOperator&  A,
                       const Vector1& x,
@@ -212,10 +212,10 @@ void generalized_spmv(thrust::execution_policy<DerivedPolicy> &exec,
                       Vector3& z,
                       BinaryFunction1  combine,
                       BinaryFunction2  reduce,
-                      coo_format,
-                      array1d_format,
-                      array1d_format,
-                      array1d_format)
+                      cusp::coo_format,
+                      cusp::array1d_format,
+                      cusp::array1d_format,
+                      cusp::array1d_format)
 {
     typedef typename LinearOperator::index_type IndexType;
     typedef typename LinearOperator::value_type ValueType;
@@ -238,7 +238,7 @@ void generalized_spmv(thrust::execution_policy<DerivedPolicy> &exec,
                                       thrust::make_tuple(
                                           A.values.begin(),
                                           thrust::make_permutation_iterator(x.begin(), A.column_indices.begin()))),
-                                  combine_tuple_base_functor<BinaryFunction1>()),
+                                  cusp::detail::combine_tuple_base_functor<BinaryFunction1>()),
                               rows.begin(),
                               vals.begin(),
                               thrust::equal_to<IndexType>(),
@@ -254,12 +254,12 @@ void generalized_spmv(thrust::execution_policy<DerivedPolicy> &exec,
 }
 
 template <typename DerivedPolicy,
-         typename LinearOperator,
-         typename Vector1,
-         typename Vector2,
-         typename Vector3,
-         typename BinaryFunction1,
-         typename BinaryFunction2>
+          typename LinearOperator,
+          typename Vector1,
+          typename Vector2,
+          typename Vector3,
+          typename BinaryFunction1,
+          typename BinaryFunction2>
 void generalized_spmv(thrust::execution_policy<DerivedPolicy> &exec,
                       const LinearOperator&  A,
                       const Vector1& x,
@@ -267,10 +267,10 @@ void generalized_spmv(thrust::execution_policy<DerivedPolicy> &exec,
                       Vector3& z,
                       BinaryFunction1  combine,
                       BinaryFunction2  reduce,
-                      csr_format,
-                      array1d_format,
-                      array1d_format,
-                      array1d_format)
+                      cusp::csr_format,
+                      cusp::array1d_format,
+                      cusp::array1d_format,
+                      cusp::array1d_format)
 {
     typedef typename LinearOperator::index_type IndexType;
     typedef typename thrust::detail::temporary_array<IndexType, DerivedPolicy>::iterator TempIterator;
@@ -298,12 +298,12 @@ void generalized_spmv(thrust::execution_policy<DerivedPolicy> &exec,
 }
 
 template <typename DerivedPolicy,
-         typename LinearOperator,
-         typename Vector1,
-         typename Vector2,
-         typename Vector3,
-         typename BinaryFunction1,
-         typename BinaryFunction2>
+          typename LinearOperator,
+          typename Vector1,
+          typename Vector2,
+          typename Vector3,
+          typename BinaryFunction1,
+          typename BinaryFunction2>
 void generalized_spmv(thrust::execution_policy<DerivedPolicy> &exec,
                       const LinearOperator&  A,
                       const Vector1& x,
@@ -311,10 +311,10 @@ void generalized_spmv(thrust::execution_policy<DerivedPolicy> &exec,
                       Vector3& z,
                       BinaryFunction1 combine,
                       BinaryFunction2 reduce,
-                      hyb_format,
-                      array1d_format,
-                      array1d_format,
-                      array1d_format)
+                      cusp::hyb_format,
+                      cusp::array1d_format,
+                      cusp::array1d_format,
+                      cusp::array1d_format)
 {
     typedef typename Vector3::value_type ValueType;
     typedef typename thrust::detail::temporary_array<ValueType, DerivedPolicy> TempArray;

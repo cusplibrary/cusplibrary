@@ -65,21 +65,21 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     typedef typename SourceType::memory_space MemorySpace;
 
     // define types used to programatically generate row_indices
-    typedef thrust::counting_iterator<IndexType>                                                 IndexIterator;
-    typedef thrust::transform_iterator<cusp::divide_value<IndexType>, IndexIterator>             RowIndexIterator;
+    typedef thrust::counting_iterator<IndexType>                                                               IndexIterator;
+    typedef thrust::transform_iterator<cusp::divide_value<IndexType>, IndexIterator>                           RowIndexIterator;
 
     // define types used to programatically generate column_indices
-    typedef typename cusp::array1d<IndexType,MemorySpace>::const_iterator                        ConstElementIterator;
-    typedef thrust::transform_iterator<cusp::modulus_value<IndexType>, IndexIterator>            ModulusIterator;
-    typedef thrust::permutation_iterator<ConstElementIterator,ModulusIterator>                   OffsetsPermIterator;
-    typedef thrust::tuple<OffsetsPermIterator, RowIndexIterator>                                 IteratorTuple;
-    typedef thrust::zip_iterator<IteratorTuple>                                                  ZipIterator;
-    typedef thrust::transform_iterator<cusp::sum_tuple_functor<IndexType>, ZipIterator>          ColumnIndexIterator;
+    typedef typename cusp::array1d<IndexType,MemorySpace>::const_iterator                                      ConstElementIterator;
+    typedef thrust::transform_iterator<cusp::modulus_value<IndexType>, IndexIterator>                          ModulusIterator;
+    typedef thrust::permutation_iterator<ConstElementIterator,ModulusIterator>                                 OffsetsPermIterator;
+    typedef thrust::tuple<OffsetsPermIterator, RowIndexIterator>                                               IteratorTuple;
+    typedef thrust::zip_iterator<IteratorTuple>                                                                ZipIterator;
+    typedef thrust::transform_iterator<cusp::sum_tuple_functor<IndexType>, ZipIterator>                        ColumnIndexIterator;
 
-    typedef typename SourceType::values_array_type::values_array_type::const_iterator            ValueIterator;
-    typedef logical_to_other_physical_functor<IndexType, cusp::row_major, cusp::column_major>    PermFunctor;
-    typedef thrust::transform_iterator<PermFunctor, IndexIterator>                               PermIndexIterator;
-    typedef thrust::permutation_iterator<ValueIterator, PermIndexIterator>                       PermValueIterator;
+    typedef typename SourceType::values_array_type::values_array_type::const_iterator                          ValueIterator;
+    typedef cusp::detail::logical_to_other_physical_functor<IndexType, cusp::row_major, cusp::column_major>    PermFunctor;
+    typedef thrust::transform_iterator<PermFunctor, IndexIterator>                                             PermIndexIterator;
+    typedef thrust::permutation_iterator<ValueIterator, PermIndexIterator>                                     PermValueIterator;
 
     // allocate output storage
     dst.resize(src.num_rows, src.num_cols, src.num_entries);
@@ -132,7 +132,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     typedef thrust::transform_iterator<cusp::sum_tuple_functor<IndexType>, ZipIterator>          ColumnIndexIterator;
 
     typedef typename SourceType::values_array_type::values_array_type::const_iterator            ValueIterator;
-    typedef logical_to_other_physical_functor<IndexType, cusp::row_major, cusp::column_major>    PermFunctor;
+    typedef cusp::detail::logical_to_other_physical_functor<IndexType, cusp::row_major, cusp::column_major>    PermFunctor;
     typedef thrust::transform_iterator<PermFunctor, IndexIterator>                               PermIndexIterator;
     typedef thrust::permutation_iterator<ValueIterator, PermIndexIterator>                       PermValueIterator;
 
@@ -165,7 +165,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
 }
 
 template <typename DerivedPolicy, typename SourceType, typename DestinationType>
-typename enable_if_same_system<SourceType,DestinationType>::type
+typename cusp::detail::enable_if_same_system<SourceType,DestinationType>::type
 convert(thrust::execution_policy<DerivedPolicy>& exec,
         const SourceType& src,
         DestinationType& dst,

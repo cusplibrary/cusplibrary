@@ -68,7 +68,7 @@ struct AXPY
 
     template <typename Tuple>
     __host__ __device__
-    void operator()(Tuple& t)
+    void operator()(Tuple t)
     {
         thrust::get<1>(t) = alpha * thrust::get<0>(t) +
                             thrust::get<1>(t);
@@ -86,7 +86,7 @@ struct AXPBY
 
     template <typename Tuple>
     __host__ __device__
-    void operator()(Tuple& t)
+    void operator()(Tuple t)
     {
         thrust::get<2>(t) = alpha * thrust::get<0>(t) +
                             beta  * thrust::get<1>(t);
@@ -105,7 +105,7 @@ struct AXPBYPCZ
 
     template <typename Tuple>
     __host__ __device__
-    void operator()(Tuple& t)
+    void operator()(Tuple t)
     {
         thrust::get<3>(t) = alpha * thrust::get<0>(t) +
                             beta  * thrust::get<1>(t) +
@@ -131,13 +131,16 @@ int amax(thrust::execution_policy<DerivedPolicy>& exec,
          const Array& x)
 {
     typedef typename Array::value_type ValueType;
+    typedef typename Array::const_iterator Iterator;
+    typedef cusp::abs_functor<ValueType> UnaryOp;
 
-    cusp::abs_functor<ValueType> unary_op;
+    UnaryOp unary_op;
 
-    return thrust::max_element(exec,
-                               thrust::make_transform_iterator(x.begin(), unary_op),
-                               thrust::make_transform_iterator(x.end(), unary_op))
-           - thrust::make_transform_iterator(x.begin(), unary_op);
+    thrust::transform_iterator<UnaryOp, Iterator> abs_iter(x.begin(), unary_op);
+
+    int index = thrust::max_element(exec, abs_iter, abs_iter + x.size()) - abs_iter;
+
+    return index;
 }
 
 template <typename DerivedPolicy,
@@ -471,7 +474,8 @@ nrmmax(thrust::execution_policy<DerivedPolicy>& exec,
     typedef typename Array::value_type ValueType;
 
     int index = cusp::blas::amax(exec, x);
-    ValueType val = x[index];
+    std::cout << "index : " << index << std::endl;
+    ValueType val = *(x.begin() + index);
 
     return cusp::abs(val);
 }

@@ -55,7 +55,7 @@ template <typename DerivedPolicy,
          typename DestinationType,
          typename Format1,
          typename Format2>
-typename enable_if_same_system<SourceType,DestinationType>::type
+typename cusp::detail::enable_if_same_system<SourceType,DestinationType>::type
 convert(thrust::execution_policy<DerivedPolicy>& exec,
         const SourceType& src,
         DestinationType& dst,
@@ -75,7 +75,7 @@ template <typename DerivedPolicy,
          typename DestinationType,
          typename Format1,
          typename Format2>
-typename enable_if_different_system<SourceType,DestinationType>::type
+typename cusp::detail::enable_if_different_system<SourceType,DestinationType>::type
 convert(thrust::execution_policy<DerivedPolicy>& exec,
         const SourceType& src,
         DestinationType& dst,

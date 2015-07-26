@@ -30,61 +30,66 @@
 
 namespace cusp
 {
+namespace detail
+{
+template <typename> struct base_functor;
+template <typename> struct combine_tuple_base_functor;
+}
 
 template <typename T>
 struct plus_value : public detail::base_functor< thrust::plus<T> >
 {
     __host__ __device__
-    plus_value(const T value = T(0)) : public detail::base_functor< thrust::plus<T> >(value) {}
+    plus_value(const T value = T(0)) : detail::base_functor< thrust::plus<T> >(value) {}
 };
 
 template <typename T>
 struct divide_value : public detail::base_functor< thrust::divides<T> >
 {
     __host__ __device__
-    divide_value(const T value = T(0)) : public detail::base_functor< thrust::divides<T> >(value) {}
+    divide_value(const T value = T(0)) : detail::base_functor< thrust::divides<T> >(value) {}
 };
 
 template <typename T>
 struct modulus_value : public detail::base_functor< thrust::modulus<T> >
 {
     __host__ __device__
-    modulus_value(const T value = T(0)) : public detail::base_functor< thrust::modulus<T> >(value) {}
+    modulus_value(const T value = T(0)) : detail::base_functor< thrust::modulus<T> >(value) {}
 };
 
 template <typename T>
 struct multiplies_value : public detail::base_functor< thrust::multiplies<T> >
 {
     __host__ __device__
-    multiplies_value(const T value) : public detail::base_functor< thrust::multiplies<T> >(value) {}
+    multiplies_value(const T value) : detail::base_functor< thrust::multiplies<T> >(value) {}
 };
 
 template <typename T>
 struct greater_value : public detail::base_functor< thrust::greater<T> >
 {
     __host__ __device__
-    greater_value(const T value) : public detail::base_functor< thrust::greater<T> >(value) {}
+    greater_value(const T value) : detail::base_functor< thrust::greater<T> >(value) {}
 };
 
 template <typename T>
 struct greater_equal_value : public detail::base_functor< thrust::greater_equal<T> >
 {
     __host__ __device__
-    greater_equal_value(const T value) : public detail::base_functor< thrust::greater_equal<T> >(value) {}
+    greater_equal_value(const T value) : detail::base_functor< thrust::greater_equal<T> >(value) {}
 };
 
 template <typename T>
 struct less_value : public detail::base_functor< thrust::less<T> >
 {
     __host__ __device__
-    less_value(const T value) : public detail::base_functor< thrust::less<T> >(value) {}
+    less_value(const T value) : detail::base_functor< thrust::less<T> >(value) {}
 };
 
 template <typename T>
 struct less_equal_value : public detail::base_functor< thrust::less_equal<T> >
 {
     __host__ __device__
-    less_equal_value(const T value) : public detail::base_functor< thrust::less_equal<T> >(value) {}
+    less_equal_value(const T value) : detail::base_functor< thrust::less_equal<T> >(value) {}
 };
 
 template<typename T>
@@ -147,7 +152,7 @@ struct abs_squared_functor : public thrust::unary_function<T, typename cusp::det
     __host__ __device__
     const typename cusp::detail::norm_type<T>::type
     operator()(const T& t) const {
-        NormType n = cusp::abs(t);
+        typename cusp::detail::norm_type<T>::type n = cusp::abs(t);
         return n * n;
     }
 };

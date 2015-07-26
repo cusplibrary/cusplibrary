@@ -118,7 +118,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
 }
 
 template <typename DerivedPolicy, typename SourceType, typename DestinationType>
-typename enable_if_same_system<SourceType,DestinationType>::type
+typename cusp::detail::enable_if_same_system<SourceType,DestinationType>::type
 convert(thrust::execution_policy<DerivedPolicy>& exec,
         const SourceType& src,
         DestinationType& dst,
@@ -131,14 +131,14 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     typedef typename DestinationType::value_type ValueType;
 
     // define types used to programatically generate row_indices
-    typedef typename SourceType::orientation                                              Orientation;
-    typedef typename SourceType::values_array_type::const_iterator                        ValueIterator;
-    typedef logical_to_other_physical_functor<IndexType, cusp::row_major, Orientation>    PermFunctor;
-    typedef thrust::counting_iterator<IndexType>                                          IndexIterator;
-    typedef thrust::transform_iterator<cusp::divide_value<IndexType>,  IndexIterator>     RowIndexIterator;
-    typedef thrust::transform_iterator<cusp::modulus_value<IndexType>, IndexIterator>     ColumnIndexIterator;
-    typedef thrust::transform_iterator<PermFunctor, IndexIterator>                        PermIndexIterator;
-    typedef thrust::permutation_iterator<ValueIterator, PermIndexIterator>                PermValueIterator;
+    typedef typename SourceType::orientation                                                            Orientation;
+    typedef typename SourceType::values_array_type::const_iterator                                      ValueIterator;
+    typedef cusp::detail::logical_to_other_physical_functor<IndexType, cusp::row_major, Orientation>    PermFunctor;
+    typedef thrust::counting_iterator<IndexType>                                                        IndexIterator;
+    typedef thrust::transform_iterator<cusp::divide_value<IndexType>,  IndexIterator>                   RowIndexIterator;
+    typedef thrust::transform_iterator<cusp::modulus_value<IndexType>, IndexIterator>                   ColumnIndexIterator;
+    typedef thrust::transform_iterator<PermFunctor, IndexIterator>                                      PermIndexIterator;
+    typedef thrust::permutation_iterator<ValueIterator, PermIndexIterator>                              PermValueIterator;
 
     RowIndexIterator    row_indices_begin(IndexIterator(0),    cusp::divide_value<IndexType>(src.pitch));
     ColumnIndexIterator column_indices_begin(IndexIterator(0), cusp::modulus_value<IndexType>(src.pitch));
