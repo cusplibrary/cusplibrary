@@ -16,8 +16,8 @@
 
 
 /*! \file functional.h
- *  \brief Defines templated functors and traits analogous to what
- *         is found in stl and boost's functional.
+ *  \brief Defines templated convenience functors analogous to what
+ *         is found in thrust's functional.
  */
 
 #pragma once
@@ -36,6 +36,39 @@ template <typename> struct base_functor;
 template <typename> struct combine_tuple_base_functor;
 }
 
+/**
+ * \p plus_value is a function object. Specifically, it is an Adaptable Unary Function.
+ *  If \c f(c) is an object of class <tt>plus_value<T></tt>, and \c x is an object
+ *  of class \c T, then <tt>f(x)</tt> returns <tt>x+c</tt>.
+ *
+ *  \param T is a model of <a href="http://www.sgi.com/tech/stl/Assignable.html">Assignable</a>,
+ *          and if \c x is an object of type \p T, then <tt>x+c</tt> must be defined
+ *          and must have a return type that is convertible to \c T.
+ *
+ * \par Example
+ * \code
+ * #include <cusp/array1d.h>
+ * #include <cusp/functional.h>
+ * #include <cusp/print.h>
+ *
+ * #include <thrust/transform.h>
+ *
+ * int main()
+ * {
+ *    // create an array with 5 entries all set to 1
+ *    cusp::constant_array<int> ones(5, 1);
+ *
+ *    // allocate size of transformed output array
+ *    cusp::array1d<int,cusp::host_memory> v(5, 0);
+ *
+ *    // compute output vector as transform of ones
+ *    thrust::transform(ones.begin(), ones.end(), v.begin(), cusp::plus_value<int>(2));
+ *
+ *    // v = [3, 3, 3, 3, 3]
+ *    cusp::print(v);
+ * }
+ * \endcode
+ */
 template <typename T>
 struct plus_value : public detail::base_functor< thrust::plus<T> >
 {
@@ -43,6 +76,37 @@ struct plus_value : public detail::base_functor< thrust::plus<T> >
     plus_value(const T value = T(0)) : detail::base_functor< thrust::plus<T> >(value) {}
 };
 
+/**
+ * \p divide_value is a function object. Specifically, it is an Adaptable Unary Function.
+ *  If \c f(c) is an object of class <tt>divide_value<T></tt>, and \c x is an object
+ *  of class \c T, then <tt>f(x)</tt> returns <tt>x/c</tt>.
+ *
+ *  \param T is a model of <a href="http://www.sgi.com/tech/stl/Assignable.html">Assignable</a>,
+ *          and if \c x is an object of type \p T, then <tt>x/c</tt> must be defined
+ *          and must have a return type that is convertible to \c T.
+ *
+ * \par Example
+ * \code
+ * #include <cusp/array1d.h>
+ * #include <cusp/functional.h>
+ * #include <cusp/print.h>
+ *
+ * int main()
+ * {
+ *    // create an array with 5 entries all set to 10
+ *    cusp::constant_array<int> tens(5, 10);
+ *
+ *    // allocate size of transformed output array
+ *    cusp::array1d<int,cusp::host_memory> v(5, 0);
+ *
+ *    // compute output vector as transform of tens
+ *    thrust::transform(tens.begin(), tens.end(), v.begin(), cusp::divide_value<int>(2));
+ *
+ *    // v = [5, 5, 5, 5, 5]
+ *    cusp::print(v);
+ * }
+ * \endcode
+ */
 template <typename T>
 struct divide_value : public detail::base_functor< thrust::divides<T> >
 {
@@ -50,6 +114,37 @@ struct divide_value : public detail::base_functor< thrust::divides<T> >
     divide_value(const T value = T(0)) : detail::base_functor< thrust::divides<T> >(value) {}
 };
 
+/**
+ * \p modulus_value is a function object. Specifically, it is an Adaptable Unary Function.
+ *  If \c f(c) is an object of class <tt>modulus_value<T></tt>, and \c x is an object
+ *  of class \c T, then <tt>f(x)</tt> returns <tt>x%c</tt>.
+ *
+ *  \param T is a model of <a href="http://www.sgi.com/tech/stl/Assignable.html">Assignable</a>,
+ *          and if \c x is an object of type \p T, then <tt>x%c</tt> must be defined
+ *          and must have a return type that is convertible to \c T.
+ *
+ * \par Example
+ * \code
+ * #include <cusp/array1d.h>
+ * #include <cusp/functional.h>
+ * #include <cusp/print.h>
+ *
+ * int main()
+ * {
+ *    // create an array with 5 entries all set to 10
+ *    cusp::constant_array<int> tens(5, 10);
+ *
+ *    // allocate size of transformed output array
+ *    cusp::array1d<int,cusp::host_memory> v(5, 0);
+ *
+ *    // compute output vector as transform of tens
+ *    thrust::transform(tens.begin(), tens.end(), v.begin(), cusp::modulus_value<int>(3));
+ *
+ *    // v = [1, 1, 1, 1, 1]
+ *    cusp::print(v);
+ * }
+ * \endcode
+ */
 template <typename T>
 struct modulus_value : public detail::base_functor< thrust::modulus<T> >
 {
@@ -57,6 +152,37 @@ struct modulus_value : public detail::base_functor< thrust::modulus<T> >
     modulus_value(const T value = T(0)) : detail::base_functor< thrust::modulus<T> >(value) {}
 };
 
+/**
+ * \p multiplies_value is a function object. Specifically, it is an Adaptable Unary Function.
+ *  If \c f(c) is an object of class <tt>multiplies_value<T></tt>, and \c x is an object
+ *  of class \c T, then <tt>f(x)</tt> returns <tt>x*c</tt>.
+ *
+ *  \param T is a model of <a href="http://www.sgi.com/tech/stl/Assignable.html">Assignable</a>,
+ *          and if \c x is an object of type \p T, then <tt>x*c</tt> must be defined
+ *          and must have a return type that is convertible to \c T.
+ *
+ * \par Example
+ * \code
+ * #include <cusp/array1d.h>
+ * #include <cusp/functional.h>
+ * #include <cusp/print.h>
+ *
+ * int main()
+ * {
+ *    // create an array with 5 entries all set to 10
+ *    cusp::constant_array<int> tens(5, 10);
+ *
+ *    // allocate size of transformed output array
+ *    cusp::array1d<int,cusp::host_memory> v(5, 0);
+ *
+ *    // compute output vector as transform of tens
+ *    thrust::transform(tens.begin(), tens.end(), v.begin(), cusp::multiplies_value<int>(3));
+ *
+ *    // v = [30, 30, 30, 30, 30]
+ *    cusp::print(v);
+ * }
+ * \endcode
+ */
 template <typename T>
 struct multiplies_value : public detail::base_functor< thrust::multiplies<T> >
 {
@@ -64,6 +190,37 @@ struct multiplies_value : public detail::base_functor< thrust::multiplies<T> >
     multiplies_value(const T value) : detail::base_functor< thrust::multiplies<T> >(value) {}
 };
 
+/**
+ * \p greater_value is a function object. Specifically, it is an Adaptable Unary Function.
+ *  If \c f(c) is an object of class <tt>greater_value<T></tt>, and \c x is an object
+ *  of class \c T, then <tt>f(x)</tt> returns <tt>x>c</tt>.
+ *
+ *  \param T is a model of <a href="http://www.sgi.com/tech/stl/Assignable.html">Assignable</a>,
+ *          and if \c x is an object of type \p T, then <tt>x>c</tt> must be defined
+ *          and must have a return type that is convertible to \c T.
+ *
+ * \par Example
+ * \code
+ * #include <cusp/array1d.h>
+ * #include <cusp/functional.h>
+ * #include <cusp/print.h>
+ *
+ * int main()
+ * {
+ *    // create an array with 5 entries from 0 to 4
+ *    cusp::counting_array<int> count(5);
+ *
+ *    // allocate size of transformed output array
+ *    cusp::array1d<bool,cusp::host_memory> v(5, 0);
+ *
+ *    // compute output vector as transform of tens
+ *    thrust::transform(count.begin(), count.end(), v.begin(), cusp::greater_value<int>(3));
+ *
+ *    // v = [0, 0, 0, 0, 1]
+ *    cusp::print(v);
+ * }
+ * \endcode
+ */
 template <typename T>
 struct greater_value : public detail::base_functor< thrust::greater<T> >
 {
@@ -71,6 +228,37 @@ struct greater_value : public detail::base_functor< thrust::greater<T> >
     greater_value(const T value) : detail::base_functor< thrust::greater<T> >(value) {}
 };
 
+/**
+ * \p greater_equal_value is a function object. Specifically, it is an Adaptable Unary Function.
+ *  If \c f(c) is an object of class <tt>greater_equal_value<T></tt>, and \c x is an object
+ *  of class \c T, then <tt>f(x)</tt> returns <tt>x>=c</tt>.
+ *
+ *  \param T is a model of <a href="http://www.sgi.com/tech/stl/Assignable.html">Assignable</a>,
+ *          and if \c x is an object of type \p T, then <tt>x>=c</tt> must be defined
+ *          and must have a return type that is convertible to \c T.
+ *
+ * \par Example
+ * \code
+ * #include <cusp/array1d.h>
+ * #include <cusp/functional.h>
+ * #include <cusp/print.h>
+ *
+ * int main()
+ * {
+ *    // create an array with 5 entries from 0 to 4
+ *    cusp::counting_array<int> count(5);
+ *
+ *    // allocate size of transformed output array
+ *    cusp::array1d<bool,cusp::host_memory> v(5, 0);
+ *
+ *    // compute output vector as transform of tens
+ *    thrust::transform(count.begin(), count.end(), v.begin(), cusp::greater_equal_value<int>(3));
+ *
+ *    // v = [0, 0, 0, 1, 1]
+ *    cusp::print(v);
+ * }
+ * \endcode
+ */
 template <typename T>
 struct greater_equal_value : public detail::base_functor< thrust::greater_equal<T> >
 {
@@ -78,6 +266,37 @@ struct greater_equal_value : public detail::base_functor< thrust::greater_equal<
     greater_equal_value(const T value) : detail::base_functor< thrust::greater_equal<T> >(value) {}
 };
 
+/**
+ * \p less_value is a function object. Specifically, it is an Adaptable Unary Function.
+ *  If \c f(c) is an object of class <tt>less_value<T></tt>, and \c x is an object
+ *  of class \c T, then <tt>f(x)</tt> returns <tt>x<c</tt>.
+ *
+ *  \param T is a model of <a href="http://www.sgi.com/tech/stl/Assignable.html">Assignable</a>,
+ *          and if \c x is an object of type \p T, then <tt>x<c</tt> must be defined
+ *          and must have a return type that is convertible to \c T.
+ *
+ * \par Example
+ * \code
+ * #include <cusp/array1d.h>
+ * #include <cusp/functional.h>
+ * #include <cusp/print.h>
+ *
+ * int main()
+ * {
+ *    // create an array with 5 entries from 0 to 4
+ *    cusp::counting_array<int> count(5);
+ *
+ *    // allocate size of transformed output array
+ *    cusp::array1d<bool,cusp::host_memory> v(5, 0);
+ *
+ *    // compute output vector as transform of tens
+ *    thrust::transform(count.begin(), count.end(), v.begin(), cusp::less_value<int>(3));
+ *
+ *    // v = [1, 1, 1, 0, 0]
+ *    cusp::print(v);
+ * }
+ * \endcode
+ */
 template <typename T>
 struct less_value : public detail::base_functor< thrust::less<T> >
 {
@@ -85,6 +304,37 @@ struct less_value : public detail::base_functor< thrust::less<T> >
     less_value(const T value) : detail::base_functor< thrust::less<T> >(value) {}
 };
 
+/**
+ * \p less_equal_value is a function object. Specifically, it is an Adaptable Unary Function.
+ *  If \c f(c) is an object of class <tt>less_equal_value<T></tt>, and \c x is an object
+ *  of class \c T, then <tt>f(x)</tt> returns <tt>x<c</tt>.
+ *
+ *  \param T is a model of <a href="http://www.sgi.com/tech/stl/Assignable.html">Assignable</a>,
+ *          and if \c x is an object of type \p T, then <tt>x<=c</tt> must be defined
+ *          and must have a return type that is convertible to \c T.
+ *
+ * \par Example
+ * \code
+ * #include <cusp/array1d.h>
+ * #include <cusp/functional.h>
+ * #include <cusp/print.h>
+ *
+ * int main()
+ * {
+ *    // create an array with 5 entries from 0 to 4
+ *    cusp::counting_array<int> count(5);
+ *
+ *    // allocate size of transformed output array
+ *    cusp::array1d<bool,cusp::host_memory> v(5, 0);
+ *
+ *    // compute output vector as transform of tens
+ *    thrust::transform(count.begin(), count.end(), v.begin(), cusp::less_equal_value<int>(3));
+ *
+ *    // v = [1, 1, 1, 1, 0]
+ *    cusp::print(v);
+ * }
+ * \endcode
+ */
 template <typename T>
 struct less_equal_value : public detail::base_functor< thrust::less_equal<T> >
 {

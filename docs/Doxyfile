@@ -760,6 +760,7 @@ INPUT                  += ../cusp/convert.h
 INPUT                  += ../cusp/copy.h
 INPUT                  += ../cusp/elementwise.h
 INPUT                  += ../cusp/format_utils.h
+INPUT                  += ../cusp/functional.h
 INPUT                  += ../cusp/linear_operator.h
 INPUT                  += ../cusp/monitor.h
 INPUT                  += ../cusp/multiply.h
