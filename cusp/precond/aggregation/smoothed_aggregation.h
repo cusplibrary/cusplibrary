@@ -166,30 +166,57 @@ class smoothed_aggregation :
 
   public:
 
-    size_t min_level_size;
-    size_t max_levels;
-
+    /* \cond */
     std::vector< sa_level<SetupMatrixType> > sa_levels;
+    /* \endcond */
 
-    smoothed_aggregation(void) : min_level_size(500), max_levels(10) {};
+    /**
+     * Construct an empty \p smoothed_aggregation preconditioner.
+     */
+    smoothed_aggregation(void) : ML() {};
 
+    /*! Construct a \p smoothed_aggregation preconditioner from a matrix.
+     *
+     *  \param A matrix used to create the AMG hierarchy.
+     */
     template <typename MatrixType>
     smoothed_aggregation(const MatrixType& A);
 
+    /*! Construct a \p smoothed_aggregation preconditioner from a matrix and
+     * specified near nullspace vector.
+     *
+     *  \param A matrix used to create the AMG hierarchy.
+     *  \param B candidate near nullspace vector.
+     */
     template <typename MatrixType,typename ArrayType>
     smoothed_aggregation(const MatrixType& A, const ArrayType& B,
                          typename thrust::detail::enable_if_convertible<typename ArrayType::format,cusp::array1d_format>::type* = 0);
 
+    /*! Construct a \p smoothed_aggregation preconditioner from a existing SA
+     * \p smoothed_aggregation preconditioner.
+     *
+     *  \param M other smoothed_aggregation preconditioner.
+     */
     template <typename MemorySpace2,typename SmootherType2,typename SolverType2,typename Format2>
     smoothed_aggregation(const smoothed_aggregation<IndexType,ValueType,MemorySpace2,SmootherType2,SolverType2,Format2>& M);
 
-    void set_min_level_size(size_t min_size);
-
-    void set_max_levels(size_t max_depth);
-
+    /*! Initialize a \p smoothed_aggregation preconditioner from a matrix.
+     * Used to initialize a \p smoothed_aggregation preconditioner constructed
+     * with no input matrix specified.
+     *
+     *  \param A matrix used to create the AMG hierarchy.
+     */
     template <typename MatrixType>
     void initialize(const MatrixType& A);
 
+    /*! Initialize a \p smoothed_aggregation preconditioner from a matrix and
+     * initial near nullspace vector.
+     * Used to initialize a \p smoothed_aggregation preconditioner constructed
+     * with no input matrix specified.
+     *
+     *  \param A matrix used to create the AMG hierarchy.
+     *  \param B candidate near nullspace vector.
+     */
     template <typename MatrixType, typename ArrayType>
     void initialize(const MatrixType& A, const ArrayType& B,
                     typename thrust::detail::enable_if_convertible<typename MatrixType::format,cusp::known_format>::type* = 0);

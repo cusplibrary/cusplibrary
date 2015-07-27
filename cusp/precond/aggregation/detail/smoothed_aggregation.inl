@@ -33,7 +33,7 @@ template <typename IndexType, typename ValueType, typename MemorySpace, typename
 template <typename MatrixType>
 smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverType,Format>
 ::smoothed_aggregation(const MatrixType& A)
-    : ML(), min_level_size(500), max_levels(10)
+    : ML()
 {
     initialize(A);
 }
@@ -43,7 +43,7 @@ template <typename MatrixType, typename ArrayType>
 smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverType,Format>
 ::smoothed_aggregation(const MatrixType& A, const ArrayType& B,
                        typename thrust::detail::enable_if_convertible<typename ArrayType::format,cusp::array1d_format>::type*)
-    : ML(), min_level_size(500), max_levels(10)
+    : ML()
 {
     initialize(A, B);
 }
@@ -52,24 +52,10 @@ template <typename IndexType, typename ValueType, typename MemorySpace, typename
 template <typename MemorySpace2, typename SmootherType2, typename SolverType2, typename Format2>
 smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverType,Format>
 ::smoothed_aggregation(const smoothed_aggregation<IndexType,ValueType,MemorySpace2,SmootherType2,SolverType2,Format2>& M)
-    : ML(M), min_level_size(M.min_level_size), max_levels(M.max_levels)
+    : ML(M)
 {
     for( size_t lvl = 0; lvl < M.sa_levels.size(); lvl++ )
         sa_levels.push_back(M.sa_levels[lvl]);
-}
-
-template <typename IndexType, typename ValueType, typename MemorySpace, typename SmootherType, typename SolverType, typename Format>
-void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverType,Format>
-::set_min_level_size(size_t min_size)
-{
-    min_level_size = min_size;
-}
-
-template <typename IndexType, typename ValueType, typename MemorySpace, typename SmootherType, typename SolverType, typename Format>
-void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverType,Format>
-::set_max_levels(size_t max_depth)
-{
-    max_levels = max_depth;
 }
 
 template <typename IndexType, typename ValueType, typename MemorySpace, typename SmootherType, typename SolverType, typename Format>
@@ -126,14 +112,14 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverTyp
     }
 
     ML::resize(A.num_rows, A.num_cols, A.num_entries);
-    ML::levels.reserve(max_levels); // avoid reallocations which force matrix copies
+    ML::levels.reserve(ML::max_levels); // avoid reallocations which force matrix copies
     ML::levels.push_back(Level());
 
     sa_levels.push_back(sa_level<SetupMatrixType>());
     sa_levels.back().B = B;
 
     // Setup the first level using a COO view
-    if(A.num_rows > min_level_size)
+    if(A.num_rows > ML::min_level_size)
     {
         View A_(A);
         extend_hierarchy(exec, A_);
@@ -141,8 +127,8 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverTyp
     }
 
     // Iteratively setup lower levels until stopping criteria are reached
-    while ((sa_levels.back().A_.num_rows > min_level_size) &&
-            (sa_levels.size() < max_levels))
+    while ((sa_levels.back().A_.num_rows > ML::min_level_size) &&
+            (sa_levels.size() < ML::max_levels))
         extend_hierarchy(exec, sa_levels.back().A_);
 
     // Setup multilevel arrays and matrices on each level
@@ -201,5 +187,4 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverTyp
 } // end namespace aggregation
 } // end namespace precond
 } // end namespace cusp
-
 
