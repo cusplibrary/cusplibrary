@@ -78,7 +78,7 @@ int main(void)
     custom_amg_policy exec;
 
     // initialize construction using custom policy to control inner routines
-    M.sa_initialize(exec, A);
+    M.initialize(exec, A);
 
     // solve
     cusp::krylov::cg(A, x, b, monitor, M);

@@ -16,9 +16,9 @@
 
 
 #include <cusp/copy.h>
-#include <cusp/detail/format.h>
-
 #include <cusp/format_utils.h>
+
+#include <cusp/detail/format.h>
 
 #include <cusp/system/detail/generic/conversions/array_to_other.h>
 #include <cusp/system/detail/generic/conversions/coo_to_other.h>
@@ -55,7 +55,7 @@ template <typename DerivedPolicy,
          typename DestinationType,
          typename Format1,
          typename Format2>
-typename enable_if_same_system<SourceType,DestinationType>::type
+typename cusp::detail::enable_if_same_system<SourceType,DestinationType>::type
 convert(thrust::execution_policy<DerivedPolicy>& exec,
         const SourceType& src,
         DestinationType& dst,
@@ -75,7 +75,7 @@ template <typename DerivedPolicy,
          typename DestinationType,
          typename Format1,
          typename Format2>
-typename enable_if_different_system<SourceType,DestinationType>::type
+typename cusp::detail::enable_if_different_system<SourceType,DestinationType>::type
 convert(thrust::execution_policy<DerivedPolicy>& exec,
         const SourceType& src,
         DestinationType& dst,
@@ -116,8 +116,7 @@ void convert(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
 {
     using cusp::system::detail::generic::convert;
 
-    convert(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, B,
-            format1, format2);
+    convert(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, B, format1, format2);
 }
 
 } // end namespace cusp

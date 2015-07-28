@@ -20,6 +20,7 @@
 #include <cusp/array1d.h>
 #include <cusp/array2d.h>
 #include <cusp/copy.h>
+
 #include <cusp/detail/format.h>
 
 #include <thrust/count.h>
@@ -27,6 +28,7 @@
 #include <thrust/execution_policy.h>
 #include <thrust/fill.h>
 #include <thrust/sequence.h>
+
 #include <thrust/iterator/counting_iterator.h>
 #include <thrust/iterator/permutation_iterator.h>
 #include <thrust/iterator/transform_iterator.h>
@@ -41,16 +43,17 @@ namespace detail
 namespace generic
 {
 
-using namespace cusp::detail;
-
 template <typename DerivedPolicy, typename SourceType, typename DestinationType>
-typename enable_if_same_system<SourceType,DestinationType>::type
+typename cusp::detail::enable_if_same_system<SourceType,DestinationType>::type
 convert(thrust::execution_policy<DerivedPolicy>& exec,
         const SourceType& src,
         DestinationType& dst,
         cusp::array2d_format&,
         cusp::array1d_format&)
 {
+    typedef cusp::array2d_view<typename DestinationType::view, cusp::row_major>    RowView;
+    typedef cusp::array2d_view<typename DestinationType::view, cusp::column_major> ColView;
+
     if (src.num_rows == 0 && src.num_cols == 0)
     {
         dst.resize(0);
@@ -60,8 +63,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
         dst.resize(src.num_rows);
 
         // interpret dst as a Nx1 column matrix and copy from src
-        typedef cusp::array2d_view<typename DestinationType::view, cusp::column_major> View;
-        View view(src.num_rows, 1, src.num_rows, cusp::make_array1d_view(dst));
+        ColView view(src.num_rows, 1, src.num_rows, cusp::make_array1d_view(dst));
 
         cusp::copy(exec, src, view);
     }
@@ -70,8 +72,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
         dst.resize(src.num_cols);
 
         // interpret dst as a 1xN row matrix and copy from src
-        typedef cusp::array2d_view<typename DestinationType::view, cusp::row_major> View;
-        View view(1, src.num_cols, src.num_cols, cusp::make_array1d_view(dst));
+        RowView view(1, src.num_cols, src.num_cols, cusp::make_array1d_view(dst));
 
         cusp::copy(exec, src, view);
     }
@@ -82,7 +83,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
 }
 
 template <typename DerivedPolicy, typename SourceType, typename DestinationType>
-typename enable_if_same_system<SourceType,DestinationType>::type
+typename cusp::detail::enable_if_same_system<SourceType,DestinationType>::type
 convert(thrust::execution_policy<DerivedPolicy>& exec,
         const SourceType& src,
         DestinationType& dst,
@@ -100,7 +101,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
 }
 
 template <typename DerivedPolicy, typename SourceType, typename DestinationType>
-typename enable_if_same_system<SourceType,DestinationType>::type
+typename cusp::detail::enable_if_same_system<SourceType,DestinationType>::type
 convert(thrust::execution_policy<DerivedPolicy>& exec,
         const SourceType& src,
         DestinationType& dst,
@@ -117,7 +118,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
 }
 
 template <typename DerivedPolicy, typename SourceType, typename DestinationType>
-typename enable_if_same_system<SourceType,DestinationType>::type
+typename cusp::detail::enable_if_same_system<SourceType,DestinationType>::type
 convert(thrust::execution_policy<DerivedPolicy>& exec,
         const SourceType& src,
         DestinationType& dst,
@@ -130,17 +131,17 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     typedef typename DestinationType::value_type ValueType;
 
     // define types used to programatically generate row_indices
-    typedef typename SourceType::orientation                                              Orientation;
-    typedef logical_to_other_physical_functor<IndexType, cusp::row_major, Orientation>    PermFunctor;
-    typedef typename SourceType::values_array_type::const_iterator                        ValueIterator;
-    typedef typename thrust::counting_iterator<IndexType>                                 IndexIterator;
-    typedef typename thrust::transform_iterator<divide_value<IndexType>,  IndexIterator>  RowIndexIterator;
-    typedef typename thrust::transform_iterator<modulus_value<IndexType>, IndexIterator>  ColumnIndexIterator;
-    typedef typename thrust::transform_iterator<PermFunctor, IndexIterator>               PermIndexIterator;
-    typedef typename thrust::permutation_iterator<ValueIterator, PermIndexIterator>       PermValueIterator;
+    typedef typename SourceType::orientation                                                            Orientation;
+    typedef typename SourceType::values_array_type::const_iterator                                      ValueIterator;
+    typedef cusp::detail::logical_to_other_physical_functor<IndexType, cusp::row_major, Orientation>    PermFunctor;
+    typedef thrust::counting_iterator<IndexType>                                                        IndexIterator;
+    typedef thrust::transform_iterator<cusp::divide_value<IndexType>,  IndexIterator>                   RowIndexIterator;
+    typedef thrust::transform_iterator<cusp::modulus_value<IndexType>, IndexIterator>                   ColumnIndexIterator;
+    typedef thrust::transform_iterator<PermFunctor, IndexIterator>                                      PermIndexIterator;
+    typedef thrust::permutation_iterator<ValueIterator, PermIndexIterator>                              PermValueIterator;
 
-    RowIndexIterator    row_indices_begin(IndexIterator(0),    divide_value<IndexType>(src.pitch));
-    ColumnIndexIterator column_indices_begin(IndexIterator(0), modulus_value<IndexType>(src.pitch));
+    RowIndexIterator    row_indices_begin(IndexIterator(0),    cusp::divide_value<IndexType>(src.pitch));
+    ColumnIndexIterator column_indices_begin(IndexIterator(0), cusp::modulus_value<IndexType>(src.pitch));
     PermIndexIterator   perm_indices_begin(IndexIterator(0),   PermFunctor(src.num_rows, src.num_cols, src.pitch));
     PermValueIterator   perm_values_begin(src.values.begin(),  perm_indices_begin);
 
@@ -159,3 +160,4 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
 } // end namespace detail
 } // end namespace system
 } // end namespace cusp
+

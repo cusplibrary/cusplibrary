@@ -24,7 +24,8 @@
 #include <cusp/detail/config.h>
 #include <cusp/detail/multilevel.h>
 
-#include <cusp/precond/aggregation/smoothed_aggregation_helper.h>
+#include <cusp/array1d.h>
+#include <cusp/precond/aggregation/detail/sa_view_traits.h>
 
 #include <thrust/execution_policy.h>
 #include <thrust/detail/use_default.h>
@@ -37,6 +38,38 @@ namespace precond
 {
 namespace aggregation
 {
+
+/* \cond */
+template<typename MatrixType>
+struct sa_level
+{
+    public:
+
+    typedef typename MatrixType::index_type IndexType;
+    typedef typename MatrixType::value_type ValueType;
+    typedef typename MatrixType::memory_space MemorySpace;
+    typedef typename cusp::detail::norm_type<ValueType>::type NormType;
+
+    MatrixType A_; 					                              // matrix
+    MatrixType T; 					                              // matrix
+    cusp::array1d<IndexType,MemorySpace> aggregates;      // aggregates
+    cusp::array1d<ValueType,MemorySpace> B;               // near-nullspace candidates
+
+    size_t   num_iters;
+    NormType rho_DinvA;
+
+    sa_level(void) : num_iters(1), rho_DinvA(0) {}
+
+    template<typename SALevelType>
+    sa_level(const SALevelType& L)
+      : A_(L.A_),
+        aggregates(L.aggregates),
+        B(L.B),
+        num_iters(L.num_iters),
+        rho_DinvA(L.rho_DinvA)
+    {}
+};
+/* \endcond */
 
 /*! \addtogroup iterative_solvers Iterative Solvers
  *  \addtogroup preconditioners Preconditioners
@@ -128,47 +161,74 @@ class smoothed_aggregation :
 {
   private:
 
-    typedef typename select_sa_matrix_type<IndexType,ValueType,MemorySpace>::type	SetupMatrixType;
+    typedef typename detail::select_sa_matrix_type<IndexType,ValueType,MemorySpace>::type	SetupMatrixType;
     typedef typename cusp::multilevel<IndexType,ValueType,MemorySpace,Format,SmootherType,SolverType>::container ML;
 
   public:
 
-    size_t min_level_size;
-    size_t max_levels;
-
+    /* \cond */
     std::vector< sa_level<SetupMatrixType> > sa_levels;
+    /* \endcond */
 
-    smoothed_aggregation(void) : min_level_size(500), max_levels(10) {};
+    /**
+     * Construct an empty \p smoothed_aggregation preconditioner.
+     */
+    smoothed_aggregation(void) : ML() {};
 
+    /*! Construct a \p smoothed_aggregation preconditioner from a matrix.
+     *
+     *  \param A matrix used to create the AMG hierarchy.
+     */
     template <typename MatrixType>
     smoothed_aggregation(const MatrixType& A);
 
+    /*! Construct a \p smoothed_aggregation preconditioner from a matrix and
+     * specified near nullspace vector.
+     *
+     *  \param A matrix used to create the AMG hierarchy.
+     *  \param B candidate near nullspace vector.
+     */
     template <typename MatrixType,typename ArrayType>
     smoothed_aggregation(const MatrixType& A, const ArrayType& B,
                          typename thrust::detail::enable_if_convertible<typename ArrayType::format,cusp::array1d_format>::type* = 0);
 
+    /*! Construct a \p smoothed_aggregation preconditioner from a existing SA
+     * \p smoothed_aggregation preconditioner.
+     *
+     *  \param M other smoothed_aggregation preconditioner.
+     */
     template <typename MemorySpace2,typename SmootherType2,typename SolverType2,typename Format2>
     smoothed_aggregation(const smoothed_aggregation<IndexType,ValueType,MemorySpace2,SmootherType2,SolverType2,Format2>& M);
 
-    void set_min_level_size(size_t min_size);
-
-    void set_max_levels(size_t max_depth);
-
+    /*! Initialize a \p smoothed_aggregation preconditioner from a matrix.
+     * Used to initialize a \p smoothed_aggregation preconditioner constructed
+     * with no input matrix specified.
+     *
+     *  \param A matrix used to create the AMG hierarchy.
+     */
     template <typename MatrixType>
-    void sa_initialize(const MatrixType& A);
+    void initialize(const MatrixType& A);
 
+    /*! Initialize a \p smoothed_aggregation preconditioner from a matrix and
+     * initial near nullspace vector.
+     * Used to initialize a \p smoothed_aggregation preconditioner constructed
+     * with no input matrix specified.
+     *
+     *  \param A matrix used to create the AMG hierarchy.
+     *  \param B candidate near nullspace vector.
+     */
     template <typename MatrixType, typename ArrayType>
-    void sa_initialize(const MatrixType& A, const ArrayType& B,
-                       typename thrust::detail::enable_if_convertible<typename MatrixType::format,cusp::known_format>::type* = 0);
+    void initialize(const MatrixType& A, const ArrayType& B,
+                    typename thrust::detail::enable_if_convertible<typename MatrixType::format,cusp::known_format>::type* = 0);
 
     /* \cond */
     template <typename DerivedPolicy, typename MatrixType>
-    void sa_initialize(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-                       const MatrixType& A);
+    void initialize(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                    const MatrixType& A);
 
     template <typename DerivedPolicy, typename MatrixType, typename ArrayType>
-    void sa_initialize(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-                       const MatrixType& A, const ArrayType& B);
+    void initialize(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                    const MatrixType& A, const ArrayType& B);
     /* \endcond */
 
 protected:

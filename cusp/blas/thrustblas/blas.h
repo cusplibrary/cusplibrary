@@ -18,7 +18,7 @@
 
 #include <cusp/array1d.h>
 #include <cusp/exception.h>
-#include <cusp/detail/functional.h>
+#include <cusp/functional.h>
 #include <cusp/print.h>
 
 #include <thrust/copy.h>
@@ -51,7 +51,7 @@ struct SCAL
 
     template <typename T2>
     __host__ __device__
-    void operator()(T2 & x)
+    void operator()(T2& x)
     {
         x = alpha * x;
     }
@@ -117,7 +117,7 @@ template <typename T>
 struct XMY : public thrust::binary_function<T,T,T>
 {
     __host__ __device__
-    T operator()(T x, T y)
+    T operator()(const T& x, const T& y)
     {
         return x * y;
     }
@@ -130,14 +130,18 @@ template <typename DerivedPolicy,
 int amax(thrust::execution_policy<DerivedPolicy>& exec,
          const Array& x)
 {
-    typedef typename Array::value_type ValueType;
+    typedef typename Array::value_type      ValueType;
+    typedef typename Array::const_iterator  Iterator;
+    typedef cusp::abs_functor<ValueType>    UnaryOp;
+    typedef thrust::transform_iterator<UnaryOp, Iterator> TransformIterator;
 
-    cusp::abs_functor<ValueType> unary_op;
+    UnaryOp unary_op;
 
-    return thrust::max_element(exec,
-                               thrust::make_transform_iterator(x.begin(), unary_op),
-                               thrust::make_transform_iterator(x.end(), unary_op))
-           - x.begin();
+    TransformIterator iter(x.begin(), unary_op);
+
+    int index = thrust::max_element(exec, iter, iter + x.size()) - iter;
+
+    return index;
 }
 
 template <typename DerivedPolicy,
@@ -238,8 +242,7 @@ void xmy(thrust::execution_policy<DerivedPolicy> &exec,
 {
     typedef typename Array3::value_type ValueType;
 
-    thrust::transform(exec,
-                      x.begin(), x.end(), y.begin(), z.begin(), detail::XMY<ValueType>());
+    thrust::transform(exec, x.begin(), x.end(), y.begin(), z.begin(), detail::XMY<ValueType>());
 }
 
 template <typename DerivedPolicy,
@@ -470,15 +473,11 @@ nrmmax(thrust::execution_policy<DerivedPolicy>& exec,
        const Array& x)
 {
     typedef typename Array::value_type ValueType;
-    typedef typename Array::memory_space MemorySpace;
-    typedef typename cusp::detail::norm_type<ValueType>::type NormType;
 
-    cusp::abs_functor<ValueType> unary_op;
-    thrust::maximum<NormType>    binary_op;
+    int index = cusp::blas::amax(exec, x);
+    ValueType val = *(x.begin() + index);
 
-    NormType init = 0;
-
-    return thrust::transform_reduce(exec, x.begin(), x.end(), unary_op, init, binary_op);
+    return cusp::abs(val);
 }
 
 } // end namespace thrustblas

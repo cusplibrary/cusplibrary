@@ -17,7 +17,6 @@
 #pragma once
 
 #include <cusp/detail/config.h>
-
 #include <cusp/detail/format.h>
 
 #include <cusp/system/detail/sequential/execution_policy.h>
@@ -39,9 +38,9 @@ void multiply(sequential::execution_policy<DerivedPolicy>& exec,
               const Matrix1& A,
               const Matrix2& B,
               Matrix3& C,
-              array2d_format,
-              array2d_format,
-              array2d_format)
+              cusp::array2d_format,
+              cusp::array2d_format,
+              cusp::array2d_format)
 {
     typedef typename Matrix3::value_type ValueType;
 

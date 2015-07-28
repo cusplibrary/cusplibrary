@@ -46,6 +46,7 @@ using namespace thrust::system::cuda;
 // now get all the algorithm definitions
 
 #include <cusp/system/cuda/detail/convert.h>
+#include <cusp/system/cuda/detail/copy.h>
 #include <cusp/system/cuda/detail/elementwise.h>
 #include <cusp/system/cuda/detail/format_utils.h>
 #include <cusp/system/cuda/detail/multiply.h>

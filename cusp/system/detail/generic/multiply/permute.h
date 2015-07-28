@@ -14,9 +14,9 @@
  *  limitations under the License.
  */
 
-#include <thrust/detail/config.h>
-
+#include <cusp/detail/config.h>
 #include <cusp/detail/format.h>
+
 #include <cusp/copy.h>
 
 #include <thrust/gather.h>
@@ -38,9 +38,9 @@ void multiply(thrust::execution_policy<DerivedPolicy> &exec,
               const LinearOperator&  A,
               const MatrixOrVector1& B,
               MatrixOrVector2& C,
-              permutation_format,
-              array1d_format,
-              array1d_format)
+              cusp::permutation_format,
+              cusp::array1d_format,
+              cusp::array1d_format)
 {
     C.resize(B.size());
 
@@ -55,9 +55,9 @@ void multiply(thrust::execution_policy<DerivedPolicy> &exec,
               const LinearOperator&  A,
               const MatrixOrVector1& B,
               MatrixOrVector2& C,
-              permutation_format,
-              coo_format,
-              coo_format)
+              cusp::permutation_format,
+              cusp::coo_format,
+              cusp::coo_format)
 {
     C.resize(B.num_rows, B.num_cols, B.num_entries);
 
@@ -77,9 +77,9 @@ void multiply(thrust::execution_policy<DerivedPolicy> &exec,
               const LinearOperator&  A,
               const MatrixOrVector1& B,
               MatrixOrVector2& C,
-              coo_format,
-              permutation_format,
-              coo_format)
+              cusp::coo_format,
+              cusp::permutation_format,
+              cusp::coo_format)
 {
     C.resize(A.num_rows, A.num_cols, A.num_entries);
 
@@ -99,9 +99,9 @@ void multiply(thrust::execution_policy<DerivedPolicy> &exec,
               const LinearOperator&  A,
               const MatrixOrVector1& B,
               MatrixOrVector2& C,
-              permutation_format,
-              sparse_format,
-              sparse_format)
+              cusp::permutation_format,
+              cusp::sparse_format,
+              cusp::sparse_format)
 {
    typename cusp::detail::as_coo_type<MatrixOrVector1>::type B_(B);
    typename cusp::detail::as_coo_type<MatrixOrVector2>::type C_(C);
@@ -118,9 +118,9 @@ void multiply(thrust::execution_policy<DerivedPolicy> &exec,
               const LinearOperator&  A,
               const MatrixOrVector1& B,
               MatrixOrVector2& C,
-              sparse_format,
-              permutation_format,
-              sparse_format)
+              cusp::sparse_format,
+              cusp::permutation_format,
+              cusp::sparse_format)
 {
    typename cusp::detail::as_coo_type<MatrixOrVector1>::type A_(A);
    typename cusp::detail::as_coo_type<MatrixOrVector2>::type C_(C);

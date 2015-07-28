@@ -21,12 +21,6 @@
 #include <cusp/coo_matrix.h>
 #include <cusp/csr_matrix.h>
 #include <cusp/hyb_matrix.h>
-#include <cusp/multiply.h>
-#include <cusp/linear_operator.h>
-
-#include <cusp/eigen/spectral_radius.h>
-
-#include <cusp/precond/diagonal.h>
 
 namespace cusp
 {
@@ -36,38 +30,6 @@ namespace aggregation
 {
 namespace detail
 {
-
-template <typename MatrixType>
-struct Dinv_A : public cusp::linear_operator<typename MatrixType::value_type, typename MatrixType::memory_space>
-{
-    typedef typename MatrixType::value_type   ValueType;
-    typedef typename MatrixType::memory_space MemorySpace;
-
-    const MatrixType& A;
-    const cusp::precond::diagonal<ValueType,MemorySpace> Dinv;
-
-    Dinv_A(const MatrixType& A)
-        : cusp::linear_operator<ValueType,MemorySpace>(A.num_rows, A.num_cols, A.num_entries + A.num_rows),
-          A(A), Dinv(A)
-    {}
-
-    template <typename Array1, typename Array2>
-    void operator()(const Array1& x, Array2& y) const
-    {
-        cusp::multiply(A,x,y);
-        cusp::multiply(Dinv,y,y);
-    }
-};
-
-template <typename MatrixType>
-double estimate_rho_Dinv_A(const MatrixType& A)
-{
-    detail::Dinv_A<MatrixType> Dinv_A(A);
-
-    return cusp::eigen::ritz_spectral_radius(Dinv_A, 8);
-}
-
-} // end namespace detail
 
 template <typename IndexType, typename ValueType, typename MemorySpace>
 struct select_sa_matrix_type
@@ -99,34 +61,7 @@ struct select_sa_matrix_view
     >::type type;
 };
 
-template<typename MatrixType>
-struct sa_level
-{
-    public:
-
-    typedef typename MatrixType::index_type IndexType;
-    typedef typename MatrixType::value_type ValueType;
-    typedef typename MatrixType::memory_space MemorySpace;
-    typedef typename cusp::detail::norm_type<ValueType>::type NormType;
-
-    MatrixType A_; 					                              // matrix
-    MatrixType T; 					                              // matrix
-    cusp::array1d<IndexType,MemorySpace> aggregates;      // aggregates
-    cusp::array1d<ValueType,MemorySpace> B;               // near-nullspace candidates
-
-    size_t   num_iters;
-    NormType rho_DinvA;
-
-    sa_level(void) : num_iters(1), rho_DinvA(0) {}
-
-    template<typename SALevelType>
-    sa_level(const SALevelType& L)
-      : A_(L.A_),
-        aggregates(L.aggregates), B(L.B),
-        num_iters(L.num_iters), rho_DinvA(L.rho_DinvA)
-    {}
-};
-
+} // end namespace detail
 } // end namespace aggregation
 } // end namespace precond
 } // end namespace cusp

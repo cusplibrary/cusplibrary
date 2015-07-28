@@ -16,9 +16,8 @@
 
 #include <cusp/array1d.h>
 #include <cusp/coo_matrix.h>
-#include <cusp/sort.h>
-
 #include <cusp/format_utils.h>
+#include <cusp/sort.h>
 
 #include <thrust/binary_search.h>
 #include <thrust/fill.h>
@@ -41,10 +40,10 @@ namespace cuda
 {
 
 template <typename Matrix1,
-         typename Matrix2,
-         typename Matrix3,
-         typename Array1,
-         typename Array2>
+          typename Matrix2,
+          typename Matrix3,
+          typename Array1,
+          typename Array2>
 void coo_spmm_helper(size_t workspace_size,
                      size_t begin_row,
                      size_t end_row,
@@ -137,16 +136,16 @@ void coo_spmm_helper(size_t workspace_size,
 }
 
 template <typename DerivedPolicy,
-         typename Matrix1,
-         typename Matrix2,
-         typename Matrix3>
+          typename Matrix1,
+          typename Matrix2,
+          typename Matrix3>
 void multiply(cuda::execution_policy<DerivedPolicy>& exec,
               const Matrix1& A,
               const Matrix2& B,
               Matrix3& C,
-              coo_format,
-              coo_format,
-              coo_format)
+              cusp::coo_format,
+              cusp::coo_format,
+              cusp::coo_format)
 {
     typedef typename Matrix3::index_type   IndexType;
     typedef typename Matrix3::value_type   ValueType;

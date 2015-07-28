@@ -14,59 +14,59 @@
  *  limitations under the License.
  */
 
+
 #pragma once
 
-#include <cusp/detail/config.h>
-#include <cusp/detail/format.h>
+#include <cusp/exception.h>
+#include <cusp/system/cuda/cusparse_csr_matrix.h>
 
-#include <cusp/system/detail/sequential/execution_policy.h>
+#include <cusparse_v2.h>
+#include <algorithm>
 
 namespace cusp
 {
 namespace system
 {
-namespace detail
-{
-namespace sequential
+namespace cuda
 {
 
 template <typename DerivedPolicy,
-          typename MatrixType,
+          typename ValueType,
           typename VectorType1,
           typename VectorType2,
           typename UnaryFunction,
           typename BinaryFunction1,
           typename BinaryFunction2>
-void multiply(sequential::execution_policy<DerivedPolicy>& exec,
-              const MatrixType& A,
+void multiply(cuda::execution_policy<DerivedPolicy>& exec,
+              const cusp::cuda::cusparse_csr_matrix<ValueType>& A,
               const VectorType1& x,
               VectorType2& y,
               UnaryFunction   initialize,
               BinaryFunction1 combine,
               BinaryFunction2 reduce,
-              cusp::coo_format,
+              cusp::csr_format,
               cusp::array1d_format,
               cusp::array1d_format)
 {
-    typedef typename MatrixType::index_type  IndexType;
-    typedef typename VectorType2::value_type ValueType;
+    cusparseHandle_t cusparse;
 
-    for(size_t i = 0; i < A.num_rows; i++)
-        y[i] = initialize(y[i]);
+    if(CUSPARSE_STATUS_SUCCESS != cusparseCreate(&cusparse)) {
+        throw cusp::runtime_exception("Could not initialize Cusparse library");
+    }
 
-    for(size_t n = 0; n < A.num_entries; n++)
-    {
-        const IndexType& i   = A.row_indices[n];
-        const IndexType& j   = A.column_indices[n];
-        const ValueType& Aij = A.values[n];
-        const ValueType& xj  = x[j];
+    ValueType alpha = 1.0;
+    ValueType beta  = 0.0;
 
-        y[i] = reduce(y[i], combine(Aij, xj));
+    if(CUSPARSE_STATUS_SUCCESS != cusparseScsrmv(cusparse,
+            CUSPARSE_OPERATION_NON_TRANSPOSE, A.num_rows, A.num_cols, A.num_entries, &alpha,
+            A.descr, thrust::raw_pointer_cast(&A.values[0]), thrust::raw_pointer_cast(&A.row_offsets[0]), thrust::raw_pointer_cast(&A.column_indices[0]),
+            thrust::raw_pointer_cast(&x[0]), &beta, thrust::raw_pointer_cast(&y[0]))) {
+        throw cusp::runtime_exception("Cusparse Spmv failed");
     }
 }
 
-} // end namespace sequential
-} // end namespace detail
+} // end namespace cuda
 } // end namespace system
 } // end namespace cusp
+
 

@@ -25,7 +25,7 @@ template <typename IndexType, typename ValueType, typename MemorySpace, typename
 template <typename MemorySpace2, typename Format2, typename SmootherType2, typename SolverType2>
 multilevel<IndexType,ValueType,MemorySpace,Format,SmootherType,SolverType>
 ::multilevel(const multilevel<IndexType,ValueType,MemorySpace2,Format2,SmootherType2,SolverType2>& M)
-    : solver(M.solver)
+    : min_level_size(M.min_level_size), max_levels(M.max_levels), solver(M.solver)
 {
     for( size_t lvl = 0; lvl < M.levels.size(); lvl++ )
         levels.push_back(M.levels[lvl]);
@@ -98,9 +98,23 @@ void multilevel<IndexType,ValueType,MemorySpace,Format,SmootherType,SolverType>
 
 template <typename IndexType, typename ValueType, typename MemorySpace, typename Format, typename SmootherType, typename SolverType>
 void multilevel<IndexType,ValueType,MemorySpace,Format,SmootherType,SolverType>
+::set_min_level_size(size_t min_size)
+{
+    min_level_size = min_size;
+}
+
+template <typename IndexType, typename ValueType, typename MemorySpace, typename Format, typename SmootherType, typename SolverType>
+void multilevel<IndexType,ValueType,MemorySpace,Format,SmootherType,SolverType>
+::set_max_levels(size_t max_depth)
+{
+    max_levels = max_depth;
+}
+
+template <typename IndexType, typename ValueType, typename MemorySpace, typename Format, typename SmootherType, typename SolverType>
+void multilevel<IndexType,ValueType,MemorySpace,Format,SmootherType,SolverType>
 ::initialize_coarse_solver(void)
 {
-  solver = Solver(levels.back().A);
+    solver = Solver(levels.back().A);
 }
 
 template <typename IndexType, typename ValueType, typename MemorySpace, typename Format, typename SmootherType, typename SolverType>
@@ -257,4 +271,5 @@ double multilevel<IndexType,ValueType,MemorySpace,Format,SmootherType,SolverType
 }
 
 } // end namespace cusp
+
 

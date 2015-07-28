@@ -21,8 +21,9 @@
 #include <cusp/format_utils.h>
 #include <cusp/sort.h>
 
-#include <cusp/detail/format.h>
 #include <cusp/blas/blas.h>
+
+#include <cusp/detail/format.h>
 
 #include <thrust/count.h>
 #include <thrust/gather.h>
@@ -69,7 +70,7 @@ struct array2d_map_functor : public thrust::unary_function<IndexType,IndexType>
 };
 
 template <typename DerivedPolicy, typename SourceType, typename DestinationType>
-typename enable_if_same_system<SourceType,DestinationType>::type
+typename cusp::detail::enable_if_same_system<SourceType,DestinationType>::type
 convert(thrust::execution_policy<DerivedPolicy>& exec,
         const SourceType& src,
         DestinationType& dst,
@@ -84,15 +85,15 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
 }
 
 template <typename DerivedPolicy, typename SourceType, typename DestinationType>
-typename enable_if_same_system<SourceType,DestinationType>::type
+typename cusp::detail::enable_if_same_system<SourceType,DestinationType>::type
 convert(thrust::execution_policy<DerivedPolicy>& exec,
         const SourceType& src,
         DestinationType& dst,
         cusp::coo_format&,
         cusp::array2d_format&)
 {
-    typedef typename DestinationType::index_type IndexType;
-    typedef typename DestinationType::value_type ValueType;
+    typedef typename DestinationType::index_type  IndexType;
+    typedef typename DestinationType::value_type  ValueType;
     typedef typename DestinationType::orientation Orientation;
 
     dst.resize(src.num_rows, src.num_cols);
@@ -111,7 +112,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
 }
 
 template <typename DerivedPolicy, typename SourceType, typename DestinationType>
-typename enable_if_same_system<SourceType,DestinationType>::type
+typename cusp::detail::enable_if_same_system<SourceType,DestinationType>::type
 convert(thrust::execution_policy<DerivedPolicy>& exec,
         const SourceType& src,
         DestinationType& dst,
@@ -128,7 +129,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
 }
 
 template <typename DerivedPolicy, typename SourceType, typename DestinationType>
-typename enable_if_same_system<SourceType,DestinationType>::type
+typename cusp::detail::enable_if_same_system<SourceType,DestinationType>::type
 convert(thrust::execution_policy<DerivedPolicy>& exec,
         const SourceType& src,
         DestinationType& dst,
@@ -136,8 +137,8 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
         cusp::dia_format&,
         size_t alignment = 32)
 {
-    typedef typename DestinationType::index_type IndexType;
-    typedef typename DestinationType::value_type ValueType;
+    typedef typename DestinationType::index_type   IndexType;
+    typedef typename DestinationType::value_type   ValueType;
     typedef typename DestinationType::memory_space MemorySpace;
 
     if(src.num_entries == 0)
@@ -163,13 +164,13 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
                       thrust::make_zip_iterator( thrust::make_tuple( src.row_indices.begin(), src.column_indices.begin() ) ),
                       thrust::make_zip_iterator( thrust::make_tuple( src.row_indices.end()  , src.column_indices.end() ) )  ,
                       diag_map.begin(),
-                      occupied_diagonal_functor<IndexType>(src.num_rows));
+                      cusp::detail::occupied_diagonal_functor<IndexType>(src.num_rows));
 
     // place ones in diagonals array locations with occupied diagonals
-    cusp::array1d<IndexType,MemorySpace> diagonals(src.num_rows+src.num_cols,IndexType(0));
+    cusp::array1d<IndexType,MemorySpace> diagonals(src.num_rows + src.num_cols,IndexType(0));
     thrust::scatter(exec,
                     thrust::constant_iterator<IndexType>(1),
-                    thrust::constant_iterator<IndexType>(1)+src.num_entries,
+                    thrust::constant_iterator<IndexType>(1) + src.num_entries,
                     diag_map.begin(),
                     diagonals.begin());
 
@@ -184,10 +185,10 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     // fill in diagonal_offsets array
     thrust::copy_if(exec,
                     thrust::counting_iterator<IndexType>(0),
-                    thrust::counting_iterator<IndexType>(src.num_rows+src.num_cols),
+                    thrust::counting_iterator<IndexType>(src.num_rows + src.num_cols),
                     diagonals.begin(),
                     dst.diagonal_offsets.begin(),
-                    greater_value<IndexType>(0));
+                    cusp::greater_value<IndexType>(0));
 
     // replace shifted diagonals with index of diagonal in offsets array
     cusp::array1d<IndexType,cusp::host_memory> diagonal_offsets( dst.diagonal_offsets );
@@ -199,7 +200,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
                     src.values.begin(), src.values.end(),
                     thrust::make_transform_iterator(
                         thrust::make_zip_iterator( thrust::make_tuple( src.row_indices.begin(), diag_map.begin() ) ),
-                        diagonal_index_functor<IndexType>(dst.values.pitch)),
+                        cusp::detail::diagonal_index_functor<IndexType>(dst.values.pitch)),
                     dst.values.values.begin());
 
     cusp::constant_array<IndexType> constant_view(num_diagonals, dst.num_rows);
@@ -210,7 +211,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
 }
 
 template <typename DerivedPolicy, typename SourceType, typename DestinationType>
-typename enable_if_same_system<SourceType,DestinationType>::type
+typename cusp::detail::enable_if_same_system<SourceType,DestinationType>::type
 convert(thrust::execution_policy<DerivedPolicy>& exec,
         const SourceType& src,
         DestinationType& dst,
@@ -219,8 +220,8 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
         size_t num_entries_per_row = 0,
         size_t alignment = 32)
 {
-    typedef typename DestinationType::index_type IndexType;
-    typedef typename DestinationType::value_type ValueType;
+    typedef typename DestinationType::index_type   IndexType;
+    typedef typename DestinationType::value_type   ValueType;
     typedef typename DestinationType::memory_space MemorySpace;
 
     if(src.num_entries == 0)
@@ -285,7 +286,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
 }
 
 template <typename DerivedPolicy, typename SourceType, typename DestinationType>
-typename enable_if_same_system<SourceType,DestinationType>::type
+typename cusp::detail::enable_if_same_system<SourceType,DestinationType>::type
 convert(thrust::execution_policy<DerivedPolicy>& exec,
         const SourceType& src,
         DestinationType& dst,
@@ -294,8 +295,8 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
         size_t num_entries_per_row = 0,
         size_t alignment = 32)
 {
-    typedef typename DestinationType::index_type IndexType;
-    typedef typename DestinationType::value_type ValueType;
+    typedef typename DestinationType::index_type   IndexType;
+    typedef typename DestinationType::value_type   ValueType;
     typedef typename DestinationType::memory_space MemorySpace;
 
     if(src.num_entries == 0)
@@ -324,8 +325,8 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
                                   IndexType(0));
 
     size_t num_coo_entries = thrust::count_if(exec,
-                                indices.begin(), indices.end(),
-                                greater_equal_value<size_t>(num_entries_per_row));
+                                              indices.begin(), indices.end(),
+                                              cusp::greater_equal_value<size_t>(num_entries_per_row));
     size_t num_ell_entries = src.num_entries - num_coo_entries;
 
     // allocate output storage
@@ -342,7 +343,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
      thrust::make_zip_iterator( thrust::make_tuple( src.row_indices.end()  , src.column_indices.end()  , src.values.end()   ) ),
      indices.begin(),
      thrust::make_zip_iterator( thrust::make_tuple( dst.coo.row_indices.begin(), dst.coo.column_indices.begin(), dst.coo.values.begin() ) ),
-     greater_equal_value<size_t>(num_entries_per_row) );
+     cusp::greater_equal_value<size_t>(num_entries_per_row) );
 
     assert(dst.ell.column_indices.pitch == dst.ell.values.pitch);
 
@@ -361,13 +362,13 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
                        indices.begin(),
                        indices.begin(),
                        dst.ell.column_indices.values.begin(),
-                       less_value<size_t>(dst.ell.column_indices.values.size()));
+                       cusp::less_value<size_t>(dst.ell.column_indices.values.size()));
     thrust::scatter_if(exec,
                        src.values.begin(), src.values.end(),
                        indices.begin(),
                        indices.begin(),
                        dst.ell.values.values.begin(),
-                       less_value<size_t>(dst.ell.values.values.size()));
+                       cusp::less_value<size_t>(dst.ell.values.values.size()));
 //// fused version appears to be slightly slower
 //  thrust::scatter_if(thrust::make_zip_iterator(thrust::make_tuple(src.column_indices.begin(), src.values.begin())),
 //                     thrust::make_zip_iterator(thrust::make_tuple(src.column_indices.end(),   src.values.end())),

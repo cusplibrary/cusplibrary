@@ -132,11 +132,14 @@ public:
 
     SolveMatrixType* A_ptr;
 
+    size_t min_level_size;
+    size_t max_levels;
+
     Solver solver;
 
     std::vector<level> levels;
 
-    multilevel(void) : A_ptr(NULL) {};
+    multilevel(size_t min_level_size=500, size_t max_levels=10) : A_ptr(NULL), min_level_size(min_level_size), max_levels(max_levels) {};
 
     template <typename MemorySpace2, typename Format2, typename SmootherType2, typename SolverType2>
     multilevel(const multilevel<IndexType,ValueType,MemorySpace2,Format2,SmootherType2,SolverType2>& M);
@@ -151,6 +154,10 @@ public:
     void solve(const Array1& b, Array2& x, Monitor& monitor);
 
     void print( void );
+
+    void set_min_level_size(size_t min_size);
+
+    void set_max_levels(size_t max_depth);
 
     double operator_complexity( void );
 

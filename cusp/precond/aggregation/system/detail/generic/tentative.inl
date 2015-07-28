@@ -20,9 +20,8 @@
 #include <cusp/copy.h>
 #include <cusp/csr_matrix.h>
 #include <cusp/format_utils.h>
+#include <cusp/functional.h>
 #include <cusp/transpose.h>
-
-#include <cusp/detail/functional.h>
 
 #include <thrust/count.h>
 #include <thrust/functional.h>
@@ -56,10 +55,10 @@ void fit_candidates(thrust::execution_policy<DerivedPolicy> &exec,
     typedef typename MatrixType::memory_space MemorySpace;
 
     IndexType num_unaggregated = thrust::count(aggregates.begin(), aggregates.end(), -1);
-    IndexType num_aggregates = *thrust::max_element(aggregates.begin(), aggregates.end()) + 1;
+    IndexType num_aggregates   = *thrust::max_element(aggregates.begin(), aggregates.end()) + 1;
 
     cusp::coo_matrix<IndexType,ValueType,MemorySpace> Q;
-    Q.resize(aggregates.size(), num_aggregates, aggregates.size()-num_unaggregated);
+    Q.resize(aggregates.size(), num_aggregates, aggregates.size() - num_unaggregated);
     R.resize(num_aggregates);
 
     // gather values into Q
@@ -77,14 +76,16 @@ void fit_candidates(thrust::execution_policy<DerivedPolicy> &exec,
 
         // compute sum of squares for each column of Q (rows of Qt)
         cusp::array1d<IndexType, MemorySpace> temp(num_aggregates);
-        thrust::transform(Qt.values.begin(), Qt.values.end(), Qt.values.begin(), cusp::detail::square_functor<ValueType>());
+
+        thrust::transform(Qt.values.begin(), Qt.values.end(), Qt.values.begin(), cusp::square_functor<ValueType>());
+
         thrust::reduce_by_key(Qt.row_indices.begin(), Qt.row_indices.end(),
                               Qt.values.begin(),
                               temp.begin(),
                               R.begin());
 
         // compute square root of each column sum
-        thrust::transform(R.begin(), R.end(), R.begin(), cusp::detail::sqrt_functor<ValueType>());
+        thrust::transform(R.begin(), R.end(), R.begin(), cusp::sqrt_functor<ValueType>());
     }
 
     // rescale columns of Q

@@ -24,7 +24,7 @@
 #include <cusp/detail/config.h>
 
 #include <cusp/format_utils.h>
-#include <cusp/precond/aggregation/smoothed_aggregation_helper.h>
+#include <cusp/eigen/spectral_radius.h>
 #include <cusp/relaxation/jacobi.h>
 
 #include <thrust/transform.h>
@@ -81,7 +81,7 @@ public:
         num_iters = L.num_iters;
 
         if(L.rho_DinvA == ValueType(0))
-            M = BaseSmoother(A, weight / cusp::precond::aggregation::detail::estimate_rho_Dinv_A(A));
+            M = BaseSmoother(A, weight / cusp::eigen::estimate_rho_Dinv_A(A));
         else
             M = BaseSmoother(A, weight / L.rho_DinvA);
     }

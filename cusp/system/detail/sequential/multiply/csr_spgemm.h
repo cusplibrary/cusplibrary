@@ -17,7 +17,6 @@
 #pragma once
 
 #include <cusp/detail/config.h>
-
 #include <cusp/detail/format.h>
 
 #include <cusp/system/detail/sequential/execution_policy.h>
@@ -70,8 +69,8 @@ size_t spmm_csr_pass1(const size_t num_rows, const size_t num_cols,
 }
 
 template <typename Array1, typename Array2, typename Array3,
-         typename Array4, typename Array5, typename Array6,
-         typename Array7, typename Array8, typename Array9>
+          typename Array4, typename Array5, typename Array6,
+          typename Array7, typename Array8, typename Array9>
 size_t spmm_csr_pass2(const size_t num_rows, const size_t num_cols,
                       const Array1& A_row_offsets, const Array2& A_column_indices, const Array3& A_values,
                       const Array4& B_row_offsets, const Array5& B_column_indices, const Array6& B_values,
@@ -150,16 +149,16 @@ size_t spmm_csr_pass2(const size_t num_rows, const size_t num_cols,
 }
 
 template <typename DerivedPolicy,
-         typename Matrix1,
-         typename Matrix2,
-         typename Matrix3>
+          typename Matrix1,
+          typename Matrix2,
+          typename Matrix3>
 void multiply(sequential::execution_policy<DerivedPolicy>& exec,
               const Matrix1& A,
               const Matrix2& B,
               Matrix3& C,
-              csr_format,
-              csr_format,
-              csr_format)
+              cusp::csr_format,
+              cusp::csr_format,
+              cusp::csr_format)
 {
     typedef typename Matrix3::index_type IndexType;
 

@@ -340,7 +340,7 @@ evolution_strength_of_connection(thrust::execution_policy<DerivedPolicy> &exec,
                          thrust::make_transform_iterator(
                              thrust::make_zip_iterator(
                                  thrust::make_tuple(A.row_indices.begin(), A.column_indices.begin())),
-                             cusp::detail::equal_tuple_functor<IndexType>()),
+                             cusp::equal_tuple_functor<IndexType>()),
                          Atilde_symmetric.begin(),
                          _1 = ValueType(1), thrust::identity<bool>());
 
