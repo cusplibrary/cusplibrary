@@ -42,6 +42,7 @@ using thrust::abs;
 using thrust::complex;
 using thrust::conj;
 using thrust::norm;
+using thrust::sqrt;
 
 template<typename T>
 __host__ __device__
