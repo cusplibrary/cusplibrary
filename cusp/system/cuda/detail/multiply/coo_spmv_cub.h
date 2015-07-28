@@ -472,15 +472,26 @@ struct PersistentBlockSpmv
         {
             if (head_flags[ITEM])
             {
+                d_result[partial_sums[ITEM].row] = partial_sums[ITEM].partial;
+
                 // Save off the first partial product that this thread block will scatter
                 if (partial_sums[ITEM].row == temp_storage.first_block_row)
                 {
                     temp_storage.first_product = partial_sums[ITEM].partial;
                 }
-                else
-                {
-                    d_result[partial_sums[ITEM].row] = reduce_op(initialize(d_result[partial_sums[ITEM].row]), partial_sums[ITEM].partial);
-                }
+
+                // Save off the first partial product that this thread block will scatter
+                // if (partial_sums[ITEM].row == temp_storage.first_block_row)
+                // {
+                //     if( (block_offset == 0) || (temp_storage.first_block_row != d_rows[block_offset - 1]) )
+                //         temp_storage.first_product = reduce_op(initialize(d_result[partial_sums[ITEM].row]), partial_sums[ITEM].partial);
+                //     else
+                //         temp_storage.first_product = partial_sums[ITEM].partial;
+                // }
+                // else
+                // {
+                //     d_result[partial_sums[ITEM].row] = reduce_op(initialize(d_result[partial_sums[ITEM].row]), partial_sums[ITEM].partial);
+                // }
             }
         }
     }
@@ -514,7 +525,7 @@ struct PersistentBlockSpmv
             if (gridDim.x == 1)
             {
                 // Scatter the final aggregate (this kernel contains only 1 threadblock)
-                d_result[prefix_op.running_prefix.row] = reduce_op(initialize(d_result[prefix_op.running_prefix.row]), prefix_op.running_prefix.partial);
+                d_result[prefix_op.running_prefix.row] = prefix_op.running_prefix.partial;
             }
             else
             {
@@ -925,9 +936,6 @@ void spmv_coo(cuda::execution_policy<DerivedPolicy>& exec,
     if (coo_grid_size > 1)
     {
         cusp::array1d<PartialProduct, cusp::host_memory> partials_h(block_partials);
-
-        for(size_t i = 0; i < 10; i++)
-          std::cout << "[" << i << "] row[" << partials_h[i].row << "] partial[" << partials_h[i].partial << "]" << std::endl;
 
         // Run the COO finalize kernel
         CooFinalizeKernel<FINALIZE_BLOCK_THREADS, FINALIZE_ITEMS_PER_THREAD><<<1, FINALIZE_BLOCK_THREADS, 0, s>>>(
