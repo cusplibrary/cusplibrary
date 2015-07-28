@@ -918,7 +918,6 @@ void spmv_coo(cuda::execution_policy<DerivedPolicy>& exec,
     // TexVector<ValueType>::BindTexture(d_x, num_cols);
 
     // cudaDeviceSetSharedMemConfig(cudaSharedMemBankSizeEightByte);
-    std::cout << y[3] << std::endl;
 
     // Run the COO kernel
     CooKernel<COO_BLOCK_THREADS, COO_ITEMS_PER_THREAD><<<coo_grid_size, COO_BLOCK_THREADS, 0, s>>>(
@@ -935,8 +934,6 @@ void spmv_coo(cuda::execution_policy<DerivedPolicy>& exec,
 
     if (coo_grid_size > 1)
     {
-        cusp::array1d<PartialProduct, cusp::host_memory> partials_h(block_partials);
-
         // Run the COO finalize kernel
         CooFinalizeKernel<FINALIZE_BLOCK_THREADS, FINALIZE_ITEMS_PER_THREAD><<<1, FINALIZE_BLOCK_THREADS, 0, s>>>(
             thrust::raw_pointer_cast(&block_partials[0]),
