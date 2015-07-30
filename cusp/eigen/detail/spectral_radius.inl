@@ -65,7 +65,6 @@ struct Dinv_A : public cusp::linear_operator<typename MatrixType::value_type, ty
     }
 };
 
-
 template <typename Matrix>
 double disks_spectral_radius(const Matrix& A, coo_format)
 {
@@ -79,8 +78,14 @@ double disks_spectral_radius(const Matrix& A, coo_format)
     // compute sum of absolute values for each row of A
     cusp::array1d<NormType, MemorySpace> row_sums(N, NormType(0));
 
+#if THRUST_VERSION >= 100800
+    const typename Matrix::row_indices_array_type& A_row_indices(A.row_indices);
+#else
+    cusp::array1d<IndexType,MemorySpace> A_row_indices(A.row_indices);
+#endif
+
     thrust::reduce_by_key
-    (A.row_indices.begin(), A.row_indices.end(),
+    (A_row_indices.begin(), A_row_indices.end(),
      thrust::make_transform_iterator(A.values.begin(), cusp::abs_functor<ValueType>()),
      thrust::make_discard_iterator(),
      row_sums.begin(),
@@ -220,4 +225,5 @@ double ritz_spectral_radius(const Matrix& A, size_t k, bool symmetric)
 
 } // end namespace eigen
 } // end namespace cusp
+
 
