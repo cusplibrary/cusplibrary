@@ -4,6 +4,51 @@
 #include <cusp/blas/blas.h>
 
 template <class MemorySpace>
+void TestAmax(void)
+{
+    typedef typename cusp::array1d<float, MemorySpace>       Array;
+    typedef typename cusp::array1d<float, MemorySpace>::view View;
+
+    Array x(6);
+    View view_x(x);
+
+    x[0] =  0.0f;
+    x[1] = -5.0f;
+    x[2] =  4.0f;
+    x[3] = -3.0f;
+    x[4] =  7.0f;
+    x[5] =  1.0f;
+
+    ASSERT_EQUAL(cusp::blas::amax(x), 4);
+
+    ASSERT_EQUAL(cusp::blas::amax(view_x), 4);
+}
+DECLARE_HOST_DEVICE_UNITTEST(TestAmax);
+
+template <class MemorySpace>
+void TestComplexAmax(void)
+{
+    typedef cusp::complex<float> ValueType;
+    typedef typename cusp::array1d<ValueType, MemorySpace>       Array;
+    typedef typename cusp::array1d<ValueType, MemorySpace>::view View;
+
+    Array x(6);
+    View view_x(x);
+
+    x[0] = ValueType( 7.0,  1.0);
+    x[1] = ValueType(-5.0,  0.0);
+    x[2] = ValueType( 4.0, -3.0);
+    x[3] = ValueType(-3.0,  4.0);
+    x[4] = ValueType( 0.0, -5.0);
+    x[5] = ValueType( 1.0,  7.0);
+
+    ASSERT_EQUAL(cusp::blas::amax(x), 0);
+
+    ASSERT_EQUAL(cusp::blas::amax(view_x), 0);
+}
+DECLARE_HOST_DEVICE_UNITTEST(TestComplexAmax);
+
+template <class MemorySpace>
 void TestAxpy(void)
 {
     typedef typename cusp::array1d<float, MemorySpace>       Array;
@@ -437,11 +482,11 @@ void TestNrmmax(void)
     Array x(6);
     View view_x(x);
 
-    x[0] =  7.0f;
+    x[0] =  0.0f;
     x[1] = -5.0f;
     x[2] =  4.0f;
     x[3] = -3.0f;
-    x[4] =  0.0f;
+    x[4] =  7.0f;
     x[5] =  1.0f;
 
     ASSERT_EQUAL(cusp::blas::nrmmax(x), 7.0f);
