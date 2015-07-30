@@ -53,12 +53,12 @@ int amax(cublas::execution_policy& exec,
 }
 
 template <typename Array>
-typename cusp::detail::norm_type<typename Array::value_type>::type
+typename cusp::norm_type<typename Array::value_type>::type
 asum(cublas::execution_policy& exec,
      const Array& x)
 {
     typedef typename Array::value_type ValueType;
-    typedef typename cusp::detail::norm_type<typename Array::value_type>::type Real;
+    typedef typename cusp::norm_type<typename Array::value_type>::type Real;
 
     int n = x.size();
 
@@ -163,12 +163,12 @@ dotc(cublas::execution_policy& exec,
 }
 
 template <typename Array>
-typename cusp::detail::norm_type<typename Array::value_type>::type
+typename cusp::norm_type<typename Array::value_type>::type
 nrm2(cublas::execution_policy& exec,
      const Array& x)
 {
     typedef typename Array::value_type ValueType;
-    typedef typename cusp::detail::norm_type<ValueType>::type ResultType;
+    typedef typename cusp::norm_type<ValueType>::type ResultType;
 
     int n = x.size();
 
@@ -588,12 +588,12 @@ void trsm(cublas::execution_policy& exec,
 }
 
 template <typename Array>
-typename cusp::detail::norm_type<typename Array::value_type>::type
+typename cusp::norm_type<typename Array::value_type>::type
 nrm1(cublas::execution_policy& exec,
      const Array& x)
 {
     typedef typename Array::value_type ValueType;
-    typedef typename cusp::detail::norm_type<ValueType>::type ResultType;
+    typedef typename cusp::norm_type<ValueType>::type ResultType;
 
     int n = x.size();
 
@@ -610,12 +610,12 @@ nrm1(cublas::execution_policy& exec,
 }
 
 template <typename Array>
-typename cusp::detail::norm_type<typename Array::value_type>::type
+typename cusp::norm_type<typename Array::value_type>::type
 nrmmax(cublas::execution_policy& exec,
        const Array& x)
 {
     typedef typename Array::value_type ValueType;
-    typedef typename cusp::detail::norm_type<ValueType>::type ResultType;
+    typedef typename cusp::norm_type<ValueType>::type ResultType;
 
     int index;
     int n = x.size();

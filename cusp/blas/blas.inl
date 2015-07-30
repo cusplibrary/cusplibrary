@@ -54,7 +54,7 @@ int amax(const ArrayType& x)
 
 template <typename DerivedPolicy,
           typename ArrayType>
-typename cusp::detail::norm_type<typename ArrayType::value_type>::type
+typename cusp::norm_type<typename ArrayType::value_type>::type
 asum(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
      const ArrayType& x)
 {
@@ -64,7 +64,7 @@ asum(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 }
 
 template <typename ArrayType>
-typename cusp::detail::norm_type<typename ArrayType::value_type>::type
+typename cusp::norm_type<typename ArrayType::value_type>::type
 asum(const ArrayType& x)
 {
     using thrust::system::detail::generic::select_system;
@@ -398,7 +398,7 @@ void fill(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 }
 
 template <typename ArrayType>
-typename cusp::detail::norm_type<typename ArrayType::value_type>::type
+typename cusp::norm_type<typename ArrayType::value_type>::type
 nrm1(const ArrayType& x)
 {
     using thrust::system::detail::generic::select_system;
@@ -412,7 +412,7 @@ nrm1(const ArrayType& x)
 
 template <typename DerivedPolicy,
           typename ArrayType>
-typename cusp::detail::norm_type<typename ArrayType::value_type>::type
+typename cusp::norm_type<typename ArrayType::value_type>::type
 nrm1(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
      const ArrayType& x)
 {
@@ -422,7 +422,7 @@ nrm1(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 }
 
 template <typename ArrayType>
-typename cusp::detail::norm_type<typename ArrayType::value_type>::type
+typename cusp::norm_type<typename ArrayType::value_type>::type
 nrm2(const ArrayType& x)
 {
     using thrust::system::detail::generic::select_system;
@@ -436,7 +436,7 @@ nrm2(const ArrayType& x)
 
 template <typename DerivedPolicy,
           typename ArrayType>
-typename cusp::detail::norm_type<typename ArrayType::value_type>::type
+typename cusp::norm_type<typename ArrayType::value_type>::type
 nrm2(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
      const ArrayType& x)
 {
@@ -446,7 +446,7 @@ nrm2(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 }
 
 template <typename ArrayType>
-typename cusp::detail::norm_type<typename ArrayType::value_type>::type
+typename cusp::norm_type<typename ArrayType::value_type>::type
 nrmmax(const ArrayType& x)
 {
     using thrust::system::detail::generic::select_system;
@@ -460,7 +460,7 @@ nrmmax(const ArrayType& x)
 
 template <typename DerivedPolicy,
           typename ArrayType>
-typename cusp::detail::norm_type<typename ArrayType::value_type>::type
+typename cusp::norm_type<typename ArrayType::value_type>::type
 nrmmax(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
        const ArrayType& x)
 {

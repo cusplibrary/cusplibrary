@@ -32,18 +32,24 @@
 
 namespace cusp
 {
-namespace detail
-{
-// forward definition
-template<typename T> struct norm_type;
-}
 
-using thrust::abs;
 using thrust::complex;
-using thrust::conj;
-using thrust::norm;
-using thrust::sqrt;
 
+/* \cond */
+template <typename T>
+struct norm_type
+{
+    typedef T type;
+};
+
+template <typename T>
+struct norm_type< cusp::complex<T> >
+{
+    typedef T type;
+};
+/* \endcond */
+
+using thrust::conj;
 template<typename T>
 __host__ __device__
 inline T
@@ -52,19 +58,25 @@ conj(const T& z)
     return z;
 }
 
+using thrust::abs;
 template <typename T>
 __host__ __device__
-inline typename cusp::detail::norm_type<T>::type
-abs(const T& z) {
+inline typename cusp::norm_type<T>::type
+abs(const T& z)
+{
     return z > 0 ? z : -z;
 }
 
+using thrust::norm;
 template <typename T>
 __host__ __device__
-inline typename cusp::detail::norm_type<T>::type
-norm(const T& z) {
+inline typename cusp::norm_type<T>::type
+norm(const T& z)
+{
     return cusp::abs(z);
 }
+
+using thrust::sqrt;
 
 // define complex type for the purpose of Doxygenating it
 // it is actually defined in Thrust

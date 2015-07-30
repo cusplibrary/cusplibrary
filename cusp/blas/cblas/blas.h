@@ -46,7 +46,7 @@ int amax(cblas::execution_policy& exec,
 }
 
 template <typename Array>
-typename cusp::detail::norm_type<typename Array::value_type>::type
+typename cusp::norm_type<typename Array::value_type>::type
 asum(cblas::execution_policy& exec,
      const Array& x)
 {
@@ -128,7 +128,7 @@ dot(cblas::execution_policy& exec,
 // }
 
 template <typename Array>
-typename cusp::detail::norm_type<typename Array::value_type>::type
+typename cusp::norm_type<typename Array::value_type>::type
 nrm2(cblas::execution_policy& exec,
      const Array& x)
 {
@@ -504,7 +504,7 @@ void trsm(cblas::execution_policy& exec,
 }
 
 template <typename Array>
-typename cusp::detail::norm_type<typename Array::value_type>::type
+typename cusp::norm_type<typename Array::value_type>::type
 nrm1(cblas::execution_policy& exec,
      const Array& x)
 {
@@ -518,12 +518,12 @@ nrm1(cblas::execution_policy& exec,
 }
 
 template <typename Array>
-typename cusp::detail::norm_type<typename Array::value_type>::type
+typename cusp::norm_type<typename Array::value_type>::type
 nrmmax(cblas::execution_policy& exec,
        const Array& x)
 {
     typedef typename Array::value_type ValueType;
-    typedef typename cusp::detail::norm_type<ValueType>::type ResultType;
+    typedef typename cusp::norm_type<ValueType>::type ResultType;
 
     int n = x.size();
 

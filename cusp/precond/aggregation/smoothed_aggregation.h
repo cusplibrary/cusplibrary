@@ -25,6 +25,7 @@
 #include <cusp/detail/multilevel.h>
 
 #include <cusp/array1d.h>
+#include <cusp/complex.h>
 #include <cusp/precond/aggregation/detail/sa_view_traits.h>
 
 #include <thrust/execution_policy.h>
@@ -48,7 +49,7 @@ struct sa_level
     typedef typename MatrixType::index_type IndexType;
     typedef typename MatrixType::value_type ValueType;
     typedef typename MatrixType::memory_space MemorySpace;
-    typedef typename cusp::detail::norm_type<ValueType>::type NormType;
+    typedef typename cusp::norm_type<ValueType>::type NormType;
 
     MatrixType A_; 					                              // matrix
     MatrixType T; 					                              // matrix

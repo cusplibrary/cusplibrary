@@ -66,18 +66,6 @@ struct enable_if_different_system
         : thrust::detail::enable_if< thrust::detail::is_different<typename T1::memory_space,typename T2::memory_space>::value, T >
 {};
 
-template <typename T>
-struct norm_type
-{
-    typedef T type;
-};
-
-template <typename T>
-struct norm_type< cusp::complex<T> >
-{
-    typedef T type;
-};
-
 template<typename MatrixType, typename CompareTag>
 struct is_matrix_type
   : thrust::detail::integral_constant<bool,thrust::detail::is_same<typename MatrixType::format,CompareTag>::value>
@@ -200,7 +188,7 @@ struct coo_view_type<MatrixType,dia_format>
 
     typedef typename thrust::detail::remove_const<IndexType>::type                                       TempType;
     typedef typename thrust::counting_iterator<TempType>                                                 CountingIterator;
-    typedef typename thrust::transform_iterator<divide_value<TempType>, CountingIterator>                RowIndexIterator;
+    typedef typename thrust::transform_iterator<cusp::divide_value<TempType>, CountingIterator>          RowIndexIterator;
     typedef typename cusp::array1d<TempType,MemorySpace>::iterator                                       IndexIterator;
 
     typedef typename MatrixType::diagonal_offsets_array_type::iterator                                   OffsetsIterator;
@@ -235,11 +223,11 @@ struct coo_view_type<MatrixType,ell_format>
 
     typedef typename thrust::detail::remove_const<IndexType>::type                                       TempType;
     typedef typename thrust::counting_iterator<TempType>                                                 CountingIterator;
-    typedef thrust::transform_iterator<divide_value<TempType>, CountingIterator>                         RowIndexIterator;
+    typedef thrust::transform_iterator<cusp::divide_value<TempType>, CountingIterator>                   RowIndexIterator;
     typedef typename MatrixType::column_indices_array_type::values_array_type::iterator                  ColumnIndexIterator;
     typedef typename MatrixType::values_array_type::values_array_type::iterator                          ValueIterator;
 
-    typedef logical_to_other_physical_functor<TempType, cusp::row_major, cusp::column_major>             PermFunctor;
+    typedef cusp::detail::logical_to_other_physical_functor<TempType, cusp::row_major, cusp::column_major> PermFunctor;
     typedef thrust::transform_iterator<PermFunctor, CountingIterator>                                    PermIndexIterator;
     typedef thrust::permutation_iterator<ColumnIndexIterator, PermIndexIterator>                         PermColumnIndexIterator;
     typedef thrust::permutation_iterator<ValueIterator, PermIndexIterator>                               PermValueIterator;
@@ -280,9 +268,9 @@ struct coo_view_type<MatrixType,hyb_format>
     typedef typename coo_view::values_array_type::iterator                                               CooValueIterator;
 
     typedef typename cusp::array1d<TempType,MemorySpace>::iterator                                       IndexIterator;
-    typedef cusp::join_iterator< thrust::tuple<EllRowIndexIterator,CooRowIndexIterator,IndexIterator> >  JoinRowIterator;
-    typedef cusp::join_iterator< thrust::tuple<EllColumnIndexIterator,CooColumnIndexIterator,IndexIterator> >             JoinColumnIterator;
-    typedef cusp::join_iterator< thrust::tuple<EllValueIterator,CooValueIterator,IndexIterator> >                         JoinValueIterator;
+    typedef cusp::join_iterator< thrust::tuple<EllRowIndexIterator,   CooRowIndexIterator,   IndexIterator> >  JoinRowIterator;
+    typedef cusp::join_iterator< thrust::tuple<EllColumnIndexIterator,CooColumnIndexIterator,IndexIterator> >  JoinColumnIterator;
+    typedef cusp::join_iterator< thrust::tuple<EllValueIterator,      CooValueIterator,      IndexIterator> >  JoinValueIterator;
 
     typedef cusp::array1d_view<typename JoinRowIterator::iterator>                                       Array1;
     typedef cusp::array1d_view<typename JoinColumnIterator::iterator>                                    Array2;

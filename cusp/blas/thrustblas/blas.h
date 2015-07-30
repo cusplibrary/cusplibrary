@@ -17,9 +17,9 @@
 #pragma once
 
 #include <cusp/array1d.h>
+#include <cusp/complex.h>
 #include <cusp/exception.h>
 #include <cusp/functional.h>
-#include <cusp/print.h>
 
 #include <thrust/copy.h>
 #include <thrust/fill.h>
@@ -160,13 +160,13 @@ int amax(thrust::execution_policy<DerivedPolicy>& exec,
 
 template <typename DerivedPolicy,
           typename Array>
-typename cusp::detail::norm_type<typename Array::value_type>::type
+typename cusp::norm_type<typename Array::value_type>::type
 asum(thrust::execution_policy<DerivedPolicy>& exec,
      const Array& x)
 {
     typedef typename Array::value_type   ValueType;
     typedef typename Array::memory_space MemorySpace;
-    typedef typename cusp::detail::norm_type<ValueType>::type NormType;
+    typedef typename cusp::norm_type<ValueType>::type NormType;
 
     cusp::abs_functor<ValueType> unary_op;
     thrust::plus<NormType>       binary_op;
@@ -313,13 +313,13 @@ void fill(thrust::execution_policy<DerivedPolicy>& exec,
 
 template <typename DerivedPolicy,
           typename Array>
-typename cusp::detail::norm_type<typename Array::value_type>::type
+typename cusp::norm_type<typename Array::value_type>::type
 nrm2(thrust::execution_policy<DerivedPolicy>& exec,
      const Array& x)
 {
     typedef typename Array::value_type   ValueType;
     typedef typename Array::memory_space MemorySpace;
-    typedef typename cusp::detail::norm_type<ValueType>::type NormType;
+    typedef typename cusp::norm_type<ValueType>::type NormType;
 
     cusp::abs_squared_functor<ValueType> unary_op;
     thrust::plus<NormType>               binary_op;
@@ -473,7 +473,7 @@ void trsm(thrust::execution_policy<DerivedPolicy>& exec,
 
 template <typename DerivedPolicy,
           typename Array>
-typename cusp::detail::norm_type<typename Array::value_type>::type
+typename cusp::norm_type<typename Array::value_type>::type
 nrm1(thrust::execution_policy<DerivedPolicy>& exec,
      const Array& x)
 {
@@ -482,7 +482,7 @@ nrm1(thrust::execution_policy<DerivedPolicy>& exec,
 
 template <typename DerivedPolicy,
           typename Array>
-typename cusp::detail::norm_type<typename Array::value_type>::type
+typename cusp::norm_type<typename Array::value_type>::type
 nrmmax(thrust::execution_policy<DerivedPolicy>& exec,
        const Array& x)
 {

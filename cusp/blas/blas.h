@@ -82,7 +82,7 @@ int amax(const ArrayType& x);
 /*! \cond */
 template <typename DerivedPolicy,
           typename ArrayType>
-typename cusp::detail::norm_type<typename ArrayType::value_type>::type
+typename cusp::norm_type<typename ArrayType::value_type>::type
 asum(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
      const ArrayType& x);
 /*! \endcond */
@@ -120,7 +120,7 @@ asum(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
  * \endcode
  */
 template <typename ArrayType>
-typename cusp::detail::norm_type<typename ArrayType::value_type>::type
+typename cusp::norm_type<typename ArrayType::value_type>::type
 asum(const ArrayType& x);
 
 /*! \cond */
@@ -585,7 +585,7 @@ void fill(ArrayType& x,
 /*! \cond */
 template <typename DerivedPolicy,
           typename ArrayType>
-typename cusp::detail::norm_type<typename ArrayType::value_type>::type
+typename cusp::norm_type<typename ArrayType::value_type>::type
 nrm1(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
      const ArrayType& array);
 /*! \endcond */
@@ -621,13 +621,13 @@ nrm1(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
  * \endcode
  */
 template <typename ArrayType>
-typename cusp::detail::norm_type<typename ArrayType::value_type>::type
+typename cusp::norm_type<typename ArrayType::value_type>::type
 nrm1(const ArrayType& x);
 
 /*! \cond */
 template <typename DerivedPolicy,
           typename ArrayType>
-typename cusp::detail::norm_type<typename ArrayType::value_type>::type
+typename cusp::norm_type<typename ArrayType::value_type>::type
 nrm2(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
      const ArrayType& x);
 /*! \endcond */
@@ -663,13 +663,13 @@ nrm2(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
  * \endcode
  */
 template <typename ArrayType>
-typename cusp::detail::norm_type<typename ArrayType::value_type>::type
+typename cusp::norm_type<typename ArrayType::value_type>::type
 nrm2(const ArrayType& x);
 
 /*! \cond */
 template <typename DerivedPolicy,
           typename ArrayType>
-typename cusp::detail::norm_type<typename ArrayType::value_type>::type
+typename cusp::norm_type<typename ArrayType::value_type>::type
 nrmmax(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
        const ArrayType& x);
 /*! \endcond */
@@ -705,7 +705,7 @@ nrmmax(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
  * \endcode
  */
 template <typename ArrayType>
-typename cusp::detail::norm_type<typename ArrayType::value_type>::type
+typename cusp::norm_type<typename ArrayType::value_type>::type
 nrmmax(const ArrayType& x);
 
 /*! \cond */

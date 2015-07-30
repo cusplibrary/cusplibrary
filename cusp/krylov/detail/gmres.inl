@@ -15,9 +15,10 @@
  */
 
 #include <cusp/array1d.h>
-#include <cusp/multiply.h>
-#include <cusp/monitor.h>
+#include <cusp/complex.h>
 #include <cusp/linear_operator.h>
+#include <cusp/monitor.h>
+#include <cusp/multiply.h>
 
 #include <cusp/blas/blas.h>
 
@@ -38,7 +39,7 @@ void ApplyPlaneRotation(ValueType &dx, ValueType &dy, ValueType &cs, ValueType &
 template <typename ValueType>
 void GeneratePlaneRotation(ValueType& dx, ValueType& dy, ValueType& cs, ValueType& sn)
 {
-    typedef typename cusp::detail::norm_type<ValueType>::type NormType;
+    typedef typename cusp::norm_type<ValueType>::type NormType;
 
     if (dx == ValueType(0)) {
         cs = ValueType(0);
@@ -73,7 +74,7 @@ void gmres(thrust::execution_policy<DerivedPolicy> &exec, LinearOperator &A,
            Preconditioner &M)
 {
     typedef typename LinearOperator::value_type ValueType;
-    typedef typename cusp::detail::norm_type<ValueType>::type NormType;
+    typedef typename cusp::norm_type<ValueType>::type NormType;
     typedef typename cusp::minimum_space<
     typename LinearOperator::memory_space, typename Vector::memory_space,
              typename Preconditioner::memory_space>::type MemorySpace;

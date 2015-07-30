@@ -706,7 +706,7 @@ int amax(my_system& system, const Array& x)
 }
 
 template <typename Array>
-typename cusp::detail::norm_type<typename Array::value_type>::type
+typename cusp::norm_type<typename Array::value_type>::type
 asum(my_system& system, const Array& x)
 {
     system.validate_dispatch();
@@ -776,7 +776,7 @@ void fill(my_system& system, Array& array, const ScalarType alpha)
 }
 
 template <typename Array>
-typename cusp::detail::norm_type<typename Array::value_type>::type
+typename cusp::norm_type<typename Array::value_type>::type
 nrm1(my_system& system, const Array& array)
 {
     system.validate_dispatch();
@@ -784,7 +784,7 @@ nrm1(my_system& system, const Array& array)
 }
 
 template <typename Array>
-typename cusp::detail::norm_type<typename Array::value_type>::type
+typename cusp::norm_type<typename Array::value_type>::type
 nrm2(my_system& system, const Array& array)
 {
     system.validate_dispatch();
@@ -792,7 +792,7 @@ nrm2(my_system& system, const Array& array)
 }
 
 template <typename Array>
-typename cusp::detail::norm_type<typename Array::value_type>::type
+typename cusp::norm_type<typename Array::value_type>::type
 nrmmax(my_system& system, const Array& array)
 {
     system.validate_dispatch();

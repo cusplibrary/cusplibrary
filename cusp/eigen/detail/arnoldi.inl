@@ -34,7 +34,7 @@ void arnoldi(const Matrix& A, Array2d& H, size_t k)
 {
     typedef typename Matrix::value_type   ValueType;
     typedef typename Matrix::memory_space MemorySpace;
-    typedef typename cusp::detail::norm_type<ValueType>::type NormType;
+    typedef typename cusp::norm_type<ValueType>::type NormType;
 
     size_t N = A.num_rows;
 

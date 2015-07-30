@@ -40,7 +40,7 @@ namespace detail
 template <typename ValueType>
 struct is_strong_connection
 {
-    typedef typename cusp::detail::norm_type<ValueType>::type NormType;
+    typedef typename cusp::norm_type<ValueType>::type NormType;
 
     NormType theta;
 

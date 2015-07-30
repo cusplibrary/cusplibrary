@@ -18,6 +18,7 @@
 
 #include <cusp/array1d.h>
 #include <cusp/array2d.h>
+#include <cusp/complex.h>
 #include <cusp/linear_operator.h>
 
 #include <cmath>
@@ -31,10 +32,7 @@ template <typename IndexType, typename ValueType, typename MemorySpace, typename
 int lu_factor(cusp::array2d<ValueType,MemorySpace,Orientation>& A,
               cusp::array1d<IndexType,MemorySpace>& pivot)
 {
-    using thrust::abs;
-    using std::abs;
-
-    typedef typename cusp::detail::norm_type<ValueType>::type NormType;
+    typedef typename cusp::norm_type<ValueType>::type NormType;
 
     const int n = A.num_rows;
 
@@ -43,13 +41,13 @@ int lu_factor(cusp::array2d<ValueType,MemorySpace,Orientation>& A,
     {
         // find the pivot row
         pivot[k] = k;
-        NormType max = abs(A(k,k));
+        NormType max = cusp::abs(A(k,k));
 
         for (int j = k + 1; j < n; j++)
         {
-            if (max < abs(A(j,k)))
+            if (max < cusp::abs(A(j,k)))
             {
-                max = abs(A(j,k));
+                max = cusp::abs(A(j,k));
                 pivot[k] = j;
             }
         }

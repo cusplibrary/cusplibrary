@@ -60,9 +60,9 @@
 #define CUSP_CUBLAS_ASUM(T,V,name)                                                            \
   cublasStatus_t asum( cublasHandle_t handle,                                                 \
                        const int n, const T* X, const int incX,                               \
-                       typename cusp::detail::norm_type<T>::type& result )                    \
+                       typename cusp::norm_type<T>::type& result )                            \
   {                                                                                           \
-    typedef typename cusp::detail::norm_type<T>::type Real;                                   \
+    typedef typename cusp::norm_type<T>::type Real;                                           \
     return cublas##name##asum(handle, n, (const V*) X, incX, (Real*) &result);                \
   }
 
@@ -109,7 +109,7 @@
 #define CUSP_CUBLAS_NRM2(T,V,name)                                                            \
   cublasStatus_t nrm2( cublasHandle_t handle,                                                 \
                        const int n, const T* X, const int incX,                               \
-                       typename cusp::detail::norm_type<T>::type& result)                     \
+                       typename cusp::norm_type<T>::type& result)                             \
   {                                                                                           \
     return cublas##name##nrm2(handle, n, (const V*) X, incX, &result);                        \
   }

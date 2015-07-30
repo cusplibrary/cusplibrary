@@ -383,22 +383,22 @@ struct reciprocal : public thrust::unary_function<T,T>
 };
 
 template<typename T>
-struct abs_functor : public thrust::unary_function<T, typename cusp::detail::norm_type<T>::type>
+struct abs_functor : public thrust::unary_function<T, typename cusp::norm_type<T>::type>
 {
     __host__ __device__
-    typename cusp::detail::norm_type<T>::type
+    typename cusp::norm_type<T>::type
     operator()(const T& t) const {
         return cusp::abs(t);
     }
 };
 
 template<typename T>
-struct abs_squared_functor : public thrust::unary_function<T, typename cusp::detail::norm_type<T>::type>
+struct abs_squared_functor : public thrust::unary_function<T, typename cusp::norm_type<T>::type>
 {
     __host__ __device__
-    typename cusp::detail::norm_type<T>::type
+    typename cusp::norm_type<T>::type
     operator()(const T& t) const {
-        return cusp::square_functor<typename cusp::detail::norm_type<T>::type>()(cusp::abs(t));
+        return cusp::square_functor<typename cusp::norm_type<T>::type>()(cusp::abs(t));
     }
 };
 
@@ -412,10 +412,10 @@ struct conj_functor : public thrust::unary_function<T,T>
 };
 
 template<typename T>
-struct norm_functor : public thrust::unary_function<T, typename cusp::detail::norm_type<T>::type>
+struct norm_functor : public thrust::unary_function<T, typename cusp::norm_type<T>::type>
 {
     __host__ __device__
-    typename cusp::detail::norm_type<T>::type
+    typename cusp::norm_type<T>::type
     operator()(const T& t) const {
         return cusp::norm(t);
     }

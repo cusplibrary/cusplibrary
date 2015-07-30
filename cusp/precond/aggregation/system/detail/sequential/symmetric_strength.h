@@ -47,7 +47,7 @@ void symmetric_strength_of_connection(thrust::system::detail::sequential::execut
     typedef typename MatrixType1::index_type   IndexType;
     typedef typename MatrixType1::value_type   ValueType;
     typedef typename MatrixType1::memory_space MemorySpace;
-    typedef typename cusp::detail::norm_type<ValueType>::type NormType;
+    typedef typename cusp::norm_type<ValueType>::type NormType;
 
     // extract matrix diagonal
     cusp::array1d<ValueType,MemorySpace> diagonal;
