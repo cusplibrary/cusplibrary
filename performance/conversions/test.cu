@@ -34,7 +34,7 @@ float time_conversion(const InputType& A)
     {
         return -1;
     }
-    
+
     try
     {
         DestinationType D(S);
@@ -58,7 +58,7 @@ void for_each_destination(const InputType& A)
     typedef typename SourceType::index_type   I;
     typedef typename SourceType::value_type   V;
     typedef typename SourceType::memory_space M;
-    
+
     typedef cusp::coo_matrix<I,V,M> COO;
     typedef cusp::csr_matrix<I,V,M> CSR;
     typedef cusp::dia_matrix<I,V,M> DIA;
@@ -85,11 +85,30 @@ void for_each_source(const InputType& A)
     typedef cusp::hyb_matrix<I,V,MemorySpace> HYB;
 
     printf(" From \\ To |    COO    |    CSR    |    DIA    |    ELL    |    HYB    |\n");
-    printf("    COO    |"); for_each_destination<COO>(A); printf("\n");  
-    printf("    CSR    |"); for_each_destination<CSR>(A); printf("\n");
-    printf("    DIA    |"); for_each_destination<DIA>(A); printf("\n");
-    printf("    ELL    |"); for_each_destination<ELL>(A); printf("\n");
-    printf("    HYB    |"); for_each_destination<HYB>(A); printf("\n");
+    printf("    COO    |");
+    for_each_destination<COO>(A);
+    printf("\n");
+    printf("    CSR    |");
+    for_each_destination<CSR>(A);
+    printf("\n");
+    printf("    DIA    |");
+    for_each_destination<DIA>(A);
+    printf("\n");
+    printf("    ELL    |");
+    for_each_destination<ELL>(A);
+    printf("\n");
+    printf("    HYB    |");
+    for_each_destination<HYB>(A);
+    printf("\n\n");
+
+    printf(" To COO view |    COO    |    CSR    |    DIA    |    ELL    |    HYB    |\n");
+    printf("\t     ");
+    printf("| %9.2f ", time_conversion<COO, typename COO::const_coo_view_type>(A));
+    printf("| %9.2f ", time_conversion<CSR, typename CSR::const_coo_view_type>(A));
+    printf("| %9.2f ", time_conversion<DIA, typename DIA::const_coo_view_type>(A));
+    printf("| %9.2f ", time_conversion<ELL, typename ELL::const_coo_view_type>(A));
+    printf("| %9.2f |", time_conversion<HYB, typename HYB::const_coo_view_type>(A));
+    printf("\n");
 }
 
 int main(int argc, char ** argv)
@@ -111,12 +130,12 @@ int main(int argc, char ** argv)
         // an input file was specified, read it from disk
         cusp::io::read_matrix_market_file(A, argv[1]);
     }
-    
+
     std::cout << "Input matrix has shape (" << A.num_rows << "," << A.num_cols << ") and " << A.num_entries << " entries" << "\n\n";
-   
+
     printf("Host Conversions (milliseconds per conversion)\n");
     for_each_source<cusp::host_memory>(A);
-   
+
     printf("\n\n");
 
     printf("Device Conversions (milliseconds per conversion)\n");
