@@ -26,30 +26,31 @@ namespace cusp
 {
 namespace detail
 {
-
-#if (THRUST_VERSION < 100800) || (THRUST_HOST_COMPILER == THRUST_HOST_COMPILER_MSVC)
-struct print_marshall
+namespace print_detail
 {
-    template<typename T, typename Stream>
-    void operator()(const T& val, Stream& s)
-    {
-        s << " "  << std::setw(14) << "(" << val << ")\n";
-    }
 
-    template<typename T, typename Stream>
-    void operator()(const thrust::complex<T>& val, Stream& s)
-    {
-        s << " "  << std::setw(14) << "(" << val.real() << ", " << val.imag() << ")\n";
-    }
+template<typename T, typename Stream>
+void marshall(const T& val, Stream& s)
+{
+    s << " "  << std::setw(14) << "(" << val << ")\n";
+}
 
-    template<typename T, typename Stream>
-    void operator()(const thrust::device_reference<T>& val, Stream& s)
-    {
-        T cval(val);
-        operator()(cval, s);
-    }
-};
+#if (THRUST_VERSION < 100802) || (THRUST_HOST_COMPILER == THRUST_HOST_COMPILER_MSVC)
+template<typename T, typename Stream>
+void marshall(const thrust::complex<T>& val, Stream& s)
+{
+    s << " "  << std::setw(14) << "(" << val.real() << ", " << val.imag() << ")\n";
+}
+
+template<typename T, typename Stream>
+void marshall(const thrust::device_reference<T>& val, Stream& s)
+{
+    T cval(val);
+    marshall(cval, s);
+}
 #endif
+
+} // end namespace print_detail
 
 template <typename Printable, typename Stream>
 void print(const Printable& p, Stream& s, cusp::coo_format)
@@ -60,11 +61,7 @@ void print(const Printable& p, Stream& s, cusp::coo_format)
     {
         s << " " << std::setw(14) << p.row_indices[n];
         s << " " << std::setw(14) << p.column_indices[n];
-		#if (THRUST_VERSION < 100800) || (THRUST_HOST_COMPILER == THRUST_HOST_COMPILER_MSVC)
-        print_marshall()(p.values[n], s);
-        #else
-        s << " " << std::setw(14) << p.values[n] << "\n";
-        #endif
+        print_detail::marshall(p.values[n], s);
     }
 }
 
@@ -85,11 +82,7 @@ void print(const Printable& p, Stream& s, cusp::array2d_format)
     {
         for(size_t j = 0; j < p.num_cols; j++)
         {
-			#if (THRUST_VERSION < 100800) || (THRUST_HOST_COMPILER == THRUST_HOST_COMPILER_MSVC)
-            print_marshall()(p(i,j), s);
-            #else
-            s << std::setw(14) << p(i,j);
-            #endif
+            print_detail::marshall(p(i,j), s);
         }
 
         s << "\n";
@@ -102,11 +95,7 @@ void print(const Printable& p, Stream& s, cusp::array1d_format)
     s << "array1d <" << p.size() << ">\n";
 
     for(size_t i = 0; i < p.size(); i++)
-		#if (THRUST_VERSION < 100800) || (THRUST_HOST_COMPILER == THRUST_HOST_COMPILER_MSVC)
-        print_marshall()(p[i], s);
-        #else
-        s << std::setw(14) << p[i] << "\n";
-        #endif
+        print_detail::marshall(p[i], s);
 }
 
 } // end namespace detail
