@@ -53,3 +53,43 @@ void TestHybMatrixView(void)
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestHybMatrixView);
 
+template <typename MemorySpace>
+void TestHybToCooMatrixView(void)
+{
+    typedef int   IndexType;
+    typedef float ValueType;
+
+    typedef cusp::hyb_matrix<IndexType,ValueType,MemorySpace> TestMatrix;
+    typedef typename TestMatrix::coo_view_type View;
+
+    cusp::coo_matrix<IndexType,ValueType,cusp::host_memory> A(3, 2, 6);
+    A.row_indices[0] = 0;
+    A.column_indices[0] = 0;
+    A.values[0] = 1;
+    A.row_indices[1] = 0;
+    A.column_indices[1] = 1;
+    A.values[1] = 2;
+    A.row_indices[2] = 1;
+    A.column_indices[2] = 0;
+    A.values[2] = 3;
+    A.row_indices[3] = 1;
+    A.column_indices[3] = 1;
+    A.values[3] = 4;
+    A.row_indices[4] = 2;
+    A.column_indices[4] = 0;
+    A.values[4] = 5;
+    A.row_indices[5] = 2;
+    A.column_indices[5] = 1;
+    A.values[5] = 6;
+
+    TestMatrix M(A);
+    View V(M);
+
+    V.column_indices[0] = -1;
+    V.values[0] = -1;
+
+    ASSERT_EQUAL(M.ell.column_indices(0,0), -1);
+    ASSERT_EQUAL(M.ell.values(0,0),         -1);
+}
+/* DECLARE_HOST_DEVICE_UNITTEST(TestHybToCooMatrixView); */
+

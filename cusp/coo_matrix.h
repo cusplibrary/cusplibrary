@@ -130,8 +130,8 @@ public:
             typename values_array_type::const_view,
             IndexType, ValueType, MemorySpace> const_view;
 
-    typedef container        coo_view_type;
-    typedef container const  const_coo_view_type;
+    typedef view        coo_view_type;
+    typedef const_view  const const_coo_view_type;
 
     template<typename MemorySpace2>
     struct rebind
