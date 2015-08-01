@@ -18,4 +18,37 @@
 
 #include <cusp/detail/config.h>
 
-// this system has no special version of this algorithm
+#include <cusp/system/detail/sequential/execution_policy.h>
+
+namespace cusp
+{
+namespace system
+{
+namespace detail
+{
+namespace sequential
+{
+
+template <typename DerivedPolicy,
+          typename OffsetArray,
+          typename IndexArray>
+void offsets_to_indices(sequential::execution_policy<DerivedPolicy> &exec,
+                        const OffsetArray& offsets,
+                        IndexArray& indices)
+{
+    typename IndexArray::iterator iter(indices.begin());
+
+    for(size_t i = 0; i < offsets.size() - 1; i++)
+        for(size_t j = 0; j < (offsets[i + 1] - offsets[i]); j++)
+            *iter++ = i;
+}
+
+} // end namespace sequential
+} // end namespace detail
+} // end namespace system
+
+// hack until ADL is operational
+using cusp::system::detail::sequential::offsets_to_indices;
+
+} // end namespace cusp
+

@@ -21,8 +21,8 @@
 #pragma once
 
 #include <cusp/detail/config.h>
-
 #include <cusp/detail/format.h>
+
 #include <cusp/array1d.h>
 #include <cusp/copy.h>
 #include <cusp/csr_matrix.h>
