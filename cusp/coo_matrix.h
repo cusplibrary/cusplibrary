@@ -554,48 +554,40 @@ make_coo_matrix_view(const coo_matrix_view<ArrayType1,ArrayType2,ArrayType3,Inde
 
 /**
  *  This is a convenience function for generating an \p coo_matrix_view
- *  using an existing \p coo_matrix.
+ *  using an existing matrix.
  *
- *  \tparam IndexType  indices type
- *  \tparam ValueType  values type
- *  \tparam MemorySpace memory space of the arrays
+ *  \tparam MatrixType Type of the input matrix
  *
- *  \param m Exemplar \p coo_matrix matrix to copy.
+ *  \param m Exemplar \p MatrixType matrix to copy.
  *
- *  \return \p coo_matrix_view constructed using input arrays.
+ *  \return \p coo_matrix_view constructed using input matrix.
  */
-template <typename IndexType, typename ValueType, class MemorySpace>
-typename coo_matrix<IndexType,ValueType,MemorySpace>::view
-make_coo_matrix_view(coo_matrix<IndexType,ValueType,MemorySpace>& m)
+template <typename MatrixType>
+typename MatrixType::coo_view_type
+make_coo_matrix_view(MatrixType& m)
 {
-    return make_coo_matrix_view
-           (m.num_rows, m.num_cols, m.num_entries,
-            make_array1d_view(m.row_indices),
-            make_array1d_view(m.column_indices),
-            make_array1d_view(m.values));
+    typedef typename MatrixType::coo_view_type View;
+
+    return View(m);
 }
 
 /**
  *  This is a convenience function for generating an const \p coo_matrix_view
- *  using an existing \p coo_matrix.
+ *  using an existing matrix.
  *
- *  \tparam IndexType  indices type
- *  \tparam ValueType  values type
- *  \tparam MemorySpace memory space of the arrays
+ *  \tparam MatrixType Type of the input matrix
  *
- *  \param m Exemplar \p coo_matrix matrix to copy.
+ *  \param m Exemplar \p MatrixType matrix to copy.
  *
- *  \return \p coo_matrix_view constructed using input arrays.
+ *  \return \p coo_matrix_view constructed using input matrix.
  */
-template <typename IndexType, typename ValueType, class MemorySpace>
-typename coo_matrix<IndexType,ValueType,MemorySpace>::const_view
-make_coo_matrix_view(const coo_matrix<IndexType,ValueType,MemorySpace>& m)
+template <typename MatrixType>
+typename MatrixType::const_coo_view_type
+make_coo_matrix_view(const MatrixType& m)
 {
-    return make_coo_matrix_view
-           (m.num_rows, m.num_cols, m.num_entries,
-            make_array1d_view(m.row_indices),
-            make_array1d_view(m.column_indices),
-            make_array1d_view(m.values));
+    typedef typename MatrixType::const_coo_view_type View;
+
+    return View(m);
 }
 /*! \}
  */

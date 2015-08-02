@@ -293,10 +293,8 @@ void coo_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>
     PermColumnIndexIterator perm_column_indices_begin(matrix.ell.column_indices.values.begin(), perm_indices_begin);
     PermValueIterator       perm_values_begin(matrix.ell.values.values.begin(), perm_indices_begin);
 
-    indices.resize(total);
-
-    // TODO : Remove this WAR when Thrust v1.9 is released, related to issue #635
-#if THRUST_VERSION >= 100802
+    // TODO : Remove this WAR when Thrust v1.8.3 is released, related to issue #635
+#if THRUST_VERSION > 100802
     RowIndexIterator temp_row_indices_begin(row_indices_begin);
     PermColumnIndexIterator temp_column_indices_begin(perm_column_indices_begin);
 #else
@@ -306,6 +304,8 @@ void coo_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>
     typename cusp::array1d<IndexType,MemorySpace>::iterator temp_row_indices_begin(temp_row_indices.begin());
     typename cusp::array1d<IndexType,MemorySpace>::iterator temp_column_indices_begin(temp_column_indices.begin());
 #endif
+
+    indices.resize(total);
 
     if(coo_num_entries > 0)
     {

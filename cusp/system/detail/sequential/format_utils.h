@@ -43,12 +43,30 @@ void offsets_to_indices(sequential::execution_policy<DerivedPolicy> &exec,
             *iter++ = i;
 }
 
+template <typename DerivedPolicy,
+          typename IndexArray,
+          typename OffsetArray>
+void indices_to_offsets(sequential::execution_policy<DerivedPolicy> &exec,
+                        const IndexArray& indices,
+                        OffsetArray& offsets)
+{
+    for(size_t i = 0; i < offsets.size(); i++)
+        offsets[i] = 0;
+
+    for(size_t i = 0; i < indices.size(); i++)
+        offsets[indices[i] + 1]++;
+
+    for(size_t i = 1; i < offsets.size(); i++)
+        offsets[i] += offsets[i - 1];
+}
+
 } // end namespace sequential
 } // end namespace detail
 } // end namespace system
 
 // hack until ADL is operational
 using cusp::system::detail::sequential::offsets_to_indices;
+using cusp::system::detail::sequential::indices_to_offsets;
 
 } // end namespace cusp
 
