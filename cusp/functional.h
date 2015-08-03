@@ -342,6 +342,37 @@ struct less_equal_value : public detail::base_functor< thrust::less_equal<T> >
     less_equal_value(const T value) : detail::base_functor< thrust::less_equal<T> >(value) {}
 };
 
+/**
+ * \p less_equal_value is a function object. Specifically, it is an Adaptable Unary Function.
+ *  If \c f(c) is an object of class <tt>less_equal_value<T></tt>, and \c x is an object
+ *  of class \c T, then <tt>f(x)</tt> returns <tt>x<c</tt>.
+ *
+ *  \param T is a model of <a href="http://www.sgi.com/tech/stl/Assignable.html">Assignable</a>,
+ *          and if \c x is an object of type \p T, then <tt>x<=c</tt> must be defined
+ *          and must have a return type that is convertible to \c T.
+ *
+ * \par Example
+ * \code
+ * #include <cusp/array1d.h>
+ * #include <cusp/functional.h>
+ * #include <cusp/print.h>
+ *
+ * int main()
+ * {
+ *    // create an array with 5 entries from 0 to 4
+ *    cusp::counting_array<int> count(5);
+ *
+ *    // allocate size of transformed output array
+ *    cusp::array1d<int,cusp::host_memory> v(5, 1);
+ *
+ *    // compute output vector as transform of tens
+ *    thrust::transform(count.begin(), count.end(), v.begin(), cusp::zero_functor<int>());
+ *
+ *    // v = [0, 0, 0, 0, 0]
+ *    cusp::print(v);
+ * }
+ * \endcode
+ */
 template<typename T>
 struct zero_functor : public thrust::unary_function<T,T>
 {
@@ -351,7 +382,37 @@ struct zero_functor : public thrust::unary_function<T,T>
     }
 };
 
-// square<T> computes the square of a number f(x) -> x*x
+/**
+ * \p multiplies_value is a function object. Specifically, it is an Adaptable Unary Function.
+ *  If \c f(c) is an object of class <tt>multiplies_value<T></tt>, and \c x is an object
+ *  of class \c T, then <tt>f(x)</tt> returns <tt>x*c</tt>.
+ *
+ *  \param T is a model of <a href="http://www.sgi.com/tech/stl/Assignable.html">Assignable</a>,
+ *          and if \c x is an object of type \p T, then <tt>x*c</tt> must be defined
+ *          and must have a return type that is convertible to \c T.
+ *
+ * \par Example
+ * \code
+ * #include <cusp/array1d.h>
+ * #include <cusp/functional.h>
+ * #include <cusp/print.h>
+ *
+ * int main()
+ * {
+ *    // create an array with 5 entries from 0 to 4
+ *    cusp::counting_array<int> count(5);
+ *
+ *    // allocate size of transformed output array
+ *    cusp::array1d<int,cusp::host_memory> v(5, 0);
+ *
+ *    // compute output vector as transform of tens
+ *    thrust::transform(count.begin(), count.end(), v.begin(), cusp::square_functor<int>());
+ *
+ *    // v = [0, 1, 4, 9, 16]
+ *    cusp::print(v);
+ * }
+ * \endcode
+ */
 template <typename T>
 struct square_functor : public thrust::unary_function<T,T>
 {
@@ -361,6 +422,37 @@ struct square_functor : public thrust::unary_function<T,T>
     }
 };
 
+/**
+ * \p multiplies_value is a function object. Specifically, it is an Adaptable Unary Function.
+ *  If \c f(c) is an object of class <tt>multiplies_value<T></tt>, and \c x is an object
+ *  of class \c T, then <tt>f(x)</tt> returns <tt>x*c</tt>.
+ *
+ *  \param T is a model of <a href="http://www.sgi.com/tech/stl/Assignable.html">Assignable</a>,
+ *          and if \c x is an object of type \p T, then <tt>x*c</tt> must be defined
+ *          and must have a return type that is convertible to \c T.
+ *
+ * \par Example
+ * \code
+ * #include <cusp/array1d.h>
+ * #include <cusp/functional.h>
+ * #include <cusp/print.h>
+ *
+ * int main()
+ * {
+ *    // create an array with 5 entries from 0 to 4
+ *    cusp::counting_array<float> count(5);
+ *
+ *    // allocate size of transformed output array
+ *    cusp::array1d<float,cusp::host_memory> v(5, 0);
+ *
+ *    // compute output vector as transform of tens
+ *    thrust::transform(count.begin(), count.end(), v.begin(), cusp::sqrt_functor<float>());
+ *
+ *    // v = [0.0, 1.0, sqrt(2), sqrt(3), 2.0]
+ *    cusp::print(v);
+ * }
+ * \endcode
+ */
 template <typename T>
 struct sqrt_functor : public thrust::unary_function<T,T>
 {
@@ -373,6 +465,37 @@ struct sqrt_functor : public thrust::unary_function<T,T>
     }
 };
 
+/**
+ * \p multiplies_value is a function object. Specifically, it is an Adaptable Unary Function.
+ *  If \c f(c) is an object of class <tt>multiplies_value<T></tt>, and \c x is an object
+ *  of class \c T, then <tt>f(x)</tt> returns <tt>x*c</tt>.
+ *
+ *  \param T is a model of <a href="http://www.sgi.com/tech/stl/Assignable.html">Assignable</a>,
+ *          and if \c x is an object of type \p T, then <tt>x*c</tt> must be defined
+ *          and must have a return type that is convertible to \c T.
+ *
+ * \par Example
+ * \code
+ * #include <cusp/array1d.h>
+ * #include <cusp/functional.h>
+ * #include <cusp/print.h>
+ *
+ * int main()
+ * {
+ *    // create an array with 5 entries from 1 to 5
+ *    cusp::counting_array<float> count(5, 1);
+ *
+ *    // allocate size of transformed output array
+ *    cusp::array1d<float,cusp::host_memory> v(5, 0);
+ *
+ *    // compute output vector as transform of tens
+ *    thrust::transform(count.begin(), count.end(), v.begin(), cusp::reciprocal_functor<float>());
+ *
+ *    // v = [1, 0.5, 0.33, 0.25, 0.2]
+ *    cusp::print(v);
+ * }
+ * \endcode
+ */
 template <typename T>
 struct reciprocal : public thrust::unary_function<T,T>
 {
@@ -382,6 +505,37 @@ struct reciprocal : public thrust::unary_function<T,T>
     }
 };
 
+/**
+ * \p multiplies_value is a function object. Specifically, it is an Adaptable Unary Function.
+ *  If \c f(c) is an object of class <tt>multiplies_value<T></tt>, and \c x is an object
+ *  of class \c T, then <tt>f(x)</tt> returns <tt>x*c</tt>.
+ *
+ *  \param T is a model of <a href="http://www.sgi.com/tech/stl/Assignable.html">Assignable</a>,
+ *          and if \c x is an object of type \p T, then <tt>x*c</tt> must be defined
+ *          and must have a return type that is convertible to \c T.
+ *
+ * \par Example
+ * \code
+ * #include <cusp/array1d.h>
+ * #include <cusp/functional.h>
+ * #include <cusp/print.h>
+ *
+ * int main()
+ * {
+ *    // create an array with 5 entries from -2 to 2
+ *    cusp::counting_array<int> count(5, -2);
+ *
+ *    // allocate size of transformed output array
+ *    cusp::array1d<int,cusp::host_memory> v(5, 0);
+ *
+ *    // compute output vector as transform of tens
+ *    thrust::transform(count.begin(), count.end(), v.begin(), cusp::abs_functor<int>());
+ *
+ *    // v = [2, 1, 0, 1, 2]
+ *    cusp::print(v);
+ * }
+ * \endcode
+ */
 template<typename T>
 struct abs_functor : public thrust::unary_function<T, typename cusp::norm_type<T>::type>
 {
@@ -392,6 +546,37 @@ struct abs_functor : public thrust::unary_function<T, typename cusp::norm_type<T
     }
 };
 
+/**
+ * \p multiplies_value is a function object. Specifically, it is an Adaptable Unary Function.
+ *  If \c f(c) is an object of class <tt>multiplies_value<T></tt>, and \c x is an object
+ *  of class \c T, then <tt>f(x)</tt> returns <tt>x*c</tt>.
+ *
+ *  \param T is a model of <a href="http://www.sgi.com/tech/stl/Assignable.html">Assignable</a>,
+ *          and if \c x is an object of type \p T, then <tt>x*c</tt> must be defined
+ *          and must have a return type that is convertible to \c T.
+ *
+ * \par Example
+ * \code
+ * #include <cusp/array1d.h>
+ * #include <cusp/functional.h>
+ * #include <cusp/print.h>
+ *
+ * int main()
+ * {
+ *    // create an array with 5 entries from -2 to 2
+ *    cusp::counting_array<int> count(5, -2);
+ *
+ *    // allocate size of transformed output array
+ *    cusp::array1d<int,cusp::host_memory> v(5, 0);
+ *
+ *    // compute output vector as transform of tens
+ *    thrust::transform(count.begin(), count.end(), v.begin(), cusp::abs_squared_functor<int>());
+ *
+ *    // v = [4, 1, 0, 1, 4]
+ *    cusp::print(v);
+ * }
+ * \endcode
+ */
 template<typename T>
 struct abs_squared_functor : public thrust::unary_function<T, typename cusp::norm_type<T>::type>
 {
@@ -402,6 +587,37 @@ struct abs_squared_functor : public thrust::unary_function<T, typename cusp::nor
     }
 };
 
+/**
+ * \p multiplies_value is a function object. Specifically, it is an Adaptable Unary Function.
+ *  If \c f(c) is an object of class <tt>multiplies_value<T></tt>, and \c x is an object
+ *  of class \c T, then <tt>f(x)</tt> returns <tt>x*c</tt>.
+ *
+ *  \param T is a model of <a href="http://www.sgi.com/tech/stl/Assignable.html">Assignable</a>,
+ *          and if \c x is an object of type \p T, then <tt>x*c</tt> must be defined
+ *          and must have a return type that is convertible to \c T.
+ *
+ * \par Example
+ * \code
+ * #include <cusp/array1d.h>
+ * #include <cusp/functional.h>
+ * #include <cusp/print.h>
+ *
+ * int main()
+ * {
+ *    // create an array with 5 entries from 0 to 5
+ *    cusp::counting_array< cusp::complex<float> > count(5, cusp::complex<float>(0,-2));
+ *
+ *    // allocate size of transformed output array
+ *    cusp::array1d<cusp::complex<float>,cusp::host_memory> v(5, 0);
+ *
+ *    // compute output vector as transform of tens
+ *    thrust::transform(count.begin(), count.end(), v.begin(), cusp::conj_functor< cusp::complex<float> >());
+ *
+ *    // v = [(0,2), (1,2), (2,2), (3,2), (4,2)]
+ *    cusp::print(v);
+ * }
+ * \endcode
+ */
 template<typename T>
 struct conj_functor : public thrust::unary_function<T,T>
 {
@@ -411,6 +627,37 @@ struct conj_functor : public thrust::unary_function<T,T>
     }
 };
 
+/**
+ * \p multiplies_value is a function object. Specifically, it is an Adaptable Unary Function.
+ *  If \c f(c) is an object of class <tt>multiplies_value<T></tt>, and \c x is an object
+ *  of class \c T, then <tt>f(x)</tt> returns <tt>x*c</tt>.
+ *
+ *  \param T is a model of <a href="http://www.sgi.com/tech/stl/Assignable.html">Assignable</a>,
+ *          and if \c x is an object of type \p T, then <tt>x*c</tt> must be defined
+ *          and must have a return type that is convertible to \c T.
+ *
+ * \par Example
+ * \code
+ * #include <cusp/array1d.h>
+ * #include <cusp/functional.h>
+ * #include <cusp/print.h>
+ *
+ * int main()
+ * {
+ *    // create an array with 5 entries from (0,-2) to (4,-2)
+ *    cusp::counting_array< cusp::complex<float> > count(5, cusp::complex<float>(0,-2));
+ *
+ *    // allocate size of transformed output array
+ *    cusp::array1d<cusp::complex<float>,cusp::host_memory> v(5, 0);
+ *
+ *    // compute output vector as transform of tens
+ *    thrust::transform(count.begin(), count.end(), v.begin(), cusp::norm_functor< cusp::complex<float> >());
+ *
+ *    // v = [4, 5, 8, 13, 20]
+ *    cusp::print(v);
+ * }
+ * \endcode
+ */
 template<typename T>
 struct norm_functor : public thrust::unary_function<T, typename cusp::norm_type<T>::type>
 {
