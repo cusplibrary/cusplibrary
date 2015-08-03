@@ -46,7 +46,7 @@ void symmetric_rcm(thrust::execution_policy<DerivedPolicy>& exec,
     cusp::graph::pseudo_peripheral_vertex(exec, G, P.permutation);
 
     // sort vertices by level in BFS traversal
-    cusp::array1d<IndexType,MemorySpace> levels(G.num_rows);
+    cusp::detail::temporary_array<IndexType,DerivedPolicy> levels(exec, G.num_rows);
     thrust::sequence(exec, levels.begin(), levels.end());
     thrust::sort_by_key(exec, P.permutation.begin(), P.permutation.end(), levels.begin());
 

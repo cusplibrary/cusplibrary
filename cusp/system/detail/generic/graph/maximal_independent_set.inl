@@ -18,6 +18,8 @@
 #pragma once
 
 #include <cusp/detail/config.h>
+#include <cusp/detail/temporary_array.h>
+
 #include <cusp/exception.h>
 #include <cusp/multiply.h>
 
@@ -62,11 +64,13 @@ struct process_non_mis_nodes
     }
 };
 
-template <typename Array1,
-         typename Array2,
-         typename Array3,
-         typename Array4>
-void compute_mis_states(const size_t k,
+template <typename DerivedPolicy,
+          typename Array1,
+          typename Array2,
+          typename Array3,
+          typename Array4>
+void compute_mis_states(thrust::execution_policy<DerivedPolicy>& exec,
+                        const size_t k,
                         const Array1& row_indices,
                         const Array2& column_indices,
                         Array3& random_values,
@@ -77,10 +81,10 @@ void compute_mis_states(const size_t k,
     typedef typename Array4::value_type   NodeStateType;
     typedef typename Array1::memory_space MemorySpace;
 
-    typedef typename thrust::counting_iterator<IndexType>                     CountingIterator;
-    typedef typename cusp::array1d<NodeStateType,MemorySpace>::iterator       StatesIterator;
-    typedef typename cusp::array1d<RandomType,MemorySpace>::iterator          RandomIterator;
-    typedef typename cusp::array1d<IndexType,MemorySpace>::iterator           IndexIterator;
+    typedef typename thrust::counting_iterator<IndexType>                                  CountingIterator;
+    typedef typename cusp::detail::temporary_array<NodeStateType, DerivedPolicy>::iterator StatesIterator;
+    typedef typename cusp::detail::temporary_array<RandomType,    DerivedPolicy>::iterator RandomIterator;
+    typedef typename cusp::detail::temporary_array<IndexType,     DerivedPolicy>::iterator IndexIterator;
 
     typedef typename thrust::tuple<NodeStateType,RandomType,IndexType>        Tuple1;
     typedef thrust::tuple<StatesIterator,RandomIterator,CountingIterator>     IteratorTuple1;
@@ -99,21 +103,15 @@ void compute_mis_states(const size_t k,
 
     const size_t N = states.size();
     const size_t M = row_indices.size();
+    const size_t temp_size = k >= 1 ? N : 0;
 
-    cusp::array1d<NodeStateType,MemorySpace> maximal_states(N);
-    cusp::array1d<RandomType,MemorySpace>    maximal_values(N);
-    cusp::array1d<IndexType,MemorySpace>     maximal_indices(N);
+    cusp::detail::temporary_array<NodeStateType, DerivedPolicy> maximal_states (exec, N);
+    cusp::detail::temporary_array<RandomType,    DerivedPolicy> maximal_values (exec, N);
+    cusp::detail::temporary_array<IndexType,     DerivedPolicy> maximal_indices(exec, N);
 
-    cusp::array1d<NodeStateType,MemorySpace> last_states;
-    cusp::array1d<RandomType,MemorySpace>    last_values;
-    cusp::array1d<IndexType,MemorySpace>     last_indices;
-
-    if(k >= 1)
-    {
-        last_states.resize (N);
-        last_values.resize (N);
-        last_indices.resize(N);
-    }
+    cusp::detail::temporary_array<NodeStateType, DerivedPolicy> last_states (exec, temp_size);
+    cusp::detail::temporary_array<RandomType,    DerivedPolicy> last_values (exec, temp_size);
+    cusp::detail::temporary_array<IndexType,     DerivedPolicy> last_indices(exec, temp_size);
 
     cusp::constant_array<Tuple1> values(M, Tuple1(0,0,0));
     CooView A(N, N, M, make_array1d_view(row_indices), make_array1d_view(column_indices), values);
@@ -137,9 +135,6 @@ void compute_mis_states(const size_t k,
         // find the largest (state,value,index) k-ring neighbor for each node (if k > 1)
         for(size_t ring = 1; ring < k; ring++)
         {
-            last_states.swap (maximal_states);
-            last_indices.swap(maximal_indices);
-            last_values.swap (maximal_values);
             y.swap(z);
 
             cusp::generalized_spmv(A, y, y, z, thrust::project2nd<Tuple1,Tuple2>(), thrust::maximum<Tuple2>());
@@ -175,7 +170,7 @@ size_t maximal_independent_set(thrust::execution_policy<DerivedPolicy>& exec,
                                const MatrixType& G,
                                ArrayType& stencil,
                                const size_t k,
-                               coo_format)
+                               cusp::coo_format)
 {
     typedef typename MatrixType::index_type   IndexType;
     typedef typename MatrixType::value_type   ValueType;
@@ -185,21 +180,22 @@ size_t maximal_independent_set(thrust::execution_policy<DerivedPolicy>& exec,
 
     const IndexType N = G.num_rows;
 
-    cusp::array1d<RandomType,MemorySpace> random_values(N);
-    cusp::copy(cusp::random_array<RandomType>(N), random_values);
+    cusp::detail::temporary_array<RandomType, DerivedPolicy> random_values(exec, N);
+    cusp::copy(exec, cusp::random_array<RandomType>(N), random_values);
 
-    cusp::array1d<NodeStateType,MemorySpace> states(N, 1);
-
-    detail::compute_mis_states(k, G.row_indices, G.column_indices, random_values, states);
+    cusp::detail::temporary_array<NodeStateType, DerivedPolicy> states(exec, N, NodeStateType(1));
+    detail::compute_mis_states(exec, k, G.row_indices, G.column_indices, random_values, states);
 
     // resize output
     stencil.resize(N);
 
     // mark all mis nodes
-    thrust::transform(states.begin(), states.end(), thrust::constant_iterator<NodeStateType>(2), stencil.begin(), thrust::equal_to<NodeStateType>());
+    thrust::transform(exec, states.begin(), states.end(),
+                      thrust::constant_iterator<NodeStateType>(2),
+                      stencil.begin(), thrust::equal_to<NodeStateType>());
 
     // return the size of the MIS
-    return thrust::count(stencil.begin(), stencil.end(), typename ArrayType::value_type(true));
+    return thrust::count(exec, stencil.begin(), stencil.end(), typename ArrayType::value_type(true));
 }
 
 template <typename DerivedPolicy, typename MatrixType, typename ArrayType>
@@ -207,21 +203,22 @@ size_t maximal_independent_set(thrust::execution_policy<DerivedPolicy>& exec,
                                const MatrixType& G,
                                ArrayType& stencil,
                                const size_t k,
-                               csr_format)
+                               cusp::csr_format)
 {
-    typedef typename MatrixType::column_indices_array_type     IndicesType;
-    typedef typename IndicesType::view                         IndicesView;
-    typedef typename IndicesType::const_view                   ConstIndicesView;
-    typedef typename MatrixType::values_array_type::const_view ConstValuesView;
+    typedef typename MatrixType::index_type                             IndexType;
+    typedef cusp::detail::temporary_array<IndexType, DerivedPolicy>     IndexArray;
 
-    IndicesType row_indices(G.num_entries);
+    typedef typename IndexArray::view                                   RowView;
+    typedef typename MatrixType::column_indices_array_type::const_view  ColView;
+    typedef typename MatrixType::values_array_type::const_view          ValView;
+
+    IndexArray row_indices(exec, G.num_entries);
     cusp::offsets_to_indices(G.row_offsets, row_indices);
 
-    cusp::coo_matrix_view<IndicesView,ConstIndicesView,ConstValuesView> G_coo(
-        G.num_rows, G.num_cols, G.num_entries,
-        cusp::make_array1d_view(row_indices),
-        cusp::make_array1d_view(G.column_indices),
-        cusp::make_array1d_view(G.values));
+    cusp::coo_matrix_view<RowView,ColView,ValView> G_coo(G.num_rows, G.num_cols, G.num_entries,
+                                                         cusp::make_array1d_view(row_indices),
+                                                         cusp::make_array1d_view(G.column_indices),
+                                                         cusp::make_array1d_view(G.values));
 
     return cusp::graph::maximal_independent_set(exec, G_coo, stencil, k);
 }
@@ -231,7 +228,7 @@ size_t maximal_independent_set(thrust::execution_policy<DerivedPolicy>& exec,
                                const MatrixType& G,
                                ArrayType& stencil,
                                const size_t k,
-                               known_format)
+                               cusp::known_format)
 {
     typedef typename cusp::detail::as_csr_type<MatrixType>::type CsrMatrix;
 

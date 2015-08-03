@@ -19,6 +19,7 @@
 #include <cusp/detail/config.h>
 #include <cusp/detail/array2d_format_utils.h>
 #include <cusp/detail/format.h>
+#include <cusp/detail/temporary_array.h>
 #include <cusp/detail/utils.h>
 
 #include <cusp/coo_matrix.h>
@@ -85,7 +86,7 @@ void generalized_spmv(thrust::execution_policy<DerivedPolicy> &exec,
     typedef thrust::transform_iterator<cusp::divide_value<IndexType>, IndexIterator>             RowIndexIterator;
 
     // define types used to programatically generate column_indices
-    typedef typename cusp::array1d<IndexType,MemorySpace>::const_iterator                        ConstElementIterator;
+    typedef typename LinearOperator::diagonal_offsets_array_type::const_iterator                 ConstElementIterator;
     typedef thrust::transform_iterator<cusp::modulus_value<IndexType>, IndexIterator>            ModulusIterator;
     typedef thrust::permutation_iterator<ConstElementIterator,ModulusIterator>                   OffsetsPermIterator;
     typedef thrust::tuple<OffsetsPermIterator, RowIndexIterator>                                 IteratorTuple;
@@ -114,7 +115,7 @@ void generalized_spmv(thrust::execution_policy<DerivedPolicy> &exec,
     PermValueIterator   perm_values_begin(A.values.values.begin(),  perm_indices_begin);
 
     typedef typename Vector3::value_type ValueType3;
-    thrust::detail::temporary_array<ValueType3, DerivedPolicy> vals(exec, A.num_rows);
+    cusp::detail::temporary_array<ValueType3, DerivedPolicy> vals(exec, A.num_rows);
     thrust::fill(exec, vals.begin(), vals.end(), ValueType(0));
 
     thrust::reduce_by_key(exec,
@@ -177,7 +178,7 @@ void generalized_spmv(thrust::execution_policy<DerivedPolicy> &exec,
 
     RowIndexIterator row_indices_begin(IndexIterator(0), cusp::divide_value<IndexType>(num_entries_per_row));
     StrideIndexIterator stride_indices_begin(IndexIterator(0), logical_functor);
-    thrust::detail::temporary_array<ValueType, DerivedPolicy> vals(exec, A.num_rows);
+    cusp::detail::temporary_array<ValueType, DerivedPolicy> vals(exec, A.num_rows);
 
     thrust::reduce_by_key(exec,
                           row_indices_begin, row_indices_begin + num_entries,
@@ -221,15 +222,18 @@ void generalized_spmv(thrust::execution_policy<DerivedPolicy> &exec,
     typedef typename LinearOperator::index_type IndexType;
     typedef typename LinearOperator::value_type ValueType;
 
+    typedef cusp::detail::temporary_array<IndexType, DerivedPolicy> IndexArray;
+    typedef cusp::detail::temporary_array<ValueType, DerivedPolicy> ValueArray;
+
     thrust::copy(exec, y.begin(), y.end(), z.begin());
 
     if(A.num_entries == 0) return;
 
-    thrust::detail::temporary_array<IndexType, DerivedPolicy> rows(exec, A.num_rows);
-    thrust::detail::temporary_array<ValueType, DerivedPolicy> vals(exec, A.num_rows);
+    IndexArray rows(exec, A.num_rows);
+    ValueArray vals(exec, A.num_rows);
 
-    typename thrust::detail::temporary_array<IndexType, DerivedPolicy>::iterator rows_end;
-    typename thrust::detail::temporary_array<ValueType, DerivedPolicy>::iterator vals_end;
+    typename IndexArray::iterator rows_end;
+    typename ValueArray::iterator vals_end;
 
     thrust::tie(rows_end, vals_end) =
         thrust::reduce_by_key(exec,
@@ -274,9 +278,9 @@ void generalized_spmv(thrust::execution_policy<DerivedPolicy> &exec,
                       cusp::array1d_format)
 {
     typedef typename LinearOperator::index_type IndexType;
-    typedef typename thrust::detail::temporary_array<IndexType, DerivedPolicy>::iterator TempIterator;
+    typedef cusp::detail::temporary_array<IndexType, DerivedPolicy> TempArray;
 
-    typedef typename cusp::array1d_view<TempIterator>::const_view           RowView;
+    typedef typename TempArray::view                                        RowView;
     typedef typename LinearOperator::column_indices_array_type::const_view  ColView;
     typedef typename LinearOperator::values_array_type::const_view          ValView;
 
@@ -286,8 +290,7 @@ void generalized_spmv(thrust::execution_policy<DerivedPolicy> &exec,
         return;
     }
 
-    thrust::detail::temporary_array<IndexType, DerivedPolicy> temp(exec, A.num_entries);
-    cusp::array1d_view<TempIterator> row_indices(temp.begin(), temp.end());
+    TempArray row_indices(exec, A.num_entries);
     cusp::offsets_to_indices(A.row_offsets, row_indices);
 
     cusp::coo_matrix_view<RowView,ColView,ValView> A_coo_view(A.num_rows, A.num_cols, A.num_entries,
@@ -318,11 +321,8 @@ void generalized_spmv(thrust::execution_policy<DerivedPolicy> &exec,
                       cusp::array1d_format)
 {
     typedef typename Vector3::value_type ValueType;
-    typedef typename thrust::detail::temporary_array<ValueType, DerivedPolicy> TempArray;
-    typedef typename TempArray::iterator TempIterator;
 
-    TempArray temp(exec, A.num_rows);
-    cusp::array1d_view<TempIterator> vals(temp.begin(), temp.end());
+    cusp::detail::temporary_array<ValueType, DerivedPolicy> vals(exec, A.num_rows);
 
     cusp::generalized_spmv(exec, A.ell, x, y, vals, combine, reduce);
     cusp::generalized_spmv(exec, A.coo, x, vals, z, combine, reduce);

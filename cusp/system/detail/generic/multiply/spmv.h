@@ -19,6 +19,7 @@
 #include <cusp/detail/config.h>
 #include <cusp/detail/array2d_format_utils.h>
 #include <cusp/detail/format.h>
+#include <cusp/detail/temporary_array.h>
 #include <cusp/detail/utils.h>
 
 #include <cusp/coo_matrix.h>
@@ -65,7 +66,7 @@ void multiply(thrust::execution_policy<DerivedPolicy> &exec,
     typedef thrust::transform_iterator<cusp::divide_value<IndexType>, IndexIterator>    RowIndexIterator;
 
     // define types used to programatically generate column_indices
-    typedef typename cusp::array1d<IndexType,MemorySpace>::const_iterator               ConstElementIterator;
+    typedef typename LinearOperator::diagonal_offsets_array_type::const_iterator        ConstElementIterator;
     typedef thrust::transform_iterator<cusp::modulus_value<IndexType>, IndexIterator>   ModulusIterator;
     typedef thrust::permutation_iterator<ConstElementIterator,ModulusIterator>          OffsetsPermIterator;
     typedef thrust::tuple<OffsetsPermIterator, RowIndexIterator>                        IteratorTuple;
@@ -93,7 +94,7 @@ void multiply(thrust::execution_policy<DerivedPolicy> &exec,
     PermIndexIterator   perm_indices_begin(IndexIterator(0),   PermFunctor(A.values.num_rows, A.values.num_cols, A.values.pitch));
     PermValueIterator   perm_values_begin(A.values.values.begin(),  perm_indices_begin);
 
-    thrust::detail::temporary_array<ValueType, DerivedPolicy> vals(exec, A.num_rows);
+    cusp::detail::temporary_array<ValueType, DerivedPolicy> vals(exec, A.num_rows);
 
     thrust::reduce_by_key(exec,
                           row_indices_begin, row_indices_begin + A.values.values.size(),
@@ -154,7 +155,7 @@ void multiply(thrust::execution_policy<DerivedPolicy> &exec,
 
     RowIndexIterator row_indices_begin(IndexIterator(0), cusp::divide_value<IndexType>(num_entries_per_row));
     StrideIndexIterator stride_indices_begin(IndexIterator(0), logical_functor);
-    thrust::detail::temporary_array<ValueType, DerivedPolicy> vals(exec, A.num_rows);
+    cusp::detail::temporary_array<ValueType, DerivedPolicy> vals(exec, A.num_rows);
 
     thrust::reduce_by_key(exec,
                           row_indices_begin, row_indices_begin + num_entries,
@@ -196,11 +197,16 @@ void multiply(thrust::execution_policy<DerivedPolicy> &exec,
     typedef typename LinearOperator::index_type IndexType;
     typedef typename LinearOperator::value_type ValueType;
 
-    thrust::detail::temporary_array<IndexType, DerivedPolicy> rows(exec, A.num_rows);
-    thrust::detail::temporary_array<ValueType, DerivedPolicy> vals(exec, A.num_rows);
+    typedef cusp::detail::temporary_array<IndexType, DerivedPolicy> IndexArray;
+    typedef cusp::detail::temporary_array<ValueType, DerivedPolicy> ValueArray;
 
-    typename thrust::detail::temporary_array<IndexType, DerivedPolicy>::iterator rows_end;
-    typename thrust::detail::temporary_array<ValueType, DerivedPolicy>::iterator vals_end;
+    cusp::detail::temporary_array<IndexType, DerivedPolicy> rows(exec, A.num_rows);
+    cusp::detail::temporary_array<ValueType, DerivedPolicy> vals(exec, A.num_rows);
+
+    if(A.num_entries == 0) return;
+
+    typename IndexArray::iterator rows_end;
+    typename ValueArray::iterator vals_end;
 
     thrust::tie(rows_end, vals_end) =
         thrust::reduce_by_key(exec,
@@ -243,14 +249,13 @@ void multiply(thrust::execution_policy<DerivedPolicy> &exec,
               cusp::array1d_format)
 {
     typedef typename LinearOperator::index_type IndexType;
-    typedef typename thrust::detail::temporary_array<IndexType, DerivedPolicy>::iterator TempIterator;
+    typedef cusp::detail::temporary_array<IndexType, DerivedPolicy> TempArray;
 
-    typedef typename cusp::array1d_view<TempIterator>::view           RowView;
+    typedef typename TempArray::view                                  RowView;
     typedef typename LinearOperator::column_indices_array_type::view  ColView;
     typedef typename LinearOperator::values_array_type::view          ValView;
 
-    thrust::detail::temporary_array<IndexType, DerivedPolicy> temp(exec, A.num_entries);
-    cusp::array1d_view<TempIterator> row_indices(temp.begin(), temp.end());
+    cusp::detail::temporary_array<IndexType, DerivedPolicy> row_indices(exec, A.num_entries);
     cusp::offsets_to_indices(A.row_offsets, row_indices);
 
     cusp::coo_matrix_view<RowView,ColView,ValView> A_coo_view(A.num_rows, A.num_cols, A.num_entries,

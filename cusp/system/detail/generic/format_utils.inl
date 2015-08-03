@@ -19,6 +19,7 @@
 #include <cusp/functional.h>
 
 #include <cusp/detail/format.h>
+#include <cusp/detail/temporary_array.h>
 
 #include <thrust/adjacent_difference.h>
 #include <thrust/binary_search.h>
@@ -76,7 +77,7 @@ void extract_diagonal(thrust::execution_policy<DerivedPolicy> &exec,
     typedef typename Array::memory_space MemorySpace;
 
     // first expand the compressed row offsets into row indices
-    thrust::detail::temporary_array<IndexType, DerivedPolicy> row_indices(exec, A.num_entries);
+    cusp::detail::temporary_array<IndexType, DerivedPolicy> row_indices(exec, A.num_entries);
     cusp::offsets_to_indices(exec, A.row_offsets, row_indices);
 
     // initialize output to zero
@@ -218,7 +219,7 @@ size_t count_diagonals(thrust::execution_policy<DerivedPolicy> &exec,
 
     size_t num_entries = row_indices.size();
 
-    thrust::detail::temporary_array<IndexType, DerivedPolicy> values(exec, num_rows + num_cols);
+    cusp::detail::temporary_array<IndexType, DerivedPolicy> values(exec, num_rows + num_cols);
     thrust::fill(exec, values.begin(), values.end(), IndexType(0));
 
     thrust::scatter(exec,
@@ -280,11 +281,11 @@ size_t compute_optimal_entries_per_row(thrust::execution_policy<DerivedPolicy> &
     IndexType max_cols_per_row = compute_max_entries_per_row(exec, row_offsets);
 
     // allocate storage for the cumulative histogram and histogram
-    thrust::detail::temporary_array<IndexType, DerivedPolicy> cumulative_histogram(exec, max_cols_per_row + 1);
+    cusp::detail::temporary_array<IndexType, DerivedPolicy> cumulative_histogram(exec, max_cols_per_row + 1);
     thrust::fill(exec, cumulative_histogram.begin(), cumulative_histogram.end(), IndexType(0));
 
     // compute distribution of nnz per row
-    thrust::detail::temporary_array<IndexType, DerivedPolicy> entries_per_row(exec, num_rows);
+    cusp::detail::temporary_array<IndexType, DerivedPolicy> entries_per_row(exec, num_rows);
     thrust::adjacent_difference(exec, row_offsets.begin() + 1, row_offsets.end(), entries_per_row.begin());
 
     // sort data to bring equal elements together
