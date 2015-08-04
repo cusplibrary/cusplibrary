@@ -23,6 +23,8 @@
 
 #include <cusp/blas/blas.h>
 
+#include <cusp/detail/temporary_array.h>
+
 #include <thrust/copy.h>
 #include <thrust/fill.h>
 #include <thrust/functional.h>
@@ -294,11 +296,11 @@ void compute_xp_m(const Array1& alpha_0_s, const Array2& z_1_s,
                   Array5& x_0_s, Array6& p_0_s)
 {
     // sanity check
-    cusp::assert_same_dimensions(alpha_0_s,z_1_s,beta_0_s);
-    cusp::assert_same_dimensions(x_0_s,p_0_s);
-    size_t N = r_0.end()-r_0.begin();
-    size_t N_s = alpha_0_s.end()-alpha_0_s.begin();
-    size_t N_t = x_0_s.end()-x_0_s.begin();
+    cusp::assert_same_dimensions(alpha_0_s, z_1_s, beta_0_s);
+    cusp::assert_same_dimensions(x_0_s, p_0_s);
+    size_t N = r_0.end() - r_0.begin();
+    size_t N_s = alpha_0_s.end() - alpha_0_s.begin();
+    size_t N_t = x_0_s.end() - x_0_s.begin();
     assert (N_t == N*N_s);
 
     // counting iterators to pass to thrust::transform
@@ -306,29 +308,29 @@ void compute_xp_m(const Array1& alpha_0_s, const Array2& z_1_s,
 
     // get raw pointers for passing to kernels
     typedef typename Array1::value_type   ScalarType;
-    const ScalarType *raw_ptr_alpha_0_s = thrust::raw_pointer_cast(alpha_0_s.data());
-    const ScalarType *raw_ptr_z_1_s     = thrust::raw_pointer_cast(z_1_s.data());
-    const ScalarType *raw_ptr_beta_0_s  = thrust::raw_pointer_cast(beta_0_s.data());
-    const ScalarType *raw_ptr_r_0       = thrust::raw_pointer_cast(r_0.data());
+    const ScalarType *raw_ptr_alpha_0_s = thrust::raw_pointer_cast(&alpha_0_s[0]);
+    const ScalarType *raw_ptr_z_1_s     = thrust::raw_pointer_cast(&z_1_s[0]);
+    const ScalarType *raw_ptr_beta_0_s  = thrust::raw_pointer_cast(&beta_0_s[0]);
+    const ScalarType *raw_ptr_r_0       = thrust::raw_pointer_cast(&r_0[0]);
 
     // compute new x,p
     thrust::for_each(
-        thrust::make_zip_iterator(thrust::make_tuple(x_0_s.begin(),p_0_s.begin(),counter)),
-        thrust::make_zip_iterator(thrust::make_tuple(x_0_s.begin(),p_0_s.begin(),counter))+N_t,
-        cusp::krylov::cg_detail::detail_m::KERNEL_XP<ScalarType>(N,raw_ptr_alpha_0_s,raw_ptr_beta_0_s,raw_ptr_z_1_s,raw_ptr_r_0));
+        thrust::make_zip_iterator(thrust::make_tuple(x_0_s.begin(), p_0_s.begin(),counter)),
+        thrust::make_zip_iterator(thrust::make_tuple(x_0_s.begin(), p_0_s.begin(),counter))+N_t,
+        cusp::krylov::cg_detail::detail_m::KERNEL_XP<ScalarType>(N, raw_ptr_alpha_0_s, raw_ptr_beta_0_s, raw_ptr_z_1_s, raw_ptr_r_0));
 }
 
 template <typename Array1, typename Array2, typename Array3>
 void doublecopy(const Array1& s, Array2& sd, Array3& d)
 {
     // sanity check
-    cusp::assert_same_dimensions(s,sd,d);
-    size_t N = s.end()-s.begin();
+    cusp::assert_same_dimensions(s, sd, d);
+    size_t N = s.end() - s.begin();
 
     // recycle
     thrust::for_each(
-        thrust::make_zip_iterator(thrust::make_tuple(s.begin(),sd.begin(),d.begin())),
-        thrust::make_zip_iterator(thrust::make_tuple(s.begin(),sd.begin(),d.begin()))+N,
+        thrust::make_zip_iterator(thrust::make_tuple(s.begin(), sd.begin(), d.begin())),
+        thrust::make_zip_iterator(thrust::make_tuple(s.begin(), sd.begin(), d.begin())) + N,
         cusp::krylov::cg_detail::detail_m::KERNEL_DCOPY());
 }
 
@@ -339,8 +341,8 @@ template <typename Array1, typename Array2>
 void vectorize_copy(const Array1& source, Array2& dest)
 {
     // sanity check
-    size_t N = source.end()-source.begin();
-    size_t N_t = dest.end()-dest.begin();
+    size_t N = source.end() - source.begin();
+    size_t N_t = dest.end() - dest.begin();
     assert ( N_t%N == 0 );
 
     // counting iterators to pass to thrust::transform
@@ -351,8 +353,8 @@ void vectorize_copy(const Array1& source, Array2& dest)
     const ScalarType *raw_ptr_source = thrust::raw_pointer_cast(source.data());
 
     // compute
-    thrust::transform(counter,counter+N_t,dest.begin(),
-                      cusp::krylov::cg_detail::detail_m::KERNEL_VCOPY<ScalarType>(N,raw_ptr_source));
+    thrust::transform(counter, counter + N_t, dest.begin(),
+                      cusp::krylov::cg_detail::detail_m::KERNEL_VCOPY<ScalarType>(N, raw_ptr_source));
 
 }
 
@@ -377,7 +379,6 @@ void xpay(const Array1& x,
     cusp::assert_same_dimensions(x, y);
     cusp::krylov::cg_detail::trans_m::xpay(x.begin(), x.end(), y.begin(), alpha);
 }
-
 
 } // end namespace trans_m
 
@@ -409,31 +410,29 @@ void cg_m(thrust::execution_policy<DerivedPolicy> &exec,
 
     // sanity checking
     const size_t N = A.num_rows;
-    const size_t N_t = x.end()-x.begin();
-    const size_t test = b.end()-b.begin();
-    const size_t N_s = sigma.end()-sigma.begin();
+    const size_t N_t = x.end() - x.begin();
+    const size_t test = b.end() - b.begin();
+    const size_t N_s = sigma.end() - sigma.begin();
 
     assert(A.num_rows == A.num_cols);
     assert(N_t == N*N_s);
     assert(N == test);
 
-    //clock_t start = clock();
-
     // p has data used in computing the soln.
-    cusp::array1d<ValueType,MemorySpace> p_0_s(N_t);
+    cusp::detail::temporary_array<ValueType, DerivedPolicy> p_0_s(exec, N_t);
 
     // stores residuals
-    cusp::array1d<ValueType,MemorySpace> r_0(N);
+    cusp::detail::temporary_array<ValueType, DerivedPolicy> r_0(exec, N);
     // used in iterates
-    cusp::array1d<ValueType,MemorySpace> p_0(N);
+    cusp::detail::temporary_array<ValueType, DerivedPolicy> p_0(exec, N);
 
     // stores parameters used in the iteration
-    cusp::array1d<ValueType,MemorySpace> z_m1_s(N_s,ValueType(1));
-    cusp::array1d<ValueType,MemorySpace> z_0_s(N_s,ValueType(1));
-    cusp::array1d<ValueType,MemorySpace> z_1_s(N_s);
+    cusp::detail::temporary_array<ValueType, DerivedPolicy> z_m1_s(exec, N_s, ValueType(1));
+    cusp::detail::temporary_array<ValueType, DerivedPolicy> z_0_s(exec, N_s, ValueType(1));
+    cusp::detail::temporary_array<ValueType, DerivedPolicy> z_1_s(exec, N_s);
 
-    cusp::array1d<ValueType,MemorySpace> alpha_0_s(N_s,ValueType(0));
-    cusp::array1d<ValueType,MemorySpace> beta_0_s(N_s);
+    cusp::detail::temporary_array<ValueType, DerivedPolicy> alpha_0_s(exec, N_s, ValueType(0));
+    cusp::detail::temporary_array<ValueType, DerivedPolicy> beta_0_s(exec, N_s);
 
     // stores parameters used in the iteration for the undeformed system
     ValueType beta_m1, beta_0(ValueType(1));
@@ -441,7 +440,7 @@ void cg_m(thrust::execution_policy<DerivedPolicy> &exec,
     //ValueType alpha_0_inv;
 
     // stores the value of the matrix-vector product we have to compute
-    cusp::array1d<ValueType,MemorySpace> Ap(N);
+    cusp::detail::temporary_array<ValueType, DerivedPolicy> Ap(exec, N);
 
     // stores the value of the inner product (p,Ap)
     ValueType pAp;
@@ -488,19 +487,19 @@ void cg_m(thrust::execution_policy<DerivedPolicy> &exec,
 
         // compute \alpha_0
         rsq_1 = cusp::blas::dotc(exec, r_0, r_0);
-        alpha_0 = rsq_1/rsq_0;
-        cusp::krylov::cg_detail::trans_m::xpay(r_0,p_0,alpha_0);
+        alpha_0 = rsq_1 / rsq_0;
+        cusp::krylov::cg_detail::trans_m::xpay(r_0, p_0, alpha_0);
 
         // calculate \alpha_0^\sigma
         cusp::krylov::cg_detail::trans_m::compute_a_m(z_0_s, z_1_s, beta_0_s,
-                                           alpha_0_s, beta_0, alpha_0);
+                                                      alpha_0_s, beta_0, alpha_0);
 
         // compute x_0^\sigma, p_0^\sigma
         cusp::krylov::cg_detail::trans_m::compute_xp_m(alpha_0_s, z_1_s, beta_0_s, r_0,
-                                            x, p_0_s);
+                                                       x, p_0_s);
 
         // recycle \zeta_i^\sigma
-        cusp::krylov::cg_detail::trans_m::doublecopy(z_1_s,z_0_s,z_m1_s);
+        cusp::krylov::cg_detail::trans_m::doublecopy(z_1_s, z_0_s, z_m1_s);
 
         ++monitor;
 

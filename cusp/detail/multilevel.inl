@@ -32,6 +32,11 @@ multilevel<IndexType,ValueType,MemorySpace,Format,SmootherType,SolverType>
 
     levels[0].A = *M.A_ptr;
     A_ptr = &levels[0].A;
+
+    residual.resize(A_ptr->num_rows);
+    update.resize(A_ptr->num_rows);
+    temp_b.resize(levels.back().A.num_rows);
+    temp_x.resize(levels.back().A.num_rows);
 }
 
 template <typename IndexType, typename ValueType, typename MemorySpace, typename Format, typename SmootherType, typename SolverType>
@@ -84,6 +89,9 @@ void multilevel<IndexType,ValueType,MemorySpace,Format,SmootherType,SolverType>
     A_ptr = &this->A;
 
     levels[0].smoother.initialize(this->A, L);
+
+    residual.resize(A.num_rows);
+    update.resize(A.num_rows);
 }
 
 template <typename IndexType, typename ValueType, typename MemorySpace, typename Format, typename SmootherType, typename SolverType>
@@ -94,6 +102,9 @@ void multilevel<IndexType,ValueType,MemorySpace,Format,SmootherType,SolverType>
     A_ptr = const_cast<SolveMatrixType*>(&A);
 
     levels[0].smoother.initialize(A, L);
+
+    residual.resize(A.num_rows);
+    update.resize(A.num_rows);
 }
 
 template <typename IndexType, typename ValueType, typename MemorySpace, typename Format, typename SmootherType, typename SolverType>
@@ -114,6 +125,9 @@ template <typename IndexType, typename ValueType, typename MemorySpace, typename
 void multilevel<IndexType,ValueType,MemorySpace,Format,SmootherType,SolverType>
 ::initialize_coarse_solver(void)
 {
+    temp_b.resize(levels.back().A.num_rows);
+    temp_x.resize(levels.back().A.num_rows);
+
     solver = Solver(levels.back().A);
 }
 
@@ -141,12 +155,7 @@ template <typename Array1, typename Array2, typename Monitor>
 void multilevel<IndexType,ValueType,MemorySpace,Format,SmootherType,SolverType>
 ::solve(const Array1& b, Array2& x, Monitor& monitor)
 {
-    const size_t N = A_ptr->num_rows;
-
     // use simple iteration
-    cusp::array1d<ValueType,MemorySpace> update(N);
-    cusp::array1d<ValueType,MemorySpace> residual(N);
-
     // compute initial residual
     cusp::multiply(*A_ptr, x, residual);
     cusp::blas::axpby(b, residual, residual, ValueType(1.0), ValueType(-1.0));
@@ -174,8 +183,7 @@ void multilevel<IndexType,ValueType,MemorySpace,Format,SmootherType,SolverType>
     {
         // coarse grid solve
         // TODO streamline
-        cusp::array1d<ValueType,cusp::host_memory> temp_b(b);
-        cusp::array1d<ValueType,cusp::host_memory> temp_x(x.size());
+        cusp::copy(b, temp_b);
         solver(temp_b, temp_x);
         cusp::copy(temp_x, x);
     }

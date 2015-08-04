@@ -706,28 +706,28 @@ void bicgstab_m(thrust::execution_policy<DerivedPolicy> &exec,
     //clock_t start = clock();
 
     // w has data used in computing the soln.
-    cusp::array1d<ValueType,MemorySpace> w_1(N);
-    cusp::array1d<ValueType,MemorySpace> w_0(N);
+    cusp::detail::temporary_array<ValueType, DerivedPolicy> w_1(exec, N);
+    cusp::detail::temporary_array<ValueType, DerivedPolicy> w_0(exec, N);
 
     // stores residuals
-    cusp::array1d<ValueType,MemorySpace> r_0(N);
-    cusp::array1d<ValueType,MemorySpace> r_1(N);
+    cusp::detail::temporary_array<ValueType, DerivedPolicy> r_0(exec, N);
+    cusp::detail::temporary_array<ValueType, DerivedPolicy> r_1(exec, N);
 
     // used in iterates
-    cusp::array1d<ValueType,MemorySpace> s_0(N);
-    cusp::array1d<ValueType,MemorySpace> s_0_s(N_t);
+    cusp::detail::temporary_array<ValueType, DerivedPolicy> s_0(exec, N);
+    cusp::detail::temporary_array<ValueType, DerivedPolicy> s_0_s(exec, N_t);
 
     // stores parameters used in the iteration
-    cusp::array1d<ValueType,MemorySpace> z_m1_s(N_s,ValueType(1));
-    cusp::array1d<ValueType,MemorySpace> z_0_s(N_s,ValueType(1));
-    cusp::array1d<ValueType,MemorySpace> z_1_s(N_s);
+    cusp::detail::temporary_array<ValueType, DerivedPolicy> z_m1_s(exec, N_s, ValueType(1));
+    cusp::detail::temporary_array<ValueType, DerivedPolicy> z_0_s(exec, N_s, ValueType(1));
+    cusp::detail::temporary_array<ValueType, DerivedPolicy> z_1_s(exec, N_s);
 
-    cusp::array1d<ValueType,MemorySpace> alpha_0_s(N_s,ValueType(0));
-    cusp::array1d<ValueType,MemorySpace> beta_0_s(N_s);
+    cusp::detail::temporary_array<ValueType, DerivedPolicy> alpha_0_s(exec, N_s, ValueType(0));
+    cusp::detail::temporary_array<ValueType, DerivedPolicy> beta_0_s(exec, N_s);
 
-    cusp::array1d<ValueType,MemorySpace> rho_0_s(N_s,ValueType(1));
-    cusp::array1d<ValueType,MemorySpace> rho_1_s(N_s);
-    cusp::array1d<ValueType,MemorySpace> chi_0_s(N_s);
+    cusp::detail::temporary_array<ValueType, DerivedPolicy> rho_0_s(exec, N_s, ValueType(1));
+    cusp::detail::temporary_array<ValueType, DerivedPolicy> rho_1_s(exec, N_s);
+    cusp::detail::temporary_array<ValueType, DerivedPolicy> chi_0_s(exec, N_s);
 
     // stores parameters used in the iteration for the undeformed system
     ValueType beta_m1, beta_0(ValueType(1));
@@ -738,8 +738,8 @@ void bicgstab_m(thrust::execution_policy<DerivedPolicy> &exec,
     ValueType chi_0;
 
     // stores the value of the matrix-vector product we have to compute
-    cusp::array1d<ValueType,MemorySpace> As(N);
-    cusp::array1d<ValueType,MemorySpace> Aw(N);
+    cusp::detail::temporary_array<ValueType, DerivedPolicy> As(exec, N);
+    cusp::detail::temporary_array<ValueType, DerivedPolicy> Aw(exec, N);
 
     // set up the initial conditions for the iteration
     cusp::blas::copy(b,r_0);

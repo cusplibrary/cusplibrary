@@ -22,6 +22,8 @@
 
 #include <cusp/blas/blas.h>
 
+#include <cusp/detail/temporary_array.h>
+
 namespace blas = cusp::blas;
 
 namespace cusp
@@ -54,14 +56,14 @@ void bicgstab(thrust::execution_policy<DerivedPolicy> &exec,
     const size_t N = A.num_rows;
 
     // allocate workspace
-    cusp::array1d<ValueType,MemorySpace>   p(N);
-    cusp::array1d<ValueType,MemorySpace>   r(N);
-    cusp::array1d<ValueType,MemorySpace>   r_star(N);
-    cusp::array1d<ValueType,MemorySpace>   s(N);
-    cusp::array1d<ValueType,MemorySpace>  Mp(N);
-    cusp::array1d<ValueType,MemorySpace> AMp(N);
-    cusp::array1d<ValueType,MemorySpace>  Ms(N);
-    cusp::array1d<ValueType,MemorySpace> AMs(N);
+    cusp::detail::temporary_array<ValueType, DerivedPolicy>   p(exec, N);
+    cusp::detail::temporary_array<ValueType, DerivedPolicy>   r(exec, N);
+    cusp::detail::temporary_array<ValueType, DerivedPolicy> r_star(exec, N);
+    cusp::detail::temporary_array<ValueType, DerivedPolicy>   s(exec, N);
+    cusp::detail::temporary_array<ValueType, DerivedPolicy>  Mp(exec, N);
+    cusp::detail::temporary_array<ValueType, DerivedPolicy> AMp(exec, N);
+    cusp::detail::temporary_array<ValueType, DerivedPolicy>  Ms(exec, N);
+    cusp::detail::temporary_array<ValueType, DerivedPolicy> AMs(exec, N);
 
     // r <- Ax
     cusp::multiply(exec, A, x, r);

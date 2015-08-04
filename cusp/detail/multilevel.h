@@ -167,6 +167,11 @@ protected:
 
     SolveMatrixType A;
 
+    cusp::array1d<ValueType, MemorySpace> update;
+    cusp::array1d<ValueType, MemorySpace> residual;
+    cusp::array1d<ValueType, cusp::host_memory> temp_b;
+    cusp::array1d<ValueType, cusp::host_memory> temp_x;
+
     template <typename Array1, typename Array2>
     void _solve(const Array1& b, Array2& x, const size_t i);
 
