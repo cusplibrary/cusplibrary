@@ -17,6 +17,8 @@
 
 #include <cusp/array1d.h>
 
+#include <cusp/detail/temporary_array.h>
+
 #include <list>
 
 namespace cusp
@@ -28,9 +30,11 @@ namespace omp
 
 //MW: note that this function is also used by coo.h
 //MW: computes the total number of nonzeors of C
-template <typename Array1, typename Array2,
-         typename Array3, typename Array4>
-size_t spmm_csr_pass1(const size_t num_rows, const size_t num_cols,
+template <typename DerivedPolicy,
+          typename Array1, typename Array2,
+          typename Array3, typename Array4>
+size_t spmm_csr_pass1(omp::execution_policy<DerivedPolicy>& exec,
+                      const size_t num_rows, const size_t num_cols,
                       const Array1& A_row_offsets, const Array2& A_column_indices,
                       const Array3& B_row_offsets, const Array4& B_column_indices)
 {
@@ -41,7 +45,8 @@ size_t spmm_csr_pass1(const size_t num_rows, const size_t num_cols,
 
     #pragma omp parallel reduction( +: num_nonzeros)
     {
-        cusp::array1d<size_t, cusp::host_memory> mask(num_cols, static_cast<size_t>(-1));
+        cusp::detail::temporary_array<size_t, DerivedPolicy> mask(exec, num_cols, static_cast<size_t>(-1));
+
         // Compute nnz in C (including explicit zeros)
         #pragma omp for
         for(size_t i = 0; i < num_rows; i++)
@@ -68,10 +73,12 @@ size_t spmm_csr_pass1(const size_t num_rows, const size_t num_cols,
 }
 
 //MW: note that this function is also used by coo.h
-template <typename Array1, typename Array2, typename Array3,
-         typename Array4, typename Array5, typename Array6,
-         typename Array7, typename Array8, typename Array9>
-size_t spmm_csr_pass2(const size_t num_rows, const size_t num_cols,
+template <typename DerivedPolicy,
+          typename Array1, typename Array2, typename Array3,
+          typename Array4, typename Array5, typename Array6,
+          typename Array7, typename Array8, typename Array9>
+size_t spmm_csr_pass2(omp::execution_policy<DerivedPolicy>& exec,
+                      const size_t num_rows, const size_t num_cols,
                       const Array1& A_row_offsets, const Array2& A_column_indices, const Array3& A_values,
                       const Array4& B_row_offsets, const Array5& B_column_indices, const Array6& B_values,
                       Array7& C_row_offsets,       Array8& C_column_indices,       Array9& C_values)
@@ -90,8 +97,8 @@ size_t spmm_csr_pass2(const size_t num_rows, const size_t num_cols,
         const IndexType init   = static_cast<IndexType>(-2);
 
         // Compute entries of C
-        IndexArray next(num_cols, unseen);
-        ValueArray sums(num_cols, ValueType(0));
+        cusp::detail::temporary_array<IndexType, DerivedPolicy> next(exec, num_cols, unseen);
+        cusp::detail::temporary_array<ValueType, DerivedPolicy> sums(exec, num_cols, ValueType(0));
 
 
         #pragma omp for ordered
@@ -160,21 +167,21 @@ size_t spmm_csr_pass2(const size_t num_rows, const size_t num_cols,
 }
 
 template <typename DerivedPolicy,
-          typename Matrix1,
-          typename Matrix2,
-          typename Matrix3>
+          typename MatrixType1,
+          typename MatrixType2,
+          typename MatrixType3>
 void multiply(omp::execution_policy<DerivedPolicy>& exec,
-              const Matrix1& A,
-              const Matrix2& B,
-              Matrix3& C,
-              csr_format,
-              csr_format,
-              csr_format)
+              const MatrixType1& A,
+              const MatrixType2& B,
+              MatrixType3& C,
+              cusp::csr_format,
+              cusp::csr_format,
+              cusp::csr_format)
 {
-    typedef typename Matrix3::index_type IndexType;
+    typedef typename MatrixType3::index_type IndexType;
 
     IndexType num_nonzeros =
-        spmm_csr_pass1(A.num_rows, B.num_cols,
+        spmm_csr_pass1(exec, A.num_rows, B.num_cols,
                        A.row_offsets, A.column_indices,
                        B.row_offsets, B.column_indices);
 
@@ -182,7 +189,7 @@ void multiply(omp::execution_policy<DerivedPolicy>& exec,
     C.resize(A.num_rows, B.num_cols, num_nonzeros);
 
     num_nonzeros =
-        spmm_csr_pass2(A.num_rows, B.num_cols,
+        spmm_csr_pass2(exec, A.num_rows, B.num_cols,
                        A.row_offsets, A.column_indices, A.values,
                        B.row_offsets, B.column_indices, B.values,
                        C.row_offsets, C.column_indices, C.values);
