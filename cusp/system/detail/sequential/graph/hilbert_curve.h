@@ -17,6 +17,7 @@
 
 #include <cusp/detail/config.h>
 #include <cusp/detail/format.h>
+#include <cusp/detail/temporary_array.h>
 
 #include <cusp/array1d.h>
 #include <cusp/exception.h>
@@ -237,7 +238,7 @@ void hilbert_curve(sequential::execution_policy<DerivedPolicy>& exec,
     if( xmin < ValueType(0) || xmax > ValueType(1) || ymin < ValueType(0) || ymax > ValueType(1) )
         throw cusp::invalid_input_exception("Hilbert coordinates should be in the range [0,1]");
 
-    cusp::array1d<double, MemorySpace> hilbert_keys(coord.num_rows);
+    cusp::detail::temporary_array<double, DerivedPolicy> hilbert_keys(exec, coord.num_rows);
 
     if( dims == 2 )
     {
@@ -261,11 +262,11 @@ void hilbert_curve(sequential::execution_policy<DerivedPolicy>& exec,
                           hilbert_keys.begin(), detail::hilbert_transform_3d());
     }
 
-    cusp::array1d<PartType, MemorySpace> perm(num_points);
+    cusp::detail::temporary_array<PartType, DerivedPolicy> perm(exec, num_points);
     thrust::sequence(exec, perm.begin(), perm.end());
     thrust::sort_by_key(exec, hilbert_keys.begin(), hilbert_keys.end(), perm.begin());
 
-    cusp::array1d<PartType, MemorySpace> uniform_parts(num_points);
+    cusp::detail::temporary_array<PartType, DerivedPolicy> uniform_parts(exec, num_points);
     thrust::transform(exec,
                       thrust::counting_iterator<PartType>(0), thrust::counting_iterator<PartType>(num_points),
                       thrust::constant_iterator<PartType>(num_points/num_parts), uniform_parts.begin(), thrust::divides<PartType>());

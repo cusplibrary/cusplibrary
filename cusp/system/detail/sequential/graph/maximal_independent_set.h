@@ -33,12 +33,12 @@ namespace sequential
 namespace detail
 {
 
-template <typename Matrix, typename IndexType>
-void propagate_distances(const Matrix& A,
+template <typename MatrixType, typename IndexType, typename ArrayType>
+void propagate_distances(const MatrixType& A,
                          const IndexType i,
                          const size_t d,
                          const size_t k,
-                         cusp::array1d<size_t,cusp::host_memory>& distance)
+                         ArrayType& distance)
 {
     distance[i] = d;
 
@@ -62,14 +62,14 @@ size_t maximal_independent_set(sequential::execution_policy<DerivedPolicy>& exec
                                const MatrixType& G,
                                ArrayType& stencil,
                                const size_t k,
-                               csr_format)
+                               cusp::csr_format)
 {
     typedef typename MatrixType::index_type IndexType;
 
     const IndexType N = G.num_rows;
 
     // distance to nearest MIS node
-    cusp::array1d<size_t,cusp::host_memory> distance(N, k + 1);
+    cusp::detail::temporary_array<size_t, DerivedPolicy> distance(exec, N, k + 1);
 
     // count number of MIS nodes
     size_t set_nodes = 0;

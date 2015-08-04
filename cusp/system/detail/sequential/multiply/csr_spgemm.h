@@ -18,6 +18,7 @@
 
 #include <cusp/detail/config.h>
 #include <cusp/detail/format.h>
+#include <cusp/detail/temporary_array.h>
 
 #include <cusp/system/detail/sequential/execution_policy.h>
 
@@ -30,18 +31,20 @@ namespace detail
 namespace sequential
 {
 
-template <typename Array1,
+template <typename DerivedPolicy,
+          typename Array1,
           typename Array2,
           typename Array3,
           typename Array4>
-size_t spmm_csr_pass1(const size_t num_rows, const size_t num_cols,
+size_t spmm_csr_pass1(sequential::execution_policy<DerivedPolicy> &exec,
+                      const size_t num_rows, const size_t num_cols,
                       const Array1& A_row_offsets, const Array2& A_column_indices,
                       const Array3& B_row_offsets, const Array4& B_column_indices)
 {
     typedef typename Array1::value_type IndexType1;
     typedef typename Array2::value_type IndexType2;
 
-    cusp::array1d<size_t, cusp::host_memory> mask(num_cols, static_cast<size_t>(-1));
+    cusp::detail::temporary_array<size_t, DerivedPolicy> mask(exec, num_cols, static_cast<size_t>(-1));
 
     // Compute nnz in C (including explicit zeros)
     size_t num_nonzeros = 0;
@@ -68,10 +71,12 @@ size_t spmm_csr_pass1(const size_t num_rows, const size_t num_cols,
     return num_nonzeros;
 }
 
-template <typename Array1, typename Array2, typename Array3,
+template <typename DerivedPolicy,
+          typename Array1, typename Array2, typename Array3,
           typename Array4, typename Array5, typename Array6,
           typename Array7, typename Array8, typename Array9>
-size_t spmm_csr_pass2(const size_t num_rows, const size_t num_cols,
+size_t spmm_csr_pass2(sequential::execution_policy<DerivedPolicy> &exec,
+                      const size_t num_rows, const size_t num_cols,
                       const Array1& A_row_offsets, const Array2& A_column_indices, const Array3& A_values,
                       const Array4& B_row_offsets, const Array5& B_column_indices, const Array6& B_values,
                       Array7& C_row_offsets,       Array8& C_column_indices,       Array9& C_values)
@@ -85,8 +90,8 @@ size_t spmm_csr_pass2(const size_t num_rows, const size_t num_cols,
     const IndexType init   = static_cast<IndexType>(-2);
 
     // Compute entries of C
-    cusp::array1d<IndexType,cusp::host_memory> next(num_cols, unseen);
-    cusp::array1d<ValueType,cusp::host_memory> sums(num_cols, ValueType(0));
+    cusp::detail::temporary_array<IndexType, DerivedPolicy> next(exec, num_cols, unseen);
+    cusp::detail::temporary_array<ValueType, DerivedPolicy> sums(exec, num_cols, ValueType(0));
 
     num_nonzeros = 0;
 
@@ -125,7 +130,7 @@ size_t spmm_csr_pass2(const size_t num_rows, const size_t num_cols,
 
         for(IndexType jj = 0; jj < length; jj++)
         {
-            if(sums[head] != ValueType(0))
+            if(ValueType(sums[head]) != ValueType(0))
             {
                 C_column_indices[num_nonzeros] = head;
                 C_values[num_nonzeros]         = sums[head];
@@ -149,21 +154,22 @@ size_t spmm_csr_pass2(const size_t num_rows, const size_t num_cols,
 }
 
 template <typename DerivedPolicy,
-          typename Matrix1,
-          typename Matrix2,
-          typename Matrix3>
+          typename MatrixType1,
+          typename MatrixType2,
+          typename MatrixType3>
 void multiply(sequential::execution_policy<DerivedPolicy>& exec,
-              const Matrix1& A,
-              const Matrix2& B,
-              Matrix3& C,
+              const MatrixType1& A,
+              const MatrixType2& B,
+              MatrixType3& C,
               cusp::csr_format,
               cusp::csr_format,
               cusp::csr_format)
 {
-    typedef typename Matrix3::index_type IndexType;
+    typedef typename MatrixType3::index_type IndexType;
 
     IndexType num_nonzeros =
-        spmm_csr_pass1(A.num_rows, B.num_cols,
+        spmm_csr_pass1(exec,
+                       A.num_rows, B.num_cols,
                        A.row_offsets, A.column_indices,
                        B.row_offsets, B.column_indices);
 
@@ -171,7 +177,8 @@ void multiply(sequential::execution_policy<DerivedPolicy>& exec,
     C.resize(A.num_rows, B.num_cols, num_nonzeros);
 
     num_nonzeros =
-        spmm_csr_pass2(A.num_rows, B.num_cols,
+        spmm_csr_pass2(exec,
+                       A.num_rows, B.num_cols,
                        A.row_offsets, A.column_indices, A.values,
                        B.row_offsets, B.column_indices, B.values,
                        C.row_offsets, C.column_indices, C.values);

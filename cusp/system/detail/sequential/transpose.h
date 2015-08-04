@@ -22,6 +22,8 @@
 
 #include <cusp/detail/config.h>
 #include <cusp/detail/format.h>
+#include <cusp/detail/temporary_array.h>
+
 #include <cusp/array1d.h>
 
 #include <cusp/system/detail/sequential/execution_policy.h>
@@ -39,25 +41,25 @@ namespace sequential
 template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
 void transpose(sequential::execution_policy<DerivedPolicy>& exec,
                const MatrixType1& A, MatrixType2& At,
-               coo_format, coo_format)
+               cusp::coo_format, cusp::coo_format)
 {
     typedef typename MatrixType2::index_type IndexType;
 
     At.resize(A.num_cols, A.num_rows, A.num_entries);
 
-    cusp::array1d<IndexType,cusp::host_memory> starting_pos(A.num_cols+1, 0);
+    cusp::detail::temporary_array<IndexType, DerivedPolicy> starting_pos(exec, A.num_cols + 1, 0);
 
     if( A.num_entries > 0 )
     {
         for( size_t i = 0; i < A.num_entries; i++ )
         {
             IndexType col = A.column_indices[i];
-            starting_pos[col+1]++;
+            starting_pos[col + 1]++;
         }
 
-        for( size_t i = 1; i < A.num_cols+1; i++ )
+        for( size_t i = 1; i < A.num_cols + 1; i++ )
         {
-            starting_pos[i] += starting_pos[i-1];
+            starting_pos[i] += starting_pos[i - 1];
         }
 
         for( size_t i = 0; i < A.num_entries; i++ )
@@ -76,7 +78,7 @@ void transpose(sequential::execution_policy<DerivedPolicy>& exec,
 template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
 void transpose(sequential::execution_policy<DerivedPolicy>& exec,
                const MatrixType1& A, MatrixType2& At,
-               csr_format, csr_format)
+               cusp::csr_format, cusp::csr_format)
 {
     typedef typename MatrixType2::index_type IndexType;
 
@@ -84,7 +86,7 @@ void transpose(sequential::execution_policy<DerivedPolicy>& exec,
 
     if( A.num_entries > 0 )
     {
-        for( size_t i = 0; i < At.num_rows+1; i++ )
+        for( size_t i = 0; i < At.num_rows + 1; i++ )
         {
             At.row_offsets[i] = 0;
         }
@@ -92,20 +94,20 @@ void transpose(sequential::execution_policy<DerivedPolicy>& exec,
         for( size_t i = 0; i < At.num_entries; i++ )
         {
             IndexType col = A.column_indices[i];
-            At.row_offsets[col+1]++;
+            At.row_offsets[col + 1]++;
         }
 
-        for( size_t i = 1; i < At.num_rows+1; i++ )
+        for( size_t i = 1; i < At.num_rows + 1; i++ )
         {
-            At.row_offsets[i] += At.row_offsets[i-1];
+            At.row_offsets[i] += At.row_offsets[i - 1];
         }
 
-        cusp::array1d<IndexType,cusp::host_memory> starting_pos( At.row_offsets );
+        cusp::detail::temporary_array<IndexType, DerivedPolicy> starting_pos(exec, At.row_offsets);
 
         for( size_t row = 0; row < A.num_rows; row++ )
         {
             IndexType row_start = A.row_offsets[row];
-            IndexType row_end   = A.row_offsets[row+1];
+            IndexType row_end   = A.row_offsets[row + 1];
 
             for( IndexType i = row_start; i < row_end; i++ )
             {
