@@ -18,6 +18,7 @@
 #pragma once
 
 #include <cusp/detail/config.h>
+#include <cusp/detail/type_traits.h>
 
 #include <thrust/execution_policy.h>
 
@@ -36,11 +37,16 @@ void breadth_first_search(thrust::execution_policy<DerivedPolicy>& exec,
                           const typename MatrixType::index_type src,
                           ArrayType& labels,
                           const bool mark_levels,
-                          known_format);
+                          cusp::known_format)
+{
+    typedef typename cusp::detail::as_csr_type<MatrixType>::type CsrMatrix;
+
+    CsrMatrix G_csr(G);
+
+    cusp::graph::breadth_first_search(exec, G_csr, src, labels, mark_levels);
+}
 
 } // end namespace generic
 } // end namespace detail
 } // end namespace system
 } // end namespace cusp
-
-#include <cusp/system/detail/generic/graph/breadth_first_search.inl>

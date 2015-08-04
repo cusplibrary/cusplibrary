@@ -14,13 +14,14 @@
  *  limitations under the License.
  */
 
-
-#pragma once
-
 #include <cusp/detail/config.h>
-#include <cusp/detail/format.h>
+
+#include <cusp/graph/pseudo_peripheral.h>
 
 #include <thrust/execution_policy.h>
+#include <thrust/sequence.h>
+#include <thrust/scatter.h>
+#include <thrust/sort.h>
 
 namespace cusp
 {
@@ -35,11 +36,28 @@ template<typename DerivedPolicy, typename MatrixType, typename PermutationType>
 void symmetric_rcm(thrust::execution_policy<DerivedPolicy>& exec,
                    const MatrixType& G,
                    PermutationType& P,
-                   cusp::csr_format);
+                   cusp::csr_format)
+{
+    typedef typename MatrixType::index_type IndexType;
+    typedef typename MatrixType::value_type ValueType;
+    typedef typename MatrixType::memory_space MemorySpace;
+
+    // find peripheral vertex and return BFS levels from vertex
+    cusp::graph::pseudo_peripheral_vertex(exec, G, P.permutation);
+
+    // sort vertices by level in BFS traversal
+    cusp::detail::temporary_array<IndexType,DerivedPolicy> levels(exec, G.num_rows);
+    thrust::sequence(exec, levels.begin(), levels.end());
+    thrust::sort_by_key(exec, P.permutation.begin(), P.permutation.end(), levels.begin());
+
+    // form RCM permutation matrix
+    thrust::scatter(exec,
+                    thrust::counting_iterator<IndexType>(0),
+                    thrust::counting_iterator<IndexType>(G.num_rows),
+                    levels.begin(), P.permutation.begin());
+}
 
 } // end namespace generic
 } // end namespace detail
 } // end namespace system
 } // end namespace cusp
-
-#include <cusp/system/detail/generic/graph/symmetric_rcm.inl>

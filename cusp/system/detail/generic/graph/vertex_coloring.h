@@ -18,6 +18,7 @@
 #pragma once
 
 #include <cusp/detail/config.h>
+#include <cusp/detail/type_traits.h>
 
 #include <thrust/execution_policy.h>
 
@@ -34,11 +35,16 @@ template<typename DerivedPolicy, typename MatrixType, typename ArrayType>
 size_t vertex_coloring(thrust::execution_policy<DerivedPolicy>& exec,
                        const MatrixType& G,
                        ArrayType& colors,
-                       known_format);
+                       known_format)
+{
+    typedef typename cusp::detail::as_csr_type<MatrixType>::type CsrMatrix;
+
+    CsrMatrix G_csr(G);
+
+    return cusp::graph::vertex_coloring(exec, G_csr, colors);
+}
 
 } // end namespace generic
 } // end namespace detail
 } // end namespace system
 } // end namespace cusp
-
-#include <cusp/system/detail/generic/graph/vertex_coloring.inl>

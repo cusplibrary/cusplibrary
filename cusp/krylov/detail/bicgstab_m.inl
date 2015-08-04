@@ -526,16 +526,16 @@ void compute_xs_m(const Array1& beta_0_s, const Array2& chi_0_s,
 
     // get raw pointers for passing to kernels
     typedef typename Array1::value_type   ScalarType;
-    const ScalarType *raw_ptr_beta_0_s  = thrust::raw_pointer_cast(beta_0_s.data());
-    const ScalarType *raw_ptr_chi_0_s   = thrust::raw_pointer_cast(chi_0_s.data());
-    const ScalarType *raw_ptr_rho_0_s   = thrust::raw_pointer_cast(rho_0_s.data());
-    const ScalarType *raw_ptr_zeta_0_s  = thrust::raw_pointer_cast(zeta_0_s.data());
-    const ScalarType *raw_ptr_alpha_1_s = thrust::raw_pointer_cast(alpha_1_s.data());
-    const ScalarType *raw_ptr_rho_1_s   = thrust::raw_pointer_cast(rho_1_s.data());
-    const ScalarType *raw_ptr_zeta_1_s  = thrust::raw_pointer_cast(zeta_1_s.data());
-    const ScalarType *raw_ptr_r_0       = thrust::raw_pointer_cast(r_0.data());
-    const ScalarType *raw_ptr_r_1       = thrust::raw_pointer_cast(r_1.data());
-    const ScalarType *raw_ptr_w_1       = thrust::raw_pointer_cast(w_1.data());
+    const ScalarType *raw_ptr_beta_0_s  = thrust::raw_pointer_cast(&beta_0_s[0]);
+    const ScalarType *raw_ptr_chi_0_s   = thrust::raw_pointer_cast(&chi_0_s[0]);
+    const ScalarType *raw_ptr_rho_0_s   = thrust::raw_pointer_cast(&rho_0_s[0]);
+    const ScalarType *raw_ptr_zeta_0_s  = thrust::raw_pointer_cast(&zeta_0_s[0]);
+    const ScalarType *raw_ptr_alpha_1_s = thrust::raw_pointer_cast(&alpha_1_s[0]);
+    const ScalarType *raw_ptr_rho_1_s   = thrust::raw_pointer_cast(&rho_1_s[0]);
+    const ScalarType *raw_ptr_zeta_1_s  = thrust::raw_pointer_cast(&zeta_1_s[0]);
+    const ScalarType *raw_ptr_r_0       = thrust::raw_pointer_cast(&r_0[0]);
+    const ScalarType *raw_ptr_r_1       = thrust::raw_pointer_cast(&r_1[0]);
+    const ScalarType *raw_ptr_w_1       = thrust::raw_pointer_cast(&w_1[0]);
 
     // compute x
     thrust::for_each(

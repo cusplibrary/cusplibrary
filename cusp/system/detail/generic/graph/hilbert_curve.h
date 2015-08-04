@@ -18,6 +18,8 @@
 #pragma once
 
 #include <cusp/detail/config.h>
+#include <cusp/exception.h>
+#include <cusp/detail/type_traits.h>
 
 #include <thrust/execution_policy.h>
 
@@ -34,11 +36,12 @@ template <typename DerivedPolicy, typename Array2d, typename Array1d>
 void hilbert_curve(thrust::execution_policy<DerivedPolicy>& exec,
                    const Array2d& coord,
                    size_t num_parts,
-                   Array1d& parts);
+                   Array1d& parts)
+{
+  throw cusp::not_implemented_exception("No generic Hilbert curve");
+}
 
 } // end namespace generic
 } // end namespace detail
 } // end namespace system
 } // end namespace cusp
-
-#include <cusp/system/detail/generic/graph/hilbert_curve.inl>
