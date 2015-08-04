@@ -92,11 +92,11 @@ public:
 
     __host__ __device__
     temporary_array(thrust::execution_policy<System> &system,
-                    cusp::array1d<T,System>& v) : super_t(system, v.begin(), v.end()) {}
+                    const cusp::array1d<T,System>& v) : super_t(system, v.begin(), v.end()) {}
 
     __host__ __device__
     temporary_array(thrust::execution_policy<System> &system,
-                    temporary_array<T,System>& v) : super_t(system, v.begin(), v.end()) {}
+                    const temporary_array<T,System>& v) : super_t(system, v.begin(), v.end()) {}
 
     void resize(size_type new_size) {
         super_t::allocate(new_size);
