@@ -224,7 +224,8 @@ void multiply(cuda::execution_policy<DerivedPolicy>& exec,
         size_t end_segment    = A.num_entries;
         size_t workspace_size = coo_num_nonzeros;
 
-        coo_spmm_helper(workspace_size,
+        coo_spmm_helper(exec,
+                        workspace_size,
                         begin_row, end_row,
                         begin_segment, end_segment,
                         A, B, C,
@@ -280,7 +281,8 @@ void multiply(cuda::execution_policy<DerivedPolicy>& exec,
             assert(end_row > begin_row);
             assert(workspace_size <= workspace_capacity);
 
-            coo_spmm_helper(workspace_size,
+            coo_spmm_helper(exec,
+                            workspace_size,
                             begin_row, end_row,
                             begin_segment, end_segment,
                             A, B, C_slice,
@@ -296,16 +298,16 @@ void multiply(cuda::execution_policy<DerivedPolicy>& exec,
         }
 
         // deallocate workspace
-        A_gather_locations.clear();
-        A_gather_locations.shrink_to_fit();
-        B_gather_locations.clear();
-        B_gather_locations.shrink_to_fit();
-        I.clear();
-        I.shrink_to_fit();
-        J.clear();
-        J.shrink_to_fit();
-        V.clear();
-        V.shrink_to_fit();
+        // A_gather_locations.clear();
+        // A_gather_locations.shrink_to_fit();
+        // B_gather_locations.clear();
+        // B_gather_locations.shrink_to_fit();
+        // I.clear();
+        // I.shrink_to_fit();
+        // J.clear();
+        // J.shrink_to_fit();
+        // V.clear();
+        // V.shrink_to_fit();
 
         // compute total output size
         size_t C_num_entries = 0;

@@ -390,6 +390,10 @@ nonsym_bridson_ainv<ValueType,MemorySpace>
     : linear_operator<ValueType,MemorySpace>(A.num_rows, A.num_cols, A.num_rows)
 {
     typename MatrixTypeA::index_type n = A.num_rows;
+
+    temp1.resize(n);
+    temp2.resize(n);
+
     MatrixTypeA At;
     cusp::transpose(A, At);
 
@@ -458,9 +462,8 @@ nonsym_bridson_ainv<ValueType,MemorySpace>
 template <typename ValueType, typename MemorySpace>
 template <typename VectorType1, typename VectorType2>
 void nonsym_bridson_ainv<ValueType, MemorySpace>
-::operator()(const VectorType1& x, VectorType2& y) const
+::operator()(const VectorType1& x, VectorType2& y)
 {
-    VectorType2 temp1(x.size()), temp2(x.size());
     cusp::multiply(z, x, temp1);
     cusp::blas::xmy(temp1, diagonals, temp2);
     cusp::multiply(w_t, temp2, y);
@@ -476,6 +479,9 @@ bridson_ainv<ValueType,MemorySpace>
     : linear_operator<ValueType,MemorySpace>(A.num_rows, A.num_cols, A.num_rows)
 {
     typename MatrixTypeA::index_type n = A.num_rows;
+
+    temp1.resize(n);
+    temp2.resize(n);
 
     // copy A to host
     typename cusp::csr_matrix<typename MatrixTypeA::index_type, typename MatrixTypeA::value_type, host_memory> host_A = A;
@@ -523,15 +529,12 @@ bridson_ainv<ValueType,MemorySpace>
 template <typename ValueType, typename MemorySpace>
 template <typename VectorType1, typename VectorType2>
 void bridson_ainv<ValueType, MemorySpace>
-::operator()(const VectorType1& x, VectorType2& y) const
+::operator()(const VectorType1& x, VectorType2& y)
 {
-    VectorType2 temp1(x.size()), temp2(x.size());
     cusp::multiply(w, x, temp1);
     cusp::blas::xmy(temp1, diagonals, temp2);
     cusp::multiply(w_t, temp2, y);
 }
-
-
 
 
 // constructor
@@ -542,6 +545,7 @@ scaled_bridson_ainv<ValueType,MemorySpace>
     : linear_operator<ValueType,MemorySpace>(A.num_rows, A.num_cols, A.num_rows)
 {
     typename MatrixTypeA::index_type n = A.num_rows;
+    temp1.resize(n);
 
     // copy A to host
     typename cusp::csr_matrix<typename MatrixTypeA::index_type, typename MatrixTypeA::value_type, host_memory> host_A = A;
@@ -585,9 +589,8 @@ scaled_bridson_ainv<ValueType,MemorySpace>
 template <typename ValueType, typename MemorySpace>
 template <typename VectorType1, typename VectorType2>
 void scaled_bridson_ainv<ValueType, MemorySpace>
-::operator()(const VectorType1& x, VectorType2& y) const
+::operator()(const VectorType1& x, VectorType2& y)
 {
-    VectorType2 temp1(x.size());
     cusp::multiply(w, x, temp1);
     cusp::multiply(w_t, temp1, y);
 }

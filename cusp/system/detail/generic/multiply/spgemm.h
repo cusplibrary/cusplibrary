@@ -308,16 +308,16 @@ void multiply(thrust::execution_policy<DerivedPolicy>& exec,
         }
 
         // deallocate workspace
-        A_gather_locations.clear();
-        A_gather_locations.shrink_to_fit();
-        B_gather_locations.clear();
-        B_gather_locations.shrink_to_fit();
-        I.clear();
-        I.shrink_to_fit();
-        J.clear();
-        J.shrink_to_fit();
-        V.clear();
-        V.shrink_to_fit();
+        // A_gather_locations.clear();
+        // A_gather_locations.shrink_to_fit();
+        // B_gather_locations.clear();
+        // B_gather_locations.shrink_to_fit();
+        // I.clear();
+        // I.shrink_to_fit();
+        // J.clear();
+        // J.shrink_to_fit();
+        // V.clear();
+        // V.shrink_to_fit();
 
         // compute total output size
         size_t C_num_entries = 0;
