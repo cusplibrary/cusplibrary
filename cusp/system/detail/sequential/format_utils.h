@@ -36,10 +36,12 @@ void offsets_to_indices(sequential::execution_policy<DerivedPolicy> &exec,
                         const OffsetArray& offsets,
                         IndexArray& indices)
 {
+    typedef typename OffsetArray::value_type OffsetType;
+
     typename IndexArray::iterator iter(indices.begin());
 
     for(size_t i = 0; i < offsets.size() - 1; i++)
-        for(size_t j = 0; j < (offsets[i + 1] - offsets[i]); j++)
+        for(OffsetType j = 0; j < (offsets[i + 1] - offsets[i]); j++)
             *iter++ = i;
 }
 

@@ -22,6 +22,9 @@
 
 #include <cusp/detail/config.h>
 
+#include <cusp/array1d.h>
+
+#include <thrust/iterator/constant_iterator.h>
 #include <thrust/detail/temporary_array.h>
 
 namespace cusp
