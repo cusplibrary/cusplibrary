@@ -30,6 +30,7 @@
 #include <thrust/iterator/zip_iterator.h>
 #include <thrust/iterator/permutation_iterator.h>
 
+#include <limits>
 #include <list>
 
 namespace cusp
@@ -207,7 +208,7 @@ void multiply(thrust::execution_policy<DerivedPolicy>& exec,
     size_t workspace_capacity = thrust::min<size_t>(coo_num_nonzeros, 16 << 20);
 
     {
-        size_t free = UINT_MAX;
+        size_t free = std::numeric_limits<unsigned int>::max();
 
         // divide free bytes by the size of each workspace unit
         size_t max_workspace_capacity = free / (4 * sizeof(IndexType) + sizeof(ValueType));

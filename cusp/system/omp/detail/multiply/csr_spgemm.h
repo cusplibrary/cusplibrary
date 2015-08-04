@@ -85,8 +85,6 @@ size_t spmm_csr_pass2(omp::execution_policy<DerivedPolicy>& exec,
 {
     typedef typename Array7::value_type IndexType;
     typedef typename Array9::value_type ValueType;
-    typedef typename Array7::container IndexArray;
-    typedef typename Array9::container ValueArray;
 
     size_t num_nonzeros = 0;
     C_row_offsets[0] = 0;
