@@ -49,7 +49,7 @@ size_t spmm_csr_pass1(omp::execution_policy<DerivedPolicy>& exec,
 
         // Compute nnz in C (including explicit zeros)
         #pragma omp for
-        for(size_t i = 0; i < num_rows; i++)
+        for(int i = 0; i < int(num_rows); i++)
         {
             for(IndexType1 jj = A_row_offsets[i]; jj < A_row_offsets[i+1]; jj++)
             {
@@ -89,78 +89,73 @@ size_t spmm_csr_pass2(omp::execution_policy<DerivedPolicy>& exec,
     size_t num_nonzeros = 0;
     C_row_offsets[0] = 0;
 
+	const IndexType unseen = static_cast<IndexType>(-1);
+	const IndexType init = static_cast<IndexType>(-2);
+
     #pragma omp parallel
     {
-        const IndexType unseen = static_cast<IndexType>(-1);
-        const IndexType init   = static_cast<IndexType>(-2);
-
         // Compute entries of C
         cusp::detail::temporary_array<IndexType, DerivedPolicy> next(exec, num_cols, unseen);
         cusp::detail::temporary_array<ValueType, DerivedPolicy> sums(exec, num_cols, ValueType(0));
 
 
-        #pragma omp for ordered
-        for(size_t i = 0; i < num_rows; i++)
-        {
-            IndexType head   = init;
-            IndexType length =    0;
+        #pragma omp for
+		for (size_t i = 0; i < num_rows; i++)
+		{
+			IndexType head = init;
+			IndexType length = 0;
 
-            IndexType jj_start = A_row_offsets[i];
-            IndexType jj_end   = A_row_offsets[i+1];
+			IndexType jj_start = A_row_offsets[i];
+			IndexType jj_end = A_row_offsets[i + 1];
 
-            for(IndexType jj = jj_start; jj < jj_end; jj++)
-            {
-                IndexType j = A_column_indices[jj];
-                ValueType v = A_values[jj];
+			for (IndexType jj = jj_start; jj < jj_end; jj++)
+			{
+				IndexType j = A_column_indices[jj];
+				ValueType v = A_values[jj];
 
-                IndexType kk_start = B_row_offsets[j];
-                IndexType kk_end   = B_row_offsets[j+1];
+				IndexType kk_start = B_row_offsets[j];
+				IndexType kk_end = B_row_offsets[j + 1];
 
-                for(IndexType kk = kk_start; kk < kk_end; kk++)
-                {
-                    IndexType k = B_column_indices[kk];
+				for (IndexType kk = kk_start; kk < kk_end; kk++)
+				{
+					IndexType k = B_column_indices[kk];
 
-                    ValueType b = B_values[kk];
-                    sums[k] += v * b;
+					ValueType b = B_values[kk];
+					sums[k] += v * b;
 
-                    if(next[k] == unseen)
-                    {
-                        next[k] = head;
-                        head  = k;
-                        length++;
-                    }
-                }
-            }
+					if (next[k] == unseen)
+					{
+						next[k] = head;
+						head = k;
+						length++;
+					}
+				}
+			}
 
-//MW let's hope that serial part is done fast (remove explicit zeroes)
-            #pragma omp ordered
-            {
-                for(IndexType jj = 0; jj < length; jj++)
-                {
-                    //MW: remove explicit zeros is serial work
-                    ValueType shead = sums[head];
-                    if(shead != ValueType(0))
-                    {
-                        C_column_indices[num_nonzeros] = head;
-                        C_values[num_nonzeros]         = sums[head];
-                        num_nonzeros++;
-                    }
+			for (IndexType jj = 0; jj < length; jj++)
+			{
+				//MW: remove explicit zeros is serial work
+				ValueType shead = sums[head];
+				if (shead != ValueType(0))
+				{
+					C_column_indices[num_nonzeros] = head;
+					C_values[num_nonzeros] = sums[head];
+					num_nonzeros++;
+				}
 
-                    IndexType temp = head;
-                    head = next[head];
+				IndexType temp = head;
+				head = next[head];
 
-                    // clear arrays
-                    next[temp] = unseen;
-                    sums[temp] = ValueType(0);
-                }
+				// clear arrays
+				next[temp] = unseen;
+				sums[temp] = ValueType(0);
+			}
 
-                C_row_offsets[i+1] = num_nonzeros;
-            }//omp ordered
-        } //omp for
-    }//omp parallel
+			C_row_offsets[i + 1] = num_nonzeros;
+		} // end for loop
+    } //omp parallel
 
     // XXX note: entries of C are unsorted within each row
-
     return num_nonzeros;
 }
 
