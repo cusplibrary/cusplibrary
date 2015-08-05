@@ -65,16 +65,16 @@ void multiply(omp::execution_policy<DerivedPolicy>& exec,
     #pragma omp parallel for
     for(int i = 0; i < N; i++)
     {
-        const IndexType& row_start = A.row_offsets[i];
-        const IndexType& row_end   = A.row_offsets[i+1];
+        const IndexType row_start = A.row_offsets[i];
+        const IndexType row_end   = A.row_offsets[i+1];
 
         ValueType accumulator = initialize(y[i]);
 
         for (IndexType jj = row_start; jj < row_end; jj++)
         {
-            const IndexType& j   = A.column_indices[jj];
-            const ValueType& Aij = A.values[jj];
-            const ValueType& xj  = x[j];
+            const IndexType j   = A.column_indices[jj];
+            const ValueType Aij = A.values[jj];
+            const ValueType xj  = x[j];
 
             accumulator = reduce(accumulator, combine(Aij, xj));
         }

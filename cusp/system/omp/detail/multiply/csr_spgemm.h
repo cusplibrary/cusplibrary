@@ -100,7 +100,7 @@ size_t spmm_csr_pass2(omp::execution_policy<DerivedPolicy>& exec,
 
 
         #pragma omp for
-		for (size_t i = 0; i < num_rows; i++)
+		for (int i = 0; i < int(num_rows); i++)
 		{
 			IndexType head = init;
 			IndexType length = 0;
