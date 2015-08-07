@@ -43,33 +43,32 @@ void multiply(omp::execution_policy<DerivedPolicy>& exec,
               cusp::coo_format,
               cusp::coo_format)
 {
-    typedef typename MatrixType3::index_type IndexType;
+    typedef typename MatrixType1::index_type IndexType1;
+    typedef typename MatrixType2::index_type IndexType2;
+    typedef typename MatrixType3::index_type IndexType3;
 
     // allocate storage for row offsets for A, B, and C
-    cusp::detail::temporary_array<typename MatrixType1::index_type, DerivedPolicy> A_row_offsets(exec, A.num_rows + 1);
-    cusp::detail::temporary_array<typename MatrixType2::index_type, DerivedPolicy> B_row_offsets(exec, B.num_rows + 1);
-    cusp::detail::temporary_array<typename MatrixType3::index_type, DerivedPolicy> C_row_offsets(exec, A.num_rows + 1);
+    cusp::detail::temporary_array<IndexType1, DerivedPolicy> A_row_offsets(exec, A.num_rows + 1);
+    cusp::detail::temporary_array<IndexType2, DerivedPolicy> B_row_offsets(exec, B.num_rows + 1);
+    cusp::detail::temporary_array<IndexType3, DerivedPolicy> C_row_offsets(exec, A.num_rows + 1);
 
     // compute row offsets for A and B
     cusp::indices_to_offsets(exec, A.row_indices, A_row_offsets);
     cusp::indices_to_offsets(exec, B.row_indices, B_row_offsets);
 
-    IndexType estimated_nonzeros =
+    size_t estimated_nonzeros =
         spmm_csr_pass1(exec, A.num_rows, B.num_cols,
                        A_row_offsets, A.column_indices,
-                       B_row_offsets, B.column_indices);
+                       B_row_offsets, B.column_indices,
+                       C_row_offsets);
 
     // Resize output
     C.resize(A.num_rows, B.num_cols, estimated_nonzeros);
 
-    IndexType true_nonzeros =
-        spmm_csr_pass2(exec, A.num_rows, B.num_cols,
-                       A_row_offsets, A.column_indices, A.values,
-                       B_row_offsets, B.column_indices, B.values,
-                       C_row_offsets, C.column_indices, C.values);
-
-    // true_nonzeros may be less than estimated_nonzeros
-    C.resize(A.num_rows, B.num_cols, true_nonzeros);
+    spmm_csr_pass2(exec, A.num_rows, B.num_cols,
+                   A_row_offsets, A.column_indices, A.values,
+                   B_row_offsets, B.column_indices, B.values,
+                   C_row_offsets, C.column_indices, C.values);
 
     cusp::offsets_to_indices(exec, C_row_offsets, C.row_indices);
 }
