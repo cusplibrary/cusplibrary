@@ -472,12 +472,14 @@ struct PersistentBlockSpmv
         {
             if (head_flags[ITEM])
             {
-                d_result[partial_sums[ITEM].row] = partial_sums[ITEM].partial;
-
                 // Save off the first partial product that this thread block will scatter
                 if (partial_sums[ITEM].row == temp_storage.first_block_row)
                 {
-                    temp_storage.first_product = partial_sums[ITEM].partial;
+                    temp_storage.first_product = reduce_op(initialize(d_result[partial_sums[ITEM].row]), partial_sums[ITEM].partial);
+                }
+                else
+                {
+                    d_result[partial_sums[ITEM].row] = reduce_op(initialize(d_result[partial_sums[ITEM].row]), partial_sums[ITEM].partial);
                 }
 
                 // Save off the first partial product that this thread block will scatter
@@ -525,7 +527,8 @@ struct PersistentBlockSpmv
             if (gridDim.x == 1)
             {
                 // Scatter the final aggregate (this kernel contains only 1 threadblock)
-                d_result[prefix_op.running_prefix.row] = prefix_op.running_prefix.partial;
+                // d_result[prefix_op.running_prefix.row] = prefix_op.running_prefix.partial;
+                d_result[prefix_op.running_prefix.row] = reduce_op(initialize(d_result[prefix_op.running_prefix.row]), prefix_op.running_prefix.partial);
             }
             else
             {
@@ -535,6 +538,8 @@ struct PersistentBlockSpmv
                 PartialProduct first_product;
                 first_product.row       = temp_storage.first_block_row;
                 first_product.partial   = temp_storage.first_product;
+
+                prefix_op.running_prefix.partial = reduce_op(initialize(d_result[prefix_op.running_prefix.row]), prefix_op.running_prefix.partial);
 
                 d_block_partials[blockIdx.x * 2]          = first_product;
                 d_block_partials[(blockIdx.x * 2) + 1]    = prefix_op.running_prefix;
@@ -902,8 +907,10 @@ void spmv_coo(cuda::execution_policy<DerivedPolicy>& exec,
                    UnaryFunction, BinaryFunction1, BinaryFunction2>,
                    COO_BLOCK_THREADS);
 
-    int sm_count;
-    cudaDeviceGetAttribute (&sm_count, cudaDevAttrMultiProcessorCount, 0);
+    // int sm_count = -1;
+    // cudaDeviceGetAttribute (&sm_count, cudaDevAttrMultiProcessorCount, 0);
+    thrust::system::cuda::detail::device_properties_t properties = thrust::system::cuda::detail::device_properties();
+    int sm_count = properties.multiProcessorCount;
     int max_coo_grid_size   = sm_count * coo_sm_occupancy * COO_SUBSCRIPTION_FACTOR;
 
     // Construct an even-share work distribution
@@ -946,11 +953,11 @@ void spmv_coo(cuda::execution_policy<DerivedPolicy>& exec,
 } // end namespace cub_coo_spmv_detail
 
 template <typename DerivedPolicy,
-         typename MatrixType,
-         typename VectorType1,
-         typename VectorType2,
-         typename BinaryFunction1,
-         typename BinaryFunction2>
+          typename MatrixType,
+          typename VectorType1,
+          typename VectorType2,
+          typename BinaryFunction1,
+          typename BinaryFunction2>
 void multiply(cuda::execution_policy<DerivedPolicy>& exec,
               const MatrixType& A,
               const VectorType1& x,
@@ -958,9 +965,9 @@ void multiply(cuda::execution_policy<DerivedPolicy>& exec,
               thrust::identity<typename MatrixType::value_type> initialize,
               BinaryFunction1 combine,
               BinaryFunction2 reduce,
-              coo_format,
-              array1d_format,
-              array1d_format)
+              cusp::coo_format,
+              cusp::array1d_format,
+              cusp::array1d_format)
 {
     cub_coo_spmv_detail::spmv_coo(exec, A, x, y, initialize, combine, reduce);
 }

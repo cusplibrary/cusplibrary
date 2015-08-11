@@ -80,12 +80,12 @@ spmv_ell_kernel(const IndexType num_rows,
 
 
 template <typename DerivedPolicy,
-         typename MatrixType,
-         typename VectorType1,
-         typename VectorType2,
-         typename UnaryFunction,
-         typename BinaryFunction1,
-         typename BinaryFunction2>
+          typename MatrixType,
+          typename VectorType1,
+          typename VectorType2,
+          typename UnaryFunction,
+          typename BinaryFunction1,
+          typename BinaryFunction2>
 void multiply(cuda::execution_policy<DerivedPolicy>& exec,
               MatrixType& A,
               VectorType1& x,
@@ -93,9 +93,9 @@ void multiply(cuda::execution_policy<DerivedPolicy>& exec,
               UnaryFunction   initialize,
               BinaryFunction1 combine,
               BinaryFunction2 reduce,
-              ell_format,
-              array1d_format,
-              array1d_format)
+              cusp::ell_format,
+              cusp::array1d_format,
+              cusp::array1d_format)
 {
     typedef typename MatrixType::index_type IndexType;
     typedef typename MatrixType::value_type ValueType;

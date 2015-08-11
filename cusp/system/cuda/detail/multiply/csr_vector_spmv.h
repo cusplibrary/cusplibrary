@@ -196,12 +196,12 @@ void __spmv_csr_vector(cuda::execution_policy<DerivedPolicy>& exec,
 }
 
 template <typename DerivedPolicy,
-         typename MatrixType,
-         typename VectorType1,
-         typename VectorType2,
-         typename UnaryFunction,
-         typename BinaryFunction1,
-         typename BinaryFunction2>
+          typename MatrixType,
+          typename VectorType1,
+          typename VectorType2,
+          typename UnaryFunction,
+          typename BinaryFunction1,
+          typename BinaryFunction2>
 void multiply(cuda::execution_policy<DerivedPolicy>& exec,
               const MatrixType& A,
               const VectorType1& x,
@@ -209,9 +209,9 @@ void multiply(cuda::execution_policy<DerivedPolicy>& exec,
               UnaryFunction   initialize,
               BinaryFunction1 combine,
               BinaryFunction2 reduce,
-              csr_format,
-              array1d_format,
-              array1d_format)
+              cusp::csr_format,
+              cusp::array1d_format,
+              cusp::array1d_format)
 {
     typedef typename MatrixType::index_type IndexType;
 

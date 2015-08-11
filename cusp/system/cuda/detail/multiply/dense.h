@@ -30,16 +30,16 @@ namespace cuda
 {
 
 template <typename DerivedPolicy,
-         typename MatrixType,
-         typename ArrayType1,
-         typename ArrayType2>
+          typename MatrixType,
+          typename ArrayType1,
+          typename ArrayType2>
 void multiply(cuda::execution_policy<DerivedPolicy>& exec,
               MatrixType& A,
               ArrayType1& x,
               ArrayType2& y,
-              array2d_format,
-              array1d_format,
-              array1d_format)
+              cusp::array2d_format,
+              cusp::array1d_format,
+              cusp::array1d_format)
 {
     typedef typename cusp::detail::as_array2d_type<Matrix1,cusp::host_memory>::type Array2d;
     typedef typename ArrayType1::value_type ValueType1;
