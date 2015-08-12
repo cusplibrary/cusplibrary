@@ -100,6 +100,12 @@ void multiply(cuda::execution_policy<DerivedPolicy>& exec,
     typedef typename MatrixType::index_type IndexType;
     typedef typename MatrixType::value_type ValueType;
 
+    if(A.num_entries == 0)
+    {
+      thrust::transform(y.begin(), y.end(), y.begin(), initialize);
+      return;
+    }
+
     const size_t BLOCK_SIZE = 256;
     const size_t MAX_BLOCKS = cusp::system::cuda::detail::max_active_blocks(
         spmv_ell_kernel<IndexType,ValueType,UnaryFunction,BinaryFunction1,BinaryFunction2,BLOCK_SIZE>, BLOCK_SIZE, (size_t) 0);
