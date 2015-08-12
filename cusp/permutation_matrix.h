@@ -115,9 +115,9 @@ private:
 public:
 
     /*! \cond */
-    typedef typename cusp::array1d<ValueType, MemorySpace> permutation_array_type;
+    typedef typename cusp::array1d<IndexType, MemorySpace> permutation_array_type;
 
-    typedef typename cusp::permutation_matrix<ValueType, MemorySpace> container;
+    typedef typename cusp::permutation_matrix<ValueType, MemorySpace, IndexType> container;
 
     typedef typename cusp::permutation_matrix_view<
             typename permutation_array_type::view,
@@ -133,7 +133,7 @@ public:
 
     template<typename MemorySpace2>
     struct rebind {
-        typedef cusp::permutation_matrix<ValueType, MemorySpace2> type;
+        typedef cusp::permutation_matrix<ValueType, MemorySpace2, IndexType> type;
     };
     /*! \endcond */
 
@@ -160,7 +160,7 @@ public:
      *  \param matrix Another sparse or dense matrix.
      */
     template<typename MemorySpace2>
-    permutation_matrix(const permutation_matrix<ValueType,MemorySpace2>& matrix)
+    permutation_matrix(const permutation_matrix<ValueType,MemorySpace2,IndexType>& matrix)
         : Parent(matrix), permutation(matrix.permutation) {}
 
     /*! Construct a \p permutation_matrix from another matrix.
@@ -286,7 +286,7 @@ public:
     /*! \cond */
     typedef ArrayType permutation_array_type;
 
-    typedef typename cusp::permutation_matrix<ValueType, MemorySpace> container;
+    typedef typename cusp::permutation_matrix<IndexType, MemorySpace> container;
 
     typedef typename cusp::permutation_matrix_view<ArrayType, ValueType, MemorySpace> view;
     /*! \endcond */
@@ -324,7 +324,7 @@ public:
      *
      *  \param matrix \p permutation_matrix used to create view.
      */
-    permutation_matrix_view(permutation_matrix<ValueType,MemorySpace>& matrix)
+    permutation_matrix_view(permutation_matrix<ValueType,MemorySpace,IndexType>& matrix)
         : Parent(matrix),
           permutation(matrix.permutation) {}
 
@@ -332,7 +332,7 @@ public:
      *
      *  \param matrix \p permutation_matrix used to create view.
      */
-    permutation_matrix_view(const permutation_matrix<ValueType,MemorySpace>& matrix)
+    permutation_matrix_view(const permutation_matrix<ValueType,MemorySpace,IndexType>& matrix)
         : Parent(matrix),
           permutation(matrix.permutation) {}
 
