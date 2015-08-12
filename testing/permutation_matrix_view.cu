@@ -6,7 +6,7 @@
 template <typename MemorySpace>
 void TestPermutationMatrixView(void)
 {
-    typedef int                                                           IndexType;
+    typedef unsigned int                                                  IndexType;
     typedef typename cusp::permutation_matrix<IndexType,MemorySpace>      Matrix;
     typedef typename cusp::array1d<IndexType,MemorySpace>::iterator       IndexIterator;
     typedef typename cusp::array1d_view<IndexIterator>                    IndexView;
@@ -38,7 +38,7 @@ DECLARE_HOST_DEVICE_UNITTEST(TestPermutationMatrixView);
 template <typename MemorySpace>
 void TestPermutationMatrixViewAssignment(void)
 {
-    typedef int                                                           IndexType;
+    typedef unsigned int                                                  IndexType;
     typedef typename cusp::permutation_matrix<IndexType,MemorySpace>      Matrix;
     typedef typename cusp::array1d<IndexType,MemorySpace>::iterator       IndexIterator;
     typedef typename cusp::array1d_view<IndexIterator>                    IndexView;
@@ -70,7 +70,7 @@ DECLARE_HOST_DEVICE_UNITTEST(TestPermutationMatrixViewAssignment);
 template <typename MemorySpace>
 void TestMakePermutationMatrixView(void)
 {
-    typedef int                                                           IndexType;
+    typedef unsigned int                                                  IndexType;
     typedef typename cusp::permutation_matrix<IndexType,MemorySpace>      Matrix;
     typedef typename cusp::array1d<IndexType,MemorySpace>::iterator       IndexIterator;
     typedef typename cusp::array1d_view<IndexIterator>                    IndexView;
