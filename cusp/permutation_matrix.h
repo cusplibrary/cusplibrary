@@ -31,7 +31,7 @@ namespace cusp
 {
 
 // forward definition
-template <typename ArrayType, typename ValueType, typename MemorySpace, typename IndexType> class permutation_matrix_view;
+template <typename ArrayType, typename IndexType, typename MemorySpace> class permutation_matrix_view;
 
 /*! \addtogroup sparse_matrices Sparse Matrices
  */
@@ -121,15 +121,13 @@ public:
 
     typedef typename cusp::permutation_matrix_view<
             typename permutation_array_type::view,
-            ValueType,
-            MemorySpace,
-            IndexType> view;
+            IndexType,
+            MemorySpace> view;
 
     typedef typename cusp::permutation_matrix_view<
             typename permutation_array_type::const_view,
-            ValueType,
-            MemorySpace,
-            IndexType> const_view;
+            IndexType,
+            MemorySpace> const_view;
 
     template<typename MemorySpace2>
     struct rebind {
@@ -272,14 +270,13 @@ public:
  *  \endcode
  */
 template <typename ArrayType,
-         typename ValueType   = typename ArrayType::value_type,
-         typename MemorySpace = typename ArrayType::memory_space,
-         typename IndexType   = unsigned int>
-class permutation_matrix_view : public cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::permutation_format>
+          typename IndexType   = typename ArrayType::value_type,
+          typename MemorySpace = typename ArrayType::memory_space>
+class permutation_matrix_view : public cusp::detail::matrix_base<IndexType,IndexType,MemorySpace,cusp::permutation_format>
 {
 private:
 
-    typedef cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::permutation_format> Parent;
+    typedef cusp::detail::matrix_base<IndexType,IndexType,MemorySpace,cusp::permutation_format> Parent;
 
 public:
 
@@ -288,7 +285,7 @@ public:
 
     typedef typename cusp::permutation_matrix<IndexType, MemorySpace> container;
 
-    typedef typename cusp::permutation_matrix_view<ArrayType, ValueType, MemorySpace> view;
+    typedef typename cusp::permutation_matrix_view<ArrayType, IndexType, MemorySpace> view;
     /*! \endcond */
 
     /*! Storage for the permutation indices
@@ -324,6 +321,7 @@ public:
      *
      *  \param matrix \p permutation_matrix used to create view.
      */
+    template<typename ValueType>
     permutation_matrix_view(permutation_matrix<ValueType,MemorySpace,IndexType>& matrix)
         : Parent(matrix),
           permutation(matrix.permutation) {}
@@ -332,6 +330,7 @@ public:
      *
      *  \param matrix \p permutation_matrix used to create view.
      */
+    template<typename ValueType>
     permutation_matrix_view(const permutation_matrix<ValueType,MemorySpace,IndexType>& matrix)
         : Parent(matrix),
           permutation(matrix.permutation) {}
