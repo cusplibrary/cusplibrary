@@ -633,7 +633,7 @@ void TestPermutationMatrixMultiply(void)
     permutation[1] = 1;
     permutation[2] = 0;
 
-    cusp::permutation_matrix<ValueType,MemorySpace,IndexType> P(3, permutation);
+    cusp::permutation_matrix<IndexType,MemorySpace> P(3, permutation);
 
     // Test row permutations
     {
