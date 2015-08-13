@@ -123,7 +123,7 @@ void multiply(thrust::execution_policy<DerivedPolicy> &exec,
               cusp::permutation_format,
               cusp::sparse_format)
 {
-   typename cusp::detail::as_coo_type<MatrixOrVector1>::type A_(A);
+   typename cusp::detail::as_coo_type<LinearOperator>::type A_(A);
    typename cusp::detail::as_coo_type<MatrixOrVector2>::type C_(C);
 
    cusp::multiply(exec, A_, B, C_);
