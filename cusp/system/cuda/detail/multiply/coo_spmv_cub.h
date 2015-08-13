@@ -49,13 +49,14 @@
 
 #pragma once
 
-#include <thrust/extrema.h>
+#include <cusp/detail/temporary_array.h>
 
 #include <cusp/system/cuda/arch.h>
 #include <cusp/system/cuda/utils.h>
 #include <cusp/system/cuda/detail/multiply/coo_serial.h>
 
 #include <thrust/device_ptr.h>
+#include <thrust/extrema.h>
 
 namespace cusp
 {
@@ -304,6 +305,7 @@ struct PersistentBlockSpmv
             };
         };
 
+        IndexType        prev_block_row;     ///< The last row-ID of the previous thread block
         IndexType        first_block_row;    ///< The first row-ID seen by this thread block
         IndexType        last_block_row;     ///< The last row-ID seen by this thread block
         ValueType        first_product;      ///< The first dot-product written by this thread block
@@ -364,7 +366,9 @@ struct PersistentBlockSpmv
         {
             IndexType first_block_row           = d_rows[block_offset];
             IndexType last_block_row            = d_rows[block_end - 1];
+            IndexType prev_block_row            = blockIdx.x == 0 ? -1 : d_rows[block_offset - 1];
 
+            temp_storage.prev_block_row         = prev_block_row;
             temp_storage.first_block_row        = first_block_row;
             temp_storage.last_block_row         = last_block_row;
             temp_storage.first_product          = ValueType(0);
@@ -471,7 +475,7 @@ struct PersistentBlockSpmv
                 // Save off the first partial product that this thread block will scatter
                 if (partial_sums[ITEM].row == temp_storage.first_block_row)
                 {
-                    temp_storage.first_product = reduce_op(d_result[partial_sums[ITEM].row], partial_sums[ITEM].partial);
+                    temp_storage.first_product = partial_sums[ITEM].partial;
                 }
                 else
                 {
@@ -514,7 +518,9 @@ struct PersistentBlockSpmv
 
                 // Scatter the first aggregate (this kernel contains only 1 threadblock)
                 if(temp_storage.first_block_row != prefix_op.running_prefix.row)
-                    d_result[temp_storage.first_block_row] = temp_storage.first_product;
+                {
+                    d_result[temp_storage.first_block_row] = reduce_op(d_result[temp_storage.first_block_row], temp_storage.first_product);
+                }
             }
             else
             {
@@ -525,7 +531,15 @@ struct PersistentBlockSpmv
                 first_product.row       = temp_storage.first_block_row;
                 first_product.partial   = temp_storage.first_product;
 
-                prefix_op.running_prefix.partial = reduce_op(d_result[prefix_op.running_prefix.row], prefix_op.running_prefix.partial);
+                if(first_product.row != temp_storage.prev_block_row)
+                {
+                     first_product.partial = reduce_op(d_result[first_product.row], first_product.partial);
+                }
+
+                if(temp_storage.first_block_row != prefix_op.running_prefix.row)
+                {
+                     prefix_op.running_prefix.partial = reduce_op(d_result[prefix_op.running_prefix.row], prefix_op.running_prefix.partial);
+                }
 
                 d_block_partials[blockIdx.x * 2]          = first_product;
                 d_block_partials[(blockIdx.x * 2) + 1]    = prefix_op.running_prefix;
@@ -851,9 +865,7 @@ void spmv_coo(cuda::execution_policy<DerivedPolicy>& exec,
     typedef typename VectorType1::const_iterator                            ValueIterator2;
     typedef typename VectorType2::iterator                                  ValueIterator3;
 
-    typedef typename cusp::array1d<PartialProduct,cusp::device_memory>::iterator PartialIterator;
-    typedef typename cusp::array1d<IndexType,cusp::device_memory>::iterator IndexIterator;
-    typedef typename cusp::array1d<ValueType,cusp::device_memory>::iterator ValueIterator4;
+    typedef typename cusp::array1d<PartialProduct,MemorySpace>::iterator    PartialIterator;
 
     if(A.num_entries == 0)
     {
@@ -899,7 +911,7 @@ void spmv_coo(cuda::execution_policy<DerivedPolicy>& exec,
     int coo_grid_size  = even_share.grid_size;
     int num_partials   = coo_grid_size * 2;
 
-    cusp::array1d<PartialProduct, MemorySpace> block_partials(num_partials);
+    cusp::detail::temporary_array<PartialProduct, DerivedPolicy> block_partials(exec, num_partials);
 
     // Bind textures
     // void *d_x = (void *) thrust::raw_pointer_cast(&x[0]);

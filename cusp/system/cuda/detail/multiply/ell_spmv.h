@@ -102,13 +102,13 @@ void multiply(cuda::execution_policy<DerivedPolicy>& exec,
 
     if(A.num_entries == 0)
     {
-      thrust::transform(y.begin(), y.end(), y.begin(), initialize);
-      return;
+        thrust::transform(y.begin(), y.end(), y.begin(), initialize);
+        return;
     }
 
     const size_t BLOCK_SIZE = 256;
     const size_t MAX_BLOCKS = cusp::system::cuda::detail::max_active_blocks(
-        spmv_ell_kernel<IndexType,ValueType,UnaryFunction,BinaryFunction1,BinaryFunction2,BLOCK_SIZE>, BLOCK_SIZE, (size_t) 0);
+                                  spmv_ell_kernel<IndexType,ValueType,UnaryFunction,BinaryFunction1,BinaryFunction2,BLOCK_SIZE>, BLOCK_SIZE, (size_t) 0);
     const size_t NUM_BLOCKS = std::min<size_t>(MAX_BLOCKS, DIVIDE_INTO(A.num_rows, BLOCK_SIZE));
 
     const IndexType pitch               = A.column_indices.pitch;
@@ -132,5 +132,4 @@ void multiply(cuda::execution_policy<DerivedPolicy>& exec,
 } // end namespace cuda
 } // end namespace system
 } // end namespace cusp
-
 
