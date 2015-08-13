@@ -48,7 +48,7 @@ size_t spmm_csr_pass1(omp::execution_policy<DerivedPolicy>& exec,
 
     #pragma omp parallel
     {
-        cusp::detail::temporary_array<size_t, DerivedPolicy> mask(exec, num_cols, static_cast<size_t>(-1));
+        cusp::detail::temporary_array<int, DerivedPolicy> mask(exec, num_cols, -1);
 
         // Compute nnz in C (including explicit zeros)
         #pragma omp for
