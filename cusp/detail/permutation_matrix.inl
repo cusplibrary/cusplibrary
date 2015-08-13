@@ -25,27 +25,27 @@
 namespace cusp
 {
 
-template <typename ValueType, typename MemorySpace, typename IndexType>
+template <typename IndexType, typename MemorySpace>
 void
-permutation_matrix<ValueType,MemorySpace,IndexType>
+permutation_matrix<IndexType,MemorySpace>
 ::resize(const size_t num_rows)
 {
     Parent::resize(num_rows, num_rows, num_rows);
     permutation.resize(num_rows);
 }
 
-template <typename ValueType, typename MemorySpace, typename IndexType>
+template <typename IndexType, typename MemorySpace>
 void
-permutation_matrix<ValueType,MemorySpace,IndexType>
+permutation_matrix<IndexType,MemorySpace>
 ::swap(permutation_matrix& matrix)
 {
     Parent::swap(matrix);
     permutation.swap(matrix.permutation);
 }
 
-template <typename ValueType, typename MemorySpace, typename IndexType>
+template <typename IndexType, typename MemorySpace>
 template <typename MatrixType>
-void permutation_matrix<ValueType,MemorySpace,IndexType>
+void permutation_matrix<IndexType,MemorySpace>
 ::symmetric_permute(MatrixType& A)
 {
     typedef typename MatrixType::index_type IndexType2;
@@ -68,19 +68,19 @@ void permutation_matrix<ValueType,MemorySpace,IndexType>
 // View Member Functions //
 ///////////////////////////
 //
-template <typename Array, typename ValueType, typename MemorySpace, typename IndexType>
+template <typename Array, typename IndexType, typename MemorySpace>
 void
-permutation_matrix_view<Array,ValueType,MemorySpace,IndexType>
+permutation_matrix_view<Array,IndexType,MemorySpace>
 ::resize(const size_t num_rows)
 {
     Parent::resize(num_rows, num_rows, num_rows);
     permutation.resize(num_rows);
 }
 
-template <typename Array, typename ValueType, typename MemorySpace, typename IndexType>
+template <typename Array, typename IndexType, typename MemorySpace>
 template <typename MatrixType>
 void
-permutation_matrix_view<Array,ValueType,MemorySpace,IndexType>
+permutation_matrix_view<Array,IndexType,MemorySpace>
 ::symmetric_permute(MatrixType& A)
 {
     typedef typename MatrixType::index_type IndexType2;

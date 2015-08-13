@@ -21,17 +21,17 @@
 #pragma once
 
 #include <cusp/detail/config.h>
+#include <cusp/detail/format.h>
+#include <cusp/detail/matrix_base.h>
 
 #include <cusp/array1d.h>
-#include <cusp/detail/format.h>
 #include <cusp/memory.h>
-#include <cusp/detail/matrix_base.h>
 
 namespace cusp
 {
 
 // forward definition
-template <typename ArrayType, typename ValueType, typename MemorySpace, typename IndexType> class permutation_matrix_view;
+template <typename ArrayType, typename IndexType, typename MemorySpace> class permutation_matrix_view;
 
 /*! \addtogroup sparse_matrices Sparse Matrices
  */
@@ -44,9 +44,8 @@ template <typename ArrayType, typename ValueType, typename MemorySpace, typename
 /**
  * \brief Simple representation a permutation matrix
  *
- * \tparam ValueType Type used for matrix values (e.g. \c float).
- * \tparam MemorySpace A memory space (e.g. \c cusp::host_memory or \c cusp::device_memory)
  * \tparam IndexType Type used for matrix indices (e.g. \c int).
+ * \tparam MemorySpace A memory space (e.g. \c cusp::host_memory or \c cusp::device_memory)
  *
  * \par Overview
  *  This matrix represents a row permutation of the identity matrix.
@@ -105,35 +104,33 @@ template <typename ArrayType, typename ValueType, typename MemorySpace, typename
  *  \endcode
  *
  */
-template <typename ValueType, typename MemorySpace, typename IndexType=unsigned int>
-class permutation_matrix : public cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::permutation_format>
+template <typename IndexType, typename MemorySpace>
+class permutation_matrix : public cusp::detail::matrix_base<IndexType,IndexType,MemorySpace,cusp::permutation_format>
 {
 private:
 
-    typedef cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::permutation_format> Parent;
+    typedef cusp::detail::matrix_base<IndexType,IndexType,MemorySpace,cusp::permutation_format> Parent;
 
 public:
 
     /*! \cond */
-    typedef typename cusp::array1d<ValueType, MemorySpace> permutation_array_type;
+    typedef typename cusp::array1d<IndexType, MemorySpace> permutation_array_type;
 
-    typedef typename cusp::permutation_matrix<ValueType, MemorySpace> container;
+    typedef typename cusp::permutation_matrix<IndexType, MemorySpace> container;
 
     typedef typename cusp::permutation_matrix_view<
             typename permutation_array_type::view,
-            ValueType,
-            MemorySpace,
-            IndexType> view;
+            IndexType,
+            MemorySpace> view;
 
     typedef typename cusp::permutation_matrix_view<
             typename permutation_array_type::const_view,
-            ValueType,
-            MemorySpace,
-            IndexType> const_view;
+            IndexType,
+            MemorySpace> const_view;
 
     template<typename MemorySpace2>
     struct rebind {
-        typedef cusp::permutation_matrix<ValueType, MemorySpace2> type;
+        typedef cusp::permutation_matrix<IndexType, MemorySpace2> type;
     };
     /*! \endcond */
 
@@ -160,7 +157,7 @@ public:
      *  \param matrix Another sparse or dense matrix.
      */
     template<typename MemorySpace2>
-    permutation_matrix(const permutation_matrix<ValueType,MemorySpace2>& matrix)
+    permutation_matrix(const permutation_matrix<IndexType,MemorySpace2>& matrix)
         : Parent(matrix), permutation(matrix.permutation) {}
 
     /*! Construct a \p permutation_matrix from another matrix.
@@ -182,7 +179,7 @@ public:
 
     /*! Swap the contents of two \p permutation_matrix objects.
      *
-     *  \param matrix Another \p permutation_matrix with the same IndexType and ValueType.
+     *  \param matrix Another \p permutation_matrix with the same IndexType.
      */
     void swap(permutation_matrix& matrix);
 
@@ -207,7 +204,7 @@ public:
  * \brief View of a \p permutation_matrix
  *
  * \tparam Array Type of permutation array view
- * \tparam ValueType Type used for matrix indices (e.g. \c int).
+ * \tparam IndexType Type used for matrix indices (e.g. \c int).
  * \tparam MemorySpace A memory space (e.g. \c cusp::host_memory or cusp::device_memory)
  *
  * \par Overview
@@ -229,6 +226,8 @@ public:
  *
  *  int main()
  *  {
+ *    typedef cusp::array1d<int, cusp::host_memory> ArrayType;
+ *
  *    // allocate storage for (3,3) matrix with 5 nonzeros
  *    cusp::coo_matrix<int,float,cusp::host_memory> A(3,3,5);
  *
@@ -245,13 +244,13 @@ public:
  *    //    [ 0  0 50]
  *
  *    // generate a index permutation that swaps row or column 0 and 2
- *    cusp::array1d<int,cusp::host_memory> permutation(3);
+ *    ArrayType permutation(3);
  *    permutation[0] = 2; // 0 maps to 2
  *    permutation[1] = 1; // 1 maps to 1
  *    permutation[2] = 0; // 2 maps to 0
  *
  *    // allocate storage for (3,3) matrix with 3 nonzeros
- *    cusp::permutation_matrix<int,cusp::host_memory> P(3, permutation);
+ *    cusp::permutation_matrix_view<ArrayType> P(3, permutation);
  *
  *    // P now represents the following permutation matrix
  *    //    [0 0 1]
@@ -272,23 +271,22 @@ public:
  *  \endcode
  */
 template <typename ArrayType,
-         typename ValueType   = typename ArrayType::value_type,
-         typename MemorySpace = typename ArrayType::memory_space,
-         typename IndexType   = unsigned int>
-class permutation_matrix_view : public cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::permutation_format>
+          typename IndexType   = typename ArrayType::value_type,
+          typename MemorySpace = typename ArrayType::memory_space>
+class permutation_matrix_view : public cusp::detail::matrix_base<IndexType,IndexType,MemorySpace,cusp::permutation_format>
 {
 private:
 
-    typedef cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::permutation_format> Parent;
+    typedef cusp::detail::matrix_base<IndexType,IndexType,MemorySpace,cusp::permutation_format> Parent;
 
 public:
 
     /*! \cond */
     typedef ArrayType permutation_array_type;
 
-    typedef typename cusp::permutation_matrix<ValueType, MemorySpace> container;
+    typedef typename cusp::permutation_matrix<IndexType, MemorySpace> container;
 
-    typedef typename cusp::permutation_matrix_view<ArrayType, ValueType, MemorySpace> view;
+    typedef typename cusp::permutation_matrix_view<ArrayType, IndexType, MemorySpace> view;
     /*! \endcond */
 
     /*! Storage for the permutation indices
@@ -324,7 +322,7 @@ public:
      *
      *  \param matrix \p permutation_matrix used to create view.
      */
-    permutation_matrix_view(permutation_matrix<ValueType,MemorySpace>& matrix)
+    permutation_matrix_view(permutation_matrix<IndexType,MemorySpace>& matrix)
         : Parent(matrix),
           permutation(matrix.permutation) {}
 
@@ -332,7 +330,7 @@ public:
      *
      *  \param matrix \p permutation_matrix used to create view.
      */
-    permutation_matrix_view(const permutation_matrix<ValueType,MemorySpace>& matrix)
+    permutation_matrix_view(const permutation_matrix<IndexType,MemorySpace>& matrix)
         : Parent(matrix),
           permutation(matrix.permutation) {}
 
@@ -393,34 +391,34 @@ make_permutation_matrix_view(size_t num_rows, ArrayType permutation)
  *  annotations.
  *
  *  \tparam ArrayType permutation array type
- *  \tparam ValueType  values type
+ *  \tparam IndexType  values type
  *  \tparam MemorySpace memory space of the arrays
  *
  *  \param m Exemplar \p permutation_matrix_view matrix to copy.
  *
  *  \return \p permutation_matrix_view constructed using input arrays.
  */
-template <typename ArrayType, typename ValueType, typename MemorySpace>
-permutation_matrix_view<ArrayType,ValueType,MemorySpace>
-make_permutation_matrix_view(const permutation_matrix_view<ArrayType,ValueType,MemorySpace>& m)
+template <typename ArrayType, typename IndexType, typename MemorySpace>
+permutation_matrix_view<ArrayType,IndexType,MemorySpace>
+make_permutation_matrix_view(const permutation_matrix_view<ArrayType,IndexType,MemorySpace>& m)
 {
-    return permutation_matrix_view<ArrayType,ValueType,MemorySpace>(m);
+    return permutation_matrix_view<ArrayType,IndexType,MemorySpace>(m);
 }
 
 /**
  *  This is a convenience function for generating a \p permutation_matrix_view
  *  using an existing \p permutation_matrix.
  *
- *  \tparam ValueType  values type
+ *  \tparam IndexType  values type
  *  \tparam MemorySpace memory space of the arrays
  *
  *  \param m Exemplar \p permutation_matrix matrix to copy.
  *
  *  \return \p permutation_matrix_view constructed using input arrays.
  */
-template <typename ValueType, class MemorySpace>
-typename permutation_matrix<ValueType,MemorySpace>::view
-make_permutation_matrix_view(permutation_matrix<ValueType,MemorySpace>& m)
+template <typename IndexType, class MemorySpace>
+typename permutation_matrix<IndexType,MemorySpace>::view
+make_permutation_matrix_view(permutation_matrix<IndexType,MemorySpace>& m)
 {
     return make_permutation_matrix_view(m.num_rows, make_array1d_view(m.permutation));
 }
@@ -429,16 +427,16 @@ make_permutation_matrix_view(permutation_matrix<ValueType,MemorySpace>& m)
  *  This is a convenience function for generating a const \p permutation_matrix_view
  *  using an existing const \p permutation_matrix.
  *
- *  \tparam ValueType  values type
+ *  \tparam IndexType  values type
  *  \tparam MemorySpace memory space of the arrays
  *
  *  \param m Exemplar \p permutation_matrix matrix to copy.
  *
  *  \return \p permutation_matrix_view constructed using input arrays.
  */
-template <typename ValueType, class MemorySpace>
-typename permutation_matrix<ValueType,MemorySpace>::const_view
-make_permutation_matrix_view(const permutation_matrix<ValueType,MemorySpace>& m)
+template <typename IndexType, class MemorySpace>
+typename permutation_matrix<IndexType,MemorySpace>::const_view
+make_permutation_matrix_view(const permutation_matrix<IndexType,MemorySpace>& m)
 {
     return make_permutation_matrix_view(m.num_rows, make_array1d_view(m.permutation));
 }

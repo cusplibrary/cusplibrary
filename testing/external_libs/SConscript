@@ -1,28 +1,31 @@
 import os
 import inspect
 
-lapack_dir = os.environ["HOME"] + "/.local"
-lapack_lib = "-lopenblas"
-
 # try to import an environment first
 Import('env')
 
 # add base testing framework file
 sources = ['../testframework.cu']
-# add lapace and CBLAS test files
-sources.extend(['lapack.cu', 'cblas.cu'])
 
-# add the directory containing this file to the include path
-this_file = inspect.currentframe().f_code.co_filename
-# this_dir = os.path.dirname(this_file)
+# add the directory containing LAPACK and CBLAS to the include path
+lapack_dir = os.environ["HOME"] + "/.local"
+lapack_lib = "openblas"
+
 env.Append(CPPPATH = lapack_dir + "/include")
 env.Append(LIBPATH = lapack_dir + "/lib")
-env.Append(LIBS = lapack_lib)
+
+# create object to check for library availability
+conf = Configure(env)
+
+if conf.CheckLib(lapack_lib):
+  # add lapack and CBLAS test files
+  sources.extend(['lapack.cu', 'cblas.cu'])
+  env.AppendUnique(LIBS = ["-l" + lapack_lib])
 
 # if nvcc is the compiler test the cublas backend
 if env['compiler'] == 'nvcc':
   sources.extend(['cublas.cu'])
-  env.Append(LIBS = "-lcublas")
+  env.AppendUnique(LIBS = ["-lcublas"])
 
 tester = env.Program('tester', sources)
 

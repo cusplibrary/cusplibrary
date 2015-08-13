@@ -595,7 +595,7 @@ void TestMultiplyPermutationOperator(void)
     ASSERT_EQUAL(y[2],  5.0f);
     ASSERT_EQUAL(y[3],  7.0f);
 }
-/* DECLARE_HOST_DEVICE_UNITTEST(TestMultiplyPermutationOperator); */
+DECLARE_HOST_DEVICE_UNITTEST(TestMultiplyPermutationOperator);
 
 template<typename TestMatrix>
 void TestPermutationMatrixMultiply(void)
@@ -633,7 +633,7 @@ void TestPermutationMatrixMultiply(void)
     permutation[1] = 1;
     permutation[2] = 0;
 
-    cusp::permutation_matrix<ValueType,MemorySpace,IndexType> P(3, permutation);
+    cusp::permutation_matrix<IndexType,MemorySpace> P(3, permutation);
 
     // Test row permutations
     {
@@ -679,7 +679,7 @@ void TestPermutationMatrixMultiply(void)
         ASSERT_EQUAL(host_matrix(2,2), ValueType(60));
     }
 }
-/* DECLARE_SPARSE_MATRIX_UNITTEST(TestPermutationMatrixMultiply); */
+DECLARE_SPARSE_MATRIX_UNITTEST(TestPermutationMatrixMultiply);
 
 template <typename MatrixType1, typename MatrixType2, typename MatrixType3>
 void multiply(my_system& system, const MatrixType1& A, const MatrixType2& B, MatrixType3& C)

@@ -1,5 +1,6 @@
 import os
 import inspect
+import SCons
 
 # try to import an environment first
 Import('env')
@@ -47,7 +48,7 @@ env.Append(CPPPATH = [this_dir])
 tester = env.Program('tester', sources)
 
 # invoke trivial_tests SConscript
-if ('tests' not in env) and ('single_test' not in env) :
-  # SConscript('external_libs/SConscript', exports='env')
-  SConscript('trivial_tests/Sconscript', exports='env')
+if ('tests' not in env) and ('single_test' not in env) and (env['PLATFORM'] != "win32" and env['PLATFORM'] != "win64"):
+  SConscript('external_libs/SConscript', exports='env')
+  SConscript('trivial_tests/SConscript', exports='env')
 

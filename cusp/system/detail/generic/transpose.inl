@@ -16,21 +16,22 @@
 
 #pragma once
 
-#include <thrust/detail/config.h>
-#include <thrust/system/detail/generic/tag.h>
-#include <thrust/iterator/counting_iterator.h>
-#include <thrust/iterator/permutation_iterator.h>
-#include <thrust/iterator/transform_iterator.h>
-
+#include <cusp/detail/config.h>
+#include <cusp/detail/array2d_format_utils.h>
 #include <cusp/detail/format.h>
+#include <cusp/detail/temporary_array.h>
+#include <cusp/detail/utils.h>
+
 #include <cusp/copy.h>
 #include <cusp/convert.h>
 #include <cusp/coo_matrix.h>
 #include <cusp/csr_matrix.h>
 #include <cusp/sort.h>
 
-#include <cusp/detail/utils.h>
-#include <cusp/detail/array2d_format_utils.h>
+#include <thrust/system/detail/generic/tag.h>
+#include <thrust/iterator/counting_iterator.h>
+#include <thrust/iterator/permutation_iterator.h>
+#include <thrust/iterator/transform_iterator.h>
 
 namespace cusp
 {
@@ -44,7 +45,7 @@ namespace generic
 // Array2d format
 template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
 void transpose(thrust::execution_policy<DerivedPolicy>& exec,
-               const MatrixType1& A, MatrixType2& At, array2d_format, array2d_format)
+               const MatrixType1& A, MatrixType2& At, cusp::array2d_format, cusp::array2d_format)
 {
     typedef typename MatrixType1::orientation Orientation1;
     typedef typename MatrixType2::orientation Orientation2;
@@ -67,7 +68,7 @@ void transpose(thrust::execution_policy<DerivedPolicy>& exec,
 // COO format
 template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
 void transpose(thrust::execution_policy<DerivedPolicy>& exec,
-               const MatrixType1& A, MatrixType2& At, coo_format, coo_format)
+               const MatrixType1& A, MatrixType2& At, cusp::coo_format, cusp::coo_format)
 {
     At.resize(A.num_cols, A.num_rows, A.num_entries);
 
@@ -81,12 +82,12 @@ void transpose(thrust::execution_policy<DerivedPolicy>& exec,
 // CSR format
 template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
 void transpose(thrust::execution_policy<DerivedPolicy>& exec,
-               const MatrixType1& A, MatrixType2& At, csr_format, csr_format)
+               const MatrixType1& A, MatrixType2& At, cusp::csr_format, cusp::csr_format)
 {
     typedef typename MatrixType2::index_type   IndexType2;
     typedef typename MatrixType2::memory_space MemorySpace2;
 
-    cusp::array1d<IndexType2,MemorySpace2> At_row_indices(A.column_indices);
+    cusp::detail::temporary_array<IndexType2, DerivedPolicy> At_row_indices(exec, A.column_indices);
 
     At.resize(A.num_cols, A.num_rows, A.num_entries);
 

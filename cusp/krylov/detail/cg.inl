@@ -53,10 +53,10 @@ void cg(thrust::execution_policy<DerivedPolicy> &exec,
     const size_t N = A.num_rows;
 
     // allocate workspace
-    cusp::array1d<ValueType,MemorySpace> y(N);
-    cusp::array1d<ValueType,MemorySpace> z(N);
-    cusp::array1d<ValueType,MemorySpace> r(N);
-    cusp::array1d<ValueType,MemorySpace> p(N);
+    cusp::detail::temporary_array<ValueType, DerivedPolicy> y(exec, N);
+    cusp::detail::temporary_array<ValueType, DerivedPolicy> z(exec, N);
+    cusp::detail::temporary_array<ValueType, DerivedPolicy> r(exec, N);
+    cusp::detail::temporary_array<ValueType, DerivedPolicy> p(exec, N);
 
     assert(A.num_rows == A.num_cols);        // sanity check
 

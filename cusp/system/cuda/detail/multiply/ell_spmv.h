@@ -80,12 +80,12 @@ spmv_ell_kernel(const IndexType num_rows,
 
 
 template <typename DerivedPolicy,
-         typename MatrixType,
-         typename VectorType1,
-         typename VectorType2,
-         typename UnaryFunction,
-         typename BinaryFunction1,
-         typename BinaryFunction2>
+          typename MatrixType,
+          typename VectorType1,
+          typename VectorType2,
+          typename UnaryFunction,
+          typename BinaryFunction1,
+          typename BinaryFunction2>
 void multiply(cuda::execution_policy<DerivedPolicy>& exec,
               MatrixType& A,
               VectorType1& x,
@@ -93,16 +93,22 @@ void multiply(cuda::execution_policy<DerivedPolicy>& exec,
               UnaryFunction   initialize,
               BinaryFunction1 combine,
               BinaryFunction2 reduce,
-              ell_format,
-              array1d_format,
-              array1d_format)
+              cusp::ell_format,
+              cusp::array1d_format,
+              cusp::array1d_format)
 {
     typedef typename MatrixType::index_type IndexType;
     typedef typename MatrixType::value_type ValueType;
 
+    if(A.num_entries == 0)
+    {
+        thrust::transform(y.begin(), y.end(), y.begin(), initialize);
+        return;
+    }
+
     const size_t BLOCK_SIZE = 256;
     const size_t MAX_BLOCKS = cusp::system::cuda::detail::max_active_blocks(
-        spmv_ell_kernel<IndexType,ValueType,UnaryFunction,BinaryFunction1,BinaryFunction2,BLOCK_SIZE>, BLOCK_SIZE, (size_t) 0);
+                                  spmv_ell_kernel<IndexType,ValueType,UnaryFunction,BinaryFunction1,BinaryFunction2,BLOCK_SIZE>, BLOCK_SIZE, (size_t) 0);
     const size_t NUM_BLOCKS = std::min<size_t>(MAX_BLOCKS, DIVIDE_INTO(A.num_rows, BLOCK_SIZE));
 
     const IndexType pitch               = A.column_indices.pitch;
@@ -126,5 +132,4 @@ void multiply(cuda::execution_policy<DerivedPolicy>& exec,
 } // end namespace cuda
 } // end namespace system
 } // end namespace cusp
-
 

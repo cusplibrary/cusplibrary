@@ -49,13 +49,14 @@
 
 #pragma once
 
-#include <thrust/extrema.h>
+#include <cusp/detail/temporary_array.h>
 
 #include <cusp/system/cuda/arch.h>
 #include <cusp/system/cuda/utils.h>
 #include <cusp/system/cuda/detail/multiply/coo_serial.h>
 
 #include <thrust/device_ptr.h>
+#include <thrust/extrema.h>
 
 namespace cusp
 {
@@ -243,17 +244,16 @@ struct NewRowOp
  * sparse COO tiles.
  */
 template <
-int             BLOCK_THREADS,
-int             ITEMS_PER_THREAD,
-typename        PartialIterator,
-typename        RowIterator,
-typename        ColumnIterator,
-typename        ValueIterator1,
-typename        ValueIterator2,
-typename        ValueIterator3,
-typename        UnaryFunction,
-typename        BinaryFunction1,
-typename        BinaryFunction2>
+    int             BLOCK_THREADS,
+    int             ITEMS_PER_THREAD,
+    typename        PartialIterator,
+    typename        RowIterator,
+    typename        ColumnIterator,
+    typename        ValueIterator1,
+    typename        ValueIterator2,
+    typename        ValueIterator3,
+    typename        BinaryFunction1,
+    typename        BinaryFunction2>
 struct PersistentBlockSpmv
 {
     //---------------------------------------------------------------------
@@ -305,6 +305,7 @@ struct PersistentBlockSpmv
             };
         };
 
+        IndexType        prev_block_row;     ///< The last row-ID of the previous thread block
         IndexType        first_block_row;    ///< The first row-ID seen by this thread block
         IndexType        last_block_row;     ///< The last row-ID seen by this thread block
         ValueType        first_product;      ///< The first dot-product written by this thread block
@@ -324,7 +325,6 @@ struct PersistentBlockSpmv
     PartialIterator                 d_block_partials;
     int                             block_offset;
     int                             block_end;
-    UnaryFunction                   initialize;
     BinaryFunction1                 combine_op;
     BinaryFunction2                 reduce_op;
 
@@ -346,7 +346,6 @@ struct PersistentBlockSpmv
         PartialIterator             d_block_partials,
         int                         block_offset,
         int                         block_end,
-        UnaryFunction               initialize,
         BinaryFunction1             combine_op,
         BinaryFunction2             reduce_op)
         :
@@ -359,7 +358,6 @@ struct PersistentBlockSpmv
         d_block_partials(d_block_partials),
         block_offset(block_offset),
         block_end(block_end),
-        initialize(initialize),
         combine_op(combine_op),
         reduce_op(reduce_op)
     {
@@ -368,7 +366,9 @@ struct PersistentBlockSpmv
         {
             IndexType first_block_row           = d_rows[block_offset];
             IndexType last_block_row            = d_rows[block_end - 1];
+            IndexType prev_block_row            = blockIdx.x == 0 ? -1 : d_rows[block_offset - 1];
 
+            temp_storage.prev_block_row         = prev_block_row;
             temp_storage.first_block_row        = first_block_row;
             temp_storage.last_block_row         = last_block_row;
             temp_storage.first_product          = ValueType(0);
@@ -472,26 +472,15 @@ struct PersistentBlockSpmv
         {
             if (head_flags[ITEM])
             {
-                d_result[partial_sums[ITEM].row] = partial_sums[ITEM].partial;
-
                 // Save off the first partial product that this thread block will scatter
                 if (partial_sums[ITEM].row == temp_storage.first_block_row)
                 {
                     temp_storage.first_product = partial_sums[ITEM].partial;
                 }
-
-                // Save off the first partial product that this thread block will scatter
-                // if (partial_sums[ITEM].row == temp_storage.first_block_row)
-                // {
-                //     if( (block_offset == 0) || (temp_storage.first_block_row != d_rows[block_offset - 1]) )
-                //         temp_storage.first_product = reduce_op(initialize(d_result[partial_sums[ITEM].row]), partial_sums[ITEM].partial);
-                //     else
-                //         temp_storage.first_product = partial_sums[ITEM].partial;
-                // }
-                // else
-                // {
-                //     d_result[partial_sums[ITEM].row] = reduce_op(initialize(d_result[partial_sums[ITEM].row]), partial_sums[ITEM].partial);
-                // }
+                else
+                {
+                    d_result[partial_sums[ITEM].row] = reduce_op(d_result[partial_sums[ITEM].row], partial_sums[ITEM].partial);
+                }
             }
         }
     }
@@ -525,7 +514,13 @@ struct PersistentBlockSpmv
             if (gridDim.x == 1)
             {
                 // Scatter the final aggregate (this kernel contains only 1 threadblock)
-                d_result[prefix_op.running_prefix.row] = prefix_op.running_prefix.partial;
+                d_result[prefix_op.running_prefix.row] = reduce_op(d_result[prefix_op.running_prefix.row], prefix_op.running_prefix.partial);
+
+                // Scatter the first aggregate (this kernel contains only 1 threadblock)
+                if(temp_storage.first_block_row != prefix_op.running_prefix.row)
+                {
+                    d_result[temp_storage.first_block_row] = reduce_op(d_result[temp_storage.first_block_row], temp_storage.first_product);
+                }
             }
             else
             {
@@ -535,6 +530,16 @@ struct PersistentBlockSpmv
                 PartialProduct first_product;
                 first_product.row       = temp_storage.first_block_row;
                 first_product.partial   = temp_storage.first_product;
+
+                if(first_product.row != temp_storage.prev_block_row)
+                {
+                     first_product.partial = reduce_op(d_result[first_product.row], first_product.partial);
+                }
+
+                if(temp_storage.first_block_row != prefix_op.running_prefix.row)
+                {
+                     prefix_op.running_prefix.partial = reduce_op(d_result[prefix_op.running_prefix.row], prefix_op.running_prefix.partial);
+                }
 
                 d_block_partials[blockIdx.x * 2]          = first_product;
                 d_block_partials[(blockIdx.x * 2) + 1]    = prefix_op.running_prefix;
@@ -548,11 +553,11 @@ struct PersistentBlockSpmv
  * Threadblock abstraction for "fixing up" an array of interblock SpMV partial products.
  */
 template <
-int             BLOCK_THREADS,
-int             ITEMS_PER_THREAD,
-typename        PartialIterator,
-typename        ValueIterator,
-typename        BinaryFunction>
+    int             BLOCK_THREADS,
+    int             ITEMS_PER_THREAD,
+    typename        PartialIterator,
+    typename        ValueIterator,
+    typename        BinaryFunction>
 struct FinalizeSpmvBlock
 {
     //---------------------------------------------------------------------
@@ -756,17 +761,16 @@ struct FinalizeSpmvBlock
  * SpMV kernel whose thread blocks each process a contiguous segment of sparse COO tiles.
  */
 template <
-int                             BLOCK_THREADS,
-int                             ITEMS_PER_THREAD,
-typename                        PartialIterator,
-typename                        RowIterator,
-typename                        ColumnIterator,
-typename                        ValueIterator1,
-typename                        ValueIterator2,
-typename                        ValueIterator3,
-typename                        UnaryFunction,
-typename                        BinaryFunction1,
-typename                        BinaryFunction2>
+    int                             BLOCK_THREADS,
+    int                             ITEMS_PER_THREAD,
+    typename                        PartialIterator,
+    typename                        RowIterator,
+    typename                        ColumnIterator,
+    typename                        ValueIterator1,
+    typename                        ValueIterator2,
+    typename                        ValueIterator3,
+    typename                        BinaryFunction1,
+    typename                        BinaryFunction2>
 __launch_bounds__ (BLOCK_THREADS)
 __global__ void CooKernel(
     GridEvenShare<int>                    even_share,
@@ -776,12 +780,11 @@ __global__ void CooKernel(
     const ValueIterator1                  d_values,
     const ValueIterator2                  d_vector,
     ValueIterator3                        d_result,
-    UnaryFunction                         initialize,
     BinaryFunction1                       combine_op,
     BinaryFunction2                       reduce_op)
 {
     // Specialize SpMV threadblock abstraction type
-    typedef PersistentBlockSpmv<BLOCK_THREADS, ITEMS_PER_THREAD, PartialIterator, RowIterator, ColumnIterator, ValueIterator1, ValueIterator2, ValueIterator3, UnaryFunction, BinaryFunction1, BinaryFunction2> PersistentBlockSpmv;
+    typedef PersistentBlockSpmv<BLOCK_THREADS, ITEMS_PER_THREAD, PartialIterator, RowIterator, ColumnIterator, ValueIterator1, ValueIterator2, ValueIterator3, BinaryFunction1, BinaryFunction2> PersistentBlockSpmv;
 
     // Shared memory allocation
     __shared__ typename PersistentBlockSpmv::TempStorage temp_storage;
@@ -800,7 +803,6 @@ __global__ void CooKernel(
         d_block_partials,
         even_share.block_offset,
         even_share.block_end,
-        initialize,
         combine_op,
         reduce_op);
 
@@ -813,11 +815,11 @@ __global__ void CooKernel(
  * Kernel for "fixing up" an array of interblock SpMV partial products.
  */
 template <
-int                             BLOCK_THREADS,
-int                             ITEMS_PER_THREAD,
-typename                        PartialIterator,
-typename                        ValueIterator,
-typename                        BinaryFunction>
+    int                             BLOCK_THREADS,
+    int                             ITEMS_PER_THREAD,
+    typename                        PartialIterator,
+    typename                        ValueIterator,
+    typename                        BinaryFunction>
 __launch_bounds__ (BLOCK_THREADS,  1)
 __global__ void CooFinalizeKernel(
     PartialIterator                      d_block_partials,
@@ -842,14 +844,12 @@ template <typename DerivedPolicy,
           typename MatrixType,
           typename VectorType1,
           typename VectorType2,
-          typename UnaryFunction,
           typename BinaryFunction1,
           typename BinaryFunction2>
 void spmv_coo(cuda::execution_policy<DerivedPolicy>& exec,
               const MatrixType& A,
               const VectorType1& x,
               VectorType2& y,
-              UnaryFunction   initialize,
               BinaryFunction1 combine,
               BinaryFunction2 reduce)
 {
@@ -865,9 +865,7 @@ void spmv_coo(cuda::execution_policy<DerivedPolicy>& exec,
     typedef typename VectorType1::const_iterator                            ValueIterator2;
     typedef typename VectorType2::iterator                                  ValueIterator3;
 
-    typedef typename cusp::array1d<PartialProduct,cusp::device_memory>::iterator PartialIterator;
-    typedef typename cusp::array1d<IndexType,cusp::device_memory>::iterator IndexIterator;
-    typedef typename cusp::array1d<ValueType,cusp::device_memory>::iterator ValueIterator4;
+    typedef typename cusp::array1d<PartialProduct,MemorySpace>::iterator    PartialIterator;
 
     if(A.num_entries == 0)
     {
@@ -899,11 +897,13 @@ void spmv_coo(cuda::execution_policy<DerivedPolicy>& exec,
                    CooKernel<COO_BLOCK_THREADS, COO_ITEMS_PER_THREAD,
                    PartialIterator, RowIterator, ColumnIterator,
                    ValueIterator1, ValueIterator2, ValueIterator3,
-                   UnaryFunction, BinaryFunction1, BinaryFunction2>,
+                   BinaryFunction1, BinaryFunction2>,
                    COO_BLOCK_THREADS);
 
-    int sm_count;
-    cudaDeviceGetAttribute (&sm_count, cudaDevAttrMultiProcessorCount, 0);
+    // int sm_count = -1;
+    // cudaDeviceGetAttribute (&sm_count, cudaDevAttrMultiProcessorCount, 0);
+    thrust::system::cuda::detail::device_properties_t properties = thrust::system::cuda::detail::device_properties();
+    int sm_count = properties.multiProcessorCount;
     int max_coo_grid_size   = sm_count * coo_sm_occupancy * COO_SUBSCRIPTION_FACTOR;
 
     // Construct an even-share work distribution
@@ -911,7 +911,7 @@ void spmv_coo(cuda::execution_policy<DerivedPolicy>& exec,
     int coo_grid_size  = even_share.grid_size;
     int num_partials   = coo_grid_size * 2;
 
-    cusp::array1d<PartialProduct, MemorySpace> block_partials(num_partials);
+    cusp::detail::temporary_array<PartialProduct, DerivedPolicy> block_partials(exec, num_partials);
 
     // Bind textures
     // void *d_x = (void *) thrust::raw_pointer_cast(&x[0]);
@@ -928,7 +928,6 @@ void spmv_coo(cuda::execution_policy<DerivedPolicy>& exec,
         A.values.begin(),
         x.begin(),
         y.begin(),
-        initialize,
         combine,
         reduce);
 
@@ -946,23 +945,45 @@ void spmv_coo(cuda::execution_policy<DerivedPolicy>& exec,
 } // end namespace cub_coo_spmv_detail
 
 template <typename DerivedPolicy,
-         typename MatrixType,
-         typename VectorType1,
-         typename VectorType2,
-         typename BinaryFunction1,
-         typename BinaryFunction2>
+          typename MatrixType,
+          typename VectorType1,
+          typename VectorType2,
+          typename BinaryFunction1,
+          typename BinaryFunction2>
 void multiply(cuda::execution_policy<DerivedPolicy>& exec,
               const MatrixType& A,
               const VectorType1& x,
               VectorType2& y,
-              thrust::identity<typename MatrixType::value_type> initialize,
+              thrust::identity<typename VectorType2::value_type> initialize,
               BinaryFunction1 combine,
               BinaryFunction2 reduce,
-              coo_format,
-              array1d_format,
-              array1d_format)
+              cusp::coo_format,
+              cusp::array1d_format,
+              cusp::array1d_format)
 {
-    cub_coo_spmv_detail::spmv_coo(exec, A, x, y, initialize, combine, reduce);
+    cub_coo_spmv_detail::spmv_coo(exec, A, x, y, combine, reduce);
+}
+
+template <typename DerivedPolicy,
+          typename MatrixType,
+          typename VectorType1,
+          typename VectorType2,
+          typename UnaryFunction,
+          typename BinaryFunction1,
+          typename BinaryFunction2>
+void multiply(cuda::execution_policy<DerivedPolicy>& exec,
+              const MatrixType& A,
+              const VectorType1& x,
+              VectorType2& y,
+              UnaryFunction   initialize,
+              BinaryFunction1 combine,
+              BinaryFunction2 reduce,
+              cusp::coo_format,
+              cusp::array1d_format,
+              cusp::array1d_format)
+{
+    thrust::transform(exec, y.begin(), y.end(), y.begin(), initialize);
+    cub_coo_spmv_detail::spmv_coo(exec, A, x, y, combine, reduce);
 }
 
 } // end namespace cuda

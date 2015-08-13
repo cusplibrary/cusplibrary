@@ -31,10 +31,10 @@ namespace cr_detail
 {
 
 template <typename DerivedPolicy,
-         class LinearOperator,
-         class Vector,
-         class Monitor,
-         class Preconditioner>
+          class LinearOperator,
+          class Vector,
+          class Monitor,
+          class Preconditioner>
 void cr(thrust::execution_policy<DerivedPolicy> &exec,
         LinearOperator& A,
         Vector& x,
@@ -54,12 +54,12 @@ void cr(thrust::execution_policy<DerivedPolicy> &exec,
     const size_t recompute_r = 8;	     // interval to update r
 
     // allocate workspace
-    cusp::array1d<ValueType,MemorySpace> y(N);
-    cusp::array1d<ValueType,MemorySpace> z(N);
-    cusp::array1d<ValueType,MemorySpace> r(N);
-    cusp::array1d<ValueType,MemorySpace> p(N);
-    cusp::array1d<ValueType,MemorySpace> Az(N);
-    cusp::array1d<ValueType,MemorySpace> Ax(N);
+    cusp::detail::temporary_array<ValueType, DerivedPolicy> y(exec, N);
+    cusp::detail::temporary_array<ValueType, DerivedPolicy> z(exec, N);
+    cusp::detail::temporary_array<ValueType, DerivedPolicy> r(exec, N);
+    cusp::detail::temporary_array<ValueType, DerivedPolicy> p(exec, N);
+    cusp::detail::temporary_array<ValueType, DerivedPolicy> Az(exec, N);
+    cusp::detail::temporary_array<ValueType, DerivedPolicy> Ax(exec, N);
 
     // y <- A*x
     cusp::multiply(exec, A, x, Ax);
@@ -130,9 +130,9 @@ void cr(thrust::execution_policy<DerivedPolicy> &exec,
 }
 
 template <typename DerivedPolicy,
-         class LinearOperator,
-         class Vector,
-         class Monitor>
+          class LinearOperator,
+          class Vector,
+          class Monitor>
 void cr(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
         LinearOperator& A,
         Vector& x,
@@ -148,8 +148,8 @@ void cr(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 }
 
 template <typename DerivedPolicy,
-         class LinearOperator,
-         class Vector>
+          class LinearOperator,
+          class Vector>
 void cr(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
         LinearOperator& A,
         Vector& x,
@@ -165,8 +165,8 @@ void cr(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 } // end cr_detail namespace
 
 template <typename DerivedPolicy,
-         class LinearOperator,
-         class Vector>
+          class LinearOperator,
+          class Vector>
 void cr(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
         LinearOperator& A,
         Vector& x,
@@ -179,7 +179,7 @@ void cr(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 }
 
 template <class LinearOperator,
-         class Vector>
+          class Vector>
 void cr(LinearOperator& A,
         Vector& x,
         Vector& b)
@@ -196,9 +196,9 @@ void cr(LinearOperator& A,
 }
 
 template <typename DerivedPolicy,
-         class LinearOperator,
-         class Vector,
-         class Monitor>
+          class LinearOperator,
+          class Vector,
+          class Monitor>
 void cr(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
         LinearOperator& A,
         Vector& x,
@@ -212,8 +212,8 @@ void cr(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 }
 
 template <class LinearOperator,
-         class Vector,
-         class Monitor>
+          class Vector,
+          class Monitor>
 void cr(LinearOperator& A,
         Vector& x,
         Vector& b,
@@ -231,10 +231,10 @@ void cr(LinearOperator& A,
 }
 
 template <typename DerivedPolicy,
-         class LinearOperator,
-         class Vector,
-         class Monitor,
-         class Preconditioner>
+          class LinearOperator,
+          class Vector,
+          class Monitor,
+          class Preconditioner>
 void cr(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
         LinearOperator& A,
         Vector& x,
@@ -249,9 +249,9 @@ void cr(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 }
 
 template <class LinearOperator,
-         class Vector,
-         class Monitor,
-         class Preconditioner>
+          class Vector,
+          class Monitor,
+          class Preconditioner>
 void cr(LinearOperator& A,
         Vector& x,
         Vector& b,

@@ -22,6 +22,7 @@
 
 #include <cusp/detail/config.h>
 #include <cusp/detail/format.h>
+#include <cusp/detail/temporary_array.h>
 
 #include <cusp/array1d.h>
 #include <cusp/copy.h>
@@ -39,7 +40,9 @@ namespace sequential
 {
 
 template <typename DerivedPolicy,
-          typename MatrixType1, typename MatrixType2, typename MatrixType3,
+          typename MatrixType1,
+          typename MatrixType2,
+          typename MatrixType3,
           typename BinaryFunction>
 void elementwise(sequential::execution_policy<DerivedPolicy>& exec,
                  const MatrixType1& A,
@@ -54,9 +57,9 @@ void elementwise(sequential::execution_policy<DerivedPolicy>& exec,
     typedef typename MatrixType3::index_type IndexType;
     typedef typename MatrixType3::value_type ValueType;
 
-    cusp::array1d<IndexType,cusp::host_memory>  next(A.num_cols, IndexType(-1));
-    cusp::array1d<ValueType,cusp::host_memory> A_row(A.num_cols, ValueType(0));
-    cusp::array1d<ValueType,cusp::host_memory> B_row(A.num_cols, ValueType(0));
+    cusp::detail::temporary_array<IndexType, DerivedPolicy>  next(exec, A.num_cols, IndexType(-1));
+    cusp::detail::temporary_array<ValueType, DerivedPolicy> A_row(exec, A.num_cols, ValueType(0));
+    cusp::detail::temporary_array<ValueType, DerivedPolicy> B_row(exec, A.num_cols, ValueType(0));
 
     cusp::csr_matrix<IndexType,ValueType,cusp::host_memory> temp(A.num_rows, A.num_cols, A.num_entries + B.num_entries);
 

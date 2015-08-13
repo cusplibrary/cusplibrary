@@ -2,6 +2,9 @@
 #include <cusp/gallery/poisson.h>
 #include <cusp/coo_matrix.h>
 
+#include <cstddef>
+#include <iostream>
+
 // This example computes a maximal independent set (MIS)
 // for a 10x10 grid.  The graph for the 10x10 grid is
 // described by the sparsity pattern of a sparse matrix

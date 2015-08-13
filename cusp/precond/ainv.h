@@ -51,6 +51,7 @@ namespace precond
 template <typename ValueType, typename MemorySpace>
 class scaled_bridson_ainv : public linear_operator<ValueType, MemorySpace>
 {
+private:
     typedef linear_operator<ValueType, MemorySpace> Parent;
 
 public:
@@ -77,7 +78,11 @@ public:
      * \tparam VectorType2 vector
      */
     template <typename VectorType1, typename VectorType2>
-    void operator()(const VectorType1& x, VectorType2& y) const;
+    void operator()(const VectorType1& x, VectorType2& y);
+
+protected:
+
+    cusp::array1d<ValueType, MemorySpace> temp1;
 };
 /*! \}
  */
@@ -101,6 +106,7 @@ public:
 template <typename ValueType, typename MemorySpace>
 class bridson_ainv : public linear_operator<ValueType, MemorySpace>
 {
+private:
     typedef linear_operator<ValueType, MemorySpace> Parent;
 
 public:
@@ -128,7 +134,11 @@ public:
      * \tparam VectorType2 vector
      */
     template <typename VectorType1, typename VectorType2>
-    void operator()(const VectorType1& x, VectorType2& y) const;
+    void operator()(const VectorType1& x, VectorType2& y);
+
+protected:
+    cusp::array1d<ValueType, MemorySpace> temp1;
+    cusp::array1d<ValueType, MemorySpace> temp2;
 };
 /*! \}
  */
@@ -148,6 +158,7 @@ public:
 template <typename ValueType, typename MemorySpace>
 class nonsym_bridson_ainv : public linear_operator<ValueType, MemorySpace>
 {
+private:
     typedef linear_operator<ValueType, MemorySpace> Parent;
 
 public:
@@ -175,7 +186,11 @@ public:
      * \tparam VectorType2 vector
      */
     template <typename VectorType1, typename VectorType2>
-    void operator()(const VectorType1& x, VectorType2& y) const;
+    void operator()(const VectorType1& x, VectorType2& y);
+
+protected:
+    cusp::array1d<ValueType, MemorySpace> temp1;
+    cusp::array1d<ValueType, MemorySpace> temp2;
 };
 /*! \}
  */

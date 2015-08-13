@@ -14,11 +14,12 @@
  *  limitations under the License.
  */
 
+#include <cusp/detail/temporary_array.h>
+
 #include <cusp/array1d.h>
 #include <cusp/coo_matrix.h>
-#include <cusp/sort.h>
-
 #include <cusp/format_utils.h>
+#include <cusp/sort.h>
 
 #include <thrust/gather.h>
 #include <thrust/scan.h>
@@ -29,6 +30,7 @@
 #include <thrust/iterator/zip_iterator.h>
 #include <thrust/iterator/permutation_iterator.h>
 
+#include <limits>
 #include <list>
 
 namespace cusp
@@ -171,11 +173,11 @@ void multiply(thrust::execution_policy<DerivedPolicy>& exec,
     }
 
     // compute row offsets for B
-    cusp::array1d<IndexType,MemorySpace> B_row_offsets(B.num_rows + 1);
+    cusp::detail::temporary_array<IndexType,DerivedPolicy> B_row_offsets(exec, B.num_rows + 1);
     cusp::indices_to_offsets(exec, B.row_indices, B_row_offsets);
 
     // compute row lengths for B
-    cusp::array1d<IndexType,MemorySpace> B_row_lengths(B.num_rows);
+    cusp::detail::temporary_array<IndexType,DerivedPolicy> B_row_lengths(exec, B.num_rows);
     thrust::transform(exec,
                       B_row_offsets.begin() + 1,
                       B_row_offsets.end(),
@@ -184,7 +186,7 @@ void multiply(thrust::execution_policy<DerivedPolicy>& exec,
                       thrust::minus<IndexType>());
 
     // for each element A(i,j) compute the number of nonzero elements in B(j,:)
-    cusp::array1d<IndexType,MemorySpace> segment_lengths(A.num_entries);
+    cusp::detail::temporary_array<IndexType,DerivedPolicy> segment_lengths(exec, A.num_entries);
     thrust::gather(exec,
                    A.column_indices.begin(),
                    A.column_indices.end(),
@@ -192,7 +194,7 @@ void multiply(thrust::execution_policy<DerivedPolicy>& exec,
                    segment_lengths.begin());
 
     // output pointer
-    cusp::array1d<IndexType,MemorySpace> output_ptr(A.num_entries + 1);
+    cusp::detail::temporary_array<IndexType,DerivedPolicy> output_ptr(exec, A.num_entries + 1);
     thrust::exclusive_scan(exec,
                            segment_lengths.begin(),
                            segment_lengths.end(),
@@ -206,7 +208,7 @@ void multiply(thrust::execution_policy<DerivedPolicy>& exec,
     size_t workspace_capacity = thrust::min<size_t>(coo_num_nonzeros, 16 << 20);
 
     {
-        size_t free = UINT_MAX;
+        size_t free = std::numeric_limits<unsigned int>::max();
 
         // divide free bytes by the size of each workspace unit
         size_t max_workspace_capacity = free / (4 * sizeof(IndexType) + sizeof(ValueType));
@@ -216,11 +218,11 @@ void multiply(thrust::execution_policy<DerivedPolicy>& exec,
     }
 
     // workspace arrays
-    cusp::array1d<IndexType,MemorySpace> A_gather_locations;
-    cusp::array1d<IndexType,MemorySpace> B_gather_locations;
-    cusp::array1d<IndexType,MemorySpace> I;
-    cusp::array1d<IndexType,MemorySpace> J;
-    cusp::array1d<ValueType,MemorySpace> V;
+    cusp::detail::temporary_array<IndexType,DerivedPolicy> A_gather_locations(exec);
+    cusp::detail::temporary_array<IndexType,DerivedPolicy> B_gather_locations(exec);
+    cusp::detail::temporary_array<IndexType,DerivedPolicy> I;
+    cusp::detail::temporary_array<IndexType,DerivedPolicy> J;
+    cusp::detail::temporary_array<ValueType,DerivedPolicy> V;
 
     if (coo_num_nonzeros <= workspace_capacity)
     {
@@ -251,16 +253,16 @@ void multiply(thrust::execution_policy<DerivedPolicy>& exec,
         ContainerList slices;
 
         // compute row offsets for A
-        cusp::array1d<IndexType,MemorySpace> A_row_offsets(A.num_rows + 1);
+        cusp::detail::temporary_array<IndexType,DerivedPolicy> A_row_offsets(exec, A.num_rows + 1);
         cusp::indices_to_offsets(exec, A.row_indices, A_row_offsets);
 
         // compute worspace requirements for each row
-        cusp::array1d<IndexType,MemorySpace> cummulative_row_workspace(A.num_rows);
+        cusp::detail::temporary_array<IndexType,DerivedPolicy> cumulative_row_workspace(exec, A.num_rows);
         thrust::gather(exec,
                        A_row_offsets.begin() + 1,
                        A_row_offsets.end(),
                        output_ptr.begin(),
-                       cummulative_row_workspace.begin());
+                       cumulative_row_workspace.begin());
 
         size_t begin_row = 0;
         size_t total_work = 0;
@@ -271,8 +273,8 @@ void multiply(thrust::execution_policy<DerivedPolicy>& exec,
 
             // find largest end_row such that the capacity of [begin_row, end_row) fits in the workspace_capacity
             size_t end_row = thrust::upper_bound(exec,
-                                                 cummulative_row_workspace.begin() + begin_row, cummulative_row_workspace.end(),
-                                                 IndexType(total_work + workspace_capacity)) - cummulative_row_workspace.begin();
+                                                 cumulative_row_workspace.begin() + begin_row, cumulative_row_workspace.end(),
+                                                 IndexType(total_work + workspace_capacity)) - cumulative_row_workspace.begin();
 
             size_t begin_segment = A_row_offsets[begin_row];
             size_t end_segment   = A_row_offsets[end_row];
@@ -306,16 +308,16 @@ void multiply(thrust::execution_policy<DerivedPolicy>& exec,
         }
 
         // deallocate workspace
-        A_gather_locations.clear();
-        A_gather_locations.shrink_to_fit();
-        B_gather_locations.clear();
-        B_gather_locations.shrink_to_fit();
-        I.clear();
-        I.shrink_to_fit();
-        J.clear();
-        J.shrink_to_fit();
-        V.clear();
-        V.shrink_to_fit();
+        // A_gather_locations.clear();
+        // A_gather_locations.shrink_to_fit();
+        // B_gather_locations.clear();
+        // B_gather_locations.shrink_to_fit();
+        // I.clear();
+        // I.shrink_to_fit();
+        // J.clear();
+        // J.shrink_to_fit();
+        // V.clear();
+        // V.shrink_to_fit();
 
         // compute total output size
         size_t C_num_entries = 0;
@@ -349,8 +351,6 @@ void multiply(thrust::execution_policy<DerivedPolicy>& exec,
               cusp::sparse_format,
               cusp::sparse_format)
 {
-    using namespace thrust::placeholders;
-
     // other formats use COO * COO
     typedef typename MatrixType1::const_coo_view_type             CooMatrix1;
     typedef typename MatrixType2::const_coo_view_type             CooMatrix2;
@@ -377,7 +377,7 @@ void multiply(thrust::execution_policy<DerivedPolicy>& exec,
                 thrust::make_zip_iterator(
                   thrust::make_tuple(C_.row_indices.end(),   C_.column_indices.end(), C_.values.end())),
                 C_.values.begin(),
-                _1 == ValueType(0)) -
+                thrust::placeholders::_1 == ValueType(0)) -
             thrust::make_zip_iterator(
                 thrust::make_tuple(C_.row_indices.begin(), C_.column_indices.begin(), C_.values.begin()));
 
@@ -391,3 +391,4 @@ void multiply(thrust::execution_policy<DerivedPolicy>& exec,
 } // end namespace detail
 } // end namespace system
 } // end namespace cusp
+

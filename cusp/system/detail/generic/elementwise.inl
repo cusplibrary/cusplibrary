@@ -23,6 +23,7 @@
 #include <cusp/verify.h>
 
 #include <cusp/detail/format.h>
+#include <cusp/detail/temporary_array.h>
 
 #include <thrust/functional.h>
 #include <thrust/inner_product.h>
@@ -113,7 +114,7 @@ void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
     typedef thrust::tuple<RowIterator2,ColumnIterator2>                                              IteratorTuple2;
     typedef thrust::zip_iterator<IteratorTuple2>                                                     ZipIterator2;
 
-    typedef typename cusp::array1d<IndexType,MemorySpace>::iterator                                  IndexIterator;
+    typedef typename cusp::detail::temporary_array<IndexType, DerivedPolicy>::iterator               IndexIterator;
     typedef cusp::join_iterator< thrust::tuple<ZipIterator1, ZipIterator2, IndexIterator> >          JoinIndexIterator;
 
     typedef typename elementwise_detail::ops<BinaryFunction>::unary_op_type                          UnaryOp;
@@ -135,7 +136,7 @@ void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
     ZipIterator1 A_tuples(thrust::make_tuple(A.row_indices.begin(), A.column_indices.begin()));
     ZipIterator2 B_tuples(thrust::make_tuple(B.row_indices.begin(), B.column_indices.begin()));
 
-    cusp::array1d<IndexType,MemorySpace> indices(num_entries);
+    cusp::detail::temporary_array<IndexType, DerivedPolicy> indices(exec, num_entries);
     thrust::sequence(exec, indices.begin(), indices.end());
 
     thrust::merge_by_key(exec,
@@ -175,9 +176,9 @@ void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
                           thrust::equal_to< thrust::tuple<IndexType,IndexType> >(),
                           BinaryOp());
 #else
-    cusp::array1d<IndexType,MemorySpace> rows(num_entries);
-    cusp::array1d<IndexType,MemorySpace> cols(num_entries);
-    cusp::array1d<ValueType,MemorySpace> vals(num_entries);
+    cusp::detail::temporary_array<IndexType, DerivedPolicy> rows(exec, num_entries);
+    cusp::detail::temporary_array<IndexType, DerivedPolicy> cols(exec, num_entries);
+    cusp::detail::temporary_array<ValueType, DerivedPolicy> vals(exec, num_entries);
 
     thrust::copy(exec, A.row_indices.begin(),    A.row_indices.end(),    rows.begin());
     thrust::copy(exec, B.row_indices.begin(),    B.row_indices.end(),    rows.begin() + A_nnz);

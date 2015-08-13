@@ -14,6 +14,7 @@
  *  limitations under the License.
  */
 
+#include <thrust/swap.h>
 
 namespace cusp
 {
@@ -129,9 +130,12 @@ void
 array1d_view<RandomAccessIterator>
 ::swap(array1d_view &v)
 {
-  thrust::swap(this->base_reference(), v.base_reference());
-  thrust::swap(m_size,     v.m_size);
-  thrust::swap(m_capacity, v.m_capacity);
+    // TODO: cost of swap_ranges vs swap?
+    // thrust::swap(this->base_reference(), v.base_reference());
+    thrust::swap_ranges(this->begin(), this->end(), v.begin());
+
+    thrust::swap(m_size,     v.m_size);
+    thrust::swap(m_capacity, v.m_capacity);
 } // end array1d_view::swap
 
 template<typename RandomAccessIterator>
@@ -279,4 +283,5 @@ bool operator!=(const array1d<T,Alloc>& lhs,
 }
 
 } // end namespace cusp
+
 

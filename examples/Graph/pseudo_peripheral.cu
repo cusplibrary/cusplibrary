@@ -3,6 +3,8 @@
 #include <cusp/gallery/poisson.h>
 #include <cusp/graph/pseudo_peripheral.h>
 
+#include <iostream>
+
 int main(int argc, char*argv[])
 {
     // create an empty sparse matrix structure (CSR format)

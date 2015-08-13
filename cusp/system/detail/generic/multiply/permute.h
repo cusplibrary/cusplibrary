@@ -18,6 +18,7 @@
 #include <cusp/detail/format.h>
 
 #include <cusp/copy.h>
+#include <cusp/sort.h>
 
 #include <thrust/gather.h>
 
@@ -66,7 +67,7 @@ void multiply(thrust::execution_policy<DerivedPolicy> &exec,
     cusp::copy(exec, B.column_indices, C.column_indices);
     cusp::copy(exec, B.values, C.values);
 
-    C.sort_by_row();
+    cusp::sort_by_row(exec, C.row_indices, C.column_indices, C.values, 0, C.num_rows);
 }
 
 template <typename DerivedPolicy,
@@ -88,7 +89,7 @@ void multiply(thrust::execution_policy<DerivedPolicy> &exec,
     cusp::copy(exec, A.row_indices, C.row_indices);
     cusp::copy(exec, A.values, C.values);
 
-    C.sort_by_row_and_column();
+    cusp::sort_by_row_and_column(exec, C.row_indices, C.column_indices, C.values, 0, C.num_rows, 0, C.num_cols);
 }
 
 template <typename DerivedPolicy,

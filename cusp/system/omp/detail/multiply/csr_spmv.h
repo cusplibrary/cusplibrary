@@ -40,12 +40,12 @@ namespace omp
 {
 
 template <typename DerivedPolicy,
-         typename MatrixType,
-         typename VectorType1,
-         typename VectorType2,
-         typename UnaryFunction,
-         typename BinaryFunction1,
-         typename BinaryFunction2>
+		  typename MatrixType,
+          typename VectorType1,
+          typename VectorType2,
+          typename UnaryFunction,
+          typename BinaryFunction1,
+          typename BinaryFunction2>
 void multiply(omp::execution_policy<DerivedPolicy>& exec,
               const MatrixType& A,
               const VectorType1& x,
@@ -53,26 +53,28 @@ void multiply(omp::execution_policy<DerivedPolicy>& exec,
               UnaryFunction   initialize,
               BinaryFunction1 combine,
               BinaryFunction2 reduce,
-              csr_format,
-              array1d_format,
-              array1d_format)
+              cusp::csr_format,
+              cusp::array1d_format,
+              cusp::array1d_format)
 {
     typedef typename MatrixType::index_type  IndexType;
     typedef typename VectorType2::value_type ValueType;
 
+	int N = A.num_rows;
+
     #pragma omp parallel for
-    for(size_t i = 0; i < A.num_rows; i++)
+    for(int i = 0; i < N; i++)
     {
-        const IndexType& row_start = A.row_offsets[i];
-        const IndexType& row_end   = A.row_offsets[i+1];
+        const IndexType row_start = A.row_offsets[i];
+        const IndexType row_end   = A.row_offsets[i+1];
 
         ValueType accumulator = initialize(y[i]);
 
         for (IndexType jj = row_start; jj < row_end; jj++)
         {
-            const IndexType& j   = A.column_indices[jj];
-            const ValueType& Aij = A.values[jj];
-            const ValueType& xj  = x[j];
+            const IndexType j   = A.column_indices[jj];
+            const ValueType Aij = A.values[jj];
+            const ValueType xj  = x[j];
 
             accumulator = reduce(accumulator, combine(Aij, xj));
         }
