@@ -1,6 +1,5 @@
 import os
 import inspect
-import glob
 
 # try to import an environment first
 try:
@@ -9,18 +8,15 @@ except:
   exec open("../build/build-env.py")
   env = Environment()
 
-# find all .cus & .cpps in the current directory
-sources = []
+# on windows we have to do /bigobj
+if env['PLATFORM'] == "win32" or env['PLATFORM'] == "win64":
+  env.Append(CPPFLAGS = "/bigobj")
+
 directories = [name for name in os.listdir('.') if os.path.isdir(name)]
-extensions = ['*.cu', '*.cpp']
+
 for dir in directories:
   if dir == 'OpenGL' : continue
-  for ext in extensions:
-    regexp = os.path.join(dir, ext)
-    #sources.extend(env.Glob(regexp, strings = True))
-    sources.extend(glob.glob(regexp))
 
-# compile examples
-for src in sources:
-  env.Program(src)
+  # invoke trivial_tests SConscript
+  SConscript(dir + '/SConscript', exports='env', duplicate=False)
 
