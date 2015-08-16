@@ -26,11 +26,11 @@
  * Copyright, Stanford University
  */
 
+#include <algorithm>
+#include <cmath>
+#include <limits>
 #include <stdlib.h>
 #include <string>
-#include <limits>
-#include <cmath>
-#include <algorithm>
 #include <utility>
 
 #include <cusp/opengl/spy/glut_2d_canvas.h>
@@ -582,10 +582,10 @@ bool matrix_canvas<IndexType,ValueType,MemorySpace>::load_matrix(const MatrixTyp
         }
     }
     for (IndexType r=0; r<m; ++r) {
-        rnorm[r]=1.0/sqrt(rnorm[r]);
+        rnorm[r]=1.0/std::sqrt(rnorm[r]);
     }
     for (IndexType r=0; r<n; ++r) {
-        cnorm[r]=1.0/sqrt(cnorm[r]);
+        cnorm[r]=1.0/std::sqrt(cnorm[r]);
     }
 
     return (true);

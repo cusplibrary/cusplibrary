@@ -1,3 +1,5 @@
+#include <cusp/complex.h>
+
 #include <cusp/gallery/poisson.h>
 #include <cusp/io/matrix_market.h>
 #include <cusp/opengl/spy/spy.h>

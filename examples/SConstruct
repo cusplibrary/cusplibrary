@@ -15,8 +15,6 @@ if env['PLATFORM'] == "win32" or env['PLATFORM'] == "win64":
 directories = [name for name in os.listdir('.') if os.path.isdir(name)]
 
 for dir in directories:
-  if dir == 'OpenGL' : continue
-
   # invoke trivial_tests SConscript
   SConscript(dir + '/SConscript', exports='env', duplicate=False)
 
