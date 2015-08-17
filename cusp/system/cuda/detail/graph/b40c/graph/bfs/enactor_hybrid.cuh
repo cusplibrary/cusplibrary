@@ -169,15 +169,15 @@ protected:
             typename CsrProblem::GraphSlice *graph_slice = csr_problem.graph_slices[0];
 
             // Bind bitmask texture
-            int bytes = (graph_slice->nodes + 8 - 1) / 8;
-            cudaChannelFormatDesc bitmask_desc = cudaCreateChannelDesc<unsigned char>();
+            // int bytes = (graph_slice->nodes + 8 - 1) / 8;
+            /* cudaChannelFormatDesc bitmask_desc = cudaCreateChannelDesc<unsigned char>();
             if (retval = util::B40CPerror<0>(cudaBindTexture(
                                               0,
                                               two_phase::contract_atomic::BitmaskTex<VisitedMask>::ref,
                                               graph_slice->d_visited_mask,
                                               bitmask_desc,
                                               bytes),
-                                          "EnactorHybrid cudaBindTexture bitmask_tex_ref failed", __FILE__, __LINE__)) break;
+                                          "EnactorHybrid cudaBindTexture bitmask_tex_ref failed", __FILE__, __LINE__)) break; */
 
             // Bind row-offsets texture
             /* cudaChannelFormatDesc row_offsets_desc = cudaCreateChannelDesc<SizeT>(); */
