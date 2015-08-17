@@ -11,7 +11,6 @@
 
 #include <cusp/gallery/poisson.h>
 #include <cusp/krylov/cg.h>
-#include <cusp/print.h>
 
 template <class MemorySpace>
 void TestStandardAggregation(void)

@@ -2,8 +2,6 @@
 
 #include <cusp/gallery/poisson.h>
 
-#include <cusp/print.h>
-
 void TestPoisson5pt(void)
 {
     // grid is 2x3

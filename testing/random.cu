@@ -8,7 +8,7 @@
 
 #include <limits>
 
-#include <cusp/print.h>
+// #include <cusp/print.h>
 
 template <typename T>
 struct TestRandomIntegersDistribution
@@ -29,9 +29,9 @@ struct TestRandomIntegersDistribution
             }
         }
 
-        //std::cout << "min " << *thrust::min_element(counts.values.begin(), counts.values.end()) << std::endl;
-        //std::cout << "max " << *thrust::max_element(counts.values.begin(), counts.values.end()) << std::endl;
-        //cusp::print_matrix(counts);
+        // std::cout << "min " << *thrust::min_element(counts.values.begin(), counts.values.end()) << std::endl;
+        // std::cout << "max " << *thrust::max_element(counts.values.begin(), counts.values.end()) << std::endl;
+        // cusp::print_matrix(counts);
 
         size_t expected = n / 16;
         size_t min_bin = *thrust::min_element(counts.values.begin(), counts.values.end());
@@ -63,9 +63,9 @@ struct TestRandomRealsDistribution
             buckets[ size_t(val * T(buckets.size())) ]++;
         }
 
-//        std::cout << "min " << *thrust::min_element(buckets.begin(), buckets.end()) << std::endl;
-//        std::cout << "max " << *thrust::max_element(buckets.begin(), buckets.end()) << std::endl;
-//        cusp::print_matrix(buckets);
+        // std::cout << "min " << *thrust::min_element(buckets.begin(), buckets.end()) << std::endl;
+        // std::cout << "max " << *thrust::max_element(buckets.begin(), buckets.end()) << std::endl;
+        // cusp::print_matrix(buckets);
 
         size_t expected = n / buckets.size();
         size_t min_bin = *thrust::min_element(buckets.begin(), buckets.end());

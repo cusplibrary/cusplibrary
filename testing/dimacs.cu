@@ -5,7 +5,6 @@
 #include <cusp/coo_matrix.h>
 #include <cusp/csr_matrix.h>
 #include <cusp/array2d.h>
-#include <cusp/print.h>
 
 #include <stdio.h>
 

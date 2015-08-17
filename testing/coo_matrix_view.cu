@@ -7,8 +7,6 @@
 #include <cusp/hyb_matrix.h>
 #include <cusp/multiply.h>
 
-#include <cusp/print.h>
-
 template <typename MemorySpace>
 void TestCooMatrixView(void)
 {

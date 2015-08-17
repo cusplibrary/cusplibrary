@@ -3,8 +3,6 @@
 #include <cusp/dia_matrix.h>
 #include <cusp/multiply.h>
 
-#include <cusp/print.h>
-
 template <typename MemorySpace>
 void TestDiaMatrixView(void)
 {

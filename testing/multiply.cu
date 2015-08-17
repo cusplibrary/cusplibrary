@@ -7,7 +7,6 @@
 #include <cusp/multiply.h>
 
 #include <cusp/linear_operator.h>
-#include <cusp/print.h>
 #include <cusp/gallery/poisson.h>
 #include <cusp/gallery/random.h>
 
