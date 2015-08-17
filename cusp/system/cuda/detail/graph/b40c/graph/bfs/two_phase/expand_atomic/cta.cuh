@@ -192,8 +192,10 @@ struct Cta
 
 					// Load neighbor row range from d_row_offsets
 					Vec2SizeT row_range;
-					row_range.x = tex1Dfetch(RowOffsetTex<SizeT>::ref, row_id);
-					row_range.y = tex1Dfetch(RowOffsetTex<SizeT>::ref, row_id + 1);
+					/* row_range.x = tex1Dfetch(RowOffsetTex<SizeT>::ref, row_id); */
+					/* row_range.y = tex1Dfetch(RowOffsetTex<SizeT>::ref, row_id + 1); */
+					row_range.x = cta->d_row_offsets[row_id];
+					row_range.y = cta->d_row_offsets[row_id + 1];
 
 					// Node is previously unvisited: compute row offset and length
 					tile->row_offset[LOAD][VEC] = row_range.x;

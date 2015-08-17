@@ -177,6 +177,7 @@ struct Cta
 		// Helper Structures
 		//---------------------------------------------------------------------
 
+
 		/**
 		 * Iterate next vector element
 		 */
@@ -195,8 +196,10 @@ struct Cta
 					VertexId row_id = (tile->vertex_id[LOAD][VEC] & KernelPolicy::VERTEX_ID_MASK) / cta->num_gpus;
 
 					// Node is previously unvisited: compute row offset and length
-					tile->row_offset[LOAD][VEC] = tex1Dfetch(RowOffsetTex<SizeT>::ref, row_id);
-					tile->row_length[LOAD][VEC] = tex1Dfetch(RowOffsetTex<SizeT>::ref, row_id + 1) - tile->row_offset[LOAD][VEC];
+					/* tile->row_offset[LOAD][VEC] = tex1Dfetch(RowOffsetTex<SizeT>::ref, row_id); */
+					/* tile->row_length[LOAD][VEC] = tex1Dfetch(RowOffsetTex<SizeT>::ref, row_id + 1) - tile->row_offset[LOAD][VEC]; */
+					tile->row_offset[LOAD][VEC] = cta->d_row_offsets[row_id];
+					tile->row_length[LOAD][VEC] = cta->d_row_offsets[row_id + 1] - tile->row_offset[LOAD][VEC];
 				}
 
 				tile->fine_row_rank[LOAD][VEC] = (tile->row_length[LOAD][VEC] < KernelPolicy::WARP_GATHER_THRESHOLD) ?
@@ -225,9 +228,10 @@ struct Cta
 					VisitedMask mask_bit = 1 << (tile->vertex_id[LOAD][VEC] & 7);
 
 					// Read byte from from visited mask (tex)
-					VisitedMask mask_byte = tex1Dfetch(
-						BitmaskTex<VisitedMask>::ref,
-						mask_byte_offset);
+					/* VisitedMask mask_byte = tex1Dfetch( */
+					/* 	BitmaskTex<VisitedMask>::ref, */
+					/* 	mask_byte_offset); */
+					VisitedMask mask_byte = cta->d_visited_mask[mask_byte_offset];
 
 					if (mask_bit & mask_byte) {
 

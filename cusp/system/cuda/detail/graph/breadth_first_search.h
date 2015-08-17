@@ -22,8 +22,9 @@
 #include <cusp/exception.h>
 
 #include <cusp/system/cuda/execution_policy.h>
-
 #include <cusp/system/cuda/detail/graph/b40c.h>
+
+#include <thrust/fill.h>
 
 namespace cusp
 {
@@ -59,6 +60,12 @@ void breadth_first_search(cuda::execution_policy<DerivedPolicy>& exec,
     if( labels.size() != G.num_rows )
     {
         throw cusp::runtime_exception("BFS traversal labels is not large enough for result.");
+    }
+
+    if( G.num_entries == 0 )
+    {
+        thrust::fill(exec, labels.begin(), labels.end(), -2);
+        return;
     }
 
     // Create a single GPU slice for the currently-set gpu

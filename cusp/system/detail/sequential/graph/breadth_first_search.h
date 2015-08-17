@@ -20,6 +20,7 @@
 
 #include <cusp/detail/config.h>
 #include <cusp/detail/format.h>
+#include <cusp/detail/temporary_array.h>
 
 #include <cusp/array1d.h>
 #include <cusp/exception.h>
@@ -41,19 +42,23 @@ void breadth_first_search(sequential::execution_policy<DerivedPolicy>& exec,
                           const typename MatrixType::index_type src,
                           ArrayType& labels,
                           const bool mark_levels,
-                          csr_format)
+                          cusp::csr_format)
 {
     typedef typename MatrixType::index_type VertexId;
 
-    ArrayType predecessors;
-
-    // initialize predecessor array
-    if(!mark_levels) predecessors.resize(G.num_rows);
+    cusp::detail::temporary_array<VertexId, DerivedPolicy> predecessors(exec);
 
     // initialize distances
     for (size_t i = 0; i < G.num_rows; i++)
-    {
         labels[i] = -1;
+
+    if(G.num_entries == 0)
+        return;
+
+    // initialize predecessor array
+    if(!mark_levels) {
+        predecessors.resize(G.num_rows);
+        predecessors[src] = -2;
     }
 
     labels[src] = 0;
@@ -100,7 +105,7 @@ void breadth_first_search(sequential::execution_policy<DerivedPolicy>& exec,
     search_depth++;
 
     // if predecessors are needed then copy into outgoing array
-    if(!mark_levels) labels = predecessors;
+    if(!mark_levels) cusp::copy(exec, predecessors, labels);
 }
 
 } // end namespace sequential
@@ -111,3 +116,4 @@ void breadth_first_search(sequential::execution_policy<DerivedPolicy>& exec,
 using cusp::system::detail::sequential::breadth_first_search;
 
 } // end namespace cusp
+

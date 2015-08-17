@@ -96,7 +96,7 @@ protected:
      * signal when done.
      */
     volatile int 		*done;
-    int 				*d_done;
+    int 				    *d_done;
     cudaEvent_t			throttle_event;
 
     /**
@@ -180,32 +180,32 @@ protected:
                                           "EnactorHybrid cudaBindTexture bitmask_tex_ref failed", __FILE__, __LINE__)) break;
 
             // Bind row-offsets texture
-            cudaChannelFormatDesc row_offsets_desc = cudaCreateChannelDesc<SizeT>();
-            if (retval = util::B40CPerror<0>(cudaBindTexture(
-                                              0,
-                                              two_phase::expand_atomic::RowOffsetTex<SizeT>::ref,
-                                              graph_slice->d_row_offsets,
-                                              row_offsets_desc,
-                                              (graph_slice->nodes + 1) * sizeof(SizeT)),
-                                          "EnactorHybrid cudaBindTexture row_offset_tex_ref failed", __FILE__, __LINE__)) break;
+            /* cudaChannelFormatDesc row_offsets_desc = cudaCreateChannelDesc<SizeT>(); */
+            /* if (retval = util::B40CPerror<0>(cudaBindTexture( */
+            /*                                   0, */
+            /*                                   two_phase::expand_atomic::RowOffsetTex<SizeT>::ref, */
+            /*                                   graph_slice->d_row_offsets, */
+            /*                                   row_offsets_desc, */
+            /*                                   (graph_slice->nodes + 1) * sizeof(SizeT)), */
+            /*                               "EnactorHybrid cudaBindTexture row_offset_tex_ref failed", __FILE__, __LINE__)) break; */
 
             // Bind bitmask texture
-            if (retval = util::B40CPerror<0>(cudaBindTexture(
-                                              0,
-                                              contract_expand_atomic::BitmaskTex<VisitedMask>::ref,
-                                              graph_slice->d_visited_mask,
-                                              bitmask_desc,
-                                              bytes),
-                                          "EnactorHybrid cudaBindTexture bitmask_tex_ref failed", __FILE__, __LINE__)) break;
+            /* if (retval = util::B40CPerror<0>(cudaBindTexture( */
+            /*                                   0, */
+            /*                                   contract_expand_atomic::BitmaskTex<VisitedMask>::ref, */
+            /*                                   graph_slice->d_visited_mask, */
+            /*                                   bitmask_desc, */
+            /*                                   bytes), */
+            /*                               "EnactorHybrid cudaBindTexture bitmask_tex_ref failed", __FILE__, __LINE__)) break; */
 
             // Bind row-offsets texture
-            if (retval = util::B40CPerror<0>(cudaBindTexture(
-                                              0,
-                                              contract_expand_atomic::RowOffsetTex<SizeT>::ref,
-                                              graph_slice->d_row_offsets,
-                                              row_offsets_desc,
-                                              (graph_slice->nodes + 1) * sizeof(SizeT)),
-                                          "EnactorHybrid cudaBindTexture row_offset_tex_ref failed", __FILE__, __LINE__)) break;
+            /* if (retval = util::B40CPerror<0>(cudaBindTexture( */
+            /*                                   0, */
+            /*                                   contract_expand_atomic::RowOffsetTex<SizeT>::ref, */
+            /*                                   graph_slice->d_row_offsets, */
+            /*                                   row_offsets_desc, */
+            /*                                   (graph_slice->nodes + 1) * sizeof(SizeT)), */
+            /*                               "EnactorHybrid cudaBindTexture row_offset_tex_ref failed", __FILE__, __LINE__)) break; */
 
 
         } while (0);
