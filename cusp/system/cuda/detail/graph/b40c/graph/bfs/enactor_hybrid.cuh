@@ -160,24 +160,24 @@ protected:
             if (retval = global_barrier.Setup(fused_grid_size)) break;
 
             // Reset statistics
-            done[0] 			= -1;
-            total_runtimes 		= 0;
-            total_lifetimes 	= 0;
+            done[0] 			  = -1;
+            total_runtimes 	= 0;
+            total_lifetimes = 0;
             total_queued 		= 0;
 
             // Single-gpu graph slice
-            typename CsrProblem::GraphSlice *graph_slice = csr_problem.graph_slices[0];
+            /* typename CsrProblem::GraphSlice *graph_slice = csr_problem.graph_slices[0]; */
 
             // Bind bitmask texture
-            // int bytes = (graph_slice->nodes + 8 - 1) / 8;
-            /* cudaChannelFormatDesc bitmask_desc = cudaCreateChannelDesc<unsigned char>();
-            if (retval = util::B40CPerror<0>(cudaBindTexture(
-                                              0,
-                                              two_phase::contract_atomic::BitmaskTex<VisitedMask>::ref,
-                                              graph_slice->d_visited_mask,
-                                              bitmask_desc,
-                                              bytes),
-                                          "EnactorHybrid cudaBindTexture bitmask_tex_ref failed", __FILE__, __LINE__)) break; */
+            /* int bytes = (graph_slice->nodes + 8 - 1) / 8; */
+            /* cudaChannelFormatDesc bitmask_desc = cudaCreateChannelDesc<unsigned char>(); */
+            /* if (retval = util::B40CPerror<0>(cudaBindTexture( */
+            /*                                   0, */
+            /*                                   two_phase::contract_atomic::BitmaskTex<VisitedMask>::ref, */
+            /*                                   graph_slice->d_visited_mask, */
+            /*                                   bitmask_desc, */
+            /*                                   bytes), */
+            /*                               "EnactorHybrid cudaBindTexture bitmask_tex_ref failed", __FILE__, __LINE__)) break; */
 
             // Bind row-offsets texture
             /* cudaChannelFormatDesc row_offsets_desc = cudaCreateChannelDesc<SizeT>(); */
