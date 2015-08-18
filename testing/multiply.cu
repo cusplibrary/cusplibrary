@@ -1,11 +1,5 @@
 #include <unittest/unittest.h>
 
-#ifndef _MSC_VER
-#define CUSP_USE_TEXTURE_MEMORY
-#endif
-
-#include <cusp/multiply.h>
-
 #include <cusp/linear_operator.h>
 #include <cusp/gallery/poisson.h>
 #include <cusp/gallery/random.h>
@@ -17,6 +11,8 @@
 #include <cusp/ell_matrix.h>
 #include <cusp/hyb_matrix.h>
 #include <cusp/permutation_matrix.h>
+
+#include <cusp/multiply.h>
 
 /////////////////////////////////////////
 // Sparse Matrix-Matrix Multiplication //
@@ -130,6 +126,121 @@ void TestSparseMatrixMatrixMultiply(void)
 
 }
 DECLARE_SPARSE_MATRIX_UNITTEST(TestSparseMatrixMatrixMultiply);
+
+template <typename SparseMatrixType, typename DenseMatrixType>
+void CompareScaledSparseMatrixMatrixMultiply(DenseMatrixType A, DenseMatrixType B)
+{
+    typedef typename SparseMatrixType::value_type ValueType;
+
+    thrust::identity<ValueType>   initialize;
+    thrust::multiplies<ValueType> combine;
+    thrust::plus<ValueType>       reduce;
+
+    DenseMatrixType C(A);
+    cusp::multiply(A, B, C, initialize, combine, reduce);
+
+    SparseMatrixType _A(A), _B(B), _C(A);
+    cusp::multiply(_A, _B, _C, initialize, combine, reduce);
+
+    ASSERT_EQUAL(C == DenseMatrixType(_C), true);
+
+    typename SparseMatrixType::view _Aview(_A), _Bview(_B), _Cview(_C);
+    cusp::multiply(_Aview, _Bview, _Cview, initialize, combine, reduce);
+
+    ASSERT_EQUAL(C == DenseMatrixType(_Cview), true);
+}
+
+template <typename TestMatrix>
+void TestScaledSparseMatrixMatrixMultiply(void)
+{
+    typedef typename TestMatrix::value_type ValueType;
+
+    cusp::array2d<ValueType,cusp::host_memory> A(3,2);
+    A(0,0) = 1.0;
+    A(0,1) = 2.0;
+    A(1,0) = 3.0;
+    A(1,1) = 0.0;
+    A(2,0) = 5.0;
+    A(2,1) = 6.0;
+
+    cusp::array2d<ValueType,cusp::host_memory> B(2,4);
+    B(0,0) = 0.0;
+    B(0,1) = 2.0;
+    B(0,2) = 3.0;
+    B(0,3) = 4.0;
+    B(1,0) = 5.0;
+    B(1,1) = 0.0;
+    B(1,2) = 0.0;
+    B(1,3) = 8.0;
+
+    cusp::array2d<ValueType,cusp::host_memory> C(2,2);
+    C(0,0) = 0.0;
+    C(0,1) = 0.0;
+    C(1,0) = 3.0;
+    C(1,1) = 5.0;
+
+    cusp::array2d<ValueType,cusp::host_memory> D(2,1);
+    D(0,0) = 2.0;
+    D(1,0) = 3.0;
+
+    cusp::array2d<ValueType,cusp::host_memory> E(2,2);
+    E(0,0) = 0.0;
+    E(0,1) = 0.0;
+    E(1,0) = 0.0;
+    E(1,1) = 0.0;
+
+    cusp::array2d<ValueType,cusp::host_memory> F(2,3);
+    F(0,0) = 0.0;
+    F(0,1) = 1.5;
+    F(0,2) = 3.0;
+    F(1,0) = 0.5;
+    F(1,1) = 0.0;
+    F(1,2) = 0.0;
+
+    cusp::array2d<ValueType,cusp::host_memory> G;
+    cusp::gallery::poisson5pt(G, 4, 6);
+
+    cusp::array2d<ValueType,cusp::host_memory> H;
+    cusp::gallery::poisson5pt(H, 8, 3);
+
+    cusp::array2d<ValueType,cusp::host_memory> I;
+    cusp::gallery::random(I, 24, 24, 150);
+
+    cusp::array2d<ValueType,cusp::host_memory> J;
+    cusp::gallery::random(J, 24, 24, 50);
+
+    cusp::array2d<ValueType,cusp::host_memory> K;
+    cusp::gallery::random(K, 24, 12, 20);
+
+    //thrust::host_vector< cusp::array2d<float,cusp::host_memory> > matrices;
+    std::vector< cusp::array2d<ValueType,cusp::host_memory> > matrices;
+    matrices.push_back(A);
+    matrices.push_back(B);
+    matrices.push_back(C);
+    matrices.push_back(D);
+    matrices.push_back(E);
+    matrices.push_back(F);
+    matrices.push_back(G);
+    matrices.push_back(H);
+    matrices.push_back(I);
+    matrices.push_back(J);
+    matrices.push_back(K);
+
+    // test matrix multiply for every pair of compatible matrices
+    for(size_t i = 0; i < matrices.size(); i++)
+    {
+        const cusp::array2d<ValueType,cusp::host_memory>& left = matrices[i];
+        for(size_t j = 0; j < matrices.size(); j++)
+        {
+            const cusp::array2d<ValueType,cusp::host_memory>& right = matrices[j];
+
+            if (left.num_cols == right.num_rows)
+                CompareScaledSparseMatrixMatrixMultiply<TestMatrix>(left, right);
+        }
+    }
+
+}
+/* DECLARE_SPARSE_MATRIX_UNITTEST(TestScaledSparseMatrixMatrixMultiply); */
 
 ///////////////////////////////////////////////
 // Sparse Matrix-Dense Matrix Multiplication //

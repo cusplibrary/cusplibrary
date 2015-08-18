@@ -478,7 +478,6 @@ void TestArray2dRowView(void)
         ASSERT_EQUAL(A(2,1), 2);
     }
 
-    // KNOWN_FAILURE;
     // row view of column major matrix
     {
         cusp::array2d<float, Space, cusp::column_major> A(3, 2, -1);
@@ -518,7 +517,6 @@ void TestArray2dColumnView(void)
         ASSERT_EQUAL(A(2,1), 1);
     }
 
-    // KNOWN_FAILURE;
     // column view of row major matrix
     {
         cusp::array2d<float, Space, cusp::row_major> A(3, 2, -1);

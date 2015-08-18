@@ -46,7 +46,9 @@ template <typename DerivedPolicy,
           typename MatrixType2,
           typename MatrixType3,
           typename ArrayType1,
-          typename ArrayType2>
+          typename ArrayType2,
+          typename BinaryFunction1,
+          typename BinaryFunction2>
 void coo_spmm_helper(cuda::execution_policy<DerivedPolicy>& exec,
                      size_t workspace_size,
                      size_t begin_row,
@@ -63,7 +65,9 @@ void coo_spmm_helper(cuda::execution_policy<DerivedPolicy>& exec,
                      ArrayType1& B_gather_locations,
                      ArrayType1& I,
                      ArrayType1& J,
-                     ArrayType2& V)
+                     ArrayType2& V,
+                     BinaryFunction1 combine,
+                     BinaryFunction2 reduce)
 {
     typedef typename ArrayType1::value_type IndexType;
     typedef typename ArrayType2::value_type ValueType;
@@ -103,7 +107,6 @@ void coo_spmm_helper(cuda::execution_policy<DerivedPolicy>& exec,
                                   B_gather_locations.begin(),
                                   B_gather_locations.begin());
 
-
     thrust::gather(exec,
                    A_gather_locations.begin(), A_gather_locations.end(),
                    A.row_indices.begin(),
@@ -118,7 +121,7 @@ void coo_spmm_helper(cuda::execution_policy<DerivedPolicy>& exec,
                       thrust::make_permutation_iterator(A.values.begin(), A_gather_locations.end()),
                       thrust::make_permutation_iterator(B.values.begin(), B_gather_locations.begin()),
                       V.begin(),
-                      thrust::multiplies<ValueType>());
+                      combine);
 
     // sort (I,J,V) tuples by (I,J)
     cusp::sort_by_row_and_column(exec, I, J, V);
@@ -144,17 +147,23 @@ void coo_spmm_helper(cuda::execution_policy<DerivedPolicy>& exec,
      thrust::make_zip_iterator(thrust::make_tuple(C.row_indices.begin(), C.column_indices.begin())),
      C.values.begin(),
      thrust::equal_to< thrust::tuple<IndexType,IndexType> >(),
-     thrust::plus<ValueType>());
+     reduce);
 }
 
 template <typename DerivedPolicy,
           typename MatrixType1,
           typename MatrixType2,
-          typename MatrixType3>
+          typename MatrixType3,
+          typename UnaryFunction,
+          typename BinaryFunction1,
+          typename BinaryFunction2>
 void multiply(cuda::execution_policy<DerivedPolicy>& exec,
               const MatrixType1& A,
               const MatrixType2& B,
               MatrixType3& C,
+              UnaryFunction   initialize,
+              BinaryFunction1 combine,
+              BinaryFunction2 reduce,
               cusp::coo_format,
               cusp::coo_format,
               cusp::coo_format)
@@ -232,7 +241,8 @@ void multiply(cuda::execution_policy<DerivedPolicy>& exec,
                         B_row_offsets,
                         segment_lengths, output_ptr,
                         A_gather_locations, B_gather_locations,
-                        I, J, V);
+                        I, J, V,
+                        combine, reduce);
     }
     else
     {
@@ -289,7 +299,8 @@ void multiply(cuda::execution_policy<DerivedPolicy>& exec,
                             B_row_offsets,
                             segment_lengths, output_ptr,
                             A_gather_locations, B_gather_locations,
-                            I, J, V);
+                            I, J, V,
+                            combine, reduce);
 
             slices.push_back(Container());
             slices.back().swap(C_slice);
@@ -332,3 +343,4 @@ void multiply(cuda::execution_policy<DerivedPolicy>& exec,
 } // end namespace cuda
 } // end namespace system
 } // end namespace cusp
+

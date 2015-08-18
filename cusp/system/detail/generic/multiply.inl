@@ -62,8 +62,8 @@ void multiply(thrust::execution_policy<DerivedPolicy> &exec,
               const  MatrixOrVector1& B,
               MatrixOrVector2& C,
               cusp::known_format,
-              cusp::array1d_format,
-              cusp::array1d_format)
+              cusp::known_format,
+              cusp::known_format)
 {
     typedef typename LinearOperator::value_type ValueType;
 
@@ -105,12 +105,12 @@ template <typename DerivedPolicy,
           typename UnaryFunction,
           typename BinaryFunction1,
           typename BinaryFunction2>
-typename thrust::detail::disable_if_convertible<UnaryFunction,cusp::known_format,void>::type
+typename thrust::detail::disable_if_convertible<UnaryFunction,cusp::known_format>::type
 multiply(thrust::execution_policy<DerivedPolicy> &exec,
          const LinearOperator&  A,
          const MatrixOrVector1& B,
          MatrixOrVector2& C,
-         UnaryFunction  initialize,
+         UnaryFunction   initialize,
          BinaryFunction1 combine,
          BinaryFunction2 reduce)
 {

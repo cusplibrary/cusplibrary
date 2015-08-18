@@ -86,18 +86,20 @@ size_t spmm_csr_pass1(omp::execution_policy<DerivedPolicy>& exec,
 template <typename DerivedPolicy,
           typename Array1, typename Array2, typename Array3,
           typename Array4, typename Array5, typename Array6,
-          typename Array7, typename Array8, typename Array9>
+          typename Array7, typename Array8, typename Array9,
+          typename UnaryFunction, typename BinaryFunction1, typename BinaryFunction2>
 void spmm_csr_pass2(omp::execution_policy<DerivedPolicy>& exec,
                     const size_t num_rows, const size_t num_cols,
                     const Array1& A_row_offsets, const Array2& A_column_indices, const Array3& A_values,
                     const Array4& B_row_offsets, const Array5& B_column_indices, const Array6& B_values,
-                    Array7& C_row_offsets,       Array8& C_column_indices,       Array9& C_values)
+                    Array7& C_row_offsets,       Array8& C_column_indices,       Array9& C_values,
+                    UnaryFunction initialize,    BinaryFunction1 combine,        BinaryFunction2 reduce)
 {
     typedef typename Array7::value_type IndexType;
     typedef typename Array9::value_type ValueType;
 
     const IndexType unseen = static_cast<IndexType>(-1);
-    const IndexType init = static_cast<IndexType>(-2);
+    const IndexType init   = static_cast<IndexType>(-2);
 
     #pragma omp parallel
     {
@@ -127,7 +129,7 @@ void spmm_csr_pass2(omp::execution_policy<DerivedPolicy>& exec,
                     IndexType k = B_column_indices[kk];
 
                     ValueType b = B_values[kk];
-                    sums[k] += v * b;
+                    sums[k] = reduce(sums[k], combine(v, B_values[kk]));
 
                     if (next[k] == unseen)
                     {
@@ -160,11 +162,17 @@ void spmm_csr_pass2(omp::execution_policy<DerivedPolicy>& exec,
 template <typename DerivedPolicy,
           typename MatrixType1,
           typename MatrixType2,
-          typename MatrixType3>
+          typename MatrixType3,
+          typename UnaryFunction,
+          typename BinaryFunction1,
+          typename BinaryFunction2>
 void multiply(omp::execution_policy<DerivedPolicy>& exec,
               const MatrixType1& A,
               const MatrixType2& B,
               MatrixType3& C,
+              UnaryFunction   initialize,
+              BinaryFunction1 combine,
+              BinaryFunction2 reduce,
               cusp::csr_format,
               cusp::csr_format,
               cusp::csr_format)
@@ -183,7 +191,8 @@ void multiply(omp::execution_policy<DerivedPolicy>& exec,
     spmm_csr_pass2(exec, A.num_rows, B.num_cols,
                    A.row_offsets, A.column_indices, A.values,
                    B.row_offsets, B.column_indices, B.values,
-                   C.row_offsets, C.column_indices, C.values);
+                   C.row_offsets, C.column_indices, C.values,
+                   initialize, combine, reduce);
 }
 
 } // end namespace omp

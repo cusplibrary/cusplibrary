@@ -31,18 +31,24 @@ namespace sequential
 {
 
 template <typename DerivedPolicy,
-         typename Matrix1,
-         typename Matrix2,
-         typename Matrix3>
+          typename MatrixType1,
+          typename MatrixType2,
+          typename MatrixType3,
+          typename UnaryFunction,
+          typename BinaryFunction1,
+          typename BinaryFunction2>
 void multiply(sequential::execution_policy<DerivedPolicy>& exec,
-              const Matrix1& A,
-              const Matrix2& B,
-              Matrix3& C,
+              const MatrixType1& A,
+              const MatrixType2& B,
+              MatrixType3& C,
+              UnaryFunction   initialize,
+              BinaryFunction1 combine,
+              BinaryFunction2 reduce,
               cusp::array2d_format,
               cusp::array2d_format,
               cusp::array2d_format)
 {
-    typedef typename Matrix3::value_type ValueType;
+    typedef typename MatrixType3::value_type ValueType;
 
     C.resize(A.num_rows, B.num_cols);
 
@@ -50,10 +56,10 @@ void multiply(sequential::execution_policy<DerivedPolicy>& exec,
     {
         for(size_t j = 0; j < C.num_cols; j++)
         {
-            ValueType v = 0;
+            ValueType v = initialize(C(i,j));
 
             for(size_t k = 0; k < A.num_cols; k++)
-                v += A(i,k) * B(k,j);
+                v = reduce(v, combine(A(i,k), B(k,j)));
 
             C(i,j) = v;
         }

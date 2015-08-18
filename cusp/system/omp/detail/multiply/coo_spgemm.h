@@ -34,11 +34,17 @@ namespace omp
 template <typename DerivedPolicy,
           typename MatrixType1,
           typename MatrixType2,
-          typename MatrixType3>
+          typename MatrixType3,
+          typename UnaryFunction,
+          typename BinaryFunction1,
+          typename BinaryFunction2>
 void multiply(omp::execution_policy<DerivedPolicy>& exec,
               const MatrixType1& A,
               const MatrixType2& B,
               MatrixType3& C,
+              UnaryFunction   initialize,
+              BinaryFunction1 combine,
+              BinaryFunction2 reduce,
               cusp::coo_format,
               cusp::coo_format,
               cusp::coo_format)
@@ -68,7 +74,8 @@ void multiply(omp::execution_policy<DerivedPolicy>& exec,
     spmm_csr_pass2(exec, A.num_rows, B.num_cols,
                    A_row_offsets, A.column_indices, A.values,
                    B_row_offsets, B.column_indices, B.values,
-                   C_row_offsets, C.column_indices, C.values);
+                   C_row_offsets, C.column_indices, C.values,
+                   initialize, combine, reduce);
 
     cusp::offsets_to_indices(exec, C_row_offsets, C.row_indices);
 }

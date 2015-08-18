@@ -35,27 +35,35 @@ namespace sequential
 template <typename DerivedPolicy,
           typename MatrixType1,
           typename MatrixType2,
-          typename MatrixType3>
+          typename MatrixType3,
+          typename UnaryFunction,
+          typename BinaryFunction1,
+          typename BinaryFunction2>
 void multiply(sequential::execution_policy<DerivedPolicy>& exec,
               const MatrixType1& A,
               const MatrixType2& B,
               MatrixType3& C,
+              UnaryFunction   initialize,
+              BinaryFunction1 combine,
+              BinaryFunction2 reduce,
               cusp::coo_format,
               cusp::coo_format,
               cusp::coo_format)
 {
+    typedef typename MatrixType1::index_type IndexType1;
+    typedef typename MatrixType2::index_type IndexType2;
+    typedef typename MatrixType3::index_type IndexType3;
+
     // allocate storage for row offsets for A, B, and C
-    cusp::detail::temporary_array<typename MatrixType1::index_type,cusp::host_memory> A_row_offsets(exec, A.num_rows + 1);
-    cusp::detail::temporary_array<typename MatrixType2::index_type,cusp::host_memory> B_row_offsets(exec, B.num_rows + 1);
-    cusp::detail::temporary_array<typename MatrixType3::index_type,cusp::host_memory> C_row_offsets(exec, A.num_rows + 1);
+    cusp::detail::temporary_array<IndexType1, DerivedPolicy> A_row_offsets(exec, A.num_rows + 1);
+    cusp::detail::temporary_array<IndexType2, DerivedPolicy> B_row_offsets(exec, B.num_rows + 1);
+    cusp::detail::temporary_array<IndexType3, DerivedPolicy> C_row_offsets(exec, A.num_rows + 1);
 
     // compute row offsets for A and B
     cusp::indices_to_offsets(exec, A.row_indices, A_row_offsets);
     cusp::indices_to_offsets(exec, B.row_indices, B_row_offsets);
 
-    typedef typename MatrixType3::index_type IndexType;
-
-    IndexType estimated_nonzeros =
+    IndexType3 estimated_nonzeros =
         spmm_csr_pass1(exec, A.num_rows, B.num_cols,
                        A_row_offsets, A.column_indices,
                        B_row_offsets, B.column_indices);
@@ -63,11 +71,12 @@ void multiply(sequential::execution_policy<DerivedPolicy>& exec,
     // Resize output
     C.resize(A.num_rows, B.num_cols, estimated_nonzeros);
 
-    IndexType true_nonzeros =
+    IndexType3 true_nonzeros =
         spmm_csr_pass2(exec, A.num_rows, B.num_cols,
                        A_row_offsets, A.column_indices, A.values,
                        B_row_offsets, B.column_indices, B.values,
-                       C_row_offsets, C.column_indices, C.values);
+                       C_row_offsets, C.column_indices, C.values,
+                       initialize, combine, reduce);
 
     // true_nonzeros may be less than estimated_nonzeros
     C.resize(A.num_rows, B.num_cols, true_nonzeros);
