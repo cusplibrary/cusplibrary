@@ -165,7 +165,7 @@ void generalized_spmv(my_system &system,
 void TestGeneralizedSpMVDispatch()
 {
     // initialize testing variables
-    cusp::csr_matrix<int, float, cusp::device_memory> A, B, C;
+    cusp::csr_matrix<int, float, cusp::device_memory> A;
     cusp::array1d<float, cusp::device_memory> x;
 
     my_system sys(0);

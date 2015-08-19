@@ -14,14 +14,15 @@
  *  limitations under the License.
  */
 
-#include <thrust/detail/config.h>
-#include <thrust/system/detail/generic/select_system.h>
+#include <cusp/detail/config.h>
+#include <cusp/detail/type_traits.h>
 
 #include <cusp/multiply.h>
 
-#include <cusp/detail/type_traits.h>
 #include <cusp/system/detail/adl/multiply.h>
 #include <cusp/system/detail/generic/multiply.h>
+
+#include <thrust/system/detail/generic/select_system.h>
 
 namespace cusp
 {
@@ -108,6 +109,54 @@ void multiply(const LinearOperator&  A,
 
     cusp::multiply(select_system(system1,system2,system3), A, B, C,
                    initialize, combine, reduce);
+}
+
+template <typename DerivedPolicy,
+          typename LinearOperator,
+          typename MatrixOrVector1,
+          typename MatrixOrVector2,
+          typename UnaryFunction,
+          typename BinaryFunction1,
+          typename BinaryFunction2>
+void generalized_spgemm(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                        const LinearOperator&  A,
+                        const MatrixOrVector1& B,
+                        MatrixOrVector2& C,
+                        UnaryFunction   initialize,
+                        BinaryFunction1 combine,
+                        BinaryFunction2 reduce)
+{
+    using cusp::system::detail::generic::generalized_spgemm;
+
+    generalized_spgemm(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
+                       A, B, C, initialize, combine, reduce);
+}
+
+template <typename LinearOperator,
+          typename MatrixOrVector1,
+          typename MatrixOrVector2,
+          typename UnaryFunction,
+          typename BinaryFunction1,
+          typename BinaryFunction2>
+void generalized_spgemm(const LinearOperator&  A,
+                        const MatrixOrVector1& B,
+                        MatrixOrVector2& C,
+                        UnaryFunction  initialize,
+                        BinaryFunction1 combine,
+                        BinaryFunction2 reduce)
+{
+    using thrust::system::detail::generic::select_system;
+
+    typedef typename LinearOperator::memory_space  System1;
+    typedef typename MatrixOrVector1::memory_space System2;
+    typedef typename MatrixOrVector2::memory_space System3;
+
+    System1 system1;
+    System2 system2;
+    System3 system3;
+
+    cusp::generalized_spgemm(select_system(system1,system2,system3), A, B, C,
+                             initialize, combine, reduce);
 }
 
 template <typename DerivedPolicy,

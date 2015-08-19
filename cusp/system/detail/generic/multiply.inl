@@ -22,6 +22,7 @@
 #include <cusp/functional.h>
 
 #include <cusp/system/detail/generic/multiply/generalized_spmv.h>
+#include <cusp/system/detail/generic/multiply/generalized_spgemm.h>
 #include <cusp/system/detail/generic/multiply/permute.h>
 #include <cusp/system/detail/generic/multiply/spgemm.h>
 #include <cusp/system/detail/generic/multiply/spmv.h>
@@ -132,6 +133,35 @@ multiply(thrust::execution_policy<DerivedPolicy> &exec,
 
 template <typename DerivedPolicy,
           typename LinearOperator,
+          typename MatrixOrVector1,
+          typename MatrixOrVector2,
+          typename UnaryFunction,
+          typename BinaryFunction1,
+          typename BinaryFunction2>
+void generalized_spgemm(thrust::execution_policy<DerivedPolicy> &exec,
+                        const LinearOperator&  A,
+                        const MatrixOrVector1& B,
+                        MatrixOrVector2& C,
+                        UnaryFunction   initialize,
+                        BinaryFunction1 combine,
+                        BinaryFunction2 reduce)
+{
+    typedef typename LinearOperator::format  Format1;
+    typedef typename MatrixOrVector1::format Format2;
+    typedef typename MatrixOrVector2::format Format3;
+
+    Format1 format1;
+    Format2 format2;
+    Format3 format3;
+
+    generalized_spgemm(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
+                       A, B, C,
+                       initialize, combine, reduce,
+                       format1, format2, format3);
+}
+
+template <typename DerivedPolicy,
+          typename LinearOperator,
           typename Vector1,
           typename Vector2,
           typename Vector3,
@@ -145,8 +175,6 @@ void generalized_spmv(thrust::execution_policy<DerivedPolicy> &exec,
                       BinaryFunction1 combine,
                       BinaryFunction2 reduce)
 {
-    using cusp::system::detail::generic::generalized_spmv;
-
     typedef typename LinearOperator::format  Format1;
     typedef typename Vector1::format         Format2;
     typedef typename Vector2::format         Format3;

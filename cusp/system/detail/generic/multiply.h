@@ -100,6 +100,21 @@ void multiply(thrust::execution_policy<DerivedPolicy> &exec,
 
 template <typename DerivedPolicy,
           typename LinearOperator,
+          typename MatrixOrVector1,
+          typename MatrixOrVector2,
+          typename UnaryFunction,
+          typename BinaryFunction1,
+          typename BinaryFunction2>
+void generalized_spgemm(thrust::execution_policy<DerivedPolicy> &exec,
+                        const LinearOperator&  A,
+                        const MatrixOrVector1& B,
+                        MatrixOrVector2& C,
+                        UnaryFunction   initialize,
+                        BinaryFunction1 combine,
+                        BinaryFunction2 reduce);
+
+template <typename DerivedPolicy,
+          typename LinearOperator,
           typename Vector1,
           typename Vector2,
           typename Vector3,
