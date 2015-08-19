@@ -127,9 +127,9 @@ void spmm_csr_pass2(omp::execution_policy<DerivedPolicy>& exec,
                 for (IndexType kk = kk_start; kk < kk_end; kk++)
                 {
                     IndexType k = B_column_indices[kk];
-
                     ValueType b = B_values[kk];
-                    sums[k] = reduce(sums[k], combine(v, B_values[kk]));
+
+                    sums[k] = reduce(sums[k], combine(v, b));
 
                     if (next[k] == unseen)
                     {

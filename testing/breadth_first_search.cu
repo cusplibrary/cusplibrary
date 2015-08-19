@@ -60,7 +60,7 @@ bool is_valid_level_set(const MatrixType& A, const ArrayType1& tree, const Array
                 neighbor_offset < csr_graph.row_offsets[parent + 1];
                 neighbor_offset++)
         {
-            if (csr_graph.column_indices[neighbor_offset] == node) {
+            if (csr_graph.column_indices[neighbor_offset] == IndexType(node)) {
                 found = true;
                 break;
             }
