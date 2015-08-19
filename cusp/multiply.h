@@ -149,15 +149,16 @@ multiply(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
  *  \code
  *  #include <cusp/array1d.h>
  *  #include <cusp/array2d.h>
+ *  #include <cusp/functional.h>
  *  #include <cusp/multiply.h>
  *  #include <cusp/print.h>
  *
  *  int main(void)
  *  {
  *      // define multiply functors
- *      cusp::detail::zero_function<float> initialize;
- *      thrust::multiplies<float>          combine;
- *      thrust::plus<float>                reduce;
+ *      cusp::zero_functor<float> initialize;
+ *      thrust::multiplies<float> combine;
+ *      thrust::plus<float>       reduce;
  *
  *      // initialize matrix
  *      cusp::array2d<float, cusp::host_memory> A(2,2);
@@ -213,61 +214,66 @@ void generalized_spgemm(const thrust::detail::execution_policy_base<DerivedPolic
 /*! \endcond */
 
 /**
- * \brief Implements generalized matrix-vector multiplication
+ * \brief Implements generalized matrix-matrix multiplication
  *
  * \par Overview
  *
  * \p generalized multiply can be used with dense and sparse matrices, and user-defined
- * \p linear_operator objects.
+ * \p linear_operator objects. This function compute nonzeros only for the
+ * entries present in the output matrix. Entries that are not specified in the
+ * output matrix are disregarded (annihilated). This specification
+ * significantly reduces the computational work corresponding to computing the
+ * sparsity of the output and performing unnecessary (combine, reduce)
+ * operations.
  *
- * \tparam LinearOperator Type of first matrix
- * \tparam Vector1 Type of second input vector
- * \tparam Vector2 Type of third  input vector
- * \tparam Vector3 Type of output vector
+ * \tparam LinearOperator  Type of matrix
+ * \tparam MatrixOrVector1 Type of second matrix
+ * \tparam MatrixOrVector2 Type of output matrix
+ * \tparam UnaryFunction   Type of unary function to initialize RHS
+ * \tparam BinaryFunction1 Type of binary function to combine entries
+ * \tparam BinaryFunction2 Type of binary function to reduce entries
  *
- * \param A input matrix
- * \param x input vector
- * \param y input vector
- * \param z output vector
+ * \param A first input matrix
+ * \param B second input matrix
+ * \param C output matrix
  *
  * \par Example
  *
- *  The following code snippet demonstrates how to use \p multiply to
- *  compute a matrix-vector product.
+ *  The following code snippet demonstrates how to use \p generalized_spgemm to
+ *  compute a matrix-matrix product.
  *
  *  \code
- *  #include <cusp/array1d.h>
- *  #include <cusp/array2d.h>
+ *  #include <cusp/coo_matrix.h>
+ *  #include <cusp/functional.h>
  *  #include <cusp/multiply.h>
  *  #include <cusp/print.h>
+ *
+ *  #include <cusp/gallery/poisson.h>
  *
  *  int main(void)
  *  {
  *      // define multiply functors
- *      thrust::multiplies<float>          combine;
- *      thrust::plus<float>                reduce;
+ *      thrust::identity<float>   identity;
+ *      cusp::zero_functor<float> zero;
+ *      thrust::multiplies<float> combine;
+ *      thrust::plus<float>       reduce;
  *
  *      // initialize matrix
- *      cusp::array2d<float, cusp::host_memory> A(2,2);
- *      A(0,0) = 10;  A(0,1) = 20;
- *      A(1,0) = 40;  A(1,1) = 50;
+ *      cusp::coo_matrix<int,float,cusp::host_memory> A;
+ *      cusp::gallery::poisson5pt(A, 3, 3);
  *
- *      // initialize input vector
- *      cusp::array1d<float, cusp::host_memory> x(2);
- *      x[0] = 1;
- *      x[1] = 2;
+ *      // allocate output matrices and initialize output nonzeros
+ *      cusp::coo_matrix<int, float, cusp::host_memory> B(A);
+ *      cusp::coo_matrix<int, float, cusp::host_memory> C(A);
  *
- *      // initial RHS filled with 2's
- *      cusp::constant_array<float> y(2, 2);
+ *      // compute B = A * A
+ *      cusp::generalized_spgemm(A, A, B, zero, combine, reduce);
+ *      // compute C += A * A
+ *      cusp::generalized_spgemm(A, A, C, identity, combine, reduce);
  *
- *      // allocate output vector
- *      cusp::array1d<float, cusp::host_memory> z(2);
- *
- *      // compute z = y + (A * x)
- *      cusp::generalized_spmv(A, x, y, z, combine, reduce);
- *
- *      // print z
- *      cusp::print(z);
+ *      // print output matrices
+ *      cusp::print(B);
+ *      cusp::print(C);
  *
  *      return 0;
  *  }
