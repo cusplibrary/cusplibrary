@@ -32,6 +32,7 @@ void CompareGeneralizedSparseMatrixMatrixMultiply(DenseMatrixType A, DenseMatrix
 
     ASSERT_EQUAL(C == DenseMatrixType(_C), true);
 
+    _C = D;
     typename SparseMatrixType::view _Aview(_A), _Bview(_B), _Cview(_C);
     cusp::generalized_spgemm(_Aview, _Bview, _Cview, initialize, combine, reduce);
 

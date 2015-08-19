@@ -49,40 +49,53 @@ template<typename MatrixType1,
          typename UnaryFunction,
          typename BinaryFunction1,
          typename BinaryFunction2>
-struct incomplete_inner_functor
+struct sparse_inner_functor
 {
+    typedef typename MatrixType1::index_type IndexType;
     typedef typename MatrixType1::value_type ValueType;
 
-    const MatrixType1& A;
-    const MatrixType2& B;
-    const ArrayType& A_row_offsets;
-    const ArrayType& B_row_offsets;
-    const ArrayType& permutation;
+    typename MatrixType1::row_indices_array_type::const_iterator      A_row_indices;
+    typename MatrixType1::column_indices_array_type::const_iterator   A_column_indices;
+    typename MatrixType1::values_array_type::const_iterator           A_values;
+    typename MatrixType2::row_indices_array_type::const_iterator      B_row_indices;
+    typename MatrixType2::column_indices_array_type::const_iterator   B_column_indices;
+    typename MatrixType2::values_array_type::const_iterator           B_values;
+    typename ArrayType::const_iterator                                A_row_offsets;
+    typename ArrayType::const_iterator                                B_row_offsets;
+    typename ArrayType::const_iterator                                permutation;
 
     UnaryFunction initialize;
     BinaryFunction1 combine;
     BinaryFunction2 reduce;
 
-    incomplete_inner_functor(const MatrixType1& A,
-                             const MatrixType2& B,
-                             const ArrayType& A_row_offsets,
-                             const ArrayType& B_row_offsets,
-                             const ArrayType& permutation,
-                             UnaryFunction   initialize,
-                             BinaryFunction1 combine,
-                             BinaryFunction2 reduce)
-        : A(A), B(B), A_row_offsets(A_row_offsets), B_row_offsets(B_row_offsets),
-          permutation(permutation),
-          initialize(initialize), combine(combine), reduce(reduce)
+    sparse_inner_functor(const MatrixType1& A,
+                         const MatrixType2& B,
+                         const ArrayType& A_row_offsets,
+                         const ArrayType& B_row_offsets,
+                         const ArrayType& permutation,
+                         UnaryFunction   initialize,
+                         BinaryFunction1 combine,
+                         BinaryFunction2 reduce)
+        : A_row_indices(A.row_indices.begin()),
+          A_column_indices(A.column_indices.begin()),
+          A_values(A.values.begin()),
+          B_row_indices(B.row_indices.begin()),
+          B_column_indices(B.column_indices.begin()),
+          B_values(B.values.begin()),
+          A_row_offsets(A_row_offsets.begin()),
+          B_row_offsets(B_row_offsets.begin()),
+          permutation(permutation.begin()),
+          initialize(initialize),
+          combine(combine),
+          reduce(reduce)
     {}
 
     template <typename Tuple>
     __host__ __device__
     ValueType operator()(const Tuple& t) const
     {
-
-        int row       = thrust::get<0>(t);
-        int col       = thrust::get<1>(t);
+        IndexType row = thrust::get<0>(t);
+        IndexType col = thrust::get<1>(t);
         ValueType sum = initialize(thrust::get<2>(t));
 
         int A_pos = A_row_offsets[row];
@@ -92,12 +105,12 @@ struct incomplete_inner_functor
 
         //while not finished with either A[row,:] or B[:,col]
         while(A_pos < A_end && B_pos < B_end) {
-            int perm = permutation[B_pos];
-            int A_j = A.column_indices[A_pos];
-            int B_j = B.row_indices[perm];
+            IndexType perm = permutation[B_pos];
+            IndexType A_j  = A_column_indices[A_pos];
+            IndexType B_j  = B_row_indices[perm];
 
             if(A_j == B_j) {
-                sum = reduce(sum, combine(A.values[A_pos], B.values[perm]));
+                sum = reduce(sum, combine(A_values[A_pos], B_values[perm]));
                 A_pos++;
                 B_pos++;
             } else if (A_j < B_j) {
@@ -132,15 +145,16 @@ void generalized_spgemm(thrust::execution_policy<DerivedPolicy> &exec,
 {
     typedef typename LinearOperator::index_type IndexType;
     typedef typename LinearOperator::value_type ValueType;
+    typedef typename LinearOperator::memory_space MemorySpace;
+
     typedef cusp::detail::temporary_array<IndexType, DerivedPolicy> ArrayType;
-    typedef incomplete_inner_functor<LinearOperator, MatrixOrVector1, ArrayType, UnaryFunction, BinaryFunction1, BinaryFunction2> IncompOp;
+    typedef sparse_inner_functor<LinearOperator, MatrixOrVector1, ArrayType, UnaryFunction, BinaryFunction1, BinaryFunction2> InnerOp;
 
     if(C.num_entries == 0)
         return;
 
     ArrayType B_row_offsets(exec, B.num_cols + 1);
-
-    ArrayType permutation(exec, A.num_entries);
+    ArrayType permutation(exec, B.num_entries);
     thrust::sequence(exec, permutation.begin(), permutation.end());
 
     {
@@ -152,8 +166,7 @@ void generalized_spgemm(thrust::execution_policy<DerivedPolicy> &exec,
     ArrayType A_row_offsets(exec, A.num_rows + 1);
 
     cusp::indices_to_offsets(exec, A.row_indices, A_row_offsets);
-
-    IncompOp incomp_op(A, B, A_row_offsets, B_row_offsets, permutation, initialize, combine, reduce);
+    InnerOp incomp_op(A, B, A_row_offsets, B_row_offsets, permutation, initialize, combine, reduce);
 
     thrust::transform(exec,
                       thrust::make_zip_iterator(thrust::make_tuple(C.row_indices.begin(), C.column_indices.begin(), C.values.begin())),
@@ -163,12 +176,12 @@ void generalized_spgemm(thrust::execution_policy<DerivedPolicy> &exec,
 }
 
 template <typename DerivedPolicy,
-         typename MatrixType1,
-         typename MatrixType2,
-         typename MatrixType3,
-         typename UnaryFunction,
-         typename BinaryFunction1,
-         typename BinaryFunction2>
+          typename MatrixType1,
+          typename MatrixType2,
+          typename MatrixType3,
+          typename UnaryFunction,
+          typename BinaryFunction1,
+          typename BinaryFunction2>
 void generalized_spgemm(thrust::execution_policy<DerivedPolicy>& exec,
                         const MatrixType1& A,
                         const MatrixType2& B,
