@@ -9,8 +9,6 @@
 #include <cusp/ell_matrix.h>
 #include <cusp/hyb_matrix.h>
 
-#include <cusp/print.h>
-
 #include <cusp/gallery/poisson.h>
 
 // check whether the MIS is valid
@@ -165,4 +163,30 @@ void TestBreadthFirstSearch(void)
 }
 DECLARE_SPARSE_MATRIX_UNITTEST(TestBreadthFirstSearch);
 
+template <typename MatrixType, typename ArrayType>
+void breadth_first_search(my_system& system,
+                          const MatrixType& G,
+                          const typename MatrixType::index_type src,
+                          ArrayType& labels,
+                          const bool mark_levels)
+{
+    system.validate_dispatch();
+    return;
+}
+
+void TestBreadthFirstSearchDispatch()
+{
+    // initialize testing variables
+    cusp::csr_matrix<int, float, cusp::device_memory> A;
+    cusp::array1d<int, cusp::device_memory> labels;
+
+    my_system sys(0);
+
+    // call with explicit dispatching
+    cusp::graph::breadth_first_search(sys, A, 0, labels, true);
+
+    // check if dispatch policy was used
+    ASSERT_EQUAL(true, sys.is_valid());
+}
+DECLARE_UNITTEST(TestBreadthFirstSearchDispatch);
 
