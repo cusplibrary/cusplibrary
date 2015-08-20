@@ -1,11 +1,21 @@
 language: cpp
 
+os:
+    - linux
+    - osx
+
 branches:
   only:
     - develop
 
 compiler:
-    - g++
+    - gcc
+    - clang
+
+matrix:
+    exclude:
+      - os: osx
+      compiler: gcc
 
 install:
     - git clone https://github.com/sdalton1/thrust.git
