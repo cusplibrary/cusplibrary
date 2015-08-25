@@ -46,7 +46,12 @@ void breadth_first_search(sequential::execution_policy<DerivedPolicy>& exec,
 {
     typedef typename MatrixType::index_type VertexId;
 
+#if THRUST_VERSION >= 100800
     cusp::detail::temporary_array<VertexId, DerivedPolicy> predecessors(exec);
+#else
+    typedef typename MatrixType::memory_space MemorySpace;
+    cusp::array1d<VertexId, MemorySpace> predecessors;
+#endif
 
     // initialize distances
     for (size_t i = 0; i < G.num_rows; i++)
