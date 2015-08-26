@@ -1,14 +1,16 @@
 #pragma once
 
+#include <cusp/multiply.h>
+#include <cusp/system/cuda/detail/multiply/coo_flat_k.h>
+#include <cusp/system/cuda/detail/multiply/csr_scalar.h>
+
+#include "bytes_per_spmv.h"
+#include "utility.h"
+#include "../timer.h"
+
 #include <string>
 #include <iostream>
 #include <stdio.h>
-
-#include "bytes_per_spmv.h"
-
-#include "../timer.h"
-#include <cusp/system/cuda/detail/multiply/coo_flat_k.h>
-#include <cusp/system/cuda/detail/multiply/csr_scalar.h>
 
 const char * BENCHMARK_OUTPUT_FILE_NAME = "benchmark_output.log";
 

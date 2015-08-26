@@ -25,10 +25,10 @@ class timer
     cudaEvent_t start;
     cudaEvent_t end;
 
-    public:
+public:
     timer()
-    { 
-        cudaEventCreate(&start); 
+    {
+        cudaEventCreate(&start);
         cudaEventCreate(&end);
         cudaEventRecord(start,0);
     }
@@ -40,7 +40,7 @@ class timer
     }
 
     float milliseconds_elapsed()
-    { 
+    {
         float elapsed_time;
         cudaEventRecord(end, 0);
         cudaEventSynchronize(end);
@@ -48,9 +48,10 @@ class timer
         return elapsed_time;
     }
     float seconds_elapsed()
-    { 
+    {
         return milliseconds_elapsed() / 1000.0;
     }
 };
+
 
 

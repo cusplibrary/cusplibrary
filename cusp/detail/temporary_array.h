@@ -27,6 +27,12 @@
 #include <thrust/iterator/constant_iterator.h>
 #include <thrust/detail/temporary_array.h>
 
+#if THRUST_VERSION >= 100800
+#define TEMP_HOST_DEVICE_DECORATORS __host__ __device__
+#else
+#define TEMP_HOST_DEVICE_DECORATORS
+#endif
+
 namespace cusp
 {
 namespace detail
@@ -50,23 +56,23 @@ public:
 
     typedef typename cusp::array1d_view<iterator>       view;
 
-    __host__ __device__
+    TEMP_HOST_DEVICE_DECORATORS
     temporary_array(thrust::execution_policy<System> &system) : super_t(system) {};
 
-    __host__ __device__
+    TEMP_HOST_DEVICE_DECORATORS
     temporary_array(thrust::execution_policy<System> &system, size_type n) : super_t(system, n) {};
 
-    __host__ __device__
+    TEMP_HOST_DEVICE_DECORATORS
     temporary_array(thrust::execution_policy<System> &system, size_type n, T init) : super_t(system, n) {
         super_t::uninitialized_copy(system, thrust::constant_iterator<T>(init), thrust::constant_iterator<T>(init) + n, super_t::begin());
     };
 
     // provide a kill-switch to explicitly avoid initialization
-    __host__ __device__
+    TEMP_HOST_DEVICE_DECORATORS
     temporary_array(int uninit, thrust::execution_policy<System> &system, size_type n) : super_t(uninit, system, n) {};
 
     template<typename InputIterator>
-    __host__ __device__
+    TEMP_HOST_DEVICE_DECORATORS
     temporary_array(thrust::execution_policy<System> &system,
                     InputIterator first,
                     size_type n,
@@ -74,30 +80,30 @@ public:
         : super_t(system, first, n) {}
 
     template<typename InputIterator, typename InputSystem>
-    __host__ __device__
+    TEMP_HOST_DEVICE_DECORATORS
     temporary_array(thrust::execution_policy<System> &system,
                     thrust::execution_policy<InputSystem> &input_system,
                     InputIterator first,
                     size_type n) : super_t(system, input_system, first, n) {}
 
     template<typename InputIterator>
-    __host__ __device__
+    TEMP_HOST_DEVICE_DECORATORS
     temporary_array(thrust::execution_policy<System> &system,
                     InputIterator first,
                     InputIterator last) : super_t(system, first, last) {}
 
     template<typename InputSystem, typename InputIterator>
-    __host__ __device__
+    TEMP_HOST_DEVICE_DECORATORS
     temporary_array(thrust::execution_policy<System> &system,
                     thrust::execution_policy<InputSystem> &input_system,
                     InputIterator first,
                     InputIterator last) : super_t(system, input_system, first, last) {}
 
-    __host__ __device__
+    TEMP_HOST_DEVICE_DECORATORS
     temporary_array(thrust::execution_policy<System> &system,
                     const cusp::array1d<T,System>& v) : super_t(system, v.begin(), v.end()) {}
 
-    __host__ __device__
+    TEMP_HOST_DEVICE_DECORATORS
     temporary_array(thrust::execution_policy<System> &system,
                     const temporary_array<T,System>& v) : super_t(system, v.begin(), v.end()) {}
 

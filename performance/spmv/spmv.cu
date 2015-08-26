@@ -1,18 +1,18 @@
 #include <cusp/csr_matrix.h>
-#include <cusp/io/matrix_market.h>
+#include <cusp/multiply.h>
+
 #include <cusp/gallery/poisson.h>
+#include <cusp/io/matrix_market.h>
+
+#include "benchmark.h"
+#include "bytes_per_spmv.h"
+#include "utility.h"
 
 #include <iostream>
 #include <string>
 #include <map>
 #include <cmath>
 #include <limits>
-
-#include <cusp/multiply.h>
-
-#include "bytes_per_spmv.h"
-#include "utility.h"
-#include "benchmark.h"
 
 typedef std::map<std::string, std::string> ArgumentMap;
 ArgumentMap args;

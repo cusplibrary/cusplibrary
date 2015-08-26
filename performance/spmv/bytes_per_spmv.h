@@ -5,7 +5,7 @@
 #include <cusp/dia_matrix.h>
 #include <cusp/ell_matrix.h>
 #include <cusp/hyb_matrix.h>
-    
+
 template <typename IndexType, typename ValueType>
 size_t bytes_per_spmv(const cusp::dia_matrix<IndexType,ValueType,cusp::host_memory>& mtx)
 {
