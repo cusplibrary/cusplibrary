@@ -180,7 +180,7 @@ void multiply(cuda::execution_policy<DerivedPolicy>& exec,
     }
 
     // compute row offsets for B
-#if THRUST_VERISON >= 100800
+#if THRUST_VERSION >= 100800
     cusp::detail::temporary_array<IndexType, DerivedPolicy> B_row_offsets(exec, B.num_rows + 1);
 #else
     cusp::array1d<IndexType, MemorySpace> B_row_offsets(B.num_rows + 1);
@@ -189,7 +189,7 @@ void multiply(cuda::execution_policy<DerivedPolicy>& exec,
     cusp::indices_to_offsets(exec, B.row_indices, B_row_offsets);
 
     // compute row lengths for B
-#if THRUST_VERISON >= 100800
+#if THRUST_VERSION >= 100800
     cusp::detail::temporary_array<IndexType, DerivedPolicy> B_row_lengths(exec, B.num_rows);
 #else
     cusp::array1d<IndexType, MemorySpace> B_row_lengths(B.num_rows);
@@ -198,7 +198,7 @@ void multiply(cuda::execution_policy<DerivedPolicy>& exec,
     thrust::transform(exec, B_row_offsets.begin() + 1, B_row_offsets.end(), B_row_offsets.begin(), B_row_lengths.begin(), thrust::minus<IndexType>());
 
     // for each element A(i,j) compute the number of nonzero elements in B(j,:)
-#if THRUST_VERISON >= 100800
+#if THRUST_VERSION >= 100800
     cusp::detail::temporary_array<IndexType, DerivedPolicy> segment_lengths(exec, A.num_entries);
 #else
     cusp::array1d<IndexType, MemorySpace> segment_lengths(A.num_entries);
@@ -210,7 +210,7 @@ void multiply(cuda::execution_policy<DerivedPolicy>& exec,
                    segment_lengths.begin());
 
     // output pointer
-#if THRUST_VERISON >= 100800
+#if THRUST_VERSION >= 100800
     cusp::detail::temporary_array<IndexType, DerivedPolicy> output_ptr(exec, A.num_entries + 1);
 #else
     cusp::array1d<IndexType, MemorySpace> output_ptr(A.num_entries + 1);
@@ -238,18 +238,18 @@ void multiply(cuda::execution_policy<DerivedPolicy>& exec,
     }
 
     // workspace arrays
-#if THRUST_VERISON >= 100800
+#if THRUST_VERSION >= 100800
     cusp::detail::temporary_array<IndexType, DerivedPolicy> A_gather_locations(exec);
     cusp::detail::temporary_array<IndexType, DerivedPolicy> B_gather_locations(exec);
     cusp::detail::temporary_array<IndexType, DerivedPolicy> I(exec);
     cusp::detail::temporary_array<IndexType, DerivedPolicy> J(exec);
     cusp::detail::temporary_array<ValueType, DerivedPolicy> V(exec);
 #else
-    cusp::array1d<IndexType, DerivedPolicy> A_gather_locations;
-    cusp::array1d<IndexType, DerivedPolicy> B_gather_locations;
-    cusp::array1d<IndexType, DerivedPolicy> I;
-    cusp::array1d<IndexType, DerivedPolicy> J;
-    cusp::array1d<ValueType, DerivedPolicy> V;
+    cusp::array1d<IndexType, MemorySpace> A_gather_locations;
+    cusp::array1d<IndexType, MemorySpace> B_gather_locations;
+    cusp::array1d<IndexType, MemorySpace> I;
+    cusp::array1d<IndexType, MemorySpace> J;
+    cusp::array1d<ValueType, MemorySpace> V;
 #endif
 
     if (coo_num_nonzeros <= workspace_capacity)
@@ -282,11 +282,21 @@ void multiply(cuda::execution_policy<DerivedPolicy>& exec,
         ContainerList slices;
 
         // compute row offsets for A
+#if THRUST_VERSION >= 100800
         cusp::detail::temporary_array<IndexType, DerivedPolicy> A_row_offsets(exec, A.num_rows + 1);
+#else
+        cusp::array1d<IndexType, MemorySpace> A_row_offsets(A.num_rows + 1);
+#endif
+
         cusp::indices_to_offsets(exec, A.row_indices, A_row_offsets);
 
         // compute worspace requirements for each row
+#if THRUST_VERSION >= 100800
         cusp::detail::temporary_array<IndexType, DerivedPolicy> cummulative_row_workspace(exec, A.num_rows);
+#else
+        cusp::array1d<IndexType, MemorySpace> cummulative_row_workspace(A.num_rows);
+#endif
+
         thrust::gather(exec,
                        A_row_offsets.begin() + 1, A_row_offsets.end(),
                        output_ptr.begin(),
