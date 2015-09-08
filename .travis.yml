@@ -14,15 +14,15 @@ env:
     global:
       - CUDA=7.0-28
     matrix:
-      - COMPILER=nvcc BACKEND=cuda THRUST_VERSION=1.7.2
-      - COMPILER=nvcc BACKEND=cuda THRUST_VERSION=1.8.3
+      # - COMPILER=nvcc BACKEND=cuda THRUST_VERSION=1.7.2
+      # - COMPILER=nvcc BACKEND=cuda THRUST_VERSION=1.8.3
       - COMPILER=nvcc BACKEND=cuda THRUST_VERSION=master
-      - COMPILER=nvcc BACKEND=omp  THRUST_VERSION=1.7.2
-      - COMPILER=nvcc BACKEND=omp  THRUST_VERSION=1.8.3
-      - COMPILER=nvcc BACKEND=omp  THRUST_VERSION=master
-      - COMPILER=g++  BACKEND=omp  THRUST_VERSION=1.7.2
-      - COMPILER=g++  BACKEND=omp  THRUST_VERSION=1.8.3
-      - COMPILER=g++  BACKEND=omp  THRUST_VERSION=master
+      # - COMPILER=nvcc BACKEND=omp  THRUST_VERSION=1.7.2
+      # - COMPILER=nvcc BACKEND=omp  THRUST_VERSION=1.8.3
+      # - COMPILER=nvcc BACKEND=omp  THRUST_VERSION=master
+      # - COMPILER=g++  BACKEND=omp  THRUST_VERSION=1.7.2
+      # - COMPILER=g++  BACKEND=omp  THRUST_VERSION=1.8.3
+      # - COMPILER=g++  BACKEND=omp  THRUST_VERSION=master
 
 before_install:
     # borrowed from https://github.com/tmcdonell/cuda
