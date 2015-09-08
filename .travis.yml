@@ -2,7 +2,6 @@ language: cpp
 
 os:
     - linux
-    - osx
 
 branches:
   only:
@@ -10,15 +9,14 @@ branches:
 
 compiler:
     - gcc
-    - clang
 
-matrix:
-    exclude:
-      - os: osx
-      compiler: gcc
+env:
+    - THRUST_VERSION=1.7.2
+    - THRUST_VERSION=1.8.3
+    - THRUST_VERSION=master
 
 install:
-    - git clone https://github.com/sdalton1/thrust.git
+    - git clone -b $THRUST_VERSION https://github.com/sdalton1/thrust.git
     - export THRUST_PATH=$PWD/thrust
     - cd testing
 
