@@ -37,6 +37,7 @@ before_install:
     - export CUDA_HOME=/usr/local/cuda-${CUDA%%-*}
     - export LD_LIBRARY_PATH=${CUDA_HOME}/lib64:${LD_LIBRARY_PATH}
     - export PATH=${CUDA_HOME}/bin:${PATH}
+    - echo "PATH="${PATH}
 
 install:
     - git clone -b $THRUST_VERSION https://github.com/sdalton1/thrust.git
@@ -44,6 +45,4 @@ install:
     - cd testing
 
 script:
-    - scons compiler=$COMPILER backend=$BACKEND
-    - cd device_omp_release
-    - ./tester --verbose
+    - scons compiler=$COMPILER backend=$BACKEND && cd device_${BACKEND}_release && ./tester --verbose
