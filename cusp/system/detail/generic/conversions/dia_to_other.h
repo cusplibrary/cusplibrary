@@ -72,7 +72,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     typedef thrust::permutation_iterator<ConstElementIterator,ModulusIterator>                                 OffsetsPermIterator;
     typedef thrust::tuple<OffsetsPermIterator, RowIndexIterator>                                               IteratorTuple;
     typedef thrust::zip_iterator<IteratorTuple>                                                                ZipIterator;
-    typedef thrust::transform_iterator<cusp::sum_tuple_functor<IndexType>, ZipIterator>                        ColumnIndexIterator;
+    typedef thrust::transform_iterator<cusp::sum_pair_functor<IndexType>, ZipIterator>                        ColumnIndexIterator;
 
     typedef typename SourceType::values_array_type::values_array_type::const_iterator                          ValueIterator;
     typedef cusp::detail::logical_to_other_physical_functor<IndexType, cusp::row_major, cusp::column_major>    PermFunctor;
@@ -89,7 +89,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     ModulusIterator gather_indices_begin(IndexIterator(0), cusp::modulus_value<IndexType>(src.values.num_cols));
     OffsetsPermIterator offsets_begin(src.diagonal_offsets.begin(), gather_indices_begin);
     ZipIterator offset_modulus_tuple(thrust::make_tuple(offsets_begin, row_indices_begin));
-    ColumnIndexIterator column_indices_begin(offset_modulus_tuple, cusp::sum_tuple_functor<IndexType>());
+    ColumnIndexIterator column_indices_begin(offset_modulus_tuple, cusp::sum_pair_functor<IndexType>());
 
     PermIndexIterator   perm_indices_begin(IndexIterator(0),   PermFunctor(src.values.num_rows, src.values.num_cols, src.values.pitch));
     PermValueIterator   perm_values_begin(src.values.values.begin(),  perm_indices_begin);
@@ -125,7 +125,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     typedef thrust::permutation_iterator<ConstElementIterator,ModulusIterator>                   OffsetsPermIterator;
     typedef thrust::tuple<OffsetsPermIterator, RowIndexIterator>                                 IteratorTuple;
     typedef thrust::zip_iterator<IteratorTuple>                                                  ZipIterator;
-    typedef thrust::transform_iterator<cusp::sum_tuple_functor<IndexType>, ZipIterator>          ColumnIndexIterator;
+    typedef thrust::transform_iterator<cusp::sum_pair_functor<IndexType>, ZipIterator>          ColumnIndexIterator;
 
     typedef typename SourceType::values_array_type::values_array_type::const_iterator            ValueIterator;
     typedef cusp::detail::logical_to_other_physical_functor<IndexType, cusp::row_major, cusp::column_major>    PermFunctor;
@@ -142,7 +142,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     ModulusIterator gather_indices_begin(IndexIterator(0), cusp::modulus_value<IndexType>(src.values.num_cols));
     OffsetsPermIterator offsets_begin(src.diagonal_offsets.begin(), gather_indices_begin);
     ZipIterator offset_modulus_tuple(thrust::make_tuple(offsets_begin, row_indices_begin));
-    ColumnIndexIterator column_indices_begin(offset_modulus_tuple, cusp::sum_tuple_functor<IndexType>());
+    ColumnIndexIterator column_indices_begin(offset_modulus_tuple, cusp::sum_pair_functor<IndexType>());
 
     PermIndexIterator   perm_indices_begin(IndexIterator(0), PermFunctor(src.values.num_rows, src.values.num_cols, src.values.pitch));
     PermValueIterator   perm_values_begin(src.values.values.begin(), perm_indices_begin);
@@ -182,7 +182,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     typedef thrust::permutation_iterator<ConstElementIterator,DivideIterator>           OffsetsPermIterator;
     typedef thrust::tuple<OffsetsPermIterator, RowIndexIterator>                        IteratorTuple;
     typedef thrust::zip_iterator<IteratorTuple>                                         ZipIterator;
-    typedef thrust::transform_iterator<cusp::sum_tuple_functor<IndexType>, ZipIterator> ColumnIndexIterator;
+    typedef thrust::transform_iterator<cusp::sum_pair_functor<IndexType>, ZipIterator> ColumnIndexIterator;
 
     if( src.num_entries == 0 )
     {
@@ -201,7 +201,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     DivideIterator gather_indices_begin(IndexIterator(0), cusp::divide_value<IndexType>(pitch));
     OffsetsPermIterator offsets_begin(src.diagonal_offsets.begin(), gather_indices_begin);
     ZipIterator offset_modulus_tuple(thrust::make_tuple(offsets_begin, row_indices_begin));
-    ColumnIndexIterator column_indices_begin(offset_modulus_tuple, cusp::sum_tuple_functor<IndexType>());
+    ColumnIndexIterator column_indices_begin(offset_modulus_tuple, cusp::sum_pair_functor<IndexType>());
 
     thrust::replace_copy_if(exec,
                             column_indices_begin,

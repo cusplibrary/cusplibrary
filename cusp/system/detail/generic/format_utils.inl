@@ -61,7 +61,7 @@ void extract_diagonal(thrust::execution_policy<DerivedPolicy> &exec,
                        thrust::make_transform_iterator(
                            thrust::make_zip_iterator(
                                thrust::make_tuple(A.row_indices.begin(), A.column_indices.begin())),
-                           cusp::equal_tuple_functor<IndexType>()),
+                           cusp::equal_pair_functor<IndexType>()),
                        output.begin());
 }
 
@@ -89,7 +89,7 @@ void extract_diagonal(thrust::execution_policy<DerivedPolicy> &exec,
                        thrust::make_transform_iterator(
                            thrust::make_zip_iterator(
                                thrust::make_tuple(row_indices.begin(), A.column_indices.begin())),
-                           cusp::equal_tuple_functor<IndexType>()),
+                           cusp::equal_pair_functor<IndexType>()),
                        output.begin());
 }
 
@@ -142,7 +142,7 @@ void extract_diagonal(thrust::execution_policy<DerivedPolicy> &exec,
                                     cusp::modulus_value<size_t>(A.column_indices.pitch)),
                                 A.column_indices.values.begin())),
      output.begin(),
-     cusp::equal_tuple_functor<IndexType>());
+     cusp::equal_pair_functor<IndexType>());
 }
 
 template <typename DerivedPolicy, typename Matrix, typename Array>
@@ -167,7 +167,7 @@ void extract_diagonal(thrust::execution_policy<DerivedPolicy> &exec,
                                        thrust::counting_iterator<size_t>(0), cusp::modulus_value<size_t>(A.ell.column_indices.pitch)),
                                    A.ell.column_indices.values.begin())),
      output.begin(),
-     cusp::equal_tuple_functor<IndexType>());
+     cusp::equal_pair_functor<IndexType>());
 }
 
 template <typename DerivedPolicy, typename OffsetArray, typename IndexArray>
@@ -185,7 +185,7 @@ void offsets_to_indices(thrust::execution_policy<DerivedPolicy> &exec,
                         offsets.begin(),
                         thrust::make_transform_iterator(
                             thrust::make_zip_iterator( thrust::make_tuple( offsets.begin(), offsets.begin() + 1 ) ),
-                            cusp::not_equal_tuple_functor<OffsetType>()),
+                            cusp::not_equal_pair_functor<OffsetType>()),
                         indices.begin());
 
     thrust::inclusive_scan(exec, indices.begin(), indices.end(), indices.begin(), thrust::maximum<OffsetType>());

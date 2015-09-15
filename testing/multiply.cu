@@ -741,7 +741,7 @@ void TestMatrixVectorMultiplyDispatch()
         my_system sys(0);
 
         // call with explicit dispatching
-        cusp::multiply(sys, A, x, x, cusp::zero_functor<float>(), thrust::multiplies<float>(), thrust::plus<float>());
+        cusp::multiply(sys, A, x, x, cusp::constant_functor<float>(), thrust::multiplies<float>(), thrust::plus<float>());
 
         // check if dispatch policy was used
         ASSERT_EQUAL(true, sys.is_valid());
