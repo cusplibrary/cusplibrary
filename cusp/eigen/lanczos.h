@@ -78,30 +78,25 @@ void lanczos(const Matrix& A, Array1d& eigVals, Array2d& eigVecs);
  *  int main(void)
  *  {
  *      // create an empty sparse matrix structure (CSR format)
- *      cusp::csr_matrix<int, double, cusp::device_memory> A;
- *
+ *      cusp::csr_matrix<int, float, cusp::device_memory> A;
  *      // initialize matrix
- *      cusp::gallery::poisson5pt(A, 10, 10);
- *
+ *      cusp::gallery::poisson5pt(A, 1024, 1024);
  *      // allocate storage and initialize eigenpairs
- *      cusp::random_array<double> randx(A.num_rows);
- *      cusp::array1d<double, cusp::device_memory> X(randx);
- *      cusp::array1d<double, cusp::device_memory> S(1,0);
+ *      cusp::array1d<float, cusp::device_memory> S(5,0);
+ *      cusp::array2d<float, cusp::device_memory, cusp::column_major> V;
+ **
+ *      // initialize Lanzcos option
+ *      cusp::eigen::lanczos_options<float> options;
+ s
+ *      options.tol = 1e-6;
+ *      options.maxIter = 100;
+ *      options.verbose = true;
+ *      options.computeEigVecs = false;
+ *      options.reorth = cusp::eigen::Full;
  *
- *      // set stopping criteria:
- *      //  iteration_limit    = 100
- *      //  relative_tolerance = 1e-6
- *      //  absolute_tolerance = 0
- *      //  verbose            = true
- *      cusp::monitor<double> monitor(X, 100, 1e-6, 0, true);
- *
- *      // set preconditioner (identity)
- *      cusp::identity_operator<double, cusp::device_memory> M(A.num_rows, A.num_rows);
- *
- *      // Compute the largest eigenpair of A
- *      cusp::eigen::lobpcg(A, S, X, monitor, M, true);
- *
- *      std::cout << "Largest eigenvalue : " << S[0] << std::endl;
+ *      // compute the largest eigenpair of A
+ *      cusp::eigen::lanczos(A, S, V, options);
+ *      std::cout << "Largest eigenvalue : " << S[4] << std::endl;
  *
  *      return 0;
  *  }
