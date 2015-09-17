@@ -17,7 +17,7 @@ void CompareGeneralizedSparseMatrixMatrixMultiply(DenseMatrixType A, DenseMatrix
     typedef typename SparseMatrixType::index_type IndexType;
     typedef typename SparseMatrixType::value_type ValueType;
 
-    cusp::zero_functor<ValueType> initialize;
+    cusp::constant_functor<ValueType> initialize(0);
     thrust::multiplies<ValueType> combine;
     thrust::plus<ValueType>       reduce;
 
