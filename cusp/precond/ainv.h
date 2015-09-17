@@ -31,7 +31,7 @@ namespace precond
 {
 
 
-/*! \addtogroup preconditioners Preconditioners
+/**
  *  \ingroup preconditioners
  *  \{
  */
@@ -84,14 +84,6 @@ protected:
 
     cusp::array1d<ValueType, MemorySpace> temp1;
 };
-/*! \}
- */
-
-
-/*! \addtogroup preconditioners Preconditioners
- *  \ingroup preconditioners
- *  \{
- */
 
 /*! \p bridson_ainv : Approximate Inverse preconditoner (from Bridson's "outer product" formulation)
  *  This preconditioner allows for a novel dropping strategy, where rather than a fixed
@@ -140,14 +132,6 @@ protected:
     cusp::array1d<ValueType, MemorySpace> temp1;
     cusp::array1d<ValueType, MemorySpace> temp2;
 };
-/*! \}
- */
-
-
-/*! \addtogroup preconditioners Preconditioners
- *  \ingroup preconditioners
- *  \{
- */
 
 /*! \p nonsym_bridson_ainv : Approximate Inverse preconditoner (from Bridson's "outer product" formulation)
  *  The non-symmetric form, which is identical to the standard form in the case of symmetric matrices, but

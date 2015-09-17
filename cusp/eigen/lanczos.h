@@ -101,9 +101,6 @@ void lanczos(const Matrix& A, Array1d& eigVals, Array2d& eigVecs);
  *      return 0;
  *  }
  *  \endcode
- *
- *  \see \p monitor
- *
  */
 template <typename Matrix,
           typename Array1d1,

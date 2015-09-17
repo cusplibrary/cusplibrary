@@ -31,6 +31,20 @@
 namespace cusp
 {
 
+/**
+ *  \addtogroup utilities Utilities
+ *  \par Overview
+ *  Miscellaneous functions and classes to support develop of custom
+ *  functionality.
+ */
+
+/**
+ *  \addtogroup functional Functional
+ *  \brief Set of useful functors
+ *  \ingroup utilities
+ *  \{
+ */
+
 /*! \cond */
 namespace detail
 {
@@ -40,13 +54,17 @@ template <typename> struct combine_tuple_base_functor;
 /*! \endcond */
 
 /**
- * \p plus_value is a function object. Specifically, it is an Adaptable Unary Function.
- *  If \c f(c) is an object of class <tt>plus_value<T></tt>, and \c x is an object
- *  of class \c T, then <tt>f(x)</tt> returns <tt>x+c</tt>.
+ * \brief \p plus_value is a function object to add a constant value to
+ * a given element.
  *
  *  \param T is a model of <a href="http://www.sgi.com/tech/stl/Assignable.html">Assignable</a>,
  *          and if \c x is an object of type \p T, then <tt>x+c</tt> must be defined
  *          and must have a return type that is convertible to \c T.
+ *
+ * \par Overview
+ * \p plus_value is a function object. Specifically, it is an Adaptable Unary Function.
+ *  If \c f(c) is an object of class <tt>plus_value<T></tt>, and \c x is an object
+ *  of class \c T, then <tt>f(x)</tt> returns <tt>x+c</tt>.
  *
  * \par Example
  * \code
@@ -80,13 +98,17 @@ struct plus_value : public detail::base_functor< thrust::plus<T> >
 };
 
 /**
- * \p divide_value is a function object. Specifically, it is an Adaptable Unary Function.
- *  If \c f(c) is an object of class <tt>divide_value<T></tt>, and \c x is an object
- *  of class \c T, then <tt>f(x)</tt> returns <tt>x/c</tt>.
+ * \brief \p divide_value is a function object to divide a given element by
+ * a constant value.
  *
  *  \param T is a model of <a href="http://www.sgi.com/tech/stl/Assignable.html">Assignable</a>,
  *          and if \c x is an object of type \p T, then <tt>x/c</tt> must be defined
  *          and must have a return type that is convertible to \c T.
+ *
+ * \par Overview
+ * \p divide_value is a function object. Specifically, it is an Adaptable Unary Function.
+ *  If \c f(c) is an object of class <tt>divide_value<T></tt>, and \c x is an object
+ *  of class \c T, then <tt>f(x)</tt> returns <tt>x/c</tt>.
  *
  * \par Example
  * \code
@@ -118,13 +140,17 @@ struct divide_value : public detail::base_functor< thrust::divides<T> >
 };
 
 /**
- * \p modulus_value is a function object. Specifically, it is an Adaptable Unary Function.
- *  If \c f(c) is an object of class <tt>modulus_value<T></tt>, and \c x is an object
- *  of class \c T, then <tt>f(x)</tt> returns <tt>x%c</tt>.
+ * \brief \p modulus_value is a function object that computes the modulus of a given element by a
+ * constant value.
  *
  *  \param T is a model of <a href="http://www.sgi.com/tech/stl/Assignable.html">Assignable</a>,
  *          and if \c x is an object of type \p T, then <tt>x%c</tt> must be defined
  *          and must have a return type that is convertible to \c T.
+ *
+ * \par Overview
+ * \p modulus_value is a function object. Specifically, it is an Adaptable Unary Function.
+ *  If \c f(c) is an object of class <tt>modulus_value<T></tt>, and \c x is an object
+ *  of class \c T, then <tt>f(x)</tt> returns <tt>x%c</tt>.
  *
  * \par Example
  * \code
@@ -156,13 +182,17 @@ struct modulus_value : public detail::base_functor< thrust::modulus<T> >
 };
 
 /**
- * \p multiplies_value is a function object. Specifically, it is an Adaptable Unary Function.
- *  If \c f(c) is an object of class <tt>multiplies_value<T></tt>, and \c x is an object
- *  of class \c T, then <tt>f(x)</tt> returns <tt>x*c</tt>.
+ * \brief \p multiplies_value is a function object that computes the multiply of a given element
+ * by a constant value.
  *
  *  \param T is a model of <a href="http://www.sgi.com/tech/stl/Assignable.html">Assignable</a>,
  *          and if \c x is an object of type \p T, then <tt>x*c</tt> must be defined
  *          and must have a return type that is convertible to \c T.
+ *
+ * \par Overview
+ * \p multiplies_value is a function object. Specifically, it is an Adaptable Unary Function.
+ *  If \c f(c) is an object of class <tt>multiplies_value<T></tt>, and \c x is an object
+ *  of class \c T, then <tt>f(x)</tt> returns <tt>x*c</tt>.
  *
  * \par Example
  * \code
@@ -194,13 +224,16 @@ struct multiplies_value : public detail::base_functor< thrust::multiplies<T> >
 };
 
 /**
- * \p greater_value is a function object. Specifically, it is an Adaptable Unary Function.
- *  If \c f(c) is an object of class <tt>greater_value<T></tt>, and \c x is an object
- *  of class \c T, then <tt>f(x)</tt> returns <tt>x>c</tt>.
+ * \brief \p greater_value is a function object that compares a given element with a constant value.
  *
  *  \param T is a model of <a href="http://www.sgi.com/tech/stl/Assignable.html">Assignable</a>,
  *          and if \c x is an object of type \p T, then <tt>x>c</tt> must be defined
  *          and must have a return type that is convertible to \c T.
+ *
+ * \par Overview
+ * \p greater_value is a function object. Specifically, it is an Adaptable Unary Function.
+ *  If \c f(c) is an object of class <tt>greater_value<T></tt>, and \c x is an object
+ *  of class \c T, then <tt>f(x)</tt> returns <tt>x>c</tt>.
  *
  * \par Example
  * \code
@@ -232,13 +265,16 @@ struct greater_value : public detail::base_functor< thrust::greater<T> >
 };
 
 /**
- * \p greater_equal_value is a function object. Specifically, it is an Adaptable Unary Function.
- *  If \c f(c) is an object of class <tt>greater_equal_value<T></tt>, and \c x is an object
- *  of class \c T, then <tt>f(x)</tt> returns <tt>x>=c</tt>.
+ * \brief \p greater_equal_value is a function object that compares a given element with a constant value.
  *
  *  \param T is a model of <a href="http://www.sgi.com/tech/stl/Assignable.html">Assignable</a>,
  *          and if \c x is an object of type \p T, then <tt>x>=c</tt> must be defined
  *          and must have a return type that is convertible to \c T.
+ *
+ * \par Overview
+ * \p greater_equal_value is a function object. Specifically, it is an Adaptable Unary Function.
+ *  If \c f(c) is an object of class <tt>greater_equal_value<T></tt>, and \c x is an object
+ *  of class \c T, then <tt>f(x)</tt> returns <tt>x>=c</tt>.
  *
  * \par Example
  * \code
@@ -270,13 +306,17 @@ struct greater_equal_value : public detail::base_functor< thrust::greater_equal<
 };
 
 /**
- * \p less_value is a function object. Specifically, it is an Adaptable Unary Function.
- *  If \c f(c) is an object of class <tt>less_value<T></tt>, and \c x is an object
- *  of class \c T, then <tt>f(x)</tt> returns <tt>x<c</tt>.
+ * \brief \p less_value is a function object that compares a given element with
+ * a constant value.
  *
  *  \param T is a model of <a href="http://www.sgi.com/tech/stl/Assignable.html">Assignable</a>,
  *          and if \c x is an object of type \p T, then <tt>x<c</tt> must be defined
  *          and must have a return type that is convertible to \c T.
+ *
+ * \brief Overview
+ * \p less_value is a function object. Specifically, it is an Adaptable Unary Function.
+ *  If \c f(c) is an object of class <tt>less_value<T></tt>, and \c x is an object
+ *  of class \c T, then <tt>f(x)</tt> returns <tt>x<c</tt>.
  *
  * \par Example
  * \code
@@ -308,13 +348,16 @@ struct less_value : public detail::base_functor< thrust::less<T> >
 };
 
 /**
- * \p less_equal_value is a function object. Specifically, it is an Adaptable Unary Function.
- *  If \c f(c) is an object of class <tt>less_equal_value<T></tt>, and \c x is an object
- *  of class \c T, then <tt>f(x)</tt> returns <tt>x<c</tt>.
+ * \brief \p less_equal_value is a function object that compares a given element with a constant value.
  *
  *  \param T is a model of <a href="http://www.sgi.com/tech/stl/Assignable.html">Assignable</a>,
  *          and if \c x is an object of type \p T, then <tt>x<=c</tt> must be defined
  *          and must have a return type that is convertible to \c T.
+ *
+ * \par Overview
+ * \p less_equal_value is a function object. Specifically, it is an Adaptable Unary Function.
+ *  If \c f(c) is an object of class <tt>less_equal_value<T></tt>, and \c x is an object
+ *  of class \c T, then <tt>f(x)</tt> returns <tt>x<c</tt>.
  *
  * \par Example
  * \code
@@ -346,13 +389,16 @@ struct less_equal_value : public detail::base_functor< thrust::less_equal<T> >
 };
 
 /**
- * \p constant_functor is a function object. Specifically, it is an Adaptable Unary Function.
- *  If \c f(c) is an object of class <tt>constant_functor<T></tt>, and \c x is an object
- *  of class \c T, then <tt>f(x)</tt> returns <tt>0</tt>.
+ * \brief \p constant_functor is a function object returns a constant value, ignores the input.
  *
  *  \param T is a model of <a href="http://www.sgi.com/tech/stl/Assignable.html">Assignable</a>,
  *          and if \c x is an object of type \p T, then <tt>x=c</tt> must be defined
  *          and must have a return type that is convertible to \c T.
+ *
+ * \brief Overview
+ * \p constant_functor is a function object. Specifically, it is an Adaptable Unary Function.
+ *  If \c f(c) is an object of class <tt>constant_functor<T></tt>, and \c x is an object
+ *  of class \c T, then <tt>f(x)</tt> returns <tt>c</tt>.
  *
  * \par Example
  * \code
@@ -393,13 +439,16 @@ struct constant_functor : public thrust::unary_function<T,T>
 };
 
 /**
- * \p multiplies_value is a function object. Specifically, it is an Adaptable Unary Function.
- *  If \c f(c) is an object of class <tt>multiplies_value<T></tt>, and \c x is an object
- *  of class \c T, then <tt>f(x)</tt> returns <tt>x*c</tt>.
+ * \brief \p square_functor is a function object that computes the square (x*x) of a given element.
  *
  *  \param T is a model of <a href="http://www.sgi.com/tech/stl/Assignable.html">Assignable</a>,
  *          and if \c x is an object of type \p T, then <tt>x*c</tt> must be defined
  *          and must have a return type that is convertible to \c T.
+ *
+ * \par Overview
+ * \p square_functor is a function object. Specifically, it is an Adaptable Unary Function.
+ *  If \c f(c) is an object of class <tt>square_functor<T></tt>, and \c x is an object
+ *  of class \c T, then <tt>f(x)</tt> returns <tt>x*x</tt>.
  *
  * \par Example
  * \code
@@ -433,13 +482,16 @@ struct square_functor : public thrust::unary_function<T,T>
 };
 
 /**
- * \p sqrt_functor is a function object. Specifically, it is an Adaptable Unary Function.
- *  If \c f(c) is an object of class <tt>sqrt_functor<T></tt>, and \c x is an object
- *  of class \c T, then <tt>f(x)</tt> returns <tt>sqrt(x)</tt>.
+ * \brief \p sqrt_functor is a function object that computes the square root of a given element.
  *
  *  \param T is a model of <a href="http://www.sgi.com/tech/stl/Assignable.html">Assignable</a>,
  *          and if \c x is an object of type \p T, then <tt>x=c</tt> must be defined
  *          and must have a return type that is convertible to \c T.
+ *
+ * \par Overview
+ * \p sqrt_functor is a function object. Specifically, it is an Adaptable Unary Function.
+ *  If \c f(c) is an object of class <tt>sqrt_functor<T></tt>, and \c x is an object
+ *  of class \c T, then <tt>f(x)</tt> returns <tt>sqrt(x)</tt>.
  *
  * \par Example
  * \code
@@ -476,13 +528,16 @@ struct sqrt_functor : public thrust::unary_function<T,T>
 };
 
 /**
- * \p reciprocal_functor is a function object. Specifically, it is an Adaptable Unary Function.
- *  If \c f(c) is an object of class <tt>reciprocal_functor<T></tt>, and \c x is an object
- *  of class \c T, then <tt>f(x)</tt> returns <tt>1.0/x</tt>.
+ * \brief \p reciprocal_functor is a function object computes the reciprocal, 1/x, of a given element.
  *
  *  \param T is a model of <a href="http://www.sgi.com/tech/stl/Assignable.html">Assignable</a>,
  *          and if \c x is an object of type \p T, then <tt>x=c</tt> must be defined
  *          and must have a return type that is convertible to \c T.
+ *
+ * \par Overview
+ * \p reciprocal_functor is a function object. Specifically, it is an Adaptable Unary Function.
+ *  If \c f(c) is an object of class <tt>reciprocal_functor<T></tt>, and \c x is an object
+ *  of class \c T, then <tt>f(x)</tt> returns <tt>1.0/x</tt>.
  *
  * \par Example
  * \code
@@ -516,13 +571,16 @@ struct reciprocal_functor : public thrust::unary_function<T,T>
 };
 
 /**
- * \p abs_functor is a function object. Specifically, it is an Adaptable Unary Function.
- *  If \c f(c) is an object of class <tt>abs_functor<T></tt>, and \c x is an object
- *  of class \c T, then <tt>f(x)</tt> returns <tt>|x|</tt>.
+ * \brief \p abs_functor is a function object that computes the absolute value of a given element.
  *
  *  \param T is a model of <a href="http://www.sgi.com/tech/stl/Assignable.html">Assignable</a>,
  *          and if \c x is an object of type \p T, then <tt>x=c</tt> must be defined
  *          and must have a return type that is convertible to \c T.
+ *
+ * \par Overview
+ * \p abs_functor is a function object. Specifically, it is an Adaptable Unary Function.
+ *  If \c f(c) is an object of class <tt>abs_functor<T></tt>, and \c x is an object
+ *  of class \c T, then <tt>f(x)</tt> returns <tt>|x|</tt>.
  *
  * \par Example
  * \code
@@ -557,13 +615,17 @@ struct abs_functor : public thrust::unary_function<T, typename cusp::norm_type<T
 };
 
 /**
- * \p abs_squared_functor is a function object. Specifically, it is an Adaptable Unary Function.
- *  If \c f(c) is an object of class <tt>abs_squared_functor<T></tt>, and \c x is an object
- *  of class \c T, then <tt>f(x)</tt> returns <tt>|x|*|x|</tt>.
+ * \brief \p abs_squared_functor is a function object that computes the square of the absolute
+ * value of a given element.
  *
  *  \param T is a model of <a href="http://www.sgi.com/tech/stl/Assignable.html">Assignable</a>,
  *          and if \c x is an object of type \p T, then <tt>x=c</tt> must be defined
  *          and must have a return type that is convertible to \c T.
+ *
+ * \par Overview
+ * \p abs_squared_functor is a function object. Specifically, it is an Adaptable Unary Function.
+ *  If \c f(c) is an object of class <tt>abs_squared_functor<T></tt>, and \c x is an object
+ *  of class \c T, then <tt>f(x)</tt> returns <tt>|x|*|x|</tt>.
  *
  * \par Example
  * \code
@@ -598,13 +660,16 @@ struct abs_squared_functor : public thrust::unary_function<T, typename cusp::nor
 };
 
 /**
- * \p conj_functor is a function object. Specifically, it is an Adaptable Unary Function.
- *  If \c f(c) is an object of class <tt>conj_functor<T></tt>, and \c x is an object
- *  of class \c T, then <tt>f(x)</tt> returns <tt>|x|</tt>.
+ * \brief \p conj_functor is a function object that computes the conjugate of a given element.
  *
  *  \param T is a model of <a href="http://www.sgi.com/tech/stl/Assignable.html">Assignable</a>,
  *          and if \c x is an object of type \p T, then <tt>x=c</tt> must be defined
  *          and must have a return type that is convertible to \c T.
+ *
+ * \par Overview
+ * \p conj_functor is a function object. Specifically, it is an Adaptable Unary Function.
+ *  If \c f(c) is an object of class <tt>conj_functor<T></tt>, and \c x is an object
+ *  of class \c T, then <tt>f(x)</tt> returns <tt>|x|</tt>.
  *
  * \par Example
  * \code
@@ -638,13 +703,16 @@ struct conj_functor : public thrust::unary_function<T,T>
 };
 
 /**
- * \p norm_functor is a function object. Specifically, it is an Adaptable Unary Function.
- *  If \c f(c) is an object of class <tt>norm_functor<T></tt>, and \c x is an object
- *  of class \c T, then <tt>f(x)</tt> returns <tt>norm(x)</tt>.
+ * \brief \p norm_functor is a function object that computes the norm of a given element.
  *
  *  \param T is a model of <a href="http://www.sgi.com/tech/stl/Assignable.html">Assignable</a>,
  *          and if \c x is an object of type \p T, then <tt>x=c</tt> must be defined
  *          and must have a return type that is convertible to \c T.
+ *
+ * \par Overview
+ * \p norm_functor is a function object. Specifically, it is an Adaptable Unary Function.
+ *  If \c f(c) is an object of class <tt>norm_functor<T></tt>, and \c x is an object
+ *  of class \c T, then <tt>f(x)</tt> returns <tt>norm(x)</tt>.
  *
  * \par Example
  * \code
@@ -679,14 +747,17 @@ struct norm_functor : public thrust::unary_function<T, typename cusp::norm_type<
 };
 
 /**
- * \p sum_pair_functor is a function object. Specifically, it is an Adaptable Unary Function.
- *  If \c f(c) is an object of class <tt>sum_pair_functor<T></tt>, and \c x is an object
- *  of class \c thrust::tuple<T,T>, then <tt>f(x)</tt> returns
- *  <tt>thrust::get<0>(x) + thrust::get<1>(x)</tt>.
+ * \brief \p sum_pair_functor is a function object that computes the sum of a 2 element tuple.
  *
  *  \param T is a model of <a href="http://www.sgi.com/tech/stl/Assignable.html">Assignable</a>,
  *          and if \c x is an object of type \p thrust::tuple<T,T>, then <tt>x=c</tt> must be defined
  *          and must have a return type that is convertible to \c T.
+ *
+ * \par Overview
+ * \p sum_pair_functor is a function object. Specifically, it is an Adaptable Unary Function.
+ *  If \c f(c) is an object of class <tt>sum_pair_functor<T></tt>, and \c x is an object
+ *  of class \c thrust::tuple<T,T>, then <tt>f(x)</tt> returns
+ *  <tt>thrust::get<0>(x) + thrust::get<1>(x)</tt>.
  *
  * \par Example
  * \code
@@ -719,14 +790,18 @@ template <typename T>
 struct sum_pair_functor : public detail::combine_tuple_base_functor< thrust::plus<T> > {};
 
 /**
- * \p divide_pair_functor is a function object. Specifically, it is an Adaptable Unary Function.
- *  If \c f(c) is an object of class <tt>divide_pair_functor<T></tt>, and \c x is an object
- *  of class \c thrust::tuple<T,T>, then <tt>f(x)</tt> returns
- *  <tt>thrust::get<0>(x) / thrust::get<1>(x)</tt>.
+ * \brief \p divide_pair_functor is a function object that divides the first element of
+ * a 2 element tuple by the second element.
  *
  *  \param T is a model of <a href="http://www.sgi.com/tech/stl/Assignable.html">Assignable</a>,
  *          and if \c x is an object of type \p thrust::tuple<T,T>, then <tt>x=c</tt> must be defined
  *          and must have a return type that is convertible to \c T.
+ *
+ * \par Overview
+ * \p divide_pair_functor is a function object. Specifically, it is an Adaptable Unary Function.
+ *  If \c f(c) is an object of class <tt>divide_pair_functor<T></tt>, and \c x is an object
+ *  of class \c thrust::tuple<T,T>, then <tt>f(x)</tt> returns
+ *  <tt>thrust::get<0>(x) / thrust::get<1>(x)</tt>.
  *
  * \par Example
  * \code
@@ -759,14 +834,17 @@ template <typename T>
 struct divide_pair_functor : public detail::combine_tuple_base_functor< thrust::divides<T> > {};
 
 /**
- * \p equal_pair_functor is a function object. Specifically, it is an Adaptable Unary Function.
- *  If \c f(c) is an object of class <tt>equal_pair_functor<T></tt>, and \c x is an object
- *  of class \c thrust::tuple<T,T>, then <tt>f(x)</tt> returns
- *  <tt>thrust::get<0>(x) == thrust::get<1>(x)</tt>.
+ * \brief \p equal_pair_functor is a function object that compares 2 element tuple entries.
  *
  *  \param T is a model of <a href="http://www.sgi.com/tech/stl/Assignable.html">Assignable</a>,
  *          and if \c x is an object of type \p thrust::tuple<T,T>, then <tt>x=c</tt> must be defined
  *          and must have a return type that is convertible to \c T.
+ *
+ * \par Overview
+ * \p equal_pair_functor is a function object. Specifically, it is an Adaptable Unary Function.
+ *  If \c f(c) is an object of class <tt>equal_pair_functor<T></tt>, and \c x is an object
+ *  of class \c thrust::tuple<T,T>, then <tt>f(x)</tt> returns
+ *  <tt>thrust::get<0>(x) == thrust::get<1>(x)</tt>.
  *
  * \par Example
  * \code
@@ -799,14 +877,17 @@ template <typename T>
 struct equal_pair_functor : public detail::combine_tuple_base_functor< thrust::equal_to<T> > {};
 
 /**
- * \p not_equal_pair_functor is a function object. Specifically, it is an Adaptable Unary Function.
- *  If \c f(c) is an object of class <tt>not_equal_pair_functor<T></tt>, and \c x is an object
- *  of class \c thrust::tuple<T,T>, then <tt>f(x)</tt> returns
- *  <tt>thrust::get<0>(x) != thrust::get<1>(x)</tt>.
+ * \brief \p not_equal_pair_functor is a function object that compares 2 element tuple entries.
  *
  *  \param T is a model of <a href="http://www.sgi.com/tech/stl/Assignable.html">Assignable</a>,
  *          and if \c x is an object of type \p thrust::tuple<T,T>, then <tt>x=c</tt> must be defined
  *          and must have a return type that is convertible to \c T.
+ *
+ * \par Overview
+ * \p not_equal_pair_functor is a function object. Specifically, it is an Adaptable Unary Function.
+ *  If \c f(c) is an object of class <tt>not_equal_pair_functor<T></tt>, and \c x is an object
+ *  of class \c thrust::tuple<T,T>, then <tt>f(x)</tt> returns
+ *  <tt>thrust::get<0>(x) != thrust::get<1>(x)</tt>.
  *
  * \par Example
  * \code
@@ -837,6 +918,9 @@ struct equal_pair_functor : public detail::combine_tuple_base_functor< thrust::e
  */
 template <typename T>
 struct not_equal_pair_functor : public detail::combine_tuple_base_functor< thrust::not_equal_to<T> > {};
+
+/*! \}
+ */
 
 } // end namespace cusp
 
