@@ -41,7 +41,8 @@ template<typename,typename> struct random_integer_functor;
 /*! \endcond */
 
 /**
- *  \ingroup iterators
+ *  \addtogroup iterators Iterators
+ *  \ingroup utilities
  *  \{
  */
 

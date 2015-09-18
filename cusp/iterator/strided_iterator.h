@@ -35,8 +35,8 @@ namespace cusp
 {
 
 /*! \addtogroup iterators Iterators
- *  \ingroup iterators
  *  \brief Various customized Thrust based iterators
+ *  \ingroup utilities
  *  \{
  */
 

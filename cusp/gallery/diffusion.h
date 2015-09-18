@@ -40,8 +40,9 @@ struct FE : public disc_type {};
 /*! \endcond */
 
 /**
- *  \ingroup gallery
+ *  \addtogroup gallery Gallery
  *  \brief Collection of example matrices
+ *  \ingroup utilities
  *  \{
  */
 

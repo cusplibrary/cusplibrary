@@ -29,7 +29,8 @@ namespace cusp
 namespace gallery
 {
 /**
- *  \ingroup gallery
+ *  \addtogroup gallery Gallery
+ *  \ingroup utilities
  *  \{
  */
 

@@ -247,7 +247,8 @@ def Environment():
     # add a variable to handle compute capability
     vars.Add(
         EnumVariable('arch', 'Compute capability code generation', 'sm_20',
-                     allowed_values=('sm_10', 'sm_11', 'sm_12', 'sm_13', 'sm_20', 'sm_21', 'sm_30', 'sm_35', 'sm_52')))
+                     allowed_values=('sm_10', 'sm_11', 'sm_12', 'sm_13', 'sm_20', 'sm_21', 'sm_30', 'sm_35',
+                                     'sm_50', 'sm_52')))
 
     # add a variable to handle warnings
     if os.name == 'posix':

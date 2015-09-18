@@ -29,6 +29,13 @@ namespace cusp
 namespace gallery
 {
 
+/**
+ *  \addtogroup gallery Gallery
+ *  \brief Collection of example matrices
+ *  \ingroup utilities
+ *  \{
+ */
+
 /*! \p generate_matrix_from_stencil: generate a matrix using the provided
  * stencil operator and grid dimensions.
  *
@@ -45,6 +52,8 @@ template <typename MatrixType,
 void generate_matrix_from_stencil(MatrixType& matrix,
                                   const cusp::array1d<StencilPoint,cusp::host_memory>& stencil,
                                   const GridDimension& grid);
+/*! \}
+ */
 
 } // end namespace gallery
 } // end namespace cusp
