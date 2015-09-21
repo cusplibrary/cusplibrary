@@ -25,7 +25,7 @@
 namespace cusp
 {
 
-/*! \addtogroup utilities Utilities
+/**
  *  \addtogroup io Input/Output
  *  \ingroup utilities
  *  \brief Provides load and store operations for sparse matrices

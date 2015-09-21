@@ -40,9 +40,9 @@ template<typename,typename> struct random_integer_functor;
 } // end detail
 /*! \endcond */
 
-/*! \addtogroup iterators Iterators
- *  \ingroup iterators
- *  \brief Various customized Thrust based iterators
+/**
+ *  \addtogroup iterators Iterators
+ *  \ingroup utilities
  *  \{
  */
 

@@ -28,8 +28,9 @@ namespace cusp
 {
 namespace gallery
 {
-/*! \addtogroup gallery Matrix Gallery
- *  \ingroup gallery
+/**
+ *  \addtogroup gallery Gallery
+ *  \ingroup utilities
  *  \{
  */
 

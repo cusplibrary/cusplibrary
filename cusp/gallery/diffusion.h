@@ -39,9 +39,10 @@ struct FD : public disc_type {};
 struct FE : public disc_type {};
 /*! \endcond */
 
-/*! \addtogroup gallery Matrix Gallery
- *  \ingroup gallery
+/**
+ *  \addtogroup gallery Gallery
  *  \brief Collection of example matrices
+ *  \ingroup utilities
  *  \{
  */
 

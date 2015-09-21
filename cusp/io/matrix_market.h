@@ -29,8 +29,9 @@ namespace cusp
 namespace io
 {
 
-/*! \addtogroup utilities Utilities
+/**
  *  \addtogroup io Input/Output
+ *  \brief Provides routines for read/write different file types
  *  \ingroup utilities
  *  \{
  */

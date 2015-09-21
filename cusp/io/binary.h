@@ -29,7 +29,7 @@ namespace cusp
 namespace io
 {
 
-/*! \addtogroup utilities Utilities
+/**
  *  \addtogroup io Input/Output
  *  \ingroup utilities
  *  \{

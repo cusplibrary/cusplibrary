@@ -69,9 +69,11 @@ void lobpcg(LinearOperator& A,
  *
  * \par Overview
  * Computes the extreme eigenpairs of hermitian linear systems A x = s x
- * with preconditioner \p M.
+ * using LOBPCG.
  *
  * \note \p A and \p M must be symmetric.
+ *
+ * \see https://en.wikipedia.org/wiki/LOBPCG
  *
  * \par Example
  *  The following code snippet demonstrates how to use \p lobpcg to

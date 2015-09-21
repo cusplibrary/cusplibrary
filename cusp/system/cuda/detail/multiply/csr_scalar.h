@@ -124,7 +124,7 @@ void spmv_csr_scalar(const MatrixType&  A,
     System2 system2;
     System3 system3;
 
-    cusp::zero_functor<ValueType> initialize;
+    cusp::constant_functor<ValueType> initialize(0);
     thrust::multiplies<ValueType> combine;
     thrust::plus<ValueType> reduce;
 

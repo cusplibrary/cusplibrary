@@ -43,7 +43,7 @@ diagonal<ValueType,MemorySpace>
 
     // invert the entries
     thrust::transform(diagonal_reciprocals.begin(), diagonal_reciprocals.end(),
-                      diagonal_reciprocals.begin(), cusp::reciprocal<ValueType>());
+                      diagonal_reciprocals.begin(), cusp::reciprocal_functor<ValueType>());
 }
 
 // linear operator

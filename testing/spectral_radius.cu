@@ -19,53 +19,37 @@ void TestEstimateSpectralRadius(void)
     typedef typename SparseMatrix::value_type   ValueType;
     typedef typename SparseMatrix::memory_space MemorySpace;
 
-    // 2x2 diagonal matrix
+    cusp::array2d<ValueType, cusp::host_memory> A(2,2,0);
+    A(0,0) = -5.0;
+    A(1,1) =  2.0;
+
+    cusp::array2d<ValueType, cusp::host_memory> B;
+    cusp::gallery::poisson5pt(B, 2, 2);
+
+    cusp::array2d<ValueType, cusp::host_memory> C;
+    cusp::gallery::poisson5pt(C, 4, 4);
+
+    std::vector< cusp::array2d<ValueType, cusp::host_memory> > matrices;
+    matrices.push_back(A);
+    matrices.push_back(B);
+    matrices.push_back(C);
+
+    std::vector<float> rhos(3);
+    rhos[0] = 5.0;
+    rhos[1] = 6.0;
+    rhos[2] = 7.2360679774997871;
+
+    // test matrix multiply for every pair of compatible matrices
+    for(size_t i = 0; i < matrices.size(); i++)
     {
-        cusp::csr_matrix<int,ValueType,cusp::host_memory> A(2,2,2);
-        A.row_offsets[0] = 0;
-        A.row_offsets[1] = 1;
-        A.row_offsets[2] = 2;
-        A.column_indices[0] = 0;
-        A.column_indices[1] = 1;
-        A.values[0] = -5;
-        A.values[1] =  2;
-
-        float rho = 5.0;
-
-        SparseMatrix B(A);
-        ASSERT_EQUAL((std::abs(cusp::eigen::estimate_spectral_radius(B) - rho) / rho) < 0.1f, true);
-        ASSERT_EQUAL((std::abs(cusp::eigen::ritz_spectral_radius(B) - rho) / rho) < 0.1f, true);
-        ASSERT_EQUAL((std::abs(cusp::eigen::ritz_spectral_radius(B,10,true) - rho) / rho) < 0.1f, true);
-        ASSERT_EQUAL((std::abs(cusp::eigen::disks_spectral_radius(B) - rho) / rho) < 0.1f, true);
-    }
-
-    // 2x2 Poisson problem
-    {
-        SparseMatrix A;
-        cusp::gallery::poisson5pt(A, 2, 2);
-
-        float rho = 6.0;
-
-        ASSERT_EQUAL((std::abs(cusp::eigen::estimate_spectral_radius(A) - rho) / rho) < 0.1f, true);
-        ASSERT_EQUAL((std::abs(cusp::eigen::ritz_spectral_radius(A) - rho) / rho) < 0.1f, true);
-        ASSERT_EQUAL((std::abs(cusp::eigen::ritz_spectral_radius(A,10,true) - rho) / rho) < 0.1f, true);
-        ASSERT_EQUAL((std::abs(cusp::eigen::disks_spectral_radius(A) - rho) / rho) < 0.1f, true);
-    }
-
-    // 4x4 Poisson problem
-    {
-        SparseMatrix A;
-        cusp::gallery::poisson5pt(A, 4, 4);
-
-        float rho = 7.2360679774997871;
+        SparseMatrix A(matrices[i]);
+        float rho = rhos[i];
 
         ASSERT_EQUAL((std::abs(cusp::eigen::estimate_spectral_radius(A) - rho) / rho) < 0.1f, true);
         ASSERT_EQUAL((std::abs(cusp::eigen::ritz_spectral_radius(A) - rho) / rho) < 0.1f, true);
         ASSERT_EQUAL((std::abs(cusp::eigen::ritz_spectral_radius(A,10,true) - rho) / rho) < 0.1f, true);
         ASSERT_EQUAL((std::abs(cusp::eigen::disks_spectral_radius(A) - rho) / rho) < 0.11f, true);
     }
-
-    // TODO test larger sizes and non-symmetric matrices
 }
 DECLARE_SPARSE_MATRIX_UNITTEST(TestEstimateSpectralRadius);
 

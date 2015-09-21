@@ -65,12 +65,12 @@ struct Dinv_A : public cusp::linear_operator<typename MatrixType::value_type, ty
     }
 };
 
-template <typename Matrix>
-double disks_spectral_radius(const Matrix& A, coo_format)
+template <typename MatrixType>
+double disks_spectral_radius(const MatrixType& A, coo_format)
 {
-    typedef typename Matrix::index_type   IndexType;
-    typedef typename Matrix::value_type   ValueType;
-    typedef typename Matrix::memory_space MemorySpace;
+    typedef typename MatrixType::index_type   IndexType;
+    typedef typename MatrixType::value_type   ValueType;
+    typedef typename MatrixType::memory_space MemorySpace;
     typedef typename cusp::norm_type<ValueType>::type NormType;
 
     const IndexType N = A.num_rows;
@@ -79,7 +79,7 @@ double disks_spectral_radius(const Matrix& A, coo_format)
     cusp::array1d<NormType, MemorySpace> row_sums(N, NormType(0));
 
 #if THRUST_VERSION >= 100800
-    const typename Matrix::row_indices_array_type& A_row_indices(A.row_indices);
+    const typename MatrixType::row_indices_array_type& A_row_indices(A.row_indices);
 #else
     cusp::array1d<IndexType,MemorySpace> A_row_indices(A.row_indices);
 #endif
@@ -95,10 +95,10 @@ double disks_spectral_radius(const Matrix& A, coo_format)
     return *thrust::max_element(row_sums.begin(), row_sums.end());
 }
 
-template <typename Matrix>
-double disks_spectral_radius(const Matrix& A, sparse_format)
+template <typename MatrixType>
+double disks_spectral_radius(const MatrixType& A, sparse_format)
 {
-    typedef typename Matrix::const_coo_view_type CooView;
+    typedef typename MatrixType::const_coo_view_type CooView;
 
     CooView A_coo(A);
 
@@ -167,10 +167,10 @@ void lanczos_estimate(const Matrix& A, Array2d& H, size_t k)
 
 } // end detail namespace
 
-template <typename Matrix>
-double disks_spectral_radius(const Matrix& A)
+template <typename MatrixType>
+double disks_spectral_radius(const MatrixType& A)
 {
-    return detail::disks_spectral_radius(A, typename Matrix::format());
+    return detail::disks_spectral_radius(A, typename MatrixType::format());
 }
 
 template <typename MatrixType>
@@ -181,12 +181,12 @@ double estimate_rho_Dinv_A(const MatrixType& A)
     return cusp::eigen::ritz_spectral_radius(Dinv_A, 8);
 }
 
-template <typename Matrix>
-double estimate_spectral_radius(const Matrix& A, size_t k)
+template <typename MatrixType>
+double estimate_spectral_radius(const MatrixType& A, size_t k)
 {
-    typedef typename Matrix::index_type   IndexType;
-    typedef typename Matrix::value_type   ValueType;
-    typedef typename Matrix::memory_space MemorySpace;
+    typedef typename MatrixType::index_type   IndexType;
+    typedef typename MatrixType::value_type   ValueType;
+    typedef typename MatrixType::memory_space MemorySpace;
     typedef typename cusp::norm_type<ValueType>::type NormType;
 
     const IndexType N = A.num_rows;
@@ -207,10 +207,10 @@ double estimate_spectral_radius(const Matrix& A, size_t k)
     return k == 0 ? 0 : cusp::blas::nrm2(x) / cusp::blas::nrm2(y);
 }
 
-template <typename Matrix>
-double ritz_spectral_radius(const Matrix& A, size_t k, bool symmetric)
+template <typename MatrixType>
+double ritz_spectral_radius(const MatrixType& A, size_t k, bool symmetric)
 {
-    typedef typename Matrix::value_type ValueType;
+    typedef typename MatrixType::value_type ValueType;
     typedef typename cusp::norm_type<ValueType>::type NormType;
 
     cusp::array2d<ValueType,cusp::host_memory> H;
@@ -225,5 +225,4 @@ double ritz_spectral_radius(const Matrix& A, size_t k, bool symmetric)
 
 } // end namespace eigen
 } // end namespace cusp
-
 

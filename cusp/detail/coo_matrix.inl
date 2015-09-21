@@ -194,7 +194,7 @@ void coo_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>
     OffsetsPermIterator offsets_begin(matrix.diagonal_offsets.begin(), gather_indices_begin);
     ZipIterator         offset_modulus_tuple(thrust::make_tuple(offsets_begin, row_indices_begin));
 
-    ColumnIndexIterator column_indices_begin(offset_modulus_tuple, cusp::sum_tuple_functor<IndexType>());
+    ColumnIndexIterator column_indices_begin(offset_modulus_tuple, cusp::sum_pair_functor<IndexType>());
     PermIndexIterator   perm_indices_begin(CountingIterator(0),   PermFunctor(matrix.values.num_rows, matrix.values.num_cols, matrix.values.pitch));
     PermValueIterator   perm_values_begin(matrix.values.values.begin(), perm_indices_begin);
 

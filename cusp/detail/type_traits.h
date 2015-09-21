@@ -196,7 +196,7 @@ struct coo_view_type<MatrixType,dia_format>
     typedef typename thrust::permutation_iterator<OffsetsIterator,ModulusIterator>                       OffsetsPermIterator;
     typedef typename thrust::tuple<OffsetsPermIterator, RowIndexIterator>                                IteratorTuple;
     typedef typename thrust::zip_iterator<IteratorTuple>                                                 ZipIterator;
-    typedef typename thrust::transform_iterator<sum_tuple_functor<IndexType>, ZipIterator>               ColumnIndexIterator;
+    typedef typename thrust::transform_iterator<sum_pair_functor<IndexType>, ZipIterator>               ColumnIndexIterator;
 
     typedef typename MatrixType::values_array_type::values_array_type::iterator                          ValueIterator;
     typedef logical_to_other_physical_functor<IndexType, cusp::row_major, cusp::column_major>            PermFunctor;

@@ -77,8 +77,7 @@ struct join_search<T,V,2>
 
 
 /*! \addtogroup iterators Iterators
- *  \ingroup iterators
- *  \brief Various customized Thrust based iterators
+ *  \ingroup utilities
  *  \{
  */
 

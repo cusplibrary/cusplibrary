@@ -37,6 +37,48 @@ namespace eigen
  *  \{
  */
 
+/**
+ * \brief Approximate spectral radius of A using Arnoldi
+ *
+ * \tparam Matrix type of a sparse or dense matrix
+ * \tparam Array2d type of dense matrix of partials
+ *
+ * \param A matrix of the linear system
+ * \param H dense matrix of ritz values
+ * \param k maximum number of outer Arnoldi iterations
+ *
+ * \return spectral radius approximation
+ *
+ * \par Overview
+ * Approximates the spectral radius A using a specified number of
+ * Arnoldi iterations.
+ *
+ * \par Example
+ *  The following code snippet demonstrates how to use \p
+ *  arnoldi to compute the spectral radius of a 16x16
+ *  Laplacian matrix.
+ *
+ *  \code
+ *  #include <cusp/csr_matrix.h>
+ *  #include <cusp/eigen/arnoldi.h>
+ *  #include <cusp/gallery/poisson.h>
+ *
+ *  int main(void)
+ *  {
+ *      // create an empty sparse matrix structure (CSR format)
+ *      cusp::csr_matrix<int, float, cusp::device_memory> A;
+ *
+ *      // initialize matrix
+ *      cusp::gallery::poisson5pt(A, 4, 4);
+ *
+ *      // compute the largest eigenpair of A using 20 Arnoldi iterations
+ *      float rho = cusp::eigen::arnoldi(A, 20);
+ *      std::cout << "Spectral radius of A : " << rho << std::endl;
+ *
+ *      return 0;
+ *  }
+ *  \endcode
+ */
 template <typename Matrix, typename Array2d>
 void arnoldi(const Matrix& A, Array2d& H, size_t k = 10);
 
