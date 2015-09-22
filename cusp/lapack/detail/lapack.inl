@@ -21,481 +21,312 @@
 #include <cusp/array1d.h>
 #include <cusp/array2d.h>
 
-#include <cusp/lapack/detail/stubs.h>
+#include <cusp/lapack/detail/generic.h>
 
 namespace cusp
 {
 namespace lapack
 {
-namespace generic
-{
-
-template<typename DerivedPolicy, typename Array2d, typename Array1d>
-void getrf( thrust::execution_policy<DerivedPolicy> &exec,
-            Array2d& A, Array1d& piv )
-{
-    typedef typename Array2d::value_type ValueType;
-    typedef typename Array1d::value_type IndexType;
-
-    lapack_int order = Orientation<typename Array2d::orientation>::type;
-
-    if(piv.size() != A.num_cols)
-        piv.resize(A.num_cols);
-
-    lapack_int m    = A.num_cols;
-    lapack_int n    = A.num_rows;
-    lapack_int lda  = A.pitch;
-    ValueType *a    = thrust::raw_pointer_cast(&A(0,0));
-    IndexType *ipiv = thrust::raw_pointer_cast(&piv[0]);
-
-    lapack_int info = cusp::lapack::detail::getrf(order, m, n, a, lda, ipiv);
-
-    if( info != 0 )
-    {
-        printf("getrf failure code : %d\n", info);
-        throw cusp::runtime_exception("getrf failed");
-    }
-}
-
-template<typename DerivedPolicy, typename Array2d>
-void potrf( thrust::execution_policy<DerivedPolicy> &exec,
-            Array2d& A, char uplo )
-{
-    typedef typename Array2d::value_type ValueType;
-
-    lapack_int order = Orientation<typename Array2d::orientation>::type;
-
-    lapack_int n    = A.num_rows;
-    lapack_int lda  = A.pitch;
-    ValueType *a    = thrust::raw_pointer_cast(&A(0,0));
-    lapack_int info = cusp::lapack::detail::potrf(order, uplo, n, a, lda);
-
-    if( info != 0 )
-    {
-        printf("potrf failure code : %d\n", info);
-        throw cusp::runtime_exception("potrf failed");
-    }
-}
-
-template<typename DerivedPolicy, typename Array2d, typename Array1d>
-void sytrf( thrust::execution_policy<DerivedPolicy> &exec,
-            Array2d& A, Array1d& piv, char uplo )
-{
-    typedef typename Array2d::value_type ValueType;
-    typedef typename Array1d::value_type IndexType;
-
-    lapack_int order = Orientation<typename Array2d::orientation>::type;
-
-    if(piv.size() != A.num_cols)
-        piv.resize(A.num_cols);
-
-    lapack_int n    = A.num_rows;
-    lapack_int lda  = A.pitch;
-    ValueType *a    = thrust::raw_pointer_cast(&A(0,0));
-    IndexType *ipiv = thrust::raw_pointer_cast(&piv[0]);
-    lapack_int info = cusp::lapack::detail::sytrf(order, uplo, n, a, lda, ipiv);
-
-    if( info != 0 )
-    {
-        printf("sytrf failure code : %d\n", info);
-        throw cusp::runtime_exception("sytrf failed");
-    }
-}
-
-template<typename DerivedPolicy, typename Array2d, typename Array1d>
-void getrs( thrust::execution_policy<DerivedPolicy> &exec,
-            const Array2d& A, const Array1d& piv, Array2d& B, char trans )
-{
-    typedef typename Array2d::value_type ValueType;
-    typedef typename Array1d::value_type IndexType;
-
-    lapack_int order = Orientation<typename Array2d::orientation>::type;
-
-    lapack_int n    = A.num_rows;
-    lapack_int lda  = A.pitch;
-    const ValueType *a    = thrust::raw_pointer_cast(&A(0,0));
-    const IndexType *ipiv = thrust::raw_pointer_cast(&piv[0]);
-
-    lapack_int nrhs = B.num_cols;
-    lapack_int ldb  = B.pitch;
-    ValueType *b    = thrust::raw_pointer_cast(&B(0,0));
-
-    lapack_int info = cusp::lapack::detail::getrs(order, trans, n, nrhs, a, lda, ipiv, b, ldb);
-
-    if( info != 0 )
-    {
-        printf("getrs failure code : %d\n", info);
-        throw cusp::runtime_exception("getrs failed");
-    }
-}
-
-template<typename DerivedPolicy, typename Array2d>
-void potrs( thrust::execution_policy<DerivedPolicy> &exec,
-            const Array2d& A, Array2d& B, char uplo )
-{
-    typedef typename Array2d::value_type ValueType;
-
-    lapack_int order = Orientation<typename Array2d::orientation>::type;
-
-    lapack_int n    = A.num_rows;
-    lapack_int lda  = A.pitch;
-    const ValueType *a = thrust::raw_pointer_cast(&A(0,0));
-
-    lapack_int nrhs = B.num_cols;
-    lapack_int ldb  = B.pitch;
-    ValueType *b    = thrust::raw_pointer_cast(&B(0,0));
-
-    lapack_int info = cusp::lapack::detail::potrs(order, uplo, n, nrhs, a, lda, b, ldb);
-
-    if( info != 0 )
-    {
-        printf("potrs failure code : %d\n", info);
-        throw cusp::runtime_exception("potrs failed");
-    }
-}
-
-template<typename DerivedPolicy, typename Array2d, typename Array1d>
-void sytrs( thrust::execution_policy<DerivedPolicy> &exec,
-            const Array2d& A, const Array1d& piv, Array2d& B, char uplo )
-{
-    typedef typename Array2d::value_type ValueType;
-    typedef typename Array1d::value_type IndexType;
-
-    lapack_int order = Orientation<typename Array2d::orientation>::type;
-
-    lapack_int n    = A.num_rows;
-    lapack_int lda  = A.pitch;
-    const ValueType *a    = thrust::raw_pointer_cast(&A(0,0));
-    const IndexType *ipiv = thrust::raw_pointer_cast(&piv[0]);
-
-    lapack_int nrhs = B.num_cols;
-    lapack_int ldb  = B.pitch;
-    ValueType *b    = thrust::raw_pointer_cast(&B(0,0));
-
-    lapack_int info = cusp::lapack::detail::sytrs(order, uplo, n, nrhs, a, lda, ipiv, b, ldb);
-
-    if( info != 0 )
-    {
-        printf("sytrs failure code : %d\n", info);
-        throw cusp::runtime_exception("sytrs failed");
-    }
-}
-
-template<typename DerivedPolicy, typename Array2d>
-void trtrs( thrust::execution_policy<DerivedPolicy> &exec,
-            const Array2d& A, Array2d& B, char uplo, char trans, char diag )
-{
-    typedef typename Array2d::value_type ValueType;
-
-    lapack_int order = Orientation<typename Array2d::orientation>::type;
-
-    lapack_int n    = A.num_rows;
-    lapack_int lda  = A.pitch;
-    const ValueType *a    = thrust::raw_pointer_cast(&A(0,0));
-
-    lapack_int nrhs = B.num_cols;
-    lapack_int ldb  = B.pitch;
-    ValueType *b    = thrust::raw_pointer_cast(&B(0,0));
-
-    lapack_int info = cusp::lapack::detail::trtrs(order, uplo, trans, diag, n, nrhs, a, lda, b, ldb);
-
-    if( info != 0 )
-    {
-        printf("trtrs failure code : %d\n", info);
-        throw cusp::runtime_exception("trtrs failed");
-    }
-}
-
-template<typename DerivedPolicy, typename Array2d>
-void trtri( thrust::execution_policy<DerivedPolicy> &exec,
-            Array2d& A, char uplo, char diag )
-{
-    typedef typename Array2d::value_type ValueType;
-
-    lapack_int order = Orientation<typename Array2d::orientation>::type;
-
-    lapack_int n = A.num_rows;
-    lapack_int lda = A.pitch;
-    ValueType *a = thrust::raw_pointer_cast(&A(0,0));
-    lapack_int info = cusp::lapack::detail::trtri(order, uplo, diag, n, a, lda);
-
-    if( info != 0 )
-    {
-        printf("trtri failure code : %d\n", info);
-        throw cusp::runtime_exception("trtri failed");
-    }
-}
-
-template<typename DerivedPolicy, typename Array2d, typename Array1d>
-void syev( thrust::execution_policy<DerivedPolicy> &exec,
-           const Array2d& A, Array1d& eigvals, Array2d& eigvecs, char uplo )
-{
-    typedef typename Array2d::value_type ValueType;
-
-    if((eigvecs.num_rows != A.num_rows) || (eigvecs.num_cols != A.num_cols))
-        eigvals.resize(A.num_rows, A.num_cols);
-
-    if(eigvals.size() != A.num_cols)
-        eigvals.resize(A.num_cols);
-
-    cusp::copy(A, eigvecs);
-
-    lapack_int order = Orientation<typename Array2d::orientation>::type;
-    char job  = 'V';
-
-    lapack_int n    = A.num_rows;
-    lapack_int lda  = A.pitch;
-    ValueType *a    = thrust::raw_pointer_cast(&eigvecs(0,0));
-    ValueType *w    = thrust::raw_pointer_cast(&eigvals[0]);
-    lapack_int info = cusp::lapack::detail::syev(order, job, uplo, n, a, lda, w);
-
-    if( info != 0 )
-    {
-        printf("syev failure code : %d\n", info);
-        throw cusp::runtime_exception("syev failed");
-    }
-}
-
-template<typename DerivedPolicy, typename Array1d1, typename Array1d2, typename Array1d3, typename Array2d>
-void stev( thrust::execution_policy<DerivedPolicy> &exec,
-           const Array1d1& alphas, const Array1d2& betas, Array1d3& eigvals, Array2d& eigvecs, char job )
-{
-    typedef typename Array2d::value_type ValueType;
-
-    cusp::array1d<ValueType,cusp::host_memory> temp(betas);
-    eigvals = alphas;
-
-    lapack_int order = Orientation<typename Array2d::orientation>::type;
-    lapack_int n     = alphas.size();
-    lapack_int ldz   = n;
-    ValueType *a = thrust::raw_pointer_cast(&eigvals[0]);
-    ValueType *b = thrust::raw_pointer_cast(&temp[0]);
-    ValueType *z = thrust::raw_pointer_cast(&eigvecs(0,0));
-
-    lapack_int info = cusp::lapack::detail::stev(order, job, n, a, b, z, ldz);
-
-    if( info != 0 )
-    {
-        printf("stev failure code : %d\n", info);
-        throw cusp::runtime_exception("stev failed");
-    }
-}
-
-template<typename DerivedPolicy, typename Array1d1, typename Array1d2, typename Array1d3>
-void stev( thrust::execution_policy<DerivedPolicy> &exec,
-           const Array1d1& alphas, const Array1d2& betas, Array1d3& eigvals )
-{
-    typedef typename Array1d1::value_type ValueType;
-
-    char job  = EvalsOrEvecs<evals>::type;
-    cusp::array2d<ValueType,cusp::host_memory> eigvecs;
-
-    stev(alphas, betas, eigvals, eigvecs, job);
-}
-
-template<typename DerivedPolicy, typename Array2d1, typename Array2d2, typename Array1d, typename Array2d3>
-void sygv( thrust::execution_policy<DerivedPolicy> &exec,
-           const Array2d1& A, const Array2d2& B, Array1d& eigvals, Array2d3& eigvecs )
-{
-    typedef typename Array2d1::value_type ValueType;
-    typedef typename Array2d1::orientation Array2dOrientation;
-
-    eigvecs = A;
-    cusp::array2d<ValueType,cusp::host_memory,Array2dOrientation> temp(B);
-
-    lapack_int order = Orientation<Array2dOrientation>::type;
-    char itype = GenEigOp<gen_op1>::type;
-    char job   = EvalsOrEvecs<evecs>::type;
-    char uplo  = UpperOrLower<upper>::type;
-
-    lapack_int n    = A.num_rows;
-    lapack_int lda  = A.pitch;
-    lapack_int ldb  = B.pitch;
-    const ValueType *a    = thrust::raw_pointer_cast(&eigvecs(0,0));
-    ValueType *b    = thrust::raw_pointer_cast(&temp(0,0));
-    ValueType *w    = thrust::raw_pointer_cast(&eigvals[0]);
-    lapack_int info = cusp::lapack::detail::sygv(order, itype, job, uplo, n, a, lda, b, ldb, w);
-
-    if( info != 0 )
-    {
-        printf("sygv failure code : %d\n", info);
-        throw cusp::runtime_exception("sygv failed");
-    }
-}
-
-template<typename DerivedPolicy, typename Array2d, typename Array1d>
-void gesv( thrust::execution_policy<DerivedPolicy> &exec,
-           const Array2d& A, Array2d& B, Array1d& pivots )
-{
-    typedef typename Array1d::value_type IndexType;
-    typedef typename Array2d::value_type ValueType;
-
-    Array2d C = A;
-
-    lapack_int order = Orientation<typename Array2d::orientation>::type;
-
-    if(pivots.size() != A.num_cols)
-        pivots.resize(A.num_cols);
-
-    lapack_int n    = C.num_rows;
-    lapack_int nrhs = B.num_cols;
-    lapack_int ldc  = C.pitch;
-    lapack_int ldb  = B.pitch;
-    ValueType *c    = thrust::raw_pointer_cast(&C(0,0));
-    ValueType *b    = thrust::raw_pointer_cast(&B(0,0));
-    IndexType *ipiv = thrust::raw_pointer_cast(&pivots[0]);
-    lapack_int info = cusp::lapack::detail::gesv(order, n, nrhs, c, ldc, ipiv, b, ldb);
-
-    if( info != 0 )
-    {
-        printf("gesv failure code : %d\n", info);
-        throw cusp::runtime_exception("gesv failed");
-    }
-}
-
-} // end namespace generic
 
 template<typename DerivedPolicy, typename Array2d, typename Array1d>
 void getrf( const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
             Array2d& A, Array1d& piv )
 {
+    using cusp::lapack::generic::getrf;
+
+    getrf(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, piv);
 }
 
 template<typename Array2d, typename Array1d>
 void getrf( Array2d& A, Array1d& piv )
 {
+    using thrust::system::detail::generic::select_system;
+
+    typedef typename Array2d::memory_space System1;
+    typedef typename Array1d::memory_space System2;
+
+    System1 system1;
+    System2 system2;
+
+    cusp::lapack::getrf(select_system(system1,system2), A, piv);
 }
 
 template<typename DerivedPolicy, typename Array2d>
 void potrf( const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
             Array2d& A, char uplo )
 {
+    using cusp::lapack::generic::potrf;
+
+    potrf(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, uplo);
 }
 
 template<typename Array2d>
 void potrf( Array2d& A, char uplo )
 {
+    using thrust::system::detail::generic::select_system;
+
+    typedef typename Array2d::memory_space System;
+
+    System system;
+
+    cusp::lapack::potrf(select_system(system), A);
 }
 
 template<typename DerivedPolicy, typename Array2d, typename Array1d>
 void sytrf( const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
             Array2d& A, Array1d& piv, char uplo )
 {
+    using cusp::lapack::generic::sytrf;
+
+    sytrf(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, piv, uplo);
 }
 
 template<typename Array2d, typename Array1d>
 void sytrf( Array2d& A, Array1d& piv, char uplo )
 {
+    using thrust::system::detail::generic::select_system;
+
+    typedef typename Array2d::memory_space System1;
+    typedef typename Array1d::memory_space System2;
+
+    System1 system1;
+    System2 system2;
+
+    cusp::lapack::sytrf(select_system(system1,system2), A, piv, uplo);
 }
 
 template<typename DerivedPolicy, typename Array2d, typename Array1d>
 void getrs( const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
             const Array2d& A, const Array1d& piv, Array2d& B, char trans )
 {
+    using cusp::lapack::generic::getrs;
+
+    getrs(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, piv, B, trans);
 }
 
 template<typename Array2d, typename Array1d>
 void getrs( const Array2d& A, const Array1d& piv, Array2d& B, char trans )
 {
+    using thrust::system::detail::generic::select_system;
+
+    typedef typename Array2d::memory_space System1;
+    typedef typename Array1d::memory_space System2;
+
+    System1 system1;
+    System2 system2;
+
+    cusp::lapack::getrs(select_system(system1,system2), A, piv, B, trans);
 }
 
 template<typename DerivedPolicy, typename Array2d>
 void potrs( const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
             const Array2d& A, Array2d& B, char uplo )
 {
+    using cusp::lapack::generic::potrs;
+
+    potrs(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, B, uplo);
 }
 
 template<typename Array2d>
 void potrs( const Array2d& A, Array2d& B, char uplo )
 {
+    using thrust::system::detail::generic::select_system;
+
+    typedef typename Array2d::memory_space System;
+
+    System system;
+
+    cusp::lapack::potrs(select_system(system), A, B, uplo);
 }
 
 template<typename DerivedPolicy, typename Array2d, typename Array1d>
 void sytrs( const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
             const Array2d& A, const Array1d& piv, Array2d& B, char uplo )
 {
+    using cusp::lapack::generic::sytrs;
+
+    sytrs(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, piv, B, uplo);
 }
 
 template<typename Array2d, typename Array1d>
 void sytrs( const Array2d& A, const Array1d& piv, Array2d& B, char uplo )
 {
+    using thrust::system::detail::generic::select_system;
+
+    typedef typename Array2d::memory_space System1;
+    typedef typename Array1d::memory_space System2;
+
+    System1 system1;
+    System2 system2;
+
+    cusp::lapack::sytrs(select_system(system1, system2), A, piv, B, uplo);
 }
 
 template<typename DerivedPolicy, typename Array2d>
 void trtrs( const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
             const Array2d& A, Array2d& B, char uplo, char trans, char diag )
 {
+    using cusp::lapack::generic::trtrs;
+
+    trtrs(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, B, uplo, trans, diag);
 }
 
 template<typename Array2d>
 void trtrs( const Array2d& A, Array2d& B, char uplo, char trans, char diag )
 {
+    using thrust::system::detail::generic::select_system;
+
+    typedef typename Array2d::memory_space System;
+
+    System system;
+
+    cusp::lapack::trtrs(select_system(system), A, B, uplo, trans, diag);
 }
 
 template<typename DerivedPolicy, typename Array2d>
 void trtri( const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
             Array2d& A, char uplo, char diag )
 {
+    using cusp::lapack::generic::trtri;
+
+    trtri(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, uplo, diag);
 }
 
 template<typename Array2d>
 void trtri( Array2d& A, char uplo, char diag )
 {
+    using thrust::system::detail::generic::select_system;
+
+    typedef typename Array2d::memory_space System;
+
+    System system;
+
+    cusp::lapack::trtri(select_system(system), A, uplo, diag);
 }
 
 template<typename DerivedPolicy, typename Array2d, typename Array1d>
 void syev( const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
            const Array2d& A, Array1d& eigvals, Array2d& eigvecs, char uplo )
 {
+    using cusp::lapack::generic::syev;
+
+    syev(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, eigvals, eigvecs, uplo);
 }
 
 template<typename Array2d, typename Array1d>
 void syev( const Array2d& A, Array1d& eigvals, Array2d& eigvecs, char uplo )
 {
+    using thrust::system::detail::generic::select_system;
+
+    typedef typename Array2d::memory_space System1;
+    typedef typename Array1d::memory_space System2;
+
+    System1 system1;
+    System2 system2;
+
+    cusp::lapack::syev(select_system(system1, system2), A, eigvals, eigvecs, uplo);
 }
 
 template<typename DerivedPolicy, typename Array1d1, typename Array1d2, typename Array1d3, typename Array2d>
 void stev( const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
            const Array1d1& alphas, const Array1d2& betas, Array1d3& eigvals, Array2d& eigvecs, char job )
 {
+    using cusp::lapack::generic::stev;
+
+    stev(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), alphas, betas, eigvals, eigvecs, job);
 }
 
 template<typename Array1d1, typename Array1d2, typename Array1d3, typename Array2d>
 void stev( const Array1d1& alphas, const Array1d2& betas, Array1d3& eigvals, Array2d& eigvecs, char job )
 {
+    using thrust::system::detail::generic::select_system;
+
+    typedef typename Array1d1::memory_space System1;
+    typedef typename Array1d2::memory_space System2;
+    typedef typename Array1d3::memory_space System3;
+    typedef typename Array2d::memory_space  System4;
+
+    System1 system1;
+    System2 system2;
+    System3 system3;
+    System4 system4;
+
+    cusp::lapack::stev(select_system(system1, system2, system3, system4), alphas, betas, eigvals, eigvecs, job);
 }
 
 template<typename DerivedPolicy, typename Array1d1, typename Array1d2, typename Array1d3>
 void stev( const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
            const Array1d1& alphas, const Array1d2& betas, Array1d3& eigvals )
 {
+    using cusp::lapack::generic::stev;
+
+    stev(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), alphas, betas, eigvals);
 }
 
 template<typename Array1d1, typename Array1d2, typename Array1d3>
 void stev( const Array1d1& alphas, const Array1d2& betas, Array1d3& eigvals )
 {
+    using thrust::system::detail::generic::select_system;
+
+    typedef typename Array1d1::memory_space System1;
+    typedef typename Array1d2::memory_space System2;
+    typedef typename Array1d3::memory_space System3;
+
+    System1 system1;
+    System2 system2;
+    System3 system3;
+
+    cusp::lapack::stev(select_system(system1, system2, system3), alphas, betas, eigvals);
 }
 
 template<typename DerivedPolicy, typename Array2d1, typename Array2d2, typename Array1d, typename Array2d3>
 void sygv( const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
            const Array2d1& A, const Array2d2& B, Array1d& eigvals, Array2d3& eigvecs )
 {
+    using cusp::lapack::generic::sygv;
+
+    sygv(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, B, eigvals, eigvecs);
 }
 
 template<typename Array2d1, typename Array2d2, typename Array1d, typename Array2d3>
 void sygv( const Array2d1& A, const Array2d2& B, Array1d& eigvals, Array2d3& eigvecs )
 {
+    using thrust::system::detail::generic::select_system;
+
+    typedef typename Array2d1::memory_space System1;
+    typedef typename Array2d2::memory_space System2;
+    typedef typename Array2d3::memory_space System3;
+    typedef typename Array1d::memory_space  System4;
+
+    System1 system1;
+    System2 system2;
+    System3 system3;
+    System4 system4;
+
+    cusp::lapack::sygv(select_system(system1, system2, system3, system4), A, B, eigvals, eigvecs);
 }
 
 template<typename DerivedPolicy, typename Array2d, typename Array1d>
 void gesv( const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
            const Array2d& A, Array2d& B, Array1d& pivots )
 {
+    using cusp::lapack::generic::gesv;
+
+    gesv(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, B, pivots);
 }
 
 template<typename Array2d, typename Array1d>
 void gesv( const Array2d& A, Array2d& B, Array1d& pivots )
 {
+    using thrust::system::detail::generic::select_system;
+
+    typedef typename Array2d::memory_space System1;
+    typedef typename Array1d::memory_space System2;
+
+    System1 system1;
+    System2 system2;
+
+    cusp::lapack::gesv(select_system(system1, system2), A, B, pivots);
 }
 
 } // end namespace lapack
