@@ -32,8 +32,11 @@ namespace cusp
 {
 namespace graph
 {
-template <typename DerivedPolicy, typename MatrixType, typename ArrayType, typename Format>
-void connected_components(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
+template <typename DerivedPolicy,
+          typename MatrixType,
+          typename ArrayType,
+          typename Format>
+size_t connected_components(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
                           const MatrixType& G,
                           ArrayType& components,
                           Format format);
@@ -79,10 +82,24 @@ size_t connected_components(thrust::execution_policy<DerivedPolicy>& exec,
     return num_components;
 }
 
+template<typename DerivedPolicy,
+         typename MatrixType,
+         typename ArrayType>
+size_t connected_components(thrust::execution_policy<DerivedPolicy>& exec,
+                            const MatrixType& G,
+                            ArrayType& components)
+{
+    typedef typename MatrixType::format Format;
+
+    Format format;
+
+    return cusp::graph::connected_components(exec, G, components, format);
+}
+
 template <typename DerivedPolicy,
           typename MatrixType,
           typename ArrayType>
-size_t connected_components(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
+size_t connected_components(thrust::execution_policy<DerivedPolicy>& exec,
                             const MatrixType& G,
                             ArrayType& components,
                             cusp::known_format)
@@ -101,14 +118,14 @@ size_t connected_components(const thrust::detail::execution_policy_base<DerivedP
 namespace graph
 {
 template <typename DerivedPolicy, typename MatrixType, typename ArrayType, typename Format>
-void connected_components(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
+size_t connected_components(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
                           const MatrixType& G,
                           ArrayType& components,
                           Format format)
 {
     using cusp::system::detail::generic::connected_components;
 
-    connected_components(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), G, components, format);
+    return connected_components(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), G, components, format);
 }
 } // end graph namespace
 } // end namespace cusp

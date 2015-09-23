@@ -41,7 +41,8 @@ size_t connected_components(const thrust::detail::execution_policy_base<DerivedP
 }
 
 template<typename MatrixType, typename ArrayType>
-size_t connected_components(const MatrixType& G, ArrayType& components)
+size_t connected_components(const MatrixType& G,
+                            ArrayType& components)
 {
     using thrust::system::detail::generic::select_system;
 
