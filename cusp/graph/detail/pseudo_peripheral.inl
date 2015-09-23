@@ -37,12 +37,10 @@ pseudo_peripheral_vertex(const thrust::detail::execution_policy_base<DerivedPoli
 {
     using cusp::system::detail::generic::pseudo_peripheral_vertex;
 
-    typename MatrixType::format format;
-
     if(G.num_rows != G.num_cols)
         throw cusp::invalid_input_exception("matrix must be square");
 
-    return pseudo_peripheral_vertex(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), G, levels, format);
+    return pseudo_peripheral_vertex(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), G, levels);
 }
 
 template<typename MatrixType, typename ArrayType>
@@ -60,16 +58,28 @@ pseudo_peripheral_vertex(const MatrixType& G, ArrayType& levels)
     return cusp::graph::pseudo_peripheral_vertex(select_system(system1,system2), G, levels);
 }
 
+template<typename DerivedPolicy,
+         typename MatrixType>
+typename MatrixType::index_type
+pseudo_peripheral_vertex(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
+                         const MatrixType& G)
+{
+    using cusp::system::detail::generic::pseudo_peripheral_vertex;
+
+    return pseudo_peripheral_vertex(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), G);
+}
+
 template<typename MatrixType>
 typename MatrixType::index_type
 pseudo_peripheral_vertex(const MatrixType& G)
 {
-    typedef typename MatrixType::index_type   IndexType;
-    typedef typename MatrixType::memory_space MemorySpace;
+    using thrust::system::detail::generic::select_system;
 
-    cusp::array1d<IndexType,MemorySpace> levels(G.num_rows);
+    typedef typename MatrixType::memory_space System;
 
-    return cusp::graph::pseudo_peripheral_vertex(G, levels);
+    System system;
+
+    return cusp::graph::pseudo_peripheral_vertex(select_system(system), G);
 }
 
 } // end namespace graph

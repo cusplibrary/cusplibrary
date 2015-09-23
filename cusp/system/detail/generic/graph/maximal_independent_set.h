@@ -130,18 +130,19 @@ void compute_mis_states(thrust::execution_policy<DerivedPolicy>& exec,
     do
     {
         // find the largest (state,value,index) 1-ring neighbor for each node
-        cusp::generalized_spmv(A, x, x, z, thrust::project2nd<Tuple1,Tuple2>(), thrust::maximum<Tuple2>());
+        cusp::generalized_spmv(exec, A, x, x, z, thrust::project2nd<Tuple1,Tuple2>(), thrust::maximum<Tuple2>());
 
         // find the largest (state,value,index) k-ring neighbor for each node (if k > 1)
         for(size_t ring = 1; ring < k; ring++)
         {
             y.swap(z);
 
-            cusp::generalized_spmv(A, y, y, z, thrust::project2nd<Tuple1,Tuple2>(), thrust::maximum<Tuple2>());
+            cusp::generalized_spmv(exec, A, y, y, z, thrust::project2nd<Tuple1,Tuple2>(), thrust::maximum<Tuple2>());
         }
 
         // label local maxima as MIS nodes
-        thrust::for_each(thrust::make_zip_iterator(
+        thrust::for_each(exec,
+                         thrust::make_zip_iterator(
                              thrust::make_tuple(
                                thrust::counting_iterator<IndexType>(0), states.begin(),
                                maximal_states.begin(), maximal_indices.begin())),
@@ -152,13 +153,14 @@ void compute_mis_states(thrust::execution_policy<DerivedPolicy>& exec,
                          process_mis_nodes());
 
         // label k-ring neighbors of MIS nodes as non-MIS nodes
-        thrust::for_each(thrust::make_zip_iterator(
+        thrust::for_each(exec,
+                         thrust::make_zip_iterator(
                              thrust::make_tuple(states.begin(), thrust::make_permutation_iterator(states.begin(), maximal_indices.begin()))),
                          thrust::make_zip_iterator(
                              thrust::make_tuple(states.begin(), thrust::make_permutation_iterator(states.begin(), maximal_indices.begin()))) + N,
                          process_non_mis_nodes());
 
-        active_nodes = thrust::count(states.begin(), states.end(), 1);
+        active_nodes = thrust::count(exec, states.begin(), states.end(), 1);
 
     } while (active_nodes > 0);
 }
@@ -213,7 +215,7 @@ size_t maximal_independent_set(thrust::execution_policy<DerivedPolicy>& exec,
     typedef typename MatrixType::values_array_type::const_view          ValView;
 
     IndexArray row_indices(exec, G.num_entries);
-    cusp::offsets_to_indices(G.row_offsets, row_indices);
+    cusp::offsets_to_indices(exec, G.row_offsets, row_indices);
 
     cusp::coo_matrix_view<RowView,ColView,ValView> G_coo(G.num_rows, G.num_cols, G.num_entries,
                                                          cusp::make_array1d_view(row_indices),

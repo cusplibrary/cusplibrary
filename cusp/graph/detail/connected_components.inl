@@ -37,9 +37,7 @@ size_t connected_components(const thrust::detail::execution_policy_base<DerivedP
 {
     using cusp::system::detail::generic::connected_components;
 
-    typename MatrixType::format format;
-
-    return connected_components(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), G, components, format);
+    return connected_components(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), G, components);
 }
 
 template<typename MatrixType, typename ArrayType>

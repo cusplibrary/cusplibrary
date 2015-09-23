@@ -35,12 +35,10 @@ void symmetric_rcm(const thrust::detail::execution_policy_base<DerivedPolicy>& e
 {
     using cusp::system::detail::generic::symmetric_rcm;
 
-    typename MatrixType::format format;
-
     if(G.num_rows != G.num_cols)
         throw cusp::invalid_input_exception("matrix must be square");
 
-    symmetric_rcm(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), G, P, format);
+    symmetric_rcm(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), G, P);
 }
 
 template<typename MatrixType, typename PermutationType>

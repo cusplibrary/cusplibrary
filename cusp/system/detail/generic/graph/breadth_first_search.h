@@ -24,12 +24,37 @@
 
 namespace cusp
 {
+namespace graph
+{
+template <typename DerivedPolicy, typename MatrixType, typename ArrayType, typename Format>
+void breadth_first_search(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
+                          const MatrixType& G,
+                          const typename MatrixType::index_type src,
+                          ArrayType& labels,
+                          const bool mark_levels,
+                          Format format);
+} // end graph namespace
+
 namespace system
 {
 namespace detail
 {
 namespace generic
 {
+
+template<typename DerivedPolicy, typename MatrixType, typename ArrayType>
+void breadth_first_search(thrust::execution_policy<DerivedPolicy>& exec,
+                          const MatrixType& G,
+                          const typename MatrixType::index_type src,
+                          ArrayType& labels,
+                          const bool mark_levels)
+{
+    typedef typename MatrixType::format Format;
+
+    Format format;
+
+    cusp::graph::breadth_first_search(exec, G, src, labels, mark_levels, format);
+}
 
 template<typename DerivedPolicy, typename MatrixType, typename ArrayType>
 void breadth_first_search(thrust::execution_policy<DerivedPolicy>& exec,
@@ -49,4 +74,20 @@ void breadth_first_search(thrust::execution_policy<DerivedPolicy>& exec,
 } // end namespace generic
 } // end namespace detail
 } // end namespace system
+
+namespace graph
+{
+template <typename DerivedPolicy, typename MatrixType, typename ArrayType, typename Format>
+void breadth_first_search(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
+                          const MatrixType& G,
+                          const typename MatrixType::index_type src,
+                          ArrayType& labels,
+                          const bool mark_levels,
+                          Format format)
+{
+    using cusp::system::detail::generic::breadth_first_search;
+
+    breadth_first_search(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), G, src, labels, mark_levels, format);
+}
+} // end graph namespace
 } // end namespace cusp

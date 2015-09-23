@@ -24,6 +24,15 @@
 
 namespace cusp
 {
+namespace graph
+{
+template <typename DerivedPolicy, typename MatrixType, typename ArrayType, typename Format>
+size_t vertex_coloring(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
+                     const MatrixType& G,
+                     ArrayType& colors,
+                     Format format);
+} // end graph namespace
+
 namespace system
 {
 namespace detail
@@ -33,9 +42,21 @@ namespace generic
 
 template<typename DerivedPolicy, typename MatrixType, typename ArrayType>
 size_t vertex_coloring(thrust::execution_policy<DerivedPolicy>& exec,
+                     const MatrixType& G,
+                     ArrayType& colors)
+{
+    typedef typename MatrixType::format Format;
+
+    Format format;
+
+    return cusp::graph::vertex_coloring(exec, G, colors, format);
+}
+
+template<typename DerivedPolicy, typename MatrixType, typename ArrayType>
+size_t vertex_coloring(thrust::execution_policy<DerivedPolicy>& exec,
                        const MatrixType& G,
                        ArrayType& colors,
-                       known_format)
+                       cusp::known_format)
 {
     typedef typename cusp::detail::as_csr_type<MatrixType>::type CsrMatrix;
 
@@ -47,4 +68,18 @@ size_t vertex_coloring(thrust::execution_policy<DerivedPolicy>& exec,
 } // end namespace generic
 } // end namespace detail
 } // end namespace system
+
+namespace graph
+{
+template <typename DerivedPolicy, typename MatrixType, typename ArrayType, typename Format>
+size_t vertex_coloring(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
+                       const MatrixType& G,
+                       ArrayType& colors,
+                       Format format)
+{
+    using cusp::system::detail::generic::vertex_coloring;
+
+    return vertex_coloring(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), G, colors, format);
+}
+} // end graph namespace
 } // end namespace cusp

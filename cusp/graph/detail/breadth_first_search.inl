@@ -39,13 +39,11 @@ void breadth_first_search(const thrust::detail::execution_policy_base<DerivedPol
 {
     using cusp::system::detail::generic::breadth_first_search;
 
-    typename MatrixType::format format;
-
     if(G.num_rows != G.num_cols)
         throw cusp::invalid_input_exception("matrix must be square");
 
     breadth_first_search(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
-                         G, src, labels, mark_levels, format);
+                         G, src, labels, mark_levels);
 }
 
 template<typename MatrixType,
