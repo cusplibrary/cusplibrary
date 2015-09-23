@@ -108,10 +108,6 @@ void TestBreadthFirstSearch(void)
 {
     typedef typename TestMatrix::value_type ValueType;
 
-    /* typedef int   IndexType; */
-    /* typedef float ValueType; */
-    /* typedef cusp::csr_matrix<IndexType,ValueType,MemorySpace> TestMatrix; */
-
     // linear graph
     cusp::array2d<ValueType,cusp::host_memory> B(4,4);
     B(0,0) = 1;

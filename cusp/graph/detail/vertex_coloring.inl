@@ -37,13 +37,11 @@ size_t vertex_coloring(const thrust::detail::execution_policy_base<DerivedPolicy
 {
     using cusp::system::detail::generic::vertex_coloring;
 
-    typename MatrixType::format format;
-
     if(G.num_rows != G.num_cols)
         throw cusp::invalid_input_exception("matrix must be square");
 
     return vertex_coloring(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
-                           G, colors, format);
+                           G, colors);
 }
 
 template<typename MatrixType,
