@@ -36,81 +36,81 @@ namespace eigen
  */
 
 /* \cond */
-template <typename Matrix, typename Array1d>
-void lanczos(const Matrix& A, Array1d& eigVals);
+template <typename MatrixType,
+          typename Array1d>
+void lanczos(const MatrixType& A,
+                   Array1d& eigVals);
 
-template <typename Matrix, typename Array1d, typename Array2d>
-void lanczos(const Matrix& A, Array1d& eigVals, Array2d& eigVecs);
+template <typename MatrixType,
+          typename Array1d,
+          typename Array2d>
+void lanczos(const MatrixType& A,
+                   Array1d& eigVals,
+                   Array2d& eigVecs);
 /* \endcond */
 
 /**
  * \brief Lanczos method
  *
  * \tparam LinearOperator is a matrix or subclass of \p linear_operator
- * \tparam Vector vector
- * \tparam Monitor is a \p monitor
- * \tparam Preconditioner is a matrix or subclass of \p linear_operator
+ * \tparam Array1d array of eigenvalues
+ * \tparam Array2d matrix of eigenvectors
  *
  * \param A matrix of the linear system
- * \param S eigenvalues
- * \param X eigenvectors
- * \param monitor monitors iteration and determines stopping conditions
- * \param M preconditioner for A
- * \param largest If true compute the eigenpair corresponding to the largest
- * eigenvalue otherwise compute the smallest.
+ * \param eigvals eigenvalues
+ * \param eigvecs eigenvectors
  *
  * \par Overview
- * Computes the extreme eigenpairs of hermitian linear systems A x = s x
- * with preconditioner \p M.
+ * Computes the extreme eigenpairs of hermitian linear systems A x = s x.
  *
- * \note \p A and \p M must be symmetric.
+ * \note \p A must be symmetric.
  *
  * \par Example
- *  The following code snippet demonstrates how to use \p lobpcg to
- *  solve a 10x10 Poisson problem.
+ *  The following code snippet demonstrates how to use \p lanczos to
+ *  compute the eigenpairs of a 10x10 Laplacian matrix.
  *
  *  \code
  *  #include <cusp/csr_matrix.h>
- *  #include <cusp/monitor.h>
- *  #include <cusp/eigen/lobpcg.h>
+ *  #include <cusp/eigen/lanczos.h>
  *  #include <cusp/gallery/poisson.h>
  *
  *  int main(void)
  *  {
  *      // create an empty sparse matrix structure (CSR format)
  *      cusp::csr_matrix<int, float, cusp::device_memory> A;
+ *
  *      // initialize matrix
- *      cusp::gallery::poisson5pt(A, 1024, 1024);
+ *      cusp::gallery::poisson5pt(A, 10, 10);
+ *
  *      // allocate storage and initialize eigenpairs
- *      cusp::array1d<float, cusp::device_memory> S(5,0);
- *      cusp::array2d<float, cusp::device_memory, cusp::column_major> V;
- **
+ *      cusp::array1d<float, cusp::device_memory> eigvals(5,0);
+ *      cusp::array2d<float, cusp::device_memory, cusp::column_major> eigvecs;
+ *
  *      // initialize Lanzcos option
  *      cusp::eigen::lanczos_options<float> options;
- s
- *      options.tol = 1e-6;
- *      options.maxIter = 100;
- *      options.verbose = true;
- *      options.computeEigVecs = false;
- *      options.reorth = cusp::eigen::Full;
+ *      options.tol             = 1e-6;
+ *      options.maxIter         = 100;
+ *      options.verbose         = true;
+ *      options.computeEigVecs  = false;
+ *      options.reorth          = cusp::eigen::Full;
  *
  *      // compute the largest eigenpair of A
- *      cusp::eigen::lanczos(A, S, V, options);
- *      std::cout << "Largest eigenvalue : " << S[4] << std::endl;
+ *      cusp::eigen::lanczos(A, eigvals, eigvecs, options);
+ *
+ *      // print largest eigenvalue
+ *      std::cout << "Largest eigenvalue : " << eigvals.back() << std::endl;
  *
  *      return 0;
  *  }
  *  \endcode
  */
-template <typename Matrix,
-          typename Array1d1,
-          typename Array2d1,
-          typename Array1d2,
-          typename Array2d2,
+template <typename LinearOperator,
+          typename Array1d,
+          typename Array2d,
           typename LanczosOptions>
-void lanczos(const Matrix& A,
-             Array1d1& eigVals,
-             Array2d1& eigVecs,
+void lanczos(const LinearOperator& A,
+             Array1d& eigVals,
+             Array2d& eigVecs,
              LanczosOptions& options);
 
 /*! \}
