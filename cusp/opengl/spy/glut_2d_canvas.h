@@ -28,8 +28,8 @@ namespace spy
 /**
  * @file glut_2d_canvas.h
  *
- * The main glut_2d_canvas window handler.  This 
- * class provides some slightly higher-level functions 
+ * The main glut_2d_canvas window handler.  This
+ * class provides some slightly higher-level functions
  * above a GLUT window.
  */
 
@@ -48,7 +48,7 @@ public:
     virtual void special_key(int key, int x, int y);
     virtual void motion(int x, int y);
     virtual void mouse_click(int button, int state, int x, int y);
-    virtual void menu(int value) {}; 
+    virtual void menu(int value) {};
 
 public:
 
@@ -57,7 +57,7 @@ public:
     int height;
 
     float natural_width;
-    float natural_height;  
+    float natural_height;
 
     float zoom;
 
@@ -71,7 +71,7 @@ public:
 
     void set_natural_size(float w, float h)
     {
-        natural_width = w; 
+        natural_width = w;
         natural_height = h;
         glutPostRedisplay();
     }
@@ -101,7 +101,11 @@ public:
     }
 
     void set_background_color(float r, float g, float b)
-    { background_color[0]=r; background_color[1]=g; background_color[2]=b; }
+    {
+        background_color[0]=r;
+        background_color[1]=g;
+        background_color[2]=b;
+    }
 
 
 
@@ -117,7 +121,7 @@ protected:
     int mouse_begin_y;
 
     float virtual_width;
-    float virtual_height;  
+    float virtual_height;
 
     void begin_mouse_click(int x, int y)
     {

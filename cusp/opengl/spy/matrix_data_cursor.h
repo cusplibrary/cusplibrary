@@ -45,14 +45,16 @@ class matrix_data_cursor
 public:
     matrix_data_cursor(int in_nrows, int in_ncols)
         : nrows(in_nrows), ncols(in_ncols),
-          state(STATE_NONE), 
           cursor_x((float)in_nrows/2),
-          cursor_y((float)in_nrows/2)
+          cursor_y((float)in_nrows/2),
+          state(STATE_NONE)
     {
-        color[0]=1.0f; color[1]=1.0f; color[2]=0.0f;
+        color[0]=1.0f;
+        color[1]=1.0f;
+        color[2]=0.0f;
     }
 
-    void set_matrix_size(int in_nrows, int in_ncols) 
+    void set_matrix_size(int in_nrows, int in_ncols)
     {
         nrows = in_nrows;
         ncols = in_ncols;
@@ -86,7 +88,7 @@ public:
             bound_cursor();
 
             glutPostRedisplay();
-            
+
             return (true);
         }
 
@@ -112,10 +114,10 @@ public:
         int mod_state = glutGetModifiers();
 
         if ((button == GLUT_LEFT_BUTTON && mod_state == GLUT_ACTIVE_CTRL) ||
-            (button == GLUT_MIDDLE_BUTTON))
+                (button == GLUT_MIDDLE_BUTTON))
         {
             state = STATE_MOVING;
-            
+
             double wx,wy;
             screen_to_world(x,y,&wx, &wy);
 
@@ -139,13 +141,18 @@ public:
         return (int)cursor_y;
     }
 
-    void set_position(int x, int y) { 
-        cursor_x = (float)x; cursor_y = (float)y;
+    void set_position(int x, int y) {
+        cursor_x = (float)x;
+        cursor_y = (float)y;
         bound_cursor();
         glutPostRedisplay();
     }
 
-    void set_color(float r, float g, float b)  { color[0]=r; color[1]=g; color[2]=b; }
+    void set_color(float r, float g, float b)  {
+        color[0]=r;
+        color[1]=g;
+        color[2]=b;
+    }
 
 private:
     /*int matrix_data_cursor_nrows;
@@ -156,7 +163,7 @@ private:
 
     enum {
         MOUSE_DATA_CURSOR_STATE_MOVING,
-        MOUSE_DATA_CURSOR_NONE 
+        MOUSE_DATA_CURSOR_NONE
     } mouse_data_cursor_state;*/
 
     int nrows;
@@ -167,7 +174,7 @@ private:
 
     enum {
         STATE_MOVING,
-        STATE_NONE 
+        STATE_NONE
     } state;
 
     void bound_cursor()

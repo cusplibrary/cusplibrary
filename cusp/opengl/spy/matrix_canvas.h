@@ -35,7 +35,7 @@ namespace spy
 
 /**
  * The matrix_canvas assumes that the matrix
- * can be stored in memory.  It loads a matrix_data_cursor and a 
+ * can be stored in memory.  It loads a matrix_data_cursor and a
  * matrix_data_panel to handle other details of the implementation.
  */
 template< typename IndexType, typename ValueType, typename MemorySpace >
@@ -121,31 +121,47 @@ public:
     void show_data_panel();
     void hide_data_panel();
 
-    void set_point_alpha(float a) { if (a >= 0. && a <= 1.) point_alpha = a; }
-    float get_point_alpha() { return (point_alpha); }
+    void set_point_alpha(float a) {
+        if (a >= 0. && a <= 1.) point_alpha = a;
+    }
+    float get_point_alpha() {
+        return (point_alpha);
+    }
 
-    float get_aspect() { return aspect; }
-    void set_aspect(float r) { if (r > 0) aspect = r; }
+    float get_aspect() {
+        return aspect;
+    }
+    void set_aspect(float r) {
+        if (r > 0) aspect = r;
+    }
 
     void home();
-    
-    void set_permutation(permutation_state_type p) { permutation_state = p; }
-    void set_normalization(normalization_state_type n) { normalization_state = n; }
-       
+
+    void set_permutation(permutation_state_type p) {
+        permutation_state = p;
+    }
+    void set_normalization(normalization_state_type n) {
+        normalization_state = n;
+    }
+
     colormap_state_type get_colormap();
     void set_colormap(colormap_state_type c);
     void set_next_colormap();
 
-    void set_border_color(float r, float g, float b) 
-    { border_color[0]=r; border_color[1]=g; border_color[2]=b; }
+    void set_border_color(float r, float g, float b)
+    {
+        border_color[0]=r;
+        border_color[1]=g;
+        border_color[2]=b;
+    }
 
     // data loading
     template< typename MatrixType >
     bool load_matrix(const MatrixType& A);
     bool load_permutations(const std::string& rperm_filename,
-        const std::string& cperm_filename);
+                           const std::string& cperm_filename);
     bool load_labels(const std::string& rlabel_filename,
-        const std::string& clabel_filename);
+                     const std::string& clabel_filename);
 
 protected:
     // matrix drawing
@@ -154,13 +170,13 @@ protected:
 
     template <bool partial, class NRMap, class NCMap, class PRMap, class PCMap>
     void draw_matrix(int r1, int c1, int r2, int c2,
-        ValueType min, ValueType inv_val_range, float alpha,
-        NRMap nrv, NCMap ncv, PRMap iprm, PCMap pcm);
+                     ValueType min, ValueType inv_val_range, float alpha,
+                     NRMap nrv, NCMap ncv, PRMap iprm, PCMap pcm);
 
     template <bool partial, class NRMap, class NCMap>
     void draw_matrix_dispatch(int r1, int c1, int r2, int c2,
-        ValueType min, ValueType inv_val_range, float alpha,
-        NRMap nrv, NCMap ncv);
+                              ValueType min, ValueType inv_val_range, float alpha,
+                              NRMap nrv, NCMap ncv);
 
     template <bool partial>
     void draw_matrix_dispatch(int r1, int c1, int r2, int c2);
@@ -171,7 +187,7 @@ protected:
 
     // control variables
     float point_alpha;
-    
+
     bool data_panel_visible;
     bool control_visible;
 
@@ -191,7 +207,7 @@ protected:
 
     // internal functions
     void init_window();
-    void init_display_list();   
+    void init_display_list();
     void init_menu();
 
     ValueType matrix_value(IndexType r, IndexType c);
@@ -217,11 +233,11 @@ protected:
 
     const static int menu_colors_white_bkg = 2001;
     const static int menu_colors_black_bkg = 2002;
-    
+
 
     const static int panel_offset = 5;
     const static int panel_height = 50;
-    
+
     // workaround for stupid gcc bug
     int p_offset;
     int p_height;

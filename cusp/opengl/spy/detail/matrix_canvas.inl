@@ -55,22 +55,22 @@ matrix_canvas<IndexType,ValueType,MemorySpace>::matrix_canvas(int w, int h)
     glut_2d_canvas(w,h,"spy"),  // initialize the window first
     // the order of the rest is the order in which the variables are
     // declared in the class declaration
-    p_offset(panel_offset), p_height(panel_height),
-    data_panel(glut_id, width-2*p_offset, std::max(height/2,p_height), p_offset, p_offset),
-    matrix_display_list(0),
-    data_panel_visible(false),
-    data_cursor(0,0),
+    rperm_loaded(false),
+    cperm_loaded(false),
     matrix_filename(""),
     matrix_loaded(false),
+    matrix_display_list(0),
     point_alpha(0.5f),
-    normalization_state(no_normalization),
+    data_panel_visible(false),
     permutation_state(no_permutation),
+    normalization_state(no_normalization),
     colormap_state(rainbow_colormap),
+    colormap_invert(false),
     colormap((float *)spring_color_map,
              sizeof(spring_color_map)/sizeof(spring_color_map[0])),
-    colormap_invert(false),
-    rperm_loaded(false),
-    cperm_loaded(false)
+    p_offset(panel_offset), p_height(panel_height),
+    data_panel(glut_id, width-2*p_offset, std::max(height/2,p_height), p_offset, p_offset),
+    data_cursor(0,0)
 {
     border_color[0]=1.0f;
     border_color[1]=1.0f;
@@ -353,7 +353,7 @@ void matrix_canvas<IndexType,ValueType,MemorySpace>::reshape(int w, int h)
 
     // handle the subwindow...
     glutSetWindow(data_panel.get_glut_window_id());
-    if (data_panel_visible && w < 4*p_offset || h < 4*p_offset)
+    if (data_panel_visible && ((w < 4*p_offset) || (h < 4*p_offset)))
     {
         // if the window is too small, then hide it!
         hide_data_panel();
