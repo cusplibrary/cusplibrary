@@ -283,18 +283,6 @@ void stev( thrust::execution_policy<DerivedPolicy> &exec,
     }
 }
 
-template<typename DerivedPolicy, typename Array1d1, typename Array1d2, typename Array1d3>
-void stev( thrust::execution_policy<DerivedPolicy> &exec,
-           const Array1d1& alphas, const Array1d2& betas, Array1d3& eigvals )
-{
-    typedef typename Array1d1::value_type ValueType;
-
-    char job  = EvalsOrEvecs<evals>::type;
-    cusp::array2d<ValueType,cusp::host_memory> eigvecs;
-
-    stev(exec, alphas, betas, eigvals, eigvecs, job);
-}
-
 template<typename DerivedPolicy, typename Array2d1, typename Array2d2, typename Array1d, typename Array2d3>
 void sygv( thrust::execution_policy<DerivedPolicy> &exec,
            const Array2d1& A, const Array2d2& B, Array1d& eigvals, Array2d3& eigvecs )

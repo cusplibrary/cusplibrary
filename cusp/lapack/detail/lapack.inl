@@ -254,31 +254,6 @@ void stev( const Array1d1& alphas, const Array1d2& betas, Array1d3& eigvals, Arr
     cusp::lapack::stev(select_system(system1, system2, system3, system4), alphas, betas, eigvals, eigvecs, job);
 }
 
-template<typename DerivedPolicy, typename Array1d1, typename Array1d2, typename Array1d3>
-void stev( const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-           const Array1d1& alphas, const Array1d2& betas, Array1d3& eigvals )
-{
-    using cusp::lapack::generic::stev;
-
-    stev(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), alphas, betas, eigvals);
-}
-
-template<typename Array1d1, typename Array1d2, typename Array1d3>
-void stev( const Array1d1& alphas, const Array1d2& betas, Array1d3& eigvals )
-{
-    using thrust::system::detail::generic::select_system;
-
-    typedef typename Array1d1::memory_space System1;
-    typedef typename Array1d2::memory_space System2;
-    typedef typename Array1d3::memory_space System3;
-
-    System1 system1;
-    System2 system2;
-    System3 system3;
-
-    cusp::lapack::stev(select_system(system1, system2, system3), alphas, betas, eigvals);
-}
-
 template<typename DerivedPolicy, typename Array2d1, typename Array2d2, typename Array1d, typename Array2d3>
 void sygv( const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
            const Array2d1& A, const Array2d2& B, Array1d& eigvals, Array2d3& eigvecs )

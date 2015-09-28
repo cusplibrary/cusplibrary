@@ -190,10 +190,12 @@ void lanczos(const Matrix& A, Array1d& eigVals, Array2d& eigVecs, LanczosOptions
 
         if((options.reorth == cusp::eigen::Full || iter+1 < N) && (iter+1 >= minIter) && (iter+1-minIter)%options.stride == 0)
         {
-            if(options.stride > 1 || iter+1 == minIter)
-                cusp::lapack::stev(alphas.subarray(0,iter-1), betas.subarray(0,iter-1), ritzVal0);
+            cusp::array2d<double, cusp::host_memory, cusp::column_major> tempV;
 
-            cusp::lapack::stev(alphas.subarray(0,iter), betas.subarray(0,iter), ritzVal);
+            if(options.stride > 1 || iter+1 == minIter)
+                cusp::lapack::stev(alphas.subarray(0,iter-1), betas.subarray(0,iter-1), ritzVal0, tempV, 'N');
+
+            cusp::lapack::stev(alphas.subarray(0,iter), betas.subarray(0,iter), ritzVal, tempV, 'N');
 
             int i = 0;
             int nev = neigLow;
@@ -338,16 +340,17 @@ void lanczos(const Matrix& A, Array1d& eigVals, Array2d& eigVecs, LanczosOptions
     } // end of Lanczos loop
 
     cusp::array2d<ValueType,MemorySpace,cusp::column_major> S;
+    cusp::array2d<double,cusp::host_memory,cusp::column_major> S_h;
 
     if(options.computeEigVecs)
     {
-        cusp::array2d<double,cusp::host_memory,cusp::column_major> S_h(iter,iter,ValueType(0));
+        S_h.resize(iter,iter,ValueType(0));
         cusp::lapack::stev(alphas.subarray(0,iter-1), betas.subarray(0,iter-1), ritzVal, S_h);
-        S = S_h;
+        cusp::copy(S_h, S);
     }
     else
     {
-        cusp::lapack::stev(alphas.subarray(0,iter-1), betas.subarray(0,iter-1), ritzVal);
+        cusp::lapack::stev(alphas.subarray(0,iter-1), betas.subarray(0,iter-1), ritzVal, S_h, 'N');
     }
 
     if(allEigenvaluesCheckedConverged == false)
