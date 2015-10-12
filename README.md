@@ -62,7 +62,7 @@ CUSP is developed as an open-source project by [NVIDIA Research](http://research
 
 ```shell
 @MISC{Cusp,
-  author = "Steven Dalton, Nathan Bell, Luke Olson and Michael Garland",
+  author = "Steven Dalton and Nathan Bell and Luke Olson and Michael Garland",
   title = "Cusp: Generic Parallel Algorithms for Sparse Matrix and Graph Computations",
   year = "2014",
   url = "http://cusplibrary.github.io/",
