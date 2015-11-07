@@ -314,18 +314,25 @@ void read_coordinate_stream(cusp::csr_matrix<IndexType,ValueType,cusp::host_memo
     cusp::indices_to_offsets(row_indices, csr.row_offsets);
 }
 
+template <typename IndexType, typename ValueType, typename Stream>
+void read_coordinate_stream(cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& coo, Stream& input, const matrix_market_banner& banner)
+{
+    size_t num_rows, num_cols, num_entries;
+    thrust::tie(num_rows, num_cols, num_entries) = read_input_size(input);
+
+    coo.resize(num_rows, num_cols, num_entries);
+    read_coordinate_stream(coo, input, banner, cusp::host_memory(), cusp::coo_format());
+}
+
 template <typename Matrix, typename Stream>
 void read_coordinate_stream(Matrix& mtx, Stream& input, const matrix_market_banner& banner)
 {
     typedef typename Matrix::index_type IndexType;
     typedef typename Matrix::value_type ValueType;
 
-    size_t num_rows, num_cols, num_entries;
-    thrust::tie(num_rows, num_cols, num_entries) = read_input_size(input);
+    cusp::coo_matrix<IndexType,ValueType,cusp::host_memory> temp;
 
-    cusp::coo_matrix<IndexType,ValueType,cusp::host_memory> temp(num_rows, num_cols, num_entries);
-
-    read_coordinate_stream(temp, input, banner, cusp::host_memory(), cusp::coo_format());
+    read_coordinate_stream(temp, input, banner);
 
     cusp::convert(temp, mtx);
 }
