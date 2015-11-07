@@ -123,9 +123,9 @@ void write_value(Stream& output, const cusp::complex<ScalarType>& value)
     output << value.real() << " " << value.imag();
 }
 
-
-template <typename IndexType, typename ValueType, typename Stream>
-void read_coordinate_stream(cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& coo, Stream& input, const matrix_market_banner& banner)
+template<typename Stream>
+thrust::tuple<size_t,size_t,size_t>
+read_input_size(Stream& input)
 {
     // read file contents line by line
     std::string line;
@@ -149,7 +149,21 @@ void read_coordinate_stream(cusp::coo_matrix<IndexType,ValueType,cusp::host_memo
     std::istringstream(tokens[1]) >> num_cols;
     std::istringstream(tokens[2]) >> num_entries;
 
-    coo.resize(num_rows, num_cols, num_entries);
+    return thrust::tie(num_rows, num_cols, num_entries);
+}
+
+template <typename MatrixType, typename Stream>
+void read_coordinate_stream(MatrixType& coo,
+                            Stream& input,
+                            const matrix_market_banner& banner,
+                            cusp::host_memory,
+                            cusp::coo_format)
+{
+    typedef typename MatrixType::index_type IndexType;
+    typedef typename MatrixType::value_type ValueType;
+
+    size_t num_rows = coo.num_rows;
+    size_t num_cols = coo.num_cols;
 
     size_t num_entries_read = 0;
 
@@ -278,6 +292,44 @@ void read_coordinate_stream(cusp::coo_matrix<IndexType,ValueType,cusp::host_memo
     coo.sort_by_row_and_column();
 }
 
+template <typename IndexType, typename ValueType, typename Stream>
+void read_coordinate_stream(cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& csr, Stream& input, const matrix_market_banner& banner)
+{
+    typedef typename cusp::array1d<IndexType,cusp::host_memory>::view IndexView;
+    typedef typename cusp::array1d<ValueType,cusp::host_memory>::view ValueView;
+    typedef cusp::coo_matrix_view<IndexView,IndexView,ValueView> CooView;
+
+    size_t num_rows, num_cols, num_entries;
+    thrust::tie(num_rows, num_cols, num_entries) = read_input_size(input);
+
+    cusp::array1d<IndexType,cusp::host_memory> row_indices(num_entries);
+    csr.resize(num_rows, num_cols, num_entries);
+
+    CooView coo(csr.num_rows, csr.num_cols, csr.num_entries,
+                cusp::make_array1d_view(row_indices),
+                cusp::make_array1d_view(csr.column_indices),
+                cusp::make_array1d_view(csr.values));
+
+    read_coordinate_stream(coo, input, banner, cusp::host_memory(), cusp::coo_format());
+    cusp::indices_to_offsets(row_indices, csr.row_offsets);
+}
+
+template <typename Matrix, typename Stream>
+void read_coordinate_stream(Matrix& mtx, Stream& input, const matrix_market_banner& banner)
+{
+    typedef typename Matrix::index_type IndexType;
+    typedef typename Matrix::value_type ValueType;
+
+    size_t num_rows, num_cols, num_entries;
+    thrust::tie(num_rows, num_cols, num_entries) = read_input_size(input);
+
+    cusp::coo_matrix<IndexType,ValueType,cusp::host_memory> temp(num_rows, num_cols, num_entries);
+
+    read_coordinate_stream(temp, input, banner, cusp::host_memory(), cusp::coo_format());
+
+    cusp::convert(temp, mtx);
+}
+
 template <typename ValueType, typename Stream>
 void read_array_stream(cusp::array2d<ValueType,cusp::host_memory>& mtx, Stream& input, const matrix_market_banner& banner)
 {
@@ -390,11 +442,7 @@ void read_matrix_market_stream(Matrix& mtx, Stream& input, Format)
 
     if (banner.storage == "coordinate")
     {
-        cusp::coo_matrix<IndexType,ValueType,cusp::host_memory> temp;
-
-        read_coordinate_stream(temp, input, banner);
-
-        cusp::convert(temp, mtx);
+        read_coordinate_stream(mtx, input, banner);
     }
     else // banner.storage == "array"
     {
