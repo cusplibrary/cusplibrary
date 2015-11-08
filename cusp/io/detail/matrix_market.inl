@@ -215,7 +215,10 @@ void read_coordinate_stream(MatrixType& coo,
     }
 
     if(num_entries_read != coo.num_entries)
+    {
+        std::cerr << " Read " << num_entries_read << " out of " << coo.num_entries << " expected entries!" << std::endl;
         throw cusp::io_exception("unexpected EOF while reading MatrixMarket entries");
+    }
 
     // check validity of row and column index data
     if (coo.num_entries > 0)
@@ -404,7 +407,10 @@ void read_array_stream(cusp::array2d<ValueType,cusp::host_memory>& mtx, Stream& 
     }
 
     if(num_entries_read != num_entries)
+    {
+        std::cerr << " Read " << num_entries_read << " out of " << num_entries << " expected entries!" << std::endl;
         throw cusp::io_exception("unexpected EOF while reading MatrixMarket entries");
+    }
 
     if (banner.symmetry != "general")
         throw cusp::not_implemented_exception("only general array symmetric MatrixMarket format is supported");
