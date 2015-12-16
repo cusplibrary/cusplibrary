@@ -32,7 +32,7 @@ template <typename ValueType>
 void ApplyPlaneRotation(ValueType &dx, ValueType &dy, ValueType &cs, ValueType &sn)
 {
     ValueType temp = cs * dx + sn * dy;
-    dy = -sn * dx + cs * dy;
+    dy = -cusp::conj(sn) * dx + cs * dy;
     dx = temp;
 }
 
