@@ -25,14 +25,15 @@ def get_cuda_paths():
     else:
         raise ValueError, 'Error: unknown OS.  Where is nvcc installed?'
 
+    lib_ext = ''
     if platform.machine()[-2:] == '64' and platform.platform()[:6] != 'Darwin':
-        lib_path += '64'
+        lib_ext = '64'
 
     # override with environement variables
     if 'CUDA_PATH' in os.environ:
-	bin_path = os.path.abspath(os.environ['CUDA_PATH']) + '\\bin'
-	lib_path = os.path.abspath(os.environ['CUDA_PATH']) + '\\lib\\x64'
-	inc_path = os.path.abspath(os.environ['CUDA_PATH']) + '\\include'
+	    bin_path = os.path.abspath(os.environ['CUDA_PATH']) + os.sep + 'bin'
+	    lib_path = os.path.abspath(os.environ['CUDA_PATH']) + os.sep + 'lib'
+	    inc_path = os.path.abspath(os.environ['CUDA_PATH']) + os.sep + 'include'
     if 'CUDA_BIN_PATH' in os.environ:
         bin_path = os.path.abspath(os.environ['CUDA_BIN_PATH'])
     if 'CUDA_LIB_PATH' in os.environ:
@@ -40,7 +41,7 @@ def get_cuda_paths():
     if 'CUDA_INC_PATH' in os.environ:
         inc_path = os.path.abspath(os.environ['CUDA_INC_PATH'])
 
-    return (bin_path, lib_path, inc_path)
+    return (bin_path, lib_path + lib_ext, inc_path)
 
 
 def get_mkl_paths():
