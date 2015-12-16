@@ -52,7 +52,7 @@ void breadth_first_search(const thrust::detail::execution_policy_base<DerivedPol
  * \tparam MatrixType Type of input matrix
  * \tparam ArrayType Type of labels array
  *
- * \param G A symmetric matrix that represents the graph
+ * \param G A matrix that represents the graph (symmetric or unsymmetric)
  * \param src The source vertex to begin the BFS traversal
  * \param labels If mark_levels is \c false then labels will contain the
  * level set of all the vertices starting from the source vertex otherwise
