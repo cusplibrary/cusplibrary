@@ -100,9 +100,9 @@ void sort_by_row_and_column(thrust::execution_policy<DerivedPolicy> &exec,
     IndexType2 maxc = max_col;
 
     if(maxr == 0)
-        maxr = *thrust::max_element(row_indices.begin(), row_indices.end());
+        maxr = *thrust::max_element(exec, row_indices.begin(), row_indices.end());
     if(maxc == 0)
-        maxc = *thrust::max_element(column_indices.begin(), column_indices.end());
+        maxc = *thrust::max_element(exec, column_indices.begin(), column_indices.end());
 
     // compute permutation and sort by (I,J)
     {
