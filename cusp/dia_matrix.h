@@ -126,17 +126,17 @@ public:
     // TODO statically assert is_signed<IndexType>
 
     /*! \cond */
-    typedef typename cusp::array1d<IndexType, MemorySpace>                     diagonal_offsets_array_type;
-    typedef typename cusp::array2d<ValueType, MemorySpace, cusp::column_major> values_array_type;
+    typedef cusp::array1d<IndexType, MemorySpace>                     diagonal_offsets_array_type;
+    typedef cusp::array2d<ValueType, MemorySpace, cusp::column_major> values_array_type;
 
-    typedef typename cusp::dia_matrix<IndexType, ValueType, MemorySpace> container;
+    typedef cusp::dia_matrix<IndexType, ValueType, MemorySpace>       container;
 
-    typedef typename cusp::dia_matrix_view<
+    typedef cusp::dia_matrix_view<
             typename diagonal_offsets_array_type::view,
             typename values_array_type::view,
             IndexType, ValueType, MemorySpace> view;
 
-    typedef typename cusp::dia_matrix_view<
+    typedef cusp::dia_matrix_view<
             typename diagonal_offsets_array_type::const_view,
             typename values_array_type::const_view,
             IndexType, ValueType, MemorySpace> const_view;
@@ -326,9 +326,9 @@ public:
     /*! \cond */
     typedef ArrayType1 diagonal_offsets_array_type;
     typedef ArrayType2 values_array_type;
-    typedef typename cusp::dia_matrix<IndexType, ValueType, MemorySpace> container;
-    typedef typename cusp::dia_matrix_view<ArrayType1, ArrayType2, IndexType, ValueType, MemorySpace> view;
-    typedef typename cusp::dia_matrix_view<ArrayType1, ArrayType2, IndexType, ValueType, MemorySpace> const_view;
+    typedef cusp::dia_matrix<IndexType, ValueType, MemorySpace> container;
+    typedef cusp::dia_matrix_view<ArrayType1, ArrayType2, IndexType, ValueType, MemorySpace> view;
+    typedef cusp::dia_matrix_view<ArrayType1, ArrayType2, IndexType, ValueType, MemorySpace> const_view;
 
     typedef typename cusp::detail::coo_view_type<view,cusp::dia_format>::view       coo_view_type;
     typedef typename cusp::detail::coo_view_type<view const,cusp::dia_format>::view const_coo_view_type;

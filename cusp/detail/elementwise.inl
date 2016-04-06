@@ -18,14 +18,12 @@
  *  \brief Inline file for elementwise.h.
  */
 
-#include <thrust/detail/config.h>
-#include <thrust/system/detail/generic/select_system.h>
+#include <cusp/detail/config.h>
 
-#include <cusp/elementwise.h>
-
-#include <cusp/detail/type_traits.h>
 #include <cusp/system/detail/adl/elementwise.h>
 #include <cusp/system/detail/generic/elementwise.h>
+
+#include <thrust/system/detail/generic/select_system.h>
 
 namespace cusp
 {

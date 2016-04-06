@@ -28,6 +28,8 @@ namespace system
 {
 namespace omp
 {
+namespace detail
+{
 
 //MW: note that this function is also used by coo.h
 //MW: computes the total number of nonzeors of C
@@ -195,6 +197,7 @@ void multiply(omp::execution_policy<DerivedPolicy>& exec,
                    initialize, combine, reduce);
 }
 
+} // end namespace detail
 } // end namespace omp
 } // end namespace system
 } // end namespace cusp

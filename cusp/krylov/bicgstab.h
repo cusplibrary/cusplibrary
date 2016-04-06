@@ -22,7 +22,7 @@
 
 #include <cusp/detail/config.h>
 
-#include <thrust/execution_policy.h>
+#include <cusp/detail/execution_policy.h>
 
 namespace cusp
 {

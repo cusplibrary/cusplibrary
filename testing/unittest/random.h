@@ -92,5 +92,5 @@ thrust::host_vector<T> random_samples(const size_t N)
     return vec;
 }
 
-}; //end namespace unittest
+} //end namespace unittest
 

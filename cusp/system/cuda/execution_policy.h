@@ -16,8 +16,8 @@
 
 #pragma once
 
-/*! \file thrust/system/cuda/execution_policy.h
- *  \brief Execution policies for Thrust's CUDA system.
+/*! \file cusp/system/cuda/execution_policy.h
+ *  \brief Execution policies for CUSP's CUDA system.
  */
 
 #include <thrust/detail/config.h>
@@ -31,17 +31,6 @@
 #if THRUST_VERSION < 100800
 #include <cusp/detail/thrust/system/cuda/detail/execute_on_stream.h>
 #endif
-
-namespace cusp
-{
-namespace system
-{
-namespace cuda
-{
-using namespace thrust::system::cuda;
-} // end namespace cuda
-} // end namespace system
-} // end namespace cusp
 
 // now get all the algorithm definitions
 

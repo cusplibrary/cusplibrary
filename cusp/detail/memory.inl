@@ -17,11 +17,8 @@
 #include <memory>
 
 #include <thrust/device_allocator.h>
-#include <thrust/iterator/iterator_traits.h>
-
-#if THRUST_VERSION >= 100600
 #include <thrust/device_malloc_allocator.h>
-#endif
+#include <thrust/iterator/iterator_traits.h>
 
 namespace cusp
 {

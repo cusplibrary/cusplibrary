@@ -19,8 +19,6 @@
 
 #include <cusp/detail/config.h>
 
-#include <cusp/detail/format.h>
-
 #include <cusp/system/detail/sequential/execution_policy.h>
 
 namespace cusp
@@ -36,9 +34,9 @@ template<typename DerivedPolicy,
          typename MatrixType,
          typename ArrayType1,
          typename ArrayType2>
-void gauss_seidel_indexed(sequential::execution_policy<DerivedPolicy>& exec,
+void gauss_seidel_indexed(thrust::cpp::execution_policy<DerivedPolicy>& exec,
                           const MatrixType& A,
-                          ArrayType1&  x,
+                                ArrayType1&  x,
                           const ArrayType1&  b,
                           const ArrayType2& indices,
                           const int row_start,
@@ -79,8 +77,5 @@ void gauss_seidel_indexed(sequential::execution_policy<DerivedPolicy>& exec,
 } // end namespace sequential
 } // end namespace detail
 } // end namespace system
-
-using cusp::system::detail::sequential::gauss_seidel_indexed;
-
 } // end namespace cusp
 

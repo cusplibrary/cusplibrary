@@ -90,7 +90,7 @@ void TestBiConjugateGradient(void)
 
     ASSERT_EQUAL(cusp::blas::nrm2(residual) < 1e-4 * cusp::blas::nrm2(b), true);
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestBiConjugateGradient);
+DECLARE_HOST_DEVICE_UNITTEST(TestBiConjugateGradient)
 
 template <class MemorySpace>
 void TestBiConjugateGradientZeroResidual(void)
@@ -121,7 +121,7 @@ void TestBiConjugateGradientZeroResidual(void)
     ASSERT_EQUAL(monitor.iteration_count(),     0);
     ASSERT_EQUAL(cusp::blas::nrm2(residual), 0.0f);
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestBiConjugateGradientZeroResidual);
+DECLARE_HOST_DEVICE_UNITTEST(TestBiConjugateGradientZeroResidual)
 
 template <class LinearOperator, class Vector>
 void bicgstab(my_system& system, LinearOperator& A, Vector& x, Vector& b)
@@ -206,7 +206,7 @@ void TestBiConjugateGradientStabilized(void)
 
     ASSERT_EQUAL(cusp::blas::nrm2(residual) < 1e-4 * cusp::blas::nrm2(b), true);
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestBiConjugateGradientStabilized);
+DECLARE_HOST_DEVICE_UNITTEST(TestBiConjugateGradientStabilized)
 
 template <class MemorySpace>
 void TestBiConjugateGradientStabilizedZeroResidual(void)
@@ -237,5 +237,5 @@ void TestBiConjugateGradientStabilizedZeroResidual(void)
     ASSERT_EQUAL(monitor.iteration_count(),     0);
     ASSERT_EQUAL(cusp::blas::nrm2(residual), 0.0f);
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestBiConjugateGradientStabilizedZeroResidual);
+DECLARE_HOST_DEVICE_UNITTEST(TestBiConjugateGradientStabilizedZeroResidual)
 

@@ -17,10 +17,10 @@
 #pragma once
 
 #include <cusp/detail/config.h>
+#include <cusp/detail/execution_policy.h>
 
 #include <cusp/array1d.h>
 #include <cusp/elementwise.h>
-#include <cusp/execution_policy.h>
 #include <cusp/format_utils.h>
 
 #include <cusp/blas/blas.h>

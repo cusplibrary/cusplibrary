@@ -44,7 +44,7 @@ template <typename DerivedPolicy,
           typename MatrixType2,
           typename MatrixType3,
           typename BinaryFunction>
-void elementwise(sequential::execution_policy<DerivedPolicy>& exec,
+void elementwise(thrust::cpp::execution_policy<DerivedPolicy>& exec,
                  const MatrixType1& A,
                  const MatrixType2& B,
                  MatrixType3& C,
@@ -137,9 +137,5 @@ void elementwise(sequential::execution_policy<DerivedPolicy>& exec,
 } // end namespace sequential
 } // end namespace detail
 } // end namespace system
-
-// hack until ADL is operational
-using cusp::system::detail::sequential::elementwise;
-
 } // end namespace cusp
 

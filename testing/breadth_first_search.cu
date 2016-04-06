@@ -157,7 +157,7 @@ void TestBreadthFirstSearch(void)
     _TestBreadthFirstSearch<TestMatrix>(G);
     _TestBreadthFirstSearch<TestMatrix>(H);
 }
-DECLARE_SPARSE_MATRIX_UNITTEST(TestBreadthFirstSearch);
+DECLARE_SPARSE_MATRIX_UNITTEST(TestBreadthFirstSearch)
 
 template <typename MatrixType, typename ArrayType>
 void breadth_first_search(my_system& system,

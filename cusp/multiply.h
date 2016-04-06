@@ -21,8 +21,10 @@
 #pragma once
 
 #include <cusp/detail/config.h>
+#include <cusp/detail/execution_policy.h>
+#include <cusp/detail/format.h>
 
-#include <cusp/execution_policy.h>
+#include <thrust/detail/type_traits.h>
 
 namespace cusp
 {

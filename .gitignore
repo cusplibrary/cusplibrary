@@ -47,6 +47,8 @@ tester
 *.cd
 *.ilk
 *.opensdf
+*.sconsign*
+*.dblite
 
 # Ignore build files
 #<AutoIgnore>

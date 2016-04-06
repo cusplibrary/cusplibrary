@@ -18,5 +18,5 @@
 
 #include <cusp/detail/config.h>
 
-// this system inherits transpose
+// this system inherits format_utils
 #include <cusp/system/cpp/detail/format_utils.h>

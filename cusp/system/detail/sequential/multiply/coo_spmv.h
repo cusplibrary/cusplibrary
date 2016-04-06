@@ -21,6 +21,8 @@
 
 #include <cusp/system/detail/sequential/execution_policy.h>
 
+#include <cstddef>
+
 namespace cusp
 {
 namespace system
@@ -37,7 +39,7 @@ template <typename DerivedPolicy,
           typename UnaryFunction,
           typename BinaryFunction1,
           typename BinaryFunction2>
-void multiply(sequential::execution_policy<DerivedPolicy>& exec,
+void multiply(thrust::cpp::execution_policy<DerivedPolicy>& exec,
               const MatrixType& A,
               const VectorType1& x,
               VectorType2& y,

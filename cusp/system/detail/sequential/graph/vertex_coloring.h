@@ -35,10 +35,10 @@ namespace sequential
 {
 
 template<typename DerivedPolicy, typename MatrixType, typename ArrayType>
-size_t vertex_coloring(sequential::execution_policy<DerivedPolicy>& exec,
+size_t vertex_coloring(thrust::cpp::execution_policy<DerivedPolicy>& exec,
                        const MatrixType& G,
                        ArrayType& colors,
-                       csr_format)
+                       cusp::csr_format)
 {
     typedef typename MatrixType::index_type IndexType;
 
@@ -76,8 +76,5 @@ size_t vertex_coloring(sequential::execution_policy<DerivedPolicy>& exec,
 } // end namespace sequential
 } // end namespace detail
 } // end namespace system
-
-// hack until ADL is operational
-using cusp::system::detail::sequential::vertex_coloring;
-
 } // end namespace cusp
+

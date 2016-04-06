@@ -89,7 +89,7 @@ void TestConjugateGradient(void)
 
     ASSERT_EQUAL(cusp::blas::nrm2(residual) < 1e-4 * cusp::blas::nrm2(b), true);
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestConjugateGradient);
+DECLARE_HOST_DEVICE_UNITTEST(TestConjugateGradient)
 
 
 template <class MemorySpace>
@@ -121,5 +121,5 @@ void TestConjugateGradientZeroResidual(void)
     ASSERT_EQUAL(monitor.iteration_count(),     0);
     ASSERT_EQUAL(cusp::blas::nrm2(residual), 0.0f);
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestConjugateGradientZeroResidual);
+DECLARE_HOST_DEVICE_UNITTEST(TestConjugateGradientZeroResidual)
 

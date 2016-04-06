@@ -18,8 +18,6 @@
 #include <cusp/csr_matrix.h>
 #include <cusp/format_utils.h>
 
-#include <cusp/multiply.h>
-
 namespace cusp
 {
 namespace precond

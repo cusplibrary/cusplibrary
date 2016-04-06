@@ -219,7 +219,7 @@ void TestArray1dView(void)
     }
 
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestArray1dView);
+DECLARE_HOST_DEVICE_UNITTEST(TestArray1dView)
 
 
 template <typename MemorySpace>
@@ -299,7 +299,7 @@ void TestMakeArray1dView(void)
         ASSERT_EQUAL(A[1], 17);
     }
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestMakeArray1dView);
+DECLARE_HOST_DEVICE_UNITTEST(TestMakeArray1dView)
 
 
 template <typename MemorySpace>
@@ -340,7 +340,7 @@ void TestArray1dViewAssignment(void)
     ASSERT_EQUAL_QUIET(W.begin(), B.begin());
     ASSERT_EQUAL_QUIET(W.end(),   B.end());
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestArray1dViewAssignment);
+DECLARE_HOST_DEVICE_UNITTEST(TestArray1dViewAssignment)
 
 template <typename MemorySpace>
 void TestArray1dViewResize(void)
@@ -380,7 +380,7 @@ void TestArray1dViewResize(void)
 
     ASSERT_THROWS(V.resize(5), cusp::not_implemented_exception);
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestArray1dViewResize);
+DECLARE_HOST_DEVICE_UNITTEST(TestArray1dViewResize)
 
 
 template <typename MemorySpace>
@@ -408,7 +408,7 @@ void TestArray1dViewSize(void)
 
     ASSERT_EQUAL(V.size(), 4);
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestArray1dViewSize);
+DECLARE_HOST_DEVICE_UNITTEST(TestArray1dViewSize)
 
 
 template <typename MemorySpace>
@@ -432,7 +432,7 @@ void TestArray1dViewCapacity(void)
     ASSERT_EQUAL(V.size(),     2);
     ASSERT_EQUAL(V.capacity(), 4);
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestArray1dViewCapacity);
+DECLARE_HOST_DEVICE_UNITTEST(TestArray1dViewCapacity)
 
 
 template <typename MemorySpace>
@@ -456,7 +456,7 @@ void TestArray1dViewCountingIterator(void)
     ASSERT_EQUAL(X[3], 5);
     ASSERT_EQUAL(X[199],5);
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestArray1dViewCountingIterator);
+DECLARE_HOST_DEVICE_UNITTEST(TestArray1dViewCountingIterator)
 
 template <typename MemorySpace>
 void TestArray1dViewZipIterator(void)
@@ -484,7 +484,7 @@ void TestArray1dViewZipIterator(void)
     ASSERT_EQUAL_QUIET(V[0], thrust::make_tuple(10,50));
     ASSERT_EQUAL_QUIET(V[3], thrust::make_tuple(40,80));
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestArray1dViewZipIterator);
+DECLARE_HOST_DEVICE_UNITTEST(TestArray1dViewZipIterator)
 
 
 template <typename MemorySpace>
@@ -527,7 +527,7 @@ void TestArray1dViewEquality(void)
     ASSERT_EQUAL_QUIET(V == W, true);
     ASSERT_EQUAL_QUIET(V != W, false);
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestArray1dViewEquality);
+DECLARE_HOST_DEVICE_UNITTEST(TestArray1dViewEquality)
 
 template <typename MemorySpace>
 void TestArray1dViewSubarray(void)
@@ -561,4 +561,5 @@ void TestArray1dViewSubarray(void)
     ASSERT_EQUAL_QUIET(W.begin(), A.begin() + 1);
     ASSERT_EQUAL_QUIET(W.end(),   A.begin() + 2);
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestArray1dViewSubarray);
+DECLARE_HOST_DEVICE_UNITTEST(TestArray1dViewSubarray)
+

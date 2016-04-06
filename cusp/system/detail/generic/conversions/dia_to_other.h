@@ -17,14 +17,15 @@
 
 #pragma once
 
+#include <cusp/detail/format.h>
+
 #include <cusp/copy.h>
+#include <cusp/dia_matrix.h>
 #include <cusp/format_utils.h>
 #include <cusp/functional.h>
 #include <cusp/sort.h>
 
 #include <cusp/blas/blas.h>
-
-#include <cusp/detail/format.h>
 
 #include <thrust/count.h>
 #include <thrust/gather.h>

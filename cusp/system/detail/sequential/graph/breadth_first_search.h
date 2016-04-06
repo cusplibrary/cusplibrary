@@ -23,6 +23,7 @@
 #include <cusp/detail/temporary_array.h>
 
 #include <cusp/array1d.h>
+#include <cusp/copy.h>
 #include <cusp/exception.h>
 
 #include <cusp/system/detail/sequential/execution_policy.h>
@@ -37,7 +38,7 @@ namespace sequential
 {
 
 template<typename DerivedPolicy, typename MatrixType, typename ArrayType>
-void breadth_first_search(sequential::execution_policy<DerivedPolicy>& exec,
+void breadth_first_search(thrust::cpp::execution_policy<DerivedPolicy>& exec,
                           const MatrixType& G,
                           const typename MatrixType::index_type src,
                           ArrayType& labels,
@@ -116,9 +117,5 @@ void breadth_first_search(sequential::execution_policy<DerivedPolicy>& exec,
 } // end namespace sequential
 } // end namespace detail
 } // end namespace system
-
-// hack until ADL is operational
-using cusp::system::detail::sequential::breadth_first_search;
-
 } // end namespace cusp
 

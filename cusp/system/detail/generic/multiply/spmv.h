@@ -249,11 +249,11 @@ void multiply(thrust::execution_policy<DerivedPolicy> &exec,
               cusp::array1d_format)
 {
     typedef typename LinearOperator::index_type IndexType;
-    typedef cusp::detail::temporary_array<IndexType, DerivedPolicy> TempArray;
+    typedef cusp::detail::temporary_array<IndexType, DerivedPolicy>         TempArray;
 
-    typedef typename TempArray::view                                  RowView;
-    typedef typename LinearOperator::column_indices_array_type::view  ColView;
-    typedef typename LinearOperator::values_array_type::view          ValView;
+    typedef typename TempArray::view                                        RowView;
+    typedef typename LinearOperator::column_indices_array_type::const_view  ColView;
+    typedef typename LinearOperator::values_array_type::const_view          ValView;
 
     cusp::detail::temporary_array<IndexType, DerivedPolicy> row_indices(exec, A.num_entries);
     cusp::offsets_to_indices(A.row_offsets, row_indices);

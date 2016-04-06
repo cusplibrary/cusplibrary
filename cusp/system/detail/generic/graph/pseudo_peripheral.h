@@ -18,11 +18,13 @@
 #pragma once
 
 #include <cusp/detail/config.h>
+#include <cusp/detail/execution_policy.h>
 #include <cusp/detail/temporary_array.h>
 
 #include <cusp/graph/breadth_first_search.h>
 
-#include <thrust/execution_policy.h>
+#include <thrust/count.h>
+#include <thrust/extrema.h>
 
 namespace cusp
 {
@@ -150,3 +152,4 @@ pseudo_peripheral_vertex(const thrust::detail::execution_policy_base<DerivedPoli
 }
 } // end graph namespace
 } // end namespace cusp
+

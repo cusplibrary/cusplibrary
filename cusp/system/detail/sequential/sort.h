@@ -14,8 +14,8 @@
  *  limitations under the License.
  */
 
-/*! \file transpose.h
- *  \brief Sequential implementations of transpose algorithms.
+/*! \file counting_sort.h
+ *  \brief Sequential implementations of counting sort algorithms.
  */
 
 #pragma once
@@ -37,9 +37,8 @@ namespace detail
 namespace sequential
 {
 
-// COO format
 template <typename DerivedPolicy, typename ArrayType>
-void counting_sort(sequential::execution_policy<DerivedPolicy>& exec,
+void counting_sort(thrust::cpp::execution_policy<DerivedPolicy>& exec,
                    ArrayType& keys,
                    typename ArrayType::value_type min,
                    typename ArrayType::value_type max)
@@ -79,7 +78,7 @@ void counting_sort(sequential::execution_policy<DerivedPolicy>& exec,
 
 // COO format
 template <typename DerivedPolicy, typename ArrayType1, typename ArrayType2>
-void counting_sort_by_key(sequential::execution_policy<DerivedPolicy>& exec,
+void counting_sort_by_key(thrust::cpp::execution_policy<DerivedPolicy>& exec,
                           ArrayType1& keys, ArrayType2& vals,
                           typename ArrayType1::value_type min,
                           typename ArrayType1::value_type max)
@@ -128,10 +127,5 @@ void counting_sort_by_key(sequential::execution_policy<DerivedPolicy>& exec,
 } // end namespace sequential
 } // end namespace detail
 } // end namespace system
-
-// hack until ADL is operational
-using cusp::system::detail::sequential::counting_sort;
-using cusp::system::detail::sequential::counting_sort_by_key;
-
 } // end namespace cusp
 

@@ -18,6 +18,7 @@
 #pragma once
 
 #include <cusp/copy.h>
+#include <cusp/csr_matrix.h>
 #include <cusp/format_utils.h>
 #include <cusp/sort.h>
 

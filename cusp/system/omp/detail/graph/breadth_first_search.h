@@ -17,5 +17,21 @@
 #pragma once
 
 #include <cusp/detail/config.h>
+#include <cusp/system/cpp/detail/graph/breadth_first_search.h>
 
-// this system has no special version of this algorithm
+namespace cusp
+{
+namespace system
+{
+namespace omp
+{
+namespace detail
+{
+
+using cusp::system::detail::sequential::breadth_first_search;
+
+} // end namespace detail
+} // end namespace omp
+} // end namespace system
+} // end namespace cusp
+

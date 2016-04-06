@@ -21,7 +21,7 @@
 
 #include <cusp/graph/breadth_first_search.h>
 
-#include <thrust/execution_policy.h>
+#include <cusp/detail/execution_policy.h>
 #include <thrust/fill.h>
 #include <thrust/find.h>
 #include <thrust/functional.h>

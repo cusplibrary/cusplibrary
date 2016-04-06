@@ -18,14 +18,14 @@
  *  \brief Inline file for transpose.h.
  */
 
-#include <thrust/detail/config.h>
-#include <thrust/system/detail/generic/select_system.h>
+#include <cusp/detail/config.h>
 
 #include <cusp/transpose.h>
 
-#include <cusp/detail/type_traits.h>
 #include <cusp/system/detail/adl/transpose.h>
 #include <cusp/system/detail/generic/transpose.h>
+
+#include <thrust/system/detail/generic/select_system.h>
 
 namespace cusp
 {

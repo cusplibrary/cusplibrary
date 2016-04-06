@@ -15,8 +15,8 @@
  */
 
 #include <cusp/detail/config.h>
+#include <cusp/detail/execution_policy.h>
 
-#include <cusp/execution_policy.h>
 #include <cusp/transpose.h>
 
 namespace cusp

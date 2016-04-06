@@ -38,9 +38,11 @@ namespace system
 {
 namespace omp
 {
+namespace detail
+{
 
 template <typename DerivedPolicy,
-		  typename MatrixType,
+		      typename MatrixType,
           typename VectorType1,
           typename VectorType2,
           typename UnaryFunction,
@@ -83,6 +85,7 @@ void multiply(omp::execution_policy<DerivedPolicy>& exec,
     }
 }
 
+} // end namespace detail
 } // end namespace omp
 } // end namespace system
 } // end namespace cusp

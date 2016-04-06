@@ -29,7 +29,7 @@ void TestArray1d(void)
     ASSERT_EQUAL(a[3], 3);
     ASSERT_EQUAL(a[4], 4);
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestArray1d);
+DECLARE_HOST_DEVICE_UNITTEST(TestArray1d)
 
 
 template <typename MemorySpace>
@@ -59,7 +59,7 @@ void TestArray1dConstructor(void)
     ASSERT_EQUAL(cd[0], 10);
     ASSERT_EQUAL(cd[1], 10);
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestArray1dConstructor);
+DECLARE_HOST_DEVICE_UNITTEST(TestArray1dConstructor)
 
 
 template <typename MemorySpace>
@@ -130,7 +130,7 @@ void TestArray1dInteroperability(void)
         ASSERT_EQUAL(c[1], 10);
     }
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestArray1dInteroperability);
+DECLARE_HOST_DEVICE_UNITTEST(TestArray1dInteroperability)
 
 
 template <typename MemorySpace>
@@ -162,7 +162,7 @@ void TestArray1dAssignment(void)
     ASSERT_EQUAL(a[0], 20);
     ASSERT_EQUAL(a[1], 20);
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestArray1dAssignment);
+DECLARE_HOST_DEVICE_UNITTEST(TestArray1dAssignment)
 
 
 template <typename MemorySpace>
@@ -190,5 +190,5 @@ void TestArray1dEquality(void)
     ASSERT_EQUAL_QUIET(A != d, true);
     ASSERT_EQUAL_QUIET(A != v, true);
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestArray1dEquality);
+DECLARE_HOST_DEVICE_UNITTEST(TestArray1dEquality)
 

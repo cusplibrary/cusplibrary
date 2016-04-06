@@ -21,7 +21,7 @@
 #include <cusp/array1d.h>
 #include <cusp/exception.h>
 
-#include <cusp/system/cuda/execution_policy.h>
+#include <cusp/system/cuda/detail/execution_policy.h>
 #include <cusp/system/cuda/detail/graph/b40c.h>
 
 #include <thrust/fill.h>
@@ -92,8 +92,6 @@ void breadth_first_search(cuda::execution_policy<DerivedPolicy>& exec,
     csr_problem.graph_slices[0]->d_labels = (VertexId *) NULL;
 }
 
-} // end namespace detail
-
 template<typename DerivedPolicy, typename MatrixType, typename ArrayType>
 void breadth_first_search(cuda::execution_policy<DerivedPolicy>& exec,
                           const MatrixType& G,
@@ -108,10 +106,8 @@ void breadth_first_search(cuda::execution_policy<DerivedPolicy>& exec,
         detail::breadth_first_search<true>(exec, G, src, labels);
 }
 
+} // end namespace detail
 } // end namespace cuda
 } // end namespace system
-
-// hack until ADL is operational
-using cusp::system::cuda::breadth_first_search;
-
 } // end namespace cusp
+

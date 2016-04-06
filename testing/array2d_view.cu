@@ -68,7 +68,7 @@ void TestArray2dView(void)
         ASSERT_EQUAL(A[5], 6);
     }
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestArray2dView);
+DECLARE_HOST_DEVICE_UNITTEST(TestArray2dView)
 
 template <typename MemorySpace>
 void TestArray2dViewResize(void)
@@ -134,7 +134,7 @@ void TestArray2dViewResize(void)
         ASSERT_THROWS(V.resize(4,2,2), cusp::not_implemented_exception);
     }
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestArray2dViewResize);
+DECLARE_HOST_DEVICE_UNITTEST(TestArray2dViewResize)
 
 
 template <typename MemorySpace>
@@ -232,7 +232,7 @@ void TestMakeArray2dView(void)
         ASSERT_EQUAL_QUIET(V.values.begin(), A.values.begin());
     }
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestMakeArray2dView);
+DECLARE_HOST_DEVICE_UNITTEST(TestMakeArray2dView)
 
 
 template <typename MemorySpace>
@@ -282,7 +282,7 @@ void TestArray2dViewEquality(void)
     ASSERT_EQUAL_QUIET(V == W, true);
     ASSERT_EQUAL_QUIET(V != W, false);
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestArray2dViewEquality);
+DECLARE_HOST_DEVICE_UNITTEST(TestArray2dViewEquality)
 
 
 template <class Space>
@@ -324,7 +324,7 @@ void TestArray2dViewRowView(void)
         ASSERT_EQUAL(A(2,1), 2);
     }
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestArray2dViewRowView);
+DECLARE_HOST_DEVICE_UNITTEST(TestArray2dViewRowView)
 
 
 template <class Space>
@@ -366,7 +366,7 @@ void TestArray2dViewColumnView(void)
         ASSERT_EQUAL(A(2,1), 1);
     }
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestArray2dViewColumnView);
+DECLARE_HOST_DEVICE_UNITTEST(TestArray2dViewColumnView)
 
 template <class Space>
 void TestArray2dViewRowViewAssign(void)
@@ -399,7 +399,7 @@ void TestArray2dViewRowViewAssign(void)
         ASSERT_EQUAL(A(2,1), 6);
     }
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestArray2dViewRowViewAssign);
+DECLARE_HOST_DEVICE_UNITTEST(TestArray2dViewRowViewAssign)
 
 template <class Space>
 void TestArray2dViewColumnViewAssign(void)
@@ -434,4 +434,4 @@ void TestArray2dViewColumnViewAssign(void)
         ASSERT_EQUAL(A(2,1), 7);
     }
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestArray2dViewColumnViewAssign);
+DECLARE_HOST_DEVICE_UNITTEST(TestArray2dViewColumnViewAssign)

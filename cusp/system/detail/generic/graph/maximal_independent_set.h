@@ -23,7 +23,7 @@
 #include <cusp/exception.h>
 #include <cusp/multiply.h>
 
-#include <thrust/execution_policy.h>
+#include <cusp/detail/execution_policy.h>
 
 namespace cusp
 {

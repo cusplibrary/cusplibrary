@@ -21,8 +21,8 @@
 #pragma once
 
 #include <cusp/detail/config.h>
-
-#include <cusp/array1d.h>
+#include <cusp/detail/format.h>
+#include <cusp/memory.h>
 
 #include <thrust/iterator/constant_iterator.h>
 #include <thrust/detail/temporary_array.h>
@@ -35,6 +35,10 @@
 
 namespace cusp
 {
+
+template <typename, typename> class array1d;
+template <typename> class array1d_view;
+
 namespace detail
 {
 

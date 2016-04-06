@@ -11,7 +11,7 @@ void TestArray2dBasicConstructor(void)
     ASSERT_EQUAL(A.num_entries,    6);
     ASSERT_EQUAL(A.values.size(),  6);
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestArray2dBasicConstructor);
+DECLARE_HOST_DEVICE_UNITTEST(TestArray2dBasicConstructor)
 
 template <class Space>
 void TestArray2dFillConstructor(void)
@@ -29,7 +29,7 @@ void TestArray2dFillConstructor(void)
     ASSERT_EQUAL(A.values[4], 13.0f);
     ASSERT_EQUAL(A.values[5], 13.0f);
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestArray2dFillConstructor);
+DECLARE_HOST_DEVICE_UNITTEST(TestArray2dFillConstructor)
 
 template <class Space>
 void TestArray2dCopyConstructor(void)
@@ -95,7 +95,7 @@ void TestArray2dCopyConstructor(void)
     ASSERT_EQUAL(A(2,0),        E(2,0));
     ASSERT_EQUAL(A(2,1),        E(2,1));
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestArray2dCopyConstructor);
+DECLARE_HOST_DEVICE_UNITTEST(TestArray2dCopyConstructor)
 
 template <class Space>
 void TestArray2dRowMajor(void)
@@ -143,7 +143,7 @@ void TestArray2dRowMajor(void)
     ASSERT_EQUAL(A.values[6], 60);
     ASSERT_EQUAL(A.values[7],  0);
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestArray2dRowMajor);
+DECLARE_HOST_DEVICE_UNITTEST(TestArray2dRowMajor)
 
 template <class Space>
 void TestArray2dColumnMajor(void)
@@ -195,7 +195,7 @@ void TestArray2dColumnMajor(void)
     ASSERT_EQUAL(A.values[10],  0);
     ASSERT_EQUAL(A.values[11],  0);
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestArray2dColumnMajor);
+DECLARE_HOST_DEVICE_UNITTEST(TestArray2dColumnMajor)
 
 template <class Space>
 void TestArray2dMixedOrientations(void)
@@ -226,7 +226,7 @@ void TestArray2dMixedOrientations(void)
     ASSERT_EQUAL(R(1,1), 50);
     ASSERT_EQUAL(R(1,2), 60);
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestArray2dMixedOrientations);
+DECLARE_HOST_DEVICE_UNITTEST(TestArray2dMixedOrientations)
 
 template <class Space>
 void TestArray2dResize(void)
@@ -251,7 +251,7 @@ void TestArray2dResize(void)
 
     ASSERT_THROWS(A.resize(3,2,1), cusp::invalid_input_exception);
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestArray2dResize);
+DECLARE_HOST_DEVICE_UNITTEST(TestArray2dResize)
 
 template <class Space>
 void TestArray2dSwap(void)
@@ -283,7 +283,7 @@ void TestArray2dSwap(void)
     ASSERT_EQUAL(B.num_entries, A_copy.num_entries);
     ASSERT_EQUAL(B.values,      A_copy.values);
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestArray2dSwap);
+DECLARE_HOST_DEVICE_UNITTEST(TestArray2dSwap)
 
 void TestArray2dRebind(void)
 {
@@ -426,7 +426,7 @@ void TestArray2dEquality(void)
     ASSERT_EQUAL(E == F, false);
     ASSERT_EQUAL(F == F,  true);
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestArray2dEquality);
+DECLARE_HOST_DEVICE_UNITTEST(TestArray2dEquality)
 
 template <class Space>
 void TestArray2dCopySemantics(void)
@@ -456,7 +456,7 @@ void TestArray2dCopySemantics(void)
     ASSERT_EQUAL_QUIET(A, C);
     ASSERT_EQUAL(C.pitch, 4);
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestArray2dCopySemantics);
+DECLARE_HOST_DEVICE_UNITTEST(TestArray2dCopySemantics)
 
 template <class Space>
 void TestArray2dRowView(void)
@@ -495,7 +495,7 @@ void TestArray2dRowView(void)
         ASSERT_EQUAL(A(2,1), 2);
     }
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestArray2dRowView);
+DECLARE_HOST_DEVICE_UNITTEST(TestArray2dRowView)
 
 template <class Space>
 void TestArray2dColumnView(void)
@@ -534,5 +534,5 @@ void TestArray2dColumnView(void)
         ASSERT_EQUAL(A(2,1), 1);
     }
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestArray2dColumnView);
+DECLARE_HOST_DEVICE_UNITTEST(TestArray2dColumnView)
 

@@ -23,12 +23,12 @@
 
 #include <cusp/detail/config.h>
 #include <cusp/detail/multilevel.h>
+#include <cusp/detail/execution_policy.h>
 
 #include <cusp/array1d.h>
 #include <cusp/complex.h>
 #include <cusp/precond/aggregation/detail/sa_view_traits.h>
 
-#include <thrust/execution_policy.h>
 #include <thrust/detail/use_default.h>
 
 #include <vector> // TODO replace with host_vector

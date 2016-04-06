@@ -18,6 +18,7 @@
 #pragma once
 
 #include <cusp/copy.h>
+#include <cusp/hyb_matrix.h>
 #include <cusp/sort.h>
 
 #include <cusp/system/detail/generic/conversions/ell_to_other.h>

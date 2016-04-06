@@ -16,7 +16,7 @@
 
 #include <cusp/detail/config.h>
 
-#include <cusp/execution_policy.h>
+#include <cusp/detail/execution_policy.h>
 
 #include <cusp/precond/aggregation/system/detail/sequential/symmetric_strength.h>
 

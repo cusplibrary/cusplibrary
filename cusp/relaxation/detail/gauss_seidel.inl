@@ -18,6 +18,9 @@
 #include <cusp/format_utils.h>
 #include <cusp/graph/vertex_coloring.h>
 
+#include <cusp/system/detail/generic/relaxation/gauss_seidel.h>
+#include <cusp/system/detail/adl/relaxation/gauss_seidel.h>
+
 #include <thrust/reduce.h>
 #include <thrust/sequence.h>
 #include <thrust/sort.h>

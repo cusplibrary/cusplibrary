@@ -17,7 +17,6 @@
 #pragma once
 
 #include <cusp/detail/config.h>
-#include <cusp/detail/format.h>
 #include <cusp/system/detail/sequential/execution_policy.h>
 
 #include <cusp/system/detail/sequential/multiply/coo_spmv.h>
@@ -31,22 +30,4 @@
 
 #include <cusp/system/detail/sequential/multiply/csr_spgemm.h>
 #include <cusp/system/detail/sequential/multiply/coo_spgemm.h>
-
-namespace cusp
-{
-namespace system
-{
-namespace detail
-{
-namespace sequential
-{
-
-} // end namespace sequential
-} // end namespace detail
-} // end namespace system
-
-// hack until ADL is operational
-using cusp::system::detail::sequential::multiply;
-
-} // end namespace cusp
 

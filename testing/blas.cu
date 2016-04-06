@@ -1,5 +1,7 @@
 #include <unittest/unittest.h>
 
+#include <cusp/array1d.h>
+#include <cusp/array2d.h>
 #include <cusp/complex.h>
 #include <cusp/blas/blas.h>
 
@@ -23,7 +25,7 @@ void TestAmax(void)
 
     ASSERT_EQUAL(cusp::blas::amax(view_x), 4);
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestAmax);
+DECLARE_HOST_DEVICE_UNITTEST(TestAmax)
 
 template <class MemorySpace>
 void TestComplexAmax(void)
@@ -46,7 +48,7 @@ void TestComplexAmax(void)
 
     ASSERT_EQUAL(cusp::blas::amax(view_x), 0);
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestComplexAmax);
+DECLARE_HOST_DEVICE_UNITTEST(TestComplexAmax)
 
 template <class MemorySpace>
 void TestAxpy(void)
@@ -88,7 +90,7 @@ void TestAxpy(void)
     Array w(3);
     ASSERT_THROWS(cusp::blas::axpy(x, w, 1.0f), cusp::invalid_input_exception);
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestAxpy);
+DECLARE_HOST_DEVICE_UNITTEST(TestAxpy)
 
 
 template <class MemorySpace>
@@ -138,7 +140,7 @@ void TestAxpby(void)
     Array w(3);
     ASSERT_THROWS(cusp::blas::axpby(x, y, w, 2.0f, 1.0f), cusp::invalid_input_exception);
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestAxpby);
+DECLARE_HOST_DEVICE_UNITTEST(TestAxpby)
 
 
 template <class MemorySpace>
@@ -194,7 +196,7 @@ void TestAxpbypcz(void)
     Array output(3);
     ASSERT_THROWS(cusp::blas::axpbypcz(x, y, z, output, 2.0f, 1.0f, 3.0f), cusp::invalid_input_exception);
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestAxpbypcz);
+DECLARE_HOST_DEVICE_UNITTEST(TestAxpbypcz)
 
 
 template <class MemorySpace>
@@ -244,7 +246,7 @@ void TestXmy(void)
     Array output(3);
     ASSERT_THROWS(cusp::blas::xmy(x, y, output), cusp::invalid_input_exception);
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestXmy);
+DECLARE_HOST_DEVICE_UNITTEST(TestXmy)
 
 
 template <class MemorySpace>
@@ -278,7 +280,7 @@ void TestCopy(void)
     cusp::array1d<float, MemorySpace> w(3);
     ASSERT_THROWS(cusp::blas::copy(w, x), cusp::invalid_input_exception);
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestCopy);
+DECLARE_HOST_DEVICE_UNITTEST(TestCopy)
 
 
 template <class MemorySpace>
@@ -311,7 +313,7 @@ void TestDot(void)
     cusp::array1d<float, MemorySpace> w(3);
     ASSERT_THROWS(cusp::blas::dot(x, w), cusp::invalid_input_exception);
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestDot);
+DECLARE_HOST_DEVICE_UNITTEST(TestDot)
 
 
 template <class MemorySpace>
@@ -349,7 +351,7 @@ void TestDotc(void)
     Array w(3);
     ASSERT_THROWS(cusp::blas::dotc(x, w), cusp::invalid_input_exception);
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestDotc);
+DECLARE_HOST_DEVICE_UNITTEST(TestDotc)
 
 
 template <class MemorySpace>
@@ -380,7 +382,7 @@ void TestFill(void)
     ASSERT_EQUAL(x[2], 1.0);
     ASSERT_EQUAL(x[3], 1.0);
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestFill);
+DECLARE_HOST_DEVICE_UNITTEST(TestFill)
 
 
 template <class MemorySpace>
@@ -403,7 +405,7 @@ void TestNrm1(void)
 
     ASSERT_EQUAL(cusp::blas::nrm1(view_x), 20.0f);
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestNrm1);
+DECLARE_HOST_DEVICE_UNITTEST(TestNrm1)
 
 template <class MemorySpace>
 void TestComplexNrm1(void)
@@ -425,7 +427,7 @@ void TestComplexNrm1(void)
 
     ASSERT_EQUAL(cusp::blas::nrm1(view_x), 20.0f);
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestComplexNrm1);
+DECLARE_HOST_DEVICE_UNITTEST(TestComplexNrm1)
 
 
 template <class MemorySpace>
@@ -448,7 +450,7 @@ void TestNrm2(void)
 
     ASSERT_EQUAL(cusp::blas::nrm2(view_x), 10.0f);
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestNrm2);
+DECLARE_HOST_DEVICE_UNITTEST(TestNrm2)
 
 template <class MemorySpace>
 void TestComplexNrm2(void)
@@ -470,7 +472,7 @@ void TestComplexNrm2(void)
 
     ASSERT_EQUAL(cusp::blas::nrm2(view_x), 10.0f);
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestComplexNrm2);
+DECLARE_HOST_DEVICE_UNITTEST(TestComplexNrm2)
 
 
 template <class MemorySpace>
@@ -493,7 +495,7 @@ void TestNrmmax(void)
 
     ASSERT_EQUAL(cusp::blas::nrmmax(view_x), 7.0f);
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestNrmmax);
+DECLARE_HOST_DEVICE_UNITTEST(TestNrmmax)
 
 template <class MemorySpace>
 void TestComplexNrmmax(void)
@@ -515,7 +517,7 @@ void TestComplexNrmmax(void)
 
     ASSERT_EQUAL(cusp::blas::nrmmax(view_x), 7.0f);
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestComplexNrmmax);
+DECLARE_HOST_DEVICE_UNITTEST(TestComplexNrmmax)
 
 
 template <class MemorySpace>
@@ -552,20 +554,20 @@ void TestScal(void)
     ASSERT_EQUAL(x[4],   0.0);
     ASSERT_EQUAL(x[5],  32.0);
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestScal);
+DECLARE_HOST_DEVICE_UNITTEST(TestScal)
 
 template <class MemorySpace>
 void TestGemv(void)
 {
-    typedef typename cusp::array2d<float, MemorySpace> Array2d;
-    typedef typename cusp::array1d<float, MemorySpace> Array1d;
+    typedef cusp::array2d<float, MemorySpace> Array2d;
+    typedef cusp::array1d<float, MemorySpace> Array1d;
 
     Array2d A(6,6);
     Array1d x(6);
 
     ASSERT_THROWS(cusp::blas::gemv(A, x, x), cusp::not_implemented_exception);
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestGemv);
+DECLARE_HOST_DEVICE_UNITTEST(TestGemv)
 
 template <class MemorySpace>
 void TestGer(void)
@@ -578,7 +580,7 @@ void TestGer(void)
 
     ASSERT_THROWS(cusp::blas::ger(x, x, A), cusp::not_implemented_exception);
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestGer);
+DECLARE_HOST_DEVICE_UNITTEST(TestGer)
 
 template <class MemorySpace>
 void TestSymv(void)
@@ -591,7 +593,7 @@ void TestSymv(void)
 
     ASSERT_THROWS(cusp::blas::symv(A, x, x), cusp::not_implemented_exception);
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestSymv);
+DECLARE_HOST_DEVICE_UNITTEST(TestSymv)
 
 template <class MemorySpace>
 void TestSyr(void)
@@ -604,7 +606,7 @@ void TestSyr(void)
 
     ASSERT_THROWS(cusp::blas::syr(x, A), cusp::not_implemented_exception);
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestSyr);
+DECLARE_HOST_DEVICE_UNITTEST(TestSyr)
 
 template <class MemorySpace>
 void TestTrmv(void)
@@ -617,7 +619,7 @@ void TestTrmv(void)
 
     ASSERT_THROWS(cusp::blas::trmv(A, x), cusp::not_implemented_exception);
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestTrmv);
+DECLARE_HOST_DEVICE_UNITTEST(TestTrmv)
 
 template <class MemorySpace>
 void TestTrsv(void)
@@ -630,7 +632,7 @@ void TestTrsv(void)
 
     ASSERT_THROWS(cusp::blas::trsv(A, x), cusp::not_implemented_exception);
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestTrsv);
+DECLARE_HOST_DEVICE_UNITTEST(TestTrsv)
 
 template <class MemorySpace>
 void TestGemm(void)
@@ -641,7 +643,7 @@ void TestGemm(void)
 
     ASSERT_THROWS(cusp::blas::gemm(A, A, A), cusp::not_implemented_exception);
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestGemm);
+DECLARE_HOST_DEVICE_UNITTEST(TestGemm)
 
 template <class MemorySpace>
 void TestSymm(void)
@@ -652,7 +654,7 @@ void TestSymm(void)
 
     ASSERT_THROWS(cusp::blas::symm(A, A, A), cusp::not_implemented_exception);
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestSymm);
+DECLARE_HOST_DEVICE_UNITTEST(TestSymm)
 
 template <class MemorySpace>
 void TestSyrk(void)
@@ -663,7 +665,7 @@ void TestSyrk(void)
 
     ASSERT_THROWS(cusp::blas::syrk(A, A), cusp::not_implemented_exception);
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestSyrk);
+DECLARE_HOST_DEVICE_UNITTEST(TestSyrk)
 
 template <class MemorySpace>
 void TestSyr2k(void)
@@ -674,7 +676,7 @@ void TestSyr2k(void)
 
     ASSERT_THROWS(cusp::blas::syr2k(A, A, A), cusp::not_implemented_exception);
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestSyr2k);
+DECLARE_HOST_DEVICE_UNITTEST(TestSyr2k)
 
 template <class MemorySpace>
 void TestTrmm(void)
@@ -685,7 +687,7 @@ void TestTrmm(void)
 
     ASSERT_THROWS(cusp::blas::trmm(A, A), cusp::not_implemented_exception);
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestTrmm);
+DECLARE_HOST_DEVICE_UNITTEST(TestTrmm)
 
 template <class MemorySpace>
 void TestTrsm(void)
@@ -696,7 +698,7 @@ void TestTrsm(void)
 
     ASSERT_THROWS(cusp::blas::trsm(A, A), cusp::not_implemented_exception);
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestTrsm);
+DECLARE_HOST_DEVICE_UNITTEST(TestTrsm)
 
 template <typename Array>
 int amax(my_system& system, const Array& x)

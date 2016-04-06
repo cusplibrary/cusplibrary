@@ -15,7 +15,6 @@
  */
 
 #include <cusp/detail/config.h>
-#include <cusp/detail/type_traits.h>
 
 #include <cusp/multiply.h>
 

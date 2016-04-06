@@ -39,7 +39,7 @@ namespace sequential
 
 // COO format
 template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
-void transpose(sequential::execution_policy<DerivedPolicy>& exec,
+void transpose(thrust::cpp::execution_policy<DerivedPolicy>& exec,
                const MatrixType1& A, MatrixType2& At,
                cusp::coo_format, cusp::coo_format)
 {
@@ -76,7 +76,7 @@ void transpose(sequential::execution_policy<DerivedPolicy>& exec,
 
 // CSR format
 template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
-void transpose(sequential::execution_policy<DerivedPolicy>& exec,
+void transpose(thrust::cpp::execution_policy<DerivedPolicy>& exec,
                const MatrixType1& A, MatrixType2& At,
                cusp::csr_format, cusp::csr_format)
 {
@@ -124,9 +124,5 @@ void transpose(sequential::execution_policy<DerivedPolicy>& exec,
 } // end namespace sequential
 } // end namespace detail
 } // end namespace system
-
-// hack until ADL is operational
-using cusp::system::detail::sequential::transpose;
-
 } // end namespace cusp
 

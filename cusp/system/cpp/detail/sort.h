@@ -18,5 +18,6 @@
 
 #include <cusp/detail/config.h>
 
-// this system inherits transpose
+// this system inherits sort
 #include <cusp/system/detail/sequential/sort.h>
+

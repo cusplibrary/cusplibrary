@@ -271,8 +271,5 @@ void hilbert_curve(cuda::execution_policy<DerivedPolicy>& exec,
 
 } // end namespace cuda
 } // end namespace system
-
-// hack until ADL is operational
-using cusp::system::cuda::hilbert_curve;
-
 } // end namespace cusp
+

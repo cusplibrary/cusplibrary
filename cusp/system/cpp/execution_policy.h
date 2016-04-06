@@ -16,11 +16,11 @@
 
 #pragma once
 
-/*! \file thrust/system/cpp/execution_policy.h
- *  \brief Execution policies for Thrust's standard C++ system.
+/*! \file cusp/system/cpp/execution_policy.h
+ *  \brief Execution policies for CUSP's standard C++ system.
  */
 
-#include <thrust/detail/config.h>
+#include <cusp/detail/config.h>
 
 // get the execution policies definitions first
 #include <thrust/system/cpp/detail/execution_policy.h>
@@ -28,16 +28,7 @@
 // get the definition of par
 #include <thrust/system/cpp/detail/par.h>
 
-namespace cusp
-{
-namespace system
-{
-namespace cpp
-{
-using namespace thrust::system::cpp;
-} // end namespace cpp
-} // end namespace system
-} // end namespace cusp
+#include <cusp/system/detail/sequential/execution_policy.h>
 
 // now get all the algorithm definitions
 
@@ -56,3 +47,4 @@ using namespace thrust::system::cpp;
 #include <cusp/system/cpp/detail/graph/pseudo_peripheral.h>
 #include <cusp/system/cpp/detail/graph/symmetric_rcm.h>
 #include <cusp/system/cpp/detail/graph/vertex_coloring.h>
+

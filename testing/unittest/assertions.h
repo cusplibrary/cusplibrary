@@ -348,5 +348,5 @@ void assert_almost_equal(const cusp::array1d<T1,Alloc1>& A, const cusp::array1d<
     assert_almost_equal(A_host.begin(), A_host.end(), B_host.begin(), B_host.end(), filename, lineno, a_tol, r_tol);
 }
 
-}; //end namespace unittest
+} //end namespace unittest
 

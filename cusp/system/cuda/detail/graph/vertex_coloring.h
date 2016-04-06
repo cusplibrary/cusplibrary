@@ -23,13 +23,15 @@
 #include <cusp/detail/type_traits.h>
 
 #include <cusp/graph/vertex_coloring.h>
-#include <cusp/system/cuda/execution_policy.h>
+#include <cusp/system/cuda/detail/execution_policy.h>
 
 namespace cusp
 {
 namespace system
 {
 namespace cuda
+{
+namespace detail
 {
 
 template<typename DerivedPolicy, typename MatrixType, typename ArrayType>
@@ -50,10 +52,8 @@ size_t vertex_coloring(cuda::execution_policy<DerivedPolicy>& exec,
   return max_colors;
 }
 
+} // end namespace detail
 } // end namespace cuda
 } // end namespace system
-
-// hack until ADL is operational
-using cusp::system::cuda::vertex_coloring;
-
 } // end namespace cusp
+

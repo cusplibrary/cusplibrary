@@ -32,7 +32,7 @@ namespace sequential
 template <typename DerivedPolicy,
           typename OffsetArray,
           typename IndexArray>
-void offsets_to_indices(sequential::execution_policy<DerivedPolicy> &exec,
+void offsets_to_indices(thrust::cpp::execution_policy<DerivedPolicy> &exec,
                         const OffsetArray& offsets,
                         IndexArray& indices)
 {
@@ -48,7 +48,7 @@ void offsets_to_indices(sequential::execution_policy<DerivedPolicy> &exec,
 template <typename DerivedPolicy,
           typename IndexArray,
           typename OffsetArray>
-void indices_to_offsets(sequential::execution_policy<DerivedPolicy> &exec,
+void indices_to_offsets(thrust::cpp::execution_policy<DerivedPolicy> &exec,
                         const IndexArray& indices,
                         OffsetArray& offsets)
 {
@@ -65,10 +65,5 @@ void indices_to_offsets(sequential::execution_policy<DerivedPolicy> &exec,
 } // end namespace sequential
 } // end namespace detail
 } // end namespace system
-
-// hack until ADL is operational
-using cusp::system::detail::sequential::offsets_to_indices;
-using cusp::system::detail::sequential::indices_to_offsets;
-
 } // end namespace cusp
 

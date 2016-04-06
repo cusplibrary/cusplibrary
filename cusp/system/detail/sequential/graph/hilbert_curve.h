@@ -211,7 +211,7 @@ struct hilbert_transform_3d : public thrust::unary_function<double,double>
 } // end namespace detail
 
 template <typename DerivedPolicy, typename Array2d, typename Array1d>
-void hilbert_curve(sequential::execution_policy<DerivedPolicy>& exec,
+void hilbert_curve(thrust::cpp::execution_policy<DerivedPolicy>& exec,
                    const Array2d& coord,
                    size_t num_parts,
                    Array1d& parts)
@@ -276,8 +276,5 @@ void hilbert_curve(sequential::execution_policy<DerivedPolicy>& exec,
 } // end namespace sequential
 } // end namespace detail
 } // end namespace system
-
-// hack until ADL is operational
-using cusp::system::detail::sequential::hilbert_curve;
-
 } // end namespace cusp
+

@@ -91,7 +91,7 @@ void TestReadBinaryFileToCsrMatrix(void)
 
     ASSERT_EQUAL(D == E, true);
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestReadBinaryFileToCsrMatrix);
+DECLARE_HOST_DEVICE_UNITTEST(TestReadBinaryFileToCsrMatrix)
 
 template <typename MemorySpace>
 void TestWriteBinaryFileCoordinateRealGeneral(void)
@@ -126,4 +126,4 @@ void TestWriteBinaryFileCoordinateRealGeneral(void)
     cusp::array2d<float, cusp::host_memory> D(coo);
     ASSERT_EQUAL(D == E, true);
 }
-DECLARE_HOST_DEVICE_UNITTEST(TestWriteBinaryFileCoordinateRealGeneral);
+DECLARE_HOST_DEVICE_UNITTEST(TestWriteBinaryFileCoordinateRealGeneral)

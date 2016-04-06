@@ -16,9 +16,9 @@
 
 
 #include <cusp/copy.h>
-#include <cusp/format_utils.h>
 
 #include <cusp/detail/format.h>
+#include <cusp/detail/type_traits.h>
 
 #include <cusp/system/detail/generic/conversions/array_to_other.h>
 #include <cusp/system/detail/generic/conversions/coo_to_other.h>

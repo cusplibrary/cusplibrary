@@ -19,7 +19,7 @@
 #include <cusp/exception.h>
 #include <cusp/verify.h>
 
-#include <cusp/execution_policy.h>
+#include <cusp/detail/execution_policy.h>
 #include <cusp/blas/blas_policy.h>
 #include <cusp/blas/thrustblas/blas.h>
 

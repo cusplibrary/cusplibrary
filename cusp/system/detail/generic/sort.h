@@ -35,7 +35,7 @@ namespace generic
 {
 
 template <typename DerivedPolicy, typename ArrayType>
-void counting_sort(thrust::execution_policy<DerivedPolicy>& exec,
+void counting_sort(cusp::execution_policy<DerivedPolicy>& exec,
                    ArrayType& keys,
                    typename ArrayType::value_type min, typename ArrayType::value_type max);
 

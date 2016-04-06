@@ -64,6 +64,8 @@ namespace system
 {
 namespace cuda
 {
+namespace detail
+{
 namespace cub_coo_spmv_detail
 {
 
@@ -846,7 +848,7 @@ template <typename DerivedPolicy,
           typename VectorType2,
           typename BinaryFunction1,
           typename BinaryFunction2>
-void spmv_coo(cuda::execution_policy<DerivedPolicy>& exec,
+void spmv_coo(cusp::system::cuda::detail::execution_policy<DerivedPolicy>& exec,
               const MatrixType& A,
               const VectorType1& x,
               VectorType2& y,
@@ -986,6 +988,7 @@ void multiply(cuda::execution_policy<DerivedPolicy>& exec,
     cub_coo_spmv_detail::spmv_coo(exec, A, x, y, combine, reduce);
 }
 
+} // end namespace detail
 } // end namespace cuda
 } // end namespace system
 } // end namespace cusp

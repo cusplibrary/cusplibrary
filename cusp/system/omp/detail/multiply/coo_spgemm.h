@@ -30,6 +30,8 @@ namespace system
 {
 namespace omp
 {
+namespace detail
+{
 
 template <typename DerivedPolicy,
           typename MatrixType1,
@@ -80,6 +82,7 @@ void multiply(omp::execution_policy<DerivedPolicy>& exec,
     cusp::offsets_to_indices(exec, C_row_offsets, C.row_indices);
 }
 
+} // end namespace detail
 } // end namespace omp
 } // end namespace system
 } // end namespace cusp

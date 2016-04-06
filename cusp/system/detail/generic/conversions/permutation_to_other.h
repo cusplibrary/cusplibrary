@@ -19,7 +19,7 @@
 
 #include <cusp/array1d.h>
 
-#include <thrust/execution_policy.h>
+#include <cusp/detail/execution_policy.h>
 #include <thrust/fill.h>
 
 namespace cusp

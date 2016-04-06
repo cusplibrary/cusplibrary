@@ -17,8 +17,7 @@
 
 #include <cusp/detail/config.h>
 #include <cusp/detail/format.h>
-
-#include <cusp/array1d.h>
+#include <cusp/detail/temporary_array.h>
 
 #include <cusp/system/detail/sequential/execution_policy.h>
 
@@ -58,7 +57,7 @@ void propagate_distances(const MatrixType& A,
 } // end namespace detail
 
 template <typename DerivedPolicy, typename MatrixType, typename ArrayType>
-size_t maximal_independent_set(sequential::execution_policy<DerivedPolicy>& exec,
+size_t maximal_independent_set(thrust::cpp::execution_policy<DerivedPolicy>& exec,
                                const MatrixType& G,
                                ArrayType& stencil,
                                const size_t k,
@@ -98,8 +97,5 @@ size_t maximal_independent_set(sequential::execution_policy<DerivedPolicy>& exec
 } // end namespace sequential
 } // end namespace detail
 } // end namespace system
-
-// hack until ADL is operational
-using cusp::system::detail::sequential::maximal_independent_set;
-
 } // end namespace cusp
+

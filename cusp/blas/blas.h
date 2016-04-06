@@ -21,9 +21,9 @@
 #pragma once
 
 #include <cusp/detail/config.h>
+#include <cusp/detail/execution_policy.h>
 
 #include <cusp/complex.h>
-#include <cusp/detail/type_traits.h>
 
 namespace cusp
 {

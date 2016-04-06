@@ -362,6 +362,7 @@ class array1d_view : public thrust::iterator_adaptor<array1d_view<RandomAccessIt
 {
 private :
     typedef thrust::iterator_adaptor<array1d_view<RandomAccessIterator>, RandomAccessIterator> Parent;
+    typedef typename thrust::iterator_system<RandomAccessIterator>::type        space;
 
     friend class thrust::iterator_core_access;
 
@@ -371,8 +372,8 @@ public :
     typedef RandomAccessIterator                                                iterator;
     typedef cusp::array1d_format                                                format;
 
+    typedef typename cusp::iterator_system<space>::type                         memory_space;
     typedef typename thrust::iterator_value<RandomAccessIterator>::type         value_type;
-    typedef typename thrust::iterator_system<RandomAccessIterator>::type        memory_space;
     typedef typename thrust::iterator_pointer<RandomAccessIterator>::type       pointer;
     typedef typename thrust::iterator_reference<RandomAccessIterator>::type     reference;
     typedef typename thrust::iterator_difference<RandomAccessIterator>::type    difference_type;

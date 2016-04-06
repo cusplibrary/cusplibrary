@@ -14,15 +14,14 @@
  *  limitations under the License.
  */
 
-/*! \file cusp/execution_policy.h
+/*! \file cusp/execution_policy
  *  \brief Cusp execution policies.
  */
 
 #pragma once
 
 #include <cusp/detail/config.h>
-
-#include <thrust/execution_policy.h>
+#include <cusp/detail/execution_policy.h>
 
 // #include the host system's execution_policy header
 #define __CUSP_HOST_SYSTEM_EXECUTION_POLICY_HEADER <__CUSP_HOST_SYSTEM_ROOT/execution_policy.h>
@@ -34,12 +33,3 @@
 #include __CUSP_DEVICE_SYSTEM_EXECUTION_POLICY_HEADER
 #undef __CUSP_DEVICE_SYSTEM_EXECUTION_POLICY_HEADER
 
-namespace cusp
-{
-
-template<typename DerivedPolicy>
-  struct execution_policy
-    : thrust::execution_policy<DerivedPolicy>
-{};
-
-} // end namespace cusp

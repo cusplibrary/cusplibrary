@@ -18,7 +18,7 @@
 
 #include <cusp/graph/pseudo_peripheral.h>
 
-#include <thrust/execution_policy.h>
+#include <cusp/detail/execution_policy.h>
 #include <thrust/sequence.h>
 #include <thrust/scatter.h>
 #include <thrust/sort.h>

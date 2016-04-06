@@ -32,6 +32,8 @@ namespace system
 {
 namespace cuda
 {
+namespace detail
+{
 
 template <typename IndexType, typename ValueType, unsigned int VECTORS_PER_BLOCK, unsigned int THREADS_PER_VECTOR>
 __launch_bounds__(VECTORS_PER_BLOCK * THREADS_PER_VECTOR,1)
@@ -163,8 +165,8 @@ template<typename DerivedPolicy,
          typename ArrayType2>
 void gauss_seidel_indexed(cuda::execution_policy<DerivedPolicy>& exec,
                           const MatrixType& A,
-                          ArrayType1&  x,
-                          const ArrayType1&  b,
+                                ArrayType1& x,
+                          const ArrayType1& b,
                           const ArrayType2& indices,
                           const int row_start,
                           const int row_stop,
@@ -194,10 +196,8 @@ void gauss_seidel_indexed(cuda::execution_policy<DerivedPolicy>& exec,
     gauss_seidel_spmv<32>(exec, A, x, b, indices, row_start, row_stop, row_step);
 }
 
+} // end namespace detail
 } // end namespace cuda
 } // end namespace system
-
-using cusp::system::cuda::gauss_seidel_indexed;
-
 } // end namespace cusp
 

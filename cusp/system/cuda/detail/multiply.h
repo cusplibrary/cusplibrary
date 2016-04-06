@@ -32,17 +32,3 @@
 
 #include <cusp/system/cuda/detail/multiply/spgemm.h>
 
-namespace cusp
-{
-namespace system
-{
-namespace cuda
-{
-
-} // end namespace cuda
-} // end namespace system
-
-// hack until ADL is operational
-using cusp::system::cuda::multiply;
-
-} // end namespace cusp

@@ -16,28 +16,18 @@
 
 #pragma once
 
-/*! \file thrust/system/tbb/execution_policy.h
- *  \brief Execution policies for Thrust's OpenMP system.
+/*! \file cusp/system/omp/execution_policy.h
+ *  \brief Execution policies for CUSP's OpenMP system.
  */
 
-#include <thrust/detail/config.h>
+#include <cusp/detail/config.h>
+#include <cusp/system/cpp/detail/execution_policy.h>
 
 // get the execution policies definitions first
 #include <thrust/system/omp/detail/execution_policy.h>
 
 // get the definition of par
 #include <thrust/system/omp/detail/par.h>
-
-namespace cusp
-{
-namespace system
-{
-namespace omp
-{
-using namespace thrust::system::omp;
-} // end namespace omp
-} // end namespace system
-} // end namespace cusp
 
 // now get all the algorithm definitions
 

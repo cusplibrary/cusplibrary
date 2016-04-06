@@ -18,8 +18,8 @@
 #pragma once
 
 #include <cusp/copy.h>
+#include <cusp/coo_matrix.h>
 #include <cusp/format_utils.h>
-#include <cusp/sort.h>
 
 #include <cusp/blas/blas.h>
 

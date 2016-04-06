@@ -31,11 +31,13 @@ namespace system
 {
 namespace omp
 {
+namespace detail
+{
 
+using cusp::system::detail::sequential::multiply;
+
+} // end namespace detail
 } // end namespace omp
 } // end namespace system
-
-// hack until ADL is operational
-using cusp::system::omp::multiply;
-
 } // end namespace cusp
+

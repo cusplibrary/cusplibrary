@@ -39,7 +39,7 @@ template <typename DerivedPolicy,
           typename UnaryFunction,
           typename BinaryFunction1,
           typename BinaryFunction2>
-void multiply(sequential::execution_policy<DerivedPolicy>& exec,
+void multiply(thrust::cpp::execution_policy<DerivedPolicy>& exec,
               const MatrixType1& A,
               const MatrixType2& B,
               MatrixType3& C,

@@ -14,10 +14,15 @@
  *  limitations under the License.
  */
 
-#include <cusp/system/detail/adl/sort.h>
-#include <cusp/system/detail/generic/sort.h>
+/*! \file sort.inl
+ *  \brief Inline file for sort.h.
+ */
 
-#include <thrust/execution_policy.h>
+#include <cusp/detail/config.h>
+#include <cusp/system/detail/generic/sort.h>
+#include <cusp/system/detail/adl/sort.h>
+
+#include <thrust/system/detail/generic/select_system.h>
 
 namespace cusp
 {

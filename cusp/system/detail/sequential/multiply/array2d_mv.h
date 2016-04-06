@@ -39,7 +39,7 @@ template <typename DerivedPolicy,
          typename UnaryFunction,
          typename BinaryFunction1,
          typename BinaryFunction2>
-void multiply(sequential::execution_policy<DerivedPolicy>& exec,
+void multiply(thrust::cpp::execution_policy<DerivedPolicy>& exec,
               const MatrixType& A,
               const VectorType1& x,
               VectorType2& y,
@@ -67,3 +67,4 @@ void multiply(sequential::execution_policy<DerivedPolicy>& exec,
 } // end namespace detail
 } // end namespace system
 } // end namespace cusp
+

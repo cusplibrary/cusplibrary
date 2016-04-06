@@ -94,7 +94,7 @@ class array2d : public cusp::detail::matrix_base<int,ValueType,MemorySpace,cusp:
 {
 private:
 
-    typedef typename cusp::detail::matrix_base<int,ValueType,MemorySpace,cusp::array2d_format> Parent;
+    typedef cusp::detail::matrix_base<int,ValueType,MemorySpace,cusp::array2d_format> Parent;
 
 public:
     /*! \cond */
@@ -105,11 +105,11 @@ public:
         typedef cusp::array2d<ValueType, MemorySpace2, Orientation> type;
     };
 
-    typedef typename cusp::array1d<ValueType, MemorySpace> values_array_type;
-    typedef typename cusp::array2d<ValueType, MemorySpace, Orientation> container;
+    typedef cusp::array1d<ValueType, MemorySpace> values_array_type;
+    typedef cusp::array2d<ValueType, MemorySpace, Orientation> container;
 
-    typedef typename cusp::array2d_view<typename values_array_type::view, Orientation> view;
-    typedef typename cusp::array2d_view<typename values_array_type::const_view, Orientation> const_view;
+    typedef cusp::array2d_view<typename values_array_type::view, Orientation> view;
+    typedef cusp::array2d_view<typename values_array_type::const_view, Orientation> const_view;
 
     typedef cusp::detail::row_or_column_view<
     typename values_array_type::iterator,thrust::detail::is_same<Orientation,cusp::row_major>::value>
@@ -336,9 +336,9 @@ public:
 
     typedef ArrayView values_array_type;
 
-    typedef typename cusp::array2d<typename Parent::value_type, typename Parent::memory_space, Orientation> container;
+    typedef cusp::array2d<typename Parent::value_type, typename Parent::memory_space, Orientation> container;
 
-    typedef typename cusp::array2d_view<ArrayView, Orientation> view;
+    typedef cusp::array2d_view<ArrayView, Orientation> view;
 
     typedef cusp::detail::row_or_column_view<
     typename values_array_type::iterator,thrust::detail::is_same<Orientation,cusp::row_major>::value> row_view_type;

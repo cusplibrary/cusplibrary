@@ -37,7 +37,7 @@ namespace sequential
 {
 
 template<typename DerivedPolicy, typename MatrixType, typename ArrayType>
-size_t connected_components(sequential::execution_policy<DerivedPolicy>& exec,
+size_t connected_components(thrust::cpp::execution_policy<DerivedPolicy>& exec,
                             const MatrixType& G,
                             ArrayType& components,
                             csr_format)
@@ -81,8 +81,4 @@ size_t connected_components(sequential::execution_policy<DerivedPolicy>& exec,
 } // end namespace sequential
 } // end namespace detail
 } // end namespace system
-
-// hack until ADL is operational
-using cusp::system::detail::sequential::connected_components;
-
 } // end namespace cusp

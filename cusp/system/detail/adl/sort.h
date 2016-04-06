@@ -18,7 +18,7 @@
 
 #include <thrust/detail/config.h>
 
-// the purpose of this header is to #include the elementwise.h header
+// the purpose of this header is to #include the sort.h header
 // of the sequential, host, and device systems. It should be #included in any
 // code which uses adl to dispatch elementwise
 
