@@ -50,6 +50,9 @@ tester
 *.sconsign*
 *.dblite
 
+# Ignore all build release files
+testing/*release
+
 # Ignore build files
 #<AutoIgnore>
 examples/Algorithms/maximal_independent_set

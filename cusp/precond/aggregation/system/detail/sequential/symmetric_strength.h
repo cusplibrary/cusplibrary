@@ -23,6 +23,8 @@
 #include <cusp/format_utils.h>
 #include <cusp/functional.h>
 
+#include <cusp/system/detail/sequential/execution_policy.h>
+
 #include <thrust/count.h>
 #include <thrust/functional.h>
 #include <thrust/iterator/zip_iterator.h>
@@ -38,7 +40,7 @@ namespace detail
 {
 
 template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
-void symmetric_strength_of_connection(thrust::system::detail::sequential::execution_policy<DerivedPolicy> &exec,
+void symmetric_strength_of_connection(thrust::cpp::execution_policy<DerivedPolicy> &exec,
                                       const MatrixType1& A,
                                             MatrixType2& S,
                                       const double theta,
@@ -105,7 +107,7 @@ void symmetric_strength_of_connection(thrust::system::detail::sequential::execut
 }
 
 template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2, typename Format>
-void symmetric_strength_of_connection(thrust::system::detail::sequential::execution_policy<DerivedPolicy> &exec,
+void symmetric_strength_of_connection(thrust::cpp::execution_policy<DerivedPolicy> &exec,
                                       const MatrixType1& A,
                                             MatrixType2& S,
                                       const double theta,
@@ -133,7 +135,7 @@ void symmetric_strength_of_connection(thrust::system::detail::sequential::execut
 }
 
 template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
-void symmetric_strength_of_connection(thrust::system::detail::sequential::execution_policy<DerivedPolicy> &exec,
+void symmetric_strength_of_connection(thrust::cpp::execution_policy<DerivedPolicy> &exec,
                                       const MatrixType1& A,
                                             MatrixType2& S,
                                       const double theta)

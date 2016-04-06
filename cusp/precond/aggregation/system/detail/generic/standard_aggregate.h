@@ -34,7 +34,7 @@ namespace detail
 {
 
 template <typename DerivedPolicy, typename MatrixType, typename ArrayType>
-void standard_aggregate(thrust::system::detail::sequential::execution_policy<DerivedPolicy> &exec,
+void standard_aggregate(thrust::cpp::execution_policy<DerivedPolicy> &exec,
                         const MatrixType& A, ArrayType& S, ArrayType& roots);
 
 template <typename DerivedPolicy, typename MatrixType, typename ArrayType>

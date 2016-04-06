@@ -25,6 +25,8 @@
 
 #include <cusp/blas/blas.h>
 
+#include <cusp/system/detail/sequential/execution_policy.h>
+
 namespace cusp
 {
 namespace precond
@@ -38,7 +40,7 @@ template <typename DerivedPolicy,
           typename MatrixType1,
           typename MatrixType2,
           typename MatrixType3>
-void smooth_prolongator(thrust::system::detail::sequential::execution_policy<DerivedPolicy> &exec,
+void smooth_prolongator(thrust::cpp::execution_policy<DerivedPolicy> &exec,
                         const MatrixType1& S,
                         const MatrixType2& T,
                         MatrixType3& P,
@@ -78,7 +80,7 @@ template <typename DerivedPolicy,
           typename MatrixType1,
           typename MatrixType2,
           typename MatrixType3>
-void smooth_prolongator(thrust::system::detail::sequential::execution_policy<DerivedPolicy> &exec,
+void smooth_prolongator(thrust::cpp::execution_policy<DerivedPolicy> &exec,
                         const MatrixType1& S,
                         const MatrixType2& T,
                         MatrixType3& P,
@@ -117,7 +119,7 @@ template <typename DerivedPolicy,
           typename MatrixType1,
           typename MatrixType2,
           typename MatrixType3>
-void smooth_prolongator(thrust::system::detail::sequential::execution_policy<DerivedPolicy> &exec,
+void smooth_prolongator(thrust::cpp::execution_policy<DerivedPolicy> &exec,
                         const MatrixType1& S,
                         const MatrixType2& T,
                         MatrixType3& P,

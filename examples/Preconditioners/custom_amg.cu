@@ -4,6 +4,8 @@
 #include <cusp/krylov/cg.h>
 #include <cusp/precond/aggregation/smoothed_aggregation.h>
 
+#include <thrust/execution_policy.h>
+
 #include <iostream>
 
 struct custom_amg_policy : thrust::device_execution_policy<custom_amg_policy> {};

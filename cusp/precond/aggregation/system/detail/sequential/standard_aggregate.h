@@ -18,6 +18,8 @@
 #include <cusp/csr_matrix.h>
 #include <cusp/format_utils.h>
 
+#include <cusp/system/detail/sequential/execution_policy.h>
+
 namespace cusp
 {
 namespace precond
@@ -28,7 +30,7 @@ namespace detail
 {
 
 template <typename DerivedPolicy, typename MatrixType, typename ArrayType>
-void standard_aggregate(thrust::system::detail::sequential::execution_policy<DerivedPolicy> &exec,
+void standard_aggregate(thrust::cpp::execution_policy<DerivedPolicy> &exec,
                         const MatrixType& A, ArrayType& aggregates, ArrayType& roots,
                         cusp::csr_format)
 {
@@ -144,7 +146,7 @@ void standard_aggregate(thrust::system::detail::sequential::execution_policy<Der
 }
 
 template <typename DerivedPolicy, typename MatrixType, typename ArrayType>
-void standard_aggregate(thrust::system::detail::sequential::execution_policy<DerivedPolicy> &exec,
+void standard_aggregate(thrust::cpp::execution_policy<DerivedPolicy> &exec,
                         const MatrixType& A, ArrayType& aggregates, ArrayType& roots,
                         cusp::known_format)
 {
@@ -166,7 +168,7 @@ void standard_aggregate(thrust::system::detail::sequential::execution_policy<Der
 }
 
 template <typename DerivedPolicy, typename MatrixType, typename ArrayType>
-void standard_aggregate(thrust::system::detail::sequential::execution_policy<DerivedPolicy> &exec,
+void standard_aggregate(thrust::cpp::execution_policy<DerivedPolicy> &exec,
                         const MatrixType& A, ArrayType& aggregates, ArrayType& roots)
 {
     typedef typename MatrixType::format Format;
