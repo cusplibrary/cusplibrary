@@ -23,12 +23,7 @@
 #include <cusp/detail/config.h>
 #include <cusp/detail/execution_policy.h>
 
-#if THRUST_VERSION >= 100800
-// get the execution policies definitions first
 #include <thrust/system/cpp/detail/execution_policy.h>
-#else
-#include <cusp/detail/thrust/system/detail/sequential/execution_policy.h>
-#endif
 
 namespace cusp
 {
