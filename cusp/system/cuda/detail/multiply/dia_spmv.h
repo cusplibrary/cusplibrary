@@ -32,6 +32,8 @@ namespace system
 {
 namespace cuda
 {
+namespace detail
+{
 
 ////////////////////////////////////////////////////////////////////////
 // DIA SpMV kernels
@@ -167,6 +169,7 @@ void multiply(cuda::execution_policy<DerivedPolicy>& exec,
     (A.num_rows, A.num_cols, num_diagonals, pitch, A.diagonal_offsets.begin(), A.values.values.begin(), x.begin(), y.begin(), initialize, combine, reduce);
 }
 
+} // end namespace detail
 } // end namespace cuda
 } // end namespace system
 } // end namespace cusp

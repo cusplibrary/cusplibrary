@@ -34,6 +34,8 @@ namespace system
 {
 namespace cuda
 {
+namespace detail
+{
 
 template<unsigned int CTA_SIZE,
          typename KeyIterator,
@@ -343,6 +345,7 @@ void spmv_coo_flat_k(const coo_matrix<IndexType,ValueType,cusp::device_memory>& 
 }
 
 
+} // end namespace detail
 } // end namespace cuda
 } // end namespace system
 } // end namespace cusp

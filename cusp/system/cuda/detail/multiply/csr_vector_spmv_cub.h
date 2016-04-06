@@ -30,6 +30,8 @@ namespace system
 {
 namespace cuda
 {
+namespace detail
+{
 
 //////////////////////////////////////////////////////////////////////////////
 // CSR SpMV kernels based on a vector model (one warp per row)
@@ -247,6 +249,7 @@ void multiply(cuda::execution_policy<DerivedPolicy>& exec,
     __spmv_csr_vector<32>(exec, A, x, y, initialize, combine, reduce);
 }
 
+} // end namespace detail
 } // end namespace cuda
 } // end namespace system
 } // end namespace cusp

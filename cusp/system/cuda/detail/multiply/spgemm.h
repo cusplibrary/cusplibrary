@@ -40,6 +40,8 @@ namespace system
 {
 namespace cuda
 {
+namespace detail
+{
 
 template <typename DerivedPolicy,
           typename MatrixType1,
@@ -378,6 +380,7 @@ void multiply(cuda::execution_policy<DerivedPolicy>& exec,
     }
 }
 
+} // end namespace detail
 } // end namespace cuda
 } // end namespace system
 } // end namespace cusp

@@ -167,7 +167,7 @@ void test_csr(HostMatrix& host_matrix)
 
     test_spmv("csr_vector", host_matrix, test_matrix_on_host, test_matrix_on_device, cusp::multiply<DeviceMatrix,DeviceArray,DeviceArray>);
     test_spmv("csr_scalar", host_matrix, test_matrix_on_host, test_matrix_on_device,
-              cusp::system::cuda::spmv_csr_scalar<DeviceMatrix,DeviceArray,DeviceArray>);
+              cusp::system::cuda::detail::spmv_csr_scalar<DeviceMatrix,DeviceArray,DeviceArray>);
 }
 
 template <typename HostMatrix>

@@ -16,12 +16,10 @@
 #pragma once
 
 #include <cusp/detail/config.h>
-#include <cusp/detail/format.h>
+#include <cusp/detail/temporary_array.h>
 
 #include <cusp/array1d.h>
 #include <cusp/exception.h>
-
-#include <cusp/system/detail/sequential/execution_policy.h>
 
 #include <thrust/extrema.h>
 #include <thrust/gather.h>
@@ -204,8 +202,6 @@ struct hilbert_transform_3d : public thrust::unary_function<double,double>
     }
 };
 
-} // end namespace detail
-
 template <typename DerivedPolicy, typename Array2d, typename Array1d>
 void hilbert_curve(cuda::execution_policy<DerivedPolicy>& exec,
                    const Array2d& coord,
@@ -241,7 +237,7 @@ void hilbert_curve(cuda::execution_policy<DerivedPolicy>& exec,
         thrust::transform(exec,
                           thrust::make_zip_iterator(thrust::make_tuple(coord.column(0).begin(), coord.column(1).begin())),
                           thrust::make_zip_iterator(thrust::make_tuple(coord.column(0).end(), coord.column(1).end())),
-                          hilbert_keys.begin(), detail::hilbert_transform_2d());
+                          hilbert_keys.begin(), hilbert_transform_2d());
     }
     else
     {
@@ -255,7 +251,7 @@ void hilbert_curve(cuda::execution_policy<DerivedPolicy>& exec,
         thrust::transform(exec,
                           thrust::make_zip_iterator(thrust::make_tuple(coord.column(0).begin(), coord.column(1).begin(), coord.column(2).begin())),
                           thrust::make_zip_iterator(thrust::make_tuple(coord.column(0).end(), coord.column(1).end(), coord.column(2).end())),
-                          hilbert_keys.begin(), detail::hilbert_transform_3d());
+                          hilbert_keys.begin(), hilbert_transform_3d());
     }
 
     cusp::detail::temporary_array<PartType, DerivedPolicy> perm(exec, num_points);
@@ -269,6 +265,7 @@ void hilbert_curve(cuda::execution_policy<DerivedPolicy>& exec,
     thrust::gather(exec, perm.begin(), perm.end(), uniform_parts.begin(), parts.begin());
 }
 
+} // end namespace detail
 } // end namespace cuda
 } // end namespace system
 } // end namespace cusp

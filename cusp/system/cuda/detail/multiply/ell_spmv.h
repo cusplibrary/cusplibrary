@@ -34,8 +34,15 @@ namespace system
 {
 namespace cuda
 {
+namespace detail
+{
 
-template <typename IndexType, typename ValueType, typename UnaryFunction, typename BinaryFunction1, typename BinaryFunction2, size_t BLOCK_SIZE>
+template <typename IndexType,
+          typename ValueType,
+          typename UnaryFunction,
+          typename BinaryFunction1,
+          typename BinaryFunction2,
+          size_t BLOCK_SIZE>
 __launch_bounds__(BLOCK_SIZE,1)
 __global__ void
 spmv_ell_kernel(const IndexType num_rows,
@@ -129,6 +136,7 @@ void multiply(cuda::execution_policy<DerivedPolicy>& exec,
     (A.num_rows, A.num_cols, num_entries_per_row, pitch, J, V, x_ptr, y_ptr, initialize, combine, reduce);
 }
 
+} // end namespace detail
 } // end namespace cuda
 } // end namespace system
 } // end namespace cusp

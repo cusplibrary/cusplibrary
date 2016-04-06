@@ -24,6 +24,8 @@ namespace system
 {
 namespace cuda
 {
+namespace detail
+{
 
 // COO format SpMV kernel that uses only one thread
 // This is incredibly slow, so it is only useful for testing purposes,
@@ -73,6 +75,7 @@ void spmv_coo_serial_device(const Matrix& A,
     (A.num_entries, A.row_indices.begin(), A.column_indices.begin(), A.values.begin(), x.begin(), y.begin(), combine, reduce);
 }
 
+} // end namespace detail
 } // end namespace cuda
 } // end namespace system
 } // end namespace cusp

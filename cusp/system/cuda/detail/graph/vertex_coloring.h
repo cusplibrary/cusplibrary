@@ -38,7 +38,7 @@ template<typename DerivedPolicy, typename MatrixType, typename ArrayType>
 size_t vertex_coloring(cuda::execution_policy<DerivedPolicy>& exec,
                        const MatrixType& G,
                        ArrayType& colors,
-                       csr_format)
+                       cusp::csr_format)
 {
   typedef typename ArrayType::value_type IndexType;
   typedef typename cusp::detail::as_csr_type<MatrixType,cusp::host_memory>::type CsrHost;

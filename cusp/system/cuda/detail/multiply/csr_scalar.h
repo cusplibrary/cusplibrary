@@ -29,6 +29,8 @@ namespace system
 {
 namespace cuda
 {
+namespace detail
+{
 
 ////////////////////////////////////////////////////////////////////////
 // CSR SpMV kernels based on a scalar model (one thread per row)
@@ -136,6 +138,7 @@ void spmv_csr_scalar(const MatrixType&  A,
                     csr_format(), array1d_format(), array1d_format());
 }
 
+} // end namespace detail
 } // end namespace cuda
 } // end namespace system
 } // end namespace cusp

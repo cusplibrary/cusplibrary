@@ -32,6 +32,8 @@ namespace system
 {
 namespace cuda
 {
+namespace detail
+{
 
 // segmented reduction in shared memory
 template <typename IndexType, typename ValueType, typename BinaryFunction>
@@ -503,6 +505,7 @@ void multiply(cuda::execution_policy<DerivedPolicy>& exec,
 }
 #endif
 
+} // end namespace detail
 } // end namespace cuda
 } // end namespace system
 } // end namespace cusp
