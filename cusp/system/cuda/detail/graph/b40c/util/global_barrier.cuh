@@ -32,9 +32,9 @@
 
 #pragma once
 
-#include "io/modified_load.cuh"
-#include "memset_kernel.cuh"
-#include "error_utils.cuh"
+#include "../util/io/modified_load.cuh"
+#include "../util/memset_kernel.cuh"
+#include "../util/error_utils.cuh"
 
 B40C_NS_PREFIX
 
@@ -214,3 +214,4 @@ public:
 } // namespace b40c
 
 B40C_NS_POSTFIX
+

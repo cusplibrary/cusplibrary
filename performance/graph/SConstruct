@@ -9,9 +9,8 @@ except:
   exec open("../../build/build-env.py")
   env = Environment()
 
-# on mac we have to tell the linker to link against the C++ library
-if env['PLATFORM'] == "darwin":
-  env.Append(LINKFLAGS = "-lstdc++")
+# always link against the C++ library
+env.Append(LINKFLAGS = "-lstdc++")
 
 # find all .cus & .cpps in the current directory
 sources = []
@@ -20,7 +19,6 @@ extensions = ['*.cu', '*.cpp']
 for dir in directories:
   for ext in extensions:
     regexp = os.path.join(dir, ext)
-    #sources.extend(env.Glob(regexp, strings = True))
     sources.extend(glob.glob(regexp))
 
 # compile examples

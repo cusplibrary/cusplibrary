@@ -32,7 +32,7 @@
 
 #pragma once
 
-#include "../operators.cuh"
+#include "../../util/operators.cuh"
 
 B40C_NS_PREFIX
 
@@ -152,5 +152,4 @@ struct SerialReduce
 } // namespace b40c
 
 B40C_NS_POSTFIX
-
 

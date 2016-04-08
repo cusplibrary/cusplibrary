@@ -32,10 +32,10 @@
 
 #pragma once
 
-#include "../../srts_grid.cuh"
-#include "../../reduction/soa/cooperative_soa_reduction.cuh"
-#include "serial_soa_scan.cuh"
-#include "warp_soa_scan.cuh"
+#include "../../../util/srts_grid.cuh"
+#include "../../../util/reduction/soa/cooperative_soa_reduction.cuh"
+#include "../../../util/scan/soa/serial_soa_scan.cuh"
+#include "../../../util/scan/soa/warp_soa_scan.cuh"
 
 B40C_NS_PREFIX
 

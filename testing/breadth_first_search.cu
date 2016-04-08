@@ -89,6 +89,7 @@ void _TestBreadthFirstSearch(const ExampleMatrix& example_matrix)
 
     IndexType src = 0;
 
+    if(sizeof(IndexType) <= 4)
     {
         // compute MIS(1)
         cusp::graph::breadth_first_search(test_matrix, src, tree, false);

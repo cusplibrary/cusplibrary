@@ -32,9 +32,9 @@
 
 #pragma once
 
-#include "../srts_grid.cuh"
-#include "../reduction/serial_reduce.cuh"
-#include "../reduction/warp_reduce.cuh"
+#include "../../util/srts_grid.cuh"
+#include "../../util/reduction/serial_reduce.cuh"
+#include "../../util/reduction/warp_reduce.cuh"
 
 B40C_NS_PREFIX
 

@@ -42,6 +42,7 @@ namespace b40c {
 namespace graph {
 namespace bfs {
 
+
 /**
  * Type of BFS problem
  */

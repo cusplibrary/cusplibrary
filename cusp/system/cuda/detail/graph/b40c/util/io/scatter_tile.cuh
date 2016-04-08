@@ -32,8 +32,8 @@
 
 #pragma once
 
-#include "modified_store.cuh"
-#include "../operators.cuh"
+#include "../../util/io/modified_store.cuh"
+#include "../../util/operators.cuh"
 
 B40C_NS_PREFIX
 

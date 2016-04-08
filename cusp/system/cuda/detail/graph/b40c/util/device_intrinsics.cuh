@@ -32,8 +32,8 @@
 
 #pragma once
 
-#include "cuda_properties.cuh"
-#include "reduction/warp_reduce.cuh"
+#include "../util/cuda_properties.cuh"
+#include "../util/reduction/warp_reduce.cuh"
 
 B40C_NS_PREFIX
 

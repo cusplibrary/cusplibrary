@@ -35,7 +35,7 @@
 
 #pragma once
 
-#include "../../soa_tuple.cuh"
+#include "../../../util/soa_tuple.cuh"
 
 B40C_NS_PREFIX
 

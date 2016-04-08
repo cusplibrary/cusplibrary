@@ -32,9 +32,9 @@
 
 #pragma once
 
-#include "cuda_properties.cuh"
-#include "basic_utils.cuh"
-#include "numeric_traits.cuh"
+#include "../util/cuda_properties.cuh"
+#include "../util/basic_utils.cuh"
+#include "../util/numeric_traits.cuh"
 
 B40C_NS_PREFIX
 

@@ -33,7 +33,6 @@
 
 #pragma once
 
-
 B40C_NS_PREFIX
 
 namespace b40c {

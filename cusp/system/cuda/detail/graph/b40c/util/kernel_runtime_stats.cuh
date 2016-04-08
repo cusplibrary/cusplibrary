@@ -32,8 +32,8 @@
 
 #pragma once
 
-#include "error_utils.cuh"
-#include "cuda_properties.cuh"
+#include "../util/error_utils.cuh"
+#include "../util/cuda_properties.cuh"
 
 B40C_NS_PREFIX
 

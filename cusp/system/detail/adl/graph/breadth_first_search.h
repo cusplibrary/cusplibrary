@@ -18,6 +18,13 @@
 
 #include <thrust/detail/config.h>
 
+#if 0
+#include <cusp/system/cpp/detail/graph/breadth_first_search.h>
+#include <cusp/system/cuda/detail/graph/breadth_first_search.h>
+#include <cusp/system/omp/detail/graph/breadth_first_search.h>
+#include <cusp/system/tbb/detail/graph/breadth_first_search.h>
+#endif
+
 // the purpose of this header is to #include the breadth_first_search.h header
 // of the sequential, host, and device systems. It should be #included in any
 // code which uses adl to dispatch breadth_first_search
