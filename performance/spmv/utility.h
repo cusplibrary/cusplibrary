@@ -3,6 +3,9 @@
 #include <cuda.h>
 #include <iostream>
 
+#include <thrust/transform_reduce.h>
+#include <cusp/functional.h>
+
 #define CUDA_SAFE_CALL_NO_SYNC( call) do {                                \
  cudaError err = call;                                                    \
  if( cudaSuccess != err) {                                                \
@@ -69,5 +72,17 @@ T l2_error(size_t N, const T * a, const T * b)
     return numerator/denominator;
 }
 
+template <typename Array1d>
+typename Array1d::value_type
+l2_error(const Array1d& a, const Array1d& b)
+{
+    typedef typename Array1d::value_type T;
 
+    cusp::array1d<T,cusp::host_memory> diff(b);
+    cusp::blas::axpy(a, diff, T(-1));
 
+    T numerator = thrust::transform_reduce(diff.begin(), diff.end(), cusp::square_functor<T>(), T(0), thrust::plus<T>());
+    T denominator = thrust::transform_reduce(b.begin(), b.end(), cusp::square_functor<T>(), T(0), thrust::plus<T>());
+
+    return numerator/denominator;
+}
