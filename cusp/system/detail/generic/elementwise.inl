@@ -115,12 +115,12 @@ void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
     typedef thrust::zip_iterator<IteratorTuple2>                                                     ZipIterator2;
 
     typedef typename cusp::detail::temporary_array<IndexType, DerivedPolicy>::iterator               IndexIterator;
-    typedef cusp::join_iterator< thrust::tuple<ZipIterator1, ZipIterator2, IndexIterator> >          JoinIndexIterator;
+    typedef typename cusp::join_iterator< thrust::tuple<ZipIterator1, ZipIterator2, IndexIterator> >::iterator          JoinIndexIterator;
 
     typedef typename elementwise_detail::ops<BinaryFunction>::unary_op_type                          UnaryOp;
     typedef typename elementwise_detail::ops<BinaryFunction>::binary_op_type                         BinaryOp;
     typedef thrust::transform_iterator<UnaryOp, ValueIterator2>                                      TransValueIterator;
-    typedef cusp::join_iterator< thrust::tuple<ValueIterator1, TransValueIterator, IndexIterator> >  JoinValueIterator;
+    typedef typename cusp::join_iterator< thrust::tuple<ValueIterator1, TransValueIterator, IndexIterator> >::iterator  JoinValueIterator;
 
     size_t A_nnz = A.num_entries;
     size_t B_nnz = B.num_entries;
@@ -132,7 +132,7 @@ void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
         return;
     }
 
-#if THRUST_VERSION >= 100900
+#if THRUST_VERSION >= 100803
     ZipIterator1 A_tuples(thrust::make_tuple(A.row_indices.begin(), A.column_indices.begin()));
     ZipIterator2 B_tuples(thrust::make_tuple(B.row_indices.begin(), B.column_indices.begin()));
 
@@ -146,18 +146,20 @@ void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
                          thrust::counting_iterator<IndexType>(A_nnz),
                          thrust::make_discard_iterator(),
                          indices.begin(),
-                         cusp::detail::coo_tuple_comp<IndexType>());
+                         cusp::detail::coo_tuple_comp_functor<IndexType>());
 
-    JoinIndexIterator combined_tuples(A_tuples, A_tuples + A_nnz, B_tuples, B_tuples + B_nnz, indices.begin());
+    // JoinIndexIterator combined_tuples(A_tuples, A_tuples + A_nnz, B_tuples, B_tuples + B_nnz, indices.begin());
+    JoinIndexIterator combined_tuples = cusp::make_join_iterator(A_nnz, B_nnz, A_tuples, B_tuples, indices.begin());
 
     TransValueIterator vals(B.values.begin(), UnaryOp());
-    JoinValueIterator combined_values(A.values.begin(), A.values.begin() + A_nnz, vals, vals + B_nnz, indices.begin());
+    // JoinValueIterator combined_values(A.values.begin(), A.values.begin() + A_nnz, vals, vals + B_nnz, indices.begin());
+    JoinValueIterator combined_values = cusp::make_join_iterator(A_nnz, B_nnz, A.values.begin(), vals, indices.begin());
 
     // compute unique number of nonzeros in the output
     IndexType C_nnz = thrust::inner_product(exec,
-                                            combined_tuples.begin(),
-                                            combined_tuples.end() - 1,
-                                            combined_tuples.begin() + 1,
+                                            combined_tuples,
+                                            combined_tuples + num_entries - 1,
+                                            combined_tuples + 1,
                                             IndexType(1),
                                             thrust::plus<IndexType>(),
                                             thrust::not_equal_to< thrust::tuple<IndexType,IndexType> >());
@@ -168,9 +170,9 @@ void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
     // sum values with the same (i,j)
 
     thrust::reduce_by_key(exec,
-                          combined_tuples.begin(),
-                          combined_tuples.end(),
-                          combined_values.begin(),
+                          combined_tuples,
+                          combined_tuples + num_entries,
+                          combined_values,
                           thrust::make_zip_iterator(thrust::make_tuple(C.row_indices.begin(), C.column_indices.begin())),
                           C.values.begin(),
                           thrust::equal_to< thrust::tuple<IndexType,IndexType> >(),
