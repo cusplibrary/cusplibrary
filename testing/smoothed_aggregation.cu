@@ -8,6 +8,7 @@
 #include <cusp/dia_matrix.h>
 #include <cusp/ell_matrix.h>
 #include <cusp/hyb_matrix.h>
+#include <cusp/monitor.h>
 
 #include <cusp/gallery/poisson.h>
 #include <cusp/krylov/cg.h>

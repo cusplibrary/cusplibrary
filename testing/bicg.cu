@@ -1,6 +1,8 @@
 #include <unittest/unittest.h>
 
 #include <cusp/csr_matrix.h>
+#include <cusp/linear_operator.h>
+#include <cusp/monitor.h>
 #include <cusp/multiply.h>
 
 #include <cusp/gallery/poisson.h>

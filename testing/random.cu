@@ -2,6 +2,7 @@
 
 #include <cusp/array1d.h>
 #include <cusp/array2d.h>
+
 #include <thrust/sort.h>
 #include <thrust/unique.h>
 #include <thrust/extrema.h>

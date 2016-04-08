@@ -1,6 +1,7 @@
 #include <unittest/unittest.h>
 
 #include <cusp/relaxation/polynomial.h>
+#include <cusp/blas/blas.h>
 
 #include <cusp/array2d.h>
 #include <cusp/coo_matrix.h>
@@ -8,6 +9,7 @@
 #include <cusp/dia_matrix.h>
 #include <cusp/ell_matrix.h>
 #include <cusp/hyb_matrix.h>
+#include <cusp/multiply.h>
 
 #include <thrust/sequence.h>
 

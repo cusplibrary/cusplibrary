@@ -2,6 +2,7 @@
 
 #include <cusp/precond/ainv.h>
 
+#include <cusp/monitor.h>
 #include <cusp/gallery/poisson.h>
 #include <cusp/krylov/cg.h>
 
