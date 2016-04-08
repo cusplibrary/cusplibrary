@@ -133,7 +133,6 @@ def generate(env):
 
     # XXX intelligently detect location of nvcc and cuda libraries here
     (bin_path, lib_path, inc_path) = get_cuda_paths()
-    print bin_path
 
     env.PrependENVPath('PATH', bin_path)
 

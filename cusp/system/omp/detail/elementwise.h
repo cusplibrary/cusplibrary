@@ -15,26 +15,18 @@
  */
 #pragma once
 
-#include <cusp/array1d.h>
-#include <cusp/format_utils.h>
-#include <cusp/sort.h>
+#include <cusp/detail/format.h>
+#include <cusp/detail/temporary_array.h>
 
-#include <thrust/gather.h>
 #include <thrust/scan.h>
-#include <thrust/scatter.h>
-#include <thrust/transform.h>
-#include <thrust/reduce.h>
-#include <thrust/inner_product.h>
-#include <thrust/iterator/zip_iterator.h>
-#include <thrust/iterator/permutation_iterator.h>
-
-#include <list>
 
 namespace cusp
 {
 namespace system
 {
 namespace omp
+{
+namespace detail
 {
 
 template <typename DerivedPolicy,
@@ -164,6 +156,8 @@ void elementwise(omp::execution_policy<DerivedPolicy>& exec,
     C.resize(A.num_rows, A.num_cols, num_entries_in_C);
 } // csr_transform_elementwise
 
+} // end namespace detail
 } // end namespace omp
 } // end namespace system
 } // end namespace cusp
+

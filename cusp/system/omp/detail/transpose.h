@@ -20,3 +20,20 @@
 
 // this system inherits transpose
 #include <cusp/system/cpp/detail/transpose.h>
+
+namespace cusp
+{
+namespace system
+{
+namespace omp
+{
+namespace detail
+{
+
+using cusp::system::detail::sequential::transpose;
+
+} // end namespace detail
+} // end namespace omp
+} // end namespace system
+} // end namespace cusp
+

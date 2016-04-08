@@ -76,7 +76,6 @@ void counting_sort(thrust::cpp::execution_policy<DerivedPolicy>& exec,
       keys[counts[temp_keys[i]]++] = temp_keys[i];
 }
 
-// COO format
 template <typename DerivedPolicy, typename ArrayType1, typename ArrayType2>
 void counting_sort_by_key(thrust::cpp::execution_policy<DerivedPolicy>& exec,
                           ArrayType1& keys, ArrayType2& vals,

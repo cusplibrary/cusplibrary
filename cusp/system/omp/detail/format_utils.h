@@ -20,3 +20,20 @@
 
 // this system inherits format_utils
 #include <cusp/system/cpp/detail/format_utils.h>
+
+namespace cusp
+{
+namespace system
+{
+namespace omp
+{
+namespace detail
+{
+
+using cusp::system::detail::sequential::offsets_to_indices;
+using cusp::system::detail::sequential::indices_to_offsets;
+
+} // end namespace detail
+} // end namespace omp
+} // end namespace system
+} // end namespace cusp

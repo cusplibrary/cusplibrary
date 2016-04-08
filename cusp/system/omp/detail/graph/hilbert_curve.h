@@ -20,3 +20,19 @@
 
 // this system inherits elementwise
 #include <cusp/system/detail/sequential/graph/hilbert_curve.h>
+
+namespace cusp
+{
+namespace system
+{
+namespace omp
+{
+namespace detail
+{
+
+using cusp::system::detail::sequential::hilbert_curve;
+
+} // end namespace detail
+} // end namespace omp
+} // end namespace system
+} // end namespace cusp

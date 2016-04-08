@@ -48,6 +48,7 @@ tester
 *.ilk
 *.opensdf
 *.sconsign*
+*.sconf_temp
 *.dblite
 
 # Ignore all build release files

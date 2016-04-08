@@ -18,5 +18,23 @@
 
 #include <cusp/detail/config.h>
 
-// this system inherits transpose
+// this system inherits sort
 #include <cusp/system/cpp/detail/sort.h>
+
+namespace cusp
+{
+namespace system
+{
+namespace omp
+{
+namespace detail
+{
+
+using cusp::system::detail::sequential::counting_sort;
+using cusp::system::detail::sequential::counting_sort_by_key;
+
+} // end namespace detail
+} // end namespace omp
+} // end namespace system
+} // end namespace cusp
+
