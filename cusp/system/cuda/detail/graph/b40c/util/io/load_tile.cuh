@@ -33,9 +33,9 @@
 
 #pragma once
 
-#include "../operators.cuh"
-#include "../vector_types.cuh"
-#include "modified_load.cuh"
+#include "../../util/operators.cuh"
+#include "../../util/vector_types.cuh"
+#include "../../util/io/modified_load.cuh"
 
 B40C_NS_PREFIX
 

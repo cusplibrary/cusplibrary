@@ -32,8 +32,8 @@
 
 #pragma once
 
-#include "../basic_utils.cuh"
-#include "../operators.cuh"
+#include "../../util/basic_utils.cuh"
+#include "../../util/operators.cuh"
 
 B40C_NS_PREFIX
 

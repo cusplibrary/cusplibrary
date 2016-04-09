@@ -54,7 +54,7 @@ class execution_policy
       return result;
     }
 
-    inline cublasHandle_t get_handle(void)
+    inline cublasHandle_t& get_handle(void)
     {
       return handle;
     }

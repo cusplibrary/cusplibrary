@@ -48,10 +48,11 @@ void smooth_prolongator(thrust::cpp::execution_policy<DerivedPolicy> &exec,
                         const double omega,
                         cusp::csr_format)
 {
-    typedef typename MatrixType3::index_type IndexType;
-    typedef typename MatrixType3::value_type ValueType;
+    typedef typename MatrixType3::index_type   IndexType;
+    typedef typename MatrixType3::value_type   ValueType;
+    typedef typename MatrixType3::memory_space MemorySpace;
 
-    cusp::array1d<ValueType, cusp::host_memory> D(S.num_rows);
+    cusp::array1d<ValueType, MemorySpace> D(S.num_rows);
     cusp::extract_diagonal(S, D);
 
     // create D_inv_S by copying S then scaling
@@ -110,7 +111,9 @@ void smooth_prolongator(thrust::cpp::execution_policy<DerivedPolicy> &exec,
                        cusp::make_csr_matrix_view(S.num_rows, S.num_cols, S.num_entries, S_row_offsets, S_.column_indices, S_.values),
                        cusp::make_csr_matrix_view(T.num_rows, T.num_cols, T.num_entries, T_row_offsets, T_.column_indices, T_.values),
                        P_,
-                       rho_Dinv_S, omega, cusp::csr_format());
+                       rho_Dinv_S,
+                       omega,
+                       cusp::csr_format());
 
     cusp::convert(P_, P);
 }

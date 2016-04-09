@@ -11,11 +11,7 @@ except:
 
 env.Append(CPPPATH = [os.environ["HOME"] + "/.local/include"])
 env.Append(LIBPATH = [os.environ["HOME"] + "/.local/lib"])
-env.Append(LIBS = ["-lopenblas"])
-
-# on mac we have to tell the linker to link against the C++ library
-if env['PLATFORM'] == "darwin":
-  env.Append(LINKFLAGS = "-lstdc++")
+env.Append(LIBS = ["cublas", "openblas", "stdc++"])
 
 # find all .cus & .cpps in the current directory
 sources = []

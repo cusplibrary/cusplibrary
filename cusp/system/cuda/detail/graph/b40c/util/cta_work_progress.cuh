@@ -33,11 +33,11 @@
 
 #pragma once
 
-#include "error_utils.cuh"
-#include "cuda_properties.cuh"
-#include "device_intrinsics.cuh"
-#include "io/modified_load.cuh"
-#include "io/modified_store.cuh"
+#include "../util/error_utils.cuh"
+#include "../util/cuda_properties.cuh"
+#include "../util/device_intrinsics.cuh"
+#include "../util/io/modified_load.cuh"
+#include "../util/io/modified_store.cuh"
 
 B40C_NS_PREFIX
 

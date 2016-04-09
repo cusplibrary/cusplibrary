@@ -49,23 +49,13 @@ cudaError_t B40CPerror(
 	const char *message,
 	const char *filename,
 	int line,
-	bool print)
+	bool print = true)
 {
 	if (error && print) {
 		fprintf(stderr, "[%s, %d] %s (CUDA error %d: %s)\n", filename, line, message, error, cudaGetErrorString(error));
 		fflush(stderr);
 	}
 	return error;
-}
-
-template<int dummy>
-cudaError_t B40CPerror(
-	cudaError_t error,
-	const char *message,
-	const char *filename,
-	int line)
-{
-	return B40CPerror<dummy>(error, message, filename, line, true);
 }
 
 /**
@@ -76,7 +66,7 @@ cudaError_t B40CPerror(
 	const char *message,
 	const char *filename,
 	int line,
-	bool print)
+	bool print = true)
 {
 	cudaError_t error = cudaGetLastError();
 	if (error && print) {
@@ -87,20 +77,13 @@ cudaError_t B40CPerror(
 	return error;
 }
 
-template<int dummy>
-cudaError_t B40CPerror(
-	const char *message,
-	const char *filename,
-	int line)
-{
-	return B40CPerror<dummy>(message, filename, line, false);
-}
-
 /**
  * Displays error message in accordance with debug mode
  */
 template<int dummy>
-cudaError_t B40CPerror(cudaError_t error, bool print)
+cudaError_t B40CPerror(
+	cudaError_t error,
+	bool print = true)
 {
 	if (error && print) {
 		fprintf(stderr, "(CUDA error %d: %s)\n", error, cudaGetErrorString(error));
@@ -109,18 +92,13 @@ cudaError_t B40CPerror(cudaError_t error, bool print)
 	return error;
 }
 
-template<int dummy>
-cudaError_t B40CPerror(cudaError_t error)
-{
-	return B40CPerror<dummy>(error, false);
-}
-
 
 /**
  * Checks and resets last CUDA error.  If set, displays last error message in accordance with debug mode.
  */
 template<int dummy>
-cudaError_t B40CPerror(bool print)
+cudaError_t B40CPerror(
+	bool print = true)
 {
 	cudaError_t error = cudaGetLastError();
 	if (error && print) {
@@ -130,11 +108,6 @@ cudaError_t B40CPerror(bool print)
 	return error;
 }
 
-template<int dummy>
-cudaError_t B40CPerror(void)
-{
-	return B40CPerror<dummy>(false);
-}
 
 } // namespace util
 } // namespace b40c

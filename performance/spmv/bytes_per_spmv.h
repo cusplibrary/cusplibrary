@@ -39,6 +39,17 @@ size_t bytes_per_spmv(const cusp::csr_matrix<IndexType,ValueType,cusp::host_memo
 }
 
 template <typename IndexType, typename ValueType>
+size_t bytes_per_spmv_block(const cusp::csr_matrix<IndexType,ValueType,cusp::host_memory>& mtx, size_t num_cols)
+{
+    size_t bytes = 0;
+    bytes += 2*sizeof(IndexType) * mtx.num_rows;     // row pointer
+    bytes += 1*sizeof(IndexType) * mtx.num_entries;  // column index
+    bytes += (num_cols + 1)*sizeof(ValueType) * mtx.num_entries;  // A[i,j] and x[j]
+    bytes += (num_cols + 1)*sizeof(ValueType) * mtx.num_rows;     // y[i] = y[i] + ...
+    return bytes;
+}
+
+template <typename IndexType, typename ValueType>
 size_t bytes_per_spmv(const cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& mtx)
 {
     size_t bytes = 0;

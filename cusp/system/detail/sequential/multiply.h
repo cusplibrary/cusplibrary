@@ -25,6 +25,8 @@
 #include <cusp/system/detail/sequential/multiply/ell_spmv.h>
 #include <cusp/system/detail/sequential/multiply/hyb_spmv.h>
 
+#include <cusp/system/detail/sequential/multiply/csr_block_spmv.h>
+
 #include <cusp/system/detail/sequential/multiply/array2d_mv.h>
 #include <cusp/system/detail/sequential/multiply/array2d_mm.h>
 

@@ -54,14 +54,15 @@ void elementwise(thrust::cpp::execution_policy<DerivedPolicy>& exec,
                  cusp::csr_format)
 {
     //Method that works for duplicate and/or unsorted indices
-    typedef typename MatrixType3::index_type IndexType;
-    typedef typename MatrixType3::value_type ValueType;
+    typedef typename MatrixType3::index_type   IndexType;
+    typedef typename MatrixType3::value_type   ValueType;
+    typedef typename MatrixType3::memory_space MemorySpace;
 
     cusp::detail::temporary_array<IndexType, DerivedPolicy>  next(exec, A.num_cols, IndexType(-1));
     cusp::detail::temporary_array<ValueType, DerivedPolicy> A_row(exec, A.num_cols, ValueType(0));
     cusp::detail::temporary_array<ValueType, DerivedPolicy> B_row(exec, A.num_cols, ValueType(0));
 
-    cusp::csr_matrix<IndexType,ValueType,cusp::host_memory> temp(A.num_rows, A.num_cols, A.num_entries + B.num_entries);
+    cusp::csr_matrix<IndexType,ValueType,MemorySpace> temp(A.num_rows, A.num_cols, A.num_entries + B.num_entries);
 
     size_t nnz = 0;
 

@@ -33,8 +33,8 @@
 #pragma once
 
 #include <cuda.h>
-#include "../cuda_properties.cuh"
-#include "../vector_types.cuh"
+#include "../../util/cuda_properties.cuh"
+#include "../../util/vector_types.cuh"
 
 B40C_NS_PREFIX
 

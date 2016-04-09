@@ -66,3 +66,4 @@ struct ProblemType
 }// namespace b40c
 
 B40C_NS_POSTFIX
+

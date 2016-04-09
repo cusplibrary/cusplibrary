@@ -36,7 +36,7 @@
 #include "../../util/cta_work_progress.cuh"
 #include "../../util/error_utils.cuh"
 
-#include "csr_problem.cuh"
+#include "../../graph/bfs/csr_problem.cuh"
 
 B40C_NS_PREFIX
 
@@ -69,7 +69,7 @@ protected:
 public:
 
 	// Allows display to stdout of search details
-	bool B40C_DEBUG;
+	bool DEBUG;
 
 	FrontierType GetFrontierType() { return frontier_type;}
 
@@ -78,9 +78,9 @@ protected:
 	/**
 	 * Constructor.
 	 */
-	EnactorBase(FrontierType frontier_type, bool B40C_DEBUG) :
+	EnactorBase(FrontierType frontier_type, bool DEBUG) :
 		frontier_type(frontier_type),
-		B40C_DEBUG(B40C_DEBUG)
+		DEBUG(DEBUG)
 	{
 		// Setup work progress (only needs doing once since we maintain
 		// it in our kernel code)
@@ -133,3 +133,4 @@ protected:
 } // namespace b40c
 
 B40C_NS_POSTFIX
+

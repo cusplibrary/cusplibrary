@@ -523,11 +523,14 @@ DECLARE_HOST_DEVICE_UNITTEST(TestComplexNrmmax)
 template <class MemorySpace>
 void TestScal(void)
 {
-    typedef typename cusp::array1d<float, MemorySpace>       Array;
-    typedef typename cusp::array1d<float, MemorySpace>::view View;
+    typedef typename cusp::array1d<float, MemorySpace>       Array1d;
+    typedef typename cusp::array1d<float, MemorySpace>::view View1d;
 
-    Array x(6);
-    View view_x(x);
+    typedef typename cusp::array2d<float, MemorySpace>       Array2d;
+    typedef typename cusp::array2d<float, MemorySpace>::view View2d;
+
+    Array1d x(6);
+    View1d view_x(x);
 
     x[0] =  7.0f;
     x[1] =  5.0f;
@@ -553,6 +556,34 @@ void TestScal(void)
     ASSERT_EQUAL(x[3], -24.0);
     ASSERT_EQUAL(x[4],   0.0);
     ASSERT_EQUAL(x[5],  32.0);
+
+    Array2d X(6,1);
+    View2d view_X(X);
+
+    X(0,0) =  7.0f;
+    X(1,0) =  5.0f;
+    X(2,0) =  4.0f;
+    X(3,0) = -3.0f;
+    X(4,0) =  0.0f;
+    X(5,0) =  4.0f;
+
+    cusp::blas::scal(X.column(0), 4.0f);
+
+    ASSERT_EQUAL(X.column(0)[0],  28.0);
+    ASSERT_EQUAL(X.column(0)[1],  20.0);
+    ASSERT_EQUAL(X.column(0)[2],  16.0);
+    ASSERT_EQUAL(X.column(0)[3], -12.0);
+    ASSERT_EQUAL(X.column(0)[4],   0.0);
+    ASSERT_EQUAL(X.column(0)[5],  16.0);
+
+    cusp::blas::scal(view_X.column(0), 2.0f);
+
+    ASSERT_EQUAL(X.column(0)[0],  56.0);
+    ASSERT_EQUAL(X.column(0)[1],  40.0);
+    ASSERT_EQUAL(X.column(0)[2],  32.0);
+    ASSERT_EQUAL(X.column(0)[3], -24.0);
+    ASSERT_EQUAL(X.column(0)[4],   0.0);
+    ASSERT_EQUAL(X.column(0)[5],  32.0);
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestScal)
 

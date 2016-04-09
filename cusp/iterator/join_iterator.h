@@ -41,15 +41,15 @@ struct constant_tuple
 
     typedef
     thrust::tuple<typename thrust::detail::eval_if<(size > 0),T_,N_>::type,
-           typename thrust::detail::eval_if<(size > 1),T_,N_>::type,
-           typename thrust::detail::eval_if<(size > 2),T_,N_>::type,
-           typename thrust::detail::eval_if<(size > 3),T_,N_>::type,
-           typename thrust::detail::eval_if<(size > 4),T_,N_>::type,
-           typename thrust::detail::eval_if<(size > 5),T_,N_>::type,
-           typename thrust::detail::eval_if<(size > 6),T_,N_>::type,
-           typename thrust::detail::eval_if<(size > 7),T_,N_>::type,
-           typename thrust::detail::eval_if<(size > 8),T_,N_>::type,
-           typename thrust::detail::eval_if<(size > 9),T_,N_>::type> type;
+                  typename thrust::detail::eval_if<(size > 1),T_,N_>::type,
+                  typename thrust::detail::eval_if<(size > 2),T_,N_>::type,
+                  typename thrust::detail::eval_if<(size > 3),T_,N_>::type,
+                  typename thrust::detail::eval_if<(size > 4),T_,N_>::type,
+                  typename thrust::detail::eval_if<(size > 5),T_,N_>::type,
+                  typename thrust::detail::eval_if<(size > 6),T_,N_>::type,
+                  typename thrust::detail::eval_if<(size > 7),T_,N_>::type,
+                  typename thrust::detail::eval_if<(size > 8),T_,N_>::type,
+                  typename thrust::detail::eval_if<(size > 9),T_,N_>::type> type;
 };
 
 template<typename T, typename V, int SIZE>
@@ -57,9 +57,9 @@ struct join_search
 {
     template<typename SizesTuple, typename Tuple>
     __host__ __device__
-    V operator()(const SizesTuple&t1, const Tuple& t2, const T i) const
+    V operator()(const SizesTuple &t1, const Tuple& t2, const T i) const
     {
-        return i >= T(thrust::get<SIZE-2>(t1)) ? thrust::get<SIZE-1>(t2)[i] : join_search<T,V,SIZE-1>()(t1,t2,i);
+        return (i >= T(thrust::get<SIZE-2>(t1))) ? V(thrust::get<SIZE-1>(t2)[i]) : join_search<T,V,SIZE-1>()(t1,t2,i);
     }
 };
 
@@ -68,7 +68,7 @@ struct join_search<T,V,2>
 {
     template<typename SizesTuple, typename Tuple>
     __host__ __device__
-    V operator()(const SizesTuple&t1, const Tuple& t2, const T i) const
+    V operator()(const SizesTuple &t1, const Tuple& t2, const T i) const
     {
         return i >= T(thrust::get<0>(t1)) ? thrust::get<1>(t2)[i] : thrust::get<0>(t2)[i];
     }
@@ -149,7 +149,8 @@ public:
     typedef typename thrust::iterator_reference<Iterator1>::type   reference;
     typedef typename thrust::iterator_difference<Iterator1>::type  difference_type;
     typedef typename thrust::iterator_difference<Iterator1>::type  size_type;
-    typedef typename thrust::iterator_system<Iterator1>::type      memory_space;
+    typedef typename thrust::iterator_system<Iterator1>::type      space;
+    typedef typename cusp::iterator_system<space>::type            memory_space;
 
     const static size_t tuple_size = thrust::tuple_size<Tuple>::value;
 

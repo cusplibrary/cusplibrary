@@ -111,6 +111,25 @@ void axpy(const ArrayType1& x,
 }
 
 template <typename ArrayType1,
+          typename RandomAccessIterator,
+          typename ScalarType>
+void axpy(const ArrayType1& x,
+                cusp::array1d_view<RandomAccessIterator> y,
+          const ScalarType alpha)
+{
+    using thrust::system::detail::generic::select_system;
+
+    typedef cusp::array1d_view<RandomAccessIterator> ArrayType2;
+    typedef typename ArrayType1::memory_space System1;
+    typedef typename ArrayType2::memory_space System2;
+
+    System1 system1;
+    System2 system2;
+
+    cusp::blas::axpy(select_system(system1,system2), x, y, alpha);
+}
+
+template <typename ArrayType1,
           typename ArrayType2,
           typename ArrayType3,
           typename ScalarType1,
@@ -476,6 +495,21 @@ void scal(ArrayType& x,
 {
     using thrust::system::detail::generic::select_system;
 
+    typedef typename ArrayType::memory_space System;
+
+    System system;
+
+    cusp::blas::scal(select_system(system), x, alpha);
+}
+
+template <typename RandomAccessIterator,
+          typename ScalarType>
+void scal(cusp::array1d_view<RandomAccessIterator> x,
+          const ScalarType alpha)
+{
+    using thrust::system::detail::generic::select_system;
+
+    typedef cusp::array1d_view<RandomAccessIterator> ArrayType;
     typedef typename ArrayType::memory_space System;
 
     System system;

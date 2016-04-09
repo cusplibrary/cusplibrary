@@ -34,7 +34,7 @@
 
 #pragma once
 
-#include "basic_utils.cuh"
+#include "../util/basic_utils.cuh"
 
 B40C_NS_PREFIX
 

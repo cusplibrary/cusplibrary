@@ -32,7 +32,7 @@
 
 #pragma once
 
-#include "../operators.cuh"
+#include "../../util/operators.cuh"
 
 B40C_NS_PREFIX
 

@@ -30,23 +30,23 @@ namespace print_detail
 {
 
 template<typename T, typename Stream>
-void marshall(const T& val, Stream& s)
+void marshall(const T& val, Stream& s, bool newline = true)
 {
-    s << " "  << std::setw(14) << "(" << val << ")\n";
+    s << " "  << std::setprecision(4) << std::setw(8) << "(" << val << ")" << (newline ? "\n" : " ");
 }
 
 #if (THRUST_VERSION < 100802) || (THRUST_HOST_COMPILER == THRUST_HOST_COMPILER_MSVC)
 template<typename T, typename Stream>
-void marshall(const thrust::complex<T>& val, Stream& s)
+void marshall(const thrust::complex<T>& val, Stream& s, bool newline = true)
 {
     s << " "  << std::setw(14) << "(" << val.real() << ", " << val.imag() << ")\n";
 }
 
 template<typename T, typename Stream>
-void marshall(const thrust::device_reference<T>& val, Stream& s)
+void marshall(const thrust::device_reference<T>& val, Stream& s, bool newline = true)
 {
     T cval(val);
-    marshall(cval, s);
+    marshall(cval, s, newline);
 }
 #endif
 
@@ -82,7 +82,7 @@ void print(const Printable& p, Stream& s, cusp::array2d_format)
     {
         for(size_t j = 0; j < p.num_cols; j++)
         {
-            print_detail::marshall(p(i,j), s);
+            print_detail::marshall(p(i,j), s, false);
         }
 
         s << "\n";

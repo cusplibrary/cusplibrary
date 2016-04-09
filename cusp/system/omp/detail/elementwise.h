@@ -19,6 +19,7 @@
 #include <cusp/detail/temporary_array.h>
 
 #include <thrust/scan.h>
+#include <cusp/system/cpp/detail/elementwise.h>
 
 namespace cusp
 {
@@ -39,7 +40,9 @@ void elementwise(omp::execution_policy<DerivedPolicy>& exec,
                  const MatrixType2& B,
                  MatrixType3& C,
                  BinaryFunction op,
-                 cusp::csr_format&)
+                 cusp::csr_format,
+                 cusp::csr_format,
+                 cusp::csr_format)
 {
     //Method that works for duplicate and/or unsorted indices
     typedef typename MatrixType3::index_type IndexType;
@@ -149,11 +152,11 @@ void elementwise(omp::execution_policy<DerivedPolicy>& exec,
         } //omp for
     } //omp parallel
 
-    C.row_offsets.swap(C_row_offsets);
-    C.column_indices.swap(C_column_indices);
-    C.values.swap(C_values);
-
     C.resize(A.num_rows, A.num_cols, num_entries_in_C);
+
+    cusp::copy(exec, C_row_offsets, C.row_offsets);
+    cusp::copy(exec, C_column_indices, C.column_indices);
+    cusp::copy(exec, C_values, C.values);
 } // csr_transform_elementwise
 
 } // end namespace detail

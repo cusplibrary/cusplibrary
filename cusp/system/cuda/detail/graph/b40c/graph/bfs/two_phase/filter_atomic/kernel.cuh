@@ -36,7 +36,7 @@
 #include "../../../../util/cta_work_progress.cuh"
 #include "../../../../util/kernel_runtime_stats.cuh"
 
-#include "cta.cuh"
+#include "../../../../graph/bfs/two_phase/filter_atomic/cta.cuh"
 
 B40C_NS_PREFIX
 

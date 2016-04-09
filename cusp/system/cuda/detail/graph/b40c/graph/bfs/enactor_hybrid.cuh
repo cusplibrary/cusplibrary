@@ -34,17 +34,17 @@
 
 #include "../../util/kernel_runtime_stats.cuh"
 
-#include "enactor_base.cuh"
-#include "problem_type.cuh"
+#include "../../graph/bfs/enactor_base.cuh"
+#include "../../graph/bfs/problem_type.cuh"
 
-#include "contract_expand_atomic/kernel.cuh"
-#include "contract_expand_atomic/kernel_policy.cuh"
-#include "two_phase/expand_atomic/kernel.cuh"
-#include "two_phase/expand_atomic/kernel_policy.cuh"
-#include "two_phase/filter_atomic/kernel.cuh"
-#include "two_phase/filter_atomic/kernel_policy.cuh"
-#include "two_phase/contract_atomic/kernel.cuh"
-#include "two_phase/contract_atomic/kernel_policy.cuh"
+#include "../../graph/bfs/contract_expand_atomic/kernel.cuh"
+#include "../../graph/bfs/contract_expand_atomic/kernel_policy.cuh"
+#include "../../graph/bfs/two_phase/expand_atomic/kernel.cuh"
+#include "../../graph/bfs/two_phase/expand_atomic/kernel_policy.cuh"
+#include "../../graph/bfs/two_phase/filter_atomic/kernel.cuh"
+#include "../../graph/bfs/two_phase/filter_atomic/kernel_policy.cuh"
+#include "../../graph/bfs/two_phase/contract_atomic/kernel.cuh"
+#include "../../graph/bfs/two_phase/contract_atomic/kernel_policy.cuh"
 
 B40C_NS_PREFIX
 
@@ -96,7 +96,7 @@ protected:
      * signal when done.
      */
     volatile int 		*done;
-    int 				    *d_done;
+    int 				*d_done;
     cudaEvent_t			throttle_event;
 
     /**
@@ -160,52 +160,52 @@ protected:
             if (retval = global_barrier.Setup(fused_grid_size)) break;
 
             // Reset statistics
-            done[0] 			  = -1;
-            total_runtimes 	= 0;
-            total_lifetimes = 0;
+            done[0] 			= -1;
+            total_runtimes 		= 0;
+            total_lifetimes 	= 0;
             total_queued 		= 0;
 
             // Single-gpu graph slice
-            /* typename CsrProblem::GraphSlice *graph_slice = csr_problem.graph_slices[0]; */
+            typename CsrProblem::GraphSlice *graph_slice = csr_problem.graph_slices[0];
 
             // Bind bitmask texture
-            /* int bytes = (graph_slice->nodes + 8 - 1) / 8; */
-            /* cudaChannelFormatDesc bitmask_desc = cudaCreateChannelDesc<unsigned char>(); */
-            /* if (retval = util::B40CPerror<0>(cudaBindTexture( */
-            /*                                   0, */
-            /*                                   two_phase::contract_atomic::BitmaskTex<VisitedMask>::ref, */
-            /*                                   graph_slice->d_visited_mask, */
-            /*                                   bitmask_desc, */
-            /*                                   bytes), */
-            /*                               "EnactorHybrid cudaBindTexture bitmask_tex_ref failed", __FILE__, __LINE__)) break; */
+            int bytes = (graph_slice->nodes + 8 - 1) / 8;
+            cudaChannelFormatDesc bitmask_desc = cudaCreateChannelDesc<VisitedMask>();
+            if (retval = util::B40CPerror<0>(cudaBindTexture(
+                                              0,
+                                              two_phase::contract_atomic::BitmaskTex<VisitedMask>::ref,
+                                              graph_slice->d_visited_mask,
+                                              bitmask_desc,
+                                              bytes),
+                                          "EnactorHybrid cudaBindTexture bitmask_tex_ref failed", __FILE__, __LINE__)) break;
 
             // Bind row-offsets texture
-            /* cudaChannelFormatDesc row_offsets_desc = cudaCreateChannelDesc<SizeT>(); */
-            /* if (retval = util::B40CPerror<0>(cudaBindTexture( */
-            /*                                   0, */
-            /*                                   two_phase::expand_atomic::RowOffsetTex<SizeT>::ref, */
-            /*                                   graph_slice->d_row_offsets, */
-            /*                                   row_offsets_desc, */
-            /*                                   (graph_slice->nodes + 1) * sizeof(SizeT)), */
-            /*                               "EnactorHybrid cudaBindTexture row_offset_tex_ref failed", __FILE__, __LINE__)) break; */
+            cudaChannelFormatDesc row_offsets_desc = cudaCreateChannelDesc<SizeT>();
+            if (retval = util::B40CPerror<0>(cudaBindTexture(
+                                              0,
+                                              two_phase::expand_atomic::RowOffsetTex<SizeT>::ref,
+                                              graph_slice->d_row_offsets,
+                                              row_offsets_desc,
+                                              (graph_slice->nodes + 1) * sizeof(SizeT)),
+                                          "EnactorHybrid cudaBindTexture row_offset_tex_ref failed", __FILE__, __LINE__)) break;
 
             // Bind bitmask texture
-            /* if (retval = util::B40CPerror<0>(cudaBindTexture( */
-            /*                                   0, */
-            /*                                   contract_expand_atomic::BitmaskTex<VisitedMask>::ref, */
-            /*                                   graph_slice->d_visited_mask, */
-            /*                                   bitmask_desc, */
-            /*                                   bytes), */
-            /*                               "EnactorHybrid cudaBindTexture bitmask_tex_ref failed", __FILE__, __LINE__)) break; */
+            if (retval = util::B40CPerror<0>(cudaBindTexture(
+                                              0,
+                                              contract_expand_atomic::BitmaskTex<VisitedMask>::ref,
+                                              graph_slice->d_visited_mask,
+                                              bitmask_desc,
+                                              bytes),
+                                          "EnactorHybrid cudaBindTexture bitmask_tex_ref failed", __FILE__, __LINE__)) break;
 
             // Bind row-offsets texture
-            /* if (retval = util::B40CPerror<0>(cudaBindTexture( */
-            /*                                   0, */
-            /*                                   contract_expand_atomic::RowOffsetTex<SizeT>::ref, */
-            /*                                   graph_slice->d_row_offsets, */
-            /*                                   row_offsets_desc, */
-            /*                                   (graph_slice->nodes + 1) * sizeof(SizeT)), */
-            /*                               "EnactorHybrid cudaBindTexture row_offset_tex_ref failed", __FILE__, __LINE__)) break; */
+            if (retval = util::B40CPerror<0>(cudaBindTexture(
+                                              0,
+                                              contract_expand_atomic::RowOffsetTex<SizeT>::ref,
+                                              graph_slice->d_row_offsets,
+                                              row_offsets_desc,
+                                              (graph_slice->nodes + 1) * sizeof(SizeT)),
+                                          "EnactorHybrid cudaBindTexture row_offset_tex_ref failed", __FILE__, __LINE__)) break;
 
 
         } while (0);
@@ -218,8 +218,8 @@ public:
     /**
      * Constructor
      */
-    EnactorHybrid(bool B40C_DEBUG = false) :
-        EnactorBase(EDGE_FRONTIERS, B40C_DEBUG),
+    EnactorHybrid(bool DEBUG = false) :
+        EnactorBase(EDGE_FRONTIERS, DEBUG),
         d_iteration(NULL),
         h_iteration(0),
         total_queued(0),
@@ -300,7 +300,7 @@ public:
             int contract_min_occupancy		= ContractPolicy::CTA_OCCUPANCY;
             int contract_grid_size 			= MaxGridSize(contract_min_occupancy, max_grid_size);
 
-            if (B40C_DEBUG) {
+            if (DEBUG) {
                 printf("BFS fused min occupancy %d, level-grid size %d\n",
                        fused_min_occupancy, fused_grid_size);
                 printf("BFS expand min occupancy %d, level-grid size %d\n",
@@ -355,7 +355,7 @@ public:
                     fused_kernel_stats,
                     (VertexId *) d_iteration);
 
-                if (B40C_DEBUG && (retval = util::B40CPerror<0>(cudaThreadSynchronize(), "contract_expand_atomic::KernelGlobalBarrier failed ", __FILE__, __LINE__))) break;
+                if (DEBUG && (retval = util::B40CPerror<0>(cudaThreadSynchronize(), "contract_expand_atomic::KernelGlobalBarrier failed ", __FILE__, __LINE__))) break;
                 cudaEventQuery(throttle_event);	// give host memory mapped visibility to GPU updates
 
                 // Retrieve output iteration
@@ -381,7 +381,7 @@ public:
                 // Update queue index by the number of elapsed iterations
                 queue_index += (iteration - one_phase_iteration);
 
-                if (B40C_DEBUG) {
+                if (DEBUG) {
                     if (retval = work_progress.GetQueueLength(queue_index, queue_length)) break;
                     printf("\n%lld, , , %lld", (long long) iteration, (long long) queue_length);
                 }
@@ -397,7 +397,7 @@ public:
                 VertexId two_phase_iteration = iteration;
                 while (done[0] < 0) {
 
-                    if (B40C_DEBUG) printf("\n%lld", (long long) iteration);
+                    if (DEBUG) printf("\n%lld", (long long) iteration);
 
                     //
                     // Filter
@@ -418,13 +418,13 @@ public:
                         graph_slice->frontier_elements[selector ^ 1],			// max vertex frontier vertices
                         this->filter_kernel_stats);
 
-                    if (B40C_DEBUG && (retval = util::B40CPerror<0>(cudaThreadSynchronize(), "filter_atomic::Kernel failed ", __FILE__, __LINE__))) break;
+                    if (DEBUG && (retval = util::B40CPerror<0>(cudaThreadSynchronize(), "filter_atomic::Kernel failed ", __FILE__, __LINE__))) break;
                     cudaEventQuery(throttle_event);	// give host memory mapped visibility to GPU updates
 
                     queue_index++;
                     selector ^= 1;
 
-                    if (B40C_DEBUG) {
+                    if (DEBUG) {
                         if (retval = work_progress.GetQueueLength(queue_index, queue_length)) break;
                         printf(", %lld", (long long) queue_length);
                     }
@@ -461,13 +461,13 @@ public:
                         graph_slice->frontier_elements[selector ^ 1],			// max out vertices
                         contract_kernel_stats);
 
-                    if (B40C_DEBUG && (retval = util::B40CPerror<0>(cudaThreadSynchronize(), "contract_atomic::Kernel failed ", __FILE__, __LINE__))) break;
+                    if (DEBUG && (retval = util::B40CPerror<0>(cudaThreadSynchronize(), "contract_atomic::Kernel failed ", __FILE__, __LINE__))) break;
                     cudaEventQuery(throttle_event);	// give host memory mapped visibility to GPU updates
 
                     queue_index++;
                     selector ^= 1;
 
-                    if (B40C_DEBUG) {
+                    if (DEBUG) {
                         if (work_progress.GetQueueLength(queue_index, queue_length)) break;
                         printf(", %lld", (long long) queue_length);
                     }
@@ -509,17 +509,17 @@ public:
                         graph_slice->frontier_elements[selector ^ 1],		// max out vertices
                         expand_kernel_stats);
 
-                    if (B40C_DEBUG && (retval = util::B40CPerror<0>(cudaThreadSynchronize(), "expand_atomic::Kernel failed ", __FILE__, __LINE__))) break;
+                    if (DEBUG && (retval = util::B40CPerror<0>(cudaThreadSynchronize(), "expand_atomic::Kernel failed ", __FILE__, __LINE__))) break;
                     cudaEventQuery(throttle_event);	// give host memory mapped visibility to GPU updates
 
                     queue_index++;
                     selector ^= 1;
                     iteration++;
 
-                    if (INSTRUMENT || B40C_DEBUG) {
+                    if (INSTRUMENT || DEBUG) {
                         if (work_progress.GetQueueLength(queue_index, queue_length)) break;
                         total_queued += queue_length;
-                        if (B40C_DEBUG) printf(", %lld", (long long) queue_length);
+                        if (DEBUG) printf(", %lld", (long long) queue_length);
                         if (INSTRUMENT) {
                             expand_kernel_stats.Accumulate(
                                 expand_grid_size,
@@ -543,7 +543,7 @@ public:
 
         } while (0);
 
-        if (B40C_DEBUG) printf("\n");
+        if (DEBUG) printf("\n");
 
         return retval;
     }
@@ -566,14 +566,14 @@ public:
         // GF100
         if (cuda_props.device_sm_version >= 200) {
 
-            /* const int SATURATION_QUIT = 4 * 128; */
+            const int SATURATION_QUIT = 4 * 128;
 
             // Fused-iteration contract-expand kernel config
             typedef contract_expand_atomic::KernelPolicy<
             typename CsrProblem::ProblemType,
                      200,
                      INSTRUMENT, 			// INSTRUMENT
-                     4 * 128/*SATURATION_QUIT*/,		// SATURATION_QUIT
+                     SATURATION_QUIT,		// SATURATION_QUIT
                      (sizeof(VertexId) > 4) ? 7 : 8,		// CTA_OCCUPANCY
                      7,						// LOG_THREADS
                      0,						// LOG_LOAD_VEC_SIZE
@@ -617,7 +617,7 @@ public:
             typename CsrProblem::ProblemType,
                      200,					// CUDA_ARCH
                      INSTRUMENT, 			// INSTRUMENT
-                     4 * 128/*SATURATION_QUIT*/, 		// SATURATION_QUIT
+                     SATURATION_QUIT, 		// SATURATION_QUIT
                      8,						// CTA_OCCUPANCY
                      7,						// LOG_THREADS
                      1,						// LOG_LOAD_VEC_SIZE
@@ -756,3 +756,4 @@ public:
 } // namespace b40c
 
 B40C_NS_POSTFIX
+

@@ -32,11 +32,11 @@
 
 #pragma once
 
-#include "../device_intrinsics.cuh"
-#include "../srts_grid.cuh"
-#include "../reduction/cooperative_reduction.cuh"
-#include "../scan/serial_scan.cuh"
-#include "../scan/warp_scan.cuh"
+#include "../../util/device_intrinsics.cuh"
+#include "../../util/srts_grid.cuh"
+#include "../../util/reduction/cooperative_reduction.cuh"
+#include "../../util/scan/serial_scan.cuh"
+#include "../../util/scan/warp_scan.cuh"
 
 B40C_NS_PREFIX
 
