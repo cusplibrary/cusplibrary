@@ -16,13 +16,23 @@
 
 #pragma once
 
-#include <thrust/detail/config.h>
+#include <cusp/detail/config.h>
 
-// the purpose of this header is to #include the elementwise.h header
+// the purpose of this header is to #include the format_utils.h header
 // of the sequential, host, and device systems. It should be #included in any
-// code which uses adl to dispatch elementwise
+// code which uses adl to dispatch format_utils
 
 #include <cusp/system/detail/sequential/format_utils.h>
+
+// SCons can't see through the #defines below to figure out what this header
+// includes, so we fake it out by specifying all possible files we might end up
+// including inside an #if 0.
+#if 0
+#include <cusp/system/cpp/detail/format_utils.h>
+#include <cusp/system/cuda/detail/format_utils.h>
+#include <cusp/system/omp/detail/format_utils.h>
+#include <cusp/system/tbb/detail/format_utils.h>
+#endif
 
 #define __CUSP_HOST_SYSTEM_FORMAT_UTILS_HEADER <__CUSP_HOST_SYSTEM_ROOT/detail/format_utils.h>
 #include __CUSP_HOST_SYSTEM_FORMAT_UTILS_HEADER
@@ -31,3 +41,4 @@
 #define __CUSP_DEVICE_SYSTEM_FORMAT_UTILS_HEADER <__CUSP_DEVICE_SYSTEM_ROOT/detail/format_utils.h>
 #include __CUSP_DEVICE_SYSTEM_FORMAT_UTILS_HEADER
 #undef __CUSP_DEVICE_SYSTEM_FORMAT_UTILS_HEADER
+

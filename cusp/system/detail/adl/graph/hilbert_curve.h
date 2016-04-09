@@ -16,13 +16,23 @@
 
 #pragma once
 
-#include <thrust/detail/config.h>
+#include <cusp/detail/config.h>
 
 // the purpose of this header is to #include the hilbert_curve.h header
 // of the sequential, host, and device systems. It should be #included in any
 // code which uses adl to dispatch hilbert_curve
 
 #include <cusp/system/detail/sequential/graph/hilbert_curve.h>
+
+// SCons can't see through the #defines below to figure out what this header
+// includes, so we fake it out by specifying all possible files we might end up
+// including inside an #if 0.
+#if 0
+#include <cusp/system/cpp/detail/graph/hilbert_curve.h>
+#include <cusp/system/cuda/detail/graph/hilbert_curve.h>
+#include <cusp/system/omp/detail/graph/hilbert_curve.h>
+#include <cusp/system/tbb/detail/graph/hilbert_curve.h>
+#endif
 
 #define __CUSP_HOST_SYSTEM_HILBERT_CURVE_HEADER <__CUSP_HOST_SYSTEM_ROOT/detail/graph/hilbert_curve.h>
 #include __CUSP_HOST_SYSTEM_HILBERT_CURVE_HEADER
@@ -31,3 +41,4 @@
 #define __CUSP_DEVICE_SYSTEM_HILBERT_CURVE_HEADER <__CUSP_DEVICE_SYSTEM_ROOT/detail/graph/hilbert_curve.h>
 #include __CUSP_DEVICE_SYSTEM_HILBERT_CURVE_HEADER
 #undef __CUSP_DEVICE_SYSTEM_HILBERT_CURVE_HEADER
+

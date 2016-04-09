@@ -16,13 +16,23 @@
 
 #pragma once
 
-#include <thrust/detail/config.h>
+#include <cusp/detail/config.h>
 
 // the purpose of this header is to #include the symmetric_rcm.h header
 // of the sequential, host, and device systems. It should be #included in any
 // code which uses adl to dispatch symmetric_rcm
 
 #include <cusp/system/detail/sequential/graph/symmetric_rcm.h>
+
+// SCons can't see through the #defines below to figure out what this header
+// includes, so we fake it out by specifying all possible files we might end up
+// including inside an #if 0.
+#if 0
+#include <cusp/system/cpp/detail/graph/symmetric_rcm.h>
+#include <cusp/system/cuda/detail/graph/symmetric_rcm.h>
+#include <cusp/system/omp/detail/graph/symmetric_rcm.h>
+#include <cusp/system/tbb/detail/graph/symmetric_rcm.h>
+#endif
 
 #define __CUSP_HOST_SYSTEM_SYMMETRIC_RCM_HEADER <__CUSP_HOST_SYSTEM_ROOT/detail/graph/symmetric_rcm.h>
 #include __CUSP_HOST_SYSTEM_SYMMETRIC_RCM_HEADER
@@ -31,3 +41,4 @@
 #define __CUSP_DEVICE_SYSTEM_SYMMETRIC_RCM_HEADER <__CUSP_DEVICE_SYSTEM_ROOT/detail/graph/symmetric_rcm.h>
 #include __CUSP_DEVICE_SYSTEM_SYMMETRIC_RCM_HEADER
 #undef __CUSP_DEVICE_SYSTEM_SYMMETRIC_RCM_HEADER
+

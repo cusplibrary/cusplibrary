@@ -16,13 +16,23 @@
 
 #pragma once
 
-#include <thrust/detail/config.h>
+#include <cusp/detail/config.h>
 
 // the purpose of this header is to #include the connected_components.h header
 // of the sequential, host, and device systems. It should be #included in any
 // code which uses adl to dispatch connected_components
 
 #include <cusp/system/detail/sequential/graph/connected_components.h>
+
+// SCons can't see through the #defines below to figure out what this header
+// includes, so we fake it out by specifying all possible files we might end up
+// including inside an #if 0.
+#if 0
+#include <cusp/system/cpp/detail/graph/connected_components.h>
+#include <cusp/system/cuda/detail/graph/connected_components.h>
+#include <cusp/system/omp/detail/graph/connected_components.h>
+#include <cusp/system/tbb/detail/graph/connected_components.h>
+#endif
 
 #define __CUSP_HOST_SYSTEM_CONNECTED_COMPONENTS_HEADER <__CUSP_HOST_SYSTEM_ROOT/detail/graph/connected_components.h>
 #include __CUSP_HOST_SYSTEM_CONNECTED_COMPONENTS_HEADER
@@ -31,3 +41,4 @@
 #define __CUSP_DEVICE_SYSTEM_CONNECTED_COMPONENTS_HEADER <__CUSP_DEVICE_SYSTEM_ROOT/detail/graph/connected_components.h>
 #include __CUSP_DEVICE_SYSTEM_CONNECTED_COMPONENTS_HEADER
 #undef __CUSP_DEVICE_SYSTEM_CONNECTED_COMPONENTS_HEADER
+

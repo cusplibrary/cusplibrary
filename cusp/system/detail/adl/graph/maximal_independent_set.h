@@ -16,13 +16,23 @@
 
 #pragma once
 
-#include <thrust/detail/config.h>
+#include <cusp/detail/config.h>
 
 // the purpose of this header is to #include the maximal_independent_set.h header
 // of the sequential, host, and device systems. It should be #included in any
 // code which uses adl to dispatch maximal_independent_set
 
 #include <cusp/system/detail/sequential/graph/maximal_independent_set.h>
+
+// SCons can't see through the #defines below to figure out what this header
+// includes, so we fake it out by specifying all possible files we might end up
+// including inside an #if 0.
+#if 0
+#include <cusp/system/cpp/detail/graph/maximal_independent_set.h>
+#include <cusp/system/cuda/detail/graph/maximal_independent_set.h>
+#include <cusp/system/omp/detail/graph/maximal_independent_set.h>
+#include <cusp/system/tbb/detail/graph/maximal_independent_set.h>
+#endif
 
 #define __CUSP_HOST_SYSTEM_MAXIMAL_INDEPENDENT_SET_HEADER <__CUSP_HOST_SYSTEM_ROOT/detail/graph/maximal_independent_set.h>
 #include __CUSP_HOST_SYSTEM_MAXIMAL_INDEPENDENT_SET_HEADER
@@ -31,3 +41,4 @@
 #define __CUSP_DEVICE_SYSTEM_MAXIMAL_INDEPENDENT_SET_HEADER <__CUSP_DEVICE_SYSTEM_ROOT/detail/graph/maximal_independent_set.h>
 #include __CUSP_DEVICE_SYSTEM_MAXIMAL_INDEPENDENT_SET_HEADER
 #undef __CUSP_DEVICE_SYSTEM_MAXIMAL_INDEPENDENT_SET_HEADER
+

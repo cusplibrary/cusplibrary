@@ -16,13 +16,23 @@
 
 #pragma once
 
-#include <thrust/detail/config.h>
+#include <cusp/detail/config.h>
 
 // the purpose of this header is to #include the transpose.h header
 // of the sequential, host, and device systems. It should be #included in any
 // code which uses adl to dispatch transpose
 
 #include <cusp/system/detail/sequential/transpose.h>
+
+// SCons can't see through the #defines below to figure out what this header
+// includes, so we fake it out by specifying all possible files we might end up
+// including inside an #if 0.
+#if 0
+#include <cusp/system/cpp/detail/transpose.h>
+#include <cusp/system/cuda/detail/transpose.h>
+#include <cusp/system/omp/detail/transpose.h>
+#include <cusp/system/tbb/detail/transpose.h>
+#endif
 
 #define __CUSP_HOST_SYSTEM_TRANSPOSE_HEADER <__CUSP_HOST_SYSTEM_ROOT/detail/transpose.h>
 #include __CUSP_HOST_SYSTEM_TRANSPOSE_HEADER
@@ -31,3 +41,4 @@
 #define __CUSP_DEVICE_SYSTEM_TRANSPOSE_HEADER <__CUSP_DEVICE_SYSTEM_ROOT/detail/transpose.h>
 #include __CUSP_DEVICE_SYSTEM_TRANSPOSE_HEADER
 #undef __CUSP_DEVICE_SYSTEM_TRANSPOSE_HEADER
+

@@ -16,13 +16,23 @@
 
 #pragma once
 
-#include <thrust/detail/config.h>
+#include <cusp/detail/config.h>
 
-// the purpose of this header is to #include the elementwise.h header
+// the purpose of this header is to #include the convert.h header
 // of the sequential, host, and device systems. It should be #included in any
-// code which uses adl to dispatch elementwise
+// code which uses adl to dispatch convert
 
 #include <cusp/system/detail/sequential/convert.h>
+
+// SCons can't see through the #defines below to figure out what this header
+// includes, so we fake it out by specifying all possible files we might end up
+// including inside an #if 0.
+#if 0
+#include <cusp/system/cpp/detail/convert.h>
+#include <cusp/system/cuda/detail/convert.h>
+#include <cusp/system/omp/detail/convert.h>
+#include <cusp/system/tbb/detail/convert.h>
+#endif
 
 #define __CUSP_HOST_SYSTEM_CONVERT_HEADER <__CUSP_HOST_SYSTEM_ROOT/detail/convert.h>
 #include __CUSP_HOST_SYSTEM_CONVERT_HEADER
@@ -31,3 +41,4 @@
 #define __CUSP_DEVICE_SYSTEM_CONVERT_HEADER <__CUSP_DEVICE_SYSTEM_ROOT/detail/convert.h>
 #include __CUSP_DEVICE_SYSTEM_CONVERT_HEADER
 #undef __CUSP_DEVICE_SYSTEM_CONVERT_HEADER
+

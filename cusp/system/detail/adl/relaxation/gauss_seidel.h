@@ -24,6 +24,16 @@
 
 #include <cusp/system/detail/sequential/relaxation/gauss_seidel.h>
 
+// SCons can't see through the #defines below to figure out what this header
+// includes, so we fake it out by specifying all possible files we might end up
+// including inside an #if 0.
+#if 0
+#include <cusp/system/cpp/detail/relaxation/gauss_seidel.h>
+#include <cusp/system/cuda/detail/relaxation/gauss_seidel.h>
+#include <cusp/system/omp/detail/relaxation/gauss_seidel.h>
+#include <cusp/system/tbb/detail/relaxation/gauss_seidel.h>
+#endif
+
 #define __CUSP_HOST_SYSTEM_GAUSS_SEIDEL_HEADER <__CUSP_HOST_SYSTEM_ROOT/detail/relaxation/gauss_seidel.h>
 #include __CUSP_HOST_SYSTEM_GAUSS_SEIDEL_HEADER
 #undef __CUSP_HOST_SYSTEM_GAUSS_SEIDEL_HEADER
@@ -31,3 +41,4 @@
 #define __CUSP_DEVICE_SYSTEM_GAUSS_SEIDEL_HEADER <__CUSP_DEVICE_SYSTEM_ROOT/detail/relaxation/gauss_seidel.h>
 #include __CUSP_DEVICE_SYSTEM_GAUSS_SEIDEL_HEADER
 #undef __CUSP_DEVICE_SYSTEM_GAUSS_SEIDEL_HEADER
+
