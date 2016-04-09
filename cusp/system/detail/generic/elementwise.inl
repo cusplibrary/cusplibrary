@@ -115,12 +115,14 @@ void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
     typedef thrust::zip_iterator<IteratorTuple2>                                                     ZipIterator2;
 
     typedef typename cusp::detail::temporary_array<IndexType, DerivedPolicy>::iterator               IndexIterator;
-    typedef typename cusp::join_iterator< thrust::tuple<ZipIterator1, ZipIterator2, IndexIterator> >::iterator          JoinIndexIterator;
+    typedef thrust::tuple<ZipIterator1, ZipIterator2, IndexIterator>                                 ZipTuple;
+    typedef typename cusp::join_iterator<ZipTuple>::iterator                                         JoinIndexIterator;
 
     typedef typename elementwise_detail::ops<BinaryFunction>::unary_op_type                          UnaryOp;
     typedef typename elementwise_detail::ops<BinaryFunction>::binary_op_type                         BinaryOp;
     typedef thrust::transform_iterator<UnaryOp, ValueIterator2>                                      TransValueIterator;
-    typedef typename cusp::join_iterator< thrust::tuple<ValueIterator1, TransValueIterator, IndexIterator> >::iterator  JoinValueIterator;
+    typedef thrust::tuple<ValueIterator1, TransValueIterator, IndexIterator>                         TransValueTuple;
+    typedef typename cusp::join_iterator<TransValueTuple>::iterator                                  JoinValueIterator;
 
     size_t A_nnz = A.num_entries;
     size_t B_nnz = B.num_entries;
@@ -148,27 +150,24 @@ void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
                          indices.begin(),
                          cusp::detail::coo_tuple_comp_functor<IndexType>());
 
-    // JoinIndexIterator combined_tuples(A_tuples, A_tuples + A_nnz, B_tuples, B_tuples + B_nnz, indices.begin());
     JoinIndexIterator combined_tuples = cusp::make_join_iterator(A_nnz, B_nnz, A_tuples, B_tuples, indices.begin());
 
     TransValueIterator vals(B.values.begin(), UnaryOp());
-    // JoinValueIterator combined_values(A.values.begin(), A.values.begin() + A_nnz, vals, vals + B_nnz, indices.begin());
     JoinValueIterator combined_values = cusp::make_join_iterator(A_nnz, B_nnz, A.values.begin(), vals, indices.begin());
 
     // compute unique number of nonzeros in the output
-    IndexType C_nnz = thrust::inner_product(exec,
-                                            combined_tuples,
-                                            combined_tuples + num_entries - 1,
-                                            combined_tuples + 1,
-                                            IndexType(1),
-                                            thrust::plus<IndexType>(),
-                                            thrust::not_equal_to< thrust::tuple<IndexType,IndexType> >());
+    size_t C_nnz = thrust::inner_product(exec,
+                                         combined_tuples,
+                                         combined_tuples + num_entries - 1,
+                                         combined_tuples + 1,
+                                         IndexType(1),
+                                         thrust::plus<IndexType>(),
+                                         thrust::not_equal_to< thrust::tuple<IndexType,IndexType> >());
 
     // allocate space for output
     C.resize(A.num_rows, A.num_cols, C_nnz);
 
     // sum values with the same (i,j)
-
     thrust::reduce_by_key(exec,
                           combined_tuples,
                           combined_tuples + num_entries,
