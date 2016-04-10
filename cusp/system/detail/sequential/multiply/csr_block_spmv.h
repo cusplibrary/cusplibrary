@@ -18,6 +18,7 @@
 
 #include <cusp/detail/config.h>
 #include <cusp/detail/format.h>
+#include <cusp/detail/temporary_array.h>
 
 #include <cusp/system/detail/sequential/execution_policy.h>
 
@@ -48,7 +49,8 @@ void multiply(thrust::cpp::execution_policy<DerivedPolicy>& exec,
               cusp::array2d_format,
               cusp::array2d_format)
 {
-    typedef typename MatrixType::index_type  IndexType;
+    typedef typename MatrixType::index_type	  IndexType;
+	typedef typename MatrixType::memory_space MemorySpace;
     typedef typename VectorType2::values_array_type::value_type ValueType;
 
     for(size_t i = 0; i < A.num_rows; i++)
@@ -56,7 +58,7 @@ void multiply(thrust::cpp::execution_policy<DerivedPolicy>& exec,
         const IndexType& row_start = A.row_offsets[i];
         const IndexType& row_end   = A.row_offsets[i + 1];
 
-        ValueType accumulator[x.num_cols];
+		cusp::detail::temporary_array<DerivedPolicy, MemorySpace> accumulator(x.num_cols);
 
         for(size_t k = 0; k < x.num_cols; k++)
             accumulator[k] = initialize(y(i,k));

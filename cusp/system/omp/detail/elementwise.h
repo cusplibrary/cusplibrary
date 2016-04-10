@@ -54,27 +54,27 @@ void elementwise(omp::execution_policy<DerivedPolicy>& exec,
     C_row_offsets[0] = 0;
 
     #pragma omp parallel for
-    for(size_t i = 0; i < A.num_rows; i++)
+    for(int i = 0; i < int(A.num_rows); i++)
     {
-        size_t num_nonzeros_in_row_i = B.row_offsets[i+1]-B.row_offsets[i];
+        size_t num_nonzeros_in_row_i = B.row_offsets[i + 1]-B.row_offsets[i];
 
-        for(IndexType jj = A.row_offsets[i]; jj < A.row_offsets[i+1]; jj++)
+        for(IndexType jj = A.row_offsets[i]; jj < A.row_offsets[i + 1]; jj++)
         {
             IndexType j = A.column_indices[jj];
             bool different = true;
 
-            for(IndexType kk = B.row_offsets[i]; kk < B.row_offsets[i+1]; kk++)
+            for(IndexType kk = B.row_offsets[i]; kk < B.row_offsets[i + 1]; kk++)
             {
                 IndexType k = B.column_indices[kk];
-                if( j == k)
+                if(j == k)
                 {
                     different = false;
                     break;
                 }
             }
-            if( different) num_nonzeros_in_row_i++;
+            if(different) num_nonzeros_in_row_i++;
         }
-        C_row_offsets[i+1] = num_nonzeros_in_row_i;
+        C_row_offsets[i + 1] = num_nonzeros_in_row_i;
     } //omp for
 
     //MW: now transform to offsets and resize column and values
@@ -92,7 +92,7 @@ void elementwise(omp::execution_policy<DerivedPolicy>& exec,
         cusp::detail::temporary_array<ValueType, DerivedPolicy> B_row(exec, A.num_cols, ValueType(0));
 
         #pragma omp for
-        for(size_t i = 0; i < A.num_rows; i++)
+        for(int i = 0; i < int(A.num_rows); i++)
         {
             IndexType head   = -2;
             IndexType length =  0;
@@ -101,7 +101,7 @@ void elementwise(omp::execution_policy<DerivedPolicy>& exec,
             IndexType i_start = A.row_offsets[i];
             IndexType i_end   = A.row_offsets[i + 1];
 
-            for(IndexType jj = i_start; jj < i_end; jj++)
+            for(int jj = int(i_start); jj < int(i_end); jj++)
             {
                 IndexType j = A.column_indices[jj];
 
@@ -118,7 +118,7 @@ void elementwise(omp::execution_policy<DerivedPolicy>& exec,
             i_start = B.row_offsets[i];
             i_end   = B.row_offsets[i + 1];
 
-            for(IndexType jj = i_start; jj < i_end; jj++)
+            for(int jj = int(i_start); jj < int(i_end); jj++)
             {
                 IndexType j = B.column_indices[jj];
 
@@ -136,7 +136,7 @@ void elementwise(omp::execution_policy<DerivedPolicy>& exec,
             // MW iterate through list without destroying it
             IndexType j = C_row_offsets[i];
 
-            for(IndexType jj = 0; jj < length; jj++)
+            for(int jj = 0; jj < int(length); jj++)
             {
                 ValueType result = op( A_row[head], B_row[head]);
                 C_column_indices[j + jj] = head;

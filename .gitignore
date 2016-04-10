@@ -113,3 +113,4 @@ performance/overhead/memory
 performance/spmv/spmv
 #<AutoIgnore/>
 
+*.user
