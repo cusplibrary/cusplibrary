@@ -24,7 +24,11 @@
 
 namespace cusp
 {
-namespace blas
+namespace system
+{
+namespace cuda
+{
+namespace detail
 {
 namespace cublas
 {
@@ -36,14 +40,20 @@ struct lower   : public cublas_format {};
 struct unit    : public cublas_format {};
 struct nonunit : public cublas_format {};
 
+struct cublas_trans_op { const static cublasOperation_t order = CUBLAS_OP_T; };
+struct cublas_norm_op  { const static cublasOperation_t order = CUBLAS_OP_N; };
+
 template< typename LayoutFormat >
-struct Orientation {static const cublasOperation_t type;};
-template<>
-const cublasOperation_t Orientation<cusp::row_major>::type    = CUBLAS_OP_T;
-template<>
-const cublasOperation_t Orientation<cusp::column_major>::type = CUBLAS_OP_N;
+struct OperationType : thrust::detail::eval_if<
+                          thrust::detail::is_same<LayoutFormat, cusp::row_major>::value,
+                          thrust::detail::identity_<cublas_trans_op>,
+                          thrust::detail::identity_<cublas_norm_op>
+                       >
+{};
 
 } // end namespace cublas
-} // end namespace blas
+} // end namespace detail
+} // end namespace cuda
+} // end namespace system
 } // end namespace cusp
 

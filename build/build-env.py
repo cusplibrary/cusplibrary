@@ -267,20 +267,18 @@ def Environment():
     vars.Add('single_test', help='Test a single file')
 
     # add a variable to handle the host sparse BLAS backend
-    hostspblas_variable = EnumVariable(
-        'hostspblas', 'Host sparse math library', 'cusp',
-        allowed_values=('cusp', 'mkl'))
+    hostspblas_variable = EnumVariable('hostspblas', 'Host sparse math library', 'cusp',
+                                       allowed_values=('cusp', 'mkl'))
     vars.Add(hostspblas_variable)
 
     # add a variable to handle the host BLAS backend
-    hostblas_variable = EnumVariable('hostblas', 'Host BLAS library', 'thrust',
-                                     allowed_values=('thrust', 'cblas'))
+    hostblas_variable = EnumVariable('hostblas', 'Host BLAS library', 'cusp',
+                                     allowed_values=('cusp', 'cblas'))
     vars.Add(hostblas_variable)
 
-    # add a variable to handle the device BLSA backend
-    deviceblas_variable = EnumVariable(
-        'deviceblas', 'Device BLAS library', 'thrust',
-        allowed_values=('thrust', 'cblas', 'cublas'))
+    # add a variable to handle the device BLAS backend
+    deviceblas_variable = EnumVariable('deviceblas', 'Device BLAS library', 'cusp',
+                                       allowed_values=('cusp', 'cblas', 'cublas'))
     vars.Add(deviceblas_variable)
 
     # create an Environment
@@ -297,26 +295,27 @@ def Environment():
     env.Tool(compiler_define, toolpath=[os.path.join(thisDir)])
 
     # get the preprocessor define to use for the backend
-    backend_define = {'cuda': 'THRUST_DEVICE_SYSTEM_CUDA', 'omp':
-                      'THRUST_DEVICE_SYSTEM_OMP', 'ocelot': 'THRUST_DEVICE_SYSTEM_CUDA'}[env['backend']]
-    env.Append(CFLAGS=['-DTHRUST_DEVICE_SYSTEM=%s' % backend_define])
-    env.Append(CXXFLAGS=['-DTHRUST_DEVICE_SYSTEM=%s' % backend_define])
+    backend_define = {'cuda'  : 'THRUST_DEVICE_SYSTEM_CUDA',
+                      'omp'   : 'THRUST_DEVICE_SYSTEM_OMP',
+                      'ocelot': 'THRUST_DEVICE_SYSTEM_CUDA'
+                     }[env['backend']]
+    env.Append(CFLAGS   = ['-DTHRUST_DEVICE_SYSTEM=%s' % backend_define])
+    env.Append(CXXFLAGS = ['-DTHRUST_DEVICE_SYSTEM=%s' % backend_define])
 
     # get the preprocessor define to use for the device BLAS backend
-    device_blas_backend_define = {'thrust': 'CUSP_DEVICE_BLAS_THRUST', 'cblas':
-                                  'CUSP_DEVICE_BLAS_CBLAS', 'cublas': 'CUSP_DEVICE_BLAS_CUBLAS'}[env['deviceblas']]
-    env.Append(
-        CFLAGS=['-DCUSP_DEVICE_BLAS_SYSTEM=%s' % device_blas_backend_define])
-    env.Append(
-        CXXFLAGS=['-DCUSP_DEVICE_BLAS_SYSTEM=%s' % device_blas_backend_define])
+    device_blas_backend_define = {'cusp'  : 'CUSP_DEVICE_BLAS_GENERIC',
+                                  'cblas' : 'CUSP_DEVICE_BLAS_CBLAS',
+                                  'cublas': 'CUSP_DEVICE_BLAS_CUBLAS'
+                                 }[env['deviceblas']]
+    env.Append(CFLAGS   = ['-DCUSP_DEVICE_BLAS_SYSTEM=%s' % device_blas_backend_define])
+    env.Append(CXXFLAGS = ['-DCUSP_DEVICE_BLAS_SYSTEM=%s' % device_blas_backend_define])
 
     # get the preprocessor define to use for the host BLAS backend
-    host_blas_backend_define = {
-        'thrust': 'CUSP_HOST_BLAS_THRUST', 'cblas': 'CUSP_HOST_BLAS_CBLAS'}[env['hostblas']]
-    env.Append(
-        CFLAGS=['-DCUSP_HOST_BLAS_SYSTEM=%s' % host_blas_backend_define])
-    env.Append(
-        CXXFLAGS=['-DCUSP_HOST_BLAS_SYSTEM=%s' % host_blas_backend_define])
+    host_blas_backend_define = {'cusp'  : 'CUSP_HOST_BLAS_GENERIC',
+                                'cblas' : 'CUSP_HOST_BLAS_CBLAS'
+                               }[env['hostblas']]
+    env.Append(CFLAGS   = ['-DCUSP_HOST_BLAS_SYSTEM=%s' % host_blas_backend_define])
+    env.Append(CXXFLAGS = ['-DCUSP_HOST_BLAS_SYSTEM=%s' % host_blas_backend_define])
 
     # get C compiler switches
     env.Append(CFLAGS=getCFLAGS(env['mode'], env['backend'], env[

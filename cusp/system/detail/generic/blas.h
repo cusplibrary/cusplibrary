@@ -34,11 +34,13 @@
 
 namespace cusp
 {
-namespace blas
-{
-namespace thrustblas
+namespace system
 {
 namespace detail
+{
+namespace generic
+{
+namespace blas
 {
 
 template <typename T>
@@ -133,8 +135,6 @@ struct AMAX : public thrust::binary_function<T,T,bool>
     }
 };
 
-} // end detail thrustblas
-
 template <typename DerivedPolicy,
           typename Array>
 int amax(thrust::execution_policy<DerivedPolicy>& exec,
@@ -182,7 +182,7 @@ template <typename DerivedPolicy,
           typename ScalarType>
 void axpy(thrust::execution_policy<DerivedPolicy>& exec,
           const Array1& x,
-          Array2& y,
+                Array2& y,
           const ScalarType alpha)
 {
     typedef typename Array1::value_type ValueType;
@@ -192,7 +192,7 @@ void axpy(thrust::execution_policy<DerivedPolicy>& exec,
     thrust::for_each(exec,
                      thrust::make_zip_iterator(thrust::make_tuple(x.begin(), y.begin())),
                      thrust::make_zip_iterator(thrust::make_tuple(x.begin(), y.begin())) + N,
-                     detail::AXPY<ValueType>(alpha));
+                     AXPY<ValueType>(alpha));
 }
 
 template <typename DerivedPolicy,
@@ -204,9 +204,9 @@ template <typename DerivedPolicy,
 void axpby(thrust::execution_policy<DerivedPolicy> &exec,
            const Array1& x,
            const Array2& y,
-           Array3& z,
-           ScalarType1 alpha,
-           ScalarType2 beta)
+                 Array3& z,
+           const ScalarType1 alpha,
+           const ScalarType2 beta)
 {
     typedef typename Array1::value_type ValueType;
 
@@ -215,7 +215,7 @@ void axpby(thrust::execution_policy<DerivedPolicy> &exec,
     thrust::for_each(exec,
                      thrust::make_zip_iterator(thrust::make_tuple(x.begin(), y.begin(), z.begin())),
                      thrust::make_zip_iterator(thrust::make_tuple(x.begin(), y.begin(), z.begin())) + N,
-                     detail::AXPBY<ValueType,ValueType>(alpha, beta));
+                     AXPBY<ValueType,ValueType>(alpha, beta));
 }
 
 template <typename DerivedPolicy,
@@ -230,10 +230,10 @@ void axpbypcz(thrust::execution_policy<DerivedPolicy> &exec,
               const Array1& x,
               const Array2& y,
               const Array3& z,
-              Array4& output,
-              ScalarType1 alpha,
-              ScalarType2 beta,
-              ScalarType3 gamma)
+                    Array4& output,
+              const ScalarType1 alpha,
+              const ScalarType2 beta,
+              const ScalarType3 gamma)
 {
     typedef typename Array1::value_type ValueType;
 
@@ -242,7 +242,7 @@ void axpbypcz(thrust::execution_policy<DerivedPolicy> &exec,
     thrust::for_each(exec,
                      thrust::make_zip_iterator(thrust::make_tuple(x.begin(), y.begin(), z.begin(), output.begin())),
                      thrust::make_zip_iterator(thrust::make_tuple(x.begin(), y.begin(), z.begin(), output.begin())) + N,
-                     detail::AXPBYPCZ<ValueType,ValueType,ValueType>(alpha, beta, gamma));
+                     AXPBYPCZ<ValueType,ValueType,ValueType>(alpha, beta, gamma));
 }
 
 template <typename DerivedPolicy,
@@ -252,11 +252,11 @@ template <typename DerivedPolicy,
 void xmy(thrust::execution_policy<DerivedPolicy> &exec,
          const Array1& x,
          const Array2& y,
-         Array3& z)
+               Array3& z)
 {
     typedef typename Array3::value_type ValueType;
 
-    thrust::transform(exec, x.begin(), x.end(), y.begin(), z.begin(), detail::XMY<ValueType>());
+    thrust::transform(exec, x.begin(), x.end(), y.begin(), z.begin(), XMY<ValueType>());
 }
 
 template <typename DerivedPolicy,
@@ -264,7 +264,7 @@ template <typename DerivedPolicy,
           typename Array2>
 void copy(thrust::execution_policy<DerivedPolicy>& exec,
           const Array1& x,
-          Array2& y)
+                Array2& y)
 {
     thrust::copy(exec, x.begin(), x.end(), y.begin());
 }
@@ -302,10 +302,10 @@ dotc(thrust::execution_policy<DerivedPolicy>& exec,
 }
 
 template <typename DerivedPolicy,
-          typename Array1,
+          typename Array,
           typename ScalarType>
 void fill(thrust::execution_policy<DerivedPolicy>& exec,
-          Array1& x,
+          Array& x,
           const ScalarType alpha)
 {
     thrust::fill(exec, x.begin(), x.end(), alpha);
@@ -336,7 +336,7 @@ void scal(thrust::execution_policy<DerivedPolicy>& exec,
           Array& x,
           const ScalarType alpha)
 {
-    thrust::for_each(exec, x.begin(), x.end(), detail::SCAL<ScalarType>(alpha));
+    thrust::for_each(exec, x.begin(), x.end(), SCAL<ScalarType>(alpha));
 }
 
 template<typename DerivedPolicy,
@@ -346,7 +346,7 @@ template<typename DerivedPolicy,
 void gemv(thrust::execution_policy<DerivedPolicy>& exec,
           const Array2d&  A,
           const Array1d1& x,
-          Array1d2& y)
+                Array1d2& y)
 {
     throw cusp::not_implemented_exception("CUSP GEMV not implemented");
 }
@@ -355,10 +355,10 @@ template <typename DerivedPolicy,
           typename Array1d1,
           typename Array1d2,
           typename Array2d1>
-void ger(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+void ger(thrust::execution_policy<DerivedPolicy> &exec,
          const Array1d1& x,
          const Array1d2& y,
-         Array2d1& A)
+               Array2d1& A)
 {
     throw cusp::not_implemented_exception("CUSP GER not implemented");
 }
@@ -367,10 +367,10 @@ template <typename DerivedPolicy,
           typename Array2d1,
           typename Array1d1,
           typename Array1d2>
-void symv(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+void symv(thrust::execution_policy<DerivedPolicy> &exec,
           const Array2d1& A,
           const Array1d1& x,
-          Array1d2& y)
+                Array1d2& y)
 {
     throw cusp::not_implemented_exception("CUSP SYMV not implemented");
 }
@@ -378,9 +378,9 @@ void symv(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 template <typename DerivedPolicy,
           typename Array1d,
           typename Array2d>
-void syr(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+void syr(thrust::execution_policy<DerivedPolicy> &exec,
          const Array1d& x,
-         Array2d& A)
+               Array2d& A)
 {
     throw cusp::not_implemented_exception("CUSP SYR not implemented");
 }
@@ -388,9 +388,9 @@ void syr(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 template <typename DerivedPolicy,
           typename Array2d,
           typename Array1d>
-void trmv(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+void trmv(thrust::execution_policy<DerivedPolicy> &exec,
           const Array2d& A,
-          Array1d& x)
+                Array1d& x)
 {
     throw cusp::not_implemented_exception("CUSP TRMV not implemented");
 }
@@ -398,9 +398,9 @@ void trmv(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 template <typename DerivedPolicy,
           typename Array2d,
           typename Array1d>
-void trsv(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+void trsv(thrust::execution_policy<DerivedPolicy> &exec,
           const Array2d& A,
-          Array1d& x)
+                Array1d& x)
 {
     throw cusp::not_implemented_exception("CUSP TRSV not implemented");
 }
@@ -408,11 +408,15 @@ void trsv(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 template<typename DerivedPolicy,
          typename Array2d1,
          typename Array2d2,
-         typename Array2d3>
+         typename Array2d3,
+         typename ScalarType1,
+         typename ScalarType2>
 void gemm(thrust::execution_policy<DerivedPolicy>& exec,
           const Array2d1& A,
           const Array2d2& B,
-          Array2d3& C)
+                Array2d3& C,
+          const ScalarType1 alpha,
+          const ScalarType2 beta)
 {
     throw cusp::not_implemented_exception("CUSP GEMM not implemented");
 }
@@ -424,7 +428,7 @@ template<typename DerivedPolicy,
 void symm(thrust::execution_policy<DerivedPolicy>& exec,
           const Array2d1& A,
           const Array2d2& B,
-          Array2d3& C)
+                Array2d3& C)
 {
     throw cusp::not_implemented_exception("CUSP SYMM not implemented");
 }
@@ -432,9 +436,9 @@ void symm(thrust::execution_policy<DerivedPolicy>& exec,
 template <typename DerivedPolicy,
           typename Array2d1,
           typename Array2d2>
-void syrk(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+void syrk(thrust::execution_policy<DerivedPolicy> &exec,
           const Array2d1& A,
-          Array2d2& B)
+                Array2d2& B)
 {
     throw cusp::not_implemented_exception("CUSP SYRK not implemented");
 }
@@ -446,7 +450,7 @@ template<typename DerivedPolicy,
 void syr2k(thrust::execution_policy<DerivedPolicy>& exec,
            const Array2d1& A,
            const Array2d2& B,
-           Array2d3& C)
+                 Array2d3& C)
 {
     throw cusp::not_implemented_exception("CUSP SYR2K not implemented");
 }
@@ -456,7 +460,7 @@ template<typename DerivedPolicy,
          typename Array2d2>
 void trmm(thrust::execution_policy<DerivedPolicy>& exec,
           const Array2d1& A,
-          Array2d2& B)
+                Array2d2& B)
 {
     throw cusp::not_implemented_exception("CUSP TRMM not implemented");
 }
@@ -466,7 +470,7 @@ template<typename DerivedPolicy,
          typename Array2d2>
 void trsm(thrust::execution_policy<DerivedPolicy>& exec,
           const Array2d1& A,
-          Array2d2& B)
+                Array2d2& B)
 {
     throw cusp::not_implemented_exception("CUSP TRSM not implemented");
 }
@@ -494,8 +498,9 @@ nrmmax(thrust::execution_policy<DerivedPolicy>& exec,
     return cusp::abs(val);
 }
 
-} // end namespace thrustblas
 } // end namespace blas
+} // end namespace generic
+} // end namespace detail
+} // end namespace system
 } // end namespace cusp
-
 

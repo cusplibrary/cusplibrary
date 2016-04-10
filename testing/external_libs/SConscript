@@ -8,11 +8,7 @@ Import('env')
 sources = ['../testframework.cu']
 
 # add the directory containing LAPACK and CBLAS to the include path
-lapack_dir = os.environ["HOME"] + "/.local"
-lapack_lib = "openblas"
-
-env.Append(CPPPATH = lapack_dir + "/include")
-env.Append(LIBPATH = lapack_dir + "/lib")
+lapack_lib = "lapacke"
 
 # create object to check for library availability
 conf = Configure(env)
@@ -20,7 +16,7 @@ conf = Configure(env)
 if conf.CheckLib(lapack_lib):
   # add lapack and CBLAS test files
   sources.extend(['lapack.cu', 'cblas.cu'])
-  env.AppendUnique(LIBS = ["-l" + lapack_lib])
+  env.AppendUnique(LIBS = ["-l" + lapack_lib, "-lopenblas"])
 
 # if nvcc is the compiler test the cublas backend
 if env['compiler'] == 'nvcc':

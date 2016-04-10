@@ -19,21 +19,25 @@
 #include <cusp/array1d.h>
 #include <cusp/exception.h>
 
-#include <cusp/blas/cublas/defs.h>
-#include <cusp/blas/cublas/execution_policy.h>
-#include <cusp/blas/cublas/stubs.h>
-
-#include <cublas_v2.h>
+#include <cusp/system/cuda/detail/cublas/defs.h>
+#include <cusp/system/cuda/detail/cublas/exception.h>
+#include <cusp/system/cuda/detail/cublas/execute_with_cublas.h>
+#include <cusp/system/cuda/detail/cublas/stubs.h>
 
 namespace cusp
 {
-namespace blas
+namespace system
+{
+namespace cuda
+{
+namespace detail
 {
 namespace cublas
 {
 
-template <typename Array>
-int amax(cublas::execution_policy& exec,
+template <typename DerivedPolicy,
+          typename Array>
+int amax(cublas::execute_with_cublas_base<DerivedPolicy>& exec,
          const Array& x)
 {
     typedef typename Array::value_type ValueType;
@@ -44,17 +48,19 @@ int amax(cublas::execution_policy& exec,
 
     int result;
 
-    if(cublas::detail::amax(exec.get_handle(), n, x_p, 1, result) != CUBLAS_STATUS_SUCCESS)
+    cublasStatus_t stat = cublas::amax<0>(handle(exec), n, x_p, 1, result);
+    if(stat != CUBLAS_STATUS_SUCCESS)
     {
-        throw cusp::runtime_exception("CUBLAS amax failed!");
+        throw cublas_exception("amax", stat);
     }
 
     return result - 1;
 }
 
-template <typename Array>
+template <typename DerivedPolicy,
+          typename Array>
 typename cusp::norm_type<typename Array::value_type>::type
-asum(cublas::execution_policy& exec,
+asum(cublas::execute_with_cublas_base<DerivedPolicy>& exec,
      const Array& x)
 {
     typedef typename Array::value_type ValueType;
@@ -66,18 +72,20 @@ asum(cublas::execution_policy& exec,
 
     Real result;
 
-    if(cublas::detail::asum(exec.get_handle(), n, x_p, 1, result) != CUBLAS_STATUS_SUCCESS)
+    cublasStatus_t stat = cublas::asum<0>(handle(exec), n, x_p, 1, result);
+    if(stat != CUBLAS_STATUS_SUCCESS)
     {
-        throw cusp::runtime_exception("CUBLAS asum failed!");
+        throw cublas_exception("asum", stat);
     }
 
     return result;
 }
 
-template <typename Array1,
+template <typename DerivedPolicy,
+          typename Array1,
           typename Array2,
           typename ScalarType>
-void axpy(cublas::execution_policy& exec,
+void axpy(cublas::execute_with_cublas_base<DerivedPolicy>& exec,
           const Array1& x,
                 Array2& y,
           const ScalarType alpha)
@@ -89,15 +97,17 @@ void axpy(cublas::execution_policy& exec,
     const ValueType* x_p = thrust::raw_pointer_cast(&x[0]);
     ValueType* y_p = thrust::raw_pointer_cast(&y[0]);
 
-    if(cublas::detail::axpy(exec.get_handle(), n, ValueType(alpha), x_p, 1, y_p, 1) != CUBLAS_STATUS_SUCCESS)
+    cublasStatus_t stat = cublas::axpy<0>(handle(exec), n, ValueType(alpha), x_p, 1, y_p, 1);
+    if(stat != CUBLAS_STATUS_SUCCESS)
     {
-        throw cusp::runtime_exception("CUBLAS axpy failed!");
+        throw cublas_exception("axpy", stat);
     }
 }
 
-template <typename Array1,
+template <typename DerivedPolicy,
+          typename Array1,
           typename Array2>
-void copy(cublas::execution_policy& exec,
+void copy(cublas::execute_with_cublas_base<DerivedPolicy>& exec,
           const Array1& x,
                 Array2& y)
 {
@@ -108,16 +118,18 @@ void copy(cublas::execution_policy& exec,
     const ValueType* x_p = thrust::raw_pointer_cast(&x[0]);
     ValueType* y_p = thrust::raw_pointer_cast(&y[0]);
 
-    if(cublas::detail::copy(exec.get_handle(), n, x_p, 1, y_p, 1) != CUBLAS_STATUS_SUCCESS)
+    cublasStatus_t stat = cublas::copy<0>(handle(exec), n, x_p, 1, y_p, 1);
+    if(stat != CUBLAS_STATUS_SUCCESS)
     {
-        throw cusp::runtime_exception("CUBLAS copy failed!");
+        throw cublas_exception("copy", stat);
     }
 }
 
-template <typename Array1,
+template <typename DerivedPolicy,
+          typename Array1,
           typename Array2>
 typename Array1::value_type
-dot(cublas::execution_policy& exec,
+dot(cublas::execute_with_cublas_base<DerivedPolicy>& exec,
     const Array1& x,
     const Array2& y)
 {
@@ -130,18 +142,20 @@ dot(cublas::execution_policy& exec,
 
     ValueType result;
 
-    if(cublas::detail::dot(exec.get_handle(), n, x_p, 1, y_p, 1, result) != CUBLAS_STATUS_SUCCESS)
+    cublasStatus_t stat = cublas::dot<0>(handle(exec), n, x_p, 1, y_p, 1, result);
+    if(stat != CUBLAS_STATUS_SUCCESS)
     {
-        throw cusp::runtime_exception("CUBLAS dot failed!");
+        throw cublas_exception("dot", stat);
     }
 
     return result;
 }
 
-template <typename Array1,
+template <typename DerivedPolicy,
+          typename Array1,
           typename Array2>
 typename Array1::value_type
-dotc(cublas::execution_policy& exec,
+dotc(cublas::execute_with_cublas_base<DerivedPolicy>& exec,
      const Array1& x,
      const Array2& y)
 {
@@ -154,17 +168,19 @@ dotc(cublas::execution_policy& exec,
 
     ValueType result;
 
-    if(cublas::detail::dotc(exec.get_handle(), n, x_p, 1, y_p, 1, &result) != CUBLAS_STATUS_SUCCESS)
+    cublasStatus_t stat = cublas::dotc<0>(handle(exec), n, x_p, 1, y_p, 1, &result);
+    if(stat != CUBLAS_STATUS_SUCCESS)
     {
-        throw cusp::runtime_exception("CUBLAS dotc failed!");
+        throw cublas_exception("dotc", stat);
     }
 
     return result;
 }
 
-template <typename Array>
+template <typename DerivedPolicy,
+          typename Array>
 typename cusp::norm_type<typename Array::value_type>::type
-nrm2(cublas::execution_policy& exec,
+nrm2(cublas::execute_with_cublas_base<DerivedPolicy>& exec,
      const Array& x)
 {
     typedef typename Array::value_type ValueType;
@@ -176,17 +192,19 @@ nrm2(cublas::execution_policy& exec,
 
     ResultType result;
 
-    if(cublas::detail::nrm2(exec.get_handle(), n, x_p, 1, result) != CUBLAS_STATUS_SUCCESS)
+    cublasStatus_t stat = cublas::nrm2<0>(handle(exec), n, x_p, 1, result);
+    if(stat != CUBLAS_STATUS_SUCCESS)
     {
-        throw cusp::runtime_exception("CUBLAS nrm2 failed!");
+        throw cublas_exception("nrm2", stat);
     }
 
     return result;
 }
 
-template <typename Array,
+template <typename DerivedPolicy,
+          typename Array,
           typename ScalarType>
-void scal(cublas::execution_policy& exec,
+void scal(cublas::execute_with_cublas_base<DerivedPolicy>& exec,
           Array& x,
           const ScalarType alpha)
 {
@@ -196,15 +214,17 @@ void scal(cublas::execution_policy& exec,
 
     ValueType* x_p = thrust::raw_pointer_cast(&x[0]);
 
-    if(cublas::detail::scal(exec.get_handle(), n, alpha, x_p, 1) != CUBLAS_STATUS_SUCCESS)
+    cublasStatus_t stat = cublas::scal<0>(handle(exec), n, alpha, x_p, 1);
+    if(stat != CUBLAS_STATUS_SUCCESS)
     {
-        throw cusp::runtime_exception("CUBLAS scal failed!");
+        throw cublas_exception("scal", stat);
     }
 }
 
-template <typename Array1,
+template <typename DerivedPolicy,
+          typename Array1,
           typename Array2>
-void swap(cublas::execution_policy& exec,
+void swap(cublas::execute_with_cublas_base<DerivedPolicy>& exec,
           Array1& x,
           Array2& y)
 {
@@ -215,16 +235,18 @@ void swap(cublas::execution_policy& exec,
     ValueType* x_p = thrust::raw_pointer_cast(&x[0]);
     ValueType* y_p = thrust::raw_pointer_cast(&y[0]);
 
-    if(cublas::detail::swap(exec.get_handle(), n, x_p, 1, y_p, 1) != CUBLAS_STATUS_SUCCESS)
+    cublasStatus_t stat = cublas::swap<0>(handle(exec), n, x_p, 1, y_p, 1);
+    if(stat != CUBLAS_STATUS_SUCCESS)
     {
-        throw cusp::runtime_exception("CUBLAS swap failed!");
+        throw cublas_exception("swap", stat);
     }
 }
 
-template<typename Array2d1,
-         typename Array1d1,
-         typename Array1d2>
-void gemv(cublas::execution_policy& exec,
+template <typename DerivedPolicy,
+          typename Array2d1,
+          typename Array1d1,
+          typename Array1d2>
+void gemv(cublas::execute_with_cublas_base<DerivedPolicy>& exec,
           const Array2d1& A,
           const Array1d1& x,
                 Array1d2& y)
@@ -244,18 +266,21 @@ void gemv(cublas::execution_policy& exec,
     const ValueType *x_p = thrust::raw_pointer_cast(&x[0]);
     ValueType *y_p = thrust::raw_pointer_cast(&y[0]);
 
-    cublasStatus_t result =
-        cublas::detail::gemv(exec.get_handle(), trans, m, n, alpha,
-                             A_p, lda, x_p, 1, beta, y_p, 1);
+    cublasStatus_t stat =
+        cublas::gemv<0>(handle(exec), trans, m, n, alpha,
+                        A_p, lda, x_p, 1, beta, y_p, 1);
 
-    if(result != CUBLAS_STATUS_SUCCESS)
-        throw cusp::runtime_exception("CUBLAS gemv failed!");
+    if(stat != CUBLAS_STATUS_SUCCESS)
+    {
+        throw cublas_exception("gemv", stat);
+    }
 }
 
-template<typename Array1d1,
-         typename Array1d2,
-         typename Array2d1>
-void ger(cublas::execution_policy& exec,
+template <typename DerivedPolicy,
+          typename Array1d1,
+          typename Array1d2,
+          typename Array2d1>
+void ger(cublas::execute_with_cublas_base<DerivedPolicy>& exec,
          const Array1d1& x,
          const Array1d2& y,
                Array2d1& A)
@@ -272,18 +297,21 @@ void ger(cublas::execution_policy& exec,
     const ValueType *y_p = thrust::raw_pointer_cast(&y[0]);
     ValueType *A_p = thrust::raw_pointer_cast(&A(0,0));
 
-    cublasStatus_t result =
-        cublas::detail::ger(exec.get_handle(), m, n, alpha,
-                            x_p, 1, y_p, 1, A_p, lda);
+    cublasStatus_t stat =
+        cublas::ger<0>(handle(exec), m, n, alpha,
+                       x_p, 1, y_p, 1, A_p, lda);
 
-    if(result != CUBLAS_STATUS_SUCCESS)
-        throw cusp::runtime_exception("CUBLAS gemv failed!");
+    if(stat != CUBLAS_STATUS_SUCCESS)
+    {
+        throw cublas_exception("ger", stat);
+    }
 }
 
-template<typename Array2d1,
-         typename Array1d1,
-         typename Array1d2>
-void symv(cublas::execution_policy& exec,
+template <typename DerivedPolicy,
+          typename Array2d1,
+          typename Array1d1,
+          typename Array1d2>
+void symv(cublas::execute_with_cublas_base<DerivedPolicy>& exec,
           const Array2d1& A,
           const Array1d1& x,
                 Array1d2& y)
@@ -302,17 +330,20 @@ void symv(cublas::execution_policy& exec,
     const ValueType *x_p = thrust::raw_pointer_cast(&x[0]);
     ValueType *y_p = thrust::raw_pointer_cast(&y[0]);
 
-    cublasStatus_t result =
-        cublas::detail::symv(exec.get_handle(), uplo, n, alpha,
-                             A_p, lda, x_p, 1, beta, y_p, 1);
+    cublasStatus_t stat =
+        cublas::symv<0>(handle(exec), uplo, n, alpha,
+                        A_p, lda, x_p, 1, beta, y_p, 1);
 
-    if(result != CUBLAS_STATUS_SUCCESS)
-        throw cusp::runtime_exception("CUBLAS symv failed!");
+    if(stat != CUBLAS_STATUS_SUCCESS)
+    {
+        throw cublas_exception("symv", stat);
+    }
 }
 
-template<typename Array1d,
-         typename Array2d>
-void syr(cublas::execution_policy& exec,
+template <typename DerivedPolicy,
+          typename Array1d,
+          typename Array2d>
+void syr(cublas::execute_with_cublas_base<DerivedPolicy>& exec,
          const Array1d& x,
                Array2d& A)
 {
@@ -328,17 +359,20 @@ void syr(cublas::execution_policy& exec,
     const ValueType *x_p = thrust::raw_pointer_cast(&x[0]);
     ValueType *A_p = thrust::raw_pointer_cast(&A(0,0));
 
-    cublasStatus_t result =
-        cublas::detail::syr(exec.get_handle(), uplo, n, alpha,
-                            x_p, 1, A_p, lda);
+    cublasStatus_t stat =
+        cublas::syr<0>(handle(exec), uplo, n, alpha,
+                       x_p, 1, A_p, lda);
 
-    if(result != CUBLAS_STATUS_SUCCESS)
-        throw cusp::runtime_exception("CUBLAS syr failed!");
+    if(stat != CUBLAS_STATUS_SUCCESS)
+    {
+        throw cublas_exception("syr", stat);
+    }
 }
 
-template<typename Array2d,
-         typename Array1d>
-void trmv(cublas::execution_policy& exec,
+template <typename DerivedPolicy,
+          typename Array2d,
+          typename Array1d>
+void trmv(cublas::execute_with_cublas_base<DerivedPolicy>& exec,
           const Array2d& A,
                 Array1d& x)
 {
@@ -354,17 +388,20 @@ void trmv(cublas::execution_policy& exec,
     const ValueType *A_p = thrust::raw_pointer_cast(&A(0,0));
     ValueType *x_p = thrust::raw_pointer_cast(&x[0]);
 
-    cublasStatus_t result =
-        cublas::detail::trmv(exec.get_handle(), uplo, trans, diag, n,
-                             A_p, lda, x_p, 1);
+    cublasStatus_t stat =
+        cublas::trmv<0>(handle(exec), uplo, trans, diag, n,
+                        A_p, lda, x_p, 1);
 
-    if(result != CUBLAS_STATUS_SUCCESS)
-        throw cusp::runtime_exception("CUBLAS trmv failed!");
+    if(stat != CUBLAS_STATUS_SUCCESS)
+    {
+        throw cublas_exception("trmv", stat);
+    }
 }
 
-template<typename Array2d,
-         typename Array1d>
-void trsv(cublas::execution_policy& exec,
+template <typename DerivedPolicy,
+          typename Array2d,
+          typename Array1d>
+void trsv(cublas::execute_with_cublas_base<DerivedPolicy>& exec,
           const Array2d& A,
                 Array1d& x)
 {
@@ -380,51 +417,61 @@ void trsv(cublas::execution_policy& exec,
     const ValueType *A_p = thrust::raw_pointer_cast(&A(0,0));
     ValueType *x_p = thrust::raw_pointer_cast(&x[0]);
 
-    cublasStatus_t result =
-        cublas::detail::trsv(exec.get_handle(), uplo, trans, diag, n,
-                             A_p, lda, x_p, 1);
+    cublasStatus_t stat =
+        cublas::trsv<0>(handle(exec), uplo, trans, diag, n,
+                        A_p, lda, x_p, 1);
 
-    if(result != CUBLAS_STATUS_SUCCESS)
-        throw cusp::runtime_exception("CUBLAS trsv failed!");
+    if(stat != CUBLAS_STATUS_SUCCESS)
+    {
+        throw cublas_exception("trsv", stat);
+    }
 }
 
-template<typename Array2d1,
-         typename Array2d2,
-         typename Array2d3>
-void gemm(cublas::execution_policy& exec,
+template <typename DerivedPolicy,
+          typename Array2d1,
+          typename Array2d2,
+          typename Array2d3,
+          typename ScalarType1,
+          typename ScalarType2>
+void gemm(cublas::execute_with_cublas_base<DerivedPolicy>& exec,
           const Array2d1& A,
           const Array2d2& B,
-                Array2d3& C)
+                Array2d3& C,
+          const ScalarType1 alpha,
+          const ScalarType2 beta)
 {
     typedef typename Array2d1::value_type ValueType;
 
     cublasOperation_t transa = CUBLAS_OP_N;
     cublasOperation_t transb = CUBLAS_OP_N;
 
+    ValueType alpha0 = ValueType(alpha);
+    ValueType beta0  = ValueType(beta);
+
     int m = A.num_rows;
     int n = B.num_cols;
     int k = B.num_rows;
 
-    ValueType alpha = 1.0;
-    ValueType beta = 0.0;
-
     const ValueType * A_p = thrust::raw_pointer_cast(&A(0,0));
     const ValueType * B_p = thrust::raw_pointer_cast(&B(0,0));
-    ValueType * C_p = thrust::raw_pointer_cast(&C(0,0));
+          ValueType * C_p = thrust::raw_pointer_cast(&C(0,0));
 
-    cublasStatus_t result =
-        cublas::detail::gemm(exec.get_handle(), transa, transb,
-                             m, n, k, alpha, A_p, m,
-                             B_p, k, beta, C_p, m);
+    cublasStatus_t stat =
+        cublas::gemm<0>(handle(exec), transa, transb,
+                        m, n, k, alpha0, A_p, m,
+                        B_p, k, beta0, C_p, m);
 
-    if(result != CUBLAS_STATUS_SUCCESS)
-        throw cusp::runtime_exception("CUBLAS gemm failed!");
+    if(stat != CUBLAS_STATUS_SUCCESS)
+    {
+        throw cublas_exception("gemm", stat);
+    }
 }
 
-template<typename Array2d1,
-         typename Array2d2,
-         typename Array2d3>
-void symm(cublas::execution_policy& exec,
+template <typename DerivedPolicy,
+          typename Array2d1,
+          typename Array2d2,
+          typename Array2d3>
+void symm(cublas::execute_with_cublas_base<DerivedPolicy>& exec,
           const Array2d1& A,
           const Array2d2& B,
                 Array2d3& C)
@@ -447,18 +494,21 @@ void symm(cublas::execution_policy& exec,
     const ValueType * B_p = thrust::raw_pointer_cast(&B(0,0));
     ValueType * C_p = thrust::raw_pointer_cast(&C(0,0));
 
-    cublasStatus_t result =
-        cublas::detail::symm(exec.get_handle(), side, uplo,
-                             m, n, alpha, A_p, lda,
-                             B_p, ldb, beta, C_p, ldc);
+    cublasStatus_t stat =
+        cublas::symm<0>(handle(exec), side, uplo,
+                        m, n, alpha, A_p, lda,
+                        B_p, ldb, beta, C_p, ldc);
 
-    if(result != CUBLAS_STATUS_SUCCESS)
-        throw cusp::runtime_exception("CUBLAS symm failed!");
+    if(stat != CUBLAS_STATUS_SUCCESS)
+    {
+        throw cublas_exception("symm", stat);
+    }
 }
 
-template<typename Array2d1,
-         typename Array2d2>
-void syrk(cublas::execution_policy& exec,
+template <typename DerivedPolicy,
+          typename Array2d1,
+          typename Array2d2>
+void syrk(cublas::execute_with_cublas_base<DerivedPolicy>& exec,
           const Array2d1& A,
                 Array2d2& B)
 {
@@ -478,19 +528,22 @@ void syrk(cublas::execution_policy& exec,
     const ValueType * A_p = thrust::raw_pointer_cast(&A(0,0));
     ValueType * B_p = thrust::raw_pointer_cast(&B(0,0));
 
-    cublasStatus_t result =
-        cublas::detail::syrk(exec.get_handle(), uplo, trans,
-                             n, k, alpha, A_p, lda,
-                             beta, B_p, ldb);
+    cublasStatus_t stat =
+        cublas::syrk<0>(handle(exec), uplo, trans,
+                        n, k, alpha, A_p, lda,
+                        beta, B_p, ldb);
 
-    if(result != CUBLAS_STATUS_SUCCESS)
-        throw cusp::runtime_exception("CUBLAS syrk failed!");
+    if(stat != CUBLAS_STATUS_SUCCESS)
+    {
+        throw cublas_exception("syrk", stat);
+    }
 }
 
-template<typename Array2d1,
-         typename Array2d2,
-         typename Array2d3>
-void syr2k(cublas::execution_policy& exec,
+template <typename DerivedPolicy,
+          typename Array2d1,
+          typename Array2d2,
+          typename Array2d3>
+void syr2k(cublas::execute_with_cublas_base<DerivedPolicy>& exec,
            const Array2d1& A,
            const Array2d2& B,
                  Array2d3& C)
@@ -513,18 +566,21 @@ void syr2k(cublas::execution_policy& exec,
     const ValueType * B_p = thrust::raw_pointer_cast(&B(0,0));
     ValueType * C_p = thrust::raw_pointer_cast(&C(0,0));
 
-    cublasStatus_t result =
-        cublas::detail::syr2k(exec.get_handle(), uplo, trans,
-                              n, k, alpha, A_p, lda,
-                              B_p, ldb, beta, C_p, ldc);
+    cublasStatus_t stat =
+        cublas::syr2k<0>(handle(exec), uplo, trans,
+                         n, k, alpha, A_p, lda,
+                         B_p, ldb, beta, C_p, ldc);
 
-    if(result != CUBLAS_STATUS_SUCCESS)
-        throw cusp::runtime_exception("CUBLAS syr2k failed!");
+    if(stat != CUBLAS_STATUS_SUCCESS)
+    {
+        throw cublas_exception("syr2k", stat);
+    }
 }
 
-template<typename Array2d1,
-         typename Array2d2>
-void trmm(cublas::execution_policy& exec,
+template <typename DerivedPolicy,
+          typename Array2d1,
+          typename Array2d2>
+void trmm(cublas::execute_with_cublas_base<DerivedPolicy>& exec,
           const Array2d1& A,
                 Array2d2& B)
 {
@@ -547,18 +603,21 @@ void trmm(cublas::execution_policy& exec,
     const ValueType * B_p = thrust::raw_pointer_cast(&B(0,0));
     ValueType * C_p = thrust::raw_pointer_cast(&B(0,0));
 
-    cublasStatus_t result =
-        cublas::detail::trmm(exec.get_handle(), side, uplo, trans, diag,
-                              m, n, alpha, A_p, lda,
-                              B_p, ldb, C_p, ldc);
+    cublasStatus_t stat =
+        cublas::trmm<0>(handle(exec), side, uplo, trans, diag,
+                        m, n, alpha, A_p, lda,
+                        B_p, ldb, C_p, ldc);
 
-    if(result != CUBLAS_STATUS_SUCCESS)
-        throw cusp::runtime_exception("CUBLAS trmm failed!");
+    if(stat != CUBLAS_STATUS_SUCCESS)
+    {
+        throw cublas_exception("trmm", stat);
+    }
 }
 
-template<typename Array2d1,
-         typename Array2d2>
-void trsm(cublas::execution_policy& exec,
+template <typename DerivedPolicy,
+          typename Array2d1,
+          typename Array2d2>
+void trsm(cublas::execute_with_cublas_base<DerivedPolicy>& exec,
           const Array2d1& A,
                 Array2d2& B)
 {
@@ -579,17 +638,20 @@ void trsm(cublas::execution_policy& exec,
     const ValueType * A_p = thrust::raw_pointer_cast(&A(0,0));
     ValueType * B_p = thrust::raw_pointer_cast(&B(0,0));
 
-    cublasStatus_t result =
-        cublas::detail::trsm(exec.get_handle(), side, uplo, trans, diag,
-                              n, k, alpha, A_p, lda, B_p, ldb);
+    cublasStatus_t stat =
+        cublas::trsm<0>(handle(exec), side, uplo, trans, diag,
+                        n, k, alpha, A_p, lda, B_p, ldb);
 
-    if(result != CUBLAS_STATUS_SUCCESS)
-        throw cusp::runtime_exception("CUBLAS trsm failed!");
+    if(stat != CUBLAS_STATUS_SUCCESS)
+    {
+        throw cublas_exception("trsm", stat);
+    }
 }
 
-template <typename Array>
+template <typename DerivedPolicy,
+          typename Array>
 typename cusp::norm_type<typename Array::value_type>::type
-nrm1(cublas::execution_policy& exec,
+nrm1(cublas::execute_with_cublas_base<DerivedPolicy>& exec,
      const Array& x)
 {
     typedef typename Array::value_type ValueType;
@@ -601,17 +663,19 @@ nrm1(cublas::execution_policy& exec,
 
     ResultType result;
 
-    if(cublas::detail::asum(exec.get_handle(), n, x_p, 1, result) != CUBLAS_STATUS_SUCCESS)
+    cublasStatus_t stat = cublas::asum(handle(exec), n, x_p, 1, result);
+    if(stat != CUBLAS_STATUS_SUCCESS)
     {
-        throw cusp::runtime_exception("CUBLAS asum failed!");
+        throw cublas_exception("nrm1", stat);
     }
 
     return result;
 }
 
-template <typename Array>
+template <typename DerivedPolicy,
+          typename Array>
 typename cusp::norm_type<typename Array::value_type>::type
-nrmmax(cublas::execution_policy& exec,
+nrmmax(cublas::execute_with_cublas_base<DerivedPolicy>& exec,
        const Array& x)
 {
     typedef typename Array::value_type ValueType;
@@ -622,15 +686,18 @@ nrmmax(cublas::execution_policy& exec,
 
     const ValueType* x_p = thrust::raw_pointer_cast(&x[0]);
 
-    if(cublas::detail::amax(exec.get_handle(), n, x_p, 1, index) != CUBLAS_STATUS_SUCCESS)
+    cublasStatus_t stat = cublas::amax(handle(exec), n, x_p, 1, index);
+    if(stat != CUBLAS_STATUS_SUCCESS)
     {
-        throw cusp::runtime_exception("CUBLAS amax failed!");
+        throw cublas_exception("nrmmax", stat);
     }
 
-    return cusp::abs(x[index-1]);
+    return cusp::abs(x[index - 1]);
 }
 
 } // end namespace cublas
-} // end namespace blas
+} // end namespace detail
+} // end namespace cuda
+} // end namespace system
 } // end namespace cusp
 

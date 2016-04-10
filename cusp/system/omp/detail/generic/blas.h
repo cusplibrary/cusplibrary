@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2014 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,11 +14,8 @@
  *  limitations under the License.
  */
 
-/*! \file blas.h
- *  \brief BLAS-like functions
- */
-
 #pragma once
 
-#include <cusp/blas.h>
+#include <cusp/detail/config.h>
 
+// this system has no blas implementation
