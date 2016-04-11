@@ -99,10 +99,9 @@ OldEnvironment = Environment
 # this dictionary maps the name of a compiler program to a dictionary mapping the name of
 # a compiler switch of interest to the specific switch implementing the feature
 gCompilerOptions = {
-        'gcc': {'warn_all': '-Wall', 'warn_errors': '-Werror', 'optimization': '-O3', 'debug': '-g',  'exception_handling': '',      'omp': '-fopenmp', 'coverage':['-O0', '-coverage']},
-        'g++': {'warn_all': '-Wall', 'warn_errors': '-Werror', 'optimization': '-O3', 'debug': '-g',  'exception_handling': '',      'omp': '-fopenmp', 'coverage':['-O0', '-coverage']},
-        'clang++': {'warn_all': '-Wall', 'warn_errors': '-Werror', 'optimization': '-O3', 'debug': '-g',  'exception_handling': '',  'omp': '-fopenmp', 'coverage':['-O0', '-coverage']},
-        'cl': {'warn_all': '/Wall', 'warn_errors': '/WX',     'optimization': '/Ox', 'debug': ['/Zi', '-D_DEBUG', '/MTd'], 'exception_handling': '/EHsc', 'omp': '/openmp', 'coverage':''}
+        'gcc':   {'warn_all': '-Wall', 'warn_errors': '-Werror', 'optimization': '-O3', 'debug': '-g',  'exception_handling': '', 'omp': '-fopenmp', 'coverage':['-O0', '-coverage']},
+        'clang': {'warn_all': '-Wall', 'warn_errors': '-Werror', 'optimization': '-O3', 'debug': '-g',  'exception_handling': '', 'omp': '-fopenmp', 'coverage':['-O0', '-coverage']},
+        'cl': {'warn_all': '/Wall', 'warn_errors': '/WX', 'optimization': '/Ox', 'debug': ['/Zi', '-D_DEBUG', '/MTd'], 'exception_handling': '/EHsc', 'omp': '/openmp', 'coverage':''}
 }
 
 
@@ -110,7 +109,6 @@ gCompilerOptions = {
 # a linker switch of interest to the specific switch implementing the feature
 gLinkerOptions = {
         'gcc': {'debug': ''},
-        'g++': {'debug': ''},
         'link': {'debug': '/debug'}
 }
 
@@ -233,7 +231,7 @@ def Environment():
 
     # add a variable to handle the device backend
     compiler_variable = EnumVariable('compiler', 'The compiler to use', 'nvcc',
-                                     allowed_values=('nvcc', 'g++', 'clang++'))
+                                     allowed_values=('nvcc', 'gcc', 'clang'))
     vars.Add(compiler_variable)
 
     # add a variable to handle the device backend
@@ -249,8 +247,7 @@ def Environment():
     # add a variable to handle compute capability
     vars.Add(
         EnumVariable('arch', 'Compute capability code generation', 'sm_20',
-                     allowed_values=('sm_10', 'sm_11', 'sm_12', 'sm_13', 'sm_20', 'sm_21', 'sm_30', 'sm_35',
-                                     'sm_50', 'sm_52')))
+                     allowed_values=('sm_20', 'sm_21', 'sm_30', 'sm_35', 'sm_50', 'sm_52')))
 
     # add a variable to handle warnings
     if os.name == 'posix':
@@ -321,11 +318,11 @@ def Environment():
 
     # get C compiler switches
     env.Append(CFLAGS=getCFLAGS(env['mode'], env['backend'], env[
-               'Wall'], env['Werror'], env['hostspblas'], env.subst('$CC')))
+               'Wall'], env['Werror'], env['hostspblas'], compiler_define))
 
     # get CXX compiler switches
     env.Append(CXXFLAGS=getCXXFLAGS(env['mode'], env['backend'], env[
-               'Wall'], env['Werror'], env['hostspblas'], env.subst('$CXX')))
+               'Wall'], env['Werror'], env['hostspblas'], compiler_define))
 
     compile_flag_prefix = ''
     if compiler_define == 'nvcc':
@@ -346,9 +343,9 @@ def Environment():
     else:
         env.Append(NVCCFLAGS = ["-x", "c++"])
 
-        GCC_VERSION = subprocess.check_output([env['CXX'], '-dumpversion'])
-        if StrictVersion(GCC_VERSION) >= StrictVersion("4.8.0") :
-            env.Append(NVCCFLAGS = ["-Wno-unused-local-typedefs"])
+        # GCC_VERSION = subprocess.check_output([env['CXX'], '-dumpversion'])
+        # if StrictVersion(GCC_VERSION) >= StrictVersion("4.8.0") :
+        #     env.Append(NVCCFLAGS = ["-Wno-unused-local-typedefs"])
 
         if 'THRUST_PATH' not in os.environ :
             raise ValueError("Building without nvcc requires THRUST_PATH environment variable!")
@@ -377,8 +374,8 @@ def Environment():
             raise ValueError, "Unknown OS.  What is the Ocelot library path?"
     elif env['backend'] == 'omp':
         if os.name == 'posix':
-            if compiler_define == 'g++' :
-                env.Append(LIBS=['omp'])
+            if compiler_define == 'gcc' :
+                env.Append(LIBS=['gomp'])
             else :
                 env.Append(LIBS=['iomp5'])
         elif os.name == 'nt':
