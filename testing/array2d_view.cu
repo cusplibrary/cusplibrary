@@ -73,7 +73,6 @@ DECLARE_HOST_DEVICE_UNITTEST(TestArray2dView)
 template <typename MemorySpace>
 void TestArray2dViewResize(void)
 {
-    typedef typename cusp::array2d<int, MemorySpace>  Container;
     typedef typename cusp::array1d<int, MemorySpace>  Array;
     typedef typename Array::iterator                  Iterator;
     typedef typename cusp::array1d_view<Iterator>     ArrayView;

@@ -57,7 +57,6 @@ void smooth_prolongator(thrust::execution_policy<DerivedPolicy> &exec,
 
     typedef typename MatrixType3::index_type IndexType;
     typedef typename MatrixType3::value_type ValueType;
-    typedef typename cusp::norm_type<ValueType>::type NormType;
 
     // TODO handle case with unaggregated nodes more gracefully
     if (T.num_entries == T.num_rows) {

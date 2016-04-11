@@ -402,11 +402,6 @@ void cg_m(thrust::execution_policy<DerivedPolicy> &exec,
 
     // shorthand for typenames
     typedef typename LinearOperator::value_type        ValueType;
-    typedef typename cusp::minimum_space<
-            typename LinearOperator::memory_space,
-            typename VectorType1::memory_space,
-            typename VectorType2::memory_space,
-            typename VectorType3::memory_space>::type  MemorySpace;
 
     // sanity checking
     const size_t N = A.num_rows;

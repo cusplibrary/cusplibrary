@@ -49,7 +49,6 @@ void sort_by_row(thrust::execution_policy<DerivedPolicy> &exec,
 {
     typedef typename ArrayType1::value_type IndexType;
     typedef typename ArrayType3::value_type ValueType;
-    typedef typename ArrayType1::memory_space MemorySpace;
 
     size_t N = row_indices.size();
 
@@ -87,7 +86,6 @@ void sort_by_row_and_column(thrust::execution_policy<DerivedPolicy> &exec,
     typedef typename ArrayType1::value_type IndexType1;
     typedef typename ArrayType2::value_type IndexType2;
     typedef typename ArrayType3::value_type ValueType;
-    typedef typename ArrayType1::memory_space MemorySpace;
 
     size_t N = row_indices.size();
 

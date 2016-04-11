@@ -104,18 +104,18 @@ void TestWriteDimacsFileCoordinateRealGeneral(void)
 {
     // initial matrix
     cusp::array2d<int, cusp::host_memory> E(4, 4);
-    E(0,0) =  1.000e+00;
-    E(0,1) =  0.000e+00;
-    E(0,2) =  0.000e+00;
-    E(1,0) =  0.000e+00;
-    E(1,1) =  1.050e+01;
-    E(1,2) =  0.000e+00;
-    E(2,0) =  0.000e+00;
-    E(2,1) =  0.000e+00;
-    E(2,2) =  2.500e-01;
-    E(3,0) =  0.000e+00;
-    E(3,1) =  2.505e+02;
-    E(3,2) =  0.000e+00;
+    E(0,0) =  1;
+    E(0,1) =  0;
+    E(0,2) =  0;
+    E(1,0) =  0;
+    E(1,1) =  10;
+    E(1,2) =  0;
+    E(2,0) =  0;
+    E(2,1) =  0;
+    E(2,2) =  0;
+    E(3,0) =  0;
+    E(3,1) =  250;
+    E(3,2) =  0;
 
     // convert to coo
     cusp::coo_matrix<int, int, MemorySpace> coo(E);
@@ -140,3 +140,4 @@ void TestWriteDimacsFileCoordinateRealGeneral(void)
     ASSERT_EQUAL(thrust::get<1>(nodes), 3);
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestWriteDimacsFileCoordinateRealGeneral);
+

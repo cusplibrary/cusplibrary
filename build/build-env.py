@@ -101,6 +101,7 @@ OldEnvironment = Environment
 gCompilerOptions = {
         'gcc': {'warn_all': '-Wall', 'warn_errors': '-Werror', 'optimization': '-O3', 'debug': '-g',  'exception_handling': '',      'omp': '-fopenmp', 'coverage':['-O0', '-coverage']},
         'g++': {'warn_all': '-Wall', 'warn_errors': '-Werror', 'optimization': '-O3', 'debug': '-g',  'exception_handling': '',      'omp': '-fopenmp', 'coverage':['-O0', '-coverage']},
+        'clang++': {'warn_all': '-Wall', 'warn_errors': '-Werror', 'optimization': '-O3', 'debug': '-g',  'exception_handling': '',  'omp': '-fopenmp', 'coverage':['-O0', '-coverage']},
         'cl': {'warn_all': '/Wall', 'warn_errors': '/WX',     'optimization': '/Ox', 'debug': ['/Zi', '-D_DEBUG', '/MTd'], 'exception_handling': '/EHsc', 'omp': '/openmp', 'coverage':''}
 }
 
@@ -232,7 +233,7 @@ def Environment():
 
     # add a variable to handle the device backend
     compiler_variable = EnumVariable('compiler', 'The compiler to use', 'nvcc',
-                                     allowed_values=('nvcc', 'g++'))
+                                     allowed_values=('nvcc', 'g++', 'clang++'))
     vars.Add(compiler_variable)
 
     # add a variable to handle the device backend
@@ -376,7 +377,10 @@ def Environment():
             raise ValueError, "Unknown OS.  What is the Ocelot library path?"
     elif env['backend'] == 'omp':
         if os.name == 'posix':
-            env.Append(LIBS=['gomp'])
+            if compiler_define == 'g++' :
+                env.Append(LIBS=['omp'])
+            else :
+                env.Append(LIBS=['iomp5'])
         elif os.name == 'nt':
             env.Append(LIBS=['VCOMP'])
         else:

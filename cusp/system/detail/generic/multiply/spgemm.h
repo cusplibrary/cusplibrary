@@ -71,7 +71,6 @@ void coo_spmm_helper(thrust::execution_policy<DerivedPolicy>& exec,
                      BinaryFunction2 reduce)
 {
     typedef typename ArrayType1::value_type IndexType;
-    typedef typename ArrayType2::value_type ValueType;
 
     A_gather_locations.resize(workspace_size);
     B_gather_locations.resize(workspace_size);

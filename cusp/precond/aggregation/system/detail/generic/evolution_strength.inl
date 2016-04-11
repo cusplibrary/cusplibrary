@@ -186,7 +186,6 @@ evolution_strength_of_connection(thrust::execution_policy<DerivedPolicy> &exec,
     typedef typename MatrixType1::index_type IndexType;
     typedef typename MatrixType1::value_type ValueType;
     typedef typename MatrixType1::memory_space MemorySpace;
-    typedef typename MatrixType1::const_view MatrixViewType;
 
     const size_t N = A.num_rows;
     const size_t M = A.num_entries;
@@ -373,7 +372,6 @@ evolution_strength_of_connection(thrust::execution_policy<DerivedPolicy> &exec,
     typedef typename MatrixType1::index_type IndexType;
     typedef typename MatrixType1::value_type ValueType;
     typedef typename MatrixType1::memory_space MemorySpace;
-    typedef typename MatrixType1::const_view MatrixViewType;
 
     cusp::array1d<IndexType, MemorySpace> A_row_indices(A.num_entries);
     cusp::offsets_to_indices(A.row_offsets, A_row_indices);

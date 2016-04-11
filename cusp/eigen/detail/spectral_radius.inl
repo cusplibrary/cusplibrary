@@ -211,7 +211,6 @@ template <typename MatrixType>
 double ritz_spectral_radius(const MatrixType& A, size_t k, bool symmetric)
 {
     typedef typename MatrixType::value_type ValueType;
-    typedef typename cusp::norm_type<ValueType>::type NormType;
 
     cusp::array2d<ValueType,cusp::host_memory> H;
 

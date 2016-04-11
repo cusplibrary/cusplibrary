@@ -85,7 +85,6 @@ void transpose(thrust::execution_policy<DerivedPolicy>& exec,
                const MatrixType1& A, MatrixType2& At, cusp::csr_format, cusp::csr_format)
 {
     typedef typename MatrixType2::index_type   IndexType2;
-    typedef typename MatrixType2::memory_space MemorySpace2;
 
     cusp::detail::temporary_array<IndexType2, DerivedPolicy> At_row_indices(exec, A.column_indices);
 

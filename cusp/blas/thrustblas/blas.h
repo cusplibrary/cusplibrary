@@ -165,7 +165,6 @@ asum(thrust::execution_policy<DerivedPolicy>& exec,
      const Array& x)
 {
     typedef typename Array::value_type   ValueType;
-    typedef typename Array::memory_space MemorySpace;
     typedef typename cusp::norm_type<ValueType>::type NormType;
 
     cusp::abs_functor<ValueType> unary_op;
@@ -318,7 +317,6 @@ nrm2(thrust::execution_policy<DerivedPolicy>& exec,
      const Array& x)
 {
     typedef typename Array::value_type   ValueType;
-    typedef typename Array::memory_space MemorySpace;
     typedef typename cusp::norm_type<ValueType>::type NormType;
 
     cusp::abs_squared_functor<ValueType> unary_op;

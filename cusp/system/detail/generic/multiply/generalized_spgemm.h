@@ -144,8 +144,6 @@ void generalized_spgemm(thrust::execution_policy<DerivedPolicy> &exec,
                         cusp::coo_format)
 {
     typedef typename LinearOperator::index_type IndexType;
-    typedef typename LinearOperator::value_type ValueType;
-    typedef typename LinearOperator::memory_space MemorySpace;
 
     typedef cusp::detail::temporary_array<IndexType, DerivedPolicy> ArrayType;
     typedef sparse_inner_functor<LinearOperator, MatrixOrVector1, ArrayType, UnaryFunction, BinaryFunction1, BinaryFunction2> InnerOp;

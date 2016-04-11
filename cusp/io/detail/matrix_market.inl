@@ -446,7 +446,6 @@ template <typename Matrix, typename Stream, typename Format>
 void read_matrix_market_stream(Matrix& mtx, Stream& input, Format)
 {
     // general case
-    typedef typename Matrix::index_type IndexType;
     typedef typename Matrix::value_type ValueType;
 
     // read banner

@@ -202,7 +202,6 @@ void TestToCooMatrixView(void)
 {
     typedef typename TestMatrix::index_type   IndexType;
     typedef typename TestMatrix::value_type   ValueType;
-    typedef typename TestMatrix::memory_space MemorySpace;
 
     typedef typename TestMatrix::coo_view_type View;
 

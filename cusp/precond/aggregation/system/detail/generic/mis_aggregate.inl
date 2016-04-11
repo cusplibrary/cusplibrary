@@ -42,7 +42,6 @@ template <typename MatrixType, typename ArrayType>
 void mis_to_aggregates(const MatrixType& C, const ArrayType& mis, ArrayType& aggregates)
 {
     typedef typename MatrixType::index_type                                   IndexType;
-    typedef typename MatrixType::value_type                                   ValueType;
     typedef typename MatrixType::memory_space                                 MemorySpace;
 
     typedef typename ArrayType::value_type                                    T;

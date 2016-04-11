@@ -79,7 +79,6 @@ void compute_mis_states(thrust::execution_policy<DerivedPolicy>& exec,
     typedef typename Array1::value_type   IndexType;
     typedef typename Array3::value_type   RandomType;
     typedef typename Array4::value_type   NodeStateType;
-    typedef typename Array1::memory_space MemorySpace;
 
     typedef typename thrust::counting_iterator<IndexType>                                  CountingIterator;
     typedef typename cusp::detail::temporary_array<NodeStateType, DerivedPolicy>::iterator StatesIterator;
@@ -175,8 +174,6 @@ size_t maximal_independent_set(thrust::execution_policy<DerivedPolicy>& exec,
                                cusp::coo_format)
 {
     typedef typename MatrixType::index_type   IndexType;
-    typedef typename MatrixType::value_type   ValueType;
-    typedef typename MatrixType::memory_space MemorySpace;
     typedef unsigned int  RandomType;
     typedef unsigned char NodeStateType;
 

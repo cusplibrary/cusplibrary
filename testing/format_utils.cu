@@ -77,7 +77,6 @@ DECLARE_HOST_DEVICE_UNITTEST(TestIndicesToOffsets);
 template <class Matrix>
 void TestExtractDiagonal(void)
 {
-    typedef typename Matrix::index_type   IndexType;
     typedef typename Matrix::value_type   ValueType;
     typedef typename Matrix::memory_space Space;
 

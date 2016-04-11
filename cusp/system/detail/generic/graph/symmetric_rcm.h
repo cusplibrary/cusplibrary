@@ -48,8 +48,6 @@ void symmetric_rcm(thrust::execution_policy<DerivedPolicy>& exec,
                    cusp::csr_format)
 {
     typedef typename MatrixType::index_type IndexType;
-    typedef typename MatrixType::value_type ValueType;
-    typedef typename MatrixType::memory_space MemorySpace;
 
     // find peripheral vertex and return BFS levels from vertex
     cusp::graph::pseudo_peripheral_vertex(exec, G, P.permutation);

@@ -92,7 +92,6 @@ namespace detail
 			cusp::known_format)
 		{
 			typedef typename MatrixType1::index_type    IndexType;
-			typedef typename MatrixType1::value_type    ValueType;
 			typedef typename MatrixType1::memory_space  MemorySpace;
 
 			typedef typename MatrixType1::const_coo_view_type             CooViewType1;

@@ -59,7 +59,6 @@ void multiply(thrust::execution_policy<DerivedPolicy> &exec,
 {
     typedef typename LinearOperator::index_type   IndexType;
     typedef typename LinearOperator::value_type   ValueType;
-    typedef typename LinearOperator::memory_space MemorySpace;
 
     // define types used to programatically generate row_indices
     typedef thrust::counting_iterator<IndexType>                                        IndexIterator;

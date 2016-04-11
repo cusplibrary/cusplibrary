@@ -219,7 +219,6 @@ void hilbert_curve(thrust::cpp::execution_policy<DerivedPolicy>& exec,
     typedef typename Array1d::value_type PartType;
     typedef typename Array2d::const_column_view::iterator Iterator;
     typedef typename Array2d::value_type ValueType;
-    typedef typename Array2d::memory_space MemorySpace;
 
     size_t num_points = coord.num_rows;
     size_t dims = coord.num_cols;

@@ -437,7 +437,6 @@ template <class TestMatrix>
 void TestSparseMatrixVectorMultiply()
 {
     typedef typename TestMatrix::value_type   ValueType;
-    typedef typename TestMatrix::memory_space MemorySpace;
 
     cusp::array2d<ValueType, cusp::host_memory> A(5,4);
     A(0,0) = 13;
@@ -571,7 +570,6 @@ template <class TestMatrix>
 void TestScaledSparseMatrixVectorMultiply()
 {
     typedef typename TestMatrix::value_type   ValueType;
-    typedef typename TestMatrix::memory_space MemorySpace;
 
     cusp::array2d<ValueType, cusp::host_memory> A(5,4);
     A(0,0) = 13;

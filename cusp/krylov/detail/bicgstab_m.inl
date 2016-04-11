@@ -691,7 +691,6 @@ void bicgstab_m(thrust::execution_policy<DerivedPolicy> &exec,
 
     // shorthand for typenames
     typedef typename LinearOperator::value_type   ValueType;
-    typedef typename LinearOperator::memory_space MemorySpace;
 
     // sanity checking
     const size_t N = A.num_rows;

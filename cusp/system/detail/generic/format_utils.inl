@@ -74,7 +74,6 @@ void extract_diagonal(thrust::execution_policy<DerivedPolicy> &exec,
 {
     typedef typename Matrix::index_type  IndexType;
     typedef typename Array::value_type   ValueType;
-    typedef typename Array::memory_space MemorySpace;
 
     // first expand the compressed row offsets into row indices
     cusp::detail::temporary_array<IndexType, DerivedPolicy> row_indices(exec, A.num_entries);
@@ -100,7 +99,6 @@ void extract_diagonal(thrust::execution_policy<DerivedPolicy> &exec,
                       Array& output,
                       cusp::dia_format)
 {
-    typedef typename Matrix::index_type  IndexType;
     typedef typename Array::value_type   ValueType;
 
     for(size_t i = 0; i < A.diagonal_offsets.size(); i++)
@@ -215,7 +213,6 @@ size_t count_diagonals(thrust::execution_policy<DerivedPolicy> &exec,
                        const ArrayType2& column_indices )
 {
     typedef typename ArrayType1::value_type IndexType;
-    typedef typename ArrayType1::memory_space MemorySpace;
 
     size_t num_entries = row_indices.size();
 
@@ -273,7 +270,6 @@ size_t compute_optimal_entries_per_row(thrust::execution_policy<DerivedPolicy> &
                                        size_t breakeven_threshold)
 {
     typedef typename ArrayType::value_type IndexType;
-    typedef typename ArrayType::memory_space MemorySpace;
 
     const size_t num_rows = row_offsets.size() - 1;
 

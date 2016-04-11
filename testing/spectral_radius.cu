@@ -17,7 +17,6 @@ template <class SparseMatrix>
 void TestEstimateSpectralRadius(void)
 {
     typedef typename SparseMatrix::value_type   ValueType;
-    typedef typename SparseMatrix::memory_space MemorySpace;
 
     cusp::array2d<ValueType, cusp::host_memory> A(2,2,0);
     A(0,0) = -5.0;

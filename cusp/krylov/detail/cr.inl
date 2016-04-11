@@ -43,10 +43,6 @@ void cr(thrust::execution_policy<DerivedPolicy> &exec,
         Preconditioner& M)
 {
     typedef typename LinearOperator::value_type           ValueType;
-    typedef typename cusp::minimum_space<
-    typename LinearOperator::memory_space,
-             typename Vector::memory_space,
-             typename Preconditioner::memory_space>::type  MemorySpace;
 
     assert(A.num_rows == A.num_cols);        // sanity check
 

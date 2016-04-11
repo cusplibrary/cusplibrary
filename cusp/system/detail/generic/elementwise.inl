@@ -97,7 +97,6 @@ void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
 
     typedef typename MatrixType3::index_type   IndexType;
     typedef typename MatrixType3::value_type   ValueType;
-    typedef typename MatrixType3::memory_space MemorySpace;
 
     typedef typename MatrixType1::const_coo_view_type                                                CooView1;
     typedef typename MatrixType2::const_coo_view_type                                                CooView2;
