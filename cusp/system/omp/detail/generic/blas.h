@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2014 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,11 +14,24 @@
  *  limitations under the License.
  */
 
-/*! \file blas.h
- *  \brief BLAS-like functions
- */
-
 #pragma once
 
-#include <cusp/blas.h>
+#include <cusp/detail/config.h>
+
+// this system inherits blas routines
+#include <cusp/system/cpp/detail/generic/blas.h>
+
+namespace cusp
+{
+namespace system
+{
+namespace omp
+{
+namespace detail
+{
+    using cusp::system::cpp::detail::gemm;
+} // end namespace detail
+} // end namespace omp
+} // end namespace system
+} // end namespace cusp
 

@@ -7,41 +7,30 @@ branches:
   only:
     - develop
 
+addons:
+    apt:
+      sources:
+          - llvm-toolchain-precise
+          - ubuntu-toolchain-r-test
+      packages:
+          - clang-3.7
+          - libiomp-dev
+
 compiler:
     - gcc
+    # - clang
 
 env:
-    global:
-      - CUDA=7.0-28
-    matrix:
-      # - COMPILER=nvcc BACKEND=cuda THRUST_VERSION=1.7.2
-      # - COMPILER=nvcc BACKEND=cuda THRUST_VERSION=1.8.3
-      # - COMPILER=nvcc BACKEND=cuda THRUST_VERSION=master
-      # - COMPILER=nvcc BACKEND=omp  THRUST_VERSION=1.7.2
-      # - COMPILER=nvcc BACKEND=omp  THRUST_VERSION=1.8.3
-      # - COMPILER=nvcc BACKEND=omp  THRUST_VERSION=master
-      - COMPILER=g++  BACKEND=omp  THRUST_VERSION=1.7.2
-      - COMPILER=g++  BACKEND=omp  THRUST_VERSION=1.8.3
-      - COMPILER=g++  BACKEND=omp  THRUST_VERSION=master
-
-before_install:
-    # borrowed from https://github.com/tmcdonell/cuda
-    # - echo "Installing CUDA library"
-    # - travis_retry wget http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1204/x86_64/cuda-repo-ubuntu1204_${CUDA}_amd64.deb
-    # - travis_retry sudo dpkg -i cuda-repo-ubuntu1204_${CUDA}_amd64.deb
-    # - travis_retry sudo apt-get update -qq
-    # - export CUDA_APT=${CUDA%-*}
-    # - export CUDA_APT=${CUDA_APT/./-}
-    # - travis_retry sudo apt-get install -y cuda-drivers cuda-core-${CUDA_APT} cuda-cudart-dev-${CUDA_APT}
-    # - travis_retry sudo apt-get clean
-    # - export CUDA_HOME=/usr/local/cuda-${CUDA%-*}
-    # - export LD_LIBRARY_PATH=${CUDA_HOME}/lib64:${LD_LIBRARY_PATH}
-    # - export PATH=${CUDA_HOME}/bin:${PATH}
+    - THRUST_VERSION=1.7.2
+    - THRUST_VERSION=1.8.3
+    - THRUST_VERSION=master
 
 install:
+    - if [ "$CC" = "clang" ]; then export CXX="clang++-3.7" CC="clang-3.7"; fi
     - git clone -b $THRUST_VERSION https://github.com/sdalton1/thrust.git
     - export THRUST_PATH=$PWD/thrust
     - cd testing
 
 script:
-    - scons compiler=$COMPILER backend=$BACKEND && cd device_${BACKEND}_release && ./tester --verbose
+    - scons compiler=$CC backend=omp && cd device_omp_release && ./tester --verbose
+

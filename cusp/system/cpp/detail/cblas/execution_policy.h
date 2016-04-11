@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2009 NVIDIA Corporation
+ *  Copyright 2008-2012 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,36 +14,44 @@
  *  limitations under the License.
  */
 
-/*! \file defs.h
- *  \brief CBLAS utility definitions for interface routines
- */
-
 #pragma once
 
-#include <cblas.h>
+#include <cusp/detail/config.h>
+#include <cusp/system/cpp/detail/execution_policy.h>
 
 namespace cusp
 {
-namespace blas
+namespace system
+{
+namespace cpp
+{
+namespace detail
 {
 namespace cblas
 {
 
-struct cblas_format {};
+template<typename Derived>
+struct execution_policy
+        : public cusp::cpp::execution_policy<Derived> {};
 
-struct upper   : public cblas_format {};
-struct lower   : public cblas_format {};
-struct unit    : public cblas_format {};
-struct nonunit : public cblas_format {};
-
-template< typename LayoutFormat >
-struct Orientation {static const enum CBLAS_ORDER type;};
-template<>
-const enum CBLAS_ORDER Orientation<cusp::row_major>::type    = CblasRowMajor;
-template<>
-const enum CBLAS_ORDER Orientation<cusp::column_major>::type = CblasColMajor;
+struct par_t : public execution_policy<par_t>
+{
+  public:
+  par_t() : execution_policy<par_t>() {}
+};
 
 } // end namespace cblas
-} // end namespace blas
+} // end namespace detail
+} // end namespace cpp
+} // end namespace system
+
+// alias items at top-level
+namespace cblas
+{
+
+using cusp::system::cpp::detail::cblas::execution_policy;
+static const cusp::system::cpp::detail::cblas::par_t par;
+
+} // end cblas
 } // end namespace cusp
 

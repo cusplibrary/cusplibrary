@@ -23,10 +23,12 @@
 
 #include <cusp/detail/config.h>
 
+#include <thrust/detail/type_traits.h>
+
 namespace cusp
 {
 
-struct known_format {};
+struct known_format   {};
 struct unknown_format {};
 
 struct dense_format       : public known_format  {};
@@ -41,4 +43,19 @@ struct dia_format         : public sparse_format {};
 struct ell_format         : public sparse_format {};
 struct hyb_format         : public sparse_format {};
 
+template<typename is_transpose>
+struct orientation {
+  typedef is_transpose transpose;
+};
+
+template<typename is_transpose>
+struct row_major_base : public orientation<is_transpose> {};
+
+template<typename is_transpose>
+struct column_major_base : public orientation<is_transpose> {};
+
+typedef row_major_base<thrust::detail::false_type>    row_major;
+typedef column_major_base<thrust::detail::false_type> column_major;
+
 } // end namespace cusp
+

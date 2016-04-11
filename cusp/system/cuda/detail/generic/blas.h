@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2012 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -18,13 +18,4 @@
 
 #include <cusp/detail/config.h>
 
-#define __CUSP_HOST_BLAS_SYSTEM <__CUSP_HOST_BLAS_ROOT/blas.h>
-#include __CUSP_HOST_BLAS_SYSTEM
-#undef __CUSP_HOST_BLAS_SYSTEM
-
-#define __CUSP_DEVICE_BLAS_SYSTEM <__CUSP_DEVICE_BLAS_ROOT/blas.h>
-#include __CUSP_DEVICE_BLAS_SYSTEM
-#undef __CUSP_DEVICE_BLAS_SYSTEM
-
-#include <cusp/blas/thrustblas/blas.h>
-
+// this system has no blas implementation

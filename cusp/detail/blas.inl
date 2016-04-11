@@ -14,14 +14,15 @@
  *  limitations under the License.
  */
 
+#include <cusp/detail/execution_policy.h>
+
 #include <cusp/array1d.h>
 #include <cusp/complex.h>
 #include <cusp/exception.h>
 #include <cusp/verify.h>
 
-#include <cusp/detail/execution_policy.h>
-#include <cusp/blas/blas_policy.h>
-#include <cusp/blas/thrustblas/blas.h>
+#include <cusp/system/detail/adl/blas.h>
+#include <cusp/system/detail/generic/blas.h>
 
 #include <thrust/iterator/iterator_traits.h>
 
@@ -35,7 +36,7 @@ template <typename DerivedPolicy,
 int amax(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
          const ArrayType& x)
 {
-    using cusp::blas::thrustblas::amax;
+    using cusp::system::detail::generic::blas::amax;
 
     return amax(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), x);
 }
@@ -58,7 +59,7 @@ typename cusp::norm_type<typename ArrayType::value_type>::type
 asum(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
      const ArrayType& x)
 {
-    using cusp::blas::thrustblas::asum;
+    using cusp::system::detail::generic::blas::asum;
 
     return asum(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), x);
 }
@@ -85,7 +86,7 @@ void axpy(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
                 ArrayType2& y,
           const ScalarType alpha)
 {
-    using cusp::blas::thrustblas::axpy;
+    using cusp::system::detail::generic::blas::axpy;
 
     cusp::assert_same_dimensions(x, y);
 
@@ -129,6 +130,27 @@ void axpy(const ArrayType1& x,
     cusp::blas::axpy(select_system(system1,system2), x, y, alpha);
 }
 
+template <typename DerivedPolicy,
+          typename ArrayType1,
+          typename ArrayType2,
+          typename ArrayType3,
+          typename ScalarType1,
+          typename ScalarType2>
+void axpby(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+           const ArrayType1& x,
+           const ArrayType2& y,
+                 ArrayType3& z,
+           const ScalarType1 alpha,
+           const ScalarType2 beta)
+{
+    using cusp::system::detail::generic::blas::axpby;
+
+    cusp::assert_same_dimensions(x, y, z);
+
+    axpby(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
+          x, y, z, alpha, beta);
+}
+
 template <typename ArrayType1,
           typename ArrayType2,
           typename ArrayType3,
@@ -137,8 +159,8 @@ template <typename ArrayType1,
 void axpby(const ArrayType1& x,
            const ArrayType2& y,
                  ArrayType3& z,
-                 ScalarType1 alpha,
-                 ScalarType2 beta)
+           const ScalarType1 alpha,
+           const ScalarType2 beta)
 {
     using thrust::system::detail::generic::select_system;
 
@@ -157,21 +179,25 @@ template <typename DerivedPolicy,
           typename ArrayType1,
           typename ArrayType2,
           typename ArrayType3,
+          typename ArrayType4,
           typename ScalarType1,
-          typename ScalarType2>
-void axpby(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-           const ArrayType1& x,
-           const ArrayType2& y,
-                 ArrayType3& z,
-                 ScalarType1 alpha,
-                 ScalarType2 beta)
+          typename ScalarType2,
+          typename ScalarType3>
+void axpbypcz(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+              const ArrayType1& x,
+              const ArrayType2& y,
+              const ArrayType3& z,
+                    ArrayType4& output,
+              const ScalarType1 alpha,
+              const ScalarType2 beta,
+              const ScalarType3 gamma)
 {
-    using cusp::blas::thrustblas::axpby;
+    using cusp::system::detail::generic::blas::axpbypcz;
 
-    cusp::assert_same_dimensions(x, y, z);
+    cusp::assert_same_dimensions(x, y, z, output);
 
-    axpby(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
-          x, y, z, alpha, beta);
+    axpbypcz(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
+             x, y, z, output, alpha, beta, gamma);
 }
 
 template <typename ArrayType1,
@@ -185,9 +211,9 @@ void axpbypcz(const ArrayType1& x,
               const ArrayType2& y,
               const ArrayType3& z,
                     ArrayType4& output,
-                    ScalarType1 alpha,
-                    ScalarType2 beta,
-                    ScalarType3 gamma)
+              const ScalarType1 alpha,
+              const ScalarType2 beta,
+              const ScalarType3 gamma)
 {
     using thrust::system::detail::generic::select_system;
 
@@ -207,26 +233,17 @@ void axpbypcz(const ArrayType1& x,
 template <typename DerivedPolicy,
           typename ArrayType1,
           typename ArrayType2,
-          typename ArrayType3,
-          typename ArrayType4,
-          typename ScalarType1,
-          typename ScalarType2,
-          typename ScalarType3>
-void axpbypcz(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-              const ArrayType1& x,
-              const ArrayType2& y,
-              const ArrayType3& z,
-                    ArrayType4& output,
-                    ScalarType1 alpha,
-                    ScalarType2 beta,
-                    ScalarType3 gamma)
+          typename ArrayType3>
+void xmy(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+         const ArrayType1& x,
+         const ArrayType2& y,
+               ArrayType3& z)
 {
-    using cusp::blas::thrustblas::axpbypcz;
+    using cusp::system::detail::generic::blas::xmy;
 
-    cusp::assert_same_dimensions(x, y, z, output);
+    cusp::assert_same_dimensions(x, y, z);
 
-    axpbypcz(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
-             x, y, z, output, alpha, beta, gamma);
+    xmy(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), x, y, z);
 }
 
 template <typename ArrayType1,
@@ -251,18 +268,16 @@ void xmy(const ArrayType1& x,
 
 template <typename DerivedPolicy,
           typename ArrayType1,
-          typename ArrayType2,
-          typename ArrayType3>
-void xmy(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-         const ArrayType1& x,
-         const ArrayType2& y,
-               ArrayType3& z)
+          typename ArrayType2>
+void copy(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+          const ArrayType1& x,
+                ArrayType2& y)
 {
-    using cusp::blas::thrustblas::xmy;
+    using cusp::system::detail::generic::blas::copy;
 
-    cusp::assert_same_dimensions(x, y, z);
+    cusp::assert_same_dimensions(x, y);
 
-    xmy(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), x, y, z);
+    copy(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), x, y);
 }
 
 template <typename ArrayType1,
@@ -300,15 +315,16 @@ void copy(const ArrayType& x,
 template <typename DerivedPolicy,
           typename ArrayType1,
           typename ArrayType2>
-void copy(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-          const ArrayType1& x,
-                ArrayType2& y)
+typename ArrayType1::value_type
+dot(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+    const ArrayType1& x,
+    const ArrayType2& y)
 {
-    using cusp::blas::thrustblas::copy;
+    using cusp::system::detail::generic::blas::dot;
 
     cusp::assert_same_dimensions(x, y);
 
-    copy(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), x, y);
+    return dot(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), x, y);
 }
 
 template <typename ArrayType1,
@@ -332,15 +348,15 @@ template <typename DerivedPolicy,
           typename ArrayType1,
           typename ArrayType2>
 typename ArrayType1::value_type
-dot(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-    const ArrayType1& x,
-    const ArrayType2& y)
+dotc(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+     const ArrayType1& x,
+     const ArrayType2& y)
 {
-    using cusp::blas::thrustblas::dot;
+    using cusp::system::detail::generic::blas::dotc;
 
     cusp::assert_same_dimensions(x, y);
 
-    return dot(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), x, y);
+    return dotc(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), x, y);
 }
 
 // TODO properly harmonize heterogenous types
@@ -362,18 +378,15 @@ dotc(const ArrayType1& x,
 }
 
 template <typename DerivedPolicy,
-          typename ArrayType1,
-          typename ArrayType2>
-typename ArrayType1::value_type
-dotc(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-     const ArrayType1& x,
-     const ArrayType2& y)
+          typename ArrayType,
+          typename ScalarType>
+void fill(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+          ArrayType& x,
+          const ScalarType alpha)
 {
-    using cusp::blas::thrustblas::dotc;
+    using cusp::system::detail::generic::blas::fill;
 
-    cusp::assert_same_dimensions(x, y);
-
-    return dotc(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), x, y);
+    fill(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), x, alpha);
 }
 
 template <typename RandomAccessIterator,
@@ -405,15 +418,14 @@ void fill(ArrayType& x,
 }
 
 template <typename DerivedPolicy,
-          typename ArrayType,
-          typename ScalarType>
-void fill(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-          ArrayType& x,
-          const ScalarType alpha)
+          typename ArrayType>
+typename cusp::norm_type<typename ArrayType::value_type>::type
+nrm1(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+     const ArrayType& x)
 {
-    using cusp::blas::thrustblas::fill;
+    using cusp::system::detail::generic::blas::nrm1;
 
-    fill(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), x, alpha);
+    return nrm1(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), x);
 }
 
 template <typename ArrayType>
@@ -432,12 +444,12 @@ nrm1(const ArrayType& x)
 template <typename DerivedPolicy,
           typename ArrayType>
 typename cusp::norm_type<typename ArrayType::value_type>::type
-nrm1(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+nrm2(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
      const ArrayType& x)
 {
-    using cusp::blas::thrustblas::nrm1;
+    using cusp::system::detail::generic::blas::nrm2;
 
-    return nrm1(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), x);
+    return nrm2(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), x);
 }
 
 template <typename ArrayType>
@@ -456,12 +468,12 @@ nrm2(const ArrayType& x)
 template <typename DerivedPolicy,
           typename ArrayType>
 typename cusp::norm_type<typename ArrayType::value_type>::type
-nrm2(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-     const ArrayType& x)
+nrmmax(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+       const ArrayType& x)
 {
-    using cusp::blas::thrustblas::nrm2;
+    using cusp::system::detail::generic::blas::nrmmax;
 
-    return nrm2(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), x);
+    return nrmmax(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), x);
 }
 
 template <typename ArrayType>
@@ -478,14 +490,15 @@ nrmmax(const ArrayType& x)
 }
 
 template <typename DerivedPolicy,
-          typename ArrayType>
-typename cusp::norm_type<typename ArrayType::value_type>::type
-nrmmax(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-       const ArrayType& x)
+          typename ArrayType,
+          typename ScalarType>
+void scal(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                ArrayType& x,
+          const ScalarType alpha)
 {
-    using cusp::blas::thrustblas::nrmmax;
+    using cusp::system::detail::generic::blas::scal;
 
-    return nrmmax(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), x);
+    scal(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), x, alpha);
 }
 
 template <typename ArrayType,
@@ -518,91 +531,29 @@ void scal(cusp::array1d_view<RandomAccessIterator> x,
 }
 
 template <typename DerivedPolicy,
-          typename ArrayType,
-          typename ScalarType>
-void scal(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-                ArrayType& x,
-          const ScalarType alpha)
-{
-    using cusp::blas::thrustblas::scal;
-
-    scal(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), x, alpha);
-}
-
-template<typename Array2d,
-         typename Array1,
-         typename Array2>
-void gemv(const Array2d& A,
-          const Array1& x,
-                Array2& y)
-{
-    using thrust::system::detail::generic::select_system;
-
-    typedef typename Array2d::memory_space System1;
-    typedef typename Array1::memory_space  System2;
-    typedef typename Array2::memory_space  System3;
-
-    System1 system1;
-    System2 system2;
-    System3 system3;
-
-    cusp::blas::gemv(select_system(system1,system2,system3), A, x, y);
-}
-
-template <typename DerivedPolicy,
-          typename Array2d,
-          typename Array1,
-          typename Array2>
-void gemv(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-          const Array2d& A,
-          const Array1&  x,
-                Array2&  y)
-{
-    using cusp::blas::thrustblas::gemv;
-
-    gemv(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, x, y);
-}
-
-template<typename Array1d1,
-         typename Array1d2,
-         typename Array2d1>
-void ger(const Array1d1& x,
-         const Array1d2& y,
-               Array2d1& A)
-{
-    using thrust::system::detail::generic::select_system;
-
-    typedef typename Array1d1::memory_space System1;
-    typedef typename Array1d2::memory_space System2;
-    typedef typename Array2d1::memory_space System3;
-
-    System1 system1;
-    System2 system2;
-    System3 system3;
-
-    cusp::blas::ger(select_system(system1,system2,system3), x, y, A);
-}
-
-template <typename DerivedPolicy,
+          typename Array2d1,
           typename Array1d1,
-          typename Array1d2,
-          typename Array2d1>
-void ger(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-         const Array1d1& x,
-         const Array1d2& y,
-               Array2d1& A)
+          typename Array1d2>
+void gemv(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+          const Array2d1& A,
+          const Array1d1& x,
+                Array1d2& y,
+          const typename Array2d1::value_type alpha,
+          const typename Array2d1::value_type beta)
 {
-    using cusp::blas::thrustblas::ger;
+    using cusp::system::detail::generic::blas::gemv;
 
-    ger(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), x, y, A);
+    gemv(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, x, y, alpha, beta);
 }
 
 template<typename Array2d1,
          typename Array1d1,
          typename Array1d2>
-void symv(const Array2d1& A,
+void gemv(const Array2d1& A,
           const Array1d1& x,
-                Array1d2& y)
+                Array1d2& y,
+          const typename Array2d1::value_type alpha,
+          const typename Array2d1::value_type beta)
 {
     using thrust::system::detail::generic::select_system;
 
@@ -614,7 +565,43 @@ void symv(const Array2d1& A,
     System2 system2;
     System3 system3;
 
-    cusp::blas::symv(select_system(system1,system2,system3), A, x, y);
+    cusp::blas::gemv(select_system(system1,system2,system3), A, x, y, alpha, beta);
+}
+
+template <typename DerivedPolicy,
+          typename Array1d1,
+          typename Array1d2,
+          typename Array2d1>
+void ger(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+         const Array1d1& x,
+         const Array1d2& y,
+               Array2d1& A,
+         const typename Array2d1::value_type alpha)
+{
+    using cusp::system::detail::generic::blas::ger;
+
+    ger(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), x, y, A, alpha);
+}
+
+template<typename Array1d1,
+         typename Array1d2,
+         typename Array2d1>
+void ger(const Array1d1& x,
+         const Array1d2& y,
+               Array2d1& A,
+         const typename Array2d1::value_type alpha)
+{
+    using thrust::system::detail::generic::select_system;
+
+    typedef typename Array1d1::memory_space System1;
+    typedef typename Array1d2::memory_space System2;
+    typedef typename Array2d1::memory_space System3;
+
+    System1 system1;
+    System2 system2;
+    System3 system3;
+
+    cusp::blas::ger(select_system(system1,system2,system3), x, y, A, alpha);
 }
 
 template <typename DerivedPolicy,
@@ -624,17 +611,55 @@ template <typename DerivedPolicy,
 void symv(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
           const Array2d1& A,
           const Array1d1& x,
-                Array1d2& y)
+                Array1d2& y,
+          const typename Array2d1::value_type alpha,
+          const typename Array2d1::value_type beta)
 {
-    using cusp::blas::thrustblas::symv;
+    using cusp::system::detail::generic::blas::symv;
 
-    symv(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, x, y);
+    symv(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, x, y, alpha, beta);
+}
+
+template<typename Array2d1,
+         typename Array1d1,
+         typename Array1d2>
+void symv(const Array2d1& A,
+          const Array1d1& x,
+                Array1d2& y,
+          const typename Array2d1::value_type alpha,
+          const typename Array2d1::value_type beta)
+{
+    using thrust::system::detail::generic::select_system;
+
+    typedef typename Array2d1::memory_space System1;
+    typedef typename Array1d1::memory_space System2;
+    typedef typename Array1d2::memory_space System3;
+
+    System1 system1;
+    System2 system2;
+    System3 system3;
+
+    cusp::blas::symv(select_system(system1,system2,system3), A, x, y, alpha, beta);
+}
+
+template <typename DerivedPolicy,
+          typename Array1d,
+          typename Array2d>
+void syr(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+         const Array1d& x,
+               Array2d& A,
+         const typename Array1d::value_type alpha)
+{
+    using cusp::system::detail::generic::blas::syr;
+
+    syr(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), x, A, alpha);
 }
 
 template<typename Array1d,
          typename Array2d>
 void syr(const Array1d& x,
-               Array2d& A)
+               Array2d& A,
+         const typename Array1d::value_type alpha)
 {
     using thrust::system::detail::generic::select_system;
 
@@ -644,19 +669,19 @@ void syr(const Array1d& x,
     System1 system1;
     System2 system2;
 
-    cusp::blas::syr(select_system(system1,system2), x, A);
+    cusp::blas::syr(select_system(system1,system2), x, A, alpha);
 }
 
 template <typename DerivedPolicy,
-          typename Array1d,
-          typename Array2d>
-void syr(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-         const Array1d& x,
-               Array2d& A)
+          typename Array2d,
+          typename Array1d>
+void trmv(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+          const Array2d& A,
+                Array1d& x)
 {
-    using cusp::blas::thrustblas::syr;
+    using cusp::system::detail::generic::blas::trmv;
 
-    syr(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), x, A);
+    trmv(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, x);
 }
 
 template<typename Array2d,
@@ -678,13 +703,13 @@ void trmv(const Array2d& A,
 template <typename DerivedPolicy,
           typename Array2d,
           typename Array1d>
-void trmv(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+void trsv(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
           const Array2d& A,
                 Array1d& x)
 {
-    using cusp::blas::thrustblas::trmv;
+    using cusp::system::detail::generic::blas::trsv;
 
-    trmv(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, x);
+    trsv(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, x);
 }
 
 template<typename Array2d,
@@ -704,15 +729,19 @@ void trsv(const Array2d& A,
 }
 
 template <typename DerivedPolicy,
-          typename Array2d,
-          typename Array1d>
-void trsv(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-          const Array2d& A,
-                Array1d& x)
+          typename Array2d1,
+          typename Array2d2,
+          typename Array2d3>
+void gemm(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+          const Array2d1& A,
+          const Array2d2& B,
+                Array2d3& C,
+          const typename Array2d1::value_type alpha,
+          const typename Array2d1::value_type beta)
 {
-    using cusp::blas::thrustblas::trsv;
+    using cusp::system::detail::generic::blas::gemm;
 
-    trsv(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, x);
+    gemm(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, B, C, alpha, beta);
 }
 
 template<typename Array2d1,
@@ -720,7 +749,9 @@ template<typename Array2d1,
          typename Array2d3>
 void gemm(const Array2d1& A,
           const Array2d2& B,
-                Array2d3& C)
+                Array2d3& C,
+          const typename Array2d1::value_type alpha,
+          const typename Array2d1::value_type beta)
 {
     using thrust::system::detail::generic::select_system;
 
@@ -732,41 +763,7 @@ void gemm(const Array2d1& A,
     System2 system2;
     System3 system3;
 
-    cusp::blas::gemm(select_system(system1,system2,system3), A, B, C);
-}
-
-template <typename DerivedPolicy,
-          typename Array2d1,
-          typename Array2d2,
-          typename Array2d3>
-void gemm(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-          const Array2d1& A,
-          const Array2d2& B,
-                Array2d3& C)
-{
-    using cusp::blas::thrustblas::gemm;
-
-    gemm(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, B, C);
-}
-
-template<typename Array2d1,
-         typename Array2d2,
-         typename Array2d3>
-void symm(const Array2d1& A,
-          const Array2d2& B,
-                Array2d3& C)
-{
-    using thrust::system::detail::generic::select_system;
-
-    typedef typename Array2d1::memory_space System1;
-    typedef typename Array2d2::memory_space System2;
-    typedef typename Array2d3::memory_space System3;
-
-    System1 system1;
-    System2 system2;
-    System3 system3;
-
-    cusp::blas::symm(select_system(system1,system2,system3), A, B, C);
+    cusp::blas::gemm(select_system(system1,system2,system3), A, B, C, alpha, beta);
 }
 
 template <typename DerivedPolicy,
@@ -776,47 +773,23 @@ template <typename DerivedPolicy,
 void symm(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
           const Array2d1& A,
           const Array2d2& B,
-                Array2d3& C)
+                Array2d3& C,
+          const typename Array2d1::value_type alpha,
+          const typename Array2d1::value_type beta)
 {
-    using cusp::blas::thrustblas::symm;
+    using cusp::system::detail::generic::blas::symm;
 
-    symm(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, B, C);
-}
-
-template<typename Array2d1,
-         typename Array2d2>
-void syrk(const Array2d1& A,
-                Array2d2& B)
-{
-    using thrust::system::detail::generic::select_system;
-
-    typedef typename Array2d1::memory_space System1;
-    typedef typename Array2d2::memory_space System2;
-
-    System1 system1;
-    System2 system2;
-
-    cusp::blas::syrk(select_system(system1,system2), A, B);
-}
-
-template <typename DerivedPolicy,
-          typename Array2d1,
-          typename Array2d2>
-void syrk(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-          const Array2d1& A,
-                Array2d2& B)
-{
-    using cusp::blas::thrustblas::syrk;
-
-    syrk(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, B);
+    symm(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, B, C, alpha, beta);
 }
 
 template<typename Array2d1,
          typename Array2d2,
          typename Array2d3>
-void syr2k(const Array2d1& A,
-           const Array2d2& B,
-                 Array2d3& C)
+void symm(const Array2d1& A,
+          const Array2d2& B,
+                Array2d3& C,
+          const typename Array2d1::value_type alpha,
+          const typename Array2d1::value_type beta)
 {
     using thrust::system::detail::generic::select_system;
 
@@ -828,7 +801,39 @@ void syr2k(const Array2d1& A,
     System2 system2;
     System3 system3;
 
-    cusp::blas::syr2k(select_system(system1,system2,system3), A, B, C);
+    cusp::blas::symm(select_system(system1,system2,system3), A, B, C, alpha, beta);
+}
+
+template <typename DerivedPolicy,
+          typename Array2d1,
+          typename Array2d2>
+void syrk(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+          const Array2d1& A,
+                Array2d2& B,
+          const typename Array2d1::value_type alpha,
+          const typename Array2d1::value_type beta)
+{
+    using cusp::system::detail::generic::blas::syrk;
+
+    syrk(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, B, alpha, beta);
+}
+
+template<typename Array2d1,
+         typename Array2d2>
+void syrk(const Array2d1& A,
+                Array2d2& B,
+          const typename Array2d1::value_type alpha,
+          const typename Array2d1::value_type beta)
+{
+    using thrust::system::detail::generic::select_system;
+
+    typedef typename Array2d1::memory_space System1;
+    typedef typename Array2d2::memory_space System2;
+
+    System1 system1;
+    System2 system2;
+
+    cusp::blas::syrk(select_system(system1,system2), A, B, alpha, beta);
 }
 
 template <typename DerivedPolicy,
@@ -838,27 +843,35 @@ template <typename DerivedPolicy,
 void syr2k(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
            const Array2d1& A,
            const Array2d2& B,
-                 Array2d3& C)
+                 Array2d3& C,
+           const typename Array2d1::value_type alpha,
+           const typename Array2d1::value_type beta)
 {
-    using cusp::blas::thrustblas::syr2k;
+    using cusp::system::detail::generic::blas::syr2k;
 
-    syr2k(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, B, C);
+    syr2k(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, B, C, alpha, beta);
 }
 
 template<typename Array2d1,
-         typename Array2d2>
-void trmm(const Array2d1& A,
-                Array2d2& B)
+         typename Array2d2,
+         typename Array2d3>
+void syr2k(const Array2d1& A,
+           const Array2d2& B,
+                 Array2d3& C,
+           const typename Array2d1::value_type alpha,
+           const typename Array2d1::value_type beta)
 {
     using thrust::system::detail::generic::select_system;
 
     typedef typename Array2d1::memory_space System1;
     typedef typename Array2d2::memory_space System2;
+    typedef typename Array2d3::memory_space System3;
 
     System1 system1;
     System2 system2;
+    System3 system3;
 
-    cusp::blas::trmm(select_system(system1,system2), A, B);
+    cusp::blas::syr2k(select_system(system1,system2,system3), A, B, C, alpha, beta);
 }
 
 template <typename DerivedPolicy,
@@ -866,17 +879,19 @@ template <typename DerivedPolicy,
           typename Array2d2>
 void trmm(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
           const Array2d1& A,
-                Array2d2& B)
+                Array2d2& B,
+          const typename Array2d1::value_type alpha)
 {
-    using cusp::blas::thrustblas::trmm;
+    using cusp::system::detail::generic::blas::trmm;
 
-    trmm(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, B);
+    trmm(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, B, alpha);
 }
 
 template<typename Array2d1,
          typename Array2d2>
-void trsm(const Array2d1& A,
-                Array2d2& B)
+void trmm(const Array2d1& A,
+                Array2d2& B,
+          const typename Array2d1::value_type alpha)
 {
     using thrust::system::detail::generic::select_system;
 
@@ -886,7 +901,7 @@ void trsm(const Array2d1& A,
     System1 system1;
     System2 system2;
 
-    cusp::blas::trsm(select_system(system1,system2), A, B);
+    cusp::blas::trmm(select_system(system1,system2), A, B, alpha);
 }
 
 template <typename DerivedPolicy,
@@ -894,11 +909,29 @@ template <typename DerivedPolicy,
           typename Array2d2>
 void trsm(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
           const Array2d1& A,
-                Array2d2& B)
+                Array2d2& B,
+          const typename Array2d1::value_type alpha)
 {
-    using cusp::blas::thrustblas::trsm;
+    using cusp::system::detail::generic::blas::trsm;
 
-    trsm(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, B);
+    trsm(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, B, alpha);
+}
+
+template<typename Array2d1,
+         typename Array2d2>
+void trsm(const Array2d1& A,
+                Array2d2& B,
+          const typename Array2d1::value_type alpha)
+{
+    using thrust::system::detail::generic::select_system;
+
+    typedef typename Array2d1::memory_space System1;
+    typedef typename Array2d2::memory_space System2;
+
+    System1 system1;
+    System2 system2;
+
+    cusp::blas::trsm(select_system(system1,system2), A, B, alpha);
 }
 
 } // end namespace blas

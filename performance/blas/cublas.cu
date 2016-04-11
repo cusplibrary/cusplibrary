@@ -11,13 +11,25 @@ struct test_nrm2
 {
     cusp::array1d<T,MemorySpace> x;
     const size_t n;
+    cublasHandle_t handle;
 
     test_nrm2(const size_t n)
-        : n(n), x(n) {}
+        : n(n), x(n)
+    {
+      if(cublasCreate(&handle) != CUBLAS_STATUS_SUCCESS)
+      {
+        throw cusp::runtime_exception("cublasCreate failed");
+      }
+    }
+
+    ~test_nrm2()
+    {
+      cublasDestroy(handle);
+    }
 
     void operator()(void)
     {
-        cusp::blas::nrm2(x);
+        cusp::blas::nrm2(cusp::cuda::par.with(handle), x);
     }
 
     std::string name(void) const { return (sizeof(T) == 4) ? "snrm2" : "dnrm2"; }
@@ -30,13 +42,25 @@ struct test_dot
 {
     cusp::array1d<T,MemorySpace> x, y;
     const size_t n;
+    cublasHandle_t handle;
 
     test_dot(const size_t n)
-        : n(n), x(n), y(n) {}
+        : n(n), x(n), y(n)
+    {
+      if(cublasCreate(&handle) != CUBLAS_STATUS_SUCCESS)
+      {
+        throw cusp::runtime_exception("cublasCreate failed");
+      }
+    }
+
+    ~test_dot()
+    {
+      cublasDestroy(handle);
+    }
 
     void operator()(void)
     {
-        cusp::blas::dot(x, y);
+        cusp::blas::dot(cusp::cuda::par.with(handle), x, y);
     }
 
     std::string name(void) const { return (sizeof(T) == 4) ? "sdot" : "ddot"; }
@@ -49,13 +73,25 @@ struct test_axpy
 {
     cusp::array1d<T,MemorySpace> x, y;
     const size_t n;
+    cublasHandle_t handle;
 
     test_axpy(const size_t n)
-        : n(n), x(n), y(n) {}
+        : n(n), x(n), y(n)
+    {
+      if(cublasCreate(&handle) != CUBLAS_STATUS_SUCCESS)
+      {
+        throw cusp::runtime_exception("cublasCreate failed");
+      }
+    }
+
+    ~test_axpy()
+    {
+      cublasDestroy(handle);
+    }
 
     void operator()(void)
     {
-        cusp::blas::axpy(x, y, T(1.0));
+        cusp::blas::axpy(cusp::cuda::par.with(handle), x, y, T(1.0));
     }
 
     std::string name(void) const { return (sizeof(T) == 4) ? "saxpy" : "daxpy"; }

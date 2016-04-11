@@ -36,10 +36,6 @@
 namespace cusp
 {
 
-// Forward definitions
-struct row_major;
-struct column_major;
-
 template <typename, typename>           class array1d;
 template <typename, typename, typename> class array2d;
 template <typename, typename, typename> class dia_matrix;
