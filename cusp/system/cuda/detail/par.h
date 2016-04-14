@@ -18,6 +18,8 @@
 
 #include <cusp/detail/config.h>
 #include <cusp/system/cuda/detail/execution_policy.h>
+#include <cusp/system/cuda/detail/cublas/execute_with_cublas.h>
+
 #include <thrust/detail/execute_with_allocator.h>
 
 namespace cusp
@@ -29,7 +31,6 @@ namespace cuda
 namespace detail
 {
 
-
 struct par_t : public cusp::system::cuda::detail::execution_policy<par_t>
 {
   public:
@@ -40,6 +41,12 @@ struct par_t : public cusp::system::cuda::detail::execution_policy<par_t>
       operator()(Allocator &alloc) const
   {
     return thrust::detail::execute_with_allocator<Allocator, cusp::system::cuda::detail::execution_policy>(alloc);
+  }
+
+  __host__ __device__
+  inline cublas::execute_with_cublas with(const cublasHandle_t &handle) const
+  {
+    return cublas::execute_with_cublas(handle);
   }
 };
 
@@ -82,9 +89,7 @@ static const detail::par_t par;
 namespace cuda
 {
 
-
 using cusp::system::cuda::par;
-
 
 } // end cuda
 } // end cusp

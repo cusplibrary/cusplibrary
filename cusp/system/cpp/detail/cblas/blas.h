@@ -19,21 +19,25 @@
 #include <cusp/array1d.h>
 #include <cusp/exception.h>
 
-#include <cusp/blas/cblas/defs.h>
-#include <cusp/blas/cblas/execution_policy.h>
-
-#include <cusp/blas/cblas/complex_stubs.h>
-#include <cusp/blas/cblas/stubs.h>
+#include <cusp/system/cpp/detail/cblas/complex_stubs.h>
+#include <cusp/system/cpp/detail/cblas/stubs.h>
+#include <cusp/system/cpp/detail/cblas/defs.h>
+#include <cusp/system/cpp/detail/cblas/execution_policy.h>
 
 namespace cusp
 {
-namespace blas
+namespace system
+{
+namespace cpp
+{
+namespace detail
 {
 namespace cblas
 {
 
-template <typename Array>
-int amax(cblas::execution_policy& exec,
+template <typename DerivedPolicy,
+          typename Array>
+int amax(cblas::execution_policy<DerivedPolicy>& exec,
          const Array& x)
 {
     typedef typename Array::value_type ValueType;
@@ -42,12 +46,13 @@ int amax(cblas::execution_policy& exec,
 
     const ValueType* x_p = thrust::raw_pointer_cast(&x[0]);
 
-    return cblas::detail::amax(n, x_p, 1);
+    return cblas::amax<0>(n, x_p, 1);
 }
 
-template <typename Array>
+template <typename DerivedPolicy,
+          typename Array>
 typename cusp::norm_type<typename Array::value_type>::type
-asum(cblas::execution_policy& exec,
+asum(cblas::execution_policy<DerivedPolicy>& exec,
      const Array& x)
 {
     typedef typename Array::value_type ValueType;
@@ -56,13 +61,14 @@ asum(cblas::execution_policy& exec,
 
     const ValueType* x_p = thrust::raw_pointer_cast(&x[0]);
 
-    return cblas::detail::asum(n, x_p, 1);
+    return cblas::asum<0>(n, x_p, 1);
 }
 
-template <typename Array1,
+template <typename DerivedPolicy,
+          typename Array1,
           typename Array2,
           typename ScalarType>
-void axpy(cblas::execution_policy& exec,
+void axpy(cblas::execution_policy<DerivedPolicy>& exec,
           const Array1& x,
                 Array2& y,
           const ScalarType alpha)
@@ -74,12 +80,13 @@ void axpy(cblas::execution_policy& exec,
     const ValueType* x_p = thrust::raw_pointer_cast(&x[0]);
     ValueType* y_p = thrust::raw_pointer_cast(&y[0]);
 
-    cblas::detail::axpy(n, alpha, x_p, 1, y_p, 1);
+    cblas::axpy<0>(n, alpha, x_p, 1, y_p, 1);
 }
 
-template <typename Array1,
+template <typename DerivedPolicy,
+          typename Array1,
           typename Array2>
-void copy(cblas::execution_policy& exec,
+void copy(cblas::execution_policy<DerivedPolicy>& exec,
           const Array1& x,
                 Array2& y)
 {
@@ -90,13 +97,14 @@ void copy(cblas::execution_policy& exec,
     const ValueType* x_p = thrust::raw_pointer_cast(&x[0]);
     ValueType* y_p = thrust::raw_pointer_cast(&y[0]);
 
-    cblas::detail::copy(n, x_p, 1, y_p, 1);
+    cblas::copy<0>(n, x_p, 1, y_p, 1);
 }
 
-template <typename Array1,
+template <typename DerivedPolicy,
+          typename Array1,
           typename Array2>
 typename Array1::value_type
-dot(cblas::execution_policy& exec,
+dot(cblas::execution_policy<DerivedPolicy>& exec,
     const Array1& x,
     const Array2& y)
 {
@@ -107,7 +115,7 @@ dot(cblas::execution_policy& exec,
     const ValueType* x_p = thrust::raw_pointer_cast(&x[0]);
     const ValueType* y_p = thrust::raw_pointer_cast(&y[0]);
 
-    return cblas::detail::dot(n, x_p, 1, y_p, 1);
+    return cblas::dot<0>(n, x_p, 1, y_p, 1);
 }
 
 // template <typename Array1,
@@ -127,9 +135,10 @@ dot(cblas::execution_policy& exec,
 //     return cblas::detail::dotc(n, x_p, 1, y_p, 1);
 // }
 
-template <typename Array>
+template <typename DerivedPolicy,
+          typename Array>
 typename cusp::norm_type<typename Array::value_type>::type
-nrm2(cblas::execution_policy& exec,
+nrm2(cblas::execution_policy<DerivedPolicy>& exec,
      const Array& x)
 {
     typedef typename Array::value_type ValueType;
@@ -138,12 +147,13 @@ nrm2(cblas::execution_policy& exec,
 
     const ValueType* x_p = thrust::raw_pointer_cast(&x[0]);
 
-    return cblas::detail::nrm2(n, x_p, 1);
+    return cblas::nrm2<0>(n, x_p, 1);
 }
 
-template <typename Array,
+template <typename DerivedPolicy,
+          typename Array,
           typename ScalarType>
-void scal(cblas::execution_policy& exec,
+void scal(cblas::execution_policy<DerivedPolicy>& exec,
           Array& x,
           const ScalarType alpha)
 {
@@ -153,12 +163,13 @@ void scal(cblas::execution_policy& exec,
 
     ValueType* x_p = thrust::raw_pointer_cast(&x[0]);
 
-    cblas::detail::scal(n, alpha, x_p, 1);
+    cblas::scal<0>(n, alpha, x_p, 1);
 }
 
-template <typename Array1,
+template <typename DerivedPolicy,
+          typename Array1,
           typename Array2>
-void swap(cblas::execution_policy& exec,
+void swap(cblas::execution_policy<DerivedPolicy>& exec,
           Array1& x,
           Array2& y)
 {
@@ -169,21 +180,23 @@ void swap(cblas::execution_policy& exec,
     ValueType* x_p = thrust::raw_pointer_cast(&x[0]);
     ValueType* y_p = thrust::raw_pointer_cast(&y[0]);
 
-    cblas::detail::swap(n, x_p, 1, y_p, 1);
+    cblas::swap<0>(n, x_p, 1, y_p, 1);
 }
 
-template<typename Array2d1,
-         typename Array1d1,
-         typename Array1d2>
-void gemv(cblas::execution_policy& exec,
+template <typename DerivedPolicy,
+          typename Array2d1,
+          typename Array1d1,
+          typename Array1d2>
+void gemv(cblas::execution_policy<DerivedPolicy>& exec,
           const Array2d1& A,
           const Array1d1& x,
                 Array1d2& y)
 {
     typedef typename Array2d1::value_type ValueType;
+    typedef typename cblas::Orientation<typename Array2d1::orientation>::type LayoutType;
 
-    enum CBLAS_ORDER order = cblas::Orientation<typename Array2d1::orientation>::type;
-    enum CBLAS_TRANSPOSE trans = CblasNoTrans;
+    CBLAS_ORDER     order = LayoutType::order;
+    CBLAS_TRANSPOSE trans = CblasNoTrans;
 
     int m = A.num_rows;
     int n = A.num_cols;
@@ -196,21 +209,23 @@ void gemv(cblas::execution_policy& exec,
     const ValueType * x_p = thrust::raw_pointer_cast(&x[0]);
     ValueType * y_p = thrust::raw_pointer_cast(&y[0]);
 
-    cblas::detail::gemv(order, trans, m, n, alpha,
-                        A_p, lda, x_p, 1, beta, y_p, 1);
+    cblas::gemv<0>(order, trans, m, n, alpha,
+                   A_p, lda, x_p, 1, beta, y_p, 1);
 }
 
-template<typename Array1d1,
-         typename Array1d2,
-         typename Array2d1>
-void ger(cblas::execution_policy& exec,
+template <typename DerivedPolicy,
+          typename Array1d1,
+          typename Array1d2,
+          typename Array2d1>
+void ger(cblas::execution_policy<DerivedPolicy>& exec,
          const Array1d1& x,
          const Array1d2& y,
                Array2d1& A)
 {
     typedef typename Array2d1::value_type ValueType;
+    typedef typename cblas::Orientation<typename Array2d1::orientation>::type LayoutType;
 
-    enum CBLAS_ORDER order = cblas::Orientation<typename Array2d1::orientation>::type;
+    CBLAS_ORDER order = LayoutType::order;
 
     int m = A.num_rows;
     int n = A.num_cols;
@@ -222,22 +237,24 @@ void ger(cblas::execution_policy& exec,
     const ValueType * y_p = thrust::raw_pointer_cast(&y[0]);
     ValueType * A_p = thrust::raw_pointer_cast(&A(0,0));
 
-    cblas::detail::ger(order, m, n, alpha,
-                       x_p, 1, y_p, 1, A_p, lda);
+    cblas::ger<0>(order, m, n, alpha,
+                  x_p, 1, y_p, 1, A_p, lda);
 }
 
-template<typename Array2d1,
-         typename Array1d1,
-         typename Array1d2>
-void symv(cblas::execution_policy& exec,
+template <typename DerivedPolicy,
+          typename Array2d1,
+          typename Array1d1,
+          typename Array1d2>
+void symv(cblas::execution_policy<DerivedPolicy>& exec,
           const Array2d1& A,
           const Array1d1& x,
                 Array1d2& y)
 {
     typedef typename Array2d1::value_type ValueType;
+    typedef typename cblas::Orientation<typename Array2d1::orientation>::type LayoutType;
 
-    enum CBLAS_ORDER order = cblas::Orientation<typename Array2d1::orientation>::type;
-    enum CBLAS_UPLO  uplo  = CblasUpper;
+    CBLAS_ORDER order = LayoutType::order;
+    CBLAS_UPLO  uplo  = CblasUpper;
 
     int n = A.num_rows;
     int lda = A.pitch;
@@ -249,20 +266,22 @@ void symv(cblas::execution_policy& exec,
     const ValueType * x_p = thrust::raw_pointer_cast(&x[0]);
     ValueType * y_p = thrust::raw_pointer_cast(&y[0]);
 
-    cblas::detail::symv(order, uplo, n, alpha,
-                        A_p, lda, x_p, 1, beta, y_p, 1);
+    cblas::symv<0>(order, uplo, n, alpha,
+                   A_p, lda, x_p, 1, beta, y_p, 1);
 }
 
-template<typename Array1d,
-         typename Array2d>
-void syr(cblas::execution_policy& exec,
+template <typename DerivedPolicy,
+          typename Array1d,
+          typename Array2d>
+void syr(cblas::execution_policy<DerivedPolicy>& exec,
          const Array1d& x,
                Array2d& A)
 {
     typedef typename Array2d::value_type ValueType;
+    typedef typename cblas::Orientation<typename Array2d::orientation>::type LayoutType;
 
-    enum CBLAS_ORDER order = cblas::Orientation<typename Array2d::orientation>::type;
-    enum CBLAS_UPLO  uplo  = CblasUpper;
+    CBLAS_ORDER order = LayoutType::order;
+    CBLAS_UPLO  uplo  = CblasUpper;
 
     int n = A.num_rows;
     int lda = A.pitch;
@@ -272,22 +291,24 @@ void syr(cblas::execution_policy& exec,
 
     ValueType alpha = 1.0;
 
-    cblas::detail::syr(order, uplo, n, alpha,
-                       x_p, 1, A_p, lda);
+    cblas::syr<0>(order, uplo, n, alpha,
+                  x_p, 1, A_p, lda);
 }
 
-template<typename Array2d,
-         typename Array1d>
-void trmv(cblas::execution_policy& exec,
+template <typename DerivedPolicy,
+          typename Array2d,
+          typename Array1d>
+void trmv(cblas::execution_policy<DerivedPolicy>& exec,
           const Array2d& A,
                 Array1d& x)
 {
     typedef typename Array2d::value_type ValueType;
+    typedef typename cblas::Orientation<typename Array2d::orientation>::type LayoutType;
 
-    enum CBLAS_ORDER order = cblas::Orientation<typename Array2d::orientation>::type;
-    enum CBLAS_UPLO      uplo  = CblasUpper;
-    enum CBLAS_TRANSPOSE trans = CblasNoTrans;
-    enum CBLAS_DIAG      diag  = CblasNonUnit;
+    CBLAS_ORDER     order = LayoutType::order;
+    CBLAS_UPLO      uplo  = CblasUpper;
+    CBLAS_TRANSPOSE trans = CblasNoTrans;
+    CBLAS_DIAG      diag  = CblasNonUnit;
 
     int n = A.num_rows;
     int lda = A.pitch;
@@ -295,22 +316,24 @@ void trmv(cblas::execution_policy& exec,
     const ValueType * A_p = thrust::raw_pointer_cast(&A(0,0));
     ValueType * x_p = thrust::raw_pointer_cast(&x[0]);
 
-    cblas::detail::trmv(order, uplo, trans, diag, n,
-                        A_p, lda, x_p, 1);
+    cblas::trmv<0>(order, uplo, trans, diag, n,
+                   A_p, lda, x_p, 1);
 }
 
-template<typename Array2d,
-         typename Array1d>
-void trsv(cblas::execution_policy& exec,
+template <typename DerivedPolicy,
+          typename Array2d,
+          typename Array1d>
+void trsv(cblas::execution_policy<DerivedPolicy>& exec,
           const Array2d& A,
                 Array1d& x)
 {
     typedef typename Array2d::value_type ValueType;
+    typedef typename cblas::Orientation<typename Array2d::orientation>::type LayoutType;
 
-    enum CBLAS_ORDER order = cblas::Orientation<typename Array2d::orientation>::type;
-    enum CBLAS_UPLO      uplo  = CblasUpper;
-    enum CBLAS_TRANSPOSE trans = CblasNoTrans;
-    enum CBLAS_DIAG      diag  = CblasNonUnit;
+    CBLAS_ORDER     order = LayoutType::order;
+    CBLAS_UPLO      uplo  = CblasUpper;
+    CBLAS_TRANSPOSE trans = CblasNoTrans;
+    CBLAS_DIAG      diag  = CblasNonUnit;
 
     int n = A.num_rows;
     int lda = A.pitch;
@@ -318,23 +341,29 @@ void trsv(cblas::execution_policy& exec,
     const ValueType * A_p = thrust::raw_pointer_cast(&A(0,0));
     ValueType * x_p = thrust::raw_pointer_cast(&x[0]);
 
-    cblas::detail::trsv(order, uplo, trans, diag, n,
-                        A_p, lda, x_p, 1);
+    cblas::trsv<0>(order, uplo, trans, diag, n,
+                   A_p, lda, x_p, 1);
 }
 
-template<typename Array2d1,
-         typename Array2d2,
-         typename Array2d3>
-void gemm(cblas::execution_policy& exec,
+template <typename DerivedPolicy,
+          typename Array2d1,
+          typename Array2d2,
+          typename Array2d3,
+          typename ScalarType1,
+          typename ScalarType2>
+void gemm(cblas::execution_policy<DerivedPolicy>& exec,
           const Array2d1& A,
           const Array2d2& B,
-                Array2d3& C)
+                Array2d3& C,
+          const ScalarType1 alpha,
+          const ScalarType2 beta)
 {
     typedef typename Array2d1::value_type ValueType;
+    typedef typename cblas::Orientation<typename Array2d1::orientation>::type LayoutType;
 
-    enum CBLAS_ORDER order = cblas::Orientation<typename Array2d1::orientation>::type;
-    enum CBLAS_TRANSPOSE transa = CblasNoTrans;
-    enum CBLAS_TRANSPOSE transb = CblasNoTrans;
+    CBLAS_ORDER     order = LayoutType::order;
+    CBLAS_TRANSPOSE transa = CblasNoTrans;
+    CBLAS_TRANSPOSE transb = CblasNoTrans;
 
     int m = C.num_rows;
     int n = C.num_cols;
@@ -343,31 +372,33 @@ void gemm(cblas::execution_policy& exec,
     int ldb = B.pitch;
     int ldc = C.pitch;
 
-    ValueType alpha = 1.0;
-    ValueType beta = 0.0;
+    ValueType alpha0 = ValueType(alpha);
+    ValueType beta0  = ValueType(beta);
 
     const ValueType * A_p = thrust::raw_pointer_cast(&A(0,0));
     const ValueType * B_p = thrust::raw_pointer_cast(&B(0,0));
     ValueType * C_p = thrust::raw_pointer_cast(&C(0,0));
 
-    cblas::detail::gemm(order, transa, transb,
-                        m, n, k, alpha, A_p, lda,
-                        B_p, ldb, beta, C_p, ldc);
+    cblas::gemm<0>(order, transa, transb,
+                   m, n, k, alpha0, A_p, lda,
+                   B_p, ldb, beta0, C_p, ldc);
 }
 
-template<typename Array2d1,
-         typename Array2d2,
-         typename Array2d3>
-void symm(cblas::execution_policy& exec,
+template <typename DerivedPolicy,
+          typename Array2d1,
+          typename Array2d2,
+          typename Array2d3>
+void symm(cblas::execution_policy<DerivedPolicy>& exec,
           const Array2d1& A,
           const Array2d2& B,
                 Array2d3& C)
 {
     typedef typename Array2d1::value_type ValueType;
+    typedef typename cblas::Orientation<typename Array2d1::orientation>::type LayoutType;
 
-    enum CBLAS_ORDER order = cblas::Orientation<typename Array2d1::orientation>::type;
-    enum CBLAS_SIDE  side  = CblasLeft;
-    enum CBLAS_UPLO  uplo  = CblasUpper;
+    CBLAS_ORDER order = LayoutType::order;
+    CBLAS_SIDE  side  = CblasLeft;
+    CBLAS_UPLO  uplo  = CblasUpper;
 
     int m = C.num_rows;
     int n = C.num_cols;
@@ -382,22 +413,24 @@ void symm(cblas::execution_policy& exec,
     const ValueType * B_p = thrust::raw_pointer_cast(&B(0,0));
     ValueType * C_p = thrust::raw_pointer_cast(&C(0,0));
 
-    cblas::detail::symm(order, side, uplo,
-                        m, n, alpha, A_p, lda,
-                        B_p, ldb, beta, C_p, ldc);
+    cblas::symm<0>(order, side, uplo,
+                   m, n, alpha, A_p, lda,
+                   B_p, ldb, beta, C_p, ldc);
 }
 
-template<typename Array2d1,
-         typename Array2d2>
-void syrk(cblas::execution_policy& exec,
+template <typename DerivedPolicy,
+          typename Array2d1,
+          typename Array2d2>
+void syrk(cblas::execution_policy<DerivedPolicy>& exec,
           const Array2d1& A,
                 Array2d2& B)
 {
     typedef typename Array2d1::value_type ValueType;
+    typedef typename cblas::Orientation<typename Array2d1::orientation>::type LayoutType;
 
-    enum CBLAS_ORDER order = cblas::Orientation<typename Array2d1::orientation>::type;
-    enum CBLAS_UPLO  uplo  = CblasUpper;
-    enum CBLAS_TRANSPOSE trans = CblasNoTrans;
+    CBLAS_ORDER     order = LayoutType::order;
+    CBLAS_UPLO      uplo  = CblasUpper;
+    CBLAS_TRANSPOSE trans = CblasNoTrans;
 
     int n = A.num_rows;
     int k = B.num_rows;
@@ -410,24 +443,26 @@ void syrk(cblas::execution_policy& exec,
     const ValueType * A_p = thrust::raw_pointer_cast(&A(0,0));
     ValueType * B_p = thrust::raw_pointer_cast(&B(0,0));
 
-    cblas::detail::syrk(order, uplo, trans,
-                        n, k, alpha, A_p, lda,
-                        beta, B_p, ldb);
+    cblas::syrk<0>(order, uplo, trans,
+                   n, k, alpha, A_p, lda,
+                   beta, B_p, ldb);
 }
 
-template<typename Array2d1,
-         typename Array2d2,
-         typename Array2d3>
-void syr2k(cblas::execution_policy& exec,
+template <typename DerivedPolicy,
+          typename Array2d1,
+          typename Array2d2,
+          typename Array2d3>
+void syr2k(cblas::execution_policy<DerivedPolicy>& exec,
            const Array2d1& A,
            const Array2d2& B,
                  Array2d3& C)
 {
     typedef typename Array2d1::value_type ValueType;
+    typedef typename cblas::Orientation<typename Array2d1::orientation>::type LayoutType;
 
-    enum CBLAS_ORDER order = cblas::Orientation<typename Array2d1::orientation>::type;
-    enum CBLAS_UPLO  uplo  = CblasUpper;
-    enum CBLAS_TRANSPOSE trans = CblasNoTrans;
+    CBLAS_ORDER     order = LayoutType::order;
+    CBLAS_UPLO      uplo  = CblasUpper;
+    CBLAS_TRANSPOSE trans = CblasNoTrans;
 
     int n = A.num_rows;
     int k = B.num_rows;
@@ -442,24 +477,26 @@ void syr2k(cblas::execution_policy& exec,
     const ValueType * B_p = thrust::raw_pointer_cast(&B(0,0));
     ValueType * C_p = thrust::raw_pointer_cast(&C(0,0));
 
-    cblas::detail::syr2k(order, uplo, trans,
-                         n, k, alpha, A_p, lda,
-                         B_p, ldb, beta, C_p, ldc);
+    cblas::syr2k<0>(order, uplo, trans,
+                    n, k, alpha, A_p, lda,
+                    B_p, ldb, beta, C_p, ldc);
 }
 
-template<typename Array2d1,
-         typename Array2d2>
-void trmm(cblas::execution_policy& exec,
+template <typename DerivedPolicy,
+          typename Array2d1,
+          typename Array2d2>
+void trmm(cblas::execution_policy<DerivedPolicy>& exec,
           const Array2d1& A,
                 Array2d2& B)
 {
     typedef typename Array2d1::value_type ValueType;
+    typedef typename cblas::Orientation<typename Array2d1::orientation>::type LayoutType;
 
-    enum CBLAS_ORDER order     = cblas::Orientation<typename Array2d1::orientation>::type;
-    enum CBLAS_SIDE  side      = CblasLeft;
-    enum CBLAS_UPLO  uplo      = CblasUpper;
-    enum CBLAS_TRANSPOSE trans = CblasNoTrans;
-    enum CBLAS_DIAG  diag      = CblasNonUnit;
+    CBLAS_ORDER     order = LayoutType::order;
+    CBLAS_SIDE      side  = CblasLeft;
+    CBLAS_UPLO      uplo  = CblasUpper;
+    CBLAS_TRANSPOSE trans = CblasNoTrans;
+    CBLAS_DIAG      diag  = CblasNonUnit;
 
     int m   = B.num_rows;
     int n   = B.num_cols;
@@ -471,23 +508,25 @@ void trmm(cblas::execution_policy& exec,
     const ValueType * A_p = thrust::raw_pointer_cast(&A(0,0));
     ValueType * B_p = thrust::raw_pointer_cast(&B(0,0));
 
-    cblas::detail::trmm(order, side, uplo, trans, diag,
-                        m, n, alpha, A_p, lda, B_p, ldb);
+    cblas::trmm<0>(order, side, uplo, trans, diag,
+                   m, n, alpha, A_p, lda, B_p, ldb);
 }
 
-template<typename Array2d1,
-         typename Array2d2>
-void trsm(cblas::execution_policy& exec,
+template <typename DerivedPolicy,
+          typename Array2d1,
+          typename Array2d2>
+void trsm(cblas::execution_policy<DerivedPolicy>& exec,
           const Array2d1& A,
                 Array2d2& B)
 {
     typedef typename Array2d1::value_type ValueType;
+    typedef typename cblas::Orientation<typename Array2d1::orientation>::type LayoutType;
 
-    enum CBLAS_ORDER order     = cblas::Orientation<typename Array2d1::orientation>::type;
-    enum CBLAS_SIDE  side      = CblasLeft;
-    enum CBLAS_UPLO  uplo      = CblasUpper;
-    enum CBLAS_TRANSPOSE trans = CblasNoTrans;
-    enum CBLAS_DIAG  diag      = CblasNonUnit;
+    CBLAS_ORDER     order = LayoutType::order;
+    CBLAS_SIDE      side  = CblasLeft;
+    CBLAS_UPLO      uplo  = CblasUpper;
+    CBLAS_TRANSPOSE trans = CblasNoTrans;
+    CBLAS_DIAG      diag  = CblasNonUnit;
 
     int m   = B.num_rows;
     int n   = B.num_cols;
@@ -499,13 +538,14 @@ void trsm(cblas::execution_policy& exec,
     const ValueType * A_p = thrust::raw_pointer_cast(&A(0,0));
     ValueType * B_p = thrust::raw_pointer_cast(&B(0,0));
 
-    cblas::detail::trsm(order, side, uplo, trans, diag,
-                        m, n, alpha, A_p, lda, B_p, ldb);
+    cblas::trsm<0>(order, side, uplo, trans, diag,
+                   m, n, alpha, A_p, lda, B_p, ldb);
 }
 
-template <typename Array>
+template <typename DerivedPolicy,
+          typename Array>
 typename cusp::norm_type<typename Array::value_type>::type
-nrm1(cblas::execution_policy& exec,
+nrm1(cblas::execution_policy<DerivedPolicy>& exec,
      const Array& x)
 {
     typedef typename Array::value_type ValueType;
@@ -514,12 +554,13 @@ nrm1(cblas::execution_policy& exec,
 
     const ValueType* x_p = thrust::raw_pointer_cast(&x[0]);
 
-    return cblas::detail::asum(n, x_p, 1);
+    return cblas::asum(n, x_p, 1);
 }
 
-template <typename Array>
+template <typename DerivedPolicy,
+          typename Array>
 typename cusp::norm_type<typename Array::value_type>::type
-nrmmax(cblas::execution_policy& exec,
+nrmmax(cblas::execution_policy<DerivedPolicy>& exec,
        const Array& x)
 {
     typedef typename Array::value_type ValueType;
@@ -529,12 +570,14 @@ nrmmax(cblas::execution_policy& exec,
 
     const ValueType* x_p = thrust::raw_pointer_cast(&x[0]);
 
-    int index = cblas::detail::amax(n, x_p, 1);
+    int index = cblas::amax(n, x_p, 1);
 
     return cusp::abs(x[index]);
 }
 
 } // end namespace cblas
-} // end namespace blas
+} // end namespace detail
+} // end namespace cpp
+} // end namespace system
 } // end namespace cusp
 

@@ -102,6 +102,8 @@ examples/Views/array2d_raw
 examples/Version/version
 
 performance/amg/smoothed_aggregation
+performance/blas/blas
+performance/blas/cublas
 performance/csr_vector/csr_vector
 performance/graph/breadth_first_search
 performance/graph/connected_components

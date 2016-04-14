@@ -14,11 +14,8 @@
  *  limitations under the License.
  */
 
-/*! \file blas.h
- *  \brief BLAS-like functions
- */
-
 #pragma once
 
-#include <cusp/blas.h>
+#include <cusp/detail/config.h>
 
+// this system has no special version of this algorithm

@@ -51,6 +51,7 @@
   CUSP_CUBLAS_EXPAND_COMPLEX_DEFS_2(FUNC_MACRO)
 
 #define CUSP_CUBLAS_AMAX(T,V,name)                                                            \
+  template<int dummy>                                                                         \
   cublasStatus_t amax( cublasHandle_t handle,                                                 \
                        const int n, const T* X, const int incX, int& result )                 \
   {                                                                                           \
@@ -58,6 +59,7 @@
   }
 
 #define CUSP_CUBLAS_ASUM(T,V,name)                                                            \
+  template<int dummy>                                                                         \
   cublasStatus_t asum( cublasHandle_t handle,                                                 \
                        const int n, const T* X, const int incX,                               \
                        typename cusp::norm_type<T>::type& result )                            \
@@ -67,6 +69,7 @@
   }
 
 #define CUSP_CUBLAS_AXPY(T,V,name)                                                            \
+  template<int dummy>                                                                         \
   cublasStatus_t axpy( cublasHandle_t handle,                                                 \
                        const int n, const T& alpha, const T* X, const int incX,               \
                        T* Y, const int incY )                                                 \
@@ -76,6 +79,7 @@
   }
 
 #define CUSP_CUBLAS_COPY(T,V,name)                                                            \
+  template<int dummy>                                                                         \
   cublasStatus_t copy( cublasHandle_t handle,                                                 \
                        const int n, const T* X, const int incX, T* Y, const int incY )        \
   {                                                                                           \
@@ -83,6 +87,7 @@
   }
 
 #define CUSP_CUBLAS_DOT(T,V,name)                                                             \
+  template<int dummy>                                                                         \
   cublasStatus_t dot( cublasHandle_t handle,                                                  \
                       const int n, const T* X, const int incX, const T* Y, const int incY,    \
                       T& result )                                                             \
@@ -91,6 +96,7 @@
   }
 
 #define CUSP_CUBLAS_DOTC(T,V,name)                                                            \
+  template<int dummy>                                                                         \
   cublasStatus_t dotc( cublasHandle_t handle,                                                 \
                        const int n, const T* X, const int incX, const T* Y,                   \
                        const int incY, T& ret )                                               \
@@ -99,6 +105,7 @@
   }
 
 #define CUSP_CUBLAS_DOTU(T,V,name)                                                            \
+  template<int dummy>                                                                         \
   cublasStatus_t dotu( cublasHandle_t handle,                                                 \
                        const int n, const T* X, const int incX, const T* Y,                   \
                        const int incY, T& ret )                                               \
@@ -107,6 +114,7 @@
   }
 
 #define CUSP_CUBLAS_NRM2(T,V,name)                                                            \
+  template<int dummy>                                                                         \
   cublasStatus_t nrm2( cublasHandle_t handle,                                                 \
                        const int n, const T* X, const int incX,                               \
                        typename cusp::norm_type<T>::type& result)                             \
@@ -115,6 +123,7 @@
   }
 
 #define CUSP_CUBLAS_SCAL(T,V,name)                                                            \
+  template<int dummy>                                                                         \
   cublasStatus_t scal( cublasHandle_t handle,                                                 \
                        const int n, const T alpha, T* X, const int incX )                     \
   {                                                                                           \
@@ -122,6 +131,7 @@
   }
 
 #define CUSP_CUBLAS_SWAP(T,V,name)                                                            \
+  template<int dummy>                                                                         \
   cublasStatus_t swap( cublasHandle_t handle,                                                 \
                        const int n, T* X, const int incX, T* Y, const int incY )              \
   {                                                                                           \
@@ -129,6 +139,7 @@
   }
 
 #define CUSP_CUBLAS_GEMV(T,V,name)                                                            \
+  template<int dummy>                                                                         \
   cublasStatus_t gemv( cublasHandle_t handle,                                                 \
                        cublasOperation_t trans,                                               \
                        int m, int n, T alpha, const T* A, int lda,                            \
@@ -139,6 +150,7 @@
 }
 
 #define CUSP_CUBLAS_GER(T,V,name)                                                             \
+  template<int dummy>                                                                         \
   cublasStatus_t ger( cublasHandle_t handle,                                                  \
                       int m, int n, T alpha, const T* x, int incx, const T* y, int incy,      \
                       T* A, int lda)                                                          \
@@ -149,6 +161,7 @@
 }
 
 #define CUSP_CUBLAS_SYMV(T,V,name)                                                            \
+  template<int dummy>                                                                         \
   cublasStatus_t symv( cublasHandle_t handle, cublasFillMode_t uplo,                          \
                        int n, T alpha, const T* A, int lda,                                   \
                        const T* x, int incx, T beta, T* y, int incy)                          \
@@ -158,6 +171,7 @@
 }
 
 #define CUSP_CUBLAS_SYR(T,V,name)                                                             \
+  template<int dummy>                                                                         \
   cublasStatus_t syr( cublasHandle_t handle, cublasFillMode_t uplo,                           \
                       int n, T alpha, const T* x, int incx, T* A, int lda)                    \
 {                                                                                             \
@@ -166,6 +180,7 @@
 }
 
 #define CUSP_CUBLAS_TRMV(T,V,name)                                                            \
+  template<int dummy>                                                                         \
   cublasStatus_t trmv( cublasHandle_t handle, cublasFillMode_t uplo,                          \
                        cublasOperation_t trans, cublasDiagType_t diag,                        \
                        int n, const T* A, int lda, T* x, int incx)                            \
@@ -175,6 +190,7 @@
 }
 
 #define CUSP_CUBLAS_TRSV(T,V,name)                                                            \
+  template<int dummy>                                                                         \
   cublasStatus_t trsv( cublasHandle_t handle, cublasFillMode_t uplo,                          \
                        cublasOperation_t trans, cublasDiagType_t diag,                        \
                        int n, const T* A, int lda, T* x, int incx)                            \
@@ -184,6 +200,7 @@
 }
 
 #define CUSP_CUBLAS_GEMM(T,V,name)                                                            \
+  template<int dummy>                                                                         \
   cublasStatus_t gemm( cublasHandle_t handle,                                                 \
                        cublasOperation_t transa, cublasOperation_t transb,                    \
                        int m, int n, int k, T alpha, const T* A, int lda,                     \
@@ -195,6 +212,7 @@
 }
 
 #define CUSP_CUBLAS_SYMM(T,V,name)                                                            \
+  template<int dummy>                                                                         \
   cublasStatus_t symm( cublasHandle_t handle,                                                 \
                        cublasSideMode_t side, cublasFillMode_t uplo,                          \
                        int m, int n, T alpha, const T* A, int lda,                            \
@@ -206,6 +224,7 @@
 }
 
 #define CUSP_CUBLAS_SYRK(T,V,name)                                                            \
+  template<int dummy>                                                                         \
   cublasStatus_t syrk( cublasHandle_t handle,                                                 \
                        cublasFillMode_t uplo, cublasOperation_t trans,                        \
                        int n, int k, T alpha, const T* A, int lda,                            \
@@ -217,6 +236,7 @@
 }
 
 #define CUSP_CUBLAS_SYR2K(T,V,name)                                                           \
+  template<int dummy>                                                                         \
   cublasStatus_t syr2k( cublasHandle_t handle,                                                \
                         cublasFillMode_t uplo, cublasOperation_t trans,                       \
                         int n, int k, T alpha, const T* A, int lda,                           \
@@ -228,6 +248,7 @@
 }
 
 #define CUSP_CUBLAS_TRMM(T,V,name)                                                            \
+  template<int dummy>                                                                         \
   cublasStatus_t trmm( cublasHandle_t handle,                                                 \
                        cublasSideMode_t side, cublasFillMode_t uplo,                          \
                        cublasOperation_t trans, cublasDiagType_t diag,                        \
@@ -240,6 +261,7 @@
 }
 
 #define CUSP_CUBLAS_TRSM(T,V,name)                                                            \
+  template<int dummy>                                                                         \
   cublasStatus_t trsm( cublasHandle_t handle,                                                 \
                        cublasSideMode_t side, cublasFillMode_t uplo,                          \
                        cublasOperation_t trans, cublasDiagType_t diag,                        \
@@ -253,11 +275,13 @@
 
 namespace cusp
 {
-namespace blas
+namespace system
 {
-namespace cublas
+namespace cuda
 {
 namespace detail
+{
+namespace cublas
 {
 
 // LEVEL 1
@@ -288,8 +312,9 @@ CUSP_CUBLAS_EXPAND_DEFS_1(CUSP_CUBLAS_SYR2K);
 CUSP_CUBLAS_EXPAND_DEFS_1(CUSP_CUBLAS_TRMM);
 CUSP_CUBLAS_EXPAND_DEFS_1(CUSP_CUBLAS_TRSM);
 
-} // end namespace detail
 } // end namespace cublas
-} // end namespace blas
+} // end namespace detail
+} // end namespace cuda
+} // end namespace system
 } // end namespace cusp
 

@@ -30,24 +30,28 @@
   FUNC_MACRO(cusp::complex<double>, double, zd)
 
 #define CUSP_CBLAS_COMPLEX_AMAX(T,V,name)                                                   \
+  template<int dummy>                                                                       \
   int amax( const int n, const T* X, const int incX )                                       \
   {                                                                                         \
     return cblas_i##name##amax(n, (const V*) X, incX);                                      \
   }
 
 #define CUSP_CBLAS_COMPLEX_ASUM(T,V,name)                                                   \
+  template<int dummy>                                                                       \
   V asum( const int n, const T* X, const int incX )                                         \
   {                                                                                         \
     return cblas_##name##asum(n, (const V*) X, incX);                                       \
   }
 
 #define CUSP_CBLAS_COMPLEX_AXPY(T,V,name)                                                   \
+  template<int dummy>                                                                       \
   void axpy( const int n, const T alpha, const T* X, const int incX, T* Y, const int incY ) \
   {                                                                                         \
     cblas_##name##axpy(n, (const V*) &alpha, (const V*) X, incX, (V*) Y, incY);             \
   }
 
 #define CUSP_CBLAS_COMPLEX_COPY(T,V,name)                                                   \
+  template<int dummy>                                                                       \
   void copy( const int n, const T* X, const int incX, T* Y, const int incY )                \
   {                                                                                         \
     cblas_##name##copy(n, (const V*) X, incX, (V*) Y, incY);                                \
@@ -80,25 +84,29 @@
 //   }
 
 #define CUSP_CBLAS_COMPLEX_NRM2(T,V,name)                                                   \
+  template<int dummy>                                                                       \
   V nrm2( const int n, const T* X, const int incX )                                         \
   {                                                                                         \
     return cblas_##name##nrm2(n, (const V*) X, incX);                                       \
   }
 
 #define CUSP_CBLAS_COMPLEX_SCAL(T,V,name)                                                   \
+  template<int dummy>                                                                       \
   void scal( const int n, const V alpha, T* X, const int incX )                             \
   {                                                                                         \
     cblas_##name##scal(n, alpha, (V*) X, incX);                                             \
   }
 
 #define CUSP_CBLAS_COMPLEX_SWAP(T,V,name)                                                   \
+  template<int dummy>                                                                       \
   void swap( const int n, T* X, const int incX, T* Y, const int incY )                      \
   {                                                                                         \
     cblas_##name##swap(n, (V*) X, incX, (V*) Y, incY);                                      \
   }
 
 #define CUSP_CBLAS_COMPLEX_GEMV(T,V,name)                                                   \
-void gemv( enum CBLAS_ORDER order, enum CBLAS_TRANSPOSE trans,                              \
+  template<int dummy>                                                                       \
+  void gemv(  CBLAS_ORDER order,  CBLAS_TRANSPOSE trans,                                    \
            int m, int n, T alpha, const T* A, int lda,                                      \
            const T* x, int incx, T beta, T* y, int incy)                                    \
 {                                                                                           \
@@ -107,7 +115,8 @@ void gemv( enum CBLAS_ORDER order, enum CBLAS_TRANSPOSE trans,                  
 }
 
 #define CUSP_CBLAS_COMPLEX_GERC(T,V,name)                                                   \
-  void ger( enum CBLAS_ORDER order, int m, int n, T alpha, const T* x, int incx,            \
+  template<int dummy>                                                                       \
+  void ger(  CBLAS_ORDER order, int m, int n, T alpha, const T* x, int incx,                \
             const T* y, int incy, T* A, int lda)                                            \
 {                                                                                           \
     cblas_##name##gerc(order, m, n, (const V*) &alpha,                                      \
@@ -116,7 +125,8 @@ void gemv( enum CBLAS_ORDER order, enum CBLAS_TRANSPOSE trans,                  
 }
 
 #define CUSP_CBLAS_COMPLEX_HEMV(T,V,name)                                                   \
-  void hemv( enum CBLAS_ORDER order, enum CBLAS_UPLO uplo,                                  \
+  template<int dummy>                                                                       \
+  void hemv(  CBLAS_ORDER order,  CBLAS_UPLO uplo,                                          \
              int n, T alpha, const T* A, int lda,                                           \
              const T* x, int incx, T beta, T* y, int incy)                                  \
 {                                                                                           \
@@ -125,7 +135,8 @@ void gemv( enum CBLAS_ORDER order, enum CBLAS_TRANSPOSE trans,                  
 }
 
 #define CUSP_CBLAS_COMPLEX_HER(T,V,name)                                                    \
-  void her( enum CBLAS_ORDER order, enum CBLAS_UPLO uplo,                                   \
+  template<int dummy>                                                                       \
+  void her(  CBLAS_ORDER order,  CBLAS_UPLO uplo,                                           \
             int n, const V alpha, const T* x, int incx, T* A, int lda)                      \
 {                                                                                           \
     cblas_##name##her(order, uplo, n, alpha,                                                \
@@ -133,8 +144,9 @@ void gemv( enum CBLAS_ORDER order, enum CBLAS_TRANSPOSE trans,                  
 }
 
 #define CUSP_CBLAS_COMPLEX_TRMV(T,V,name)                                                   \
-  void trmv( enum CBLAS_ORDER order, enum CBLAS_UPLO uplo,                                  \
-             enum CBLAS_TRANSPOSE trans, enum CBLAS_DIAG diag,                              \
+  template<int dummy>                                                                       \
+  void trmv(  CBLAS_ORDER order,  CBLAS_UPLO uplo,                                          \
+              CBLAS_TRANSPOSE trans,  CBLAS_DIAG diag,                                      \
              int n, const T* A, int lda, T* x, int incx)                                    \
 {                                                                                           \
     cblas_##name##trmv(order, uplo, trans, diag, n,                                         \
@@ -142,8 +154,9 @@ void gemv( enum CBLAS_ORDER order, enum CBLAS_TRANSPOSE trans,                  
 }
 
 #define CUSP_CBLAS_COMPLEX_TRSV(T,V,name)                                                   \
-  void trsv( enum CBLAS_ORDER order, enum CBLAS_UPLO uplo,                                  \
-             enum CBLAS_TRANSPOSE trans, enum CBLAS_DIAG diag,                              \
+  template<int dummy>                                                                       \
+  void trsv(  CBLAS_ORDER order,  CBLAS_UPLO uplo,                                          \
+              CBLAS_TRANSPOSE trans,  CBLAS_DIAG diag,                                      \
              int n, const T* A, int lda, T* x, int incx)                                    \
 {                                                                                           \
     cblas_##name##trsv(order, uplo, trans, diag, n,                                         \
@@ -151,8 +164,9 @@ void gemv( enum CBLAS_ORDER order, enum CBLAS_TRANSPOSE trans,                  
 }
 
 #define CUSP_CBLAS_COMPLEX_GEMM(T,V,name)                                                   \
-void gemm( enum CBLAS_ORDER order,                                                          \
-           enum CBLAS_TRANSPOSE transa, enum CBLAS_TRANSPOSE transb,                        \
+  template<int dummy>                                                                       \
+void gemm(  CBLAS_ORDER order,                                                              \
+            CBLAS_TRANSPOSE transa,  CBLAS_TRANSPOSE transb,                                \
            int m, int n, int k, T alpha, const T* A, int lda,                               \
            const T* B, int ldb, T beta, T* C, int ldc)                                      \
 {                                                                                           \
@@ -162,8 +176,9 @@ void gemm( enum CBLAS_ORDER order,                                              
 }
 
 #define CUSP_CBLAS_COMPLEX_SYMM(T,V,name)                                                   \
-  void symm( enum CBLAS_ORDER order,                                                        \
-             enum CBLAS_SIDE side, enum CBLAS_UPLO uplo,                                    \
+  template<int dummy>                                                                       \
+  void symm(  CBLAS_ORDER order,                                                            \
+              CBLAS_SIDE side,  CBLAS_UPLO uplo,                                            \
              int m, int n, T alpha, const T* A, int lda,                                    \
              const T* B, int ldb, T beta, T* C, int ldc)                                    \
 {                                                                                           \
@@ -173,8 +188,9 @@ void gemm( enum CBLAS_ORDER order,                                              
 }
 
 #define CUSP_CBLAS_COMPLEX_SYRK(T,V,name)                                                   \
-  void syrk( enum CBLAS_ORDER order,                                                        \
-             enum CBLAS_UPLO uplo, enum CBLAS_TRANSPOSE trans,                              \
+  template<int dummy>                                                                       \
+  void syrk(  CBLAS_ORDER order,                                                            \
+              CBLAS_UPLO uplo,  CBLAS_TRANSPOSE trans,                                      \
              int n, int k, T alpha, const T* A, int lda,                                    \
              T beta, T* C, int ldc)                                                         \
 {                                                                                           \
@@ -184,8 +200,9 @@ void gemm( enum CBLAS_ORDER order,                                              
 }
 
 #define CUSP_CBLAS_COMPLEX_SYR2K(T,V,name)                                                  \
-  void syr2k( enum CBLAS_ORDER order,                                                       \
-              enum CBLAS_UPLO uplo, enum CBLAS_TRANSPOSE trans,                             \
+  template<int dummy>                                                                       \
+  void syr2k(  CBLAS_ORDER order,                                                           \
+               CBLAS_UPLO uplo,  CBLAS_TRANSPOSE trans,                                     \
               int n, int k, T& alpha, const T* A, int lda,                                  \
               const T* B, int ldb, T& beta, T* C, int ldc)                                  \
 {                                                                                           \
@@ -195,9 +212,10 @@ void gemm( enum CBLAS_ORDER order,                                              
 }
 
 #define CUSP_CBLAS_COMPLEX_TRMM(T,V,name)                                                   \
-  void trmm( enum CBLAS_ORDER order,                                                        \
-             enum CBLAS_SIDE side, enum CBLAS_UPLO uplo,                                    \
-             enum CBLAS_TRANSPOSE trans, enum CBLAS_DIAG diag,                              \
+  template<int dummy>                                                                       \
+  void trmm(  CBLAS_ORDER order,                                                            \
+              CBLAS_SIDE side,  CBLAS_UPLO uplo,                                            \
+              CBLAS_TRANSPOSE trans,  CBLAS_DIAG diag,                                      \
              int m, int n, T alpha, const T* A, int lda,                                    \
              T* B, int ldb)                                                                 \
 {                                                                                           \
@@ -206,9 +224,10 @@ void gemm( enum CBLAS_ORDER order,                                              
 }
 
 #define CUSP_CBLAS_COMPLEX_TRSM(T,V,name)                                                   \
-  void trsm( enum CBLAS_ORDER order,                                                        \
-             enum CBLAS_SIDE side, enum CBLAS_UPLO uplo,                                    \
-             enum CBLAS_TRANSPOSE trans, enum CBLAS_DIAG diag,                              \
+  template<int dummy>                                                                       \
+  void trsm(  CBLAS_ORDER order,                                                            \
+              CBLAS_SIDE side,  CBLAS_UPLO uplo,                                            \
+              CBLAS_TRANSPOSE trans,  CBLAS_DIAG diag,                                      \
              int m, int n, T alpha, const T* A, int lda,                                    \
              T* B, int ldb)                                                                 \
 {                                                                                           \
@@ -218,11 +237,13 @@ void gemm( enum CBLAS_ORDER order,                                              
 
 namespace cusp
 {
-namespace blas
+namespace system
 {
-namespace cblas
+namespace cpp
 {
 namespace detail
+{
+namespace cblas
 {
 
 // LEVEL 1
@@ -251,8 +272,9 @@ CUSP_CBLAS_COMPLEX_DEFS_1(CUSP_CBLAS_COMPLEX_SYR2K);
 CUSP_CBLAS_COMPLEX_DEFS_1(CUSP_CBLAS_COMPLEX_TRMM);
 CUSP_CBLAS_COMPLEX_DEFS_1(CUSP_CBLAS_COMPLEX_TRSM);
 
-} // end namespace detail
 } // end namespace cblas
-} // end namespace blas
+} // end namespace detail
+} // end namespace cpp
+} // end namespace system
 } // end namespace cusp
 

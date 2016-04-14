@@ -1,7 +1,7 @@
 #include <unittest/unittest.h>
+
 #include <cusp/array2d.h>
 #include <cusp/gallery/poisson.h>
-#include <cusp/blas/cblas/blas.h>
 #include <cusp/blas/blas.h>
 
 template<typename ValueType>
@@ -20,9 +20,9 @@ void TestCBLASamax(void)
     x[4] =  0.0f;
     x[5] =  1.0f;
 
-    ASSERT_EQUAL(cusp::blas::amax(cusp::cblas,x), 0);
+    ASSERT_EQUAL(cusp::blas::amax(cusp::cblas::par,x), 0);
 
-    ASSERT_EQUAL(cusp::blas::amax(cusp::cblas,view_x), 0);
+    ASSERT_EQUAL(cusp::blas::amax(cusp::cblas::par,view_x), 0);
 }
 DECLARE_NUMERIC_UNITTEST(TestCBLASamax);
 
@@ -42,9 +42,9 @@ void TestCBLASasum(void)
     x[4] =  0.0f;
     x[5] =  1.0f;
 
-    ASSERT_EQUAL(cusp::blas::asum(cusp::cblas,x), 20.0f);
+    ASSERT_EQUAL(cusp::blas::asum(cusp::cblas::par,x), 20.0f);
 
-    ASSERT_EQUAL(cusp::blas::asum(cusp::cblas,view_x), 20.0f);
+    ASSERT_EQUAL(cusp::blas::asum(cusp::cblas::par,view_x), 20.0f);
 }
 DECLARE_NUMERIC_UNITTEST(TestCBLASasum);
 
@@ -66,7 +66,7 @@ void TestCBLASaxpy(void)
     x[3] = -3.0f;
     y[3] =  5.0f;
 
-    cusp::blas::axpy(cusp::cblas, x, y, 2.0f);
+    cusp::blas::axpy(cusp::cblas::par, x, y, 2.0f);
 
     ASSERT_EQUAL(y[0],  14.0);
     ASSERT_EQUAL(y[1],   8.0);
@@ -76,7 +76,7 @@ void TestCBLASaxpy(void)
     View view_x(x);
     View view_y(y);
 
-    cusp::blas::axpy(cusp::cblas, view_x, view_y, 2.0f);
+    cusp::blas::axpy(cusp::cblas::par, view_x, view_y, 2.0f);
 
     ASSERT_EQUAL(y[0],  28.0);
     ASSERT_EQUAL(y[1],  18.0);
@@ -100,7 +100,7 @@ void TestCBLAScopy(void)
 
     {
         Array y(4, -1);
-        cusp::blas::copy(cusp::cblas, x, y);
+        cusp::blas::copy(cusp::cblas::par, x, y);
         ASSERT_EQUAL(x == y, true);
     }
 
@@ -108,7 +108,7 @@ void TestCBLAScopy(void)
         Array y(4, -1);
         View view_x(x);
         View view_y(y);
-        cusp::blas::copy(cusp::cblas, view_x, view_y);
+        cusp::blas::copy(cusp::cblas::par, view_x, view_y);
         ASSERT_EQUAL(view_x == view_y, true);
     }
 }
@@ -136,11 +136,11 @@ void TestCBLASdot(void)
     x[5] =  4.0f;
     y[5] =  1.0f;
 
-    ASSERT_EQUAL(cusp::blas::dot(cusp::cblas, x, y), -21.0f);
+    ASSERT_EQUAL(cusp::blas::dot(cusp::cblas::par, x, y), -21.0f);
 
     View view_x(x);
     View view_y(y);
-    ASSERT_EQUAL(cusp::blas::dot(cusp::cblas, view_x, view_y), -21.0f);
+    ASSERT_EQUAL(cusp::blas::dot(cusp::cblas::par, view_x, view_y), -21.0f);
 }
 DECLARE_REAL_UNITTEST(TestCBLASdot);
 
@@ -166,11 +166,11 @@ void TestCBLASdotc(void)
     x[5] =  4.0f;
     y[5] =  1.0f;
 
-    ASSERT_EQUAL(cusp::blas::dotc(cusp::cblas, x, y), -21.0);
+    ASSERT_EQUAL(cusp::blas::dotc(cusp::cblas::par, x, y), -21.0);
 
     View view_x(x);
     View view_y(y);
-    ASSERT_EQUAL(cusp::blas::dotc(cusp::cblas, view_x, view_y), -21.0);
+    ASSERT_EQUAL(cusp::blas::dotc(cusp::cblas::par, view_x, view_y), -21.0);
 }
 DECLARE_COMPLEX_UNITTEST(TestCBLASdotc);
 
@@ -189,9 +189,9 @@ void TestCBLASnrm2(void)
     x[4] =  0.0f;
     x[5] =  1.0f;
 
-    ASSERT_EQUAL(cusp::blas::nrm2(cusp::cblas, x), 10.0f);
+    ASSERT_EQUAL(cusp::blas::nrm2(cusp::cblas::par, x), 10.0f);
 
-    ASSERT_EQUAL(cusp::blas::nrm2(cusp::cblas, View(x)), 10.0f);
+    ASSERT_EQUAL(cusp::blas::nrm2(cusp::cblas::par, View(x)), 10.0f);
 }
 DECLARE_NUMERIC_UNITTEST(TestCBLASnrm2);
 
@@ -210,7 +210,7 @@ void TestCBLASscal(void)
     x[4] =  0.0f;
     x[5] =  4.0f;
 
-    cusp::blas::scal(cusp::cblas, x, 4.0f);
+    cusp::blas::scal(cusp::cblas::par, x, 4.0f);
 
     ASSERT_EQUAL(x[0],  28.0);
     ASSERT_EQUAL(x[1],  20.0);
@@ -220,7 +220,7 @@ void TestCBLASscal(void)
     ASSERT_EQUAL(x[5],  16.0);
 
     View v(x);
-    cusp::blas::scal(cusp::cblas, v, 2.0f);
+    cusp::blas::scal(cusp::cblas::par, v, 2.0f);
 
     ASSERT_EQUAL(x[0],  56.0);
     ASSERT_EQUAL(x[1],  40.0);
@@ -253,7 +253,7 @@ void TestCBLASgemv(void)
     x[7] =  0.0f;
     x[8] =  4.0f;
 
-    cusp::blas::gemv(cusp::cblas, A, x, y);
+    cusp::blas::gemv(cusp::cblas::par, A, x, y);
 
     ASSERT_EQUAL(y[0],  26.0);
     ASSERT_EQUAL(y[1],   9.0);
@@ -289,7 +289,7 @@ void TestCBLASsymv(void)
     x[7] =  0.0f;
     x[8] =  4.0f;
 
-    cusp::blas::symv(cusp::cblas, A, x, y);
+    cusp::blas::symv(cusp::cblas::par, A, x, y);
 
     ASSERT_EQUAL(y[0],  26.0);
     ASSERT_EQUAL(y[1],   9.0);
@@ -330,8 +330,8 @@ void TestCBLAStrmv(void)
     x[7] =  0.0f;
     x[8] =  4.0f;
 
-    cusp::blas::gemv(cusp::cblas, A, x, expected);
-    cusp::blas::trmv(cusp::cblas, A, x);
+    cusp::blas::gemv(cusp::cblas::par, A, x, expected);
+    cusp::blas::trmv(cusp::cblas::par, A, x);
 
     ASSERT_ALMOST_EQUAL(x, expected);
 }
@@ -360,11 +360,11 @@ void TestCBLAStrsv(void)
 
     Array1d b(x);
 
-    cusp::blas::trsv(cusp::cblas, A, x);
+    cusp::blas::trsv(cusp::cblas::par, A, x);
 
     // check residual norm
     cusp::array1d<ValueType, cusp::host_memory> residual(x);
-    cusp::blas::trmv(cusp::cblas, A, residual);
+    cusp::blas::trmv(cusp::cblas::par, A, residual);
     cusp::blas::axpby(residual, b, residual, -1.0f, 1.0f);
 
     ASSERT_EQUAL(cusp::blas::nrm2(residual) < 1e-7, true);
