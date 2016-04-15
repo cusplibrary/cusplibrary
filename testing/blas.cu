@@ -882,7 +882,7 @@ void trsv(my_system& system, const Array2d& A, Array1d& x)
 }
 
 template<typename Array2d1, typename Array2d2, typename Array2d3>
-void gemm(my_system& system, const Array2d1& A, const Array2d2& B, Array2d3& C)
+void gemm(my_system& system, const Array2d1& A, const Array2d2& B, Array2d3& C, float alpha = 1.0, float beta = 0.0)
 {
     system.validate_dispatch();
     return;

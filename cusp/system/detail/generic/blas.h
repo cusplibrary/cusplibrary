@@ -152,7 +152,7 @@ int amax(thrust::execution_policy<DerivedPolicy>& exec,
 #if THRUST_VERSION >= 100800
     int index = thrust::max_element(exec, iter, iter + x.size()) - iter;
 #else
-    int index = thrust::max_element(exec, x.begin(), x.end(), detail::AMAX<ValueType>()) - x.begin();
+    int index = thrust::max_element(exec, x.begin(), x.end(), AMAX<ValueType>()) - x.begin();
 #endif
 
     return index;
