@@ -670,10 +670,26 @@ void TestGemm(void)
 {
     typedef typename cusp::array2d<float, MemorySpace> Array;
 
+    Array A(6,6,1);
+    Array B(6,6,0);
+
+    cusp::blas::gemm(A, A, B);
+
+    Array C(6,6,6);
+    ASSERT_EQUAL(B.values, C.values);
+}
+
+#if THRUST_DEVICE_SYSTEM == THRUST_DEVICE_SYSTEM_CUDA
+template<>
+void TestGemm<cusp::system::cuda::detail::par_t>(void)
+{
+    typedef typename cusp::array2d<float, cusp::device_memory> Array;
+
     Array A(6,6);
 
     ASSERT_THROWS(cusp::blas::gemm(A, A, A), cusp::not_implemented_exception);
 }
+#endif
 DECLARE_HOST_DEVICE_UNITTEST(TestGemm)
 
 template <class MemorySpace>
@@ -840,28 +856,28 @@ void scal(my_system& system, Array& x, const ScalarType alpha)
 }
 
 template<typename Array2d1, typename Array1d1, typename Array1d2>
-void gemv(my_system& system, const Array2d1& A, const Array1d1& x, Array1d2& y)
+void gemv(my_system& system, const Array2d1& A, const Array1d1& x, Array1d2& y, float alpha = 1.0, float beta = 0.0)
 {
     system.validate_dispatch();
     return;
 }
 
 template<typename Array1d1, typename Array1d2, typename Array2d1>
-void ger(my_system& system, const Array1d1& x, const Array1d2& y, Array2d1& A)
+void ger(my_system& system, const Array1d1& x, const Array1d2& y, Array2d1& A, float alpha = 1.0)
 {
     system.validate_dispatch();
     return;
 }
 
 template <typename Array2d1, typename Array1d1, typename Array1d2>
-void symv(my_system& system, const Array2d1& A, const Array1d1& x, Array1d2& y)
+void symv(my_system& system, const Array2d1& A, const Array1d1& x, Array1d2& y, float alpha = 1.0, float beta = 0.0)
 {
     system.validate_dispatch();
     return;
 }
 
 template <typename Array1d, typename Array2d>
-void syr(my_system& system, const Array1d& x, Array2d& A)
+void syr(my_system& system, const Array1d& x, Array2d& A, float alpha = 1.0)
 {
     system.validate_dispatch();
     return;
@@ -889,35 +905,35 @@ void gemm(my_system& system, const Array2d1& A, const Array2d2& B, Array2d3& C, 
 }
 
 template<typename Array2d1, typename Array2d2, typename Array2d3>
-void symm(my_system& system, const Array2d1& A, const Array2d2& B, Array2d3& C)
+void symm(my_system& system, const Array2d1& A, const Array2d2& B, Array2d3& C, float alpha = 1.0, float beta = 0.0)
 {
     system.validate_dispatch();
     return;
 }
 
 template<typename Array2d1, typename Array2d2>
-void syrk(my_system& system, const Array2d1& A, Array2d2& B)
+void syrk(my_system& system, const Array2d1& A, Array2d2& B, float alpha = 1.0, float beta = 0.0)
 {
     system.validate_dispatch();
     return;
 }
 
 template<typename Array2d1, typename Array2d2, typename Array2d3>
-void syr2k(my_system& system, const Array2d1& A, const Array2d2& B, Array2d3& C)
+void syr2k(my_system& system, const Array2d1& A, const Array2d2& B, Array2d3& C, float alpha = 1.0, float beta = 0.0)
 {
     system.validate_dispatch();
     return;
 }
 
 template<typename Array2d1, typename Array2d2>
-void trmm(my_system& system, const Array2d1& A, Array2d2& B)
+void trmm(my_system& system, const Array2d1& A, Array2d2& B, float alpha = 1.0)
 {
     system.validate_dispatch();
     return;
 }
 
 template<typename Array2d1, typename Array2d2>
-void trsm(my_system& system, const Array2d1& A, Array2d2& B)
+void trsm(my_system& system, const Array2d1& A, Array2d2& B, float alpha = 1.0)
 {
     system.validate_dispatch();
     return;

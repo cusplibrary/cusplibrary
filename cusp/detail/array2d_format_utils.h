@@ -28,11 +28,8 @@
 namespace cusp
 {
 
-struct row_major    {};
-struct column_major {};
-
 // forward definitions
-template<typename Array, class Orientation> class array2d_view;
+template<typename, class> class array2d_view;
 
 namespace detail
 {
@@ -94,15 +91,15 @@ IndexType linear_index_to_col_index(IndexType linear_index, IndexType num_rows, 
 }
 
 // convert a logical (i,j) index into a physical linear index
-template <typename IndexType>
-__host__ __device__
-IndexType index_of(IndexType i, IndexType j, IndexType pitch, row_major)    {
+template <typename IndexType, typename Bool>
+__host__ __device__ inline
+IndexType index_of(IndexType i, IndexType j, IndexType pitch, row_major_base<Bool>)    {
     return i * pitch + j;
 }
 
-template <typename IndexType>
-__host__ __device__
-IndexType index_of(IndexType i, IndexType j, IndexType pitch, column_major) {
+template <typename IndexType, typename Bool>
+__host__ __device__ inline
+IndexType index_of(IndexType i, IndexType j, IndexType pitch, column_major_base<Bool>) {
     return j * pitch + i;
 }
 
@@ -226,6 +223,15 @@ struct row_or_column_view<Iterator,false>
         return x;
     }
 };
+
+template <typename Orientation, typename IsTranspose = typename Orientation::transpose>
+struct transpose_orientation
+      : thrust::detail::eval_if<
+          thrust::detail::is_same<Orientation, cusp::row_major_base<IsTranspose> >::value,
+          thrust::detail::identity_<cusp::column_major_base<thrust::detail::not_<IsTranspose> > >,
+          thrust::detail::identity_<cusp::row_major_base<thrust::detail::not_<IsTranspose> > >
+        > // if orientation
+{};
 
 } // end namespace detail
 

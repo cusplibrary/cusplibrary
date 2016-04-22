@@ -100,6 +100,7 @@ OldEnvironment = Environment
 # a compiler switch of interest to the specific switch implementing the feature
 gCompilerOptions = {
         'gcc':   {'warn_all': '-Wall', 'warn_errors': '-Werror', 'optimization': '-O3', 'debug': '-g',  'exception_handling': '', 'omp': '-fopenmp', 'coverage':['-O0', '-coverage']},
+        'g++':   {'warn_all': '-Wall', 'warn_errors': '-Werror', 'optimization': '-O3', 'debug': '-g',  'exception_handling': '', 'omp': '-fopenmp', 'coverage':['-O0', '-coverage']},
         'clang': {'warn_all': '-Wall', 'warn_errors': '-Werror', 'optimization': '-O3', 'debug': '-g',  'exception_handling': '', 'omp': '-fopenmp', 'coverage':['-O0', '-coverage']},
         'cl': {'warn_all': '/Wall', 'warn_errors': '/WX', 'optimization': '/Ox', 'debug': ['/Zi', '-D_DEBUG', '/MTd'], 'exception_handling': '/EHsc', 'omp': '/openmp', 'coverage':''}
 }
@@ -316,12 +317,10 @@ def Environment():
     env.Append(CXXFLAGS = ['-DCUSP_HOST_BLAS_SYSTEM=%s' % host_blas_backend_define])
 
     # get C compiler switches
-    env.Append(CFLAGS=getCFLAGS(env['mode'], env['backend'], env[
-               'Wall'], env['Werror'], env['hostspblas'], compiler_define))
+    env.Append(CFLAGS=getCFLAGS(env['mode'], env['backend'], env['Wall'], env['Werror'], env['hostspblas'], env.subst('$CC')))
 
     # get CXX compiler switches
-    env.Append(CXXFLAGS=getCXXFLAGS(env['mode'], env['backend'], env[
-               'Wall'], env['Werror'], env['hostspblas'], compiler_define))
+    env.Append(CXXFLAGS=getCXXFLAGS(env['mode'], env['backend'], env['Wall'], env['Werror'], env['hostspblas'], env.subst('$CXX')))
 
     compile_flag_prefix = ''
     if compiler_define == 'nvcc':

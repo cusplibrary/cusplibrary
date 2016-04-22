@@ -69,6 +69,17 @@ array2d<ValueType,MemorySpace,Orientation>
     return *this;
 }
 
+template <typename ValueType, class MemorySpace, class Orientation>
+typename array2d<ValueType,MemorySpace,Orientation>::transpose_const_view_type
+array2d<ValueType,MemorySpace,Orientation>
+::T(void) const
+{
+    return transpose_const_view_type(this->num_cols,
+                                     this->num_rows,
+                                     this->pitch,
+                                     this->values);
+}
+
 
 template <typename ValueType, class MemorySpace, class Orientation>
 typename array2d<ValueType,MemorySpace,Orientation>::values_array_type::reference
@@ -222,6 +233,17 @@ array2d_view<ArrayView,Orientation>
 ::column(const size_t i) const
 {
     return column_view_type::get_array(*this, i);
+}
+
+template<typename ArrayView, class Orientation>
+typename array2d_view<ArrayView,Orientation>::transpose_const_view_type
+array2d_view<ArrayView,Orientation>
+::T(void) const
+{
+    return transpose_const_view_type(this->num_cols,
+                                     this->num_rows,
+                                     this->pitch,
+                                     this->values);
 }
 
 /////////////////////

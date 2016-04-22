@@ -762,7 +762,9 @@ template <typename DerivedPolicy,
 void gemv(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
           const Array2d1& A,
           const Array1d1& x,
-                Array1d2& y);
+                Array1d2& y,
+          const typename Array2d1::value_type alpha = 1.0,
+          const typename Array2d1::value_type beta  = 0.0);
 /*! \endcond */
 
 /**
@@ -774,7 +776,9 @@ void gemv(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
  *
  * \param A General matrix
  * \param x Input vector
- * \param x Output vector
+ * \param y Output vector
+ * \param alpha Scale input by alpha
+ * \param beta  Scale output by beta
  *
  * \par Example
  * \code
@@ -817,7 +821,9 @@ template<typename Array2d1,
          typename Array1d2>
 void gemv(const Array2d1& A,
           const Array1d1& x,
-                Array1d2& y);
+                Array1d2& y,
+          const typename Array2d1::value_type alpha = 1.0,
+          const typename Array2d1::value_type beta  = 0.0);
 
 /*! \cond */
 template <typename DerivedPolicy,
@@ -827,7 +833,8 @@ template <typename DerivedPolicy,
 void ger(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
          const Array1d1& x,
          const Array1d2& y,
-               Array2d1& A);
+               Array2d1& A,
+         const typename Array2d1::value_type alpha = 1.0);
 /*! \endcond */
 
 /**
@@ -840,6 +847,7 @@ void ger(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
  * \param x First n-element array
  * \param y Second n-element array
  * \param A An n-by-n general matrix
+ * \param alpha Scale input by alpha
  *
  * \par Example
  * \code
@@ -879,7 +887,8 @@ template<typename Array1d1,
          typename Array2d1>
 void ger(const Array1d1& x,
          const Array1d2& y,
-               Array2d1& A);
+               Array2d1& A,
+         const typename Array2d1::value_type alpha = 1.0);
 
 /*! \cond */
 template <typename DerivedPolicy,
@@ -889,7 +898,9 @@ template <typename DerivedPolicy,
 void symv(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
           const Array2d1& A,
           const Array1d1& x,
-                Array1d2& y);
+                Array1d2& y,
+          const typename Array2d1::value_type alpha = 1.0,
+          const typename Array2d1::value_type beta  = 0.0);
 /*! \endcond */
 
 /**
@@ -901,7 +912,9 @@ void symv(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
  *
  * \param A Symmetric matrix
  * \param x Input vector
- * \param x Output vector
+ * \param y Output vector
+ * \param alpha Scale input by alpha
+ * \param beta  Scale output by beta
  *
  * \par Example
  * \code
@@ -944,7 +957,9 @@ template <typename Array2d1,
           typename Array1d2>
 void symv(const Array2d1& A,
           const Array1d1& x,
-                Array1d2& y);
+                Array1d2& y,
+          const typename Array2d1::value_type alpha = 1.0,
+          const typename Array2d1::value_type beta  = 0.0);
 
 /*! \cond */
 template <typename DerivedPolicy,
@@ -952,7 +967,8 @@ template <typename DerivedPolicy,
           typename Array2d>
 void syr(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
          const Array1d& x,
-               Array2d& A);
+               Array2d& A,
+         const typename Array1d::value_type alpha = 1.0);
 /*! \endcond */
 
 /**
@@ -963,6 +979,7 @@ void syr(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
  *
  * \param x An n-element array
  * \param A An n-by-n symmetric matrix
+ * \param alpha Scale input by alpha
  *
  * \par Example
  * \code
@@ -997,7 +1014,8 @@ void syr(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 template <typename Array1d,
           typename Array2d>
 void syr(const Array1d& x,
-               Array2d& A);
+               Array2d& A,
+         const typename Array1d::value_type alpha = 1.0);
 
 /*! \cond */
 template <typename DerivedPolicy,
@@ -1139,6 +1157,8 @@ void gemm(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
  * \param A First input matrix
  * \param B Second input matrix
  * \param C Output matrix
+ * \param alpha Scale input by alpha
+ * \param beta  Scale output by beta
  *
  * \par Example
  * \code
@@ -1188,7 +1208,9 @@ template <typename DerivedPolicy,
 void symm(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
           const Array2d1& A,
           const Array2d2& B,
-                Array2d3& C);
+                Array2d3& C,
+          const typename Array2d1::value_type alpha = 1.0,
+          const typename Array2d1::value_type beta  = 0.0);
 /*! \endcond */
 
 /**
@@ -1201,6 +1223,8 @@ void symm(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
  * \param A First symmetric input matrix
  * \param B Second input matrix
  * \param C Output matrix
+ * \param alpha Scale input by alpha
+ * \param beta  Scale output by beta
  *
  * \par Example
  * \code
@@ -1238,7 +1262,9 @@ template<typename Array2d1,
          typename Array2d3>
 void symm(const Array2d1& A,
           const Array2d2& B,
-                Array2d3& C);
+                Array2d3& C,
+          const typename Array2d1::value_type alpha = 1.0,
+          const typename Array2d1::value_type beta  = 0.0);
 
 /*! \cond */
 template <typename DerivedPolicy,
@@ -1246,7 +1272,9 @@ template <typename DerivedPolicy,
           typename Array2d2>
 void syrk(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
           const Array2d1& A,
-                Array2d2& B);
+                Array2d2& B,
+          const typename Array2d1::value_type alpha = 1.0,
+          const typename Array2d1::value_type beta  = 0.0);
 /*! \endcond */
 
 /**
@@ -1259,6 +1287,8 @@ void syrk(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
  * \param A First input matrix
  * \param B Second input matrix
  * \param C Output matrix
+ * \param alpha Scale input by alpha
+ * \param beta  Scale output by beta
  *
  * \par Example
  * \code
@@ -1294,7 +1324,9 @@ void syrk(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 template<typename Array2d1,
          typename Array2d2>
 void syrk(const Array2d1& A,
-                Array2d2& B);
+                Array2d2& B,
+          const typename Array2d1::value_type alpha = 1.0,
+          const typename Array2d1::value_type beta  = 0.0);
 
 /*! \cond */
 template <typename DerivedPolicy,
@@ -1304,7 +1336,9 @@ template <typename DerivedPolicy,
 void syr2k(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
            const Array2d1& A,
            const Array2d2& B,
-                 Array2d3& C);
+                 Array2d3& C,
+           const typename Array2d1::value_type alpha = 1.0,
+           const typename Array2d1::value_type beta  = 0.0);
 /*! \endcond */
 
 /**
@@ -1317,6 +1351,8 @@ void syr2k(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
  * \param A First input matrix
  * \param B Second input matrix
  * \param C Output matrix
+ * \param alpha Scale input by alpha
+ * \param beta  Scale output by beta
  *
  * \par Example
  * \code
@@ -1354,7 +1390,9 @@ template<typename Array2d1,
          typename Array2d3>
 void syr2k(const Array2d1& A,
            const Array2d2& B,
-                 Array2d3& C);
+                 Array2d3& C,
+           const typename Array2d1::value_type alpha = 1.0,
+           const typename Array2d1::value_type beta  = 0.0);
 
 /*! \cond */
 template <typename DerivedPolicy,
@@ -1362,7 +1400,8 @@ template <typename DerivedPolicy,
           typename Array2d2>
 void trmm(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
           const Array2d1& A,
-                Array2d2& B);
+                Array2d2& B,
+          const typename Array2d1::value_type alpha = 1.0);
 /*! \endcond */
 
 /**
@@ -1375,6 +1414,7 @@ void trmm(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
  * \param A First triangular input matrix
  * \param B Second input matrix
  * \param C Output matrix
+ * \param alpha Scale input by alpha
  *
  * \par Example
  * \code
@@ -1410,7 +1450,8 @@ void trmm(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 template<typename Array2d1,
          typename Array2d2>
 void trmm(const Array2d1& A,
-                Array2d2& B);
+                Array2d2& B,
+          const typename Array2d1::value_type alpha = 1.0);
 
 /*! \cond */
 template <typename DerivedPolicy,
@@ -1418,7 +1459,8 @@ template <typename DerivedPolicy,
           typename Array2d2>
 void trsm(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
           const Array2d1& A,
-                Array2d2& B);
+                Array2d2& B,
+          const typename Array2d1::value_type alpha = 1.0);
 /*! \endcond */
 
 /**
@@ -1429,6 +1471,7 @@ void trsm(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
  *
  * \param A Contains the upper or lower triangle of a symmetric matrix
  * \param B Contains block of right-hand side vectors
+ * \param alpha Scale input by alpha
  *
  * \par Example
  * \code
@@ -1468,7 +1511,8 @@ void trsm(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 template<typename Array2d1,
          typename Array2d2>
 void trsm(const Array2d1& A,
-                Array2d2& B);
+                Array2d2& B,
+          const typename Array2d1::value_type alpha = 1.0);
 
 /*! \}
  */

@@ -4,6 +4,8 @@
 #include <cusp/blas/blas.h>
 #include <cusp/gallery/poisson.h>
 
+#include <cusp/system/cuda/detail/cublas/blas.h>
+
 template<typename ValueType>
 void TestCublasAmax(void)
 {
@@ -473,4 +475,77 @@ void TestCublasTrsv(void)
     }
 }
 DECLARE_NUMERIC_UNITTEST(TestCublasTrsv);
+
+template<typename ValueType, typename Orientation>
+void TestCublasGemmOrientation(void)
+{
+    typedef cusp::array2d<ValueType, cusp::device_memory, Orientation> Array2dDev;
+    typedef typename Array2dDev::rebind<cusp::host_memory>::type       Array2dHost;
+
+    cublasHandle_t handle;
+
+    if(cublasCreate(&handle) != CUBLAS_STATUS_SUCCESS)
+    {
+      throw cusp::runtime_exception("cublasCreate failed");
+    }
+
+    Array2dDev A(3, 4);
+    Array2dDev B(4, 3);
+
+    cusp::counting_array<ValueType> init_values(A.num_entries, 1);
+    A.values = init_values;
+    B.values = init_values;
+
+    Array2dHost A_h(A);
+    Array2dHost B_h(B);
+
+    {
+      Array2dDev C(A.num_rows, B.num_cols);
+      cusp::blas::gemm(cusp::cuda::par.with(handle), A, B, C);
+
+      Array2dHost C_h(C.num_rows, C.num_cols);
+      cusp::blas::gemm(A_h, B_h, C_h);
+      ASSERT_EQUAL(C_h.values, C.values);
+    }
+
+    {
+      Array2dDev C(A.T().num_rows, B.T().num_cols);
+      cusp::blas::gemm(cusp::cuda::par.with(handle), A.T(), B.T(), C);
+
+      Array2dHost C_h(C.num_rows, C.num_cols);
+      cusp::blas::gemm(A_h.T(), B_h.T(), C_h);
+      ASSERT_EQUAL(C_h.values, C.values);
+    }
+
+    {
+      Array2dDev C(A.T().num_rows, A.num_cols);
+      cusp::blas::gemm(cusp::cuda::par.with(handle), A.T(), A, C);
+
+      Array2dHost C_h(C.num_rows, C.num_cols);
+      cusp::blas::gemm(A_h.T(), A_h, C_h);
+      ASSERT_EQUAL(C_h.values, C.values);
+    }
+
+    {
+      Array2dDev C(A.num_rows, A.T().num_cols);
+      cusp::blas::gemm(cusp::cuda::par.with(handle), A, A.T(), C);
+
+      Array2dHost C_h(C.num_rows, C.num_cols);
+      cusp::blas::gemm(A_h, A_h.T(), C_h);
+      ASSERT_EQUAL(C_h.values, C.values);
+    }
+
+    if(cublasDestroy(handle) != CUBLAS_STATUS_SUCCESS)
+    {
+      throw cusp::runtime_exception("cublasDestroy failed");
+    }
+}
+
+template<typename ValueType>
+void TestCublasGemm(void)
+{
+    TestCublasGemmOrientation<ValueType,cusp::row_major>();
+    TestCublasGemmOrientation<ValueType,cusp::column_major>();
+}
+DECLARE_REAL_UNITTEST(TestCublasGemm);
 

@@ -34,9 +34,6 @@ namespace cusp
 {
 
 /*! \cond */
-// Forward definitions
-struct column_major;
-
 template<typename,typename,typename>                   class array2d;
 template<typename,typename>                            class array2d_view;
 template<typename,typename,typename,typename,typename> class ell_matrix_view;

@@ -112,28 +112,31 @@ public:
     typedef cusp::array2d_view<typename values_array_type::const_view, Orientation> const_view;
 
     typedef cusp::detail::row_or_column_view<
-    typename values_array_type::iterator,thrust::detail::is_same<Orientation,cusp::row_major>::value>
-    row_view_type;
+        typename values_array_type::iterator,thrust::detail::is_same<Orientation,cusp::row_major>::value
+      > row_view_type;
 
     typedef typename row_view_type::ArrayType row_view;
 
-    typedef cusp::detail::row_or_column_view
-    <typename values_array_type::iterator,thrust::detail::is_same<Orientation,cusp::column_major>::value>
-    column_view_type;
+    typedef cusp::detail::row_or_column_view<
+        typename values_array_type::iterator,thrust::detail::is_same<Orientation,cusp::column_major>::value
+      > column_view_type;
 
     typedef typename column_view_type::ArrayType column_view;
 
-    typedef cusp::detail::row_or_column_view
-    <typename values_array_type::const_iterator,thrust::detail::is_same<Orientation,cusp::row_major>::value>
-    const_row_view_type;
+    typedef cusp::detail::row_or_column_view<
+        typename values_array_type::const_iterator,thrust::detail::is_same<Orientation,cusp::row_major>::value
+      > const_row_view_type;
 
     typedef typename const_row_view_type::ArrayType const_row_view;
 
-    typedef cusp::detail::row_or_column_view
-    <typename values_array_type::const_iterator,thrust::detail::is_same<Orientation,cusp::column_major>::value>
-    const_column_view_type;
+    typedef cusp::detail::row_or_column_view<
+        typename values_array_type::const_iterator,thrust::detail::is_same<Orientation,cusp::column_major>::value
+      > const_column_view_type;
 
     typedef typename const_column_view_type::ArrayType const_column_view;
+
+    typedef typename cusp::detail::transpose_orientation<Orientation>::type transpose_orientation;
+    typedef cusp::array2d_view<typename values_array_type::const_view, transpose_orientation> transpose_const_view_type;
     /*! \endcond */
 
     /*! The stride between consecutive elements along the major dimension
@@ -265,6 +268,12 @@ public:
     template <typename MatrixType>
     array2d& operator=(const MatrixType& matrix);
 
+    /*! Construct a array2d_view of current matrix with opposite orientation.
+     *  Mainly useful for interacting with BLAS routines.
+     *  \return array2d_view with new orientation.
+     */
+    transpose_const_view_type T(void) const;
+
 }; // class array2d
 /*! \}
  */
@@ -341,12 +350,17 @@ public:
     typedef cusp::array2d_view<ArrayView, Orientation> view;
 
     typedef cusp::detail::row_or_column_view<
-    typename values_array_type::iterator,thrust::detail::is_same<Orientation,cusp::row_major>::value> row_view_type;
+        typename values_array_type::iterator,thrust::detail::is_same<Orientation,cusp::row_major>::value
+      > row_view_type;
     typedef typename row_view_type::ArrayType row_view;
 
     typedef cusp::detail::row_or_column_view<
-    typename values_array_type::iterator,thrust::detail::is_same<Orientation,cusp::column_major>::value> column_view_type;
+        typename values_array_type::iterator,thrust::detail::is_same<Orientation,cusp::column_major>::value
+      > column_view_type;
     typedef typename column_view_type::ArrayType column_view;
+
+    typedef typename cusp::detail::transpose_orientation<Orientation>::type transpose_orientation;
+    typedef cusp::array2d_view<ArrayView, transpose_orientation> transpose_const_view_type;
     /*! \endcond */
 
     /*! The stride between consecutive elements along the major dimension.
@@ -442,6 +456,12 @@ public:
      * \return const array1d_view of column \p i
      */
     column_view column(size_t i) const;
+
+    /*! Construct a array2d_view of current matrix with opposite orientation.
+     *  Mainly useful for interacting with BLAS routines.
+     *  \return array2d_view with new orientation.
+     */
+    transpose_const_view_type T(void) const;
 }; // end array2d_view class
 
 

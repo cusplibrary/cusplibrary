@@ -1,11 +1,13 @@
 #include <unittest/unittest.h>
 
 #include <cusp/array2d.h>
-#include <cusp/gallery/poisson.h>
 #include <cusp/blas/blas.h>
+#include <cusp/gallery/poisson.h>
+
+#include <cusp/system/cpp/detail/cblas/blas.h>
 
 template<typename ValueType>
-void TestCBLASamax(void)
+void TestCblasAmax(void)
 {
     typedef cusp::array1d<ValueType, cusp::host_memory>       Array;
     typedef typename Array::view                              View;
@@ -24,10 +26,10 @@ void TestCBLASamax(void)
 
     ASSERT_EQUAL(cusp::blas::amax(cusp::cblas::par,view_x), 0);
 }
-DECLARE_NUMERIC_UNITTEST(TestCBLASamax);
+DECLARE_NUMERIC_UNITTEST(TestCblasAmax);
 
 template<typename ValueType>
-void TestCBLASasum(void)
+void TestCblasAsum(void)
 {
     typedef cusp::array1d<ValueType, cusp::host_memory>       Array;
     typedef typename Array::view                              View;
@@ -46,10 +48,10 @@ void TestCBLASasum(void)
 
     ASSERT_EQUAL(cusp::blas::asum(cusp::cblas::par,view_x), 20.0f);
 }
-DECLARE_NUMERIC_UNITTEST(TestCBLASasum);
+DECLARE_NUMERIC_UNITTEST(TestCblasAsum);
 
 template<typename ValueType>
-void TestCBLASaxpy(void)
+void TestCblasAxpy(void)
 {
     typedef cusp::array1d<ValueType, cusp::host_memory>       Array;
     typedef typename Array::view                              View;
@@ -83,10 +85,10 @@ void TestCBLASaxpy(void)
     ASSERT_EQUAL(y[2],  16.0);
     ASSERT_EQUAL(y[3],  -7.0);
 }
-DECLARE_NUMERIC_UNITTEST(TestCBLASaxpy);
+DECLARE_NUMERIC_UNITTEST(TestCblasAxpy);
 
 template<typename ValueType>
-void TestCBLAScopy(void)
+void TestCblasCopy(void)
 {
     typedef cusp::array1d<ValueType, cusp::host_memory>       Array;
     typedef typename Array::view                              View;
@@ -112,10 +114,10 @@ void TestCBLAScopy(void)
         ASSERT_EQUAL(view_x == view_y, true);
     }
 }
-DECLARE_NUMERIC_UNITTEST(TestCBLAScopy);
+DECLARE_NUMERIC_UNITTEST(TestCblasCopy);
 
 template<typename ValueType>
-void TestCBLASdot(void)
+void TestCblasDot(void)
 {
     typedef cusp::array1d<ValueType, cusp::host_memory>       Array;
     typedef typename Array::view                              View;
@@ -142,10 +144,10 @@ void TestCBLASdot(void)
     View view_y(y);
     ASSERT_EQUAL(cusp::blas::dot(cusp::cblas::par, view_x, view_y), -21.0f);
 }
-DECLARE_REAL_UNITTEST(TestCBLASdot);
+DECLARE_REAL_UNITTEST(TestCblasDot);
 
 template<typename ValueType>
-void TestCBLASdotc(void)
+void TestCblasDotc(void)
 {
     typedef cusp::array1d<ValueType, cusp::host_memory>       Array;
     typedef typename Array::view                              View;
@@ -172,10 +174,10 @@ void TestCBLASdotc(void)
     View view_y(y);
     ASSERT_EQUAL(cusp::blas::dotc(cusp::cblas::par, view_x, view_y), -21.0);
 }
-DECLARE_COMPLEX_UNITTEST(TestCBLASdotc);
+DECLARE_COMPLEX_UNITTEST(TestCblasDotc);
 
 template<typename ValueType>
-void TestCBLASnrm2(void)
+void TestCblasNrm2(void)
 {
     typedef cusp::array1d<ValueType, cusp::host_memory>       Array;
     typedef typename Array::view                              View;
@@ -193,10 +195,10 @@ void TestCBLASnrm2(void)
 
     ASSERT_EQUAL(cusp::blas::nrm2(cusp::cblas::par, View(x)), 10.0f);
 }
-DECLARE_NUMERIC_UNITTEST(TestCBLASnrm2);
+DECLARE_NUMERIC_UNITTEST(TestCblasNrm2);
 
 template<typename ValueType>
-void TestCBLASscal(void)
+void TestCblasScal(void)
 {
     typedef cusp::array1d<ValueType, cusp::host_memory>       Array;
     typedef typename Array::view                              View;
@@ -229,10 +231,10 @@ void TestCBLASscal(void)
     ASSERT_EQUAL(x[4],   0.0);
     ASSERT_EQUAL(x[5],  32.0);
 }
-DECLARE_NUMERIC_UNITTEST(TestCBLASscal);
+DECLARE_NUMERIC_UNITTEST(TestCblasScal);
 
 template<typename ValueType>
-void TestCBLASgemv(void)
+void TestCblasGemv(void)
 {
     typedef cusp::array2d<ValueType, cusp::host_memory> Array2d;
     typedef cusp::array1d<ValueType, cusp::host_memory> Array1d;
@@ -265,10 +267,10 @@ void TestCBLASgemv(void)
     ASSERT_EQUAL(y[7],  -1.0);
     ASSERT_EQUAL(y[8],  12.0);
 }
-DECLARE_NUMERIC_UNITTEST(TestCBLASgemv);
+DECLARE_NUMERIC_UNITTEST(TestCblasGemv);
 
 template<typename ValueType>
-void TestCBLASsymv(void)
+void TestCblasSymv(void)
 {
     typedef cusp::array2d<ValueType, cusp::host_memory> Array2d;
     typedef cusp::array1d<ValueType, cusp::host_memory> Array1d;
@@ -301,10 +303,10 @@ void TestCBLASsymv(void)
     ASSERT_EQUAL(y[7],  -1.0);
     ASSERT_EQUAL(y[8],  12.0);
 }
-DECLARE_REAL_UNITTEST(TestCBLASsymv);
+DECLARE_REAL_UNITTEST(TestCblasSymv);
 
 template<typename ValueType>
-void TestCBLAStrmv(void)
+void TestCblasTrmv(void)
 {
     typedef cusp::array2d<ValueType, cusp::host_memory> Array2d;
     typedef cusp::array1d<ValueType, cusp::host_memory> Array1d;
@@ -335,10 +337,10 @@ void TestCBLAStrmv(void)
 
     ASSERT_ALMOST_EQUAL(x, expected);
 }
-DECLARE_NUMERIC_UNITTEST(TestCBLAStrmv);
+DECLARE_NUMERIC_UNITTEST(TestCblasTrmv);
 
 template<typename ValueType>
-void TestCBLAStrsv(void)
+void TestCblasTrsv(void)
 {
     typedef cusp::array2d<ValueType, cusp::host_memory> Array2d;
     typedef cusp::array1d<ValueType, cusp::host_memory> Array1d;
@@ -369,5 +371,62 @@ void TestCBLAStrsv(void)
 
     ASSERT_EQUAL(cusp::blas::nrm2(residual) < 1e-7, true);
 }
-DECLARE_NUMERIC_UNITTEST(TestCBLAStrsv);
+DECLARE_NUMERIC_UNITTEST(TestCblasTrsv);
+
+template<typename ValueType, typename Orientation>
+void TestCblasGemmOrientation(void)
+{
+    typedef cusp::array2d<ValueType, cusp::host_memory, Orientation> Array2d;
+
+    Array2d A(3, 4);
+    Array2d B(4, 3);
+
+    cusp::counting_array<ValueType> init_values(A.num_entries, 1);
+    A.values = init_values;
+    B.values = init_values;
+
+    {
+      Array2d C(A.num_rows, B.num_cols);
+      cusp::blas::gemm(cusp::cblas::par, A, B, C);
+
+      Array2d C_h(C.num_rows, C.num_cols);
+      cusp::blas::gemm(A, B, C_h);
+      ASSERT_EQUAL(C_h.values, C.values);
+    }
+
+    {
+      Array2d C(A.T().num_rows, B.T().num_cols);
+      cusp::blas::gemm(cusp::cblas::par, A.T(), B.T(), C);
+
+      Array2d C_h(C.num_rows, C.num_cols);
+      cusp::blas::gemm(A.T(), B.T(), C_h);
+      ASSERT_EQUAL(C_h.values, C.values);
+    }
+
+    {
+      Array2d C(A.T().num_rows, A.num_cols);
+      cusp::blas::gemm(cusp::cblas::par, A.T(), A, C);
+
+      Array2d C_h(C.num_rows, C.num_cols);
+      cusp::blas::gemm(A.T(), A, C_h);
+      ASSERT_EQUAL(C_h.values, C.values);
+    }
+
+    {
+      Array2d C(A.num_rows, A.T().num_cols);
+      cusp::blas::gemm(cusp::cblas::par, A, A.T(), C);
+
+      Array2d C_h(C.num_rows, C.num_cols);
+      cusp::blas::gemm(A, A.T(), C_h);
+      ASSERT_EQUAL(C_h.values, C.values);
+    }
+}
+
+template<typename ValueType>
+void TestCblasGemm(void)
+{
+    TestCblasGemmOrientation<ValueType,cusp::row_major>();
+    TestCblasGemmOrientation<ValueType,cusp::column_major>();
+}
+DECLARE_REAL_UNITTEST(TestCblasGemm);
 

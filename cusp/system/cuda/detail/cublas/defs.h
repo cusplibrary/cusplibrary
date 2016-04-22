@@ -40,14 +40,17 @@ struct lower   : public cublas_format {};
 struct unit    : public cublas_format {};
 struct nonunit : public cublas_format {};
 
-struct cublas_trans_op { const static cublasOperation_t order = CUBLAS_OP_T; };
-struct cublas_norm_op  { const static cublasOperation_t order = CUBLAS_OP_N; };
+struct cublas_transpose_op { const static cublasOperation_t order = CUBLAS_OP_T; };
+struct cublas_normal_op    { const static cublasOperation_t order = CUBLAS_OP_N; };
 
 template< typename LayoutFormat >
-struct OperationType : thrust::detail::eval_if<
-                          thrust::detail::is_same<LayoutFormat, cusp::row_major>::value,
-                          thrust::detail::identity_<cublas_trans_op>,
-                          thrust::detail::identity_<cublas_norm_op>
+struct Orientation : thrust::detail::eval_if<
+                          thrust::detail::or_<
+                              thrust::detail::is_same<LayoutFormat, cusp::row_major_base<thrust::detail::true_type> >,
+                              thrust::detail::is_same<LayoutFormat, cusp::column_major_base<thrust::detail::false_type> >
+                          >::value, // end or_
+                          thrust::detail::identity_<cublas_normal_op>,
+                          thrust::detail::identity_<cublas_transpose_op>
                        >
 {};
 

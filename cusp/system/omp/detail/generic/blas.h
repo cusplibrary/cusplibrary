@@ -1,3 +1,4 @@
+
 /*
  *  Copyright 2008-2013 NVIDIA Corporation
  *
@@ -18,4 +19,20 @@
 
 #include <cusp/detail/config.h>
 
-// this system has no blas implementation
+// this system inherits blas routines
+#include <cusp/system/cpp/detail/generic/blas.h>
+
+namespace cusp
+{
+namespace system
+{
+namespace omp
+{
+namespace detail
+{
+    using cusp::system::cpp::detail::gemm;
+} // end namespace detail
+} // end namespace omp
+} // end namespace system
+} // end namespace cusp
+

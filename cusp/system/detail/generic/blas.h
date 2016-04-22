@@ -55,7 +55,7 @@ struct SCAL
     __host__ __device__
     void operator()(T2& x)
     {
-        x = alpha * x;
+        x = T(alpha) * x;
     }
 };
 
@@ -340,11 +340,15 @@ void scal(thrust::execution_policy<DerivedPolicy>& exec,
 template<typename DerivedPolicy,
          typename Array2d,
          typename Array1d1,
-         typename Array1d2>
+         typename Array1d2,
+         typename ScalarType1,
+         typename ScalarType2>
 void gemv(thrust::execution_policy<DerivedPolicy>& exec,
           const Array2d&  A,
           const Array1d1& x,
-                Array1d2& y)
+                Array1d2& y,
+          const ScalarType1 alpha,
+          const ScalarType2 beta)
 {
     throw cusp::not_implemented_exception("CUSP GEMV not implemented");
 }
@@ -352,11 +356,13 @@ void gemv(thrust::execution_policy<DerivedPolicy>& exec,
 template <typename DerivedPolicy,
           typename Array1d1,
           typename Array1d2,
-          typename Array2d1>
+          typename Array2d1,
+          typename ScalarType>
 void ger(thrust::execution_policy<DerivedPolicy> &exec,
          const Array1d1& x,
          const Array1d2& y,
-               Array2d1& A)
+               Array2d1& A,
+         const ScalarType alpha)
 {
     throw cusp::not_implemented_exception("CUSP GER not implemented");
 }
@@ -364,21 +370,27 @@ void ger(thrust::execution_policy<DerivedPolicy> &exec,
 template <typename DerivedPolicy,
           typename Array2d1,
           typename Array1d1,
-          typename Array1d2>
+          typename Array1d2,
+          typename ScalarType1,
+          typename ScalarType2>
 void symv(thrust::execution_policy<DerivedPolicy> &exec,
           const Array2d1& A,
           const Array1d1& x,
-                Array1d2& y)
+                Array1d2& y,
+          const ScalarType1 alpha,
+          const ScalarType2 beta)
 {
     throw cusp::not_implemented_exception("CUSP SYMV not implemented");
 }
 
 template <typename DerivedPolicy,
           typename Array1d,
-          typename Array2d>
+          typename Array2d,
+          typename ScalarType>
 void syr(thrust::execution_policy<DerivedPolicy> &exec,
          const Array1d& x,
-               Array2d& A)
+               Array2d& A,
+         const ScalarType alpha)
 {
     throw cusp::not_implemented_exception("CUSP SYR not implemented");
 }
@@ -422,21 +434,29 @@ void gemm(thrust::execution_policy<DerivedPolicy>& exec,
 template<typename DerivedPolicy,
          typename Array2d1,
          typename Array2d2,
-         typename Array2d3>
+         typename Array2d3,
+         typename ScalarType1,
+         typename ScalarType2>
 void symm(thrust::execution_policy<DerivedPolicy>& exec,
           const Array2d1& A,
           const Array2d2& B,
-                Array2d3& C)
+                Array2d3& C,
+          const ScalarType1 alpha,
+          const ScalarType2 beta)
 {
     throw cusp::not_implemented_exception("CUSP SYMM not implemented");
 }
 
 template <typename DerivedPolicy,
           typename Array2d1,
-          typename Array2d2>
+          typename Array2d2,
+          typename ScalarType1,
+          typename ScalarType2>
 void syrk(thrust::execution_policy<DerivedPolicy> &exec,
           const Array2d1& A,
-                Array2d2& B)
+                Array2d2& B,
+          const ScalarType1 alpha,
+          const ScalarType2 beta)
 {
     throw cusp::not_implemented_exception("CUSP SYRK not implemented");
 }
@@ -444,31 +464,39 @@ void syrk(thrust::execution_policy<DerivedPolicy> &exec,
 template<typename DerivedPolicy,
          typename Array2d1,
          typename Array2d2,
-         typename Array2d3>
+         typename Array2d3,
+         typename ScalarType1,
+         typename ScalarType2>
 void syr2k(thrust::execution_policy<DerivedPolicy>& exec,
            const Array2d1& A,
            const Array2d2& B,
-                 Array2d3& C)
+                 Array2d3& C,
+           const ScalarType1 alpha,
+           const ScalarType2 beta)
 {
     throw cusp::not_implemented_exception("CUSP SYR2K not implemented");
 }
 
 template<typename DerivedPolicy,
          typename Array2d1,
-         typename Array2d2>
+         typename Array2d2,
+         typename ScalarType>
 void trmm(thrust::execution_policy<DerivedPolicy>& exec,
           const Array2d1& A,
-                Array2d2& B)
+                Array2d2& B,
+          const ScalarType alpha)
 {
     throw cusp::not_implemented_exception("CUSP TRMM not implemented");
 }
 
 template<typename DerivedPolicy,
          typename Array2d1,
-         typename Array2d2>
+         typename Array2d2,
+         typename ScalarType>
 void trsm(thrust::execution_policy<DerivedPolicy>& exec,
           const Array2d1& A,
-                Array2d2& B)
+                Array2d2& B,
+          const ScalarType alpha)
 {
     throw cusp::not_implemented_exception("CUSP TRSM not implemented");
 }

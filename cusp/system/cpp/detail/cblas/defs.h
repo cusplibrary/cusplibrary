@@ -40,8 +40,8 @@ struct lower   : public cblas_format {};
 struct unit    : public cblas_format {};
 struct nonunit : public cblas_format {};
 
-struct cblas_row_major { const static CBLAS_LAYOUT order = CblasRowMajor; };
-struct cblas_col_major { const static CBLAS_LAYOUT order = CblasColMajor; };
+struct cblas_row_major { const static CBLAS_ORDER order = CblasRowMajor; };
+struct cblas_col_major { const static CBLAS_ORDER order = CblasColMajor; };
 
 template< typename LayoutFormat >
 struct Orientation : thrust::detail::eval_if<
