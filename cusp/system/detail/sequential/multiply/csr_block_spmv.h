@@ -32,12 +32,12 @@ namespace sequential
 {
 
 template <typename DerivedPolicy,
-         typename MatrixType,
-         typename VectorType1,
-         typename VectorType2,
-         typename UnaryFunction,
-         typename BinaryFunction1,
-         typename BinaryFunction2>
+          typename MatrixType,
+          typename VectorType1,
+          typename VectorType2,
+          typename UnaryFunction,
+          typename BinaryFunction1,
+          typename BinaryFunction2>
 void multiply(thrust::cpp::execution_policy<DerivedPolicy>& exec,
               const MatrixType& A,
               const VectorType1& x,
@@ -49,28 +49,28 @@ void multiply(thrust::cpp::execution_policy<DerivedPolicy>& exec,
               cusp::array2d_format,
               cusp::array2d_format)
 {
-    typedef typename MatrixType::index_type	  IndexType;
-	typedef typename MatrixType::memory_space MemorySpace;
+    typedef typename MatrixType::index_type	   IndexType;
+	  typedef typename VectorType2::memory_space MemorySpace;
     typedef typename VectorType2::values_array_type::value_type ValueType;
 
     for(size_t i = 0; i < A.num_rows; i++)
     {
-        const IndexType& row_start = A.row_offsets[i];
-        const IndexType& row_end   = A.row_offsets[i + 1];
+        const IndexType row_start = A.row_offsets[i];
+        const IndexType row_end   = A.row_offsets[i + 1];
 
-		cusp::detail::temporary_array<DerivedPolicy, MemorySpace> accumulator(x.num_cols);
+		    cusp::detail::temporary_array<ValueType, DerivedPolicy> accumulator(exec, x.num_cols);
 
         for(size_t k = 0; k < x.num_cols; k++)
             accumulator[k] = initialize(y(i,k));
 
         for (IndexType jj = row_start; jj < row_end; jj++)
         {
-            const IndexType& j   = A.column_indices[jj];
-            const ValueType& Aij = A.values[jj];
+            const IndexType j   = A.column_indices[jj];
+            const ValueType Aij = A.values[jj];
 
             for(size_t k = 0; k < x.num_cols; k++)
             {
-              const ValueType& xj  = x(j,k);
+              const ValueType xj  = x(j,k);
               accumulator[k] = reduce(accumulator[k], combine(Aij, xj));
             }
         }
