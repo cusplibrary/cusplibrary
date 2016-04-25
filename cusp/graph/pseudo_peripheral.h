@@ -50,7 +50,7 @@ template <typename DerivedPolicy,
 typename MatrixType::index_type
 pseudo_peripheral_vertex(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
                          const MatrixType& G,
-                         ArrayType& levels);
+                               ArrayType& levels);
 /*! \endcond */
 
 /**
@@ -106,9 +106,11 @@ pseudo_peripheral_vertex(const thrust::detail::execution_policy_base<DerivedPoli
  * \endcode
  *
  */
-template<typename MatrixType, typename ArrayType>
+template<typename MatrixType,
+         typename ArrayType>
 typename MatrixType::index_type
-pseudo_peripheral_vertex(const MatrixType& G, ArrayType& levels);
+pseudo_peripheral_vertex(const MatrixType& G,
+                               ArrayType& levels);
 
 /*! \}
  */

@@ -42,7 +42,7 @@ template <typename DerivedPolicy,
           typename ArrayType>
 size_t vertex_coloring(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
                        const MatrixType& G,
-                       ArrayType& colors);
+                             ArrayType& colors);
 /*! \endcond */
 
 /**
@@ -85,9 +85,10 @@ size_t vertex_coloring(const thrust::detail::execution_policy_base<DerivedPolicy
  *  }
  *  \endcode
  */
-template<typename MatrixType, typename ArrayType>
+template<typename MatrixType,
+         typename ArrayType>
 size_t vertex_coloring(const MatrixType& G,
-                       ArrayType& colors);
+                             ArrayType& colors);
 /*! \}
  */
 

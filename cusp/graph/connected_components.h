@@ -41,7 +41,7 @@ template <typename DerivedPolicy,
           typename ArrayType>
 size_t connected_components(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
                             const MatrixType& G,
-                            ArrayType& components);
+                                  ArrayType& components);
 /*! \endcond */
 
 /**
@@ -101,8 +101,10 @@ size_t connected_components(const thrust::detail::execution_policy_base<DerivedP
  * }
  * \endcode
  */
-template<typename MatrixType, typename ArrayType>
-size_t connected_components(const MatrixType& G, ArrayType& components);
+template<typename MatrixType,
+         typename ArrayType>
+size_t connected_components(const MatrixType& G,
+                                  ArrayType& components);
 /*! \}
  */
 

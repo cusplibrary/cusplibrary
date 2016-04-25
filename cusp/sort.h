@@ -33,10 +33,12 @@ namespace cusp
  */
 
 /* \cond */
-template <typename DerivedPolicy, typename ArrayType>
+template <typename DerivedPolicy,
+          typename ArrayType>
 void counting_sort(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
                    ArrayType& keys,
-                   typename ArrayType::value_type min, typename ArrayType::value_type max);
+                   typename ArrayType::value_type min,
+                   typename ArrayType::value_type max);
 /* \endcond */
 
 /**
@@ -88,12 +90,17 @@ void counting_sort(const thrust::detail::execution_policy_base<DerivedPolicy> &e
  *  \endcode
  */
 template <typename ArrayType>
-void counting_sort(ArrayType& keys, typename ArrayType::value_type min, typename ArrayType::value_type max);
+void counting_sort(ArrayType& keys,
+                   typename ArrayType::value_type min,
+                   typename ArrayType::value_type max);
 
 /* \cond */
-template <typename DerivedPolicy, typename ArrayType1, typename ArrayType2>
+template <typename DerivedPolicy,
+          typename ArrayType1,
+          typename ArrayType2>
 void counting_sort_by_key(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-                          ArrayType1& keys, ArrayType2& vals,
+                          ArrayType1& keys,
+                          ArrayType2& vals,
                           typename ArrayType1::value_type min,
                           typename ArrayType1::value_type max);
 /* \endcond */
@@ -153,16 +160,23 @@ void counting_sort_by_key(const thrust::detail::execution_policy_base<DerivedPol
  *  }
  *  \endcode
  */
-template <typename ArrayType1, typename ArrayType2>
-void counting_sort_by_key(ArrayType1& keys, ArrayType2& vals,
+template <typename ArrayType1,
+          typename ArrayType2>
+void counting_sort_by_key(ArrayType1& keys,
+                          ArrayType2& vals,
                           typename ArrayType1::value_type min,
                           typename ArrayType1::value_type max);
 
 
 /* \cond */
-template <typename DerivedPolicy, typename ArrayType1, typename ArrayType2, typename ArrayType3>
+template <typename DerivedPolicy,
+          typename ArrayType1,
+          typename ArrayType2,
+          typename ArrayType3>
 void sort_by_row(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-                 ArrayType1& row_indices, ArrayType2& column_indices, ArrayType3& values,
+                 ArrayType1& row_indices,
+                 ArrayType2& column_indices,
+                 ArrayType3& values,
                  typename ArrayType1::value_type min_row = 0,
                  typename ArrayType1::value_type max_row = 0);
 /* \endcond */
@@ -211,15 +225,24 @@ void sort_by_row(const thrust::detail::execution_policy_base<DerivedPolicy> &exe
  *  }
  *  \endcode
  */
-template <typename ArrayType1, typename ArrayType2, typename ArrayType3>
-void sort_by_row(ArrayType1& row_indices, ArrayType2& column_indices, ArrayType3& values,
+template <typename ArrayType1,
+          typename ArrayType2,
+          typename ArrayType3>
+void sort_by_row(ArrayType1& row_indices,
+                 ArrayType2& column_indices,
+                 ArrayType3& values,
                  typename ArrayType1::value_type min_row = 0,
                  typename ArrayType1::value_type max_row = 0);
 
 /* \cond */
-template <typename DerivedPolicy, typename ArrayType1, typename ArrayType2, typename ArrayType3>
+template <typename DerivedPolicy,
+          typename ArrayType1,
+          typename ArrayType2,
+          typename ArrayType3>
 void sort_by_row_and_column(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-                            ArrayType1& row_indices, ArrayType2& column_indices, ArrayType3& values,
+                            ArrayType1& row_indices,
+                            ArrayType2& column_indices,
+                            ArrayType3& values,
                             typename ArrayType1::value_type min_row = 0,
                             typename ArrayType1::value_type max_row = 0,
                             typename ArrayType2::value_type min_col = 0,
@@ -273,8 +296,12 @@ void sort_by_row_and_column(const thrust::detail::execution_policy_base<DerivedP
  *  }
  *  \endcode
  */
-template <typename ArrayType1, typename ArrayType2, typename ArrayType3>
-void sort_by_row_and_column(ArrayType1& row_indices, ArrayType2& column_indices, ArrayType3& values,
+template <typename ArrayType1,
+          typename ArrayType2,
+          typename ArrayType3>
+void sort_by_row_and_column(ArrayType1& row_indices,
+                            ArrayType2& column_indices,
+                            ArrayType3& values,
                             typename ArrayType1::value_type min_row = 0,
                             typename ArrayType1::value_type max_row = 0,
                             typename ArrayType2::value_type min_col = 0,

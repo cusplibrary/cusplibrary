@@ -43,7 +43,7 @@ template <typename DerivedPolicy,
 void hilbert_curve(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
                    const Array2dType& coord,
                    const size_t num_parts,
-                   ArrayType& parts);
+                         ArrayType& parts);
 /*! \endcond */
 
 /**
@@ -103,8 +103,11 @@ void hilbert_curve(const thrust::detail::execution_policy_base<DerivedPolicy>& e
  * }
  * \endcode
  */
-template <class Array2dType, class ArrayType>
-void hilbert_curve(const Array2dType& coord, const size_t num_parts, ArrayType& parts);
+template <class Array2dType,
+          class ArrayType>
+void hilbert_curve(const Array2dType& coord,
+                   const size_t num_parts,
+                         ArrayType& parts);
 /*! \}
  */
 

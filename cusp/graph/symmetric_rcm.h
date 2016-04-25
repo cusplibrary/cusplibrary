@@ -40,7 +40,7 @@ template <typename DerivedPolicy,
           typename PermutationType>
 void symmetric_rcm(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
                    const MatrixType& G,
-                   PermutationType& P);
+                         PermutationType& P);
 /* \endcond */
 
 /**
@@ -96,8 +96,10 @@ void symmetric_rcm(const thrust::detail::execution_policy_base<DerivedPolicy>& e
  * }
  * \endcode
  */
-template<typename MatrixType, typename PermutationType>
-void symmetric_rcm(const MatrixType& G, PermutationType& P);
+template<typename MatrixType,
+         typename PermutationType>
+void symmetric_rcm(const MatrixType& G,
+                         PermutationType& P);
 /*! \}
  */
 

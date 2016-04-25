@@ -97,8 +97,10 @@ void print(const Printable& p);
  *  }
  *  \endcode
  */
-template <typename Printable, typename Stream>
-void print(const Printable& p, Stream& s);
+template <typename Printable,
+          typename Stream>
+void print(const Printable& p,
+                 Stream& s);
 
 /*! \}
  */

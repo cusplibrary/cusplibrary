@@ -36,13 +36,15 @@ namespace cusp
 
 /*! \cond */
 template <typename DerivedPolicy,
-          typename MatrixType1, typename MatrixType2, typename MatrixType3,
+          typename MatrixType1,
+          typename MatrixType2,
+          typename MatrixType3,
           typename BinaryFunction>
 void elementwise(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
                  const MatrixType1& A,
                  const MatrixType2& B,
-                 MatrixType3& C,
-                 BinaryFunction op);
+                       MatrixType3& C,
+                       BinaryFunction op);
 /*! \endcond */
 
 /**
@@ -95,12 +97,14 @@ void elementwise(const thrust::detail::execution_policy_base<DerivedPolicy>& exe
  *  }
  *  \endcode
  */
-template <typename MatrixType1, typename MatrixType2, typename MatrixType3,
+template <typename MatrixType1,
+          typename MatrixType2,
+          typename MatrixType3,
           typename BinaryFunction>
 void elementwise(const MatrixType1& A,
                  const MatrixType2& B,
-                 MatrixType3& C,
-                 BinaryFunction op);
+                       MatrixType3& C,
+                       BinaryFunction op);
 
 /**
  * \brief Compute the sum of two matrices
@@ -151,11 +155,11 @@ void elementwise(const MatrixType1& A,
  *  \endcode
  */
 template <typename MatrixType1,
-         typename MatrixType2,
-         typename MatrixType3>
+          typename MatrixType2,
+          typename MatrixType3>
 void add(const MatrixType1& A,
          const MatrixType2& B,
-         MatrixType3& C);
+               MatrixType3& C);
 
 /**
  * \brief Compute the difference of two matrices
@@ -206,11 +210,11 @@ void add(const MatrixType1& A,
  *  \endcode
  */
 template <typename MatrixType1,
-         typename MatrixType2,
-         typename MatrixType3>
+          typename MatrixType2,
+          typename MatrixType3>
 void subtract(const MatrixType1& A,
               const MatrixType2& B,
-              MatrixType3& C);
+                    MatrixType3& C);
 /*! \}
  */
 

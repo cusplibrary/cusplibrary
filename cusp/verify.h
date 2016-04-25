@@ -52,8 +52,10 @@ bool is_valid_matrix(const MatrixType& matrix);
  * \param ostream Stream to which the validate stream should print
  * \return \p true if format is valid otherwise \p false
  */
-template <typename MatrixType, typename OutputStream>
-bool is_valid_matrix(const MatrixType& matrix, OutputStream& ostream);
+template <typename MatrixType,
+          typename OutputStream>
+bool is_valid_matrix(const MatrixType& matrix,
+                           OutputStream& ostream);
 
 /**
  * \brief Validate format of a given matrix and exit if invalid
@@ -75,7 +77,8 @@ void assert_is_valid_matrix(const MatrixType& matrix);
  * \param array1 First array used in comparison
  * \param array2 Second array used in comparison
  */
-template <typename Array1, typename Array2>
+template <typename Array1,
+          typename Array2>
 void assert_same_dimensions(const Array1& array1,
                             const Array2& array2);
 
@@ -91,7 +94,9 @@ void assert_same_dimensions(const Array1& array1,
  * \param array2 Second array used in comparison
  * \param array3 Third array used in comparison
  */
-template <typename Array1, typename Array2, typename Array3>
+template <typename Array1,
+          typename Array2,
+          typename Array3>
 void assert_same_dimensions(const Array1& array1,
                             const Array2& array2,
                             const Array3& array3);
@@ -110,7 +115,10 @@ void assert_same_dimensions(const Array1& array1,
  * \param array3 Third array used in comparison
  * \param array4 Fourth array used in comparison
  */
-template <typename Array1, typename Array2, typename Array3, typename Array4>
+template <typename Array1,
+          typename Array2,
+          typename Array3,
+          typename Array4>
 void assert_same_dimensions(const Array1& array1,
                             const Array2& array2,
                             const Array3& array3,

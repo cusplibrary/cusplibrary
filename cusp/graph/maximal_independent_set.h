@@ -36,10 +36,12 @@ namespace graph
  */
 
 /*! \cond */
-template <typename DerivedPolicy, typename MatrixType, typename ArrayType>
+template <typename DerivedPolicy,
+          typename MatrixType,
+          typename ArrayType>
 size_t maximal_independent_set(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
                                const MatrixType& G,
-                               ArrayType& stencil,
+                                     ArrayType& stencil,
                                const size_t k = 1);
 /*! \endcond */
 
@@ -103,8 +105,11 @@ size_t maximal_independent_set(const thrust::detail::execution_policy_base<Deriv
  * }
  * \endcode
  */
-template <typename MatrixType, typename ArrayType>
-size_t maximal_independent_set(const MatrixType& G, ArrayType& stencil, size_t k = 1);
+template <typename MatrixType,
+          typename ArrayType>
+size_t maximal_independent_set(const MatrixType& G,
+                                     ArrayType& stencil,
+                               const size_t k = 1);
 /*! \}
  */
 
