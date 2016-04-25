@@ -30,6 +30,7 @@
 
 // now get all the algorithm definitions
 
+#include <cusp/system/tbb/detail/blas.h>
 #include <cusp/system/tbb/detail/convert.h>
 #include <cusp/system/tbb/detail/elementwise.h>
 #include <cusp/system/tbb/detail/format_utils.h>
@@ -45,3 +46,4 @@
 #include <cusp/system/tbb/detail/graph/pseudo_peripheral.h>
 #include <cusp/system/tbb/detail/graph/symmetric_rcm.h>
 #include <cusp/system/tbb/detail/graph/vertex_coloring.h>
+

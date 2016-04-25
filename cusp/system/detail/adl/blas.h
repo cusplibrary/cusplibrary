@@ -23,15 +23,18 @@
 // code which uses adl to dispatch blas
 
 #include <cusp/system/detail/sequential/blas.h>
-#include <cusp/system//cpp/detail/generic/blas.h>
 
 // SCons can't see through the #defines below to figure out what this header
 // includes, so we fake it out by specifying all possible files we might end up
 // including inside an #if 0.
 #if 0
 #include <cusp/system/cpp/detail/cblas/blas.h>
-#include <cusp/system/omp/detail/generic/blas.h>
 #include <cusp/system/cuda/detail/cublas/blas.h>
+
+#include <cusp/system/cpp/detail/blas.h>
+#include <cusp/system/omp/detail/blas.h>
+#include <cusp/system/tbb/detail/blas.h>
+#include <cusp/system/cuda/detail/blas.h>
 #endif
 
 #define __CUSP_HOST_BLAS_SYSTEM <__CUSP_HOST_BLAS_ROOT/blas.h>

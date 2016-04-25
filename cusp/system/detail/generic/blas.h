@@ -141,15 +141,13 @@ int amax(thrust::execution_policy<DerivedPolicy>& exec,
          const Array& x)
 {
     typedef typename Array::value_type                    ValueType;
+
+#if THRUST_VERSION >= 100800
     typedef typename Array::const_iterator                Iterator;
     typedef cusp::abs_functor<ValueType>                  UnaryOp;
     typedef thrust::transform_iterator<UnaryOp, Iterator> TransformIterator;
 
-    UnaryOp unary_op;
-
-    TransformIterator iter(x.begin(), unary_op);
-
-#if THRUST_VERSION >= 100800
+    TransformIterator iter(x.begin(), UnaryOp());
     int index = thrust::max_element(exec, iter, iter + x.size()) - iter;
 #else
     int index = thrust::max_element(exec, x.begin(), x.end(), AMAX<ValueType>()) - x.begin();

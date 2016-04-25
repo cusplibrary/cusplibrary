@@ -32,6 +32,7 @@
 
 // now get all the algorithm definitions
 
+#include <cusp/system/cpp/detail/blas.h>
 #include <cusp/system/cpp/detail/convert.h>
 #include <cusp/system/cpp/detail/copy.h>
 #include <cusp/system/cpp/detail/elementwise.h>

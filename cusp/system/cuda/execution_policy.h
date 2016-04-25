@@ -34,6 +34,7 @@
 
 // now get all the algorithm definitions
 
+#include <cusp/system/cuda/detail/blas.h>
 #include <cusp/system/cuda/detail/convert.h>
 #include <cusp/system/cuda/detail/copy.h>
 #include <cusp/system/cuda/detail/elementwise.h>
@@ -51,3 +52,4 @@
 #include <cusp/system/cuda/detail/graph/vertex_coloring.h>
 
 #include <cusp/system/cuda/detail/relaxation/gauss_seidel.h>
+
