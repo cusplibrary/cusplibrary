@@ -97,7 +97,20 @@ void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
 
     typedef typename MatrixType3::index_type   IndexType;
     typedef typename MatrixType3::value_type   ValueType;
+    typedef typename elementwise_detail::ops<BinaryFunction>::unary_op_type                          UnaryOp;
+    typedef typename elementwise_detail::ops<BinaryFunction>::binary_op_type                         BinaryOp;
 
+    size_t A_nnz = A.num_entries;
+    size_t B_nnz = B.num_entries;
+    size_t num_entries = A_nnz + B_nnz;
+
+    if (A_nnz == 0 && B_nnz == 0)
+    {
+        C.resize(A.num_rows, A.num_cols, 0);
+        return;
+    }
+
+#if THRUST_VERSION >= 100803
     typedef typename MatrixType1::const_coo_view_type                                                CooView1;
     typedef typename MatrixType2::const_coo_view_type                                                CooView2;
 
@@ -117,23 +130,10 @@ void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
     typedef thrust::tuple<ZipIterator1, ZipIterator2, IndexIterator>                                 ZipTuple;
     typedef typename cusp::join_iterator<ZipTuple>::iterator                                         JoinIndexIterator;
 
-    typedef typename elementwise_detail::ops<BinaryFunction>::unary_op_type                          UnaryOp;
-    typedef typename elementwise_detail::ops<BinaryFunction>::binary_op_type                         BinaryOp;
     typedef thrust::transform_iterator<UnaryOp, ValueIterator2>                                      TransValueIterator;
     typedef thrust::tuple<ValueIterator1, TransValueIterator, IndexIterator>                         TransValueTuple;
     typedef typename cusp::join_iterator<TransValueTuple>::iterator                                  JoinValueIterator;
 
-    size_t A_nnz = A.num_entries;
-    size_t B_nnz = B.num_entries;
-    size_t num_entries = A_nnz + B_nnz;
-
-    if (A_nnz == 0 && B_nnz == 0)
-    {
-        C.resize(A.num_rows, A.num_cols, 0);
-        return;
-    }
-
-#if THRUST_VERSION >= 100803
     ZipIterator1 A_tuples(thrust::make_tuple(A.row_indices.begin(), A.column_indices.begin()));
     ZipIterator2 B_tuples(thrust::make_tuple(B.row_indices.begin(), B.column_indices.begin()));
 
@@ -212,7 +212,7 @@ void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
                           thrust::make_zip_iterator(thrust::make_tuple(C.row_indices.begin(), C.column_indices.begin())),
                           C.values.begin(),
                           thrust::equal_to< thrust::tuple<IndexType,IndexType> >(),
-                          thrust::plus<ValueType>());
+                          BinaryOp());
 #endif
 
     int num_zeros = thrust::count(exec, C.values.begin(), C.values.end(), ValueType(0));
