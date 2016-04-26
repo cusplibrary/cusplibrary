@@ -9,8 +9,6 @@ except:
   exec open("../../build/build-env.py")
   env = Environment()
 
-env.Append(CPPDEFINES = "_FORCE_INLINES")
-
 # find all .cus & .cpps in the current directory
 sources = []
 directories = ['.']

@@ -11,7 +11,7 @@ except:
 
 env.Append(CPPPATH = [os.environ["HOME"] + "/.local/include"])
 env.Append(LIBPATH = [os.environ["HOME"] + "/.local/lib"])
-env.Append(LIBS = ["cublas", "openblas", "stdc++"])
+env.Append(LIBS = ["cublas", "openblas"])
 
 # find all .cus & .cpps in the current directory
 sources = []

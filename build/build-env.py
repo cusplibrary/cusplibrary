@@ -328,8 +328,7 @@ def Environment():
         compile_flag_prefix = '-Xcompiler'
 
         # get NVCC compiler switches
-        env.Append(NVCCFLAGS=getNVCCFLAGS(
-            env['mode'], env['backend'], env['arch']))
+        env.Append(NVCCFLAGS=getNVCCFLAGS(env['mode'], env['backend'], env['arch']))
 
         # get CUDA paths
         (cuda_exe_path, cuda_lib_path, cuda_inc_path) = get_cuda_paths()
@@ -341,19 +340,21 @@ def Environment():
     else:
         env.Append(NVCCFLAGS = ["-x", "c++"])
 
-        # GCC_VERSION = subprocess.check_output([env['CXX'], '-dumpversion'])
-        # if StrictVersion(GCC_VERSION) >= StrictVersion("4.8.0") :
-        #     env.Append(NVCCFLAGS = ["-Wno-unused-local-typedefs"])
-
         if 'THRUST_PATH' not in os.environ :
             raise ValueError("Building without nvcc requires THRUST_PATH environment variable!")
+
+    # if compiler_define == 'gcc' or compiler_define == 'g++' :
+    #     GCC_VERSION = subprocess.check_output([env['CXX'], '-dumpversion'])
+    #     if StrictVersion(GCC_VERSION) >= StrictVersion("5.0.0") :
+
+    # XXX should only include for GCC >= 5.0.0 and NVCC <= 7.5
+    env.Append(CPPDEFINES = ["_FORCE_INLINES"])
 
     # hack to silence unknown pragma warnings
     # env.Append(NVCCFLAGS = [compile_flag_prefix, '-Wno-unknown-pragmas'])
 
     # get linker switches
-    env.Append(LINKFLAGS=getLINKFLAGS(
-        env['mode'], env['backend'], env['hostspblas'], env.subst('$LINK')))
+    env.Append(LINKFLAGS=getLINKFLAGS(env['mode'], env['backend'], env['hostspblas'], env.subst('$LINK')))
 
     # link against backend-specific runtimes
     # XXX we shouldn't have to link against cudart unless we're using the

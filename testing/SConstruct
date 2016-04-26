@@ -8,14 +8,9 @@ except:
   exec open("../build/build-env.py")
   env = Environment()
 
-# always link against the C++ library
-env.Append(LINKFLAGS = "-lstdc++")
-
 # on windows we have to do /bigobj
 if env['PLATFORM'] == "win32" or env['PLATFORM'] == "win64":
   env.Append(CPPFLAGS = "/bigobj")
-
-env.Append(CPPDEFINES = "_FORCE_INLINES")
 
 # assemble the name of this configuration's targets directory
 targets = 'device_{0}_{1}'.format(env['backend'], env['mode'])
