@@ -39,29 +39,30 @@ namespace krylov
 
 /* \cond */
 template <typename DerivedPolicy,
-          class LinearOperator,
-          class Vector>
+          typename LinearOperator,
+          typename Vector>
 void gmres(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-        LinearOperator& A,
-        Vector& x,
-        Vector& b,
-        const size_t restart);
+           LinearOperator& A,
+           Vector& x,
+           Vector& b,
+           const size_t restart);
 
 /*! \p gmres : GMRES method
  *
  * Solves the nonsymmetric, linear system A x = b
  * using the default convergence criteria.
  */
-template <class LinearOperator, class Vector>
+template <typename LinearOperator,
+          typename Vector>
 void gmres(LinearOperator& A,
            Vector& x,
            Vector& b,
            const size_t restart);
 
 template <typename DerivedPolicy,
-          class LinearOperator,
-          class Vector,
-          class Monitor>
+          typename LinearOperator,
+          typename Vector,
+          typename Monitor>
 void gmres(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
            LinearOperator& A,
            Vector& x,
@@ -73,9 +74,9 @@ void gmres(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
  *
  * Solves the nonsymmetric, linear system A x = b without preconditioning.
  */
-template <class LinearOperator,
-         class Vector,
-         class Monitor>
+template <typename LinearOperator,
+          typename Vector,
+          typename Monitor>
 void gmres(LinearOperator& A,
            Vector& x,
            Vector& b,
@@ -83,10 +84,10 @@ void gmres(LinearOperator& A,
            Monitor& monitor);
 
 template <typename DerivedPolicy,
-          class LinearOperator,
-          class Vector,
-          class Monitor,
-          class Preconditioner>
+          typename LinearOperator,
+          typename Vector,
+          typename Monitor,
+          typename Preconditioner>
 void gmres(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
            LinearOperator& A,
            Vector& x,
@@ -159,10 +160,10 @@ void gmres(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
  *  \see \p monitor
  *
  */
-template <class LinearOperator,
-         class Vector,
-         class Monitor,
-         class Preconditioner>
+template <typename LinearOperator,
+          typename Vector,
+          typename Monitor,
+          typename Preconditioner>
 void gmres(LinearOperator& A,
            Vector& x,
            Vector& b,

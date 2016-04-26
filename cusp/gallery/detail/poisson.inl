@@ -26,7 +26,9 @@ namespace gallery
 {
 
 template <typename MatrixType>
-void poisson5pt(MatrixType& matrix, size_t m, size_t n)
+void poisson5pt(MatrixType& matrix,
+                const size_t m,
+                const size_t n)
 {
     typedef typename MatrixType::index_type IndexType;
     typedef typename MatrixType::value_type ValueType;
@@ -44,7 +46,9 @@ void poisson5pt(MatrixType& matrix, size_t m, size_t n)
 }
 
 template <typename MatrixType>
-void poisson9pt(MatrixType& matrix, size_t m, size_t n)
+void poisson9pt(MatrixType& matrix,
+                const size_t m,
+                const size_t n)
 {
     typedef typename MatrixType::index_type IndexType;
     typedef typename MatrixType::value_type ValueType;
@@ -66,7 +70,10 @@ void poisson9pt(MatrixType& matrix, size_t m, size_t n)
 }
 
 template <typename MatrixType>
-void poisson7pt(MatrixType& matrix, size_t m, size_t n, size_t k)
+void poisson7pt(MatrixType& matrix,
+                const size_t m,
+                const size_t n,
+                const size_t k)
 {
     typedef typename MatrixType::index_type IndexType;
     typedef typename MatrixType::value_type ValueType;
@@ -86,7 +93,10 @@ void poisson7pt(MatrixType& matrix, size_t m, size_t n, size_t k)
 }
 
 template <typename MatrixType>
-void poisson27pt(MatrixType& matrix, size_t m, size_t n, size_t l)
+void poisson27pt(MatrixType& matrix,
+                 const size_t m,
+                 const size_t n,
+                 const size_t l)
 {
     typedef typename MatrixType::index_type IndexType;
     typedef typename MatrixType::value_type ValueType;

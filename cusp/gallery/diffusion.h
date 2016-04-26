@@ -59,10 +59,13 @@ struct FE : public disc_type {};
  * \tparam MatrixType matrix container
  *
  */
-template <typename Method, typename MatrixType>
-void diffusion(	MatrixType& matrix, size_t m, size_t n,
-                const double eps = 1e-5,
-                const double theta = M_PI/4.0);
+template <typename Method,
+          typename MatrixType>
+void diffusion(MatrixType& matrix,
+               const size_t m,
+               const size_t n,
+               const double eps = 1e-5,
+               const double theta = M_PI/4.0);
 /*! \}
  */
 

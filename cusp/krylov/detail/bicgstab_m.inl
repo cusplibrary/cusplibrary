@@ -609,10 +609,15 @@ void compute_s_0_m(InputIterator1 r_1_b, InputIterator1 r_1_e,
         cusp::krylov::bicg_detail::detail_m::KERNEL_S<ScalarType>(alpha_1,chi_0));
 }
 
-template <typename Array1, typename Array2, typename Array3,
-         typename ScalarType>
-void compute_s_0_m(const Array1& r_1, const Array2& As, Array3& s_0,
-                   ScalarType alpha_1, ScalarType chi_0)
+template <typename Array1,
+          typename Array2,
+          typename Array3,
+          typename ScalarType>
+void compute_s_0_m(const Array1& r_1,
+                   const Array2& As,
+                         Array3& s_0,
+                         ScalarType alpha_1,
+                         ScalarType chi_0)
 {
     // sanity checks
     cusp::assert_same_dimensions(r_1,As,s_0);
@@ -622,12 +627,16 @@ void compute_s_0_m(const Array1& r_1, const Array2& As, Array3& s_0,
                                          As.begin(),s_0.begin(),alpha_1,chi_0);
 }
 
-template <typename InputIterator1, typename InputIterator2,
-         typename OutputIterator1, typename OutputIterator2,
-         typename ScalarType>
-void compute_chirho_m(InputIterator1 rho_0_s_b, InputIterator1 rho_0_s_e,
+template <typename InputIterator1,
+          typename InputIterator2,
+          typename OutputIterator1,
+          typename OutputIterator2,
+          typename ScalarType>
+void compute_chirho_m(InputIterator1 rho_0_s_b,
+                      InputIterator1 rho_0_s_e,
                       InputIterator2 sigma_b,
-                      OutputIterator1 chi_0_s_b, OutputIterator2 rho_1_s_b,
+                      OutputIterator1 chi_0_s_b,
+                      OutputIterator2 rho_1_s_b,
                       ScalarType chi_0)
 {
     size_t N = rho_0_s_e-rho_0_s_b;
@@ -637,10 +646,16 @@ void compute_chirho_m(InputIterator1 rho_0_s_b, InputIterator1 rho_0_s_e,
         cusp::krylov::bicg_detail::detail_m::KERNEL_CHIRHO<ScalarType>(chi_0));
 }
 
-template <typename Array1, typename Array2, typename Array3, typename Array4,
-         typename ScalarType>
-void compute_chirho_m(const Array1& rho_0_s, const Array2& sigma,
-                      Array3& chi_0_s, Array4& rho_1_s, ScalarType chi_0)
+template <typename Array1,
+          typename Array2,
+          typename Array3,
+          typename Array4,
+          typename ScalarType>
+void compute_chirho_m(const Array1& rho_0_s,
+                      const Array2& sigma,
+                            Array3& chi_0_s,
+                            Array4& rho_1_s,
+                            ScalarType chi_0)
 {
     // sanity checks
     cusp::assert_same_dimensions(sigma,rho_0_s,rho_1_s);
@@ -654,8 +669,10 @@ void compute_chirho_m(const Array1& rho_0_s, const Array2& sigma,
 // multiple copy of array to another array
 // this is just a vectorization of blas::copy
 // uses detail_m::KERNEL_VCOPY
-template <typename Array1, typename Array2>
-void vectorize_copy(const Array1& source, Array2& dest)
+template <typename Array1,
+          typename Array2>
+void vectorize_copy(const Array1& source,
+                          Array2& dest)
 {
     // sanity check
     size_t N = source.end()-source.begin();
@@ -677,12 +694,17 @@ void vectorize_copy(const Array1& source, Array2& dest)
 
 } // end namespace trans_m
 
-template <typename DerivedPolicy, class LinearOperator,
-          class VectorType1, class VectorType2, class VectorType3,
-          class Monitor>
+template <typename DerivedPolicy,
+          typename LinearOperator,
+          typename VectorType1,
+          typename VectorType2,
+          typename VectorType3,
+          typename Monitor>
 void bicgstab_m(thrust::execution_policy<DerivedPolicy> &exec,
                 LinearOperator& A,
-                VectorType1& x, VectorType2& b, VectorType3& sigma,
+                VectorType1& x,
+                VectorType2& b,
+                VectorType3& sigma,
                 Monitor& monitor)
 {
     //
@@ -825,11 +847,16 @@ void bicgstab_m(thrust::execution_policy<DerivedPolicy> &exec,
 
 } // end bicgstab_m
 
-template <typename DerivedPolicy, class LinearOperator,
-          class VectorType1, class VectorType2, class VectorType3>
+template <typename DerivedPolicy,
+          typename LinearOperator,
+          typename VectorType1,
+          typename VectorType2,
+          typename VectorType3>
 void bicgstab_m(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
                 LinearOperator& A,
-                VectorType1& x, VectorType2& b, VectorType3& sigma)
+                VectorType1& x,
+                VectorType2& b,
+                VectorType3& sigma)
 {
     typedef typename LinearOperator::value_type   ValueType;
 
@@ -840,11 +867,16 @@ void bicgstab_m(const thrust::detail::execution_policy_base<DerivedPolicy> &exec
 
 } // end bicg_detail namespace
 
-template <typename DerivedPolicy, class LinearOperator,
-          class VectorType1, class VectorType2, class VectorType3>
+template <typename DerivedPolicy,
+          typename LinearOperator,
+          typename VectorType1,
+          typename VectorType2,
+          typename VectorType3>
 void bicgstab_m(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
                 LinearOperator& A,
-                VectorType1& x, VectorType2& b, VectorType3& sigma)
+                VectorType1& x,
+                VectorType2& b,
+                VectorType3& sigma)
 {
     using cusp::krylov::bicg_detail::bicgstab_m;
 
@@ -853,11 +885,15 @@ void bicgstab_m(const thrust::detail::execution_policy_base<DerivedPolicy> &exec
 }
 
 // BiCGStab-M routine that uses the default monitor to determine completion
-template <class LinearOperator,
-          class VectorType1, class VectorType2, class VectorType3>
+template <typename LinearOperator,
+          typename VectorType1,
+          typename VectorType2,
+          typename VectorType3>
 typename thrust::detail::enable_if_convertible<typename LinearOperator::format,cusp::known_format>::type
 bicgstab_m(LinearOperator& A,
-           VectorType1& x, VectorType2& b, VectorType3& sigma)
+           VectorType1& x,
+           VectorType2& b,
+           VectorType3& sigma)
 {
     using thrust::system::detail::generic::select_system;
 
@@ -874,12 +910,17 @@ bicgstab_m(LinearOperator& A,
     cusp::krylov::bicgstab_m(select_system(system1,system2,system3,system4), A, x, b, sigma);
 }
 
-template <typename DerivedPolicy, class LinearOperator,
-          class VectorType1, class VectorType2, class VectorType3,
-          class Monitor>
+template <typename DerivedPolicy,
+          typename LinearOperator,
+          typename VectorType1,
+          typename VectorType2,
+          typename VectorType3,
+          typename Monitor>
 void bicgstab_m(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
                 LinearOperator& A,
-                VectorType1& x, VectorType2& b, VectorType3& sigma,
+                VectorType1& x,
+                VectorType2& b,
+                VectorType3& sigma,
                 Monitor& monitor)
 {
     using cusp::krylov::bicg_detail::bicgstab_m;
@@ -889,12 +930,16 @@ void bicgstab_m(const thrust::detail::execution_policy_base<DerivedPolicy> &exec
 }
 
 // BiCGStab-M routine that takes a user specified monitor
-template <class LinearOperator,
-          class VectorType1, class VectorType2, class VectorType3,
-          class Monitor>
+template <typename LinearOperator,
+          typename VectorType1,
+          typename VectorType2,
+          typename VectorType3,
+          typename Monitor>
 typename thrust::detail::enable_if_convertible<typename LinearOperator::format,cusp::known_format>::type
 bicgstab_m(LinearOperator& A,
-           VectorType1& x, VectorType2& b, VectorType3& sigma,
+           VectorType1& x,
+           VectorType2& b,
+           VectorType3& sigma,
            Monitor& monitor)
 {
     using thrust::system::detail::generic::select_system;

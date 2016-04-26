@@ -24,7 +24,9 @@ namespace gallery
 {
 
 template <typename MatrixType>
-void grid2d(MatrixType& matrix, size_t m, size_t n)
+void grid2d(MatrixType& matrix,
+            const size_t m,
+            const size_t n)
 {
     typedef typename MatrixType::index_type IndexType;
     typedef typename MatrixType::value_type ValueType;
@@ -41,7 +43,10 @@ void grid2d(MatrixType& matrix, size_t m, size_t n)
 }
 
 template <typename MatrixType>
-void grid3d(MatrixType& matrix, size_t m, size_t n, size_t l)
+void grid3d(MatrixType& matrix,
+            const size_t m,
+            const size_t n,
+            const size_t l)
 {
     typedef typename MatrixType::index_type IndexType;
     typedef typename MatrixType::value_type ValueType;

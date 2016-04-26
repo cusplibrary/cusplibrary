@@ -63,7 +63,9 @@ namespace gallery
  * \endcode
  */
 template <typename MatrixType>
-void poisson5pt(MatrixType& matrix, size_t m, size_t n);
+void poisson5pt(MatrixType& matrix,
+                const size_t m,
+                const size_t n);
 
 /*! \p poisson9pt: Create a matrix representing a 9pt Poisson problem
  * discretized on an \p m by \p n grid with the standard 2D 9-point
@@ -94,7 +96,9 @@ void poisson5pt(MatrixType& matrix, size_t m, size_t n);
  * \endcode
  */
 template <typename MatrixType>
-void poisson9pt(MatrixType& matrix, size_t m, size_t n);
+void poisson9pt(MatrixType& matrix,
+                const size_t m,
+                const size_t n);
 
 /*! \p poisson7pt: Create a matrix representing a 7pt Poisson problem
  * discretized on an \p m by \p n by \p k grid with the standard 3D 7-point
@@ -126,7 +130,10 @@ void poisson9pt(MatrixType& matrix, size_t m, size_t n);
  * \endcode
  */
 template <typename MatrixType>
-void poisson7pt(MatrixType& matrix, size_t m, size_t n, size_t k);
+void poisson7pt(MatrixType& matrix,
+                const size_t m,
+                const size_t n,
+                const size_t k);
 
 /*! \p poisson27pt: Create a matrix representing a 27pt Poisson problem
  * discretized on an \p m by \p n by \p l grid with the standard 3D 27-point
@@ -158,7 +165,10 @@ void poisson7pt(MatrixType& matrix, size_t m, size_t n, size_t k);
  * \endcode
  */
 template <typename MatrixType>
-void poisson27pt(MatrixType& matrix, size_t m, size_t n, size_t l);
+void poisson27pt(MatrixType& matrix,
+                 const size_t m,
+                 const size_t n,
+                 const size_t l);
 
 /*! \}
  */
