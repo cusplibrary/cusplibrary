@@ -32,15 +32,16 @@ namespace cg_detail
 
 template <typename DerivedPolicy,
           typename LinearOperator,
-          typename Vector,
+          typename VectorType1,
+          typename VectorType2,
           typename Monitor,
           typename Preconditioner>
 void cg(thrust::execution_policy<DerivedPolicy> &exec,
-        LinearOperator& A,
-        Vector& x,
-        Vector& b,
-        Monitor& monitor,
-        Preconditioner& M)
+        const LinearOperator& A,
+              VectorType1& x,
+        const VectorType2& b,
+              Monitor& monitor,
+              Preconditioner& M)
 {
     typedef typename LinearOperator::value_type           ValueType;
 
@@ -103,118 +104,20 @@ void cg(thrust::execution_policy<DerivedPolicy> &exec,
     }
 }
 
-template <typename DerivedPolicy,
-          typename LinearOperator,
-          typename Vector,
-          typename Monitor>
-void cg(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-        LinearOperator& A,
-        Vector& x,
-        Vector& b,
-        Monitor& monitor)
-{
-    typedef typename LinearOperator::value_type   ValueType;
-    typedef typename LinearOperator::memory_space MemorySpace;
-
-    cusp::identity_operator<ValueType,MemorySpace> M(A.num_rows, A.num_cols);
-
-    cusp::krylov::cg_detail::cg(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, x, b, monitor, M);
-}
-
-template <typename DerivedPolicy,
-          typename LinearOperator,
-          typename Vector>
-void cg(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-        LinearOperator& A,
-        Vector& x,
-        Vector& b)
-{
-    typedef typename LinearOperator::value_type   ValueType;
-
-    cusp::monitor<ValueType> monitor(b);
-
-    cusp::krylov::cg_detail::cg(exec, A, x, b, monitor);
-}
-
 } // end cg_detail namespace
 
 template <typename DerivedPolicy,
           typename LinearOperator,
-          typename Vector>
-void cg(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-        LinearOperator& A,
-        Vector& x,
-        Vector& b)
-{
-    using cusp::krylov::cg_detail::cg;
-
-    cg(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
-       A, x, b);
-}
-
-template <typename LinearOperator,
-          typename Vector>
-void cg(LinearOperator& A,
-        Vector& x,
-        Vector& b)
-{
-    using thrust::system::detail::generic::select_system;
-
-    typedef typename LinearOperator::memory_space System1;
-    typedef typename Vector::memory_space         System2;
-
-    System1 system1;
-    System2 system2;
-
-    cusp::krylov::cg(select_system(system1,system2), A, x, b);
-}
-
-template <typename DerivedPolicy,
-          typename LinearOperator,
-          typename Vector,
-          typename Monitor>
-void cg(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-        LinearOperator& A,
-        Vector& x,
-        Vector& b,
-        Monitor& monitor)
-{
-    using cusp::krylov::cg_detail::cg;
-
-    cg(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
-       A, x, b, monitor);
-}
-
-template <typename LinearOperator,
-          typename Vector,
-          typename Monitor>
-void cg(LinearOperator& A,
-        Vector& x,
-        Vector& b,
-        Monitor& monitor)
-{
-    using thrust::system::detail::generic::select_system;
-
-    typedef typename LinearOperator::memory_space System1;
-    typedef typename Vector::memory_space         System2;
-
-    System1 system1;
-    System2 system2;
-
-    cusp::krylov::cg(select_system(system1,system2), A, x, b, monitor);
-}
-
-template <typename DerivedPolicy,
-          typename LinearOperator,
-          typename Vector,
+          typename VectorType1,
+          typename VectorType2,
           typename Monitor,
           typename Preconditioner>
 void cg(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-        LinearOperator& A,
-        Vector& x,
-        Vector& b,
-        Monitor& monitor,
-        Preconditioner& M)
+        const LinearOperator& A,
+              VectorType1& x,
+        const VectorType2& b,
+              Monitor& monitor,
+              Preconditioner& M)
 {
     using cusp::krylov::cg_detail::cg;
 
@@ -223,24 +126,56 @@ void cg(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 }
 
 template <typename LinearOperator,
-          typename Vector,
+          typename VectorType1,
+          typename VectorType2,
           typename Monitor,
           typename Preconditioner>
-void cg(LinearOperator& A,
-        Vector& x,
-        Vector& b,
-        Monitor& monitor,
-        Preconditioner& M)
+void cg(const LinearOperator& A,
+              VectorType1& x,
+        const VectorType2& b,
+              Monitor& monitor,
+              Preconditioner& M)
 {
     using thrust::system::detail::generic::select_system;
 
     typedef typename LinearOperator::memory_space System1;
-    typedef typename Vector::memory_space         System2;
+    typedef typename VectorType2::memory_space    System2;
 
     System1 system1;
     System2 system2;
 
     cusp::krylov::cg(select_system(system1,system2), A, x, b, monitor, M);
+}
+
+template <typename LinearOperator,
+          typename VectorType1,
+          typename VectorType2,
+          typename Monitor>
+void cg(const LinearOperator& A,
+              VectorType1& x,
+        const VectorType2& b,
+              Monitor& monitor)
+{
+    typedef typename LinearOperator::value_type   ValueType;
+    typedef typename LinearOperator::memory_space MemorySpace;
+
+    cusp::identity_operator<ValueType,MemorySpace> M(A.num_rows, A.num_cols);
+
+    cusp::krylov::cg(A, x, b, monitor, M);
+}
+
+template <typename LinearOperator,
+          typename VectorType1,
+          typename VectorType2>
+void cg(const LinearOperator& A,
+              VectorType1& x,
+        const VectorType2& b)
+{
+    typedef typename LinearOperator::value_type   ValueType;
+
+    cusp::monitor<ValueType> monitor(b);
+
+    cusp::krylov::cg(A, x, b, monitor);
 }
 
 } // end namespace krylov

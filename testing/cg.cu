@@ -8,22 +8,8 @@
 #include <cusp/gallery/poisson.h>
 #include <cusp/krylov/cg.h>
 
-template <class LinearOperator, class Vector>
-void cg(my_system& system, LinearOperator& A, Vector& x, Vector& b)
-{
-    system.validate_dispatch();
-    return;
-}
-
-template <class LinearOperator, class Vector, class Monitor>
-void cg(my_system& system, LinearOperator& A, Vector& x, Vector& b, Monitor& monitor)
-{
-    system.validate_dispatch();
-    return;
-}
-
-template <class LinearOperator, class Vector, class Monitor, class Preconditioner>
-void cg(my_system& system, LinearOperator& A, Vector& x, Vector& b, Monitor& monitor, Preconditioner& M)
+template <class LinearOperator, class VectorType1, class VectorType2, class Monitor, class Preconditioner>
+void cg(my_system& system, const LinearOperator& A, VectorType1& x, const VectorType2& b, Monitor& monitor, Preconditioner& M)
 {
     system.validate_dispatch();
     return;
@@ -37,26 +23,6 @@ void TestConjugateGradientDispatch()
     cusp::array1d<float, cusp::device_memory> x(A.num_rows, 0.0f);
     cusp::monitor<float> monitor(x, 20, 1e-4);
     cusp::identity_operator<float,cusp::device_memory> M(A.num_rows, A.num_cols);
-
-    {
-        my_system sys(0);
-
-        // call with explicit dispatching
-        cusp::krylov::cg(sys, A, x, x);
-
-        // check if dispatch policy was used
-        ASSERT_EQUAL(true, sys.is_valid());
-    }
-
-    {
-        my_system sys(0);
-
-        // call with explicit dispatching
-        cusp::krylov::cg(sys, A, x, x, monitor);
-
-        // check if dispatch policy was used
-        ASSERT_EQUAL(true, sys.is_valid());
-    }
 
     {
         my_system sys(0);
