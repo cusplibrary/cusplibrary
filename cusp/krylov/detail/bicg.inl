@@ -55,7 +55,7 @@ void bicg(thrust::execution_policy<DerivedPolicy> &exec,
     const size_t N = A.num_rows;
 
     // allocate workspace
-    cusp::detail::temporary_array<ValueType, DerivedPolicy> y(exec, N);
+    cusp::detail::temporary_array<ValueType, DerivedPolicy>  y(exec, N);
 
     cusp::detail::temporary_array<ValueType, DerivedPolicy>  p(exec, N);
     cusp::detail::temporary_array<ValueType, DerivedPolicy>  p_star(exec, N);

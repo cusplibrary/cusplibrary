@@ -14,9 +14,7 @@
  *  limitations under the License.
  */
 
-#include <cusp/detail/config.h>
-
-#include <cusp/multiply.h>
+#include <cusp/detail/execution_policy.h>
 
 #include <cusp/system/detail/adl/multiply.h>
 #include <cusp/system/detail/generic/multiply.h>
@@ -68,7 +66,7 @@ template <typename DerivedPolicy,
          typename UnaryFunction,
          typename BinaryFunction1,
          typename BinaryFunction2>
-typename thrust::detail::disable_if_convertible<UnaryFunction,cusp::known_format,void>::type
+typename thrust::detail::disable_if_convertible<UnaryFunction,cusp::known_format>::type
 multiply(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
          const LinearOperator&  A,
          const MatrixOrVector1& B,

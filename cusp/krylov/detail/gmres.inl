@@ -22,6 +22,8 @@
 
 #include <cusp/blas/blas.h>
 
+#include <cusp/detail/temporary_array.h>
+
 namespace blas = cusp::blas;
 
 namespace cusp
@@ -31,44 +33,52 @@ namespace krylov
 namespace gmres_detail
 {
 
-template <typename ValueType>
-void ApplyPlaneRotation(ValueType &dx,
-                        ValueType &dy,
-                        ValueType &cs,
-                        ValueType &sn)
+template <typename ValueType1,
+          typename ValueType2,
+          typename ValueType3,
+          typename ValueType4>
+void ApplyPlaneRotation(      ValueType1& dx,
+                              ValueType2& dy,
+                        const ValueType3& cs,
+                        const ValueType4& sn)
 {
-    ValueType temp = cs * dx + sn * dy;
+    ValueType3 temp = cs * dx + sn * dy;
     dy = -cusp::conj(sn) * dx + cs * dy;
     dx = temp;
 }
 
-template <typename ValueType>
-void GeneratePlaneRotation(ValueType& dx,
-                           ValueType& dy,
-                           ValueType& cs,
-                           ValueType& sn)
+template <typename ValueType1,
+          typename ValueType2,
+          typename ValueType3,
+          typename ValueType4>
+void GeneratePlaneRotation(const ValueType1& dx,
+                           const ValueType2& dy,
+                                 ValueType3& cs,
+                                 ValueType4& sn)
 {
-    typedef typename cusp::norm_type<ValueType>::type NormType;
+    typedef typename cusp::norm_type<ValueType1>::type NormType;
 
-    if (dx == ValueType(0)) {
-        cs = ValueType(0);
-        sn = ValueType(1);
+    if (dx == ValueType1(0)) {
+        cs = ValueType3(0);
+        sn = ValueType4(1);
     } else {
         NormType scale = cusp::abs(dx) + cusp::abs(dy);
         NormType norm = scale * std::sqrt(cusp::abs(dx / scale) * cusp::abs(dx / scale) +
                                           cusp::abs(dy / scale) * cusp::abs(dy / scale));
-        ValueType alpha = dx / cusp::abs(dx);
+        ValueType4 alpha = dx / cusp::abs(dx);
         cs = cusp::abs(dx) / norm;
         sn = alpha * cusp::conj(dy) / norm;
     }
 }
 
 template <typename LinearOperator,
-          typename ValueType>
+          typename VectorType1,
+          typename VectorType2,
+          typename VectorType3>
 void PlaneRotation(LinearOperator &H,
-                   ValueType &cs,
-                   ValueType &sn,
-                   ValueType &s,
+                   VectorType1    &cs,
+                   VectorType2    &sn,
+                   VectorType3    &s,
                    const int i)
 {
     for (int k = 0; k < i; k++) {
@@ -106,37 +116,37 @@ void gmres(thrust::execution_policy<DerivedPolicy> &exec,
     const int R = restart;
     int i, j, k;
     NormType beta = 0;
-    cusp::array1d<NormType, cusp::host_memory> resid(1);
 
     // allocate workspace
-    cusp::array1d<ValueType, MemorySpace> w(N);
+    cusp::detail::temporary_array<ValueType, DerivedPolicy>   w(exec, N);
     // Arnoldi matrix pos 0
-    cusp::array1d<ValueType, MemorySpace> V0(N);
+    cusp::detail::temporary_array<ValueType, DerivedPolicy>   V0(exec, N);
     // Arnoldi matrix
     cusp::array2d<ValueType, MemorySpace, cusp::column_major> V(N, R + 1, ValueType(0.0));
 
     // duplicate copy of s on GPU
-    cusp::array1d<ValueType, MemorySpace> sDev(R + 1);
+    cusp::detail::temporary_array<ValueType, DerivedPolicy> sDev(exec, R + 1);
 
     // HOST WORKSPACE
-    cusp::array2d<ValueType, cusp::host_memory, cusp::column_major> H(
-        R + 1, R);  // Hessenberg matrix
+    cusp::host_memory host_exec;
+    cusp::array2d<ValueType, cusp::host_memory, cusp::column_major> H(R + 1, R);  // Hessenberg matrix
     cusp::array1d<ValueType, cusp::host_memory> s(R + 1);
     cusp::array1d<ValueType, cusp::host_memory> cs(R);
     cusp::array1d<ValueType, cusp::host_memory> sn(R);
+    cusp::array1d<ValueType, cusp::host_memory> resid(1);
 
     do
     {
         // compute initial residual and its norm
-        cusp::multiply(A, x, w);                // V(0) = A*x
-        blas::axpy(b, w, ValueType(-1));        // V(0) = V(0) - b
-        cusp::multiply(M, w, w);                // V(0) = M*V(0)
-        beta = blas::nrm2(w);                   // beta = norm(V(0))
-        blas::scal(w, ValueType(-1.0 / beta));  // V(0) = -V(0)/beta
-        blas::copy(w, V.column(0));
+        cusp::multiply(exec, A, x, w);                // V(0) = A*x
+        blas::axpy(exec, b, w, ValueType(-1));        // V(0) = V(0) - b
+        cusp::multiply(exec, M, w, w);                // V(0) = M*V(0)
+        beta = blas::nrm2(exec, w);                   // beta = norm(V(0))
+        blas::scal(exec, w, ValueType(-1.0 / beta));  // V(0) = -V(0)/beta
+        blas::copy(exec, w, V.column(0));
 
         // s = 0 //
-        blas::fill(s, ValueType(0.0));
+        blas::fill(host_exec, s, ValueType(0.0));
         s[0] = beta;
         i = -1;
         resid[0] = cusp::abs(s[0]);
@@ -152,22 +162,22 @@ void gmres(thrust::execution_policy<DerivedPolicy> &exec,
 
             // apply preconditioner
             // can't pass in ref to column in V so need to use copy (w)
-            cusp::multiply(A, w, V0);
+            cusp::multiply(exec, A, w, V0);
             // V(i+1) = A*w = M*A*V(i)
-            cusp::multiply(M, V0, w);
+            cusp::multiply(exec, M, V0, w);
 
             for (k = 0; k <= i; k++)
             {
                 //  H(k,i) = <V(i+1),V(k)>
-                H(k, i) = blas::dotc(V.column(k), w);
+                H(k, i) = blas::dotc(exec, V.column(k), w);
                 // V(i+1) -= H(k, i) * V(k)
-                blas::axpy(V.column(k), w, -H(k, i));
+                blas::axpy(exec, V.column(k), w, -H(k, i));
             }
 
-            H(i + 1, i) = blas::nrm2(w);
+            H(i + 1, i) = blas::nrm2(exec, w);
             // V(i+1) = V(i+1) / H(i+1, i)
-            blas::scal(w, ValueType(1.0) / H(i + 1, i));
-            blas::copy(w, V.column(i + 1));
+            blas::scal(exec, w, ValueType(1.0) / H(i + 1, i));
+            blas::copy(exec, w, V.column(i + 1));
 
             PlaneRotation(H, cs, sn, s, i);
 
@@ -197,7 +207,7 @@ void gmres(thrust::execution_policy<DerivedPolicy> &exec,
         // x= V(1:N,0:i)*s(0:i)+x
         for (j = 0; j <= i; j++) {
             // x = x + s[j] * V(j)
-            blas::axpy(V.column(j), x, s[j]);
+            blas::axpy(exec, V.column(j), x, s[j]);
         }
     } while (!monitor.finished(resid));
 }

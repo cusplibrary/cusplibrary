@@ -19,6 +19,8 @@
 #include <cusp/multiply.h>
 #include <cusp/monitor.h>
 
+#include <cusp/detail/temporary_array.h>
+
 #include <cusp/blas/blas.h>
 
 namespace blas = cusp::blas;

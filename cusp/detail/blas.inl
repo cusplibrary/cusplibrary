@@ -280,6 +280,20 @@ void copy(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
     copy(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), x, y);
 }
 
+template <typename DerivedPolicy,
+          typename ArrayType1,
+          typename RandomAccessIterator>
+void copy(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+          const ArrayType1& x,
+                cusp::array1d_view<RandomAccessIterator> y)
+{
+    using cusp::system::detail::generic::blas::copy;
+
+    cusp::assert_same_dimensions(x, y);
+
+    copy(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), x, y);
+}
+
 template <typename ArrayType1,
           typename ArrayType2>
 void copy(const ArrayType1& x,
