@@ -35,17 +35,18 @@ namespace bicg_detail
 
 template <typename DerivedPolicy,
           typename LinearOperator,
-          typename Vector,
+          typename VectorType1,
+          typename VectorType2,
           typename Monitor,
           typename Preconditioner>
 void bicg(thrust::execution_policy<DerivedPolicy> &exec,
-          LinearOperator& A,
-          LinearOperator& At,
-          Vector& x,
-          Vector& b,
-          Monitor& monitor,
-          Preconditioner& M,
-          Preconditioner& Mt)
+          const LinearOperator& A,
+          const LinearOperator& At,
+                VectorType1& x,
+          const VectorType2& b,
+                Monitor& monitor,
+                Preconditioner& M,
+                Preconditioner& Mt)
 {
     typedef typename LinearOperator::value_type           ValueType;
 
@@ -146,126 +147,22 @@ void bicg(thrust::execution_policy<DerivedPolicy> &exec,
     }
 }
 
-template <typename DerivedPolicy,
-          typename LinearOperator,
-          typename Vector,
-          typename Monitor>
-void bicg(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-          LinearOperator& A,
-          LinearOperator& At,
-          Vector& x,
-          Vector& b,
-          Monitor& monitor)
-{
-    typedef typename LinearOperator::value_type   ValueType;
-    typedef typename LinearOperator::memory_space MemorySpace;
-
-    cusp::identity_operator<ValueType,MemorySpace> M(A.num_rows, A.num_cols);
-
-    cusp::krylov::bicg_detail::bicg(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, At, x, b, monitor, M, M);
-}
-
-template <typename DerivedPolicy,
-          typename LinearOperator,
-          typename Vector>
-void bicg(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-          LinearOperator& A,
-          LinearOperator& At,
-          Vector& x,
-          Vector& b)
-{
-    typedef typename LinearOperator::value_type   ValueType;
-
-    cusp::monitor<ValueType> monitor(b);
-
-    cusp::krylov::bicg_detail::bicg(exec, A, At, x, b, monitor);
-}
-
 } // end bicg_detail namespace
 
 template <typename DerivedPolicy,
           typename LinearOperator,
-          typename Vector>
-void bicg(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-          LinearOperator& A,
-          LinearOperator& At,
-          Vector& x,
-          Vector& b)
-{
-    using cusp::krylov::bicg_detail::bicg;
-
-    bicg(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
-         A, At, x, b);
-}
-
-template <typename LinearOperator,
-          typename Vector>
-void bicg(LinearOperator& A,
-          LinearOperator& At,
-          Vector& x,
-          Vector& b)
-{
-    using thrust::system::detail::generic::select_system;
-
-    typedef typename LinearOperator::memory_space System1;
-    typedef typename Vector::memory_space         System2;
-
-    System1 system1;
-    System2 system2;
-
-    cusp::krylov::bicg(select_system(system1,system2), A, At, x, b);
-}
-
-template <typename DerivedPolicy,
-          typename LinearOperator,
-          typename Vector,
-          typename Monitor>
-void bicg(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-          LinearOperator& A,
-          LinearOperator& At,
-          Vector& x,
-          Vector& b,
-          Monitor& monitor)
-{
-    using cusp::krylov::bicg_detail::bicg;
-
-    bicg(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
-         A, At, x, b, monitor);
-}
-
-template <typename LinearOperator,
-          typename Vector,
-          typename Monitor>
-void bicg(LinearOperator& A,
-          LinearOperator& At,
-          Vector& x,
-          Vector& b,
-          Monitor& monitor)
-{
-    using thrust::system::detail::generic::select_system;
-
-    typedef typename LinearOperator::memory_space System1;
-    typedef typename Vector::memory_space         System2;
-
-    System1 system1;
-    System2 system2;
-
-    cusp::krylov::bicg(select_system(system1,system2), A, At, x, b, monitor);
-}
-
-template <typename DerivedPolicy,
-          typename LinearOperator,
-          typename Vector,
+          typename VectorType1,
+          typename VectorType2,
           typename Monitor,
           typename Preconditioner>
 void bicg(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-          LinearOperator& A,
-          LinearOperator& At,
-          Vector& x,
-          Vector& b,
-          Monitor& monitor,
-          Preconditioner& M,
-          Preconditioner& Mt)
+          const LinearOperator& A,
+          const LinearOperator& At,
+                VectorType1& x,
+          const VectorType2& b,
+                Monitor& monitor,
+                Preconditioner& M,
+                Preconditioner& Mt)
 {
     using cusp::krylov::bicg_detail::bicg;
 
@@ -274,26 +171,60 @@ void bicg(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 }
 
 template <typename LinearOperator,
-          typename Vector,
+          typename VectorType1,
+          typename VectorType2,
           typename Monitor,
           typename Preconditioner>
-void bicg(LinearOperator& A,
-          LinearOperator& At,
-          Vector& x,
-          Vector& b,
-          Monitor& monitor,
-          Preconditioner& M,
-          Preconditioner& Mt)
+void bicg(const LinearOperator& A,
+          const LinearOperator& At,
+                VectorType1& x,
+          const VectorType2& b,
+                Monitor& monitor,
+                Preconditioner& M,
+                Preconditioner& Mt)
 {
     using thrust::system::detail::generic::select_system;
 
     typedef typename LinearOperator::memory_space System1;
-    typedef typename Vector::memory_space         System2;
+    typedef typename VectorType2::memory_space    System2;
 
     System1 system1;
     System2 system2;
 
     cusp::krylov::bicg(select_system(system1,system2), A, At, x, b, monitor, M, Mt);
+}
+
+template <typename LinearOperator,
+          typename VectorType1,
+          typename VectorType2,
+          typename Monitor>
+void bicg(const LinearOperator& A,
+          const LinearOperator& At,
+                VectorType1& x,
+          const VectorType2& b,
+                Monitor& monitor)
+{
+    typedef typename LinearOperator::value_type   ValueType;
+    typedef typename LinearOperator::memory_space MemorySpace;
+
+    cusp::identity_operator<ValueType,MemorySpace> M(A.num_rows, A.num_cols);
+
+    cusp::krylov::bicg(A, At, x, b, monitor, M, M);
+}
+
+template <typename LinearOperator,
+          typename VectorType1,
+          typename VectorType2>
+void bicg(const LinearOperator& A,
+          const LinearOperator& At,
+                VectorType1& x,
+          const VectorType2& b)
+{
+    typedef typename LinearOperator::value_type   ValueType;
+
+    cusp::monitor<ValueType> monitor(b);
+
+    cusp::krylov::bicg(A, At, x, b, monitor);
 }
 
 } // end namespace krylov

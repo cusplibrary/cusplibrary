@@ -36,66 +36,41 @@ namespace krylov
  */
 
 /* \cond */
-
 template <typename DerivedPolicy,
           typename LinearOperator,
-          typename Vector>
-void cr(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-        LinearOperator& A,
-        Vector& x,
-        Vector& b);
-
-/*! \p cr : Conjugate Residual method
- *
- * Computes least squares solution of semi-definite linear system A x = b
- * using the default convergence criteria.
- */
-template <typename LinearOperator,
-          typename Vector>
-void cr(LinearOperator& A,
-        Vector& x,
-        Vector& b);
-
-/*! \p cr : Conjugate Residual method
- *
- * Computes least squares solution of semi-definite linear system A x = b without preconditioning.
- */
-template <typename LinearOperator,
-          typename Vector,
-          typename Monitor>
-void cr(LinearOperator& A,
-        Vector& x,
-        Vector& b,
-        Monitor& monitor);
-
-template <typename DerivedPolicy,
-          typename LinearOperator,
-          typename Vector,
-          typename Monitor>
-void cr(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-        LinearOperator& A,
-        Vector& x,
-        Vector& b,
-        Monitor& monitor);
-
-template <typename DerivedPolicy,
-          typename LinearOperator,
-          typename Vector,
+          typename VectorType1,
+          typename VectorType2,
           typename Monitor,
           typename Preconditioner>
 void cr(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-        LinearOperator& A,
-        Vector& x,
-        Vector& b,
-        Monitor& monitor,
-        Preconditioner& M);
+        const LinearOperator& A,
+              VectorType1& x,
+        const VectorType2& b,
+              Monitor& monitor,
+              Preconditioner& M);
+
+template <typename LinearOperator,
+          typename VectorType1,
+          typename VectorType2,
+          typename Monitor>
+void cr(const LinearOperator& A,
+              VectorType1& x,
+        const VectorType2& b,
+              Monitor& monitor);
+
+template <typename LinearOperator,
+          typename VectorType1,
+          typename VectorType2>
+void cr(const LinearOperator& A,
+              VectorType1& x,
+        const VectorType2& b);
 /* \endcond */
 
 /**
  * \brief Conjugate Residual method
  *
  * \tparam LinearOperator is a matrix or subclass of \p linear_operator
- * \tparam Vector vector
+ * \tparam VectorType1 vector
  * \tparam Monitor is a \p monitor
  * \tparam Preconditioner is a matrix or subclass of \p linear_operator
  *
@@ -153,14 +128,15 @@ void cr(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
  *
  */
 template <typename LinearOperator,
-          typename Vector,
+          typename VectorType1,
+          typename VectorType2,
           typename Monitor,
           typename Preconditioner>
-void cr(LinearOperator& A,
-        Vector& x,
-        Vector& b,
-        Monitor& monitor,
-        Preconditioner& M);
+void cr(const LinearOperator& A,
+              VectorType1& x,
+        const VectorType2& b,
+              Monitor& monitor,
+              Preconditioner& M);
 /*! \}
  */
 

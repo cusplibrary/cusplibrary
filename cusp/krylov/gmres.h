@@ -38,70 +38,46 @@ namespace krylov
  */
 
 /* \cond */
-template <typename DerivedPolicy,
-          typename LinearOperator,
-          typename Vector>
-void gmres(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-           LinearOperator& A,
-           Vector& x,
-           Vector& b,
-           const size_t restart);
-
-/*! \p gmres : GMRES method
- *
- * Solves the nonsymmetric, linear system A x = b
- * using the default convergence criteria.
- */
-template <typename LinearOperator,
-          typename Vector>
-void gmres(LinearOperator& A,
-           Vector& x,
-           Vector& b,
-           const size_t restart);
 
 template <typename DerivedPolicy,
           typename LinearOperator,
-          typename Vector,
-          typename Monitor>
-void gmres(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-           LinearOperator& A,
-           Vector& x,
-           Vector& b,
-           const size_t restart,
-           Monitor& monitor);
-
-/*! \p gmres : GMRES method
- *
- * Solves the nonsymmetric, linear system A x = b without preconditioning.
- */
-template <typename LinearOperator,
-          typename Vector,
-          typename Monitor>
-void gmres(LinearOperator& A,
-           Vector& x,
-           Vector& b,
-           const size_t restart,
-           Monitor& monitor);
-
-template <typename DerivedPolicy,
-          typename LinearOperator,
-          typename Vector,
+          typename VectorType1,
+          typename VectorType2,
           typename Monitor,
           typename Preconditioner>
 void gmres(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-           LinearOperator& A,
-           Vector& x,
-           Vector& b,
+           const LinearOperator& A,
+                 VectorType1& x,
+           const VectorType2& b,
            const size_t restart,
-           Monitor& monitor,
-           Preconditioner& M);
+                 Monitor& monitor,
+                 Preconditioner& M);
+
+template <typename LinearOperator,
+          typename VectorType1,
+          typename VectorType2,
+          typename Monitor>
+void gmres(const LinearOperator& A,
+                 VectorType1& x,
+           const VectorType2& b,
+           const size_t restart,
+                 Monitor& monitor);
+
+template <typename LinearOperator,
+          typename VectorType1,
+          typename VectorType2>
+void gmres(const LinearOperator& A,
+                 VectorType1& x,
+           const VectorType2& b,
+           const size_t restart);
+
 /* \endcond */
 
 /**
  * \brief GMRES method
  *
  * \tparam LinearOperator is a matrix or subclass of \p linear_operator
- * \tparam Vector vector
+ * \tparam VectorType1 vector
  * \tparam Monitor is a monitor such as \p default_monitor or \p verbose_monitor
  * \tparam Preconditioner is a matrix or subclass of \p linear_operator
  *
@@ -161,15 +137,16 @@ void gmres(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
  *
  */
 template <typename LinearOperator,
-          typename Vector,
+          typename VectorType1,
+          typename VectorType2,
           typename Monitor,
           typename Preconditioner>
-void gmres(LinearOperator& A,
-           Vector& x,
-           Vector& b,
+void gmres(const LinearOperator& A,
+                 VectorType1& x,
+           const VectorType2& b,
            const size_t restart,
-           Monitor& monitor,
-           Preconditioner& M);
+                 Monitor& monitor,
+                 Preconditioner& M);
 /*! \}
 */
 
