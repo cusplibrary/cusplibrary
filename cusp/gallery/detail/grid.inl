@@ -28,12 +28,13 @@ void grid2d(MatrixType& matrix,
             const size_t m,
             const size_t n)
 {
-    typedef typename MatrixType::index_type IndexType;
-    typedef typename MatrixType::value_type ValueType;
+    typedef typename MatrixType::index_type       IndexType;
+    typedef typename MatrixType::value_type       ValueType;
+    typedef typename MatrixType::memory_space     MemorySpace;
     typedef thrust::tuple<IndexType,IndexType>    StencilIndex;
     typedef thrust::tuple<StencilIndex,ValueType> StencilPoint;
 
-    cusp::array1d<StencilPoint, cusp::host_memory> stencil;
+    cusp::array1d<StencilPoint, MemorySpace> stencil;
     stencil.push_back(StencilPoint(StencilIndex(  0, -1), 1));
     stencil.push_back(StencilPoint(StencilIndex( -1,  0), 1));
     stencil.push_back(StencilPoint(StencilIndex(  1,  0), 1));
@@ -48,12 +49,13 @@ void grid3d(MatrixType& matrix,
             const size_t n,
             const size_t l)
 {
-    typedef typename MatrixType::index_type IndexType;
-    typedef typename MatrixType::value_type ValueType;
-    typedef thrust::tuple<IndexType,IndexType,IndexType>    StencilIndex;
-    typedef thrust::tuple<StencilIndex,ValueType> 	    StencilPoint;
+    typedef typename MatrixType::index_type              IndexType;
+    typedef typename MatrixType::value_type              ValueType;
+    typedef typename MatrixType::memory_space            MemorySpace;
+    typedef thrust::tuple<IndexType,IndexType,IndexType> StencilIndex;
+    typedef thrust::tuple<StencilIndex,ValueType> 	     StencilPoint;
 
-    cusp::array1d<StencilPoint, cusp::host_memory> stencil;
+    cusp::array1d<StencilPoint, MemorySpace> stencil;
     for( IndexType k = -1; k <= 1; k++ )
         for( IndexType j = -1; j <= 1; j++ )
             for( IndexType i = -1; i <= 1; i++ )

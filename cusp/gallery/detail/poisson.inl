@@ -32,10 +32,11 @@ void poisson5pt(MatrixType& matrix,
 {
     typedef typename MatrixType::index_type IndexType;
     typedef typename MatrixType::value_type ValueType;
+    typedef typename MatrixType::memory_space MemorySpace;
     typedef thrust::tuple<IndexType,IndexType>    StencilIndex;
     typedef thrust::tuple<StencilIndex,ValueType> StencilPoint;
 
-    cusp::array1d<StencilPoint, cusp::host_memory> stencil;
+    cusp::array1d<StencilPoint, MemorySpace> stencil;
     stencil.push_back(StencilPoint(StencilIndex(  0, -1), ValueType(-1)));
     stencil.push_back(StencilPoint(StencilIndex( -1,  0), ValueType(-1)));
     stencil.push_back(StencilPoint(StencilIndex(  0,  0), ValueType( 4)));
@@ -52,10 +53,11 @@ void poisson9pt(MatrixType& matrix,
 {
     typedef typename MatrixType::index_type IndexType;
     typedef typename MatrixType::value_type ValueType;
+    typedef typename MatrixType::memory_space MemorySpace;
     typedef thrust::tuple<IndexType,IndexType>    StencilIndex;
     typedef thrust::tuple<StencilIndex,ValueType> StencilPoint;
 
-    cusp::array1d<StencilPoint, cusp::host_memory> stencil;
+    cusp::array1d<StencilPoint, MemorySpace> stencil;
     stencil.push_back(StencilPoint(StencilIndex( -1, -1), ValueType(-1)));
     stencil.push_back(StencilPoint(StencilIndex(  0, -1), ValueType(-1)));
     stencil.push_back(StencilPoint(StencilIndex(  1, -1), ValueType(-1)));
@@ -77,10 +79,11 @@ void poisson7pt(MatrixType& matrix,
 {
     typedef typename MatrixType::index_type IndexType;
     typedef typename MatrixType::value_type ValueType;
+    typedef typename MatrixType::memory_space MemorySpace;
     typedef thrust::tuple<IndexType,IndexType,IndexType>    StencilIndex;
     typedef thrust::tuple<StencilIndex,ValueType> 	    StencilPoint;
 
-    cusp::array1d<StencilPoint, cusp::host_memory> stencil;
+    cusp::array1d<StencilPoint, MemorySpace> stencil;
     stencil.push_back(StencilPoint(StencilIndex( 0,  0, -1), ValueType(-1)));
     stencil.push_back(StencilPoint(StencilIndex( 0, -1,  0), ValueType(-1)));
     stencil.push_back(StencilPoint(StencilIndex(-1,  0,  0), ValueType(-1)));
@@ -100,10 +103,11 @@ void poisson27pt(MatrixType& matrix,
 {
     typedef typename MatrixType::index_type IndexType;
     typedef typename MatrixType::value_type ValueType;
+    typedef typename MatrixType::memory_space MemorySpace;
     typedef thrust::tuple<IndexType,IndexType,IndexType>    StencilIndex;
     typedef thrust::tuple<StencilIndex,ValueType> 	    StencilPoint;
 
-    cusp::array1d<StencilPoint, cusp::host_memory> stencil;
+    cusp::array1d<StencilPoint, MemorySpace> stencil;
     for( IndexType k = -1; k <= 1; k++ )
         for( IndexType j = -1; j <= 1; j++ )
             for( IndexType i = -1; i <= 1; i++ )

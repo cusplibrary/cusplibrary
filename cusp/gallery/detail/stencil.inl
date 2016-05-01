@@ -136,31 +136,33 @@ struct fill_diagonal_entries
 } // end namespace detail
 
 template <typename IndexType,
-         typename ValueType,
-         typename MemorySpace,
-         typename StencilPoint,
-         typename GridDimension>
+          typename ValueType,
+          typename MemorySpace,
+          typename StencilPoint,
+          typename GridDimension>
 void generate_matrix_from_stencil(cusp::dia_matrix<IndexType,ValueType,MemorySpace>& matrix,
-                                  const cusp::array1d<StencilPoint,cusp::host_memory>& stencil,
+                                  const cusp::array1d<StencilPoint,MemorySpace>& stencil,
                                   const GridDimension& grid)
 {
     IndexType num_dimensions = thrust::tuple_size<GridDimension>::value;
 
-    cusp::array1d<IndexType,cusp::host_memory> grid_indices(num_dimensions);
+    cusp::array1d<IndexType,MemorySpace> grid_indices(num_dimensions);
     detail::unpack_tuple(grid, grid_indices.begin());
 
     IndexType num_rows = thrust::reduce(grid_indices.begin(), grid_indices.end(), IndexType(1), thrust::multiplies<IndexType>());
 
     IndexType num_diagonals = stencil.size();
 
-    cusp::array1d<IndexType,cusp::host_memory> strides(grid_indices.size());
+    cusp::array1d<IndexType,MemorySpace> strides(grid_indices.size());
     thrust::exclusive_scan(grid_indices.begin(), grid_indices.end(), strides.begin(), IndexType(1), thrust::multiplies<IndexType>());
 
-    cusp::array1d<IndexType,cusp::host_memory> offsets(stencil.size(), 0);
+    cusp::array1d<IndexType,MemorySpace> offsets(stencil.size(), 0);
+    cusp::array1d<StencilPoint,cusp::host_memory> stencil_host(stencil);
+
     for(size_t i = 0; i < offsets.size(); i++)
     {
-        cusp::array1d<IndexType,cusp::host_memory> stencil_indices(num_dimensions);
-        detail::unpack_tuple(thrust::get<0>(stencil[i]), stencil_indices.begin());
+        cusp::array1d<IndexType,MemorySpace> stencil_indices(num_dimensions);
+        detail::unpack_tuple(thrust::get<0>(stencil_host[i]), stencil_indices.begin());
 
         for(IndexType j = 0; j < num_dimensions; j++)
         {
@@ -187,15 +189,15 @@ void generate_matrix_from_stencil(cusp::dia_matrix<IndexType,ValueType,MemorySpa
 
 // TODO add an entry point and make this the default path
 template <typename MatrixType,
-         typename StencilPoint,
-         typename GridDimension>
+          typename StencilPoint,
+          typename MemorySpace,
+          typename GridDimension>
 void generate_matrix_from_stencil(MatrixType& matrix,
-                                  const cusp::array1d<StencilPoint,cusp::host_memory>& stencil,
+                                  const cusp::array1d<StencilPoint,MemorySpace>& stencil,
                                   const GridDimension& grid)
 {
     typedef typename MatrixType::index_type   IndexType;
     typedef typename MatrixType::value_type   ValueType;
-    typedef typename MatrixType::memory_space MemorySpace;
 
     cusp::dia_matrix<IndexType,ValueType,MemorySpace> dia;
     generate_matrix_from_stencil(dia, stencil, grid);

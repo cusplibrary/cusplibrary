@@ -47,10 +47,11 @@ namespace gallery
  * \tparam GridDimension dimensions of the grid
  */
 template <typename MatrixType,
-         typename StencilPoint,
-         typename GridDimension>
+          typename StencilPoint,
+          typename MemorySpace,
+          typename GridDimension>
 void generate_matrix_from_stencil(MatrixType& matrix,
-                                  const cusp::array1d<StencilPoint,cusp::host_memory>& stencil,
+                                  const cusp::array1d<StencilPoint,MemorySpace>& stencil,
                                   const GridDimension& grid);
 /*! \}
  */

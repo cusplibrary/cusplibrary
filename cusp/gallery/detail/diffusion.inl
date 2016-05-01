@@ -37,8 +37,9 @@ void diffusion(MatrixType& matrix,
                const double eps,
                const double theta)
 {
-    typedef typename MatrixType::index_type IndexType;
-    typedef typename MatrixType::value_type ValueType;
+    typedef typename MatrixType::index_type       IndexType;
+    typedef typename MatrixType::value_type       ValueType;
+    typedef typename MatrixType::memory_space     MemorySpace;
     typedef thrust::tuple<IndexType,IndexType>    StencilIndex;
     typedef thrust::tuple<StencilIndex,ValueType> StencilPoint;
 
@@ -81,7 +82,7 @@ void diffusion(MatrixType& matrix,
         throw cusp::invalid_input_exception("unrecognized discretization method");
     }
 
-    cusp::array1d<StencilPoint, cusp::host_memory> stencil;
+    cusp::array1d<StencilPoint, MemorySpace> stencil;
 
     stencil.push_back(StencilPoint(StencilIndex( -1, -1), a));
     stencil.push_back(StencilPoint(StencilIndex(  0, -1), b));
