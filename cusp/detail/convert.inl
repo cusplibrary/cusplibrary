@@ -26,17 +26,22 @@
 namespace cusp
 {
 
-template <typename DerivedPolicy, typename SourceType, typename DestinationType>
+template <typename DerivedPolicy,
+          typename SourceType,
+          typename DestinationType>
 void convert(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-             const SourceType& src, DestinationType& dst)
+             const SourceType& src,
+                   DestinationType& dst)
 {
     using cusp::system::detail::generic::convert;
 
     convert(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), src, dst);
 }
 
-template <typename SourceType, typename DestinationType>
-void convert(const SourceType& src, DestinationType& dst)
+template <typename SourceType,
+          typename DestinationType>
+void convert(const SourceType& src,
+                   DestinationType& dst)
 {
     using thrust::system::detail::generic::select_system;
 

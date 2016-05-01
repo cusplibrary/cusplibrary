@@ -18,4 +18,38 @@
 
 #include <cusp/detail/config.h>
 
-// this system has no special version of this algorithm
+#include <cusp/system/cuda/detail/execution_policy.h>
+
+#include <cusp/copy.h>
+
+namespace cusp
+{
+namespace system
+{
+namespace cuda
+{
+namespace detail
+{
+
+template <typename System1,
+          typename System2,
+          typename SourceType,
+          typename DestinationType>
+void convert(thrust::system::cuda::detail::cross_system<System1,System2>& exec,
+             const SourceType& src,
+                   DestinationType& dst)
+{
+    typedef typename DestinationType::container                Container;
+    typedef typename Container::template rebind<System1>::type DestinationType2;
+
+    DestinationType2 tmp;
+
+    cusp::convert(src, tmp);
+    cusp::copy(tmp, dst);
+}
+
+} // end namespace detail
+} // end namespace cuda
+} // end namespace system
+} // end namespace cusp
+

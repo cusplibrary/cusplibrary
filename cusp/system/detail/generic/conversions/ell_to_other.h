@@ -52,7 +52,7 @@ namespace generic
 {
 
 template <typename DerivedPolicy, typename SourceType, typename DestinationType>
-typename cusp::detail::enable_if_same_system<SourceType,DestinationType>::type
+void
 convert(thrust::execution_policy<DerivedPolicy>& exec,
              const SourceType& src,
              DestinationType& dst,
@@ -94,7 +94,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
 }
 
 template <typename DerivedPolicy, typename SourceType, typename DestinationType>
-typename cusp::detail::enable_if_same_system<SourceType,DestinationType>::type
+void
 convert(thrust::execution_policy<DerivedPolicy>& exec,
         const SourceType& src,
         DestinationType& dst,
@@ -143,7 +143,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
 }
 
 template <typename DerivedPolicy, typename SourceType, typename DestinationType>
-typename cusp::detail::enable_if_same_system<SourceType,DestinationType>::type
+void
 convert(thrust::execution_policy<DerivedPolicy>& exec,
         const SourceType& src,
         DestinationType& dst,
