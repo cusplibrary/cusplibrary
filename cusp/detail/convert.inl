@@ -35,7 +35,7 @@ void convert(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 {
     using cusp::system::detail::generic::convert;
 
-    convert(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), src, dst);
+    return convert(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), src, dst);
 }
 
 template <typename SourceType,
@@ -51,7 +51,7 @@ void convert(const SourceType& src,
     System1 system1;
     System2 system2;
 
-    cusp::convert(select_system(system1,system2), src, dst);
+    return cusp::convert(select_system(system1,system2), src, dst);
 }
 
 } // end namespace cusp

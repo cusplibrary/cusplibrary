@@ -24,17 +24,6 @@
 
 namespace cusp
 {
-
-template <typename DerivedPolicy,
-          typename SourceType,
-          typename DestinationType,
-          typename Format1,
-          typename Format2>
-void copy(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
-             const SourceType& src,
-             DestinationType& dst,
-             Format1, Format2);
-
 namespace system
 {
 namespace detail
@@ -101,3 +90,4 @@ void copy(thrust::execution_policy<DerivedPolicy>& exec,
 } // end namespace cusp
 
 #include <cusp/system/detail/generic/copy.inl>
+

@@ -29,15 +29,9 @@ void extract_diagonal(const thrust::detail::execution_policy_base<DerivedPolicy>
 {
     using cusp::system::detail::generic::extract_diagonal;
 
-    typedef typename Matrix::format Format;
-
-    Format format;
-
-    output.resize(thrust::min(A.num_rows, A.num_cols));
-
     // dispatch on matrix format
-    extract_diagonal(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
-                     A, output, format);
+    return extract_diagonal(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
+                            A, output);
 }
 
 template <typename Matrix, typename Array>
@@ -51,7 +45,7 @@ void extract_diagonal(const Matrix& A, Array& output)
     System1 system1;
     System2 system2;
 
-    cusp::extract_diagonal(select_system(system1,system2), A, output);
+    return cusp::extract_diagonal(select_system(system1,system2), A, output);
 }
 
 template <typename DerivedPolicy, typename OffsetArray, typename IndexArray>
@@ -60,8 +54,8 @@ void offsets_to_indices(const thrust::detail::execution_policy_base<DerivedPolic
 {
     using cusp::system::detail::generic::offsets_to_indices;
 
-    offsets_to_indices(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
-                       offsets, indices);
+    return offsets_to_indices(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
+                              offsets, indices);
 }
 
 template <typename OffsetArray, typename IndexArray>
@@ -75,7 +69,7 @@ void offsets_to_indices(const OffsetArray& offsets, IndexArray& indices)
     System1 system1;
     System2 system2;
 
-    cusp::offsets_to_indices(select_system(system1,system2), offsets, indices);
+    return cusp::offsets_to_indices(select_system(system1,system2), offsets, indices);
 }
 
 template <typename DerivedPolicy, typename IndexArray, typename OffsetArray>
@@ -84,8 +78,8 @@ void indices_to_offsets(const thrust::detail::execution_policy_base<DerivedPolic
 {
     using cusp::system::detail::generic::indices_to_offsets;
 
-    indices_to_offsets(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
-                       indices, offsets);
+    return indices_to_offsets(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
+                              indices, offsets);
 }
 
 template <typename IndexArray, typename OffsetArray>
@@ -99,7 +93,7 @@ void indices_to_offsets(const IndexArray& indices, OffsetArray& offsets)
     System1 system1;
     System2 system2;
 
-    cusp::indices_to_offsets(select_system(system1,system2), indices, offsets);
+    return cusp::indices_to_offsets(select_system(system1,system2), indices, offsets);
 }
 
 template <typename DerivedPolicy, typename ArrayType1, typename ArrayType2>

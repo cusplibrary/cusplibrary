@@ -25,9 +25,9 @@ namespace cusp
 {
 
 template <typename DerivedPolicy,
-         typename LinearOperator,
-         typename MatrixOrVector1,
-         typename MatrixOrVector2>
+          typename LinearOperator,
+          typename MatrixOrVector1,
+          typename MatrixOrVector2>
 void multiply(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
               const LinearOperator&  A,
               const MatrixOrVector1& B,
@@ -35,16 +35,16 @@ void multiply(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 {
     using cusp::system::detail::generic::multiply;
 
-    multiply(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
-             A, B, C);
+    return multiply(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
+                    A, B, C);
 }
 
 template <typename LinearOperator,
-         typename MatrixOrVector1,
-         typename MatrixOrVector2>
+          typename MatrixOrVector1,
+          typename MatrixOrVector2>
 void multiply(const LinearOperator&  A,
               const MatrixOrVector1& B,
-              MatrixOrVector2& C)
+                    MatrixOrVector2& C)
 {
     using thrust::system::detail::generic::select_system;
 
@@ -56,16 +56,16 @@ void multiply(const LinearOperator&  A,
     System2 system2;
     System3 system3;
 
-    cusp::multiply(select_system(system1,system2,system3), A, B, C);
+    return cusp::multiply(select_system(system1,system2,system3), A, B, C);
 }
 
 template <typename DerivedPolicy,
-         typename LinearOperator,
-         typename MatrixOrVector1,
-         typename MatrixOrVector2,
-         typename UnaryFunction,
-         typename BinaryFunction1,
-         typename BinaryFunction2>
+          typename LinearOperator,
+          typename MatrixOrVector1,
+          typename MatrixOrVector2,
+          typename UnaryFunction,
+          typename BinaryFunction1,
+          typename BinaryFunction2>
 typename thrust::detail::disable_if_convertible<UnaryFunction,cusp::known_format>::type
 multiply(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
          const LinearOperator&  A,
@@ -77,16 +77,16 @@ multiply(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 {
     using cusp::system::detail::generic::multiply;
 
-    multiply(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
-             A, B, C, initialize, combine, reduce);
+    return multiply(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
+                    A, B, C, initialize, combine, reduce);
 }
 
 template <typename LinearOperator,
-         typename MatrixOrVector1,
-         typename MatrixOrVector2,
-         typename UnaryFunction,
-         typename BinaryFunction1,
-         typename BinaryFunction2>
+          typename MatrixOrVector1,
+          typename MatrixOrVector2,
+          typename UnaryFunction,
+          typename BinaryFunction1,
+          typename BinaryFunction2>
 void multiply(const LinearOperator&  A,
               const MatrixOrVector1& B,
               MatrixOrVector2& C,
@@ -104,8 +104,8 @@ void multiply(const LinearOperator&  A,
     System2 system2;
     System3 system3;
 
-    cusp::multiply(select_system(system1,system2,system3), A, B, C,
-                   initialize, combine, reduce);
+    return cusp::multiply(select_system(system1,system2,system3), A, B, C,
+                          initialize, combine, reduce);
 }
 
 template <typename DerivedPolicy,
@@ -125,8 +125,8 @@ void generalized_spgemm(const thrust::detail::execution_policy_base<DerivedPolic
 {
     using cusp::system::detail::generic::generalized_spgemm;
 
-    generalized_spgemm(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
-                       A, B, C, initialize, combine, reduce);
+    return generalized_spgemm(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
+                              A, B, C, initialize, combine, reduce);
 }
 
 template <typename LinearOperator,
@@ -152,17 +152,17 @@ void generalized_spgemm(const LinearOperator&  A,
     System2 system2;
     System3 system3;
 
-    cusp::generalized_spgemm(select_system(system1,system2,system3), A, B, C,
-                             initialize, combine, reduce);
+    return cusp::generalized_spgemm(select_system(system1,system2,system3), A, B, C,
+                                    initialize, combine, reduce);
 }
 
 template <typename DerivedPolicy,
-         typename LinearOperator,
-         typename Vector1,
-         typename Vector2,
-         typename Vector3,
-         typename BinaryFunction1,
-         typename BinaryFunction2>
+          typename LinearOperator,
+          typename Vector1,
+          typename Vector2,
+          typename Vector3,
+          typename BinaryFunction1,
+          typename BinaryFunction2>
 void generalized_spmv(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
                       const LinearOperator&  A,
                       const Vector1& x,
@@ -173,16 +173,16 @@ void generalized_spmv(const thrust::detail::execution_policy_base<DerivedPolicy>
 {
     using cusp::system::detail::generic::generalized_spmv;
 
-    generalized_spmv(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
-                     A, x, y, z, combine, reduce);
+    return generalized_spmv(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
+                            A, x, y, z, combine, reduce);
 }
 
 template <typename LinearOperator,
-         typename Vector1,
-         typename Vector2,
-         typename Vector3,
-         typename BinaryFunction1,
-         typename BinaryFunction2>
+          typename Vector1,
+          typename Vector2,
+          typename Vector3,
+          typename BinaryFunction1,
+          typename BinaryFunction2>
 void generalized_spmv(const LinearOperator&  A,
                       const Vector1& x,
                       const Vector2& y,
@@ -202,7 +202,7 @@ void generalized_spmv(const LinearOperator&  A,
     System3 system3;
     System4 system4;
 
-    cusp::generalized_spmv(select_system(system1,system2,system3,system4), A, x, y, z, combine, reduce);
+    return cusp::generalized_spmv(select_system(system1,system2,system3,system4), A, x, y, z, combine, reduce);
 }
 
 } // end namespace cusp

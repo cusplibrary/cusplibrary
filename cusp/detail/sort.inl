@@ -27,17 +27,22 @@
 namespace cusp
 {
 
-template <typename DerivedPolicy, typename ArrayType>
+template <typename DerivedPolicy,
+          typename ArrayType>
 void counting_sort(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-                   ArrayType& v, typename ArrayType::value_type min, typename ArrayType::value_type max)
+                   ArrayType& v,
+                   typename ArrayType::value_type min,
+                   typename ArrayType::value_type max)
 {
     using cusp::system::detail::generic::counting_sort;
 
-    counting_sort(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), v, min, max);
+    return counting_sort(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), v, min, max);
 }
 
 template <typename ArrayType>
-void counting_sort(ArrayType& v, typename ArrayType::value_type min, typename ArrayType::value_type max)
+void counting_sort(ArrayType& v,
+                   typename ArrayType::value_type min,
+                   typename ArrayType::value_type max)
 {
     using thrust::system::detail::generic::select_system;
 
@@ -45,17 +50,19 @@ void counting_sort(ArrayType& v, typename ArrayType::value_type min, typename Ar
 
     System system;
 
-    cusp::counting_sort(select_system(system), v, min, max);
+    return cusp::counting_sort(select_system(system), v, min, max);
 }
 
 template <typename DerivedPolicy, typename ArrayType1, typename ArrayType2>
 void counting_sort_by_key(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-                          ArrayType1& keys, ArrayType2& vals,
-                          typename ArrayType1::value_type min, typename ArrayType1::value_type max)
+                          ArrayType1& keys,
+                          ArrayType2& vals,
+                          typename ArrayType1::value_type min,
+                          typename ArrayType1::value_type max)
 {
     using cusp::system::detail::generic::counting_sort_by_key;
 
-    counting_sort_by_key(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), keys, vals, min, max);
+    return counting_sort_by_key(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), keys, vals, min, max);
 }
 
 template <typename ArrayType1, typename ArrayType2>
@@ -71,24 +78,36 @@ void counting_sort_by_key(ArrayType1& keys, ArrayType2& vals,
     System1 system1;
     System2 system2;
 
-    cusp::counting_sort_by_key(select_system(system1,system2), keys, vals, min, max);
+    return cusp::counting_sort_by_key(select_system(system1,system2), keys, vals, min, max);
 }
 
-template <typename DerivedPolicy, typename ArrayType1, typename ArrayType2, typename ArrayType3>
+template <typename DerivedPolicy,
+          typename ArrayType1,
+          typename ArrayType2,
+          typename ArrayType3>
 void sort_by_row(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-                 ArrayType1& row_indices, ArrayType2& column_indices, ArrayType3& values,
+                 ArrayType1& row_indices,
+                 ArrayType2& column_indices,
+                 ArrayType3& values,
                  typename ArrayType1::value_type min_row,
                  typename ArrayType1::value_type max_row)
 {
     using cusp::system::detail::generic::sort_by_row;
 
-    sort_by_row(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
-                row_indices, column_indices, values,
-                min_row, max_row);
+    return sort_by_row(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
+                       row_indices,
+                       column_indices,
+                       values,
+                       min_row,
+                       max_row);
 }
 
-template <typename ArrayType1, typename ArrayType2, typename ArrayType3>
-void sort_by_row(ArrayType1& row_indices, ArrayType2& column_indices, ArrayType3& values,
+template <typename ArrayType1,
+          typename ArrayType2,
+          typename ArrayType3>
+void sort_by_row(ArrayType1& row_indices,
+                 ArrayType2& column_indices,
+                 ArrayType3& values,
                  typename ArrayType1::value_type min_row,
                  typename ArrayType1::value_type max_row)
 {
@@ -102,14 +121,22 @@ void sort_by_row(ArrayType1& row_indices, ArrayType2& column_indices, ArrayType3
     System2 system2;
     System3 system3;
 
-    cusp::sort_by_row(select_system(system1,system2,system3),
-                      row_indices, column_indices, values,
-                      min_row, max_row);
+    return cusp::sort_by_row(select_system(system1,system2,system3),
+                             row_indices,
+                             column_indices,
+                             values,
+                             min_row,
+                             max_row);
 }
 
-template <typename DerivedPolicy, typename ArrayType1, typename ArrayType2, typename ArrayType3>
+template <typename DerivedPolicy,
+          typename ArrayType1,
+          typename ArrayType2,
+          typename ArrayType3>
 void sort_by_row_and_column(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-                            ArrayType1& row_indices, ArrayType2& column_indices, ArrayType3& values,
+                            ArrayType1& row_indices,
+                            ArrayType2& column_indices,
+                            ArrayType3& values,
                             typename ArrayType1::value_type min_row,
                             typename ArrayType1::value_type max_row,
                             typename ArrayType2::value_type min_col,
@@ -117,13 +144,22 @@ void sort_by_row_and_column(const thrust::detail::execution_policy_base<DerivedP
 {
     using cusp::system::detail::generic::sort_by_row_and_column;
 
-    sort_by_row_and_column(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
-                           row_indices, column_indices, values,
-                           min_row, max_row, min_col, max_col);
+    return sort_by_row_and_column(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
+                                  row_indices,
+                                  column_indices,
+                                  values,
+                                  min_row,
+                                  max_row,
+                                  min_col,
+                                  max_col);
 }
 
-template <typename ArrayType1, typename ArrayType2, typename ArrayType3>
-void sort_by_row_and_column(ArrayType1& row_indices, ArrayType2& column_indices, ArrayType3& values,
+template <typename ArrayType1,
+          typename ArrayType2,
+          typename ArrayType3>
+void sort_by_row_and_column(ArrayType1& row_indices,
+                            ArrayType2& column_indices,
+                            ArrayType3& values,
                             typename ArrayType1::value_type min_row,
                             typename ArrayType1::value_type max_row,
                             typename ArrayType2::value_type min_col,
@@ -139,9 +175,10 @@ void sort_by_row_and_column(ArrayType1& row_indices, ArrayType2& column_indices,
     System2 system2;
     System3 system3;
 
-    cusp::sort_by_row_and_column(select_system(system1,system2,system3),
-                                 row_indices, column_indices, values,
-                                 min_row, max_row, min_col, max_col);
+    return cusp::sort_by_row_and_column(select_system(system1,system2,system3),
+                                        row_indices, column_indices, values,
+                                        min_row, max_row, min_col, max_col);
 }
 
 } // end namespace cusp
+

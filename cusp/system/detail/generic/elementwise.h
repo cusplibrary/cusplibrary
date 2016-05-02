@@ -23,16 +23,6 @@
 
 namespace cusp
 {
-
-template <typename DerivedPolicy,
-          typename MatrixType1, typename MatrixType2, typename MatrixType3,
-          typename BinaryFunction,
-          typename Format1, typename Format2, typename Format3>
-void elementwise(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
-                 const MatrixType1& A, const MatrixType2& B, MatrixType3& C,
-                 BinaryFunction op,
-                 Format1, Format2, Format3);
-
 namespace system
 {
 namespace detail
