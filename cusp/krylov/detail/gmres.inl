@@ -29,7 +29,10 @@ namespace krylov {
 namespace gmres_detail {
 
 template <typename ValueType>
-void ApplyPlaneRotation(ValueType &dx, ValueType &dy, ValueType &cs, ValueType &sn)
+void ApplyPlaneRotation(ValueType &dx,
+                        ValueType &dy,
+                        ValueType &cs,
+                        ValueType &sn)
 {
     ValueType temp = cs * dx + sn * dy;
     dy = -cusp::conj(sn) * dx + cs * dy;
@@ -37,7 +40,10 @@ void ApplyPlaneRotation(ValueType &dx, ValueType &dy, ValueType &cs, ValueType &
 }
 
 template <typename ValueType>
-void GeneratePlaneRotation(ValueType& dx, ValueType& dy, ValueType& cs, ValueType& sn)
+void GeneratePlaneRotation(ValueType& dx,
+                           ValueType& dy,
+                           ValueType& cs,
+                           ValueType& sn)
 {
     typedef typename cusp::norm_type<ValueType>::type NormType;
 
@@ -54,9 +60,13 @@ void GeneratePlaneRotation(ValueType& dx, ValueType& dy, ValueType& cs, ValueTyp
     }
 }
 
-template <class LinearOperator, typename ValueType>
-void PlaneRotation(LinearOperator &H, ValueType &cs, ValueType &sn,
-                   ValueType &s, int i)
+template <typename LinearOperator,
+          typename ValueType>
+void PlaneRotation(LinearOperator &H,
+                   ValueType &cs,
+                   ValueType &sn,
+                   ValueType &s,
+                   const int i)
 {
     for (int k = 0; k < i; k++) {
         ApplyPlaneRotation(H(k, i), H(k + 1, i), cs[k], sn[k]);
@@ -67,10 +77,16 @@ void PlaneRotation(LinearOperator &H, ValueType &cs, ValueType &sn,
     ApplyPlaneRotation(s[i], s[i + 1], cs[i], sn[i]);
 }
 
-template <typename DerivedPolicy, class LinearOperator, class Vector,
-         class Monitor, class Preconditioner>
+template <typename DerivedPolicy,
+          typename LinearOperator,
+          typename Vector,
+          typename Monitor,
+          typename Preconditioner>
 void gmres(thrust::execution_policy<DerivedPolicy> &exec, LinearOperator &A,
-           Vector &x, Vector &b, const size_t restart, Monitor &monitor,
+           Vector &x,
+           Vector &b,
+           const size_t restart,
+           Monitor &monitor,
            Preconditioner &M)
 {
     typedef typename LinearOperator::value_type ValueType;
@@ -175,23 +191,35 @@ void gmres(thrust::execution_policy<DerivedPolicy> &exec, LinearOperator &A,
     } while (!monitor.finished(resid));
 }
 
-template <typename DerivedPolicy, class LinearOperator, class Vector,
-         class Monitor>
+template <typename DerivedPolicy,
+          typename LinearOperator,
+          typename Vector,
+          typename Monitor>
 void gmres(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-           LinearOperator &A, Vector &x, Vector &b, const size_t restart,
-           Monitor &monitor) {
+           LinearOperator &A,
+           Vector &x,
+           Vector &b,
+           const size_t restart,
+           Monitor &monitor)
+{
     typedef typename LinearOperator::value_type ValueType;
     typedef typename LinearOperator::memory_space MemorySpace;
 
     cusp::identity_operator<ValueType, MemorySpace> M(A.num_rows, A.num_cols);
 
-    cusp::krylov::gmres_detail::gmres(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, x, b, restart, monitor, M);
+    cusp::krylov::gmres_detail::gmres(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
+                                      A, x, b, restart, monitor, M);
 }
 
-template <typename DerivedPolicy, class LinearOperator, class Vector>
+template <typename DerivedPolicy,
+          typename LinearOperator,
+          typename Vector>
 void gmres(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-           LinearOperator &A, Vector &x, Vector &b, const size_t restart) {
-
+           LinearOperator &A,
+           Vector &x,
+           Vector &b,
+           const size_t restart)
+{
     typedef typename LinearOperator::value_type ValueType;
 
     cusp::monitor<ValueType> monitor(b);
@@ -201,18 +229,28 @@ void gmres(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 
 }  // end gmres_detail namespace
 
-template <typename DerivedPolicy, class LinearOperator, class Vector>
+template <typename DerivedPolicy,
+          typename LinearOperator,
+          typename Vector>
 void gmres(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-           LinearOperator &A, Vector &x, Vector &b, const size_t restart) {
-
+           LinearOperator &A,
+           Vector &x,
+           Vector &b,
+           const size_t restart)
+{
     using cusp::krylov::gmres_detail::gmres;
 
     gmres(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
           A, x, b, restart);
 }
 
-template <class LinearOperator, class Vector>
-void gmres(LinearOperator &A, Vector &x, Vector &b, const size_t restart) {
+template <typename LinearOperator,
+          typename Vector>
+void gmres(LinearOperator &A,
+           Vector &x,
+           Vector &b,
+           const size_t restart)
+{
     using thrust::system::detail::generic::select_system;
 
     typedef typename LinearOperator::memory_space System1;
@@ -224,20 +262,32 @@ void gmres(LinearOperator &A, Vector &x, Vector &b, const size_t restart) {
     cusp::krylov::gmres(select_system(system1, system2), A, x, b, restart);
 }
 
-template <typename DerivedPolicy, class LinearOperator, class Vector,
-         class Monitor>
+template <typename DerivedPolicy,
+          typename LinearOperator,
+          typename Vector,
+          typename Monitor>
 void gmres(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-           LinearOperator &A, Vector &x, Vector &b, const size_t restart,
-           Monitor &monitor) {
+           LinearOperator &A,
+           Vector &x,
+           Vector &b,
+           const size_t restart,
+           Monitor &monitor)
+{
     using cusp::krylov::gmres_detail::gmres;
 
     gmres(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
           A, x, b, restart, monitor);
 }
 
-template <class LinearOperator, class Vector, class Monitor>
-void gmres(LinearOperator &A, Vector &x, Vector &b, const size_t restart,
-           Monitor &monitor) {
+template <typename LinearOperator,
+          typename Vector,
+          typename Monitor>
+void gmres(LinearOperator &A,
+           Vector &x,
+           Vector &b,
+           const size_t restart,
+           Monitor &monitor)
+{
     using thrust::system::detail::generic::select_system;
 
     typedef typename LinearOperator::memory_space System1;
@@ -250,22 +300,36 @@ void gmres(LinearOperator &A, Vector &x, Vector &b, const size_t restart,
                         A, x, b, restart, monitor);
 }
 
-template <typename DerivedPolicy, class LinearOperator, class Vector,
-         class Monitor, class Preconditioner>
+template <typename DerivedPolicy,
+          typename LinearOperator,
+          typename Vector,
+          typename Monitor,
+          typename Preconditioner>
 void gmres(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-           LinearOperator &A, Vector &x, Vector &b, const size_t restart,
-           Monitor &monitor, Preconditioner &M) {
-
+           LinearOperator &A,
+           Vector &x,
+           Vector &b,
+           const size_t restart,
+           Monitor &monitor,
+           Preconditioner &M)
+{
     using cusp::krylov::gmres_detail::gmres;
 
     gmres(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
           A, x, b, restart, monitor, M);
 }
 
-template <class LinearOperator, class Vector, class Monitor,
-         class Preconditioner>
-void gmres(LinearOperator &A, Vector &x, Vector &b, const size_t restart,
-           Monitor &monitor, Preconditioner &M) {
+template <typename LinearOperator,
+          typename Vector,
+          typename Monitor,
+          typename Preconditioner>
+void gmres(LinearOperator &A,
+           Vector &x,
+           Vector &b,
+           const size_t restart,
+           Monitor &monitor,
+           Preconditioner &M)
+{
     using thrust::system::detail::generic::select_system;
 
     typedef typename LinearOperator::memory_space System1;
@@ -280,3 +344,4 @@ void gmres(LinearOperator &A, Vector &x, Vector &b, const size_t restart,
 
 }  // end namespace krylov
 }  // end namespace cusp
+

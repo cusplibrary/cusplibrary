@@ -29,9 +29,13 @@ namespace cusp
 namespace gallery
 {
 
-template <typename Method, typename MatrixType>
-void diffusion(	MatrixType& matrix, size_t m, size_t n,
-                const double eps, const double theta)
+template <typename Method,
+          typename MatrixType>
+void diffusion(MatrixType& matrix,
+               const size_t m,
+               const size_t n,
+               const double eps,
+               const double theta)
 {
     typedef typename MatrixType::index_type IndexType;
     typedef typename MatrixType::value_type ValueType;

@@ -384,11 +384,11 @@ void xpay(const Array1& x,
 
 // CG-M routine that takes a user specified monitor
 template <typename DerivedPolicy,
-          class LinearOperator,
-          class VectorType1,
-          class VectorType2,
-          class VectorType3,
-          class Monitor>
+          typename LinearOperator,
+          typename VectorType1,
+          typename VectorType2,
+          typename VectorType3,
+          typename Monitor>
 void cg_m(thrust::execution_policy<DerivedPolicy> &exec,
           LinearOperator& A,
           VectorType1& x,
@@ -503,10 +503,10 @@ void cg_m(thrust::execution_policy<DerivedPolicy> &exec,
 } // end cg_m
 
 template <typename DerivedPolicy,
-          class LinearOperator,
-          class VectorType1,
-          class VectorType2,
-          class VectorType3>
+          typename LinearOperator,
+          typename VectorType1,
+          typename VectorType2,
+          typename VectorType3>
 void cg_m(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
           LinearOperator& A,
           VectorType1& x,
@@ -524,10 +524,10 @@ void cg_m(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 
 // CG-M routine that uses the default monitor to determine completion
 template <typename DerivedPolicy,
-          class LinearOperator,
-          class VectorType1,
-          class VectorType2,
-          class VectorType3>
+          typename LinearOperator,
+          typename VectorType1,
+          typename VectorType2,
+          typename VectorType3>
 void cg_m(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
           LinearOperator& A,
           VectorType1& x,
@@ -540,10 +540,10 @@ void cg_m(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
          A, x, b, sigma);
 }
 
-template <class LinearOperator,
-          class VectorType1,
-          class VectorType2,
-          class VectorType3>
+template <typename LinearOperator,
+          typename VectorType1,
+          typename VectorType2,
+          typename VectorType3>
 typename thrust::detail::enable_if_convertible<typename LinearOperator::format,cusp::known_format>::type
 cg_m(LinearOperator& A,
      VectorType1& x,
@@ -567,11 +567,11 @@ cg_m(LinearOperator& A,
 
 // CG-M routine that uses the default monitor to determine completion
 template <typename DerivedPolicy,
-          class LinearOperator,
-          class VectorType1,
-          class VectorType2,
-          class VectorType3,
-          class Monitor>
+          typename LinearOperator,
+          typename VectorType1,
+          typename VectorType2,
+          typename VectorType3,
+          typename Monitor>
 void cg_m(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
           LinearOperator& A,
           VectorType1& x,
@@ -585,11 +585,11 @@ void cg_m(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
          A, x, b, sigma, monitor);
 }
 
-template <class LinearOperator,
-          class VectorType1,
-          class VectorType2,
-          class VectorType3,
-          class Monitor>
+template <typename LinearOperator,
+          typename VectorType1,
+          typename VectorType2,
+          typename VectorType3,
+          typename Monitor>
 typename thrust::detail::enable_if_convertible<typename LinearOperator::format,cusp::known_format>::type
 cg_m(LinearOperator& A,
      VectorType1& x,

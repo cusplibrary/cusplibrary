@@ -9,9 +9,6 @@ except:
   exec open("../../build/build-env.py")
   env = Environment()
 
-# always link against the C++ library
-env.Append(LINKFLAGS = "-lstdc++")
-
 # find all .cus & .cpps in the current directory
 sources = []
 directories = ['.']

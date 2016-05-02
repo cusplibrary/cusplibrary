@@ -49,8 +49,7 @@ void multiply(thrust::cpp::execution_policy<DerivedPolicy>& exec,
               cusp::array2d_format,
               cusp::array2d_format)
 {
-    typedef typename MatrixType::index_type	   IndexType;
-	  typedef typename VectorType2::memory_space MemorySpace;
+    typedef typename MatrixType::index_type	                    IndexType;
     typedef typename VectorType2::values_array_type::value_type ValueType;
 
     for(size_t i = 0; i < A.num_rows; i++)

@@ -62,7 +62,9 @@ namespace gallery
  *
  */
 template <typename MatrixType>
-void grid2d(MatrixType& matrix, size_t m, size_t n);
+void grid2d(MatrixType& matrix,
+            const size_t m,
+            const size_t n);
 
 /*! \p grid3d: Create a matrix representing a 3d \p m by \p n by \p l grid.
  *
@@ -93,7 +95,10 @@ void grid2d(MatrixType& matrix, size_t m, size_t n);
  *
  */
 template <typename MatrixType>
-void grid3d(MatrixType& matrix, size_t m, size_t n, size_t l);
+void grid3d(MatrixType& matrix,
+            const size_t m,
+            const size_t n,
+            const size_t l);
 
 /*! \}
  */

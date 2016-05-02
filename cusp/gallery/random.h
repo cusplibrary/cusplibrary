@@ -63,7 +63,10 @@ namespace gallery
  * \endcode
  */
 template <typename MatrixType>
-void random(MatrixType& matrix, size_t m, size_t n, size_t num_samples);
+void random(MatrixType& matrix,
+            const size_t m,
+            const size_t n,
+            const size_t num_samples);
 /*! \}
  */
 

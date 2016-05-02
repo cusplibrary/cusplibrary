@@ -31,10 +31,10 @@ namespace cr_detail
 {
 
 template <typename DerivedPolicy,
-          class LinearOperator,
-          class Vector,
-          class Monitor,
-          class Preconditioner>
+          typename LinearOperator,
+          typename Vector,
+          typename Monitor,
+          typename Preconditioner>
 void cr(thrust::execution_policy<DerivedPolicy> &exec,
         LinearOperator& A,
         Vector& x,
@@ -126,9 +126,9 @@ void cr(thrust::execution_policy<DerivedPolicy> &exec,
 }
 
 template <typename DerivedPolicy,
-          class LinearOperator,
-          class Vector,
-          class Monitor>
+          typename LinearOperator,
+          typename Vector,
+          typename Monitor>
 void cr(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
         LinearOperator& A,
         Vector& x,
@@ -144,8 +144,8 @@ void cr(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 }
 
 template <typename DerivedPolicy,
-          class LinearOperator,
-          class Vector>
+          typename LinearOperator,
+          typename Vector>
 void cr(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
         LinearOperator& A,
         Vector& x,
@@ -161,8 +161,8 @@ void cr(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 } // end cr_detail namespace
 
 template <typename DerivedPolicy,
-          class LinearOperator,
-          class Vector>
+          typename LinearOperator,
+          typename Vector>
 void cr(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
         LinearOperator& A,
         Vector& x,
@@ -174,8 +174,8 @@ void cr(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
        A, x, b);
 }
 
-template <class LinearOperator,
-          class Vector>
+template <typename LinearOperator,
+          typename Vector>
 void cr(LinearOperator& A,
         Vector& x,
         Vector& b)
@@ -192,9 +192,9 @@ void cr(LinearOperator& A,
 }
 
 template <typename DerivedPolicy,
-          class LinearOperator,
-          class Vector,
-          class Monitor>
+          typename LinearOperator,
+          typename Vector,
+          typename Monitor>
 void cr(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
         LinearOperator& A,
         Vector& x,
@@ -207,9 +207,9 @@ void cr(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
        A, x, b, monitor);
 }
 
-template <class LinearOperator,
-          class Vector,
-          class Monitor>
+template <typename LinearOperator,
+          typename Vector,
+          typename Monitor>
 void cr(LinearOperator& A,
         Vector& x,
         Vector& b,
@@ -227,10 +227,10 @@ void cr(LinearOperator& A,
 }
 
 template <typename DerivedPolicy,
-          class LinearOperator,
-          class Vector,
-          class Monitor,
-          class Preconditioner>
+          typename LinearOperator,
+          typename Vector,
+          typename Monitor,
+          typename Preconditioner>
 void cr(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
         LinearOperator& A,
         Vector& x,
@@ -244,10 +244,10 @@ void cr(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
        A, x, b, monitor, M);
 }
 
-template <class LinearOperator,
-          class Vector,
-          class Monitor,
-          class Preconditioner>
+template <typename LinearOperator,
+          typename Vector,
+          typename Monitor,
+          typename Preconditioner>
 void cr(LinearOperator& A,
         Vector& x,
         Vector& b,

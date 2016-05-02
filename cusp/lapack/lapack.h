@@ -38,9 +38,12 @@ namespace lapack
 
 
 /*! \cond */
-template<typename DerivedPolicy, typename Array2d, typename Array1d>
+template<typename DerivedPolicy,
+         typename Array2d,
+         typename Array1d>
 void getrf(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-           Array2d& A, Array1d& piv );
+           Array2d& A,
+           Array1d& piv);
 /*! \endcond */
 
 /**
@@ -87,13 +90,17 @@ void getrf(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
  * }
  * \endcode
  */
-template<typename Array2d, typename Array1d>
-void getrf( Array2d& A, Array1d& piv );
+template<typename Array2d,
+         typename Array1d>
+void getrf(Array2d& A,
+           Array1d& piv);
 
 /*! \cond */
-template<typename DerivedPolicy, typename Array2d>
+template<typename DerivedPolicy,
+         typename Array2d>
 void potrf(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-           Array2d& A, char uplo = 'U' );
+           Array2d& A,
+           char uplo = 'U');
 /*! \endcond */
 
 /**
@@ -139,12 +146,17 @@ void potrf(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
  * \endcode
  */
 template<typename Array2d>
-void potrf( Array2d& A, char uplo = 'U' );
+void potrf(Array2d& A,
+           char uplo = 'U');
 
 /*! \cond */
-template<typename DerivedPolicy, typename Array2d, typename Array1d>
+template<typename DerivedPolicy,
+         typename Array2d,
+         typename Array1d>
 void sytrf(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-           Array2d& A, Array1d& piv, char uplo = 'U' );
+           Array2d& A,
+           Array1d& piv,
+           char uplo = 'U');
 /*! \endcond */
 
 /**
@@ -197,13 +209,21 @@ void sytrf(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
  * }
  * \endcode
  */
-template<typename Array2d, typename Array1d>
-void sytrf( Array2d& A, Array1d& piv, char uplo = 'U' );
+template<typename Array2d,
+         typename Array1d>
+void sytrf(Array2d& A,
+           Array1d& piv,
+           char uplo = 'U');
 
 /*! \cond */
-template<typename DerivedPolicy, typename Array2d, typename Array1d>
+template<typename DerivedPolicy,
+         typename Array2d,
+         typename Array1d>
 void getrs(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-           const Array2d& A, const Array1d& piv, Array2d& B, char trans = 'N' );
+           const Array2d& A,
+           const Array1d& piv,
+                 Array2d& B,
+                 char trans = 'N');
 /*! \endcond */
 
 /**
@@ -260,13 +280,20 @@ void getrs(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
  * }
  * \endcode
  */
-template<typename Array2d, typename Array1d>
-void getrs( const Array2d& A, const Array1d& piv, Array2d& B, char trans = 'N' );
+template<typename Array2d,
+         typename Array1d>
+void getrs(const Array2d& A,
+           const Array1d& piv,
+                 Array2d& B,
+                 char trans = 'N');
 
 /*! \cond */
-template<typename DerivedPolicy, typename Array2d>
+template<typename DerivedPolicy,
+         typename Array2d>
 void potrs(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-           const Array2d& A, Array2d& B, char uplo = 'N' );
+           const Array2d& A,
+                 Array2d& B,
+                 char uplo = 'N');
 /*! \endcond */
 
 /**
@@ -329,12 +356,19 @@ void potrs(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
  * \endcode
  */
 template<typename Array2d>
-void potrs( const Array2d& A, Array2d& B, char uplo = 'U');
+void potrs(const Array2d& A,
+                 Array2d& B,
+                 char uplo = 'U');
 
 /*! \cond */
-template<typename DerivedPolicy, typename Array2d, typename Array1d>
+template<typename DerivedPolicy,
+         typename Array2d,
+         typename Array1d>
 void sytrs(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-           const Array2d& A, const Array1d& piv, Array2d& B, char uplo = 'N' );
+           const Array2d& A,
+           const Array1d& piv,
+                 Array2d& B,
+                 char uplo = 'N');
 /*! \endcond */
 
 /**
@@ -399,13 +433,22 @@ void sytrs(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
  * }
  * \endcode
  */
-template<typename Array2d, typename Array1d>
-void sytrs( const Array2d& A, const Array1d& piv, Array2d& B, char uplo = 'U' );
+template<typename Array2d,
+         typename Array1d>
+void sytrs(const Array2d& A,
+           const Array1d& piv,
+                 Array2d& B,
+                 char uplo = 'U');
 
 /*! \cond */
-template<typename DerivedPolicy, typename Array2d>
-void trtrs( const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-            const Array2d& A, Array2d& B, char uplo = 'U', char trans = 'N', char diag = 'N' );
+template<typename DerivedPolicy,
+         typename Array2d>
+void trtrs(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+           const Array2d& A,
+                 Array2d& B,
+                 char uplo  = 'U',
+                 char trans = 'N',
+                 char diag  = 'N');
 /*! \endcond */
 
 /**
@@ -459,12 +502,19 @@ void trtrs( const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
  * \endcode
  */
 template<typename Array2d>
-void trtrs( const Array2d& A, Array2d& B, char uplo = 'U', char trans = 'N', char diag = 'N' );
+void trtrs(const Array2d& A,
+                 Array2d& B,
+                 char uplo  = 'U',
+                 char trans = 'N',
+                 char diag  = 'N');
 
 /*! \cond */
-template<typename DerivedPolicy, typename Array2d>
-void trtri( const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-            Array2d& A, char uplo = 'U', char diag = 'N' );
+template<typename DerivedPolicy,
+         typename Array2d>
+void trtri(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+           Array2d& A,
+           char uplo = 'U',
+           char diag = 'N');
 /*! \endcond */
 
 /**
@@ -501,12 +551,19 @@ void trtri( const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
  * \endcode
  */
 template<typename Array2d>
-void trtri( Array2d& A, char uplo = 'U', char diag = 'N' );
+void trtri(Array2d& A,
+           char uplo = 'U',
+           char diag = 'N');
 
 /*! \cond */
-template<typename DerivedPolicy, typename Array2d, typename Array1d>
-void syev( const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-           const Array2d& A, Array1d& eigvals, Array2d& eigvecs, char uplo = 'U' );
+template<typename DerivedPolicy,
+         typename Array2d,
+         typename Array1d>
+void syev(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+          const Array2d& A,
+                Array1d& eigvals,
+                Array2d& eigvecs,
+                char uplo = 'U');
 /*! \endcond */
 
 /**
@@ -553,14 +610,25 @@ void syev( const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
  * }
  * \endcode
  */
-template<typename Array2d, typename Array1d>
-void syev( const Array2d& A, Array1d& eigvals, Array2d& eigvecs, char uplo = 'U' );
+template<typename Array2d,
+         typename Array1d>
+void syev(const Array2d& A,
+                Array1d& eigvals,
+                Array2d& eigvecs,
+                char uplo = 'U');
 
 /*! \cond */
-template<typename DerivedPolicy, typename Array1d1, typename Array1d2, typename Array1d3, typename Array2d>
-void stev( const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-           const Array1d1& alphas, const Array1d2& betas,
-           Array1d3& eigvals, Array2d& eigvecs, char job = 'V' );
+template<typename DerivedPolicy,
+         typename Array1d1,
+         typename Array1d2,
+         typename Array1d3,
+         typename Array2d>
+void stev(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+          const Array1d1& alphas,
+          const Array1d2& betas,
+                Array1d3& eigvals,
+                Array2d& eigvecs,
+                char job = 'V');
 /*! \endcond */
 
 /**
@@ -609,14 +677,27 @@ void stev( const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
  * }
  * \endcode
  */
-template<typename Array1d1, typename Array1d2, typename Array1d3, typename Array2d>
-void stev( const Array1d1& alphas, const Array1d2& betas,
-           Array1d3& eigvals, Array2d& eigvecs, char job = 'V' );
+template<typename Array1d1,
+         typename Array1d2,
+         typename Array1d3,
+         typename Array2d>
+void stev(const Array1d1& alphas,
+          const Array1d2& betas,
+                Array1d3& eigvals,
+                Array2d& eigvecs,
+                char job = 'V');
 
 /*! \cond */
-template<typename DerivedPolicy, typename Array2d1, typename Array2d2, typename Array1d, typename Array2d3>
-void sygv( const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-           const Array2d1& A, const Array2d2& B, Array1d& eigvals, Array2d3& eigvecs );
+template<typename DerivedPolicy,
+         typename Array2d1,
+         typename Array2d2,
+         typename Array1d,
+         typename Array2d3>
+void sygv(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+          const Array2d1& A,
+          const Array2d2& B,
+                Array1d& eigvals,
+                Array2d3& eigvecs);
 /*! \endcond */
 
 /**
@@ -669,13 +750,23 @@ void sygv( const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
  * }
  * \endcode
  */
-template<typename Array2d1, typename Array2d2, typename Array1d, typename Array2d3>
-void sygv( const Array2d1& A, const Array2d2& B, Array1d& eigvals, Array2d3& eigvecs );
+template<typename Array2d1,
+         typename Array2d2,
+         typename Array1d,
+         typename Array2d3>
+void sygv(const Array2d1& A,
+          const Array2d2& B,
+                Array1d& eigvals,
+                Array2d3& eigvecs);
 
 /*! \cond */
-template<typename DerivedPolicy, typename Array2d, typename Array1d>
-void gesv( const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-           const Array2d& A, Array2d& B, Array1d& piv );
+template<typename DerivedPolicy,
+         typename Array2d,
+         typename Array1d>
+void gesv(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+          const Array2d& A,
+                Array2d& B,
+                Array1d& piv);
 /*! \endcond */
 
 /**
@@ -728,8 +819,11 @@ void gesv( const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
  * }
  * \endcode
  */
-template<typename Array2d, typename Array1d>
-void gesv( const Array2d& A, Array2d& B, Array1d& piv );
+template<typename Array2d,
+         typename Array1d>
+void gesv(const Array2d& A,
+                Array2d& B,
+                Array1d& piv);
 
 /*! \}
  */

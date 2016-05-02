@@ -34,10 +34,10 @@ namespace bicg_detail
 {
 
 template <typename DerivedPolicy,
-          class LinearOperator,
-          class Vector,
-          class Monitor,
-          class Preconditioner>
+          typename LinearOperator,
+          typename Vector,
+          typename Monitor,
+          typename Preconditioner>
 void bicg(thrust::execution_policy<DerivedPolicy> &exec,
           LinearOperator& A,
           LinearOperator& At,
@@ -147,9 +147,9 @@ void bicg(thrust::execution_policy<DerivedPolicy> &exec,
 }
 
 template <typename DerivedPolicy,
-          class LinearOperator,
-          class Vector,
-          class Monitor>
+          typename LinearOperator,
+          typename Vector,
+          typename Monitor>
 void bicg(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
           LinearOperator& A,
           LinearOperator& At,
@@ -166,8 +166,8 @@ void bicg(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 }
 
 template <typename DerivedPolicy,
-          class LinearOperator,
-          class Vector>
+          typename LinearOperator,
+          typename Vector>
 void bicg(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
           LinearOperator& A,
           LinearOperator& At,
@@ -184,8 +184,8 @@ void bicg(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 } // end bicg_detail namespace
 
 template <typename DerivedPolicy,
-          class LinearOperator,
-          class Vector>
+          typename LinearOperator,
+          typename Vector>
 void bicg(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
           LinearOperator& A,
           LinearOperator& At,
@@ -198,8 +198,8 @@ void bicg(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
          A, At, x, b);
 }
 
-template <class LinearOperator,
-          class Vector>
+template <typename LinearOperator,
+          typename Vector>
 void bicg(LinearOperator& A,
           LinearOperator& At,
           Vector& x,
@@ -217,9 +217,9 @@ void bicg(LinearOperator& A,
 }
 
 template <typename DerivedPolicy,
-          class LinearOperator,
-          class Vector,
-          class Monitor>
+          typename LinearOperator,
+          typename Vector,
+          typename Monitor>
 void bicg(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
           LinearOperator& A,
           LinearOperator& At,
@@ -233,9 +233,9 @@ void bicg(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
          A, At, x, b, monitor);
 }
 
-template <class LinearOperator,
-          class Vector,
-          class Monitor>
+template <typename LinearOperator,
+          typename Vector,
+          typename Monitor>
 void bicg(LinearOperator& A,
           LinearOperator& At,
           Vector& x,
@@ -254,10 +254,10 @@ void bicg(LinearOperator& A,
 }
 
 template <typename DerivedPolicy,
-          class LinearOperator,
-          class Vector,
-          class Monitor,
-          class Preconditioner>
+          typename LinearOperator,
+          typename Vector,
+          typename Monitor,
+          typename Preconditioner>
 void bicg(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
           LinearOperator& A,
           LinearOperator& At,
@@ -273,10 +273,10 @@ void bicg(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
          A, At, x, b, monitor, M, Mt);
 }
 
-template <class LinearOperator,
-          class Vector,
-          class Monitor,
-          class Preconditioner>
+template <typename LinearOperator,
+          typename Vector,
+          typename Monitor,
+          typename Preconditioner>
 void bicg(LinearOperator& A,
           LinearOperator& At,
           Vector& x,

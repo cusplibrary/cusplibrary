@@ -33,9 +33,12 @@ namespace cusp
  */
 
 /*! \cond */
-template <typename DerivedPolicy, typename SourceType, typename DestinationType>
+template <typename DerivedPolicy,
+          typename SourceType,
+          typename DestinationType>
 void copy(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-          const SourceType& src, DestinationType& dst);
+          const SourceType& src,
+                DestinationType& dst);
 /*! \endcond */
 
 /**
@@ -76,8 +79,10 @@ void copy(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
  *
  * \see \p convert
  */
-template <typename SourceType, typename DestinationType>
-void copy(const SourceType& src, DestinationType& dst);
+template <typename SourceType,
+          typename DestinationType>
+void copy(const SourceType& src,
+                DestinationType& dst);
 /*! \}
  */
 

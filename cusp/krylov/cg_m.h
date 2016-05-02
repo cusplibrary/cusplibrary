@@ -40,10 +40,10 @@ namespace krylov
 
 /* \cond */
 template <typename DerivedPolicy,
-          class LinearOperator,
-          class VectorType1,
-          class VectorType2,
-          class VectorType3>
+          typename LinearOperator,
+          typename VectorType1,
+          typename VectorType2,
+          typename VectorType3>
 void cg_m(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
           LinearOperator& A,
           VectorType1& x,
@@ -62,21 +62,21 @@ void cg_m(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
  * \param sigma array of shifts
  *
  */
-template <class LinearOperator,
-          class VectorType1,
-          class VectorType2,
-          class VectorType3>
+template <typename LinearOperator,
+          typename VectorType1,
+          typename VectorType2,
+          typename VectorType3>
 void cg_m(LinearOperator& A,
           VectorType1& x,
           VectorType2& b,
           VectorType3& sigma);
 
 template <typename DerivedPolicy,
-          class LinearOperator,
-          class VectorType1,
-          class VectorType2,
-          class VectorType3,
-          class Monitor>
+          typename LinearOperator,
+          typename VectorType1,
+          typename VectorType2,
+          typename VectorType3,
+          typename Monitor>
 void cg_m(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
           LinearOperator& A,
           VectorType1& x,
@@ -149,11 +149,11 @@ void cg_m(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
  *
  *  \see \p monitor
  */
-template <class LinearOperator,
-          class VectorType1,
-          class VectorType2,
-          class VectorType3,
-          class Monitor>
+template <typename LinearOperator,
+          typename VectorType1,
+          typename VectorType2,
+          typename VectorType3,
+          typename Monitor>
 typename thrust::detail::enable_if_convertible<typename LinearOperator::format,cusp::known_format>::type
 cg_m(LinearOperator& A,
      VectorType1& x,
