@@ -519,8 +519,7 @@ void cg_m(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 {
     using cusp::krylov::cg_detail::cg_m;
 
-    cg_m(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
-         A, x, b, sigma, monitor);
+    return cg_m(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, x, b, sigma, monitor);
 }
 
 template <typename LinearOperator,
@@ -546,7 +545,7 @@ void cg_m(const LinearOperator& A,
     System3 system3;
     System4 system4;
 
-    cusp::krylov::cg_m(select_system(system1,system2,system3,system4), A, x, b, sigma, monitor);
+    return cusp::krylov::cg_m(select_system(system1,system2,system3,system4), A, x, b, sigma, monitor);
 }
 
 // CG-M routine that uses the default monitor to determine completion
@@ -563,7 +562,7 @@ void cg_m(const LinearOperator& A,
 
     cusp::monitor<ValueType> monitor(b);
 
-    cusp::krylov::cg_m(A, x, b, sigma, monitor);
+    return cusp::krylov::cg_m(A, x, b, sigma, monitor);
 }
 
 } // end namespace krylov

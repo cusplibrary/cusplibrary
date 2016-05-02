@@ -230,8 +230,7 @@ void gmres(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 {
     using cusp::krylov::gmres_detail::gmres;
 
-    gmres(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
-          A, x, b, restart, monitor, M);
+    return gmres(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, x, b, restart, monitor, M);
 }
 
 template <typename LinearOperator,
@@ -254,8 +253,7 @@ void gmres(const LinearOperator &A,
     System1 system1;
     System2 system2;
 
-    cusp::krylov::gmres(select_system(system1, system2),
-                        A, x, b, restart, monitor, M);
+    return cusp::krylov::gmres(select_system(system1, system2), A, x, b, restart, monitor, M);
 }
 
 template <typename LinearOperator,
@@ -273,7 +271,7 @@ void gmres(const LinearOperator &A,
 
     cusp::identity_operator<ValueType, MemorySpace> M(A.num_rows, A.num_cols);
 
-    cusp::krylov::gmres(A, x, b, restart, monitor, M);
+    return cusp::krylov::gmres(A, x, b, restart, monitor, M);
 }
 
 template <typename LinearOperator,
@@ -288,7 +286,7 @@ void gmres(const LinearOperator &A,
 
     cusp::monitor<ValueType> monitor(b);
 
-    cusp::krylov::gmres(A, x, b, restart, monitor);
+    return cusp::krylov::gmres(A, x, b, restart, monitor);
 }
 
 }  // end namespace krylov

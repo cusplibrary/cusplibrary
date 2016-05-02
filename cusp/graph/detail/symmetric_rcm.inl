@@ -17,9 +17,6 @@
 #include <cusp/detail/config.h>
 #include <thrust/system/detail/generic/select_system.h>
 
-#include <cusp/exception.h>
-#include <cusp/graph/symmetric_rcm.h>
-
 #include <cusp/system/detail/adl/graph/symmetric_rcm.h>
 #include <cusp/system/detail/generic/graph/symmetric_rcm.h>
 
@@ -35,10 +32,7 @@ void symmetric_rcm(const thrust::detail::execution_policy_base<DerivedPolicy>& e
 {
     using cusp::system::detail::generic::symmetric_rcm;
 
-    if(G.num_rows != G.num_cols)
-        throw cusp::invalid_input_exception("matrix must be square");
-
-    symmetric_rcm(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), G, P);
+    return symmetric_rcm(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), G, P);
 }
 
 template<typename MatrixType, typename PermutationType>
@@ -57,3 +51,4 @@ void symmetric_rcm(const MatrixType& G, PermutationType& P)
 
 } // end namespace graph
 } // end namespace cusp
+

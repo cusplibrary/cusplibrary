@@ -35,8 +35,7 @@ void multiply(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 {
     using cusp::system::detail::generic::multiply;
 
-    return multiply(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
-                    A, B, C);
+    return multiply(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, B, C);
 }
 
 template <typename LinearOperator,
@@ -77,8 +76,7 @@ multiply(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 {
     using cusp::system::detail::generic::multiply;
 
-    return multiply(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
-                    A, B, C, initialize, combine, reduce);
+    return multiply(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, B, C, initialize, combine, reduce);
 }
 
 template <typename LinearOperator,
@@ -104,8 +102,7 @@ void multiply(const LinearOperator&  A,
     System2 system2;
     System3 system3;
 
-    return cusp::multiply(select_system(system1,system2,system3), A, B, C,
-                          initialize, combine, reduce);
+    return cusp::multiply(select_system(system1,system2,system3), A, B, C, initialize, combine, reduce);
 }
 
 template <typename DerivedPolicy,
@@ -125,8 +122,7 @@ void generalized_spgemm(const thrust::detail::execution_policy_base<DerivedPolic
 {
     using cusp::system::detail::generic::generalized_spgemm;
 
-    return generalized_spgemm(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
-                              A, B, C, initialize, combine, reduce);
+    return generalized_spgemm(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, B, C, initialize, combine, reduce);
 }
 
 template <typename LinearOperator,
@@ -152,8 +148,7 @@ void generalized_spgemm(const LinearOperator&  A,
     System2 system2;
     System3 system3;
 
-    return cusp::generalized_spgemm(select_system(system1,system2,system3), A, B, C,
-                                    initialize, combine, reduce);
+    return cusp::generalized_spgemm(select_system(system1,system2,system3), A, B, C, initialize, combine, reduce);
 }
 
 template <typename DerivedPolicy,
@@ -173,8 +168,7 @@ void generalized_spmv(const thrust::detail::execution_policy_base<DerivedPolicy>
 {
     using cusp::system::detail::generic::generalized_spmv;
 
-    return generalized_spmv(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
-                            A, x, y, z, combine, reduce);
+    return generalized_spmv(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, x, y, z, combine, reduce);
 }
 
 template <typename LinearOperator,

@@ -39,11 +39,7 @@ void breadth_first_search(const thrust::detail::execution_policy_base<DerivedPol
 {
     using cusp::system::detail::generic::breadth_first_search;
 
-    if(G.num_rows != G.num_cols)
-        throw cusp::invalid_input_exception("matrix must be square");
-
-    breadth_first_search(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
-                         G, src, labels, mark_levels);
+    return breadth_first_search(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), G, src, labels, mark_levels);
 }
 
 template<typename MatrixType,
@@ -61,7 +57,7 @@ void breadth_first_search(const MatrixType& G,
     System1 system1;
     System2 system2;
 
-    cusp::graph::breadth_first_search(select_system(system1,system2), G, src, labels, mark_levels);
+    return cusp::graph::breadth_first_search(select_system(system1,system2), G, src, labels, mark_levels);
 }
 
 } // end namespace graph

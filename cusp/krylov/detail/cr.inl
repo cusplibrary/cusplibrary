@@ -143,8 +143,7 @@ void cr(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 {
     using cusp::krylov::cr_detail::cr;
 
-    cr(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
-       A, x, b, monitor, M);
+    return cr(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, x, b, monitor, M);
 }
 
 template <typename LinearOperator,

@@ -4,7 +4,7 @@ import os, sys, re, glob
 
 from os.path import join, split, splitext
 
-def process_file(fobj, filename, base_list) :
+def process_file(fobj, filename, base_list, project_name) :
     enum_ids = [];
     policy_tag_str = 'template\s*?<\s*?typename DerivedPolicy.*?>.*?;';
 
@@ -44,12 +44,15 @@ def process_file(fobj, filename, base_list) :
                                 raise ValueError("\n"+routine)
                             return_type = ret.group("return_type").strip();
 
+                            if "blas" in routine :
+                                name = "_".join(["blas", name]);
+
                             lines = routine.split("\n")
                             out_lines = []
                             for line in lines:
                                 if line :
                                     if "return" in line :
-                                        enum_id = "__THRUST_{}__".format(name.upper());
+                                        enum_id = "__{}_{}__".format(project_name.upper(), name.upper());
                                         if enum_id not in enum_ids :
                                             enum_ids.append(enum_id);
                                         out_lines.append("\n  exec.start({});".format(enum_id));
@@ -70,13 +73,12 @@ def process_file(fobj, filename, base_list) :
 
     return enum_ids;
 
-if __name__ == "__main__" :
-    thrust_base = os.path.join(os.environ["HOME"], "thrust", "thrust");
-    base_list = ["for_each", "for_each_n", "inclusive_scan", "exclusive_scan", "reduce"];
+def generate(base_dir, project_name, base_list, start_index) :
+    project_base = os.path.join(base_dir, project_name);
 
     # find all .inls base directories
     sources = []
-    directories = [thrust_base]
+    directories = [project_base]
     extensions = ['*.h'];
 
     for dir in directories:
@@ -85,18 +87,29 @@ if __name__ == "__main__" :
         sources.extend(glob.glob(regexp))
 
     global_ids = []
-    with open("my_thrust_func.h", "w") as fobj:
+    with open("my_{}_func.h".format(project_name), "w") as fobj:
         for source in sources :
-            ids = process_file(fobj, source, base_list);
+            ids = process_file(fobj, source, base_list, project_name);
             if ids :
                 global_ids.extend(ids);
 
-    with open("my_thrust_map.h", "w") as fobj:
+    with open("my_{}_map.h".format(project_name), "w") as fobj:
         fobj.write("enum {\n");
         fobj.write(",\n".join(global_ids));
         fobj.write("\n};\n\n");
 
-        fobj.write("static const char * ARR_{}_NAMES[] = {{\n".format("thrust".upper()));
+        fobj.write("static const char * ARR_{}_NAMES[] = {{\n".format(project_name.upper()));
         fobj.write(",\n".join(["\"" + k.lower().strip('__') + "\"" for k in global_ids]));
         fobj.write("\n};\n\n");
+
+
+if __name__ == "__main__" :
+
+    thrust_base = os.path.join(os.environ["HOME"], "thrust");
+    thrust_base_funcs = ["for_each", "for_each_n", "inclusive_scan", "exclusive_scan", "reduce"];
+    generate(thrust_base, "thrust", thrust_base_funcs, 0);
+
+    cusp_base = os.path.join(os.environ["HOME"], "cusplibrary");
+    cusp_base_funcs = [];
+    generate(cusp_base, "cusp", cusp_base_funcs, 0);
 

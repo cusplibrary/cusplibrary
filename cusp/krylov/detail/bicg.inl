@@ -166,8 +166,7 @@ void bicg(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 {
     using cusp::krylov::bicg_detail::bicg;
 
-    bicg(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
-         A, At, x, b, monitor, M, Mt);
+    return bicg(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, At, x, b, monitor, M, Mt);
 }
 
 template <typename LinearOperator,
@@ -191,7 +190,7 @@ void bicg(const LinearOperator& A,
     System1 system1;
     System2 system2;
 
-    cusp::krylov::bicg(select_system(system1,system2), A, At, x, b, monitor, M, Mt);
+    return cusp::krylov::bicg(select_system(system1,system2), A, At, x, b, monitor, M, Mt);
 }
 
 template <typename LinearOperator,
@@ -209,7 +208,7 @@ void bicg(const LinearOperator& A,
 
     cusp::identity_operator<ValueType,MemorySpace> M(A.num_rows, A.num_cols);
 
-    cusp::krylov::bicg(A, At, x, b, monitor, M, M);
+    return cusp::krylov::bicg(A, At, x, b, monitor, M, M);
 }
 
 template <typename LinearOperator,
@@ -224,7 +223,7 @@ void bicg(const LinearOperator& A,
 
     cusp::monitor<ValueType> monitor(b);
 
-    cusp::krylov::bicg(A, At, x, b, monitor);
+    return cusp::krylov::bicg(A, At, x, b, monitor);
 }
 
 } // end namespace krylov

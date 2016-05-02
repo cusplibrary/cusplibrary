@@ -28,33 +28,24 @@ namespace cusp
 namespace graph
 {
 
-template <typename DerivedPolicy, typename MatrixType, typename ArrayType>
+template <typename DerivedPolicy,
+          typename MatrixType,
+          typename ArrayType>
 size_t maximal_independent_set(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
                                const MatrixType& G,
-                               ArrayType& stencil,
+                                     ArrayType& stencil,
                                const size_t k)
 {
     using cusp::system::detail::generic::maximal_independent_set;
 
-    typename MatrixType::format format;
-
-    if(G.num_rows != G.num_cols)
-        throw cusp::invalid_input_exception("matrix must be square");
-
-    if (k == 0)
-    {
-        stencil.resize(G.num_rows);
-        thrust::fill(exec, stencil.begin(), stencil.end(), typename ArrayType::value_type(1));
-        return stencil.size();
-    }
-    else
-    {
-        return maximal_independent_set(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), G, stencil, k, format);
-    }
+    return maximal_independent_set(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), G, stencil, k);
 }
 
-template <typename MatrixType, typename ArrayType>
-size_t maximal_independent_set(const MatrixType& G, ArrayType& stencil, const size_t k)
+template <typename MatrixType,
+          typename ArrayType>
+size_t maximal_independent_set(const MatrixType& G,
+                                     ArrayType& stencil,
+                               const size_t k)
 {
     using thrust::system::detail::generic::select_system;
 

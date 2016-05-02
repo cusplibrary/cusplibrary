@@ -79,6 +79,9 @@ pseudo_peripheral_vertex(thrust::execution_policy<DerivedPolicy>& exec,
 {
     typedef typename MatrixType::index_type IndexType;
 
+    if(G.num_rows != G.num_cols)
+        throw cusp::invalid_input_exception("matrix must be square");
+
     IndexType delta = 0;
     IndexType x = rand() % G.num_rows;
     IndexType y;

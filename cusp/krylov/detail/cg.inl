@@ -123,8 +123,7 @@ void cg(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 {
     using cusp::krylov::cg_detail::cg;
 
-    cg(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
-       A, x, b, monitor, M);
+    return cg(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, x, b, monitor, M);
 }
 
 template <typename LinearOperator,
@@ -146,7 +145,7 @@ void cg(const LinearOperator& A,
     System1 system1;
     System2 system2;
 
-    cusp::krylov::cg(select_system(system1,system2), A, x, b, monitor, M);
+    return cusp::krylov::cg(select_system(system1,system2), A, x, b, monitor, M);
 }
 
 template <typename LinearOperator,
@@ -163,7 +162,7 @@ void cg(const LinearOperator& A,
 
     cusp::identity_operator<ValueType,MemorySpace> M(A.num_rows, A.num_cols);
 
-    cusp::krylov::cg(A, x, b, monitor, M);
+    return cusp::krylov::cg(A, x, b, monitor, M);
 }
 
 template <typename LinearOperator,
@@ -177,7 +176,7 @@ void cg(const LinearOperator& A,
 
     cusp::monitor<ValueType> monitor(b);
 
-    cusp::krylov::cg(A, x, b, monitor);
+    return cusp::krylov::cg(A, x, b, monitor);
 }
 
 } // end namespace krylov

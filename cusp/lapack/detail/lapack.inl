@@ -34,7 +34,7 @@ void getrf( const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 {
     using cusp::lapack::generic::getrf;
 
-    getrf(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, piv);
+    return getrf(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, piv);
 }
 
 template<typename Array2d, typename Array1d>
@@ -48,7 +48,7 @@ void getrf( Array2d& A, Array1d& piv )
     System1 system1;
     System2 system2;
 
-    cusp::lapack::getrf(select_system(system1,system2), A, piv);
+    return cusp::lapack::getrf(select_system(system1,system2), A, piv);
 }
 
 template<typename DerivedPolicy, typename Array2d>
@@ -57,7 +57,7 @@ void potrf( const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 {
     using cusp::lapack::generic::potrf;
 
-    potrf(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, uplo);
+    return potrf(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, uplo);
 }
 
 template<typename Array2d>
@@ -69,7 +69,7 @@ void potrf( Array2d& A, char uplo )
 
     System system;
 
-    cusp::lapack::potrf(select_system(system), A);
+    return cusp::lapack::potrf(select_system(system), A);
 }
 
 template<typename DerivedPolicy, typename Array2d, typename Array1d>
@@ -78,7 +78,7 @@ void sytrf( const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 {
     using cusp::lapack::generic::sytrf;
 
-    sytrf(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, piv, uplo);
+    return sytrf(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, piv, uplo);
 }
 
 template<typename Array2d, typename Array1d>
@@ -92,7 +92,7 @@ void sytrf( Array2d& A, Array1d& piv, char uplo )
     System1 system1;
     System2 system2;
 
-    cusp::lapack::sytrf(select_system(system1,system2), A, piv, uplo);
+    return cusp::lapack::sytrf(select_system(system1,system2), A, piv, uplo);
 }
 
 template<typename DerivedPolicy, typename Array2d, typename Array1d>
@@ -101,7 +101,7 @@ void getrs( const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 {
     using cusp::lapack::generic::getrs;
 
-    getrs(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, piv, B, trans);
+    return getrs(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, piv, B, trans);
 }
 
 template<typename Array2d, typename Array1d>
@@ -115,7 +115,7 @@ void getrs( const Array2d& A, const Array1d& piv, Array2d& B, char trans )
     System1 system1;
     System2 system2;
 
-    cusp::lapack::getrs(select_system(system1,system2), A, piv, B, trans);
+    return cusp::lapack::getrs(select_system(system1,system2), A, piv, B, trans);
 }
 
 template<typename DerivedPolicy, typename Array2d>
@@ -124,7 +124,7 @@ void potrs( const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 {
     using cusp::lapack::generic::potrs;
 
-    potrs(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, B, uplo);
+    return potrs(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, B, uplo);
 }
 
 template<typename Array2d>
@@ -136,7 +136,7 @@ void potrs( const Array2d& A, Array2d& B, char uplo )
 
     System system;
 
-    cusp::lapack::potrs(select_system(system), A, B, uplo);
+    return cusp::lapack::potrs(select_system(system), A, B, uplo);
 }
 
 template<typename DerivedPolicy, typename Array2d, typename Array1d>
@@ -145,7 +145,7 @@ void sytrs( const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 {
     using cusp::lapack::generic::sytrs;
 
-    sytrs(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, piv, B, uplo);
+    return sytrs(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, piv, B, uplo);
 }
 
 template<typename Array2d, typename Array1d>
@@ -159,7 +159,7 @@ void sytrs( const Array2d& A, const Array1d& piv, Array2d& B, char uplo )
     System1 system1;
     System2 system2;
 
-    cusp::lapack::sytrs(select_system(system1, system2), A, piv, B, uplo);
+    return cusp::lapack::sytrs(select_system(system1, system2), A, piv, B, uplo);
 }
 
 template<typename DerivedPolicy, typename Array2d>
@@ -168,7 +168,7 @@ void trtrs( const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 {
     using cusp::lapack::generic::trtrs;
 
-    trtrs(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, B, uplo, trans, diag);
+    return trtrs(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, B, uplo, trans, diag);
 }
 
 template<typename Array2d>
@@ -180,7 +180,7 @@ void trtrs( const Array2d& A, Array2d& B, char uplo, char trans, char diag )
 
     System system;
 
-    cusp::lapack::trtrs(select_system(system), A, B, uplo, trans, diag);
+    return cusp::lapack::trtrs(select_system(system), A, B, uplo, trans, diag);
 }
 
 template<typename DerivedPolicy, typename Array2d>
@@ -189,7 +189,7 @@ void trtri( const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 {
     using cusp::lapack::generic::trtri;
 
-    trtri(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, uplo, diag);
+    return trtri(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, uplo, diag);
 }
 
 template<typename Array2d>
@@ -201,7 +201,7 @@ void trtri( Array2d& A, char uplo, char diag )
 
     System system;
 
-    cusp::lapack::trtri(select_system(system), A, uplo, diag);
+    return cusp::lapack::trtri(select_system(system), A, uplo, diag);
 }
 
 template<typename DerivedPolicy, typename Array2d, typename Array1d>
@@ -210,7 +210,7 @@ void syev( const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 {
     using cusp::lapack::generic::syev;
 
-    syev(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, eigvals, eigvecs, uplo);
+    return syev(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, eigvals, eigvecs, uplo);
 }
 
 template<typename Array2d, typename Array1d>
@@ -224,7 +224,7 @@ void syev( const Array2d& A, Array1d& eigvals, Array2d& eigvecs, char uplo )
     System1 system1;
     System2 system2;
 
-    cusp::lapack::syev(select_system(system1, system2), A, eigvals, eigvecs, uplo);
+    return cusp::lapack::syev(select_system(system1, system2), A, eigvals, eigvecs, uplo);
 }
 
 template<typename DerivedPolicy, typename Array1d1, typename Array1d2, typename Array1d3, typename Array2d>
@@ -233,7 +233,7 @@ void stev( const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 {
     using cusp::lapack::generic::stev;
 
-    stev(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), alphas, betas, eigvals, eigvecs, job);
+    return stev(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), alphas, betas, eigvals, eigvecs, job);
 }
 
 template<typename Array1d1, typename Array1d2, typename Array1d3, typename Array2d>
@@ -251,7 +251,7 @@ void stev( const Array1d1& alphas, const Array1d2& betas, Array1d3& eigvals, Arr
     System3 system3;
     System4 system4;
 
-    cusp::lapack::stev(select_system(system1, system2, system3, system4), alphas, betas, eigvals, eigvecs, job);
+    return cusp::lapack::stev(select_system(system1, system2, system3, system4), alphas, betas, eigvals, eigvecs, job);
 }
 
 template<typename DerivedPolicy, typename Array2d1, typename Array2d2, typename Array1d, typename Array2d3>
@@ -260,7 +260,7 @@ void sygv( const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 {
     using cusp::lapack::generic::sygv;
 
-    sygv(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, B, eigvals, eigvecs);
+    return sygv(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, B, eigvals, eigvecs);
 }
 
 template<typename Array2d1, typename Array2d2, typename Array1d, typename Array2d3>
@@ -278,7 +278,7 @@ void sygv( const Array2d1& A, const Array2d2& B, Array1d& eigvals, Array2d3& eig
     System3 system3;
     System4 system4;
 
-    cusp::lapack::sygv(select_system(system1, system2, system3, system4), A, B, eigvals, eigvecs);
+    return cusp::lapack::sygv(select_system(system1, system2, system3, system4), A, B, eigvals, eigvecs);
 }
 
 template<typename DerivedPolicy, typename Array2d, typename Array1d>
@@ -287,7 +287,7 @@ void gesv( const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 {
     using cusp::lapack::generic::gesv;
 
-    gesv(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, B, pivots);
+    return gesv(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, B, pivots);
 }
 
 template<typename Array2d, typename Array1d>
@@ -301,7 +301,7 @@ void gesv( const Array2d& A, Array2d& B, Array1d& pivots )
     System1 system1;
     System2 system2;
 
-    cusp::lapack::gesv(select_system(system1, system2), A, B, pivots);
+    return cusp::lapack::gesv(select_system(system1, system2), A, B, pivots);
 }
 
 } // end namespace lapack

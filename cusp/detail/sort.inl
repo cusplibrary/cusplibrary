@@ -94,12 +94,7 @@ void sort_by_row(const thrust::detail::execution_policy_base<DerivedPolicy> &exe
 {
     using cusp::system::detail::generic::sort_by_row;
 
-    return sort_by_row(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
-                       row_indices,
-                       column_indices,
-                       values,
-                       min_row,
-                       max_row);
+    return sort_by_row(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), row_indices, column_indices, values, min_row, max_row);
 }
 
 template <typename ArrayType1,
@@ -121,12 +116,7 @@ void sort_by_row(ArrayType1& row_indices,
     System2 system2;
     System3 system3;
 
-    return cusp::sort_by_row(select_system(system1,system2,system3),
-                             row_indices,
-                             column_indices,
-                             values,
-                             min_row,
-                             max_row);
+    return cusp::sort_by_row(select_system(system1,system2,system3), row_indices, column_indices, values, min_row, max_row);
 }
 
 template <typename DerivedPolicy,
@@ -144,14 +134,7 @@ void sort_by_row_and_column(const thrust::detail::execution_policy_base<DerivedP
 {
     using cusp::system::detail::generic::sort_by_row_and_column;
 
-    return sort_by_row_and_column(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
-                                  row_indices,
-                                  column_indices,
-                                  values,
-                                  min_row,
-                                  max_row,
-                                  min_col,
-                                  max_col);
+    return sort_by_row_and_column(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), row_indices, column_indices, values, min_row, max_row, min_col, max_col);
 }
 
 template <typename ArrayType1,
@@ -175,9 +158,7 @@ void sort_by_row_and_column(ArrayType1& row_indices,
     System2 system2;
     System3 system3;
 
-    return cusp::sort_by_row_and_column(select_system(system1,system2,system3),
-                                        row_indices, column_indices, values,
-                                        min_row, max_row, min_col, max_col);
+    return cusp::sort_by_row_and_column(select_system(system1,system2,system3), row_indices, column_indices, values, min_row, max_row, min_col, max_col);
 }
 
 } // end namespace cusp

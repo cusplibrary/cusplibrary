@@ -143,8 +143,7 @@ void axpby(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 {
     using cusp::system::detail::generic::blas::axpby;
 
-    return axpby(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
-                 x, y, z, alpha, beta);
+    return axpby(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), x, y, z, alpha, beta);
 }
 
 template <typename ArrayType1,
@@ -190,8 +189,7 @@ void axpbypcz(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
 {
     using cusp::system::detail::generic::blas::axpbypcz;
 
-    return axpbypcz(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
-             x, y, z, output, alpha, beta, gamma);
+    return axpbypcz(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), x, y, z, output, alpha, beta, gamma);
 }
 
 template <typename ArrayType1,

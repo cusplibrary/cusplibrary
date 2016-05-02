@@ -236,6 +236,30 @@ size_t maximal_independent_set(thrust::execution_policy<DerivedPolicy>& exec,
     return cusp::graph::maximal_independent_set(exec, G_csr, stencil, k);
 }
 
+template <typename DerivedPolicy,
+          typename MatrixType,
+          typename ArrayType>
+size_t maximal_independent_set(thrust::execution_policy<DerivedPolicy>& exec,
+                               const MatrixType& G,
+                               ArrayType& stencil,
+                               const size_t k)
+{
+    if(G.num_rows != G.num_cols)
+        throw cusp::invalid_input_exception("matrix must be square");
+
+    if (k == 0)
+    {
+        stencil.resize(G.num_rows);
+        thrust::fill(exec, stencil.begin(), stencil.end(), typename ArrayType::value_type(1));
+        return stencil.size();
+    }
+    else
+    {
+        typename MatrixType::format format;
+        return maximal_independent_set(exec, G, stencil, k, format);
+    }
+}
+
 } // end namespace generic
 } // end namespace detail
 } // end namespace system

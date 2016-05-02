@@ -29,9 +29,7 @@ void extract_diagonal(const thrust::detail::execution_policy_base<DerivedPolicy>
 {
     using cusp::system::detail::generic::extract_diagonal;
 
-    // dispatch on matrix format
-    return extract_diagonal(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
-                            A, output);
+    return extract_diagonal(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, output);
 }
 
 template <typename Matrix, typename Array>
@@ -54,8 +52,7 @@ void offsets_to_indices(const thrust::detail::execution_policy_base<DerivedPolic
 {
     using cusp::system::detail::generic::offsets_to_indices;
 
-    return offsets_to_indices(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
-                              offsets, indices);
+    return offsets_to_indices(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), offsets, indices);
 }
 
 template <typename OffsetArray, typename IndexArray>
@@ -78,8 +75,7 @@ void indices_to_offsets(const thrust::detail::execution_policy_base<DerivedPolic
 {
     using cusp::system::detail::generic::indices_to_offsets;
 
-    return indices_to_offsets(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
-                              indices, offsets);
+    return indices_to_offsets(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), indices, offsets);
 }
 
 template <typename IndexArray, typename OffsetArray>
@@ -105,8 +101,7 @@ size_t count_diagonals(const thrust::detail::execution_policy_base<DerivedPolicy
 {
     using cusp::system::detail::generic::count_diagonals;
 
-    return count_diagonals(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
-                           num_rows, num_cols, row_indices, column_indices);
+    return count_diagonals(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), num_rows, num_cols, row_indices, column_indices);
 }
 
 template <typename ArrayType1, typename ArrayType2>
@@ -132,8 +127,7 @@ size_t compute_max_entries_per_row(const thrust::detail::execution_policy_base<D
 {
     using cusp::system::detail::generic::compute_max_entries_per_row;
 
-    return compute_max_entries_per_row(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
-                                       row_offsets);
+    return compute_max_entries_per_row(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), row_offsets);
 }
 
 template <typename ArrayType>
@@ -156,8 +150,7 @@ size_t compute_optimal_entries_per_row(const thrust::detail::execution_policy_ba
 {
     using cusp::system::detail::generic::compute_optimal_entries_per_row;
 
-    return compute_optimal_entries_per_row(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
-                                           row_offsets, relative_speed, breakeven_threshold);
+    return compute_optimal_entries_per_row(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), row_offsets, relative_speed, breakeven_threshold);
 }
 
 template <typename ArrayType>

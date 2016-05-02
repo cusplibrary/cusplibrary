@@ -5,6 +5,7 @@
 #include <iostream>
 
 #include "my_thrust_map.h"
+#include "my_cusp_map.h"
 
 struct my_policy : public cusp::cuda::execution_policy<my_policy>
 {
@@ -61,14 +62,7 @@ public:
 };
 
 #include "my_thrust_func.h"
-
-#include "my_cusp/blas.h"
-#include "my_cusp/convert.h"
-#include "my_cusp/elementwise.h"
-#include "my_cusp/format_utils.h"
-#include "my_cusp/multiply.h"
-#include "my_cusp/sort.h"
-#include "my_cusp/transpose.h"
+#include "my_cusp_func.h"
 
 #include "my_cusp/cg.h"
 
