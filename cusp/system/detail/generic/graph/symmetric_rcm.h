@@ -49,6 +49,9 @@ void symmetric_rcm(thrust::execution_policy<DerivedPolicy>& exec,
 {
     typedef typename MatrixType::index_type IndexType;
 
+    if(G.num_rows != G.num_cols)
+        throw cusp::invalid_input_exception("matrix must be square");
+
     // find peripheral vertex and return BFS levels from vertex
     cusp::graph::pseudo_peripheral_vertex(exec, G, P.permutation);
 

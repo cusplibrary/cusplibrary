@@ -98,8 +98,11 @@ void breadth_first_search(cuda::execution_policy<DerivedPolicy>& exec,
                           const typename MatrixType::index_type src,
                           ArrayType& labels,
                           const bool mark_levels,
-                          csr_format)
+                          cusp::csr_format)
 {
+    if(G.num_rows != G.num_cols)
+        throw cusp::invalid_input_exception("matrix must be square");
+
     if(mark_levels)
         detail::breadth_first_search<false>(exec, G, src, labels);
     else

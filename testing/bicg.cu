@@ -9,22 +9,19 @@
 #include <cusp/krylov/bicg.h>
 #include <cusp/krylov/bicgstab.h>
 
-template <class LinearOperator, class Vector>
-void bicg(my_system& system, LinearOperator& A, LinearOperator& At, Vector& x, Vector& b)
-{
-    system.validate_dispatch();
-    return;
-}
-
-template <class LinearOperator, class Vector, class Monitor>
-void bicg(my_system& system, LinearOperator& A, LinearOperator& At, Vector& x, Vector& b, Monitor& monitor)
-{
-    system.validate_dispatch();
-    return;
-}
-
-template <class LinearOperator, class Vector, class Monitor, class Preconditioner>
-void bicg(my_system& system, LinearOperator& A, LinearOperator& At, Vector& x, Vector& b, Monitor& monitor, Preconditioner& M, Preconditioner& Mt)
+template <class LinearOperator,
+          class VectorType1,
+          class VectorType2,
+          class Monitor,
+          class Preconditioner>
+void bicg(my_system& system,
+          const LinearOperator& A,
+          const LinearOperator& At,
+                VectorType1& x,
+          const VectorType2& b,
+                Monitor& monitor,
+                Preconditioner& M,
+                Preconditioner& Mt)
 {
     system.validate_dispatch();
     return;
@@ -39,35 +36,13 @@ void TestBiConjugateGradientDispatch()
     cusp::monitor<float> monitor(x, 20, 1e-4);
     cusp::identity_operator<float,cusp::device_memory> M(A.num_rows, A.num_cols);
 
-    {
-        my_system sys(0);
+    my_system sys(0);
 
-        // call with explicit dispatching
-        cusp::krylov::bicg(sys, A, A, x, x);
+    // call with explicit dispatching
+    cusp::krylov::bicg(sys, A, A, x, x, monitor, M, M);
 
-        // check if dispatch policy was used
-        ASSERT_EQUAL(true, sys.is_valid());
-    }
-
-    {
-        my_system sys(0);
-
-        // call with explicit dispatching
-        cusp::krylov::bicg(sys, A, A, x, x, monitor);
-
-        // check if dispatch policy was used
-        ASSERT_EQUAL(true, sys.is_valid());
-    }
-
-    {
-        my_system sys(0);
-
-        // call with explicit dispatching
-        cusp::krylov::bicg(sys, A, A, x, x, monitor, M, M);
-
-        // check if dispatch policy was used
-        ASSERT_EQUAL(true, sys.is_valid());
-    }
+    // check if dispatch policy was used
+    ASSERT_EQUAL(true, sys.is_valid());
 }
 DECLARE_UNITTEST(TestBiConjugateGradientDispatch);
 
@@ -125,22 +100,8 @@ void TestBiConjugateGradientZeroResidual(void)
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestBiConjugateGradientZeroResidual)
 
-template <class LinearOperator, class Vector>
-void bicgstab(my_system& system, LinearOperator& A, Vector& x, Vector& b)
-{
-    system.validate_dispatch();
-    return;
-}
-
-template <class LinearOperator, class Vector, class Monitor>
-void bicgstab(my_system& system, LinearOperator& A, Vector& x, Vector& b, Monitor& monitor)
-{
-    system.validate_dispatch();
-    return;
-}
-
-template <class LinearOperator, class Vector, class Monitor, class Preconditioner>
-void bicgstab(my_system& system, LinearOperator& A, Vector& x, Vector& b, Monitor& monitor, Preconditioner& M)
+template <class LinearOperator, class VectorType1, class VectorType2, class Monitor, class Preconditioner>
+void bicgstab(my_system& system, const LinearOperator& A, VectorType1& x, const VectorType2& b, Monitor& monitor, Preconditioner& M)
 {
     system.validate_dispatch();
     return;
@@ -155,35 +116,13 @@ void TestBiConjugateGradientStabilizedDispatch()
     cusp::monitor<float> monitor(x, 20, 1e-4);
     cusp::identity_operator<float,cusp::device_memory> M(A.num_rows, A.num_cols);
 
-    {
-        my_system sys(0);
+    my_system sys(0);
 
-        // call with explicit dispatching
-        cusp::krylov::bicgstab(sys, A, x, x);
+    // call with explicit dispatching
+    cusp::krylov::bicgstab(sys, A, x, x, monitor, M);
 
-        // check if dispatch policy was used
-        ASSERT_EQUAL(true, sys.is_valid());
-    }
-
-    {
-        my_system sys(0);
-
-        // call with explicit dispatching
-        cusp::krylov::bicgstab(sys, A, x, x, monitor);
-
-        // check if dispatch policy was used
-        ASSERT_EQUAL(true, sys.is_valid());
-    }
-
-    {
-        my_system sys(0);
-
-        // call with explicit dispatching
-        cusp::krylov::bicgstab(sys, A, x, x, monitor, M);
-
-        // check if dispatch policy was used
-        ASSERT_EQUAL(true, sys.is_valid());
-    }
+    // check if dispatch policy was used
+    ASSERT_EQUAL(true, sys.is_valid());
 }
 DECLARE_UNITTEST(TestBiConjugateGradientStabilizedDispatch);
 

@@ -29,24 +29,29 @@ namespace cusp
 {
 
 template <typename DerivedPolicy,
-          typename MatrixType1, typename MatrixType2, typename MatrixType3,
+          typename MatrixType1,
+          typename MatrixType2,
+          typename MatrixType3,
           typename BinaryFunction>
 void elementwise(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
-                 const MatrixType1& A, const MatrixType2& B, MatrixType3& C,
-                 BinaryFunction op)
+                 const MatrixType1& A,
+                 const MatrixType2& B,
+                       MatrixType3& C,
+                       BinaryFunction op)
 {
     using cusp::system::detail::generic::elementwise;
 
-    if(A.num_rows != B.num_rows || A.num_cols != B.num_cols)
-        throw cusp::invalid_input_exception("matrix dimensions do not match");
-
-    elementwise(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, B, C, op);
+    return elementwise(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, B, C, op);
 }
 
-template <typename MatrixType1, typename MatrixType2, typename MatrixType3,
+template <typename MatrixType1,
+          typename MatrixType2,
+          typename MatrixType3,
           typename BinaryFunction>
-void elementwise(const MatrixType1& A, const MatrixType2& B, MatrixType3& C,
-                 BinaryFunction op)
+void elementwise(const MatrixType1& A,
+                 const MatrixType2& B,
+                       MatrixType3& C,
+                       BinaryFunction op)
 {
     using thrust::system::detail::generic::select_system;
 
@@ -58,11 +63,15 @@ void elementwise(const MatrixType1& A, const MatrixType2& B, MatrixType3& C,
     System2 system2;
     System3 system3;
 
-    cusp::elementwise(select_system(system1,system2,system3), A, B, C, op);
+    return cusp::elementwise(select_system(system1,system2,system3), A, B, C, op);
 }
 
-template <typename MatrixType1, typename MatrixType2, typename MatrixType3>
-void add(const MatrixType1& A, const MatrixType2& B, MatrixType3& C)
+template <typename MatrixType1,
+          typename MatrixType2,
+          typename MatrixType3>
+void add(const MatrixType1& A,
+         const MatrixType2& B,
+               MatrixType3& C)
 {
     typedef typename MatrixType1::value_type   ValueType;
     typedef thrust::plus<ValueType>            Op;
@@ -72,8 +81,12 @@ void add(const MatrixType1& A, const MatrixType2& B, MatrixType3& C)
     cusp::elementwise(A, B, C, op);
 }
 
-template <typename MatrixType1, typename MatrixType2, typename MatrixType3>
-void subtract(const MatrixType1& A, const MatrixType2& B, MatrixType3& C)
+template <typename MatrixType1,
+          typename MatrixType2,
+          typename MatrixType3>
+void subtract(const MatrixType1& A,
+              const MatrixType2& B,
+                    MatrixType3& C)
 {
     typedef typename MatrixType1::value_type   ValueType;
     typedef thrust::minus<ValueType>           Op;

@@ -42,6 +42,9 @@ size_t vertex_coloring(thrust::cpp::execution_policy<DerivedPolicy>& exec,
 {
     typedef typename MatrixType::index_type IndexType;
 
+    if(G.num_rows != G.num_cols)
+        throw cusp::invalid_input_exception("matrix must be square");
+
     size_t max_color = 0;
     size_t N = G.num_rows;
 

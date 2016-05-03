@@ -71,7 +71,7 @@ struct array2d_map_functor : public thrust::unary_function<IndexType,IndexType>
 };
 
 template <typename DerivedPolicy, typename SourceType, typename DestinationType>
-typename cusp::detail::enable_if_same_system<SourceType,DestinationType>::type
+void
 convert(thrust::execution_policy<DerivedPolicy>& exec,
         const SourceType& src,
         DestinationType& dst,
@@ -86,7 +86,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
 }
 
 template <typename DerivedPolicy, typename SourceType, typename DestinationType>
-typename cusp::detail::enable_if_same_system<SourceType,DestinationType>::type
+void
 convert(thrust::execution_policy<DerivedPolicy>& exec,
         const SourceType& src,
         DestinationType& dst,
@@ -113,7 +113,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
 }
 
 template <typename DerivedPolicy, typename SourceType, typename DestinationType>
-typename cusp::detail::enable_if_same_system<SourceType,DestinationType>::type
+void
 convert(thrust::execution_policy<DerivedPolicy>& exec,
         const SourceType& src,
         DestinationType& dst,
@@ -130,7 +130,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
 }
 
 template <typename DerivedPolicy, typename SourceType, typename DestinationType>
-typename cusp::detail::enable_if_same_system<SourceType,DestinationType>::type
+void
 convert(thrust::execution_policy<DerivedPolicy>& exec,
         const SourceType& src,
         DestinationType& dst,
@@ -212,7 +212,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
 }
 
 template <typename DerivedPolicy, typename SourceType, typename DestinationType>
-typename cusp::detail::enable_if_same_system<SourceType,DestinationType>::type
+void
 convert(thrust::execution_policy<DerivedPolicy>& exec,
         const SourceType& src,
         DestinationType& dst,
@@ -287,7 +287,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
 }
 
 template <typename DerivedPolicy, typename SourceType, typename DestinationType>
-typename cusp::detail::enable_if_same_system<SourceType,DestinationType>::type
+void
 convert(thrust::execution_policy<DerivedPolicy>& exec,
         const SourceType& src,
         DestinationType& dst,

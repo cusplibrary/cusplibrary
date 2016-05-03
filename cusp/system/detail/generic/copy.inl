@@ -174,23 +174,12 @@ void copy(thrust::execution_policy<DerivedPolicy> &exec,
     Format1 format1;
     Format2 format2;
 
-    cusp::copy(exec, src, dst, format1, format2);
+    copy(exec, src, dst, format1, format2);
 }
 
 } // end namespace generic
 } // end namespace detail
 } // end namespace system
-
-template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2,
-          typename Format1, typename Format2>
-void copy(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
-          const MatrixType1& A, MatrixType2& B, Format1 format1, Format2 format2)
-{
-    using cusp::system::detail::generic::copy;
-
-    copy(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, B, format1, format2);
-}
-
 } // end namespace cusp
 
 

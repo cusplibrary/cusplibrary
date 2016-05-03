@@ -34,70 +34,47 @@ namespace krylov
  */
 
 /* \cond */
-template <typename DerivedPolicy,
-          typename LinearOperator,
-          typename Vector>
-void bicg(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-          LinearOperator& A,
-          LinearOperator& At,
-          Vector& x,
-          Vector& b);
-
-/*! \p bicg : Biconjugate Gradient method
- *
- * Solves the linear system A x = b using the default convergence criteria.
- */
-template <typename LinearOperator,
-          typename Vector>
-void bicg(LinearOperator& A,
-          LinearOperator& At,
-          Vector& x,
-          Vector& b);
 
 template <typename DerivedPolicy,
           typename LinearOperator,
-          typename Vector,
-          typename Monitor>
-void bicg(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-          LinearOperator& A,
-          LinearOperator& At,
-          Vector& x,
-          Vector& b,
-          Monitor& monitor);
-
-/*! \p bicgstab : Biconjugate Gradient method
- *
- * Solves the linear system A x = b without preconditioning.
- */
-template <typename LinearOperator,
-          typename Vector,
-          typename Monitor>
-void bicg(LinearOperator& A,
-          LinearOperator& At,
-          Vector& x,
-          Vector& b,
-          Monitor& monitor);
-
-template <typename DerivedPolicy,
-          typename LinearOperator,
-          typename Vector,
+          typename VectorType1,
+          typename VectorType2,
           typename Monitor,
           typename Preconditioner>
 void bicg(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-          LinearOperator& A,
-          LinearOperator& At,
-          Vector& x,
-          Vector& b,
-          Monitor& monitor,
-          Preconditioner& M,
-          Preconditioner& Mt);
+          const LinearOperator& A,
+          const LinearOperator& At,
+                VectorType1& x,
+          const VectorType2& b,
+                Monitor& monitor,
+                Preconditioner& M,
+                Preconditioner& Mt);
+
+template <typename LinearOperator,
+          typename VectorType1,
+          typename VectorType2,
+          typename Monitor>
+void bicg(const LinearOperator& A,
+          const LinearOperator& At,
+                VectorType1& x,
+          const VectorType2& b,
+                Monitor& monitor);
+
+template <typename LinearOperator,
+          typename VectorType1,
+          typename VectorType2>
+void bicg(const LinearOperator& A,
+          const LinearOperator& At,
+                VectorType1& x,
+          const VectorType2& b);
+
 /* \endcond */
 
 /**
  * \brief Biconjugate Gradient method
  *
  * \tparam LinearOperator is a matrix or subclass of \p linear_operator
- * \tparam Vector vector
+ * \tparam VectorType1 vector
  * \tparam Monitor is a \p monitor
  * \tparam Preconditioner is a matrix or subclass of \p linear_operator
  *
@@ -157,16 +134,17 @@ void bicg(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
  *  \see \p monitor
  */
 template <typename LinearOperator,
-          typename Vector,
+          typename VectorType1,
+          typename VectorType2,
           typename Monitor,
           typename Preconditioner>
-void bicg(LinearOperator& A,
-          LinearOperator& At,
-          Vector& x,
-          Vector& b,
-          Monitor& monitor,
-          Preconditioner& M,
-          Preconditioner& Mt);
+void bicg(const LinearOperator& A,
+          const LinearOperator& At,
+                VectorType1& x,
+          const VectorType2& b,
+                Monitor& monitor,
+                Preconditioner& M,
+                Preconditioner& Mt);
 /*! \}
  */
 

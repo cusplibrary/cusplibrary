@@ -22,9 +22,6 @@
 
 #include <cusp/detail/config.h>
 #include <cusp/detail/execution_policy.h>
-#include <cusp/detail/format.h>
-
-#include <thrust/detail/type_traits.h>
 
 namespace cusp
 {
@@ -113,14 +110,13 @@ template <typename DerivedPolicy,
           typename UnaryFunction,
           typename BinaryFunction1,
           typename BinaryFunction2>
-typename thrust::detail::disable_if_convertible<UnaryFunction,cusp::known_format,void>::type
-multiply(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-         const LinearOperator&  A,
-         const MatrixOrVector1& B,
-               MatrixOrVector2& C,
-               UnaryFunction  initialize,
-               BinaryFunction1 combine,
-               BinaryFunction2 reduce);
+void multiply(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+              const LinearOperator&  A,
+              const MatrixOrVector1& B,
+                    MatrixOrVector2& C,
+                    UnaryFunction  initialize,
+                    BinaryFunction1 combine,
+                    BinaryFunction2 reduce);
 /*! \endcond */
 
 /**

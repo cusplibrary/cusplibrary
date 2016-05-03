@@ -390,11 +390,11 @@ template <typename DerivedPolicy,
           typename VectorType3,
           typename Monitor>
 void cg_m(thrust::execution_policy<DerivedPolicy> &exec,
-          LinearOperator& A,
-          VectorType1& x,
-          VectorType2& b,
-          VectorType3& sigma,
-          Monitor& monitor)
+          const LinearOperator& A,
+                VectorType1& x,
+          const VectorType2& b,
+          const VectorType3& sigma,
+                Monitor& monitor)
 {
     //
     // This bit is initialization of the solver.
@@ -502,114 +502,67 @@ void cg_m(thrust::execution_policy<DerivedPolicy> &exec,
 
 } // end cg_m
 
+} // end cg_detail namespace
+
 template <typename DerivedPolicy,
           typename LinearOperator,
           typename VectorType1,
           typename VectorType2,
-          typename VectorType3>
+          typename VectorType3,
+          typename Monitor>
 void cg_m(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-          LinearOperator& A,
-          VectorType1& x,
-          VectorType2& b,
-          VectorType3& sigma)
+          const LinearOperator& A,
+                VectorType1& x,
+          const VectorType2& b,
+          const VectorType3& sigma,
+                Monitor& monitor)
+{
+    using cusp::krylov::cg_detail::cg_m;
+
+    return cg_m(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, x, b, sigma, monitor);
+}
+
+template <typename LinearOperator,
+          typename VectorType1,
+          typename VectorType2,
+          typename VectorType3,
+          typename Monitor>
+void cg_m(const LinearOperator& A,
+                VectorType1& x,
+          const VectorType2& b,
+          const VectorType3& sigma,
+                Monitor& monitor)
+{
+    using thrust::system::detail::generic::select_system;
+
+    typedef typename LinearOperator::memory_space System1;
+    typedef typename VectorType1::memory_space    System2;
+    typedef typename VectorType2::memory_space    System3;
+    typedef typename VectorType3::memory_space    System4;
+
+    System1 system1;
+    System2 system2;
+    System3 system3;
+    System4 system4;
+
+    return cusp::krylov::cg_m(select_system(system1,system2,system3,system4), A, x, b, sigma, monitor);
+}
+
+// CG-M routine that uses the default monitor to determine completion
+template <typename LinearOperator,
+          typename VectorType1,
+          typename VectorType2,
+          typename VectorType3>
+void cg_m(const LinearOperator& A,
+                VectorType1& x,
+          const VectorType2& b,
+          const VectorType3& sigma)
 {
     typedef typename LinearOperator::value_type   ValueType;
 
     cusp::monitor<ValueType> monitor(b);
 
-    cusp::krylov::cg_detail::cg_m(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, x, b, sigma, monitor);
-}
-
-} // end cg_detail namespace
-
-// CG-M routine that uses the default monitor to determine completion
-template <typename DerivedPolicy,
-          typename LinearOperator,
-          typename VectorType1,
-          typename VectorType2,
-          typename VectorType3>
-void cg_m(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-          LinearOperator& A,
-          VectorType1& x,
-          VectorType2& b,
-          VectorType3& sigma)
-{
-    using cusp::krylov::cg_detail::cg_m;
-
-    cg_m(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
-         A, x, b, sigma);
-}
-
-template <typename LinearOperator,
-          typename VectorType1,
-          typename VectorType2,
-          typename VectorType3>
-typename thrust::detail::enable_if_convertible<typename LinearOperator::format,cusp::known_format>::type
-cg_m(LinearOperator& A,
-     VectorType1& x,
-     VectorType2& b,
-     VectorType3& sigma)
-{
-    using thrust::system::detail::generic::select_system;
-
-    typedef typename LinearOperator::memory_space System1;
-    typedef typename VectorType1::memory_space    System2;
-    typedef typename VectorType2::memory_space    System3;
-    typedef typename VectorType3::memory_space    System4;
-
-    System1 system1;
-    System2 system2;
-    System3 system3;
-    System4 system4;
-
-    cusp::krylov::cg_m(select_system(system1,system2,system3,system4), A, x, b, sigma);
-}
-
-// CG-M routine that uses the default monitor to determine completion
-template <typename DerivedPolicy,
-          typename LinearOperator,
-          typename VectorType1,
-          typename VectorType2,
-          typename VectorType3,
-          typename Monitor>
-void cg_m(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-          LinearOperator& A,
-          VectorType1& x,
-          VectorType2& b,
-          VectorType3& sigma,
-          Monitor& monitor)
-{
-    using cusp::krylov::cg_detail::cg_m;
-
-    cg_m(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
-         A, x, b, sigma, monitor);
-}
-
-template <typename LinearOperator,
-          typename VectorType1,
-          typename VectorType2,
-          typename VectorType3,
-          typename Monitor>
-typename thrust::detail::enable_if_convertible<typename LinearOperator::format,cusp::known_format>::type
-cg_m(LinearOperator& A,
-     VectorType1& x,
-     VectorType2& b,
-     VectorType3& sigma,
-     Monitor& monitor)
-{
-    using thrust::system::detail::generic::select_system;
-
-    typedef typename LinearOperator::memory_space System1;
-    typedef typename VectorType1::memory_space    System2;
-    typedef typename VectorType2::memory_space    System3;
-    typedef typename VectorType3::memory_space    System4;
-
-    System1 system1;
-    System2 system2;
-    System3 system3;
-    System4 system4;
-
-    cusp::krylov::cg_m(select_system(system1,system2,system3,system4), A, x, b, sigma, monitor);
+    return cusp::krylov::cg_m(A, x, b, sigma, monitor);
 }
 
 } // end namespace krylov

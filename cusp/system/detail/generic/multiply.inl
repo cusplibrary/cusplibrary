@@ -42,13 +42,11 @@ template <typename DerivedPolicy,
           typename LinearOperator,
           typename MatrixOrVector1,
           typename MatrixOrVector2>
-void multiply(thrust::execution_policy<DerivedPolicy> &exec,
-              const LinearOperator&  A,
-              const MatrixOrVector1& B,
-              MatrixOrVector2& C,
-              cusp::unknown_format,
-              cusp::array1d_format,
-              cusp::array1d_format)
+typename thrust::detail::enable_if_convertible<typename LinearOperator::format,cusp::unknown_format>::type
+multiply(thrust::execution_policy<DerivedPolicy> &exec,
+         const LinearOperator&  A,
+         const MatrixOrVector1& B,
+               MatrixOrVector2& C)
 {
     // user-defined LinearOperator
     const_cast<LinearOperator&>(A)(B,C);
@@ -58,13 +56,11 @@ template <typename DerivedPolicy,
           typename LinearOperator,
           typename MatrixOrVector1,
           typename MatrixOrVector2>
-void multiply(thrust::execution_policy<DerivedPolicy> &exec,
-              const  LinearOperator&  A,
-              const  MatrixOrVector1& B,
-              MatrixOrVector2& C,
-              cusp::known_format,
-              cusp::known_format,
-              cusp::known_format)
+typename thrust::detail::disable_if_convertible<typename LinearOperator::format,cusp::unknown_format>::type
+multiply(thrust::execution_policy<DerivedPolicy> &exec,
+         const LinearOperator&  A,
+         const MatrixOrVector1& B,
+               MatrixOrVector2& C)
 {
     typedef typename LinearOperator::value_type ValueType;
 
@@ -78,30 +74,6 @@ void multiply(thrust::execution_policy<DerivedPolicy> &exec,
 template <typename DerivedPolicy,
           typename LinearOperator,
           typename MatrixOrVector1,
-          typename MatrixOrVector2>
-void multiply(thrust::execution_policy<DerivedPolicy> &exec,
-              const LinearOperator&  A,
-              const MatrixOrVector1& B,
-              MatrixOrVector2& C)
-{
-    using cusp::system::detail::generic::multiply;
-
-    typedef typename LinearOperator::format  Format1;
-    typedef typename MatrixOrVector1::format Format2;
-    typedef typename MatrixOrVector2::format Format3;
-
-    Format1 format1;
-    Format2 format2;
-    Format3 format3;
-
-    multiply(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
-             A, B, C,
-             format1, format2, format3);
-}
-
-template <typename DerivedPolicy,
-          typename LinearOperator,
-          typename MatrixOrVector1,
           typename MatrixOrVector2,
           typename UnaryFunction,
           typename BinaryFunction1,
@@ -110,13 +82,11 @@ typename thrust::detail::disable_if_convertible<UnaryFunction,cusp::known_format
 multiply(thrust::execution_policy<DerivedPolicy> &exec,
          const LinearOperator&  A,
          const MatrixOrVector1& B,
-         MatrixOrVector2& C,
-         UnaryFunction   initialize,
-         BinaryFunction1 combine,
-         BinaryFunction2 reduce)
+               MatrixOrVector2& C,
+               UnaryFunction   initialize,
+               BinaryFunction1 combine,
+               BinaryFunction2 reduce)
 {
-    using cusp::system::detail::generic::multiply;
-
     typedef typename LinearOperator::format  Format1;
     typedef typename MatrixOrVector1::format Format2;
     typedef typename MatrixOrVector2::format Format3;
@@ -125,10 +95,7 @@ multiply(thrust::execution_policy<DerivedPolicy> &exec,
     Format2 format2;
     Format3 format3;
 
-    multiply(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
-             A, B, C,
-             initialize, combine, reduce,
-             format1, format2, format3);
+    multiply(thrust::detail::derived_cast(exec), A, B, C, initialize, combine, reduce, format1, format2, format3);
 }
 
 template <typename DerivedPolicy,
@@ -154,10 +121,7 @@ void generalized_spgemm(thrust::execution_policy<DerivedPolicy> &exec,
     Format2 format2;
     Format3 format3;
 
-    generalized_spgemm(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
-                       A, B, C,
-                       initialize, combine, reduce,
-                       format1, format2, format3);
+    generalized_spgemm(exec, A, B, C, initialize, combine, reduce, format1, format2, format3);
 }
 
 template <typename DerivedPolicy,
@@ -185,10 +149,7 @@ void generalized_spmv(thrust::execution_policy<DerivedPolicy> &exec,
     Format3 format3;
     Format4 format4;
 
-    generalized_spmv(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
-                     A, x, y, z,
-                     combine, reduce,
-                     format1, format2, format3, format4);
+    generalized_spmv(exec, A, x, y, z, combine, reduce, format1, format2, format3, format4);
 }
 
 } // end namespace generic

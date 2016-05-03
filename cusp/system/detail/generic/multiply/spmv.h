@@ -255,7 +255,7 @@ void multiply(thrust::execution_policy<DerivedPolicy> &exec,
     typedef typename LinearOperator::values_array_type::const_view          ValView;
 
     cusp::detail::temporary_array<IndexType, DerivedPolicy> row_indices(exec, A.num_entries);
-    cusp::offsets_to_indices(A.row_offsets, row_indices);
+    cusp::offsets_to_indices(exec, A.row_offsets, row_indices);
 
     cusp::coo_matrix_view<RowView,ColView,ValView> A_coo_view(A.num_rows, A.num_cols, A.num_entries,
                                                               cusp::make_array1d_view(row_indices),
@@ -263,24 +263,6 @@ void multiply(thrust::execution_policy<DerivedPolicy> &exec,
                                                               cusp::make_array1d_view(A.values));
 
     cusp::multiply(exec, A_coo_view, B, C, initialize, combine, reduce);
-}
-
-template <typename DerivedPolicy,
-         typename LinearOperator, typename MatrixOrVector1, typename MatrixOrVector2,
-         typename UnaryFunction,  typename BinaryFunction1, typename BinaryFunction2>
-void multiply(thrust::execution_policy<DerivedPolicy> &exec,
-              LinearOperator&  A,
-              MatrixOrVector1& B,
-              MatrixOrVector2& C,
-              UnaryFunction   initialize,
-              BinaryFunction1 combine,
-              BinaryFunction2 reduce,
-              cusp::permutation_format,
-              cusp::array1d_format,
-              cusp::array1d_format)
-{
-    // TODO : initialize, combine, and reduce are ignored
-    thrust::gather(A.permutation.begin(), A.permutation.end(), B.begin(), C.begin());
 }
 
 template <typename DerivedPolicy,
@@ -307,3 +289,4 @@ void multiply(thrust::execution_policy<DerivedPolicy> &exec,
 } // end namespace detail
 } // end namespace system
 } // end namespace cusp
+

@@ -14,8 +14,8 @@
  *  limitations under the License.
  */
 
-/*! \file transpose.h
- *  \brief Sequential implementations of transpose algorithms.
+/*! \file sort.h
+ *  \brief Generic implementation of counting sorting algorithms.
  */
 
 #pragma once
@@ -64,3 +64,4 @@ void sort_by_row_and_column(thrust::execution_policy<DerivedPolicy> &exec,
 } // end namespace cusp
 
 #include <cusp/system/detail/generic/sort.inl>
+

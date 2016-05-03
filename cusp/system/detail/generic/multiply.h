@@ -31,23 +31,26 @@ namespace detail
 namespace generic
 {
 
-/*
- * Top level routine. Specialize backend
- * based on format of input operators.
- */
 template <typename DerivedPolicy,
           typename LinearOperator,
           typename MatrixOrVector1,
           typename MatrixOrVector2>
-void multiply(thrust::execution_policy<DerivedPolicy> &exec,
-              const LinearOperator&  A,
-              const MatrixOrVector1& B,
-              MatrixOrVector2& C);
+typename thrust::detail::enable_if_convertible<typename LinearOperator::format,cusp::unknown_format>::type
+multiply(thrust::execution_policy<DerivedPolicy> &exec,
+         const LinearOperator&  A,
+         const MatrixOrVector1& B,
+               MatrixOrVector2& C);
 
-/*
- * Top level routine. Specialize backend
- * based on format of input operators.
- */
+template <typename DerivedPolicy,
+          typename LinearOperator,
+          typename MatrixOrVector1,
+          typename MatrixOrVector2>
+typename thrust::detail::disable_if_convertible<typename LinearOperator::format,cusp::unknown_format>::type
+multiply(thrust::execution_policy<DerivedPolicy> &exec,
+         const LinearOperator&  A,
+         const MatrixOrVector1& B,
+               MatrixOrVector2& C);
+
 template <typename DerivedPolicy,
           typename LinearOperator,
           typename MatrixOrVector1,
@@ -63,40 +66,6 @@ multiply(thrust::execution_policy<DerivedPolicy> &exec,
          UnaryFunction   initialize,
          BinaryFunction1 combine,
          BinaryFunction2 reduce);
-
-/*
- * Format of input operators provided. Dispatch
- * to call for unknown operator type.
- */
-template <typename DerivedPolicy,
-          typename LinearOperator,
-          typename MatrixOrVector1,
-          typename MatrixOrVector2>
-void multiply(thrust::execution_policy<DerivedPolicy> &exec,
-              const LinearOperator&  A,
-              const MatrixOrVector1& B,
-              MatrixOrVector2& C,
-              cusp::unknown_format,
-              cusp::array1d_format,
-              cusp::array1d_format);
-
-/*
- * Format of input operators provided. Dispatch
- * to call for known types, ie permutation_matrix, or
- * append generic initialize, reduce, combine functors
- * and call fully qualified generic backend.
- */
-template <typename DerivedPolicy,
-          typename LinearOperator,
-          typename MatrixOrVector1,
-          typename MatrixOrVector2>
-void multiply(thrust::execution_policy<DerivedPolicy> &exec,
-              const  LinearOperator&  A,
-              const  MatrixOrVector1& B,
-              MatrixOrVector2& C,
-              cusp::known_format,
-              cusp::known_format,
-              cusp::known_format);
 
 template <typename DerivedPolicy,
           typename LinearOperator,

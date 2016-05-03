@@ -15,26 +15,30 @@
  */
 
 #include <cusp/detail/config.h>
+#include <cusp/detail/execution_policy.h>
 
 #include <cusp/system/detail/adl/copy.h>
 #include <cusp/system/detail/generic/copy.h>
 
-#include <cusp/detail/execution_policy.h>
-
 namespace cusp
 {
 
-template <typename DerivedPolicy, typename SourceType, typename DestinationType>
+template <typename DerivedPolicy,
+          typename SourceType,
+          typename DestinationType>
 void copy(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-          const SourceType& src, DestinationType& dst)
+          const SourceType& src,
+                DestinationType& dst)
 {
     using cusp::system::detail::generic::copy;
 
-    copy(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), src, dst);
+    return copy(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), src, dst);
 }
 
-template <typename SourceType, typename DestinationType>
-void copy(const SourceType& src, DestinationType& dst)
+template <typename SourceType,
+          typename DestinationType>
+void copy(const SourceType& src,
+                DestinationType& dst)
 {
     using thrust::system::detail::generic::select_system;
 
@@ -44,7 +48,7 @@ void copy(const SourceType& src, DestinationType& dst)
     System1 system1;
     System2 system2;
 
-    cusp::copy(select_system(system1,system2), src, dst);
+    return cusp::copy(select_system(system1,system2), src, dst);
 }
 
 } // end namespace cusp

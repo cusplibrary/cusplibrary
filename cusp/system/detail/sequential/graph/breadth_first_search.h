@@ -47,6 +47,9 @@ void breadth_first_search(thrust::cpp::execution_policy<DerivedPolicy>& exec,
 {
     typedef typename MatrixType::index_type VertexId;
 
+    if(G.num_rows != G.num_cols)
+        throw cusp::invalid_input_exception("matrix must be square");
+
 #if THRUST_VERSION >= 100800
     cusp::detail::temporary_array<VertexId, DerivedPolicy> predecessors(exec);
 #else

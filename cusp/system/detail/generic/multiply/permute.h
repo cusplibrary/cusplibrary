@@ -34,13 +34,19 @@ namespace generic
 template <typename DerivedPolicy,
           typename LinearOperator,
           typename MatrixOrVector1,
-          typename MatrixOrVector2>
+          typename MatrixOrVector2,
+          typename UnaryFunction,
+          typename BinaryFunction1,
+          typename BinaryFunction2>
 void multiply(thrust::execution_policy<DerivedPolicy> &exec,
               const LinearOperator&  A,
               const MatrixOrVector1& B,
               MatrixOrVector2& C,
-              cusp::permutation_format,
+              UnaryFunction   initialize,
+              BinaryFunction1 combine,
+              BinaryFunction2 reduce,
               cusp::array1d_format,
+              cusp::permutation_format,
               cusp::array1d_format)
 {
     C.resize(B.size());
@@ -51,11 +57,40 @@ void multiply(thrust::execution_policy<DerivedPolicy> &exec,
 template <typename DerivedPolicy,
           typename LinearOperator,
           typename MatrixOrVector1,
-          typename MatrixOrVector2>
+          typename MatrixOrVector2,
+          typename UnaryFunction,
+          typename BinaryFunction1,
+          typename BinaryFunction2>
 void multiply(thrust::execution_policy<DerivedPolicy> &exec,
               const LinearOperator&  A,
               const MatrixOrVector1& B,
               MatrixOrVector2& C,
+              UnaryFunction   initialize,
+              BinaryFunction1 combine,
+              BinaryFunction2 reduce,
+              cusp::permutation_format,
+              cusp::array1d_format,
+              cusp::array1d_format)
+{
+    // TODO : initialize, combine, and reduce are ignored
+    thrust::gather(exec, A.permutation.begin(), A.permutation.end(), B.begin(), C.begin());
+}
+
+
+template <typename DerivedPolicy,
+          typename LinearOperator,
+          typename MatrixOrVector1,
+          typename MatrixOrVector2,
+          typename UnaryFunction,
+          typename BinaryFunction1,
+          typename BinaryFunction2>
+void multiply(thrust::execution_policy<DerivedPolicy> &exec,
+              const LinearOperator&  A,
+              const MatrixOrVector1& B,
+              MatrixOrVector2& C,
+              UnaryFunction,
+              BinaryFunction1,
+              BinaryFunction2,
               cusp::permutation_format,
               cusp::coo_format,
               cusp::coo_format)
@@ -73,11 +108,17 @@ void multiply(thrust::execution_policy<DerivedPolicy> &exec,
 template <typename DerivedPolicy,
           typename LinearOperator,
           typename MatrixOrVector1,
-          typename MatrixOrVector2>
+          typename MatrixOrVector2,
+          typename UnaryFunction,
+          typename BinaryFunction1,
+          typename BinaryFunction2>
 void multiply(thrust::execution_policy<DerivedPolicy> &exec,
               const LinearOperator&  A,
               const MatrixOrVector1& B,
               MatrixOrVector2& C,
+              UnaryFunction,
+              BinaryFunction1,
+              BinaryFunction2,
               cusp::coo_format,
               cusp::permutation_format,
               cusp::coo_format)
@@ -95,11 +136,42 @@ void multiply(thrust::execution_policy<DerivedPolicy> &exec,
 template <typename DerivedPolicy,
           typename LinearOperator,
           typename MatrixOrVector1,
-          typename MatrixOrVector2>
+          typename MatrixOrVector2,
+          typename UnaryFunction,
+          typename BinaryFunction1,
+          typename BinaryFunction2>
 void multiply(thrust::execution_policy<DerivedPolicy> &exec,
               const LinearOperator&  A,
               const MatrixOrVector1& B,
               MatrixOrVector2& C,
+              UnaryFunction,
+              BinaryFunction1,
+              BinaryFunction2,
+              cusp::sparse_format,
+              cusp::permutation_format,
+              cusp::sparse_format)
+{
+   typename cusp::detail::as_coo_type<LinearOperator>::type  A_(A);
+   typename cusp::detail::as_coo_type<MatrixOrVector2>::type C_(C);
+
+   cusp::multiply(exec, A_, B, C_);
+   cusp::convert(exec, C_, C);
+}
+
+template <typename DerivedPolicy,
+          typename LinearOperator,
+          typename MatrixOrVector1,
+          typename MatrixOrVector2,
+          typename UnaryFunction,
+          typename BinaryFunction1,
+          typename BinaryFunction2>
+void multiply(thrust::execution_policy<DerivedPolicy> &exec,
+              const LinearOperator&  A,
+              const MatrixOrVector1& B,
+              MatrixOrVector2& C,
+              UnaryFunction,
+              BinaryFunction1,
+              BinaryFunction2,
               cusp::permutation_format,
               cusp::sparse_format,
               cusp::sparse_format)
@@ -111,26 +183,8 @@ void multiply(thrust::execution_policy<DerivedPolicy> &exec,
    cusp::convert(exec, C_, C);
 }
 
-template <typename DerivedPolicy,
-          typename LinearOperator,
-          typename MatrixOrVector1,
-          typename MatrixOrVector2>
-void multiply(thrust::execution_policy<DerivedPolicy> &exec,
-              const LinearOperator&  A,
-              const MatrixOrVector1& B,
-              MatrixOrVector2& C,
-              cusp::sparse_format,
-              cusp::permutation_format,
-              cusp::sparse_format)
-{
-   typename cusp::detail::as_coo_type<LinearOperator>::type A_(A);
-   typename cusp::detail::as_coo_type<MatrixOrVector2>::type C_(C);
-
-   cusp::multiply(exec, A_, B, C_);
-   cusp::convert(exec, C_, C);
-}
-
 } // end namespace generic
 } // end namespace detail
 } // end namespace system
 } // end namespace cusp
+

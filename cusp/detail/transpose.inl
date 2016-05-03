@@ -20,8 +20,6 @@
 
 #include <cusp/detail/config.h>
 
-#include <cusp/transpose.h>
-
 #include <cusp/system/detail/adl/transpose.h>
 #include <cusp/system/detail/generic/transpose.h>
 
@@ -30,17 +28,22 @@
 namespace cusp
 {
 
-template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
+template <typename DerivedPolicy,
+          typename MatrixType1,
+          typename MatrixType2>
 void transpose(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
-               const MatrixType1& A, MatrixType2& At)
+               const MatrixType1& A,
+                     MatrixType2& At)
 {
     using cusp::system::detail::generic::transpose;
 
-    transpose(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, At);
+    return transpose(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, At);
 }
 
-template <typename MatrixType1, typename MatrixType2>
-void transpose(const MatrixType1& A, MatrixType2& At)
+template <typename MatrixType1,
+          typename MatrixType2>
+void transpose(const MatrixType1& A,
+                     MatrixType2& At)
 {
     using thrust::system::detail::generic::select_system;
 
@@ -50,7 +53,7 @@ void transpose(const MatrixType1& A, MatrixType2& At)
     System1 system1;
     System2 system2;
 
-    cusp::transpose(select_system(system1,system2), A, At);
+    return cusp::transpose(select_system(system1,system2), A, At);
 }
 
 } // end namespace cusp

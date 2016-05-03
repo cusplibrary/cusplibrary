@@ -169,6 +169,20 @@ void extract_diagonal(thrust::execution_policy<DerivedPolicy> &exec,
      cusp::equal_pair_functor<IndexType>());
 }
 
+template <typename DerivedPolicy, typename Matrix, typename Array>
+void extract_diagonal(thrust::execution_policy<DerivedPolicy> &exec,
+                      const Matrix& A, Array& output)
+{
+    typedef typename Matrix::format Format;
+
+    Format format;
+
+    output.resize(thrust::min(A.num_rows, A.num_cols));
+
+    // dispatch on matrix format
+    return extract_diagonal(exec, A, output, format);
+}
+
 template <typename DerivedPolicy, typename OffsetArray, typename IndexArray>
 void offsets_to_indices(thrust::execution_policy<DerivedPolicy> &exec,
                         const OffsetArray& offsets, IndexArray& indices)

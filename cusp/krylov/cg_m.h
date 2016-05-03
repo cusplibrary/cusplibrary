@@ -39,37 +39,6 @@ namespace krylov
  */
 
 /* \cond */
-template <typename DerivedPolicy,
-          typename LinearOperator,
-          typename VectorType1,
-          typename VectorType2,
-          typename VectorType3>
-void cg_m(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-          LinearOperator& A,
-          VectorType1& x,
-          VectorType2& b,
-          VectorType3& sigma);
-
-/*! \p cg_m : Multi-mass Conjugate Gradient method
- *
- * Solves the symmetric, positive-definited linear system (A+\sigma) x = b
- * for some set of constant shifts \p sigma for the price of the smallest shift
- * using the default monitor
- *
- * \param A matrix of the linear system
- * \param x solutions of the system
- * \param b right-hand side of the linear system
- * \param sigma array of shifts
- *
- */
-template <typename LinearOperator,
-          typename VectorType1,
-          typename VectorType2,
-          typename VectorType3>
-void cg_m(LinearOperator& A,
-          VectorType1& x,
-          VectorType2& b,
-          VectorType3& sigma);
 
 template <typename DerivedPolicy,
           typename LinearOperator,
@@ -78,11 +47,21 @@ template <typename DerivedPolicy,
           typename VectorType3,
           typename Monitor>
 void cg_m(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-          LinearOperator& A,
-          VectorType1& x,
-          VectorType2& b,
-          VectorType3& sigma,
-          Monitor& monitor);
+          const LinearOperator& A,
+                VectorType1& x,
+          const VectorType2& b,
+          const VectorType3& sigma,
+                Monitor& monitor);
+
+template <typename LinearOperator,
+          typename VectorType1,
+          typename VectorType2,
+          typename VectorType3>
+void cg_m(const LinearOperator& A,
+                VectorType1& x,
+          const VectorType2& b,
+          const VectorType3& sigma);
+
 /* \endcond */
 
 /**
@@ -154,12 +133,11 @@ template <typename LinearOperator,
           typename VectorType2,
           typename VectorType3,
           typename Monitor>
-typename thrust::detail::enable_if_convertible<typename LinearOperator::format,cusp::known_format>::type
-cg_m(LinearOperator& A,
-     VectorType1& x,
-     VectorType2& b,
-     VectorType3& sigma,
-     Monitor& monitor);
+void cg_m(const LinearOperator& A,
+                VectorType1& x,
+          const VectorType2& b,
+          const VectorType3& sigma,
+                Monitor& monitor);
 /*! \}
  */
 

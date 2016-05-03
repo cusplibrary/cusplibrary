@@ -23,12 +23,6 @@
 
 namespace cusp
 {
-
-template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2,
-          typename Format1, typename Format2>
-void transpose(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
-               const MatrixType1& A, MatrixType2& At, Format1, Format2);
-
 namespace system
 {
 namespace detail
@@ -36,25 +30,50 @@ namespace detail
 namespace generic
 {
 
-template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
+template <typename DerivedPolicy,
+          typename MatrixType1,
+          typename MatrixType2>
 void transpose(thrust::execution_policy<DerivedPolicy>& exec,
-               const MatrixType1& A, MatrixType2& At, array2d_format, array2d_format);
+               const MatrixType1& A,
+                     MatrixType2& At,
+                     array2d_format,
+                     array2d_format);
 
-template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
+template <typename DerivedPolicy,
+          typename MatrixType1,
+          typename MatrixType2>
 void transpose(thrust::execution_policy<DerivedPolicy>& exec,
-               const MatrixType1& A, MatrixType2& At, coo_format, coo_format);
+               const MatrixType1& A,
+                     MatrixType2& At,
+                     coo_format,
+                     coo_format);
 
-template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
+template <typename DerivedPolicy,
+          typename MatrixType1,
+          typename MatrixType2>
 void transpose(thrust::execution_policy<DerivedPolicy>& exec,
-               const MatrixType1& A, MatrixType2& At, csr_format, csr_format);
+               const MatrixType1& A,
+                     MatrixType2& At,
+                     csr_format,
+                     csr_format);
 
-template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2, typename Format1, typename Format2>
+template <typename DerivedPolicy,
+          typename MatrixType1,
+          typename MatrixType2,
+          typename Format1,
+          typename Format2>
 void transpose(thrust::execution_policy<DerivedPolicy>& exec,
-               const MatrixType1& A, MatrixType2& At, Format1, Format2);
+               const MatrixType1& A,
+                     MatrixType2& At,
+                     Format1,
+                     Format2);
 
-template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
+template <typename DerivedPolicy,
+          typename MatrixType1,
+          typename MatrixType2>
 void transpose(thrust::execution_policy<DerivedPolicy>& exec,
-               const MatrixType1& A, MatrixType2& At);
+               const MatrixType1& A,
+                     MatrixType2& At);
 
 } // end namespace generic
 } // end namespace detail
@@ -62,3 +81,4 @@ void transpose(thrust::execution_policy<DerivedPolicy>& exec,
 } // end namespace cusp
 
 #include <cusp/system/detail/generic/transpose.inl>
+

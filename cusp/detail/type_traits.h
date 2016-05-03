@@ -52,15 +52,6 @@ namespace detail
 
 template <typename ,typename ,typename> struct logical_to_other_physical_functor;
 
-template<typename T1, typename T2, typename T = void>
-struct enable_if_same_system
-        : thrust::detail::enable_if< thrust::detail::is_same<typename T1::memory_space,typename T2::memory_space>::value, T >
-{};
-template<typename T1, typename T2, typename T = void>
-struct enable_if_different_system
-        : thrust::detail::enable_if< thrust::detail::is_different<typename T1::memory_space,typename T2::memory_space>::value, T >
-{};
-
 template<typename MatrixType, typename CompareTag>
 struct is_matrix_type
   : thrust::detail::integral_constant<bool,thrust::detail::is_same<typename MatrixType::format,CompareTag>::value>

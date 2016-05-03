@@ -23,6 +23,8 @@ compiler:
 env:
     - THRUST_VERSION=1.7.2
     - THRUST_VERSION=1.8.3
+
+allow_failures:
     - THRUST_VERSION=master
 
 install:

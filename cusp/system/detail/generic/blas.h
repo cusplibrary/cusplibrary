@@ -184,6 +184,8 @@ void axpy(thrust::execution_policy<DerivedPolicy>& exec,
 {
     typedef typename Array1::value_type ValueType;
 
+    cusp::assert_same_dimensions(x, y);
+
     size_t N = x.size();
 
     thrust::for_each(exec,
@@ -206,6 +208,8 @@ void axpby(thrust::execution_policy<DerivedPolicy> &exec,
            const ScalarType2 beta)
 {
     typedef typename Array1::value_type ValueType;
+
+    cusp::assert_same_dimensions(x, y, z);
 
     size_t N = x.size();
 
@@ -234,6 +238,8 @@ void axpbypcz(thrust::execution_policy<DerivedPolicy> &exec,
 {
     typedef typename Array1::value_type ValueType;
 
+    cusp::assert_same_dimensions(x, y, z, output);
+
     size_t N = x.size();
 
     thrust::for_each(exec,
@@ -253,6 +259,8 @@ void xmy(thrust::execution_policy<DerivedPolicy> &exec,
 {
     typedef typename Array3::value_type ValueType;
 
+    cusp::assert_same_dimensions(x, y, z);
+
     thrust::transform(exec, x.begin(), x.end(), y.begin(), z.begin(), XMY<ValueType>());
 }
 
@@ -263,6 +271,8 @@ void copy(thrust::execution_policy<DerivedPolicy>& exec,
           const Array1& x,
                 Array2& y)
 {
+    cusp::assert_same_dimensions(x, y);
+
     thrust::copy(exec, x.begin(), x.end(), y.begin());
 }
 
@@ -277,6 +287,8 @@ dot(thrust::execution_policy<DerivedPolicy>& exec,
 {
     typedef typename Array1::value_type OutputType;
 
+    cusp::assert_same_dimensions(x, y);
+
     return thrust::inner_product(exec, x.begin(), x.end(), y.begin(), OutputType(0));
 }
 
@@ -290,6 +302,8 @@ dotc(thrust::execution_policy<DerivedPolicy>& exec,
      const Array2& y)
 {
     typedef typename Array1::value_type OutputType;
+
+    cusp::assert_same_dimensions(x, y);
 
     return thrust::inner_product(exec,
                                  thrust::make_transform_iterator(x.begin(), cusp::conj_functor<OutputType>()),

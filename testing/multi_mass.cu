@@ -6,15 +6,17 @@
 #include <cusp/krylov/cg_m.h>
 #include <cusp/krylov/bicgstab_m.h>
 
-template <class LinearOperator, class VectorType1, class VectorType2, class VectorType3>
-void cg_m(my_system& system, LinearOperator& A, VectorType1& x, VectorType2& b, VectorType3& sigma)
-{
-    system.validate_dispatch();
-    return;
-}
-
-template <class LinearOperator, class VectorType1, class VectorType2, class VectorType3, class Monitor>
-void cg_m(my_system& system, LinearOperator& A, VectorType1& x, VectorType2& b, VectorType3& sigma, Monitor& monitor)
+template <class LinearOperator,
+          class VectorType1,
+          class VectorType2,
+          class VectorType3,
+          class Monitor>
+void cg_m(my_system& system,
+          const LinearOperator& A,
+                VectorType1& x,
+          const VectorType2& b,
+          const VectorType3& sigma,
+                Monitor& monitor)
 {
     system.validate_dispatch();
     return;
@@ -28,25 +30,13 @@ void TestConjugateGradientMDispatch()
     cusp::array1d<float, cusp::device_memory> x(A.num_rows, 0.0f);
     cusp::monitor<float> monitor(x, 20, 1e-4);
 
-    {
-        my_system sys(0);
+    my_system sys(0);
 
-        // call with explicit dispatching
-        cusp::krylov::cg_m(sys, A, x, x, x);
+    // call with explicit dispatching
+    cusp::krylov::cg_m(sys, A, x, x, x, monitor);
 
-        // check if dispatch policy was used
-        ASSERT_EQUAL(true, sys.is_valid());
-    }
-
-    {
-        my_system sys(0);
-
-        // call with explicit dispatching
-        cusp::krylov::cg_m(sys, A, x, x, x, monitor);
-
-        // check if dispatch policy was used
-        ASSERT_EQUAL(true, sys.is_valid());
-    }
+    // check if dispatch policy was used
+    ASSERT_EQUAL(true, sys.is_valid());
 }
 DECLARE_UNITTEST(TestConjugateGradientMDispatch);
 

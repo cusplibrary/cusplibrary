@@ -16,9 +16,6 @@
 #include <cusp/detail/config.h>
 #include <thrust/system/detail/generic/select_system.h>
 
-#include <cusp/exception.h>
-#include <cusp/graph/pseudo_peripheral.h>
-
 #include <cusp/system/detail/adl/graph/pseudo_peripheral.h>
 #include <cusp/system/detail/generic/graph/pseudo_peripheral.h>
 
@@ -36,9 +33,6 @@ pseudo_peripheral_vertex(const thrust::detail::execution_policy_base<DerivedPoli
                          ArrayType& levels)
 {
     using cusp::system::detail::generic::pseudo_peripheral_vertex;
-
-    if(G.num_rows != G.num_cols)
-        throw cusp::invalid_input_exception("matrix must be square");
 
     return pseudo_peripheral_vertex(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), G, levels);
 }
