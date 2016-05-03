@@ -86,30 +86,32 @@ def generate(base_dir, project_name, base_list, start_index) :
         regexp = os.path.join(dir, ext)
         sources.extend(glob.glob(regexp))
 
-    global_ids = []
+    local_ids = []
     with open("my_{}_func.h".format(project_name), "w") as fobj:
         for source in sources :
             ids = process_file(fobj, source, base_list, project_name);
             if ids :
-                global_ids.extend(ids);
+                local_ids.extend(ids);
 
-    with open("my_{}_map.h".format(project_name), "w") as fobj:
-        fobj.write("enum {\n");
-        fobj.write(",\n".join(global_ids));
-        fobj.write("\n};\n\n");
-
-        fobj.write("static const char * ARR_{}_NAMES[] = {{\n".format(project_name.upper()));
-        fobj.write(",\n".join(["\"" + k.lower().strip('__') + "\"" for k in global_ids]));
-        fobj.write("\n};\n\n");
-
+    return local_ids
 
 if __name__ == "__main__" :
 
     thrust_base = os.path.join(os.environ["HOME"], "thrust");
     thrust_base_funcs = ["for_each", "for_each_n", "inclusive_scan", "exclusive_scan", "reduce"];
-    generate(thrust_base, "thrust", thrust_base_funcs, 0);
+    global_ids = generate(thrust_base, "thrust", thrust_base_funcs, 0);
 
     cusp_base = os.path.join(os.environ["HOME"], "cusplibrary");
     cusp_base_funcs = [];
-    generate(cusp_base, "cusp", cusp_base_funcs, 0);
+    ids = generate(cusp_base, "cusp", cusp_base_funcs, 0);
+    global_ids.extend(ids);
+
+    with open("my_policy_map.h", "w") as fobj:
+        fobj.write("enum {\n");
+        fobj.write(",\n".join(global_ids));
+        fobj.write("\n};\n\n");
+
+        fobj.write("static const char * ARR_NAMES[] = {\n");
+        fobj.write(",\n".join(["\"" + k.lower().strip('__') + "\"" for k in global_ids]));
+        fobj.write("\n};\n\n");
 

@@ -4,8 +4,7 @@
 
 #include <iostream>
 
-#include "my_thrust_map.h"
-#include "my_cusp_map.h"
+#include "my_policy_map.h"
 
 struct my_policy : public cusp::cuda::execution_policy<my_policy>
 {
@@ -56,13 +55,11 @@ public:
         cudaEventElapsedTime(&elapsed_time, begin, end);
 
         for(size_t k = 0; k < stack - 1; k++) std::cout << "\t";
-        std::cout << ARR_THRUST_NAMES[func_id] << "[ " << elapsed_time << " (ms)]\n";
+        std::cout << ARR_NAMES[func_id] << "[ " << elapsed_time << " (ms)]\n";
         stack--;
     }
 };
 
 #include "my_thrust_func.h"
 #include "my_cusp_func.h"
-
-#include "my_cusp/cg.h"
 
