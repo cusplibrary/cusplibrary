@@ -31,7 +31,7 @@ template <typename DerivedPolicy,
 void multiply(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
               const LinearOperator&  A,
               const MatrixOrVector1& B,
-              MatrixOrVector2& C)
+                    MatrixOrVector2& C)
 {
     using cusp::system::detail::generic::multiply;
 
@@ -65,14 +65,13 @@ template <typename DerivedPolicy,
           typename UnaryFunction,
           typename BinaryFunction1,
           typename BinaryFunction2>
-typename thrust::detail::disable_if_convertible<UnaryFunction,cusp::known_format>::type
-multiply(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-         const LinearOperator&  A,
-         const MatrixOrVector1& B,
-         MatrixOrVector2& C,
-         UnaryFunction  initialize,
-         BinaryFunction1 combine,
-         BinaryFunction2 reduce)
+void multiply(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+              const LinearOperator&  A,
+              const MatrixOrVector1& B,
+                    MatrixOrVector2& C,
+                    UnaryFunction  initialize,
+                    BinaryFunction1 combine,
+                    BinaryFunction2 reduce)
 {
     using cusp::system::detail::generic::multiply;
 

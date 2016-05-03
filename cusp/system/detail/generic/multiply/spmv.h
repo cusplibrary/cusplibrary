@@ -266,24 +266,6 @@ void multiply(thrust::execution_policy<DerivedPolicy> &exec,
 }
 
 template <typename DerivedPolicy,
-         typename LinearOperator, typename MatrixOrVector1, typename MatrixOrVector2,
-         typename UnaryFunction,  typename BinaryFunction1, typename BinaryFunction2>
-void multiply(thrust::execution_policy<DerivedPolicy> &exec,
-              LinearOperator&  A,
-              MatrixOrVector1& B,
-              MatrixOrVector2& C,
-              UnaryFunction   initialize,
-              BinaryFunction1 combine,
-              BinaryFunction2 reduce,
-              cusp::permutation_format,
-              cusp::array1d_format,
-              cusp::array1d_format)
-{
-    // TODO : initialize, combine, and reduce are ignored
-    thrust::gather(exec, A.permutation.begin(), A.permutation.end(), B.begin(), C.begin());
-}
-
-template <typename DerivedPolicy,
           typename LinearOperator, typename MatrixOrVector1, typename MatrixOrVector2,
           typename UnaryFunction,  typename BinaryFunction1, typename BinaryFunction2>
 void multiply(thrust::execution_policy<DerivedPolicy> &exec,
