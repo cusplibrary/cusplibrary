@@ -22,9 +22,6 @@
 
 #include <cusp/detail/config.h>
 #include <cusp/detail/execution_policy.h>
-#include <cusp/detail/format.h>
-
-#include <thrust/detail/type_traits.h>
 
 namespace cusp
 {
