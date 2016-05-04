@@ -32,11 +32,13 @@ namespace detail
 namespace generic
 {
 
-template <typename DerivedPolicy, typename Array2d, typename Array1d>
+template <typename DerivedPolicy,
+          typename Array2d,
+          typename Array1d>
 void hilbert_curve(thrust::execution_policy<DerivedPolicy>& exec,
                    const Array2d& coord,
-                   size_t num_parts,
-                   Array1d& parts)
+                   const size_t num_parts,
+                         Array1d& parts)
 {
   throw cusp::not_implemented_exception("No generic Hilbert curve");
 }

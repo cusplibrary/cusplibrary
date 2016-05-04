@@ -25,15 +25,6 @@
 
 namespace cusp
 {
-namespace graph
-{
-template <typename DerivedPolicy, typename MatrixType, typename PermutationType, typename Format>
-void symmetric_rcm(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
-                   const MatrixType& G,
-                   PermutationType& P,
-                   Format format);
-} // end graph namespace
-
 namespace system
 {
 namespace detail
@@ -41,16 +32,20 @@ namespace detail
 namespace generic
 {
 
-template<typename DerivedPolicy, typename MatrixType, typename PermutationType>
+template<typename DerivedPolicy,
+         typename MatrixType,
+         typename PermutationType>
 void symmetric_rcm(thrust::execution_policy<DerivedPolicy>& exec,
                    const MatrixType& G,
-                   PermutationType& P,
+                         PermutationType& P,
                    cusp::csr_format)
 {
     typedef typename MatrixType::index_type IndexType;
 
     if(G.num_rows != G.num_cols)
         throw cusp::invalid_input_exception("matrix must be square");
+
+    assert(P.num_rows == G.num_rows);
 
     // find peripheral vertex and return BFS levels from vertex
     cusp::graph::pseudo_peripheral_vertex(exec, G, P.permutation);
@@ -67,22 +62,12 @@ void symmetric_rcm(thrust::execution_policy<DerivedPolicy>& exec,
                     levels.begin(), P.permutation.begin());
 }
 
-template <typename DerivedPolicy, typename MatrixType, typename PermutationType>
-void symmetric_rcm(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
+template <typename DerivedPolicy,
+          typename MatrixType,
+          typename PermutationType>
+void symmetric_rcm(thrust::execution_policy<DerivedPolicy>& exec,
                    const MatrixType& G,
-                   PermutationType& P)
-{
-    typedef typename MatrixType::format Format;
-
-    Format format;
-
-    cusp::graph::symmetric_rcm(exec, G, P, format);
-}
-
-template <typename DerivedPolicy, typename MatrixType, typename PermutationType>
-void symmetric_rcm(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
-                   const MatrixType& G,
-                   PermutationType& P,
+                         PermutationType& P,
                    cusp::known_format)
 {
     typedef typename cusp::detail::as_csr_type<MatrixType>::type CsrMatrix;
@@ -92,21 +77,22 @@ void symmetric_rcm(const thrust::detail::execution_policy_base<DerivedPolicy>& e
     cusp::graph::symmetric_rcm(exec, G_csr, P);
 }
 
+template <typename DerivedPolicy,
+          typename MatrixType,
+          typename PermutationType>
+void symmetric_rcm(thrust::execution_policy<DerivedPolicy>& exec,
+                   const MatrixType& G,
+                         PermutationType& P)
+{
+    typedef typename MatrixType::format Format;
+
+    Format format;
+
+    symmetric_rcm(thrust::detail::derived_cast(exec), G, P, format);
+}
+
 } // end namespace generic
 } // end namespace detail
 } // end namespace system
-
-namespace graph
-{
-template <typename DerivedPolicy, typename MatrixType, typename PermutationType, typename Format>
-void symmetric_rcm(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
-                   const MatrixType& G,
-                   PermutationType& P,
-                   Format format)
-{
-    using cusp::system::detail::generic::symmetric_rcm;
-
-    symmetric_rcm(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), G, P, format);
-}
-} // end graph namespace
 } // end namespace cusp
+

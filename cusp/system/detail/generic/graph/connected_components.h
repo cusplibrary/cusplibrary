@@ -30,18 +30,6 @@
 
 namespace cusp
 {
-namespace graph
-{
-template <typename DerivedPolicy,
-          typename MatrixType,
-          typename ArrayType,
-          typename Format>
-size_t connected_components(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
-                          const MatrixType& G,
-                          ArrayType& components,
-                          Format format);
-} // end graph namespace
-
 namespace system
 {
 namespace detail
@@ -65,21 +53,40 @@ size_t connected_components(thrust::execution_policy<DerivedPolicy>& exec,
     size_t num_components = 0;
     VertexId num_rows = G.num_rows;
 
-    thrust::fill(components.begin(), components.end(), UNSET);
-    ArrayType levels(G.num_rows, UNSET);
+    thrust::fill(exec, components.begin(), components.end(), UNSET);
+    cusp::detail::temporary_array<VertexId, DerivedPolicy> levels(exec, G.num_rows, UNSET);
     VertexId src = rand() % G.num_rows;
 
     while(src < num_rows) {
-        cusp::graph::breadth_first_search(G, src, levels);
-        thrust::transform_if( thrust::constant_iterator<VertexId>(num_components),
+        cusp::graph::breadth_first_search(exec, G, src, levels);
+        thrust::transform_if( exec,
+                              thrust::constant_iterator<VertexId>(num_components),
                               thrust::constant_iterator<VertexId>(num_components) + G.num_rows,
-                              levels.begin(), components.begin(), thrust::identity<VertexId>(), _1 != UNSET );
-        thrust::fill(levels.begin(), levels.end(), UNSET);
-        src = thrust::find(components.begin(), components.end(), UNSET) - components.begin();
+                              levels.begin(),
+                              components.begin(),
+                              thrust::identity<VertexId>(),
+                              _1 != UNSET );
+        thrust::fill(exec, levels.begin(), levels.end(), UNSET);
+        src = thrust::find(exec, components.begin(), components.end(), UNSET) - components.begin();
         num_components++;
     }
 
     return num_components;
+}
+
+template <typename DerivedPolicy,
+          typename MatrixType,
+          typename ArrayType>
+size_t connected_components(thrust::execution_policy<DerivedPolicy>& exec,
+                            const MatrixType& G,
+                            ArrayType& components,
+                            cusp::known_format)
+{
+    typedef typename cusp::detail::as_csr_type<MatrixType>::type CsrMatrix;
+
+    CsrMatrix G_csr(exec, G);
+
+    return cusp::graph::connected_components(exec, G_csr, components);
 }
 
 template<typename DerivedPolicy,
@@ -93,40 +100,11 @@ size_t connected_components(thrust::execution_policy<DerivedPolicy>& exec,
 
     Format format;
 
-    return cusp::graph::connected_components(exec, G, components, format);
-}
-
-template <typename DerivedPolicy,
-          typename MatrixType,
-          typename ArrayType>
-size_t connected_components(thrust::execution_policy<DerivedPolicy>& exec,
-                            const MatrixType& G,
-                            ArrayType& components,
-                            cusp::known_format)
-{
-    typedef typename cusp::detail::as_csr_type<MatrixType>::type CsrMatrix;
-
-    CsrMatrix G_csr(G);
-
-    return cusp::graph::connected_components(exec, G_csr, components);
+    return connected_components(exec, G, components, format);
 }
 
 } // end namespace generic
 } // end namespace detail
 } // end namespace system
-
-namespace graph
-{
-template <typename DerivedPolicy, typename MatrixType, typename ArrayType, typename Format>
-size_t connected_components(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
-                          const MatrixType& G,
-                          ArrayType& components,
-                          Format format)
-{
-    using cusp::system::detail::generic::connected_components;
-
-    return connected_components(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), G, components, format);
-}
-} // end graph namespace
 } // end namespace cusp
 

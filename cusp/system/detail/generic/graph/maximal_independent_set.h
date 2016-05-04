@@ -166,16 +166,18 @@ void compute_mis_states(thrust::execution_policy<DerivedPolicy>& exec,
 
 } // end namespace detail
 
-template <typename DerivedPolicy, typename MatrixType, typename ArrayType>
+template <typename DerivedPolicy,
+          typename MatrixType,
+          typename ArrayType>
 size_t maximal_independent_set(thrust::execution_policy<DerivedPolicy>& exec,
                                const MatrixType& G,
-                               ArrayType& stencil,
+                                     ArrayType& stencil,
                                const size_t k,
                                cusp::coo_format)
 {
     typedef typename MatrixType::index_type   IndexType;
-    typedef unsigned int  RandomType;
-    typedef unsigned char NodeStateType;
+    typedef unsigned int                      RandomType;
+    typedef unsigned char                     NodeStateType;
 
     const IndexType N = G.num_rows;
 
@@ -197,10 +199,12 @@ size_t maximal_independent_set(thrust::execution_policy<DerivedPolicy>& exec,
     return thrust::count(exec, stencil.begin(), stencil.end(), typename ArrayType::value_type(true));
 }
 
-template <typename DerivedPolicy, typename MatrixType, typename ArrayType>
+template <typename DerivedPolicy,
+          typename MatrixType,
+          typename ArrayType>
 size_t maximal_independent_set(thrust::execution_policy<DerivedPolicy>& exec,
                                const MatrixType& G,
-                               ArrayType& stencil,
+                                     ArrayType& stencil,
                                const size_t k,
                                cusp::csr_format)
 {
@@ -222,10 +226,12 @@ size_t maximal_independent_set(thrust::execution_policy<DerivedPolicy>& exec,
     return cusp::graph::maximal_independent_set(exec, G_coo, stencil, k);
 }
 
-template <typename DerivedPolicy, typename MatrixType, typename ArrayType>
+template <typename DerivedPolicy,
+          typename MatrixType,
+          typename ArrayType>
 size_t maximal_independent_set(thrust::execution_policy<DerivedPolicy>& exec,
                                const MatrixType& G,
-                               ArrayType& stencil,
+                                     ArrayType& stencil,
                                const size_t k,
                                cusp::known_format)
 {
@@ -241,7 +247,7 @@ template <typename DerivedPolicy,
           typename ArrayType>
 size_t maximal_independent_set(thrust::execution_policy<DerivedPolicy>& exec,
                                const MatrixType& G,
-                               ArrayType& stencil,
+                                     ArrayType& stencil,
                                const size_t k)
 {
     if(G.num_rows != G.num_cols)
@@ -256,7 +262,7 @@ size_t maximal_independent_set(thrust::execution_policy<DerivedPolicy>& exec,
     else
     {
         typename MatrixType::format format;
-        return maximal_independent_set(exec, G, stencil, k, format);
+        return maximal_independent_set(thrust::detail::derived_cast(exec), G, stencil, k, format);
     }
 }
 

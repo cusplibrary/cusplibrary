@@ -28,16 +28,6 @@
 
 namespace cusp
 {
-namespace graph
-{
-template<typename DerivedPolicy, typename MatrixType, typename ArrayType, typename Format>
-typename MatrixType::index_type
-pseudo_peripheral_vertex(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
-                         const MatrixType& G,
-                         ArrayType& levels,
-                         Format format);
-} // end graph namespace
-
 namespace system
 {
 namespace detail
@@ -45,36 +35,13 @@ namespace detail
 namespace generic
 {
 
-template<typename DerivedPolicy, typename MatrixType>
-typename MatrixType::index_type
-pseudo_peripheral_vertex(thrust::execution_policy<DerivedPolicy>& exec,
-                         const MatrixType& G)
-{
-    typedef typename MatrixType::index_type IndexType;
-
-    cusp::detail::temporary_array<IndexType, DerivedPolicy> levels(exec, G.num_rows);
-
-    return cusp::graph::pseudo_peripheral_vertex(exec, G, levels);
-}
-
-template<typename DerivedPolicy, typename MatrixType, typename ArrayType>
+template<typename DerivedPolicy,
+         typename MatrixType,
+         typename ArrayType>
 typename MatrixType::index_type
 pseudo_peripheral_vertex(thrust::execution_policy<DerivedPolicy>& exec,
                          const MatrixType& G,
-                         ArrayType& levels)
-{
-    typedef typename MatrixType::format Format;
-
-    Format format;
-
-    return cusp::graph::pseudo_peripheral_vertex(exec, G, levels, format);
-}
-
-template<typename DerivedPolicy, typename MatrixType, typename ArrayType>
-typename MatrixType::index_type
-pseudo_peripheral_vertex(thrust::execution_policy<DerivedPolicy>& exec,
-                         const MatrixType& G,
-                         ArrayType& levels,
+                               ArrayType& levels,
                          cusp::csr_format)
 {
     typedef typename MatrixType::index_type IndexType;
@@ -136,23 +103,36 @@ pseudo_peripheral_vertex(thrust::execution_policy<DerivedPolicy>& exec,
     return y;
 }
 
+template<typename DerivedPolicy,
+         typename MatrixType,
+         typename ArrayType>
+typename MatrixType::index_type
+pseudo_peripheral_vertex(thrust::execution_policy<DerivedPolicy>& exec,
+                         const MatrixType& G,
+                               ArrayType& levels)
+{
+    typedef typename MatrixType::format Format;
+
+    Format format;
+
+    return pseudo_peripheral_vertex(thrust::detail::derived_cast(exec), G, levels, format);
+}
+
+template<typename DerivedPolicy,
+         typename MatrixType>
+typename MatrixType::index_type
+pseudo_peripheral_vertex(thrust::execution_policy<DerivedPolicy>& exec,
+                         const MatrixType& G)
+{
+    typedef typename MatrixType::index_type IndexType;
+
+    cusp::detail::temporary_array<IndexType, DerivedPolicy> levels(exec, G.num_rows);
+
+    return cusp::graph::pseudo_peripheral_vertex(exec, G, levels);
+}
+
 } // end namespace generic
 } // end namespace detail
 } // end namespace system
-
-namespace graph
-{
-template <typename DerivedPolicy, typename MatrixType, typename ArrayType, typename Format>
-typename MatrixType::index_type
-pseudo_peripheral_vertex(const thrust::detail::execution_policy_base<DerivedPolicy>& exec,
-                         const MatrixType& G,
-                         ArrayType& levels,
-                         Format format)
-{
-    using cusp::system::detail::generic::pseudo_peripheral_vertex;
-
-    return pseudo_peripheral_vertex(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), G, levels, format);
-}
-} // end graph namespace
 } // end namespace cusp
 

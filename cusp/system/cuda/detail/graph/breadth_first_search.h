@@ -104,9 +104,9 @@ void breadth_first_search(cuda::execution_policy<DerivedPolicy>& exec,
         throw cusp::invalid_input_exception("matrix must be square");
 
     if(mark_levels)
-        detail::breadth_first_search<false>(exec, G, src, labels);
+        breadth_first_search<false>(exec, G, src, labels);
     else
-        detail::breadth_first_search<true>(exec, G, src, labels);
+        breadth_first_search<true>(exec, G, src, labels);
 }
 
 } // end namespace detail
