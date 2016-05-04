@@ -28,57 +28,71 @@ namespace aggregation
 {
 
 /* \cond */
-template <typename DerivedPolicy, typename MatrixType, typename ArrayType>
+template <typename DerivedPolicy,
+          typename MatrixType,
+          typename ArrayType>
 void standard_aggregation(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-                          const MatrixType& C, ArrayType& aggregates);
-
-template <typename DerivedPolicy, typename MatrixType, typename ArrayType>
-void standard_aggregation(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-                          const MatrixType& C, ArrayType& aggregates, ArrayType& roots);
+                          const MatrixType& C,
+                                ArrayType& aggregates,
+                                ArrayType& roots);
 /* \endcond */
 
-template <typename MatrixType, typename ArrayType>
-void standard_aggregation(const MatrixType& C, ArrayType& aggregates);
+template <typename MatrixType,
+          typename ArrayType>
+void standard_aggregation(const MatrixType& C,
+                                ArrayType& aggregates,
+                                ArrayType& roots);
 
-template <typename MatrixType, typename ArrayType>
-void standard_aggregation(const MatrixType& C, ArrayType& aggregates, ArrayType& roots);
+template <typename MatrixType,
+          typename ArrayType>
+void standard_aggregation(const MatrixType& C,
+                                ArrayType& aggregates);
 
 /* \cond */
-template <typename DerivedPolicy, typename MatrixType, typename ArrayType>
+template <typename DerivedPolicy,
+          typename MatrixType,
+          typename ArrayType>
 void mis_aggregation(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-                     const MatrixType& C, ArrayType& aggregates);
-
-template <typename DerivedPolicy, typename MatrixType, typename ArrayType>
-void mis_aggregation(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-                     const MatrixType& C, ArrayType& aggregates, ArrayType& roots);
+                     const MatrixType& C,
+                           ArrayType& aggregates,
+                           ArrayType& roots);
 /* \endcond */
 
-template <typename MatrixType, typename ArrayType>
-void mis_aggregation(const MatrixType& C, ArrayType& aggregates);
+template <typename MatrixType,
+          typename ArrayType>
+void mis_aggregation(const MatrixType& C,
+                           ArrayType& aggregates,
+                           ArrayType& roots);
 
-template <typename MatrixType, typename ArrayType>
-void mis_aggregation(const MatrixType& C, ArrayType& aggregates, ArrayType& roots);
+template <typename MatrixType,
+          typename ArrayType>
+void mis_aggregation(const MatrixType& C,
+                           ArrayType& aggregates);
 
 /* \cond */
-template <typename DerivedPolicy, typename MatrixType, typename ArrayType>
+template <typename DerivedPolicy,
+          typename MatrixType,
+          typename ArrayType>
 void aggregate(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-               const MatrixType& A, ArrayType& aggregates);
+               const MatrixType& A,
+                     ArrayType& aggregates,
+                     ArrayType& roots);
 /* \endcond */
 
-template <typename MatrixType, typename ArrayType>
-void aggregate(const MatrixType& C, ArrayType& aggregates);
+template <typename MatrixType,
+          typename ArrayType>
+void aggregate(const MatrixType& C,
+                     ArrayType& aggregates,
+                     ArrayType& roots);
 
-/* \cond */
-template <typename DerivedPolicy, typename MatrixType, typename ArrayType>
-void aggregate(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-               const MatrixType& A, ArrayType& aggregates, ArrayType& roots);
-/* \endcond */
-
-template <typename MatrixType, typename ArrayType>
-void aggregate(const MatrixType& C, ArrayType& aggregates, ArrayType& roots);
+template <typename MatrixType,
+          typename ArrayType>
+void aggregate(const MatrixType& C,
+                     ArrayType& aggregates);
 
 } // end namespace aggregation
 } // end namespace precond
 } // end namespace cusp
 
 #include <cusp/precond/aggregation/detail/aggregate.inl>
+

@@ -27,35 +27,35 @@ namespace aggregation
 {
 
 template <typename DerivedPolicy,
-          typename Array1,
-          typename Array2,
+          typename ArrayType1,
+          typename ArrayType2,
           typename MatrixType,
-          typename Array3>
+          typename ArrayType3>
 void fit_candidates(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-                    const Array1& aggregates,
-                    const Array2& B,
-                    MatrixType& Q,
-                    Array3& R)
+                    const ArrayType1& aggregates,
+                    const ArrayType2& B,
+                          MatrixType& Q,
+                          ArrayType3& R)
 {
     using cusp::precond::aggregation::detail::fit_candidates;
 
     return fit_candidates(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), aggregates, B, Q, R);
 }
 
-template <typename Array1,
-          typename Array2,
+template <typename ArrayType1,
+          typename ArrayType2,
           typename MatrixType,
-          typename Array3>
-void fit_candidates(const Array1& aggregates,
-                    const Array2& B,
-                    MatrixType& Q,
-                    Array3& R)
+          typename ArrayType3>
+void fit_candidates(const ArrayType1& aggregates,
+                    const ArrayType2& B,
+                          MatrixType& Q,
+                          ArrayType3& R)
 {
     using thrust::system::detail::generic::select_system;
 
-    typedef typename Array1::memory_space System1;
-    typedef typename Array2::memory_space System2;
-    typedef typename Array3::memory_space System3;
+    typedef typename ArrayType1::memory_space System1;
+    typedef typename ArrayType2::memory_space System2;
+    typedef typename ArrayType3::memory_space System3;
     typedef typename MatrixType::memory_space System4;
 
     System1 system1;

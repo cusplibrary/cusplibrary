@@ -33,16 +33,23 @@ template <typename DerivedPolicy,
           typename MatrixType2,
           typename MatrixType3>
 void galerkin_product(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-                      const MatrixType1& R, const MatrixType2& A, const MatrixType1& P, MatrixType3& RAP);
+                      const MatrixType1& R,
+                      const MatrixType2& A,
+                      const MatrixType1& P,
+                            MatrixType3& RAP);
 /* \endcond */
 
 template <typename MatrixType1,
           typename MatrixType2,
           typename MatrixType3>
-void galerkin_product(const MatrixType1& R, const MatrixType2& A, const MatrixType1& P, MatrixType3& RAP);
+void galerkin_product(const MatrixType1& R,
+                      const MatrixType2& A,
+                      const MatrixType1& P,
+                            MatrixType3& RAP);
 
 } // end namespace aggregation
 } // end namespace precond
 } // end namespace cusp
 
 #include <cusp/precond/aggregation/detail/galerkin_product.inl>
+

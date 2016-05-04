@@ -153,8 +153,9 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverTyp
         strength_of_connection(exec, A, C, sa_levels.back());
 
         // compute aggregates
+        cusp::array1d<IndexType, MemorySpace>  roots;
         sa_levels.back().aggregates.resize(A.num_rows, IndexType(0));
-        aggregate(exec, C, sa_levels.back().aggregates);
+        aggregate(exec, C, sa_levels.back().aggregates, roots);
     }
 
     SetupMatrixType P;

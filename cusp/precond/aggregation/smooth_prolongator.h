@@ -57,3 +57,4 @@ void smooth_prolongator(const MatrixType1& S,
 } // end namespace cusp
 
 #include <cusp/precond/aggregation/detail/smooth_prolongator.inl>
+
