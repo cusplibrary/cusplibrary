@@ -26,17 +26,21 @@ namespace aggregation
 namespace detail
 {
 
-template <typename DerivedPolicy, typename MatrixType, typename ArrayType>
+template <typename DerivedPolicy,
+          typename MatrixType,
+          typename ArrayType1,
+          typename ArrayType2>
 void standard_aggregate(thrust::execution_policy<DerivedPolicy> &exec,
-                        const MatrixType& A, ArrayType& aggregates, ArrayType& roots)
+                        const MatrixType& A,
+                              ArrayType1& aggregates,
+                              ArrayType2& roots)
 {
     typedef typename MatrixType::index_type IndexType;
     typedef typename MatrixType::value_type ValueType;
-    typedef typename ArrayType::template rebind<cusp::host_memory>::type HostArray;
 
     cusp::csr_matrix<IndexType,ValueType,cusp::host_memory> A_csr(A);
-    HostArray aggregates_host(aggregates);
-    HostArray roots_host(roots);
+    cusp::array1d<IndexType, cusp::host_memory> aggregates_host(aggregates);
+    cusp::array1d<IndexType, cusp::host_memory> roots_host(roots);
 
     cusp::precond::aggregation::standard_aggregate(A_csr, aggregates_host, roots_host);
 

@@ -27,9 +27,14 @@ namespace aggregation
 namespace detail
 {
 
-template <typename DerivedPolicy, typename MatrixType, typename ArrayType>
+template <typename DerivedPolicy,
+          typename MatrixType,
+          typename ArrayType1,
+          typename ArrayType2>
 void mis_aggregate(thrust::execution_policy<DerivedPolicy> &exec,
-                   const MatrixType& A, ArrayType& S, ArrayType& roots);
+                   const MatrixType& A,
+                         ArrayType1& S,
+                         ArrayType2& roots);
 
 } // end namespace detail
 } // end namespace aggregation

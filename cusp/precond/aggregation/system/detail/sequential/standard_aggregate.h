@@ -33,11 +33,12 @@ namespace detail
 
 template <typename DerivedPolicy,
           typename MatrixType,
-          typename ArrayType>
+          typename ArrayType1,
+          typename ArrayType2>
 void standard_aggregate(thrust::cpp::execution_policy<DerivedPolicy> &exec,
                         const MatrixType& A,
-                              ArrayType& aggregates,
-                              ArrayType& roots,
+                              ArrayType1& aggregates,
+                              ArrayType2& roots,
                         cusp::csr_format)
 {
     typedef typename MatrixType::index_type IndexType;
@@ -153,11 +154,12 @@ void standard_aggregate(thrust::cpp::execution_policy<DerivedPolicy> &exec,
 
 template <typename DerivedPolicy,
           typename MatrixType,
-          typename ArrayType>
+          typename ArrayType1,
+          typename ArrayType2>
 void standard_aggregate(thrust::cpp::execution_policy<DerivedPolicy> &exec,
                         const MatrixType& A,
-                              ArrayType& aggregates,
-                              ArrayType& roots,
+                              ArrayType1& aggregates,
+                              ArrayType2& roots,
                         cusp::known_format)
 {
     typedef typename MatrixType::index_type          IndexType;
@@ -180,11 +182,12 @@ void standard_aggregate(thrust::cpp::execution_policy<DerivedPolicy> &exec,
 
 template <typename DerivedPolicy,
           typename MatrixType,
-          typename ArrayType>
+          typename ArrayType1,
+          typename ArrayType2>
 void standard_aggregate(thrust::cpp::execution_policy<DerivedPolicy> &exec,
                         const MatrixType& A,
-                              ArrayType& aggregates,
-                              ArrayType& roots)
+                              ArrayType1& aggregates,
+                              ArrayType2& roots)
 {
     typedef typename MatrixType::format Format;
 

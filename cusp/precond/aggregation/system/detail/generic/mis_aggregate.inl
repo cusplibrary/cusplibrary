@@ -38,8 +38,12 @@ namespace aggregation
 namespace detail
 {
 
-template <typename MatrixType, typename ArrayType>
-void mis_to_aggregates(const MatrixType& C, const ArrayType& mis, ArrayType& aggregates)
+template <typename MatrixType,
+          typename ArrayType1,
+          typename ArrayType2>
+void mis_to_aggregates(const MatrixType& C,
+                       const ArrayType1& mis,
+                             ArrayType2& aggregates)
 {
     typedef typename MatrixType::index_type                                   IndexType;
     typedef typename MatrixType::memory_space                                 MemorySpace;
@@ -102,15 +106,22 @@ void mis_to_aggregates(const MatrixType& C, const ArrayType& mis, ArrayType& agg
     thrust::gather(idx2.begin(), idx2.end(), mis_enum.begin(), aggregates.begin());
 } // mis_to_aggregates()
 
-template <typename DerivedPolicy, typename Matrix, typename Array>
+template <typename DerivedPolicy,
+          typename MatrixType,
+          typename ArrayType1,
+          typename ArrayType2>
 void mis_aggregate(thrust::execution_policy<DerivedPolicy> &exec,
-                   const Matrix& C, Array& aggregates, Array& mis,
+                   const MatrixType& C,
+                         ArrayType1& aggregates,
+                         ArrayType2& mis,
                    cusp::coo_format)
 {
-    typedef typename Matrix::index_type IndexType;
+    typedef typename MatrixType::index_type       IndexType;
+    typedef typename MatrixType::memory_space     MemorySpace;
+    typedef cusp::array1d<IndexType, MemorySpace> Array;
 
     // compute MIS(2)
-    cusp::graph::maximal_independent_set(C, mis, 2);
+    cusp::graph::maximal_independent_set(exec, C, mis, 2);
 
     // compute aggregates from MIS(2)
     mis_to_aggregates(C, mis, aggregates);
@@ -154,23 +165,33 @@ void mis_aggregate(thrust::execution_policy<DerivedPolicy> &exec,
     }
 }
 
-template <typename DerivedPolicy, typename Matrix, typename Array>
+template <typename DerivedPolicy,
+          typename MatrixType,
+          typename ArrayType1,
+          typename ArrayType2>
 void mis_aggregate(thrust::execution_policy<DerivedPolicy> &exec,
-                   const Matrix& C, Array& aggregates, Array& mis,
+                   const MatrixType& C,
+                         ArrayType1& aggregates,
+                         ArrayType2& mis,
                    cusp::known_format)
 {
-    typedef typename Matrix::const_coo_view_type MatrixViewType;
+    typedef typename MatrixType::const_coo_view_type MatrixViewType;
 
     MatrixViewType C_(C);
 
     mis_aggregate(exec, C_ , aggregates, mis, cusp::coo_format());
 }
 
-template <typename DerivedPolicy, typename Matrix, typename Array>
+template <typename DerivedPolicy,
+          typename MatrixType,
+          typename ArrayType1,
+          typename ArrayType2>
 void mis_aggregate(thrust::execution_policy<DerivedPolicy> &exec,
-                   const Matrix& C, Array& aggregates, Array& mis)
+                   const MatrixType& C,
+                         ArrayType1& aggregates,
+                         ArrayType2& mis)
 {
-    typedef typename Matrix::format Format;
+    typedef typename MatrixType::format Format;
 
     Format format;
 

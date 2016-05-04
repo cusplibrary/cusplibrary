@@ -26,20 +26,17 @@ namespace precond
 {
 namespace aggregation
 {
-
-template <typename MatrixType, typename ArrayType>
-void standard_aggregate(const MatrixType& A, ArrayType& aggregates, ArrayType& roots);
-
 namespace detail
 {
 
-template <typename DerivedPolicy, typename MatrixType, typename ArrayType>
-void standard_aggregate(thrust::cpp::execution_policy<DerivedPolicy> &exec,
-                        const MatrixType& A, ArrayType& S, ArrayType& roots);
-
-template <typename DerivedPolicy, typename MatrixType, typename ArrayType>
+template <typename DerivedPolicy,
+          typename MatrixType,
+          typename ArrayType1,
+          typename ArrayType2>
 void standard_aggregate(thrust::execution_policy<DerivedPolicy> &exec,
-                        const MatrixType& A, ArrayType& S, ArrayType& roots);
+                        const MatrixType& A,
+                              ArrayType1& S,
+                              ArrayType2& roots);
 
 } // end namespace detail
 } // end namespace aggregation
@@ -47,3 +44,4 @@ void standard_aggregate(thrust::execution_policy<DerivedPolicy> &exec,
 } // end namespace cusp
 
 #include <cusp/precond/aggregation/system/detail/generic/standard_aggregate.inl>
+

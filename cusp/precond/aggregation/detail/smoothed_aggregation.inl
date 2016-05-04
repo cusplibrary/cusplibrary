@@ -22,6 +22,8 @@
 #include <cusp/precond/aggregation/restrict.h>
 #include <cusp/precond/aggregation/galerkin_product.h>
 
+#include <cusp/detail/temporary_array.h>
+
 namespace cusp
 {
 namespace precond
@@ -153,13 +155,13 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverTyp
         strength_of_connection(exec, A, C, sa_levels.back());
 
         // compute aggregates
-        cusp::array1d<IndexType, MemorySpace>  roots;
+        cusp::detail::temporary_array<IndexType, DerivedPolicy> roots(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A.num_rows);
         sa_levels.back().aggregates.resize(A.num_rows, IndexType(0));
         aggregate(exec, C, sa_levels.back().aggregates, roots);
     }
 
     SetupMatrixType P;
-    cusp::array1d<ValueType,MemorySpace>  B_coarse;
+    cusp::detail::temporary_array<ValueType, DerivedPolicy>  B_coarse(thrust::detail::derived_cast(thrust::detail::strip_const(exec)));
 
     // compute tenative prolongator and coarse nullspace vector
     fit_candidates(exec, sa_levels.back().aggregates, sa_levels.back().B, sa_levels.back().T, B_coarse);
@@ -178,7 +180,8 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverTyp
     // Setup components for next level in hierarchy
     sa_levels.push_back(sa_level<SetupMatrixType>());
     sa_levels.back().A_.swap(RAP);
-    sa_levels.back().B.swap(B_coarse);
+    // sa_levels.back().B.swap(B_coarse);
+    cusp::copy(exec, B_coarse, sa_levels.back().B);
 
     ML::copy_or_swap_matrix(ML::levels.back().R, R);
     ML::copy_or_swap_matrix(ML::levels.back().P, P);

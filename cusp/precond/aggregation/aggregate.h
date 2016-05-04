@@ -30,60 +30,66 @@ namespace aggregation
 /* \cond */
 template <typename DerivedPolicy,
           typename MatrixType,
-          typename ArrayType>
-void standard_aggregation(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-                          const MatrixType& C,
-                                ArrayType& aggregates,
-                                ArrayType& roots);
+          typename ArrayType1,
+          typename ArrayType2>
+void standard_aggregate(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                        const MatrixType& C,
+                              ArrayType1& aggregates,
+                              ArrayType2& roots);
 /* \endcond */
 
 template <typename MatrixType,
-          typename ArrayType>
-void standard_aggregation(const MatrixType& C,
-                                ArrayType& aggregates,
-                                ArrayType& roots);
+          typename ArrayType1,
+          typename ArrayType2>
+void standard_aggregate(const MatrixType& C,
+                              ArrayType1& aggregates,
+                              ArrayType2& roots);
 
 template <typename MatrixType,
           typename ArrayType>
-void standard_aggregation(const MatrixType& C,
-                                ArrayType& aggregates);
+void standard_aggregate(const MatrixType& C,
+                              ArrayType& aggregates);
 
 /* \cond */
 template <typename DerivedPolicy,
           typename MatrixType,
-          typename ArrayType>
-void mis_aggregation(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-                     const MatrixType& C,
-                           ArrayType& aggregates,
-                           ArrayType& roots);
+          typename ArrayType1,
+          typename ArrayType2>
+void mis_aggregate(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+                   const MatrixType& C,
+                         ArrayType1& aggregates,
+                         ArrayType2& roots);
 /* \endcond */
 
 template <typename MatrixType,
-          typename ArrayType>
-void mis_aggregation(const MatrixType& C,
-                           ArrayType& aggregates,
-                           ArrayType& roots);
+          typename ArrayType1,
+          typename ArrayType2>
+void mis_aggregate(const MatrixType& C,
+                         ArrayType1& aggregates,
+                         ArrayType2& roots);
 
 template <typename MatrixType,
           typename ArrayType>
-void mis_aggregation(const MatrixType& C,
-                           ArrayType& aggregates);
+void mis_aggregate(const MatrixType& C,
+                         ArrayType& aggregates);
 
 /* \cond */
 template <typename DerivedPolicy,
           typename MatrixType,
-          typename ArrayType>
+          typename ArrayType1,
+          typename ArrayType2>
 void aggregate(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
                const MatrixType& A,
-                     ArrayType& aggregates,
-                     ArrayType& roots);
+                     ArrayType1& aggregates,
+                     ArrayType2& roots);
 /* \endcond */
 
 template <typename MatrixType,
-          typename ArrayType>
+          typename ArrayType1,
+          typename ArrayType2>
 void aggregate(const MatrixType& C,
-                     ArrayType& aggregates,
-                     ArrayType& roots);
+                     ArrayType1& aggregates,
+                     ArrayType2& roots);
 
 template <typename MatrixType,
           typename ArrayType>

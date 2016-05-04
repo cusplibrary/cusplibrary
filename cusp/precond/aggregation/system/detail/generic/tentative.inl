@@ -40,15 +40,15 @@ namespace detail
 using namespace thrust::placeholders;
 
 template <typename DerivedPolicy,
-          typename Array1,
-          typename Array2,
+          typename ArrayType1,
+          typename ArrayType2,
           typename MatrixType,
-          typename Array3>
+          typename ArrayType3>
 void fit_candidates(thrust::execution_policy<DerivedPolicy> &exec,
-                    const Array1& aggregates,
-                    const Array2& B,
+                    const ArrayType1& aggregates,
+                    const ArrayType2& B,
                     MatrixType& Q_,
-                    Array3& R)
+                    ArrayType3& R)
 {
     typedef typename MatrixType::index_type IndexType;
     typedef typename MatrixType::value_type ValueType;
