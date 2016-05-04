@@ -75,22 +75,28 @@ void evolution_strength_of_connection(const MatrixType1& A, MatrixType2& S, cons
 }
 
 
-template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
+template <typename DerivedPolicy,
+          typename MatrixType1,
+          typename MatrixType2>
 void strength_of_connection(thrust::execution_policy<DerivedPolicy> &exec,
-                            const MatrixType1& A, MatrixType2& S)
+                            const MatrixType1& A,
+                                  MatrixType2& S)
 {
-    cusp::precond::aggregation::symmetric_strength_of_connection(exec, A, S);
+    return cusp::precond::aggregation::symmetric_strength_of_connection(exec, A, S);
 }
 
 template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
 void strength_of_connection(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-                            const MatrixType1& A, MatrixType2& S)
+                            const MatrixType1& A,
+                                  MatrixType2& S)
 {
-    strength_of_connection(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, S);
+    return strength_of_connection(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, S);
 }
 
-template <typename MatrixType1, typename MatrixType2>
-void strength_of_connection(const MatrixType1& A, MatrixType2& S)
+template <typename MatrixType1,
+          typename MatrixType2>
+void strength_of_connection(const MatrixType1& A,
+                                  MatrixType2& S)
 {
     using thrust::system::detail::generic::select_system;
 
@@ -100,25 +106,39 @@ void strength_of_connection(const MatrixType1& A, MatrixType2& S)
     System1 system1;
     System2 system2;
 
-    cusp::precond::aggregation::strength_of_connection(select_system(system1,system2), A, S);
+    return cusp::precond::aggregation::strength_of_connection(select_system(system1,system2), A, S);
 }
 
-template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2, typename MatrixType3>
+template <typename DerivedPolicy,
+          typename MatrixType1,
+          typename MatrixType2,
+          typename MatrixType3>
 void strength_of_connection(thrust::execution_policy<DerivedPolicy> &exec,
-                            const MatrixType1& A, MatrixType2& S, sa_level<MatrixType3>& level)
+                            const MatrixType1& A,
+                                  MatrixType2& S,
+                                  sa_level<MatrixType3>& level)
 {
     cusp::precond::aggregation::symmetric_strength_of_connection(exec, A, S);
 }
 
-template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2, typename MatrixType3>
+template <typename DerivedPolicy,
+          typename MatrixType1,
+          typename MatrixType2,
+          typename MatrixType3>
 void strength_of_connection(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-                            const MatrixType1& A, MatrixType2& S, sa_level<MatrixType3>& level)
+                            const MatrixType1& A,
+                                  MatrixType2& S,
+                                  sa_level<MatrixType3>& level)
 {
-    strength_of_connection(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, S, level);
+    return strength_of_connection(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, S, level);
 }
 
-template <typename MatrixType1, typename MatrixType2, typename MatrixType3>
-void strength_of_connection(const MatrixType1& A, MatrixType2& S, sa_level<MatrixType3>& level)
+template <typename MatrixType1,
+          typename MatrixType2,
+          typename MatrixType3>
+void strength_of_connection(const MatrixType1& A,
+                                  MatrixType2& S,
+                                  sa_level<MatrixType3>& level)
 {
     using thrust::system::detail::generic::select_system;
 
@@ -128,7 +148,7 @@ void strength_of_connection(const MatrixType1& A, MatrixType2& S, sa_level<Matri
     System1 system1;
     System2 system2;
 
-    cusp::precond::aggregation::strength_of_connection(select_system(system1,system2), A, S, level);
+    return cusp::precond::aggregation::strength_of_connection(select_system(system1,system2), A, S, level);
 }
 
 } // end namespace aggregation

@@ -59,21 +59,25 @@ struct is_strong_connection
     }
 };
 
-template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
+template <typename DerivedPolicy,
+          typename MatrixType1,
+          typename MatrixType2>
 void symmetric_strength_of_connection(thrust::execution_policy<DerivedPolicy> &exec,
-                                      const MatrixType1& A, MatrixType2& S, const double theta,
+                                      const MatrixType1& A,
+                                            MatrixType2& S,
+                                      const double theta,
                                       cusp::coo_format)
 {
     typedef typename MatrixType1::index_type   IndexType;
     typedef typename MatrixType1::value_type   ValueType;
     typedef typename MatrixType1::memory_space MemorySpace;
 
-    cusp::array1d<ValueType,MemorySpace> diagonal;
+    cusp::detail::temporary_array<ValueType, DerivedPolicy> diagonal(exec, A.num_rows);
     cusp::extract_diagonal(exec, A, diagonal);
 
     is_strong_connection<ValueType> pred(theta);
 
-    cusp::array1d<bool,MemorySpace> copyflags(A.num_entries);
+    cusp::detail::temporary_array<bool, DerivedPolicy> copyflags(exec, A.num_entries);
 
     // this is just zipping up (A[i,j],A[i,i],A[j,j]) and applying is_strong_connection to each tuple
     thrust::transform(exec,
@@ -123,9 +127,13 @@ void symmetric_strength_of_connection(thrust::execution_policy<DerivedPolicy> &e
                     thrust::identity<bool>());
 }
 
-template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
+template <typename DerivedPolicy,
+          typename MatrixType1,
+          typename MatrixType2>
 void symmetric_strength_of_connection(thrust::execution_policy<DerivedPolicy> &exec,
-                                      const MatrixType1& A, MatrixType2& S, const double theta,
+                                      const MatrixType1& A,
+                                            MatrixType2& S,
+                                      const double theta,
                                       cusp::known_format)
 {
     typedef typename MatrixType1::const_coo_view_type MatrixViewType;
@@ -136,18 +144,22 @@ void symmetric_strength_of_connection(thrust::execution_policy<DerivedPolicy> &e
 
     symmetric_strength_of_connection(exec, A_ , S_, theta, cusp::coo_format());
 
-    S = S_;
+    cusp::convert(exec, S_, S);
 }
 
-template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
+template <typename DerivedPolicy,
+          typename MatrixType1,
+          typename MatrixType2>
 void symmetric_strength_of_connection(thrust::execution_policy<DerivedPolicy> &exec,
-                                      const MatrixType1& A, MatrixType2& S, const double theta)
+                                      const MatrixType1& A,
+                                            MatrixType2& S,
+                                      const double theta)
 {
     typedef typename MatrixType1::format Format;
 
     Format format;
 
-    symmetric_strength_of_connection(exec, A, S, theta, format);
+    symmetric_strength_of_connection(thrust::detail::derived_cast(exec), A, S, theta, format);
 }
 
 } // end namespace detail

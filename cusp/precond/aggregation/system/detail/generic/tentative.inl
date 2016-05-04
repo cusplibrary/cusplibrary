@@ -54,15 +54,16 @@ void fit_candidates(thrust::execution_policy<DerivedPolicy> &exec,
     typedef typename MatrixType::value_type ValueType;
     typedef typename MatrixType::memory_space MemorySpace;
 
-    IndexType num_unaggregated = thrust::count(aggregates.begin(), aggregates.end(), -1);
-    IndexType num_aggregates   = *thrust::max_element(aggregates.begin(), aggregates.end()) + 1;
+    IndexType num_unaggregated = thrust::count(exec, aggregates.begin(), aggregates.end(), -1);
+    IndexType num_aggregates   = *thrust::max_element(exec, aggregates.begin(), aggregates.end()) + 1;
 
     cusp::coo_matrix<IndexType,ValueType,MemorySpace> Q;
     Q.resize(aggregates.size(), num_aggregates, aggregates.size() - num_unaggregated);
     R.resize(num_aggregates);
 
     // gather values into Q
-    thrust::copy_if(thrust::make_zip_iterator(thrust::make_tuple(thrust::counting_iterator<IndexType>(0), aggregates.begin(), B.begin())),
+    thrust::copy_if(exec,
+                    thrust::make_zip_iterator(thrust::make_tuple(thrust::counting_iterator<IndexType>(0), aggregates.begin(), B.begin())),
                     thrust::make_zip_iterator(thrust::make_tuple(thrust::counting_iterator<IndexType>(aggregates.size()), aggregates.end(), B.end())),
                     aggregates.begin(),
                     thrust::make_zip_iterator(thrust::make_tuple(Q.row_indices.begin(), Q.column_indices.begin(), Q.values.begin())),
@@ -72,30 +73,32 @@ void fit_candidates(thrust::execution_policy<DerivedPolicy> &exec,
     {
         // compute Qt
         cusp::coo_matrix<IndexType,ValueType,MemorySpace> Qt;
-        cusp::transpose(Q, Qt);
+        cusp::transpose(exec, Q, Qt);
 
         // compute sum of squares for each column of Q (rows of Qt)
-        cusp::array1d<IndexType, MemorySpace> temp(num_aggregates);
+        cusp::detail::temporary_array<IndexType, DerivedPolicy> temp(exec, num_aggregates);
 
-        thrust::transform(Qt.values.begin(), Qt.values.end(), Qt.values.begin(), cusp::square_functor<ValueType>());
+        thrust::transform(exec, Qt.values.begin(), Qt.values.end(), Qt.values.begin(), cusp::square_functor<ValueType>());
 
-        thrust::reduce_by_key(Qt.row_indices.begin(), Qt.row_indices.end(),
+        thrust::reduce_by_key(exec,
+                              Qt.row_indices.begin(), Qt.row_indices.end(),
                               Qt.values.begin(),
                               temp.begin(),
                               R.begin());
 
         // compute square root of each column sum
-        thrust::transform(R.begin(), R.end(), R.begin(), cusp::sqrt_functor<ValueType>());
+        thrust::transform(exec, R.begin(), R.end(), R.begin(), cusp::sqrt_functor<ValueType>());
     }
 
     // rescale columns of Q
-    thrust::transform(Q.values.begin(), Q.values.end(),
+    thrust::transform(exec,
+                      Q.values.begin(), Q.values.end(),
                       thrust::make_permutation_iterator(R.begin(), Q.column_indices.begin()),
                       Q.values.begin(),
                       thrust::divides<ValueType>());
 
     // copy/convert Q to output matrix Q_
-    Q_ = Q;
+    cusp::convert(exec, Q, Q_);
 }
 
 } // end namepace detail

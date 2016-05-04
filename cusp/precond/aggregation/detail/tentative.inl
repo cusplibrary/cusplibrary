@@ -39,7 +39,7 @@ void fit_candidates(const thrust::detail::execution_policy_base<DerivedPolicy> &
 {
     using cusp::precond::aggregation::detail::fit_candidates;
 
-    fit_candidates(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), aggregates, B, Q, R);
+    return fit_candidates(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), aggregates, B, Q, R);
 }
 
 template <typename Array1,
@@ -63,8 +63,7 @@ void fit_candidates(const Array1& aggregates,
     System3 system3;
     System4 system4;
 
-    cusp::precond::aggregation::fit_candidates(select_system(system1,system2,system3,system4),
-                                               aggregates, B, Q, R);
+    return cusp::precond::aggregation::fit_candidates(select_system(system1,system2,system3,system4), aggregates, B, Q, R);
 }
 
 } // end namespace aggregation
