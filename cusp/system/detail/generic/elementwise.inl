@@ -297,7 +297,7 @@ void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
     Format2 format2;
     Format3 format3;
 
-    elementwise(exec, A, B, C, op, format1, format2, format3);
+    elementwise(thrust::detail::derived_cast(exec), A, B, C, op, format1, format2, format3);
 }
 
 } // end namespace generic

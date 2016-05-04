@@ -43,9 +43,14 @@ namespace generic
 {
 
 // Array2d format
-template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
+template <typename DerivedPolicy,
+          typename MatrixType1,
+          typename MatrixType2>
 void transpose(thrust::execution_policy<DerivedPolicy>& exec,
-               const MatrixType1& A, MatrixType2& At, cusp::array2d_format, cusp::array2d_format)
+               const MatrixType1& A,
+                     MatrixType2& At,
+               cusp::array2d_format,
+               cusp::array2d_format)
 {
     typedef typename MatrixType1::orientation Orientation1;
     typedef typename MatrixType2::orientation Orientation2;
@@ -66,9 +71,14 @@ void transpose(thrust::execution_policy<DerivedPolicy>& exec,
 }
 
 // COO format
-template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
+template <typename DerivedPolicy,
+          typename MatrixType1,
+          typename MatrixType2>
 void transpose(thrust::execution_policy<DerivedPolicy>& exec,
-               const MatrixType1& A, MatrixType2& At, cusp::coo_format, cusp::coo_format)
+               const MatrixType1& A,
+                     MatrixType2& At,
+               cusp::coo_format,
+               cusp::coo_format)
 {
     At.resize(A.num_cols, A.num_rows, A.num_entries);
 
@@ -121,7 +131,7 @@ void transpose(thrust::execution_policy<DerivedPolicy>& exec,
     View A_coo(A);
     CooType At_coo;
 
-    transpose(exec, A_coo, At_coo, coo_format(), coo_format());
+    transpose(thrust::detail::derived_cast(exec), A_coo, At_coo, coo_format(), coo_format());
 
     cusp::convert(exec, At_coo, At);
 }
@@ -139,7 +149,7 @@ void transpose(thrust::execution_policy<DerivedPolicy>& exec,
     Format1 format1;
     Format2 format2;
 
-    transpose(exec, A, At, format1, format2);
+    transpose(thrust::detail::derived_cast(exec), A, At, format1, format2);
 }
 
 } // end namespace generic

@@ -44,6 +44,9 @@ void elementwise(omp::execution_policy<DerivedPolicy>& exec,
                  cusp::csr_format,
                  cusp::csr_format)
 {
+    if(A.num_rows != B.num_rows || A.num_cols != B.num_cols)
+        throw cusp::invalid_input_exception("matrix dimensions do not match");
+
     //Method that works for duplicate and/or unsorted indices
     typedef typename MatrixType3::index_type IndexType;
     typedef typename MatrixType3::value_type ValueType;

@@ -58,6 +58,9 @@ void elementwise(thrust::cpp::execution_policy<DerivedPolicy>& exec,
     typedef typename MatrixType3::value_type   ValueType;
     typedef typename MatrixType3::memory_space MemorySpace;
 
+    if(A.num_rows != B.num_rows || A.num_cols != B.num_cols)
+        throw cusp::invalid_input_exception("matrix dimensions do not match");
+
     cusp::detail::temporary_array<IndexType, DerivedPolicy>  next(exec, A.num_cols, IndexType(-1));
     cusp::detail::temporary_array<ValueType, DerivedPolicy> A_row(exec, A.num_cols, ValueType(0));
     cusp::detail::temporary_array<ValueType, DerivedPolicy> B_row(exec, A.num_cols, ValueType(0));
