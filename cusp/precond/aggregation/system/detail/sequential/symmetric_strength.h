@@ -50,7 +50,6 @@ void symmetric_strength_of_connection(thrust::cpp::execution_policy<DerivedPolic
 {
     typedef typename MatrixType1::index_type   IndexType;
     typedef typename MatrixType1::value_type   ValueType;
-    typedef typename MatrixType1::memory_space MemorySpace;
 
     // extract matrix diagonal
     cusp::detail::temporary_array<ValueType, DerivedPolicy> diagonal(exec, A.num_rows);
@@ -118,7 +117,6 @@ void symmetric_strength_of_connection(thrust::cpp::execution_policy<DerivedPolic
                                       Format format)
 {
     typedef typename MatrixType1::index_type          IndexType;
-    typedef typename MatrixType1::memory_space        MemorySpace;
     typedef typename MatrixType1::const_coo_view_type CooView;
     typedef typename cusp::detail::as_csr_type<MatrixType2>::type CsrType;
 

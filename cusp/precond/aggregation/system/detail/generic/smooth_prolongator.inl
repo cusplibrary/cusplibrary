@@ -48,7 +48,7 @@ template <typename DerivedPolicy,
 void smooth_prolongator(thrust::execution_policy<DerivedPolicy> &exec,
                         const MatrixType1& S,
                         const MatrixType2& T,
-                        MatrixType3& P,
+                              MatrixType3& P,
                         const double rho_Dinv_S,
                         const double omega,
                         cusp::coo_format)
@@ -59,40 +59,43 @@ void smooth_prolongator(thrust::execution_policy<DerivedPolicy> &exec,
     typedef typename MatrixType3::value_type ValueType;
 
     // TODO handle case with unaggregated nodes more gracefully
-    if (T.num_entries == T.num_rows) {
-
+    if (T.num_entries == T.num_rows)
+    {
         const ValueType lambda = omega / rho_Dinv_S;
 
         // temp <- -lambda * S(i,j) * T(j,k)
         MatrixType3 temp(S.num_rows, T.num_cols, S.num_entries + T.num_entries);
-        thrust::copy(S.row_indices.begin(), S.row_indices.end(), temp.row_indices.begin());
-        thrust::gather(S.column_indices.begin(), S.column_indices.end(), T.column_indices.begin(), temp.column_indices.begin());
-        thrust::transform(S.values.begin(), S.values.end(),
+        thrust::copy(exec, S.row_indices.begin(), S.row_indices.end(), temp.row_indices.begin());
+        thrust::gather(exec, S.column_indices.begin(), S.column_indices.end(), T.column_indices.begin(), temp.column_indices.begin());
+        thrust::transform(exec,
+                          S.values.begin(), S.values.end(),
                           thrust::make_permutation_iterator(T.values.begin(), S.column_indices.begin()),
                           temp.values.begin(),
                           -lambda * _1 * _2);
 
         // temp <- D^-1
         {
-            cusp::array1d<ValueType, cusp::device_memory> D(S.num_rows);
-            cusp::extract_diagonal(S, D);
-            thrust::transform(temp.values.begin(), temp.values.begin() + S.num_entries,
+            cusp::detail::temporary_array<ValueType, DerivedPolicy> D(exec, S.num_rows);
+            cusp::extract_diagonal(exec, S, D);
+            thrust::transform(exec,
+                              temp.values.begin(), temp.values.begin() + S.num_entries,
                               thrust::make_permutation_iterator(D.begin(), S.row_indices.begin()),
                               temp.values.begin(),
                               thrust::divides<ValueType>());
         }
 
         // temp <- temp + T
-        thrust::copy(T.row_indices.begin(),    T.row_indices.end(),    temp.row_indices.begin()    + S.num_entries);
-        thrust::copy(T.column_indices.begin(), T.column_indices.end(), temp.column_indices.begin() + S.num_entries);
-        thrust::copy(T.values.begin(),         T.values.end(),         temp.values.begin()         + S.num_entries);
+        thrust::copy(exec, T.row_indices.begin(),    T.row_indices.end(),    temp.row_indices.begin()    + S.num_entries);
+        thrust::copy(exec, T.column_indices.begin(), T.column_indices.end(), temp.column_indices.begin() + S.num_entries);
+        thrust::copy(exec, T.values.begin(),         T.values.end(),         temp.values.begin()         + S.num_entries);
 
         // sort by (I,J)
-        cusp::sort_by_row_and_column(temp.row_indices, temp.column_indices, temp.values, 0, T.num_rows, 0, T.num_cols);
+        cusp::sort_by_row_and_column(exec, temp.row_indices, temp.column_indices, temp.values, 0, T.num_rows, 0, T.num_cols);
 
         // compute unique number of nonzeros in the output
         // throws a warning at compile (warning: expression has no effect)
-        IndexType NNZ = thrust::inner_product(thrust::make_zip_iterator(thrust::make_tuple(temp.row_indices.begin(), temp.column_indices.begin())),
+        IndexType NNZ = thrust::inner_product(exec,
+                                              thrust::make_zip_iterator(thrust::make_tuple(temp.row_indices.begin(), temp.column_indices.begin())),
                                               thrust::make_zip_iterator(thrust::make_tuple(temp.row_indices.end (),  temp.column_indices.end()))   - 1,
                                               thrust::make_zip_iterator(thrust::make_tuple(temp.row_indices.begin(), temp.column_indices.begin())) + 1,
                                               IndexType(0),
@@ -103,35 +106,36 @@ void smooth_prolongator(thrust::execution_policy<DerivedPolicy> &exec,
         P.resize(temp.num_rows, temp.num_cols, NNZ);
 
         // sum values with the same (i,j)
-        thrust::reduce_by_key(thrust::make_zip_iterator(thrust::make_tuple(temp.row_indices.begin(), temp.column_indices.begin())),
+        thrust::reduce_by_key(exec,
+                              thrust::make_zip_iterator(thrust::make_tuple(temp.row_indices.begin(), temp.column_indices.begin())),
                               thrust::make_zip_iterator(thrust::make_tuple(temp.row_indices.end(),   temp.column_indices.end())),
                               temp.values.begin(),
                               thrust::make_zip_iterator(thrust::make_tuple(P.row_indices.begin(), P.column_indices.begin())),
                               P.values.begin(),
                               thrust::equal_to< thrust::tuple<IndexType,IndexType> >(),
                               thrust::plus<ValueType>());
-
-    } else {
-
-        cusp::array1d<ValueType, cusp::device_memory> D(S.num_rows);
-        cusp::extract_diagonal(S, D);
+    }
+    else
+    {
+        cusp::detail::temporary_array<ValueType, DerivedPolicy> D(exec, S.num_rows);
+        cusp::extract_diagonal(exec, S, D);
 
         // create D_inv_S by copying S then scaling
         MatrixType3 D_inv_S(S);
 
         // scale the rows of D_inv_S by D^-1
-        thrust::transform(D_inv_S.values.begin(), D_inv_S.values.begin() + S.num_entries,
+        thrust::transform(exec,
+                          D_inv_S.values.begin(), D_inv_S.values.begin() + S.num_entries,
                           thrust::make_permutation_iterator(D.begin(), S.row_indices.begin()),
                           D_inv_S.values.begin(),
                           thrust::divides<ValueType>());
 
         const ValueType lambda = omega / rho_Dinv_S;
-        cusp::blas::scal( D_inv_S.values, lambda );
+        cusp::blas::scal(exec, D_inv_S.values, lambda);
 
         MatrixType3 temp;
-        cusp::multiply( D_inv_S, T, temp );
-        cusp::subtract( T, temp, P );
-
+        cusp::multiply(exec, D_inv_S, T, temp);
+        cusp::subtract(T, temp, P);
     }
 }
 
@@ -142,7 +146,7 @@ template <typename DerivedPolicy,
 void smooth_prolongator(thrust::execution_policy<DerivedPolicy> &exec,
                         const MatrixType1& S,
                         const MatrixType2& T,
-                        MatrixType3& P,
+                              MatrixType3& P,
                         const double rho_Dinv_S,
                         const double omega,
                         cusp::known_format)
@@ -157,7 +161,7 @@ void smooth_prolongator(thrust::execution_policy<DerivedPolicy> &exec,
 
     smooth_prolongator(exec, S_, T_, P_, rho_Dinv_S, omega, cusp::coo_format());
 
-    cusp::convert(P_, P);
+    cusp::convert(exec, P_, P);
 }
 
 template <typename DerivedPolicy,
@@ -175,7 +179,7 @@ void smooth_prolongator(thrust::execution_policy<DerivedPolicy> &exec,
 
     Format format;
 
-    smooth_prolongator(exec, S, T, P, rho_Dinv_S, omega, format);
+    smooth_prolongator(thrust::detail::derived_cast(exec), S, T, P, rho_Dinv_S, omega, format);
 }
 
 } // end namespace detail
