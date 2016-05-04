@@ -22,6 +22,8 @@
 #include <cusp/blas/blas.h>
 #include <cusp/eigen/spectral_radius.h>
 
+#include <cusp/detail/temporary_array.h>
+
 #include <thrust/extrema.h>
 #include <thrust/fill.h>
 #include <thrust/gather.h>
@@ -125,7 +127,8 @@ void smooth_prolongator(thrust::execution_policy<DerivedPolicy> &exec,
 
         // scale the rows of D_inv_S by D^-1
         thrust::transform(exec,
-                          D_inv_S.values.begin(), D_inv_S.values.begin() + S.num_entries,
+                          D_inv_S.values.begin(),
+                          D_inv_S.values.begin() + S.num_entries,
                           thrust::make_permutation_iterator(D.begin(), S.row_indices.begin()),
                           D_inv_S.values.begin(),
                           thrust::divides<ValueType>());
@@ -171,7 +174,7 @@ template <typename DerivedPolicy,
 void smooth_prolongator(thrust::execution_policy<DerivedPolicy> &exec,
                         const MatrixType1& S,
                         const MatrixType2& T,
-                        MatrixType3& P,
+                              MatrixType3& P,
                         const double rho_Dinv_S,
                         const double omega)
 {
@@ -179,7 +182,7 @@ void smooth_prolongator(thrust::execution_policy<DerivedPolicy> &exec,
 
     Format format;
 
-    smooth_prolongator(thrust::detail::derived_cast(exec), S, T, P, rho_Dinv_S, omega, format);
+    smooth_prolongator(exec, S, T, P, rho_Dinv_S, omega, format);
 }
 
 } // end namespace detail

@@ -116,8 +116,8 @@ void symmetric_strength_of_connection(thrust::cpp::execution_policy<DerivedPolic
                                       const double theta,
                                       Format format)
 {
-    typedef typename MatrixType1::index_type          IndexType;
-    typedef typename MatrixType1::const_coo_view_type CooView;
+    typedef typename MatrixType1::index_type                      IndexType;
+    typedef typename MatrixType1::const_coo_view_type             CooView;
     typedef typename cusp::detail::as_csr_type<MatrixType2>::type CsrType;
 
     CooView A_coo(A);
@@ -128,7 +128,9 @@ void symmetric_strength_of_connection(thrust::cpp::execution_policy<DerivedPolic
 
     symmetric_strength_of_connection(exec,
                                      cusp::make_csr_matrix_view(A.num_rows, A.num_cols, A.num_entries,
-                                                                row_offsets, A_coo.column_indices, A_coo.values),
+                                                                cusp::make_array1d_view(row_offsets),
+                                                                cusp::make_array1d_view(A_coo.column_indices),
+                                                                cusp::make_array1d_view(A_coo.values)),
                                      S_csr,
                                      theta,
                                      cusp::csr_format());

@@ -170,7 +170,9 @@ void standard_aggregate(thrust::cpp::execution_policy<DerivedPolicy> &exec,
 
     standard_aggregate(exec,
                        cusp::make_csr_matrix_view(A.num_rows, A.num_cols, A.num_entries,
-                                                  row_offsets, A_coo.column_indices, A_coo.values),
+                                                  cusp::make_array1d_view(row_offsets),
+                                                  cusp::make_array1d_view(A_coo.column_indices),
+                                                  cusp::make_array1d_view(A_coo.values)),
                        aggregates,
                        roots,
                        cusp::csr_format());
