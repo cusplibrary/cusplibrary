@@ -49,7 +49,7 @@ multiply(thrust::execution_policy<DerivedPolicy> &exec,
                MatrixOrVector2& C)
 {
     // user-defined LinearOperator
-    const_cast<LinearOperator&>(A)(B,C);
+    const_cast<LinearOperator&>(A)(exec, B, C);
 }
 
 template <typename DerivedPolicy,

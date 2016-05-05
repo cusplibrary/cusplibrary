@@ -45,8 +45,8 @@ def process_file(fobj, filename, base_list, project_name) :
                             routine = re.sub("const thrust::detail::execution_policy_base<DerivedPolicy>",
                                              "my_policy", routine);
                             routine = re.sub("thrust::detail::derived_cast\(thrust::detail::strip_const\(exec\)\)",
-                                             "exec.get()" if name not in base_list else "exec.base()", routine);
-                                             # "exec.base()", routine);
+                                             "exec.base()", routine);
+                                             # "exec.get()" if name not in base_list else "exec.base()", routine);
 
                             ret = re.search(r"template\s*?<.*?>\s*(?P<return_type>[\w\d,:<> ]+)\s*" + name + r"\s*?\(", routine, re.DOTALL);
                             if not ret:

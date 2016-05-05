@@ -184,6 +184,9 @@ public:
     template <typename Vector>
     bool finished(const Vector& r);
 
+    template <typename DerivedPolicy, typename Vector>
+    bool finished(thrust::execution_policy<DerivedPolicy> &exec, const Vector& r);
+
     /**
      *  \brief Sets the verbosity level of the monitor
      *
