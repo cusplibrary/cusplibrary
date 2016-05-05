@@ -54,6 +54,7 @@ struct sa_level
     MatrixType A_; 					                              // matrix
     MatrixType T; 					                              // matrix
     cusp::array1d<IndexType,MemorySpace> aggregates;      // aggregates
+    cusp::array1d<IndexType,MemorySpace> roots;           // aggregates
     cusp::array1d<ValueType,MemorySpace> B;               // near-nullspace candidates
 
     size_t   num_iters;
@@ -189,8 +190,10 @@ class smoothed_aggregation :
      *  \param A matrix used to create the AMG hierarchy.
      *  \param B candidate near nullspace vector.
      */
-    template <typename MatrixType,typename ArrayType>
-    smoothed_aggregation(const MatrixType& A, const ArrayType& B,
+    template <typename MatrixType,
+              typename ArrayType>
+    smoothed_aggregation(const MatrixType& A,
+                         const ArrayType&  B,
                          typename thrust::detail::enable_if_convertible<typename ArrayType::format,cusp::array1d_format>::type* = 0);
 
     /*! Construct a \p smoothed_aggregation preconditioner from a existing SA
@@ -198,7 +201,10 @@ class smoothed_aggregation :
      *
      *  \param M other smoothed_aggregation preconditioner.
      */
-    template <typename MemorySpace2,typename SmootherType2,typename SolverType2,typename Format2>
+    template <typename MemorySpace2,
+              typename SmootherType2,
+              typename SolverType2,
+              typename Format2>
     smoothed_aggregation(const smoothed_aggregation<IndexType,ValueType,MemorySpace2,SmootherType2,SolverType2,Format2>& M);
 
     /*! Initialize a \p smoothed_aggregation preconditioner from a matrix.
@@ -218,25 +224,32 @@ class smoothed_aggregation :
      *  \param A matrix used to create the AMG hierarchy.
      *  \param B candidate near nullspace vector.
      */
-    template <typename MatrixType, typename ArrayType>
-    void initialize(const MatrixType& A, const ArrayType& B,
+    template <typename MatrixType,
+              typename ArrayType>
+    void initialize(const MatrixType& A,
+                    const ArrayType&  B,
                     typename thrust::detail::enable_if_convertible<typename MatrixType::format,cusp::known_format>::type* = 0);
 
     /* \cond */
-    template <typename DerivedPolicy, typename MatrixType>
+    template <typename DerivedPolicy,
+              typename MatrixType>
     void initialize(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
                     const MatrixType& A);
 
-    template <typename DerivedPolicy, typename MatrixType, typename ArrayType>
+    template <typename DerivedPolicy,
+              typename MatrixType,
+              typename ArrayType>
     void initialize(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-                    const MatrixType& A, const ArrayType& B);
+                    const MatrixType& A,
+                    const ArrayType&  B);
     /* \endcond */
 
 protected:
 
     /* \cond */
-    template <typename DerivedPolicy, typename MatrixType>
-    void extend_hierarchy(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
+    template <typename DerivedPolicy,
+              typename MatrixType>
+    void extend_hierarchy(thrust::execution_policy<DerivedPolicy> &exec,
                           const MatrixType& A);
     /* \endcond */
 };

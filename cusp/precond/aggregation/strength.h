@@ -93,7 +93,7 @@ template <typename DerivedPolicy,
           typename MatrixType2>
 void strength_of_connection(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
                             const MatrixType1& A,
-                            MatrixType2& S);
+                                  MatrixType2& S);
 
 template <typename DerivedPolicy,
           typename MatrixType1,

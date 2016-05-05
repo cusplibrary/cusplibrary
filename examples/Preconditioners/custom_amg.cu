@@ -8,7 +8,7 @@
 
 #include <iostream>
 
-struct custom_amg_policy : thrust::device_execution_policy<custom_amg_policy> {};
+struct custom_amg_policy : cusp::cuda::execution_policy<custom_amg_policy> {};
 
 // Use evolution strength measure
 template <typename MatrixType1, typename MatrixType2, typename SALevelType>

@@ -38,21 +38,22 @@ namespace aggregation
 namespace detail
 {
 
-template <typename MatrixType,
+template <typename DerivedPolicy,
+          typename MatrixType,
           typename ArrayType1,
           typename ArrayType2>
-void mis_to_aggregates(const MatrixType& C,
+void mis_to_aggregates(thrust::execution_policy<DerivedPolicy>& exec,
+                       const MatrixType& C,
                        const ArrayType1& mis,
                              ArrayType2& aggregates)
 {
     typedef typename MatrixType::index_type                                   IndexType;
-    typedef typename MatrixType::memory_space                                 MemorySpace;
+    typedef cusp::detail::temporary_array<IndexType, DerivedPolicy>           ArrayType;
 
-    typedef typename ArrayType::value_type                                    T;
     typedef typename ArrayType::iterator                                      ArrayIterator;
     typedef typename ArrayType::const_iterator                                ConstArrayIterator;
 
-    typedef thrust::tuple<T,T>                                                Tuple;
+    typedef thrust::tuple<IndexType,IndexType>                                Tuple;
     typedef typename thrust::counting_iterator<IndexType>                     CountingIterator;
 
     typedef typename MatrixType::row_indices_array_type::const_view           RowView;
@@ -68,17 +69,21 @@ void mis_to_aggregates(const MatrixType& C,
     typedef typename thrust::zip_iterator<IteratorTuple2>                     ZipIterator2;
     typedef typename cusp::array1d_view<ZipIterator2>                         ArrayViewType2;
 
-    const IndexType N = C.num_rows;
-    const IndexType M = C.num_entries;
+    const size_t N = C.num_rows;
+    const size_t M = C.num_entries;
     cusp::constant_array<Tuple> values(M, Tuple(1,1));
-    CooView A(N, N, M, make_array1d_view(C.row_indices), make_array1d_view(C.column_indices), values);
+    CooView A(N, N, M,
+              make_array1d_view(C.row_indices),
+              make_array1d_view(C.column_indices),
+              values);
 
     // current (ring,index)
-    ArrayType mis1(N);
-    ArrayType mis2(N);
+    ArrayType mis1(exec, N);
+    ArrayType mis2(exec, N);
+    ArrayType mis_enum(exec, N);
 
-    ArrayType idx1(N);
-    ArrayType idx2(N);
+    ArrayType idx1(exec, N);
+    ArrayType idx2(exec, N);
 
     CountingIterator count_begin(0);
     ZipIterator1 x_iter(thrust::make_tuple(mis.begin(),  count_begin));
@@ -91,19 +96,18 @@ void mis_to_aggregates(const MatrixType& C,
 
     // (2,i) mis (0,i) non-mis
     // find the largest (mis[j],j) 1-ring neighbor for each node
-    cusp::generalized_spmv(A, x, x, y, thrust::project2nd<Tuple,Tuple>(), thrust::maximum<Tuple>());
+    cusp::generalized_spmv(exec, A, x, x, y, thrust::project2nd<Tuple,Tuple>(), thrust::maximum<Tuple>());
 
     // boost mis0 values so they win in second round
-    thrust::transform(mis.begin(), mis.end(), mis1.begin(), mis1.begin(), thrust::plus<T>());
+    thrust::transform(exec, mis.begin(), mis.end(), mis1.begin(), mis1.begin(), thrust::plus<IndexType>());
 
     // find the largest (mis[j],j) 2-ring neighbor for each node
-    cusp::generalized_spmv(A, y, y, z, thrust::project2nd<Tuple,Tuple>(), thrust::maximum<Tuple>());
+    cusp::generalized_spmv(exec, A, y, y, z, thrust::project2nd<Tuple,Tuple>(), thrust::maximum<Tuple>());
 
     // enumerate the MIS nodes
-    cusp::array1d<IndexType,MemorySpace> mis_enum(N);
-    thrust::exclusive_scan(mis.begin(), mis.end(), mis_enum.begin());
+    thrust::exclusive_scan(exec, mis.begin(), mis.end(), mis_enum.begin());
 
-    thrust::gather(idx2.begin(), idx2.end(), mis_enum.begin(), aggregates.begin());
+    thrust::gather(exec, idx2.begin(), idx2.end(), mis_enum.begin(), aggregates.begin());
 } // mis_to_aggregates()
 
 template <typename DerivedPolicy,
@@ -116,52 +120,56 @@ void mis_aggregate(thrust::execution_policy<DerivedPolicy> &exec,
                          ArrayType2& mis,
                    cusp::coo_format)
 {
-    typedef typename MatrixType::index_type       IndexType;
-    typedef typename MatrixType::memory_space     MemorySpace;
-    typedef cusp::array1d<IndexType, MemorySpace> Array;
+    typedef typename MatrixType::index_type                         IndexType;
+    typedef cusp::detail::temporary_array<IndexType, DerivedPolicy> ArrayType;
 
     // compute MIS(2)
     cusp::graph::maximal_independent_set(exec, C, mis, 2);
 
     // compute aggregates from MIS(2)
-    mis_to_aggregates(C, mis, aggregates);
+    mis_to_aggregates(exec, C, mis, aggregates);
 
     // locate singletons
-    IndexType num_aggregates = *thrust::max_element(aggregates.begin(), aggregates.end()) + 1;
-    Array sorted_aggregates(aggregates);
-    Array aggregate_counts(num_aggregates);
-    Array reduced_aggregates(num_aggregates);
+    IndexType num_aggregates = *thrust::max_element(exec, aggregates.begin(), aggregates.end()) + 1;
+    ArrayType sorted_aggregates(exec, aggregates);
+    ArrayType aggregate_counts(exec, num_aggregates);
+    ArrayType reduced_aggregates(exec, num_aggregates);
 
     // compute sizes of the aggregates
-    thrust::sort(sorted_aggregates.begin(), sorted_aggregates.end());
-    thrust::reduce_by_key(sorted_aggregates.begin(), sorted_aggregates.end(),
+    thrust::sort(exec, sorted_aggregates.begin(), sorted_aggregates.end());
+    thrust::reduce_by_key(exec,
+                          sorted_aggregates.begin(), sorted_aggregates.end(),
                           thrust::constant_iterator<IndexType>(1),
                           thrust::make_discard_iterator(),
                           aggregate_counts.begin());
 
     // count the number of aggregates consisting of a single node
-    IndexType num_singletons = thrust::count(aggregate_counts.begin(), aggregate_counts.end(), IndexType(1));
+    IndexType num_singletons = thrust::count(exec, aggregate_counts.begin(), aggregate_counts.end(), IndexType(1));
 
     // mark singletons with -1 for filtering, the total number of aggregates is now (num_aggregates - num_singletons)
     if ( num_singletons > 0 ) {
-        Array aggregate_ids(num_aggregates);
+        ArrayType aggregate_ids(exec, num_aggregates);
         cusp::array1d<bool,cusp::device_memory> isone(num_aggregates);
 
         // [2, 2, 1, 2, 2, 1] -> [1, 1, 0, 1, 1, 0]
-        thrust::transform(aggregate_counts.begin(), aggregate_counts.end(),
+        thrust::transform(exec,
+                          aggregate_counts.begin(), aggregate_counts.end(),
                           thrust::constant_iterator<IndexType>(1), isone.begin(),
                           thrust::equal_to<IndexType>());
         // [1, 1, 0, 1, 1, 0] -> [0, 1, 2, 2, 3, 3]
-        thrust::exclusive_scan(thrust::make_transform_iterator(isone.begin(), thrust::logical_not<bool>()),
+        thrust::exclusive_scan(exec,
+                               thrust::make_transform_iterator(isone.begin(), thrust::logical_not<bool>()),
                                thrust::make_transform_iterator(isone.end()  , thrust::logical_not<bool>()),
                                aggregate_ids.begin());
         // [0, 1, 2, 2, 3, 3] -> [0, 1, -1, 2, 3, -1]
-        thrust::scatter_if( thrust::constant_iterator<IndexType>(-1),
-                            thrust::constant_iterator<IndexType>(-1) + num_aggregates,
-                            thrust::counting_iterator<IndexType>(0),
-                            isone.begin(),
+        thrust::scatter_if(exec,
+                           thrust::constant_iterator<IndexType>(-1),
+                           thrust::constant_iterator<IndexType>(-1) + num_aggregates,
+                           thrust::counting_iterator<IndexType>(0),
+                           isone.begin(),
                             aggregate_ids.begin());
-        thrust::gather(aggregates.begin(), aggregates.end(), aggregate_ids.begin(), aggregates.begin());
+
+        thrust::gather(exec, aggregates.begin(), aggregates.end(), aggregate_ids.begin(), aggregates.begin());
     }
 }
 
@@ -179,7 +187,7 @@ void mis_aggregate(thrust::execution_policy<DerivedPolicy> &exec,
 
     MatrixViewType C_(C);
 
-    mis_aggregate(exec, C_ , aggregates, mis, cusp::coo_format());
+    mis_aggregate(exec, C_ , aggregates, mis);
 }
 
 template <typename DerivedPolicy,
@@ -195,7 +203,7 @@ void mis_aggregate(thrust::execution_policy<DerivedPolicy> &exec,
 
     Format format;
 
-    mis_aggregate(exec, C, aggregates, mis, format);
+    mis_aggregate(thrust::detail::derived_cast(exec), C, aggregates, mis, format);
 }
 
 } // end namespace detail
