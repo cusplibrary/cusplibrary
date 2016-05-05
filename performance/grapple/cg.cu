@@ -14,7 +14,6 @@ int main(int argc, char** argv)
     typedef cusp::device_memory MemorySpace;
 
     cusp::csr_matrix<IndexType,ValueType,MemorySpace> A;
-    cusp::dia_matrix<IndexType,ValueType,MemorySpace> B;
 
     if (argc == 1)
     {
@@ -36,7 +35,6 @@ int main(int argc, char** argv)
 
     my_policy exec;
     cusp::krylov::cg(exec, A, x, b, monitor, I);
-    cusp::convert(exec, A, B);
 
     return 0;
 }

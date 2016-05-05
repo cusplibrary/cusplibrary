@@ -13,6 +13,7 @@ def process_file(fobj, filename, base_list, project_name) :
         output = re.findall(policy_tag_str, text, re.DOTALL);
 
         if output :
+
             base_dir,base_file = split(filename);
             start_dir = os.path.split(base_dir)[1];
 
@@ -28,7 +29,14 @@ def process_file(fobj, filename, base_list, project_name) :
                         fobj.write("#include <{}/{}>".format(start_dir, base_file));
 
                         for routine in output :
-                            name    = re.search("using.*::(?P<name>\w+);", routine).group("name");
+                            if '::execution_policy<' in routine :
+                                continue;
+
+                            name_search = re.search("using.*::(?P<name>\w+);", routine);
+                            if name_search :
+                                name = name_search.group("name")
+                            else :
+                                continue;
 
                             routine = re.sub("typename\s*?DerivedPolicy,\s*?",
                                              "", routine);
@@ -38,6 +46,7 @@ def process_file(fobj, filename, base_list, project_name) :
                                              "my_policy", routine);
                             routine = re.sub("thrust::detail::derived_cast\(thrust::detail::strip_const\(exec\)\)",
                                              "exec.get()" if name not in base_list else "exec.base()", routine);
+                                             # "exec.base()", routine);
 
                             ret = re.search(r"template\s*?<.*?>\s*(?P<return_type>[\w\d,:<> ]+)\s*" + name + r"\s*?\(", routine, re.DOTALL);
                             if not ret:
@@ -48,6 +57,7 @@ def process_file(fobj, filename, base_list, project_name) :
                                 name = "_".join(["blas", name]);
 
                             lines = routine.split("\n")
+
                             out_lines = []
                             for line in lines:
                                 if line :
@@ -73,12 +83,10 @@ def process_file(fobj, filename, base_list, project_name) :
 
     return enum_ids;
 
-def generate(base_dir, project_name, base_list, start_index) :
-    project_base = os.path.join(base_dir, project_name);
-
+def generate(base_dir, project_name, dir_list, base_list, start_index) :
     # find all .inls base directories
-    sources = []
-    directories = [project_base]
+    sources = [];
+    directories = [os.path.join(base_dir, dir_name) for dir_name in dir_list];
     extensions = ['*.h'];
 
     for dir in directories:
@@ -99,11 +107,11 @@ if __name__ == "__main__" :
 
     thrust_base = os.path.join(os.environ["HOME"], "thrust");
     thrust_base_funcs = ["for_each", "for_each_n", "inclusive_scan", "exclusive_scan", "reduce"];
-    global_ids = generate(thrust_base, "thrust", thrust_base_funcs, 0);
+    global_ids = generate(thrust_base, "thrust", ["thrust"], thrust_base_funcs, 0);
 
     cusp_base = os.path.join(os.environ["HOME"], "cusplibrary");
     cusp_base_funcs = [];
-    ids = generate(cusp_base, "cusp", cusp_base_funcs, 0);
+    ids = generate(cusp_base, "cusp", ["cusp", "cusp/krylov", "cusp/graph"], cusp_base_funcs, 0);
     global_ids.extend(ids);
 
     with open("my_policy_map.h", "w") as fobj:

@@ -34,9 +34,9 @@ public:
         return *this;
     }
 
-    const cusp::system::cuda::detail::par_t& base(void)
+    cusp::system::cuda::execution_policy<my_policy>& base(void)
     {
-        return cusp::cuda::par;
+        return *this;
     }
 
     void start(const size_t id)
@@ -54,7 +54,7 @@ public:
         cudaEventSynchronize(end);
         cudaEventElapsedTime(&elapsed_time, begin, end);
 
-        for(size_t k = 0; k < stack - 1; k++) std::cout << "\t";
+        // for(size_t k = 0; k < stack - 1; k++) std::cout << "\t";
         std::cout << ARR_NAMES[func_id] << "[ " << elapsed_time << " (ms)]\n";
         stack--;
     }

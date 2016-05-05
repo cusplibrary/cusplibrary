@@ -862,7 +862,7 @@ void bicgstab_m(const thrust::detail::execution_policy_base<DerivedPolicy> &exec
 
     cusp::monitor<ValueType> monitor(b);
 
-    cusp::krylov::bicg_detail::bicgstab_m(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, x, b, sigma, monitor);
+    return cusp::krylov::bicg_detail::bicgstab_m(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, x, b, sigma, monitor);
 }
 
 } // end bicg_detail namespace
@@ -880,8 +880,7 @@ void bicgstab_m(const thrust::detail::execution_policy_base<DerivedPolicy> &exec
 {
     using cusp::krylov::bicg_detail::bicgstab_m;
 
-    bicgstab_m(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
-               A, x, b, sigma);
+    return bicgstab_m(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, x, b, sigma);
 }
 
 // BiCGStab-M routine that uses the default monitor to determine completion
@@ -907,7 +906,7 @@ bicgstab_m(LinearOperator& A,
     System3 system3;
     System4 system4;
 
-    cusp::krylov::bicgstab_m(select_system(system1,system2,system3,system4), A, x, b, sigma);
+    return cusp::krylov::bicgstab_m(select_system(system1,system2,system3,system4), A, x, b, sigma);
 }
 
 template <typename DerivedPolicy,
@@ -925,8 +924,7 @@ void bicgstab_m(const thrust::detail::execution_policy_base<DerivedPolicy> &exec
 {
     using cusp::krylov::bicg_detail::bicgstab_m;
 
-    bicgstab_m(thrust::detail::derived_cast(thrust::detail::strip_const(exec)),
-               A, x, b, sigma, monitor);
+    return bicgstab_m(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, x, b, sigma, monitor);
 }
 
 // BiCGStab-M routine that takes a user specified monitor
@@ -954,7 +952,7 @@ bicgstab_m(LinearOperator& A,
     System3 system3;
     System4 system4;
 
-    cusp::krylov::bicgstab_m(select_system(system1,system2,system3,system4), A, x, b, sigma, monitor);
+    return cusp::krylov::bicgstab_m(select_system(system1,system2,system3,system4), A, x, b, sigma, monitor);
 }
 
 } // end namespace krylov
