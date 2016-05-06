@@ -5,9 +5,49 @@
 
 #include <iostream>
 #include <stack>
+#include <string>
+#include <typeinfo>
 #include <vector>
 
 #include "my_policy_map.h"
+
+std::string demangle(const char* name);
+
+template <class T>
+std::string type(const T& t) {
+
+      return demangle(typeid(t).name());
+}
+
+#ifdef __GNUG__
+#include <cstdlib>
+#include <memory>
+#include <cxxabi.h>
+
+struct handle {
+    char* p;
+    handle(char* ptr) : p(ptr) { }
+    ~handle() {
+        std::free(p);
+    }
+};
+
+std::string demangle(const char* name) {
+
+    int status = -4; // some arbitrary value to eliminate the compiler warning
+
+    handle result( abi::__cxa_demangle(name, NULL, NULL, &status) );
+
+    return (status==0) ? result.p : name ;
+}
+
+#else
+
+// does nothing if not g++
+std::string demangle(const char* name) {
+    return name;
+}
+#endif
 
 class timer
 {
@@ -171,8 +211,7 @@ public:
         timer_list[--stack_frame].Stop();
         float elapsed_time = timer_list[stack_frame].milliseconds_elapsed();
 
-        int index = func_stack.top();
-        data[index].set_data(stack_frame, func_index[stack_frame], elapsed_time);
+        data[func_stack.top()].set_data(stack_frame, func_index[stack_frame], elapsed_time);
         func_stack.pop();
     }
 

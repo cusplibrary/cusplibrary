@@ -12,6 +12,8 @@ except:
 # env.Append(NVCCFLAGS  = ["-std=c++11"])
 # env.Append(CPPDEFINES = ["_MWAITXINTRIN_H_INCLUDED"])
 
+env.Append(LIBS = ["lapacke"])
+
 # find all .cus & .cpps in the current directory
 sources = []
 directories = ['.']

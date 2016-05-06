@@ -4,9 +4,10 @@ import os, sys, re, glob
 
 from os.path import join, split, splitext
 
-def process_file(fobj, filename, base_list, project_name) :
+def process_file(project_base_dir, fobj, filename, base_list, project_name) :
     enum_ids = [];
     policy_tag_str = 'template\s*?<\s*?typename DerivedPolicy.*?>.*?;';
+    inc_filename = filename.replace(project_base_dir + "/", "");
 
     with open(filename, "r") as fobj0:
         text = fobj0.read();
@@ -26,7 +27,7 @@ def process_file(fobj, filename, base_list, project_name) :
                     output = re.findall(ext_policy_tag_str, text, re.DOTALL);
 
                     if output :
-                        fobj.write("#include <{}/{}>".format(start_dir, base_file));
+                        fobj.write("#include <{}>\n".format(inc_filename));
 
                         for routine in output :
                             if '::execution_policy<' in routine :
@@ -38,15 +39,11 @@ def process_file(fobj, filename, base_list, project_name) :
                             else :
                                 continue;
 
-                            routine = re.sub("typename\s*?DerivedPolicy,\s*?",
-                                             "", routine);
-                            routine = re.sub("__host__\s*__device__",
-                                             "", routine);
-                            routine = re.sub("const thrust::detail::execution_policy_base<DerivedPolicy>",
-                                             "my_policy", routine);
+                            routine = re.sub("typename\s*?DerivedPolicy,\s*?", "", routine);
+                            routine = re.sub("__host__\s*__device__", "", routine);
+                            routine = re.sub("const thrust::detail::execution_policy_base<DerivedPolicy>", "my_policy", routine);
                             routine = re.sub("thrust::detail::derived_cast\(thrust::detail::strip_const\(exec\)\)",
-                                             "exec.base()", routine);
-                                             # "exec.get()" if name not in base_list else "exec.base()", routine);
+                                             "exec.get()" if name not in base_list else "exec.base()", routine);
 
                             ret = re.search(r"template\s*?<.*?>\s*(?P<return_type>[\w\d,:<> ]+)\s*" + name + r"\s*?\(", routine, re.DOTALL);
                             if not ret:
@@ -97,7 +94,7 @@ def generate(base_dir, project_name, dir_list, base_list, start_index) :
     local_ids = []
     with open("my_{}_func.h".format(project_name), "w") as fobj:
         for source in sources :
-            ids = process_file(fobj, source, base_list, project_name);
+            ids = process_file(base_dir, fobj, source, base_list, project_name);
             if ids :
                 local_ids.extend(ids);
 
@@ -111,7 +108,7 @@ if __name__ == "__main__" :
 
     cusp_base = os.path.join(os.environ["HOME"], "cusplibrary");
     cusp_base_funcs = [];
-    ids = generate(cusp_base, "cusp", ["cusp", "cusp/krylov", "cusp/graph"], cusp_base_funcs, 0);
+    ids = generate(cusp_base, "cusp", ["cusp", "cusp/krylov", "cusp/graph", "cusp/lapack"], cusp_base_funcs, 0);
     global_ids.extend(ids);
 
     with open("my_policy_map.h", "w") as fobj:
