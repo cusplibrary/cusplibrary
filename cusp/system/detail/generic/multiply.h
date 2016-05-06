@@ -31,25 +31,25 @@ namespace detail
 namespace generic
 {
 
-template <typename DerivedPolicy,
-          typename LinearOperator,
-          typename MatrixOrVector1,
-          typename MatrixOrVector2>
-typename thrust::detail::enable_if_convertible<typename LinearOperator::format,cusp::unknown_format>::type
-multiply(thrust::execution_policy<DerivedPolicy> &exec,
-         const LinearOperator&  A,
-         const MatrixOrVector1& B,
-               MatrixOrVector2& C);
-
-template <typename DerivedPolicy,
-          typename LinearOperator,
-          typename MatrixOrVector1,
-          typename MatrixOrVector2>
-typename thrust::detail::disable_if_convertible<typename LinearOperator::format,cusp::unknown_format>::type
-multiply(thrust::execution_policy<DerivedPolicy> &exec,
-         const LinearOperator&  A,
-         const MatrixOrVector1& B,
-               MatrixOrVector2& C);
+// template <typename DerivedPolicy,
+//           typename LinearOperator,
+//           typename MatrixOrVector1,
+//           typename MatrixOrVector2>
+// typename thrust::detail::enable_if_convertible<typename LinearOperator::format,cusp::unknown_format>::type
+// multiply(thrust::execution_policy<DerivedPolicy> &exec,
+//          const LinearOperator&  A,
+//          const MatrixOrVector1& B,
+//                MatrixOrVector2& C);
+//
+// template <typename DerivedPolicy,
+//           typename LinearOperator,
+//           typename MatrixOrVector1,
+//           typename MatrixOrVector2>
+// typename thrust::detail::disable_if_convertible<typename LinearOperator::format,cusp::unknown_format>::type
+// multiply(thrust::execution_policy<DerivedPolicy> &exec,
+//          const LinearOperator&  A,
+//          const MatrixOrVector1& B,
+//                MatrixOrVector2& C);
 
 template <typename DerivedPolicy,
           typename LinearOperator,

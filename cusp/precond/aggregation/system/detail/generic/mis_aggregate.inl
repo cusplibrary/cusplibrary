@@ -48,7 +48,9 @@ void mis_to_aggregates(thrust::execution_policy<DerivedPolicy>& exec,
                              ArrayType2& aggregates)
 {
     typedef typename MatrixType::index_type                                   IndexType;
-    typedef cusp::detail::temporary_array<IndexType, DerivedPolicy>           ArrayType;
+    typedef typename MatrixType::memory_space                                 MemorySpace;
+    // typedef cusp::detail::temporary_array<IndexType, DerivedPolicy>           ArrayType;
+    typedef cusp::array1d<IndexType, MemorySpace>                             ArrayType;
 
     typedef typename ArrayType::iterator                                      ArrayIterator;
     typedef typename ArrayType::const_iterator                                ConstArrayIterator;
@@ -78,12 +80,12 @@ void mis_to_aggregates(thrust::execution_policy<DerivedPolicy>& exec,
               values);
 
     // current (ring,index)
-    ArrayType mis1(exec, N);
-    ArrayType mis2(exec, N);
-    ArrayType mis_enum(exec, N);
+    ArrayType mis1(N);
+    ArrayType mis2(N);
+    ArrayType mis_enum(N);
 
-    ArrayType idx1(exec, N);
-    ArrayType idx2(exec, N);
+    ArrayType idx1(N);
+    ArrayType idx2(N);
 
     CountingIterator count_begin(0);
     ZipIterator1 x_iter(thrust::make_tuple(mis.begin(),  count_begin));
