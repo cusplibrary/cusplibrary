@@ -15,8 +15,7 @@ addons:
           - llvm-toolchain-precise
           - ubuntu-toolchain-r-test
       packages:
-          - clang-3.7
-          - libiomp-dev
+          - clang-3.9
 
 compiler:
     - gcc
@@ -28,8 +27,9 @@ env:
     - THRUST_VERSION=master
 
 install:
-    # - if [ "$CC" = "clang" ]; then export CXX="clang++-3.7" CC="clang-3.7"; fi
-    - sudo ln -s /usr/bin/clang-3.7 /usr/bin/clang
+    # - if [ "$CC" = "clang" ]; then export CXX="clang++-3.9" CC="clang-3.9"; fi
+    - sudo apt-get install libiomp-dev
+    - sudo ln -s /usr/bin/clang-3.9 /usr/bin/clang
     - git clone -b $THRUST_VERSION https://github.com/sdalton1/thrust.git
     - export THRUST_PATH=$PWD/thrust
     - cd testing
