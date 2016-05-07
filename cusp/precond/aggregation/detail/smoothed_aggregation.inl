@@ -161,7 +161,6 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverTyp
     }
 
     SetupMatrixType P;
-    // cusp::detail::temporary_array<ValueType, DerivedPolicy> B_coarse(exec);
     cusp::array1d<ValueType, MemorySpace> B_coarse;
 
     // compute tenative prolongator and coarse nullspace vector
