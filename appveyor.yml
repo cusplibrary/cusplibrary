@@ -9,7 +9,6 @@ configuration: Release
 platform: x64
 environment:
   matrix:
-    - THRUST_VERSION: "1.7.2"
     - THRUST_VERSION: "1.8.3"
     - THRUST_VERSION: "master"
 before_build:

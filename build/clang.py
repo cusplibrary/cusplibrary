@@ -63,11 +63,14 @@ def generate(env):
     # set the "CUDA Compiler Command" environment variable
     # windows is picky about getting the full filename of the executable
     if os.name == 'nt':
-        env['NVCC'] = 'clang.exe'
+        env['NVCC']   = 'clang.exe'
         env['SHNVCC'] = 'clang.exe'
     else:
-        env['NVCC'] = 'clang'
+        env['NVCC']   = 'clang'
         env['SHNVCC'] = 'clang'
+        env['CC']     = 'clang'
+        env['CXX']    = 'clang++'
+        env['LINK']   = 'clang'
 
     # set the include path, and pass both c compiler flags and c++ compiler
     # flags

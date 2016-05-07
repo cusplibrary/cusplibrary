@@ -99,18 +99,20 @@ OldEnvironment = Environment
 # this dictionary maps the name of a compiler program to a dictionary mapping the name of
 # a compiler switch of interest to the specific switch implementing the feature
 gCompilerOptions = {
-        'gcc':   {'warn_all': '-Wall', 'warn_errors': '-Werror', 'optimization': '-O3', 'debug': '-g',  'exception_handling': '', 'omp': '-fopenmp', 'coverage':['-O0', '-coverage']},
-        'g++':   {'warn_all': '-Wall', 'warn_errors': '-Werror', 'optimization': '-O3', 'debug': '-g',  'exception_handling': '', 'omp': '-fopenmp', 'coverage':['-O0', '-coverage']},
-        'clang': {'warn_all': '-Wall', 'warn_errors': '-Werror', 'optimization': '-O3', 'debug': '-g',  'exception_handling': '', 'omp': '-fopenmp', 'coverage':['-O0', '-coverage']},
-        'cl': {'warn_all': '/Wall', 'warn_errors': '/WX', 'optimization': '/Ox', 'debug': ['/Zi', '-D_DEBUG', '/MTd'], 'exception_handling': '/EHsc', 'omp': '/openmp', 'coverage':''}
+      'gcc':    {'warn_all': '-Wall', 'warn_errors': '-Werror', 'optimization': '-O3', 'debug': '-g',  'exception_handling': '', 'omp': '-fopenmp', 'coverage':['-O0', '-coverage']},
+      'g++':    {'warn_all': '-Wall', 'warn_errors': '-Werror', 'optimization': '-O3', 'debug': '-g',  'exception_handling': '', 'omp': '-fopenmp', 'coverage':['-O0', '-coverage']},
+      'clang':  {'warn_all': '-Wall', 'warn_errors': '-Werror', 'optimization': '-O3', 'debug': '-g',  'exception_handling': '', 'omp': '-fopenmp', 'coverage':['-O0', '-coverage']},
+      'clang++':{'warn_all': '-Wall', 'warn_errors': '-Werror', 'optimization': '-O3', 'debug': '-g',  'exception_handling': '', 'omp': '-fopenmp', 'coverage':['-O0', '-coverage']},
+      'cl':     {'warn_all': '/Wall', 'warn_errors': '/WX', 'optimization': '/Ox', 'debug': ['/Zi', '-D_DEBUG', '/MTd'], 'exception_handling': '/EHsc', 'omp': '/openmp', 'coverage':''}
 }
 
 
 # this dictionary maps the name of a linker program to a dictionary mapping the name of
 # a linker switch of interest to the specific switch implementing the feature
 gLinkerOptions = {
-        'gcc': {'debug': ''},
-        'link': {'debug': '/debug'}
+        'gcc'  : {'debug': ''},
+        'clang': {'debug': ''},
+        'link' : {'debug': '/debug'}
 }
 
 
@@ -342,6 +344,9 @@ def Environment():
 
         if 'THRUST_PATH' not in os.environ :
             raise ValueError("Building without nvcc requires THRUST_PATH environment variable!")
+
+        if 'clang' in compiler_define :
+            env.Append(CFLAGS = ["-Wno-unused-local-typedef"]);
 
     # if compiler_define == 'gcc' or compiler_define == 'g++' :
     #     GCC_VERSION = subprocess.check_output([env['CXX'], '-dumpversion'])
