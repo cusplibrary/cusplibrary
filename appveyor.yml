@@ -9,9 +9,12 @@ configuration: Release
 platform: x64
 environment:
   matrix:
-  - {}
+    - THRUST_VERSION: "1.7.2"
+    - THRUST_VERSION: "1.8.3"
+    - THRUST_VERSION: "master"
 before_build:
-  - cmd: git clone -b 1.8.3 https://github.com/sdalton1/thrust.git C:\projects\thrust
+  - cmd: ECHO "%THRUST_VERSION%"
+  - cmd: git clone -b %THRUST_VERSION% https://github.com/sdalton1/thrust.git C:\projects\thrust
 build:
   project: C:\projects\cusplibrary\testing\vs_tester\device_omp_tester\device_omp_tester.vcxproj
   parallel: true
