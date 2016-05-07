@@ -149,7 +149,7 @@ void mis_aggregate(thrust::execution_policy<DerivedPolicy> &exec,
     // mark singletons with -1 for filtering, the total number of aggregates is now (num_aggregates - num_singletons)
     if ( num_singletons > 0 ) {
         ArrayType aggregate_ids(exec, num_aggregates);
-        cusp::array1d<bool,cusp::device_memory> isone(num_aggregates);
+        cusp::detail::temporary_array<bool, DerivedPolicy> isone(exec, num_aggregates);
 
         // [2, 2, 1, 2, 2, 1] -> [1, 1, 0, 1, 1, 0]
         thrust::transform(exec,
@@ -167,7 +167,7 @@ void mis_aggregate(thrust::execution_policy<DerivedPolicy> &exec,
                            thrust::constant_iterator<IndexType>(-1) + num_aggregates,
                            thrust::counting_iterator<IndexType>(0),
                            isone.begin(),
-                            aggregate_ids.begin());
+                           aggregate_ids.begin());
 
         thrust::gather(exec, aggregates.begin(), aggregates.end(), aggregate_ids.begin(), aggregates.begin());
     }
