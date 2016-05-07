@@ -158,6 +158,7 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverTyp
 
         // compute aggregates
         sa_levels.back().aggregates.resize(A.num_rows, IndexType(0));
+        sa_levels.back().roots.resize(A.num_rows);
         aggregate(exec, C, sa_levels.back().aggregates, sa_levels.back().roots);
     }
 

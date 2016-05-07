@@ -138,7 +138,9 @@ void symmetric_strength_of_connection(thrust::cpp::execution_policy<DerivedPolic
     cusp::convert(exec, S_csr, S);
 }
 
-template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
+template <typename DerivedPolicy,
+          typename MatrixType1,
+          typename MatrixType2>
 void symmetric_strength_of_connection(thrust::cpp::execution_policy<DerivedPolicy> &exec,
                                       const MatrixType1& A,
                                             MatrixType2& S,

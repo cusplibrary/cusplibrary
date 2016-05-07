@@ -39,7 +39,7 @@ void standard_aggregate(thrust::cpp::execution_policy<DerivedPolicy> &exec,
                         const MatrixType& A,
                               ArrayType1& aggregates,
                               ArrayType2& roots,
-                        cusp::csr_format)
+                              cusp::csr_format)
 {
     typedef typename MatrixType::index_type IndexType;
 
