@@ -120,20 +120,20 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverTyp
     sa_levels.push_back(sa_level<SetupMatrixType>());
     sa_levels.back().B = B;
 
-    DerivedPolicy& dexec = thrust::detail::derived_cast(thrust::detail::strip_const(exec));
+    // DerivedPolicy& dexec = thrust::detail::derived_cast(thrust::detail::strip_const(exec));
 
     // Setup the first level using a COO view
     if(A.num_rows > ML::min_level_size)
     {
         View A_(A);
-        extend_hierarchy(dexec, A_);
+        extend_hierarchy(exec, A_);
         ML::setup_level(0, A, sa_levels[0]);
     }
 
     // Iteratively setup lower levels until stopping criteria are reached
     while ((sa_levels.back().A_.num_rows > ML::min_level_size) &&
             (sa_levels.size() < ML::max_levels))
-        extend_hierarchy(dexec, sa_levels.back().A_);
+        extend_hierarchy(exec, sa_levels.back().A_);
 
     // Setup multilevel arrays and matrices on each level
     for( size_t lvl = 1; lvl < sa_levels.size(); lvl++ )
@@ -146,7 +146,7 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverTyp
 template <typename IndexType, typename ValueType, typename MemorySpace, typename SmootherType, typename SolverType, typename Format>
 template <typename DerivedPolicy, typename MatrixType>
 void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverType,Format>
-::extend_hierarchy(thrust::execution_policy<DerivedPolicy> &exec,
+::extend_hierarchy(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
                    const MatrixType& A)
 {
     typedef typename ML::level Level;

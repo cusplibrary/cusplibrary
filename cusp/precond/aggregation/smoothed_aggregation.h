@@ -249,7 +249,7 @@ protected:
     /* \cond */
     template <typename DerivedPolicy,
               typename MatrixType>
-    void extend_hierarchy(thrust::execution_policy<DerivedPolicy> &exec,
+    void extend_hierarchy(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
                           const MatrixType& A);
     /* \endcond */
 };
