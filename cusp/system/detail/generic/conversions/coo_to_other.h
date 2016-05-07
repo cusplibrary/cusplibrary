@@ -24,6 +24,7 @@
 #include <cusp/blas/blas.h>
 
 #include <cusp/detail/format.h>
+#include <cusp/detail/temporary_array.h>
 
 #include <thrust/count.h>
 #include <thrust/gather.h>
@@ -140,7 +141,6 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
 {
     typedef typename DestinationType::index_type   IndexType;
     typedef typename DestinationType::value_type   ValueType;
-    typedef typename DestinationType::memory_space MemorySpace;
 
     if(src.num_entries == 0)
     {
@@ -160,7 +160,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
         throw cusp::format_conversion_exception("dia_matrix fill-in would exceed maximum tolerance");
 
     // compute number of occupied diagonals and enumerate them
-    cusp::array1d<IndexType,MemorySpace> diag_map(src.num_entries);
+    cusp::detail::temporary_array<IndexType, DerivedPolicy> diag_map(exec, src.num_entries);
     thrust::transform(exec,
                       thrust::make_zip_iterator( thrust::make_tuple( src.row_indices.begin(), src.column_indices.begin() ) ),
                       thrust::make_zip_iterator( thrust::make_tuple( src.row_indices.end()  , src.column_indices.end() ) )  ,
@@ -168,7 +168,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
                       cusp::detail::occupied_diagonal_functor<IndexType>(src.num_rows));
 
     // place ones in diagonals array locations with occupied diagonals
-    cusp::array1d<IndexType,MemorySpace> diagonals(src.num_rows + src.num_cols,IndexType(0));
+    cusp::detail::temporary_array<IndexType, DerivedPolicy> diagonals(exec, src.num_rows + src.num_cols,IndexType(0));
     thrust::scatter(exec,
                     thrust::constant_iterator<IndexType>(1),
                     thrust::constant_iterator<IndexType>(1) + src.num_entries,
@@ -223,7 +223,6 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
 {
     typedef typename DestinationType::index_type   IndexType;
     typedef typename DestinationType::value_type   ValueType;
-    typedef typename DestinationType::memory_space MemorySpace;
 
     if(src.num_entries == 0)
     {
@@ -233,7 +232,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
 
     if(num_entries_per_row == 0)
     {
-        cusp::array1d<IndexType,MemorySpace> row_offsets(src.num_rows + 1);
+        cusp::detail::temporary_array<IndexType, DerivedPolicy> row_offsets(exec, src.num_rows + 1);
         cusp::indices_to_offsets(exec, src.row_indices, row_offsets);
 
         const size_t max_entries_per_row = cusp::compute_max_entries_per_row(exec, row_offsets);
@@ -256,7 +255,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
 
     // compute permutation from COO index to ELL index
     // first enumerate the entries within each row, e.g. [0, 1, 2, 0, 1, 2, 3, ...]
-    cusp::array1d<IndexType, MemorySpace> permutation(src.num_entries);
+    cusp::detail::temporary_array<IndexType, DerivedPolicy> permutation(exec, src.num_entries);
 
     thrust::exclusive_scan_by_key(exec,
                                   src.row_indices.begin(), src.row_indices.end(),
@@ -298,7 +297,6 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
 {
     typedef typename DestinationType::index_type   IndexType;
     typedef typename DestinationType::value_type   ValueType;
-    typedef typename DestinationType::memory_space MemorySpace;
 
     if(src.num_entries == 0)
     {
@@ -311,14 +309,14 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
         const float  relative_speed      = 3.0;
         const size_t breakeven_threshold = 4096;
 
-        cusp::array1d<IndexType,MemorySpace> row_offsets(src.num_rows + 1);
+        cusp::detail::temporary_array<IndexType, DerivedPolicy> row_offsets(exec, src.num_rows + 1);
         cusp::indices_to_offsets(src.row_indices, row_offsets);
 
         num_entries_per_row =
             cusp::compute_optimal_entries_per_row(exec, row_offsets, relative_speed, breakeven_threshold);
     }
 
-    cusp::array1d<IndexType,MemorySpace> indices(src.num_entries);
+    cusp::detail::temporary_array<IndexType, DerivedPolicy> indices(exec, src.num_entries);
     thrust::exclusive_scan_by_key(exec,
                                   src.row_indices.begin(), src.row_indices.end(),
                                   thrust::constant_iterator<IndexType>(1),

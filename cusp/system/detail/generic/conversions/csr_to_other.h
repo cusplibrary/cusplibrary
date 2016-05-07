@@ -25,6 +25,7 @@
 #include <cusp/blas/blas.h>
 
 #include <cusp/detail/format.h>
+#include <cusp/detail/temporary_array.h>
 
 #include <thrust/count.h>
 #include <thrust/gather.h>
@@ -80,7 +81,6 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
 {
     typedef typename DestinationType::index_type   IndexType;
     typedef typename DestinationType::value_type   ValueType;
-    typedef typename DestinationType::memory_space MemorySpace;
 
     if(src.num_entries == 0)
     {
@@ -89,7 +89,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     }
 
     // compute number of occupied diagonals and enumerate them
-    cusp::array1d<IndexType,MemorySpace> row_indices(src.num_entries);
+    cusp::detail::temporary_array<IndexType, DerivedPolicy> row_indices(exec, src.num_entries);
     cusp::offsets_to_indices(exec, src.row_offsets, row_indices);
 
     const size_t occupied_diagonals = cusp::count_diagonals(exec, src.num_rows, src.num_cols, row_indices, src.column_indices);
@@ -102,7 +102,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     if (max_fill < fill_ratio && size > threshold)
         throw cusp::format_conversion_exception("dia_matrix fill-in would exceed maximum tolerance");
 
-    cusp::array1d<IndexType,MemorySpace> diag_map(src.num_entries);
+    cusp::detail::temporary_array<IndexType, DerivedPolicy> diag_map(exec, src.num_entries);
     thrust::transform(exec,
                       thrust::make_zip_iterator( thrust::make_tuple( row_indices.begin(), src.column_indices.begin() ) ),
                       thrust::make_zip_iterator( thrust::make_tuple( row_indices.end()  , src.column_indices.end() ) )  ,
@@ -110,7 +110,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
                       cusp::detail::occupied_diagonal_functor<IndexType>(src.num_rows));
 
     // place ones in diagonals array locations with occupied diagonals
-    cusp::array1d<IndexType,MemorySpace> diagonals(src.num_rows + src.num_cols,IndexType(0));
+    cusp::detail::temporary_array<IndexType, DerivedPolicy> diagonals(exec, src.num_rows + src.num_cols,IndexType(0));
 
     thrust::scatter(exec,
                     thrust::constant_iterator<IndexType>(1),
@@ -164,7 +164,6 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
 {
     typedef typename DestinationType::index_type   IndexType;
     typedef typename DestinationType::value_type   ValueType;
-    typedef typename DestinationType::memory_space MemorySpace;
 
     if(src.num_entries == 0)
     {
@@ -193,12 +192,12 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     dst.resize(src.num_rows, src.num_cols, num_entries, num_entries_per_row, alignment);
 
     // expand row offsets into row indices
-    cusp::array1d<IndexType, MemorySpace> row_indices(src.num_entries);
+    cusp::detail::temporary_array<IndexType, DerivedPolicy> row_indices(exec, src.num_entries);
     cusp::offsets_to_indices(exec, src.row_offsets, row_indices);
 
     // compute permutation from CSR index to ELL index
     // first enumerate the entries within each row, e.g. [0, 1, 2, 0, 1, 2, 3, ...]
-    cusp::array1d<IndexType, MemorySpace> permutation(src.num_entries);
+    cusp::detail::temporary_array<IndexType, DerivedPolicy> permutation(exec, src.num_entries);
     thrust::exclusive_scan_by_key(exec,
                                   row_indices.begin(), row_indices.end(),
                                   thrust::constant_iterator<IndexType>(1),
@@ -239,7 +238,6 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
 {
     typedef typename DestinationType::index_type   IndexType;
     typedef typename DestinationType::value_type   ValueType;
-    typedef typename DestinationType::memory_space MemorySpace;
 
     if(src.num_entries == 0)
     {
@@ -256,12 +254,12 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     }
 
     // expand row offsets into row indices
-    cusp::array1d<IndexType, MemorySpace> row_indices(src.num_entries);
+    cusp::detail::temporary_array<IndexType, DerivedPolicy> row_indices(exec, src.num_entries);
     cusp::offsets_to_indices(exec, src.row_offsets, row_indices);
 
     // TODO call coo_to_hyb with a coo_matrix_view
 
-    cusp::array1d<IndexType, MemorySpace> indices(src.num_entries);
+    cusp::detail::temporary_array<IndexType, DerivedPolicy> indices(exec, src.num_entries);
     thrust::exclusive_scan_by_key(exec,
                                   row_indices.begin(), row_indices.end(),
                                   thrust::constant_iterator<IndexType>(1),

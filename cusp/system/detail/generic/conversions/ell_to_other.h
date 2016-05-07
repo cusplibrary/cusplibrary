@@ -26,6 +26,7 @@
 #include <cusp/blas/blas.h>
 
 #include <cusp/detail/format.h>
+#include <cusp/detail/temporary_array.h>
 
 #include <thrust/count.h>
 #include <thrust/gather.h>
@@ -103,7 +104,6 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
 {
     typedef typename DestinationType::index_type   IndexType;
     typedef typename DestinationType::value_type   ValueType;
-    typedef typename DestinationType::memory_space MemorySpace;
 
     // define types used to programatically generate row_indices
     typedef thrust::counting_iterator<IndexType>                                                               IndexIterator;
@@ -127,7 +127,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     if(src.num_entries == 0) return;
 
     // create temporary row_indices array to capture valid ELL row indices
-    cusp::array1d<IndexType, MemorySpace> row_indices(src.num_entries);
+    cusp::detail::temporary_array<IndexType, DerivedPolicy> row_indices(exec, src.num_entries);
 
     // copy valid entries to mixed COO/CSR format
     thrust::copy_if
