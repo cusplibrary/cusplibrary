@@ -55,7 +55,7 @@ template <typename MatrixType1,
           typename MatrixType3>
 void smooth_prolongator(const MatrixType1& S,
                         const MatrixType2& T,
-                        MatrixType3& P,
+                              MatrixType3& P,
                         const double rho_Dinv_S,
                         const double omega)
 {

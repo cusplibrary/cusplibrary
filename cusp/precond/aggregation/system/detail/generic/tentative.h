@@ -15,9 +15,18 @@
  */
 
 
-#include <cusp/detail/config.h>
+#include <cusp/array1d.h>
+#include <cusp/convert.h>
+#include <cusp/copy.h>
+#include <cusp/csr_matrix.h>
+#include <cusp/format_utils.h>
+#include <cusp/functional.h>
+#include <cusp/transpose.h>
 
-#include <cusp/detail/execution_policy.h>
+#include <thrust/count.h>
+#include <thrust/functional.h>
+#include <thrust/iterator/zip_iterator.h>
+#include <thrust/iterator/permutation_iterator.h>
 
 namespace cusp
 {
@@ -28,20 +37,72 @@ namespace aggregation
 namespace detail
 {
 
+using namespace thrust::placeholders;
+
 template <typename DerivedPolicy,
-          typename Array1,
-          typename Array2,
+          typename ArrayType1,
+          typename ArrayType2,
           typename MatrixType,
-          typename Array3>
+          typename ArrayType3>
 void fit_candidates(thrust::execution_policy<DerivedPolicy> &exec,
-                    const Array1& aggregates,
-                    const Array2& B,
+                    const ArrayType1& aggregates,
+                    const ArrayType2& B,
                     MatrixType& Q_,
-                    Array3& R);
+                    ArrayType3& R)
+{
+    typedef typename MatrixType::index_type IndexType;
+    typedef typename MatrixType::value_type ValueType;
+    typedef typename MatrixType::memory_space MemorySpace;
+
+    IndexType num_unaggregated = thrust::count(exec, aggregates.begin(), aggregates.end(), -1);
+    IndexType num_aggregates   = *thrust::max_element(exec, aggregates.begin(), aggregates.end()) + 1;
+
+    cusp::coo_matrix<IndexType,ValueType,MemorySpace> Q;
+    Q.resize(aggregates.size(), num_aggregates, aggregates.size() - num_unaggregated);
+    R.resize(num_aggregates);
+
+    // gather values into Q
+    thrust::copy_if(exec,
+                    thrust::make_zip_iterator(thrust::make_tuple(thrust::counting_iterator<IndexType>(0), aggregates.begin(), B.begin())),
+                    thrust::make_zip_iterator(thrust::make_tuple(thrust::counting_iterator<IndexType>(aggregates.size()), aggregates.end(), B.end())),
+                    aggregates.begin(),
+                    thrust::make_zip_iterator(thrust::make_tuple(Q.row_indices.begin(), Q.column_indices.begin(), Q.values.begin())),
+                    _1 != -1);
+
+    // compute norm over each aggregate
+    {
+        // compute Qt
+        cusp::coo_matrix<IndexType,ValueType,MemorySpace> Qt;
+        cusp::transpose(exec, Q, Qt);
+
+        // compute sum of squares for each column of Q (rows of Qt)
+        cusp::detail::temporary_array<IndexType, DerivedPolicy> temp(exec, num_aggregates);
+
+        thrust::transform(exec, Qt.values.begin(), Qt.values.end(), Qt.values.begin(), cusp::square_functor<ValueType>());
+
+        thrust::reduce_by_key(exec,
+                              Qt.row_indices.begin(), Qt.row_indices.end(),
+                              Qt.values.begin(),
+                              temp.begin(),
+                              R.begin());
+
+        // compute square root of each column sum
+        thrust::transform(exec, R.begin(), R.end(), R.begin(), cusp::sqrt_functor<ValueType>());
+    }
+
+    // rescale columns of Q
+    thrust::transform(exec,
+                      Q.values.begin(), Q.values.end(),
+                      thrust::make_permutation_iterator(R.begin(), Q.column_indices.begin()),
+                      Q.values.begin(),
+                      thrust::divides<ValueType>());
+
+    // copy/convert Q to output matrix Q_
+    cusp::convert(exec, Q, Q_);
+}
 
 } // end namepace detail
 } // end namespace aggregation
 } // end namespace precond
 } // end namespace cusp
 
-#include <cusp/precond/aggregation/system/detail/generic/tentative.inl>

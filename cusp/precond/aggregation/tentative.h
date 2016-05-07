@@ -29,25 +29,25 @@ namespace aggregation
 
 /* \cond */
 template <typename DerivedPolicy,
-          typename Array1,
-          typename Array2,
+          typename ArrayType1,
+          typename ArrayType2,
           typename MatrixType,
-          typename Array3>
+          typename ArrayType3>
 void fit_candidates(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-                    const Array1& aggregates,
-                    const Array2& B,
-                    MatrixType& Q,
-                    Array3& R);
+                    const ArrayType1& aggregates,
+                    const ArrayType2& B,
+                          MatrixType& Q,
+                          ArrayType3& R);
 /* \endcond */
 
-template <typename Array1,
-          typename Array2,
+template <typename ArrayType1,
+          typename ArrayType2,
           typename MatrixType,
-          typename Array3>
-void fit_candidates(const Array1& aggregates,
-                    const Array2& B,
-                    MatrixType& Q,
-                    Array3& R);
+          typename ArrayType3>
+void fit_candidates(const ArrayType1& aggregates,
+                    const ArrayType2& B,
+                          MatrixType& Q,
+                          ArrayType3& R);
 
 } // end namespace aggregation
 } // end namespace precond

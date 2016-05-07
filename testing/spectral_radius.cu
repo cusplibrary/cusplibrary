@@ -52,3 +52,38 @@ void TestEstimateSpectralRadius(void)
 }
 DECLARE_SPARSE_MATRIX_UNITTEST(TestEstimateSpectralRadius);
 
+template <class MemorySpace>
+void TestEstimateRhoDinvA(void)
+{
+    // 2x2 diagonal matrix
+    {
+        cusp::csr_matrix<int, float, MemorySpace> A(2,2,2);
+        A.row_offsets[0] = 0;
+        A.row_offsets[1] = 1;
+        A.row_offsets[2] = 2;
+        A.column_indices[0] = 0;
+        A.column_indices[1] = 1;
+        A.values[0] = -5;
+        A.values[1] =  2;
+        float rho = 1.0;
+        ASSERT_EQUAL((std::abs(cusp::eigen::estimate_rho_Dinv_A(A) - rho) / rho) < 0.1f, true);
+    }
+
+    // 2x2 Poisson problem
+    {
+        cusp::csr_matrix<int, float, MemorySpace> A;
+        cusp::gallery::poisson5pt(A, 2, 2);
+        float rho = 1.5;
+        ASSERT_EQUAL((std::abs(cusp::eigen::estimate_rho_Dinv_A(A) - rho) / rho) < 0.1f, true);
+    }
+
+    // 4x4 Poisson problem
+    {
+        cusp::csr_matrix<int, float, MemorySpace> A;
+        cusp::gallery::poisson5pt(A, 4, 4);
+        float rho = 1.8090169943749468;
+        ASSERT_EQUAL((std::abs(cusp::eigen::estimate_rho_Dinv_A(A) - rho) / rho) < 0.1f, true);
+    }
+}
+DECLARE_HOST_DEVICE_UNITTEST(TestEstimateRhoDinvA);
+

@@ -14,7 +14,6 @@ int main(int argc, char** argv)
     typedef cusp::device_memory MemorySpace;
 
     cusp::csr_matrix<IndexType,ValueType,MemorySpace> A;
-    cusp::dia_matrix<IndexType,ValueType,MemorySpace> B;
 
     if (argc == 1)
     {
@@ -32,11 +31,10 @@ int main(int argc, char** argv)
     cusp::array1d<ValueType, MemorySpace> x(N,0);
     cusp::array1d<ValueType, MemorySpace> b(N,1);
     cusp::monitor<ValueType> monitor(b, 2, 1e-5);
-    cusp::identity_operator<ValueType, MemorySpace> I(N, N);
+    cusp::identity_operator<ValueType, MemorySpace> M(N, N);
 
     my_policy exec;
-    cusp::krylov::cg(exec, A, x, b, monitor, I);
-    cusp::convert(exec, A, B);
+    cusp::krylov::cg(exec, A, x, b, monitor, M);
 
     return 0;
 }

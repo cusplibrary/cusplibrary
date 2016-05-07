@@ -39,7 +39,9 @@ namespace aggregation
 namespace detail
 {
 
-template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
+template <typename DerivedPolicy,
+          typename MatrixType1,
+          typename MatrixType2>
 void symmetric_strength_of_connection(thrust::cpp::execution_policy<DerivedPolicy> &exec,
                                       const MatrixType1& A,
                                             MatrixType2& S,
@@ -48,10 +50,9 @@ void symmetric_strength_of_connection(thrust::cpp::execution_policy<DerivedPolic
 {
     typedef typename MatrixType1::index_type   IndexType;
     typedef typename MatrixType1::value_type   ValueType;
-    typedef typename MatrixType1::memory_space MemorySpace;
 
     // extract matrix diagonal
-    cusp::array1d<ValueType,MemorySpace> diagonal;
+    cusp::detail::temporary_array<ValueType, DerivedPolicy> diagonal(exec, A.num_rows);
     cusp::extract_diagonal(exec, A, diagonal);
 
     IndexType num_entries = 0;
@@ -105,35 +106,41 @@ void symmetric_strength_of_connection(thrust::cpp::execution_policy<DerivedPolic
     S.row_offsets[S.num_rows] = num_entries;
 }
 
-template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2, typename Format>
+template <typename DerivedPolicy,
+          typename MatrixType1,
+          typename MatrixType2,
+          typename Format>
 void symmetric_strength_of_connection(thrust::cpp::execution_policy<DerivedPolicy> &exec,
                                       const MatrixType1& A,
                                             MatrixType2& S,
                                       const double theta,
                                       Format format)
 {
-    typedef typename MatrixType1::index_type          IndexType;
-    typedef typename MatrixType1::memory_space        MemorySpace;
-    typedef typename MatrixType1::const_coo_view_type CooView;
+    typedef typename MatrixType1::index_type                      IndexType;
+    typedef typename MatrixType1::const_coo_view_type             CooView;
     typedef typename cusp::detail::as_csr_type<MatrixType2>::type CsrType;
 
     CooView A_coo(A);
     CsrType S_csr;
 
-    cusp::array1d<IndexType,MemorySpace> row_offsets(A.num_rows + 1);
-    cusp::indices_to_offsets(A_coo.row_indices, row_offsets);
+    cusp::detail::temporary_array<IndexType, DerivedPolicy> row_offsets(exec, A.num_rows + 1);
+    cusp::indices_to_offsets(exec, A_coo.row_indices, row_offsets);
 
     symmetric_strength_of_connection(exec,
                                      cusp::make_csr_matrix_view(A.num_rows, A.num_cols, A.num_entries,
-                                                                row_offsets, A_coo.column_indices, A_coo.values),
+                                                                cusp::make_array1d_view(row_offsets),
+                                                                cusp::make_array1d_view(A_coo.column_indices),
+                                                                cusp::make_array1d_view(A_coo.values)),
                                      S_csr,
                                      theta,
                                      cusp::csr_format());
 
-    cusp::convert(S_csr, S);
+    cusp::convert(exec, S_csr, S);
 }
 
-template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
+template <typename DerivedPolicy,
+          typename MatrixType1,
+          typename MatrixType2>
 void symmetric_strength_of_connection(thrust::cpp::execution_policy<DerivedPolicy> &exec,
                                       const MatrixType1& A,
                                             MatrixType2& S,

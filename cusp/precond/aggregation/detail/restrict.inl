@@ -31,9 +31,10 @@ namespace detail
 template <typename DerivedPolicy,
           typename MatrixType>
 void form_restriction(thrust::execution_policy<DerivedPolicy> &exec,
-                      const MatrixType& P, MatrixType& R)
+                      const MatrixType& P,
+                            MatrixType& R)
 {
-    cusp::transpose(P, R);
+    cusp::transpose(exec, P, R);
 }
 
 } // end detail
@@ -41,15 +42,17 @@ void form_restriction(thrust::execution_policy<DerivedPolicy> &exec,
 template <typename DerivedPolicy,
           typename MatrixType>
 void form_restriction(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-                      const MatrixType& P, MatrixType& R)
+                      const MatrixType& P,
+                            MatrixType& R)
 {
     using cusp::precond::aggregation::detail::form_restriction;
 
-    form_restriction(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), P, R);
+    return form_restriction(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), P, R);
 }
 
 template <typename MatrixType>
-void form_restriction(const MatrixType& P, MatrixType& R)
+void form_restriction(const MatrixType& P,
+                            MatrixType& R)
 {
     using thrust::system::detail::generic::select_system;
 
@@ -57,7 +60,7 @@ void form_restriction(const MatrixType& P, MatrixType& R)
 
     System system;
 
-    cusp::precond::aggregation::form_restriction(select_system(system), P, R);
+    return cusp::precond::aggregation::form_restriction(select_system(system), P, R);
 }
 
 } // end namespace aggregation

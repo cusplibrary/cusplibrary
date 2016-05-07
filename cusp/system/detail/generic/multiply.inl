@@ -38,18 +38,51 @@ namespace detail
 namespace generic
 {
 
+using namespace thrust::detail;
+__THRUST_DEFINE_IS_CALL_POSSIBLE(has_member_operator_exec_impl, operator())
+
 template <typename DerivedPolicy,
           typename LinearOperator,
           typename MatrixOrVector1,
           typename MatrixOrVector2>
-typename thrust::detail::enable_if_convertible<typename LinearOperator::format,cusp::unknown_format>::type
+struct has_member_operator_exec
+: has_member_operator_exec_impl<LinearOperator, void(thrust::execution_policy<DerivedPolicy>&,const MatrixOrVector1&,MatrixOrVector2&)>
+{};
+
+template <typename DerivedPolicy,
+          typename LinearOperator,
+          typename MatrixOrVector1,
+          typename MatrixOrVector2>
+typename enable_if<
+thrust::detail::and_<
+  has_member_operator_exec<DerivedPolicy,LinearOperator,MatrixOrVector1,MatrixOrVector2>,
+  thrust::detail::is_convertible<typename LinearOperator::format,cusp::unknown_format>
+  >::value
+>::type
 multiply(thrust::execution_policy<DerivedPolicy> &exec,
          const LinearOperator&  A,
          const MatrixOrVector1& B,
                MatrixOrVector2& C)
 {
-    // user-defined LinearOperator
-    const_cast<LinearOperator&>(A)(B,C);
+    const_cast<LinearOperator&>(A)(exec, B, C);
+}
+
+template <typename DerivedPolicy,
+          typename LinearOperator,
+          typename MatrixOrVector1,
+          typename MatrixOrVector2>
+typename enable_if<
+thrust::detail::and_<
+  thrust::detail::not_<has_member_operator_exec<DerivedPolicy,LinearOperator,MatrixOrVector1,MatrixOrVector2> >,
+  thrust::detail::is_convertible<typename LinearOperator::format,cusp::unknown_format>
+  >::value
+>::type
+multiply(thrust::execution_policy<DerivedPolicy> &exec,
+         const LinearOperator&  A,
+         const MatrixOrVector1& B,
+               MatrixOrVector2& C)
+{
+    const_cast<LinearOperator&>(A)(B, C);
 }
 
 template <typename DerivedPolicy,
@@ -72,20 +105,20 @@ multiply(thrust::execution_policy<DerivedPolicy> &exec,
 }
 
 template <typename DerivedPolicy,
-          typename LinearOperator,
-          typename MatrixOrVector1,
-          typename MatrixOrVector2,
-          typename UnaryFunction,
-          typename BinaryFunction1,
-          typename BinaryFunction2>
+         typename LinearOperator,
+         typename MatrixOrVector1,
+         typename MatrixOrVector2,
+         typename UnaryFunction,
+         typename BinaryFunction1,
+         typename BinaryFunction2>
 typename thrust::detail::disable_if_convertible<UnaryFunction,cusp::known_format>::type
 multiply(thrust::execution_policy<DerivedPolicy> &exec,
          const LinearOperator&  A,
          const MatrixOrVector1& B,
-               MatrixOrVector2& C,
-               UnaryFunction   initialize,
-               BinaryFunction1 combine,
-               BinaryFunction2 reduce)
+         MatrixOrVector2& C,
+         UnaryFunction   initialize,
+         BinaryFunction1 combine,
+         BinaryFunction2 reduce)
 {
     typedef typename LinearOperator::format  Format1;
     typedef typename MatrixOrVector1::format Format2;
@@ -99,12 +132,12 @@ multiply(thrust::execution_policy<DerivedPolicy> &exec,
 }
 
 template <typename DerivedPolicy,
-          typename LinearOperator,
-          typename MatrixOrVector1,
-          typename MatrixOrVector2,
-          typename UnaryFunction,
-          typename BinaryFunction1,
-          typename BinaryFunction2>
+         typename LinearOperator,
+         typename MatrixOrVector1,
+         typename MatrixOrVector2,
+         typename UnaryFunction,
+         typename BinaryFunction1,
+         typename BinaryFunction2>
 void generalized_spgemm(thrust::execution_policy<DerivedPolicy> &exec,
                         const LinearOperator&  A,
                         const MatrixOrVector1& B,
@@ -125,12 +158,12 @@ void generalized_spgemm(thrust::execution_policy<DerivedPolicy> &exec,
 }
 
 template <typename DerivedPolicy,
-          typename LinearOperator,
-          typename Vector1,
-          typename Vector2,
-          typename Vector3,
-          typename BinaryFunction1,
-          typename BinaryFunction2>
+         typename LinearOperator,
+         typename Vector1,
+         typename Vector2,
+         typename Vector3,
+         typename BinaryFunction1,
+         typename BinaryFunction2>
 void generalized_spmv(thrust::execution_policy<DerivedPolicy> &exec,
                       const LinearOperator&  A,
                       const Vector1& x,

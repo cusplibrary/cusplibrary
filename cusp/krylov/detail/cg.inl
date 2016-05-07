@@ -74,7 +74,7 @@ void cg(thrust::execution_policy<DerivedPolicy> &exec,
     // rz = <r^H, z>
     ValueType rz = blas::dotc(exec, r, z);
 
-    while (!monitor.finished(r))
+    while (!monitor.finished(exec, r))
     {
         // y <- Ap
         cusp::multiply(exec, A, p, y);

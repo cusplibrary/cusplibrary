@@ -11,7 +11,7 @@ environment:
   matrix:
   - {}
 before_build:
-- cmd: git clone https://github.com/sdalton1/thrust.git C:\projects\thrust
+  - cmd: git clone -b 1.8.3 https://github.com/sdalton1/thrust.git C:\projects\thrust
 build:
   project: C:\projects\cusplibrary\testing\vs_tester\device_omp_tester\device_omp_tester.vcxproj
   parallel: true

@@ -201,6 +201,12 @@ public:
     identity_operator(IndexType num_rows, IndexType num_cols)
         : Parent(num_rows, num_cols) {}
 
+    template <typename DerivedPolicy, typename VectorType1, typename VectorType2>
+    void operator()(thrust::execution_policy<DerivedPolicy>& exec, const VectorType1& x, VectorType2& y) const
+    {
+        cusp::blas::copy(exec, x, y);
+    }
+
     /*! Apply the \p identity_operator to vector x and produce vector y.
      *
      * \tparam VectorType1 Type of the input vector

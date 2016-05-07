@@ -176,11 +176,12 @@ monitor<ValueType>
 }
 
 template <typename ValueType>
-template <typename Vector>
+template <typename DerivedPolicy, typename Vector>
 bool monitor<ValueType>
-::finished(const Vector& r)
+::finished(thrust::execution_policy<DerivedPolicy> &exec,
+           const Vector& r)
 {
-    r_norm = cusp::blas::nrm2(r);
+    r_norm = cusp::blas::nrm2(exec, r);
     residuals.push_back(r_norm);
 
     if(verbose)
@@ -203,6 +204,20 @@ bool monitor<ValueType>
     {
         return false;
     }
+}
+
+template <typename ValueType>
+template <typename Vector>
+bool monitor<ValueType>
+::finished(const Vector& r)
+{
+    using thrust::system::detail::generic::select_system;
+
+    typedef typename Vector::memory_space System;
+
+    System system;
+
+    return finished(select_system(system), r);
 }
 
 template <typename ValueType>

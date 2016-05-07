@@ -31,9 +31,13 @@ namespace aggregation
 template<typename> struct sa_level;
 
 /* \cond */
-template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
+template <typename DerivedPolicy,
+          typename MatrixType1,
+          typename MatrixType2>
 void symmetric_strength_of_connection(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-                                      const MatrixType1& A, MatrixType2& S, const double theta = 0.0);
+                                      const MatrixType1& A,
+                                            MatrixType2& S,
+                                      const double theta = 0.0);
 /* \endcond */
 
 /*  Compute a strength of connection matrix using the standard symmetric measure.
@@ -45,14 +49,23 @@ void symmetric_strength_of_connection(const thrust::detail::execution_policy_bas
  *
  *  Note: explicit diagonal entries are always considered strong.
  */
-template <typename MatrixType1, typename MatrixType2>
-void symmetric_strength_of_connection(const MatrixType1& A, MatrixType2& S, const double theta = 0.0);
+template <typename MatrixType1,
+          typename MatrixType2>
+void symmetric_strength_of_connection(const MatrixType1& A,
+                                            MatrixType2& S,
+                                      const double theta = 0.0);
 
 /* \cond */
-template<typename DerivedPolicy, typename MatrixType1, typename MatrixType2, typename ArrayType>
+template<typename DerivedPolicy,
+         typename MatrixType1,
+         typename MatrixType2,
+         typename ArrayType>
 void evolution_strength_of_connection(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-                                      const MatrixType1& A, MatrixType2& S, const ArrayType& B,
-                                      const double rho_DinvA = 0.0, const double epsilon = 4.0);
+                                      const MatrixType1& A,
+                                            MatrixType2& S,
+                                      const ArrayType& B,
+                                      const double rho_DinvA = 0.0,
+                                      const double epsilon = 4.0);
 /* \endcond */
 
 /*  Compute a strength of connection matrix using the standard symmetric measure.
@@ -64,19 +77,32 @@ void evolution_strength_of_connection(const thrust::detail::execution_policy_bas
  *
  *  Note: explicit diagonal entries are always considered strong.
  */
-template<typename MatrixType1, typename MatrixType2, typename ArrayType>
-void evolution_strength_of_connection(const MatrixType1& A, MatrixType2& S, const ArrayType& B,
-                                      const double rho_DinvA = 0.0, const double epsilon = 4.0);
+template<typename MatrixType1,
+         typename MatrixType2,
+         typename ArrayType>
+void evolution_strength_of_connection(const MatrixType1& A,
+                                            MatrixType2& S,
+                                      const ArrayType& B,
+                                      const double rho_DinvA = 0.0,
+                                      const double epsilon = 4.0);
 
 
 /* \cond */
-template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2>
+template <typename DerivedPolicy,
+          typename MatrixType1,
+          typename MatrixType2>
 void strength_of_connection(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-                            const MatrixType1& A, MatrixType2& S);
+                            const MatrixType1& A,
+                                  MatrixType2& S);
 
-template <typename DerivedPolicy, typename MatrixType1, typename MatrixType2, typename MatrixType3>
+template <typename DerivedPolicy,
+          typename MatrixType1,
+          typename MatrixType2,
+          typename MatrixType3>
 void strength_of_connection(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-                            const MatrixType1& A, MatrixType2& S, sa_level<MatrixType3>& level);
+                            const MatrixType1& A,
+                                  MatrixType2& S,
+                                  sa_level<MatrixType3>& level);
 /* \endcond */
 
 /*  Compute a strength of connection matrix using the standard symmetric measure.
@@ -88,11 +114,17 @@ void strength_of_connection(const thrust::detail::execution_policy_base<DerivedP
  *
  *  Note: explicit diagonal entries are always considered strong.
  */
-template <typename MatrixType1, typename MatrixType2>
-void strength_of_connection(const MatrixType1& A, MatrixType2& S);
+template <typename MatrixType1,
+          typename MatrixType2>
+void strength_of_connection(const MatrixType1& A,
+                                  MatrixType2& S);
 
-template <typename MatrixType1, typename MatrixType2, typename MatrixType3>
-void strength_of_connection(const MatrixType1& A, MatrixType2& S, sa_level<MatrixType3>& level);
+template <typename MatrixType1,
+          typename MatrixType2,
+          typename MatrixType3>
+void strength_of_connection(const MatrixType1& A,
+                                  MatrixType2& S,
+                                  sa_level<MatrixType3>& level);
 
 } // end namespace aggregation
 } // end namespace precond

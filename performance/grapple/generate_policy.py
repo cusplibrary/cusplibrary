@@ -4,15 +4,17 @@ import os, sys, re, glob
 
 from os.path import join, split, splitext
 
-def process_file(fobj, filename, base_list, project_name) :
+def process_file(project_base_dir, fobj, filename, base_list, project_name) :
     enum_ids = [];
     policy_tag_str = 'template\s*?<\s*?typename DerivedPolicy.*?>.*?;';
+    inc_filename = filename.replace(project_base_dir + "/", "");
 
     with open(filename, "r") as fobj0:
         text = fobj0.read();
         output = re.findall(policy_tag_str, text, re.DOTALL);
 
         if output :
+
             base_dir,base_file = split(filename);
             start_dir = os.path.split(base_dir)[1];
 
@@ -25,17 +27,21 @@ def process_file(fobj, filename, base_list, project_name) :
                     output = re.findall(ext_policy_tag_str, text, re.DOTALL);
 
                     if output :
-                        fobj.write("#include <{}/{}>".format(start_dir, base_file));
+                        fobj.write("#include <{}>\n".format(inc_filename));
 
                         for routine in output :
-                            name    = re.search("using.*::(?P<name>\w+);", routine).group("name");
+                            if '::execution_policy<' in routine :
+                                continue;
 
-                            routine = re.sub("typename\s*?DerivedPolicy,\s*?",
-                                             "", routine);
-                            routine = re.sub("__host__\s*__device__",
-                                             "", routine);
-                            routine = re.sub("const thrust::detail::execution_policy_base<DerivedPolicy>",
-                                             "my_policy", routine);
+                            name_search = re.search("using.*::(?P<name>\w+);", routine);
+                            if name_search :
+                                name = name_search.group("name")
+                            else :
+                                continue;
+
+                            routine = re.sub("typename\s*?DerivedPolicy,\s*?", "", routine);
+                            routine = re.sub("__host__\s*__device__", "", routine);
+                            routine = re.sub("const thrust::detail::execution_policy_base<DerivedPolicy>", "my_policy", routine);
                             routine = re.sub("thrust::detail::derived_cast\(thrust::detail::strip_const\(exec\)\)",
                                              "exec.get()" if name not in base_list else "exec.base()", routine);
 
@@ -48,6 +54,7 @@ def process_file(fobj, filename, base_list, project_name) :
                                 name = "_".join(["blas", name]);
 
                             lines = routine.split("\n")
+
                             out_lines = []
                             for line in lines:
                                 if line :
@@ -73,12 +80,10 @@ def process_file(fobj, filename, base_list, project_name) :
 
     return enum_ids;
 
-def generate(base_dir, project_name, base_list, start_index) :
-    project_base = os.path.join(base_dir, project_name);
-
+def generate(base_dir, project_name, dir_list, base_list, start_index) :
     # find all .inls base directories
-    sources = []
-    directories = [project_base]
+    sources = [];
+    directories = [os.path.join(base_dir, dir_name) for dir_name in dir_list];
     extensions = ['*.h'];
 
     for dir in directories:
@@ -89,7 +94,7 @@ def generate(base_dir, project_name, base_list, start_index) :
     local_ids = []
     with open("my_{}_func.h".format(project_name), "w") as fobj:
         for source in sources :
-            ids = process_file(fobj, source, base_list, project_name);
+            ids = process_file(base_dir, fobj, source, base_list, project_name);
             if ids :
                 local_ids.extend(ids);
 
@@ -99,11 +104,11 @@ if __name__ == "__main__" :
 
     thrust_base = os.path.join(os.environ["HOME"], "thrust");
     thrust_base_funcs = ["for_each", "for_each_n", "inclusive_scan", "exclusive_scan", "reduce"];
-    global_ids = generate(thrust_base, "thrust", thrust_base_funcs, 0);
+    global_ids = generate(thrust_base, "thrust", ["thrust"], thrust_base_funcs, 0);
 
     cusp_base = os.path.join(os.environ["HOME"], "cusplibrary");
     cusp_base_funcs = [];
-    ids = generate(cusp_base, "cusp", cusp_base_funcs, 0);
+    ids = generate(cusp_base, "cusp", ["cusp", "cusp/krylov", "cusp/graph", "cusp/lapack"], cusp_base_funcs, 0);
     global_ids.extend(ids);
 
     with open("my_policy_map.h", "w") as fobj:

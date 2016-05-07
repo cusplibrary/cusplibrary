@@ -26,132 +26,175 @@ namespace precond
 namespace aggregation
 {
 
-template <typename DerivedPolicy, typename MatrixType, typename ArrayType>
+template <typename DerivedPolicy,
+          typename MatrixType,
+          typename ArrayType1,
+          typename ArrayType2>
 void standard_aggregate(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-                        const MatrixType& A, ArrayType& aggregates, ArrayType& roots)
+                        const MatrixType& A,
+                              ArrayType1& aggregates,
+                              ArrayType2& roots)
 {
     using cusp::precond::aggregation::detail::standard_aggregate;
 
-    standard_aggregate(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, aggregates, roots);
+    return standard_aggregate(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, aggregates, roots);
 }
 
-template <typename DerivedPolicy, typename MatrixType, typename ArrayType>
-void standard_aggregate(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-                        const MatrixType& A, ArrayType& aggregates)
-{
-    ArrayType roots(A.num_rows);
-
-    standard_aggregate(exec, A, aggregates, roots);
-}
-
-template <typename MatrixType, typename ArrayType>
-void standard_aggregate(const MatrixType& A, ArrayType& aggregates, ArrayType& roots)
+template <typename MatrixType,
+          typename ArrayType1,
+          typename ArrayType2>
+void standard_aggregate(const MatrixType& A,
+                              ArrayType1& aggregates,
+                              ArrayType2& roots)
 {
     using thrust::system::detail::generic::select_system;
 
-    typedef typename MatrixType::memory_space System;
+    typedef typename MatrixType::memory_space System1;
+    typedef typename ArrayType1::memory_space System2;
+    typedef typename ArrayType2::memory_space System3;
 
-    System system;
+    System1 system1;
+    System2 system2;
+    System3 system3;
 
-    cusp::precond::aggregation::standard_aggregate(select_system(system), A, aggregates, roots);
+    return cusp::precond::aggregation::standard_aggregate(select_system(system1,system2,system3), A, aggregates, roots);
 }
 
-template <typename MatrixType, typename ArrayType>
-void standard_aggregate(const MatrixType& A, ArrayType& aggregates)
+template <typename MatrixType,
+          typename ArrayType>
+void standard_aggregate(const MatrixType& A,
+                              ArrayType& aggregates)
 {
-    ArrayType roots(A.num_rows);
+    using thrust::system::detail::generic::select_system;
 
-    standard_aggregate(A, aggregates, roots);
+    typedef typename MatrixType::index_type   IndexType;
+    typedef typename MatrixType::memory_space System1;
+    typedef typename ArrayType::memory_space  System2;
+
+    cusp::array1d<IndexType, System1> roots(A.num_rows);
+
+    System1 system1;
+    System2 system2;
+
+    return standard_aggregate(select_system(system1,system2), A, aggregates, roots);
 }
 
-template <typename DerivedPolicy, typename MatrixType, typename ArrayType>
+template <typename DerivedPolicy,
+          typename MatrixType,
+          typename ArrayType1,
+          typename ArrayType2>
 void mis_aggregate(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-                   const MatrixType& A, ArrayType& aggregates, ArrayType& roots)
+                   const MatrixType& A,
+                         ArrayType1& aggregates,
+                         ArrayType2& roots)
 {
     using cusp::precond::aggregation::detail::mis_aggregate;
 
-    mis_aggregate(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, aggregates, roots);
+    return mis_aggregate(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, aggregates, roots);
 }
 
-template <typename DerivedPolicy, typename MatrixType, typename ArrayType>
-void mis_aggregate(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-                   const MatrixType& A, ArrayType& aggregates)
-{
-    ArrayType roots(A.num_rows);
-
-    mis_aggregate(exec, A, aggregates, roots);
-}
-
-template <typename MatrixType, typename ArrayType>
-void mis_aggregate(const MatrixType& A, ArrayType& aggregates, ArrayType& roots)
+template <typename MatrixType,
+          typename ArrayType1,
+          typename ArrayType2>
+void mis_aggregate(const MatrixType& A,
+                         ArrayType1& aggregates,
+                         ArrayType2& roots)
 {
     using thrust::system::detail::generic::select_system;
 
-    typedef typename MatrixType::memory_space System;
+    typedef typename MatrixType::memory_space System1;
+    typedef typename ArrayType1::memory_space System2;
+    typedef typename ArrayType2::memory_space System3;
 
-    System system;
+    System1 system1;
+    System2 system2;
+    System3 system3;
 
-    mis_aggregate(select_system(system), A, aggregates, roots);
+    return mis_aggregate(select_system(system1,system2,system3), A, aggregates, roots);
 }
 
-template <typename MatrixType, typename ArrayType>
-void mis_aggregate(const MatrixType& A, ArrayType& aggregates)
+template <typename MatrixType,
+          typename ArrayType>
+void mis_aggregate(const MatrixType& A,
+                         ArrayType& aggregates)
 {
-    ArrayType roots(A.num_rows);
+    typedef typename MatrixType::index_type   IndexType;
+    typedef typename ArrayType::memory_space  MemorySpace;
 
-    mis_aggregate(A, aggregates, roots);
+    cusp::array1d<IndexType, MemorySpace> roots(A.num_rows);
+
+    return mis_aggregate(A, aggregates, roots);
 }
 
-template <typename DerivedPolicy, typename MatrixType, typename ArrayType>
+template <typename DerivedPolicy,
+          typename MatrixType,
+          typename ArrayType1,
+          typename ArrayType2>
 typename thrust::detail::enable_if_convertible<typename MatrixType::memory_space,cusp::host_memory>::type
 aggregate(thrust::execution_policy<DerivedPolicy> &exec,
-          const MatrixType& A, ArrayType& aggregates, ArrayType& roots)
+          const MatrixType& A,
+                ArrayType1& aggregates,
+                ArrayType2& roots)
 {
-    standard_aggregate(exec, A, aggregates, roots);
+    return standard_aggregate(exec, A, aggregates, roots);
 }
 
-template <typename DerivedPolicy, typename MatrixType, typename ArrayType>
+template <typename DerivedPolicy,
+          typename MatrixType,
+          typename ArrayType1,
+          typename ArrayType2>
 typename thrust::detail::disable_if_convertible<typename MatrixType::memory_space,cusp::host_memory>::type
 aggregate(thrust::execution_policy<DerivedPolicy> &exec,
-          const MatrixType& A, ArrayType& aggregates, ArrayType& roots)
+          const MatrixType& A,
+                ArrayType1& aggregates,
+                ArrayType2& roots)
 {
-    mis_aggregate(exec, A, aggregates, roots);
+    return mis_aggregate(exec, A, aggregates, roots);
 }
 
-template <typename DerivedPolicy, typename MatrixType, typename ArrayType>
+template <typename DerivedPolicy,
+          typename MatrixType,
+          typename ArrayType1,
+          typename ArrayType2>
 void aggregate(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-               const MatrixType& A, ArrayType& aggregates, ArrayType& roots)
+               const MatrixType& A,
+                     ArrayType1& aggregates,
+                     ArrayType2& roots)
 {
-    aggregate(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, aggregates, roots);
+    return aggregate(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, aggregates, roots);
 }
 
-template <typename DerivedPolicy, typename MatrixType, typename ArrayType>
-void aggregate(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-               const MatrixType& A, ArrayType& aggregates)
-{
-    ArrayType roots(A.num_rows);
-
-    aggregate(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), A, aggregates, roots);
-}
-
-template <typename MatrixType, typename ArrayType>
-void aggregate(const MatrixType& A, ArrayType& aggregates, ArrayType& roots)
+template <typename MatrixType,
+          typename ArrayType1,
+          typename ArrayType2>
+void aggregate(const MatrixType& A,
+                     ArrayType1& aggregates,
+                     ArrayType2& roots)
 {
     using thrust::system::detail::generic::select_system;
 
-    typedef typename MatrixType::memory_space System;
+    typedef typename MatrixType::memory_space System1;
+    typedef typename ArrayType1::memory_space System2;
+    typedef typename ArrayType2::memory_space System3;
 
-    System system;
+    System1 system1;
+    System2 system2;
+    System3 system3;
 
-    cusp::precond::aggregation::aggregate(select_system(system), A, aggregates, roots);
+    return cusp::precond::aggregation::aggregate(select_system(system1,system2,system3), A, aggregates, roots);
 }
 
-template <typename MatrixType, typename ArrayType>
-void aggregate(const MatrixType& A, ArrayType& aggregates)
+template <typename MatrixType,
+          typename ArrayType>
+void aggregate(const MatrixType& A,
+                     ArrayType& aggregates)
 {
-    ArrayType roots(A.num_rows);
+    typedef typename MatrixType::index_type   IndexType;
+    typedef typename ArrayType::memory_space  MemorySpace;
 
-    aggregate(A, aggregates, roots);
+    cusp::array1d<IndexType, MemorySpace> roots(A.num_rows);
+
+    return aggregate(A, aggregates, roots);
 }
 
 } // end namespace aggregation

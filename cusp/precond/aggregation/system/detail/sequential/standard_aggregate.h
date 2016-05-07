@@ -18,6 +18,8 @@
 #include <cusp/csr_matrix.h>
 #include <cusp/format_utils.h>
 
+#include <cusp/detail/temporary_array.h>
+
 #include <cusp/system/detail/sequential/execution_policy.h>
 
 namespace cusp
@@ -29,17 +31,22 @@ namespace aggregation
 namespace detail
 {
 
-template <typename DerivedPolicy, typename MatrixType, typename ArrayType>
+template <typename DerivedPolicy,
+          typename MatrixType,
+          typename ArrayType1,
+          typename ArrayType2>
 void standard_aggregate(thrust::cpp::execution_policy<DerivedPolicy> &exec,
-                        const MatrixType& A, ArrayType& aggregates, ArrayType& roots,
-                        cusp::csr_format)
+                        const MatrixType& A,
+                              ArrayType1& aggregates,
+                              ArrayType2& roots,
+                              cusp::csr_format)
 {
     typedef typename MatrixType::index_type IndexType;
 
     IndexType next_aggregate = 1; // number of aggregates + 1
 
     // initialize aggregates to 0
-    thrust::fill(aggregates.begin(), aggregates.end(), 0);
+    thrust::fill(exec, aggregates.begin(), aggregates.end(), 0);
 
     IndexType n_row = A.num_rows;
 
@@ -141,35 +148,46 @@ void standard_aggregate(thrust::cpp::execution_policy<DerivedPolicy> &exec,
     }
 
     if ( next_aggregate == 0 ) {
-        thrust::fill( aggregates.begin(), aggregates.end(), 0 );
+        thrust::fill(exec, aggregates.begin(), aggregates.end(), 0);
     }
 }
 
-template <typename DerivedPolicy, typename MatrixType, typename ArrayType>
+template <typename DerivedPolicy,
+          typename MatrixType,
+          typename ArrayType1,
+          typename ArrayType2>
 void standard_aggregate(thrust::cpp::execution_policy<DerivedPolicy> &exec,
-                        const MatrixType& A, ArrayType& aggregates, ArrayType& roots,
+                        const MatrixType& A,
+                              ArrayType1& aggregates,
+                              ArrayType2& roots,
                         cusp::known_format)
 {
     typedef typename MatrixType::index_type          IndexType;
-    typedef typename MatrixType::memory_space        MemorySpace;
     typedef typename MatrixType::const_coo_view_type CooView;
 
     CooView A_coo(A);
 
-    cusp::array1d<IndexType,MemorySpace> row_offsets(A.num_rows + 1);
-    cusp::indices_to_offsets(A_coo.row_indices, row_offsets);
+    cusp::detail::temporary_array<IndexType, DerivedPolicy> row_offsets(exec, A.num_rows + 1);
+    cusp::indices_to_offsets(exec, A_coo.row_indices, row_offsets);
 
     standard_aggregate(exec,
                        cusp::make_csr_matrix_view(A.num_rows, A.num_cols, A.num_entries,
-                                                  row_offsets, A_coo.column_indices, A_coo.values),
+                                                  cusp::make_array1d_view(row_offsets),
+                                                  cusp::make_array1d_view(A_coo.column_indices),
+                                                  cusp::make_array1d_view(A_coo.values)),
                        aggregates,
                        roots,
                        cusp::csr_format());
 }
 
-template <typename DerivedPolicy, typename MatrixType, typename ArrayType>
+template <typename DerivedPolicy,
+          typename MatrixType,
+          typename ArrayType1,
+          typename ArrayType2>
 void standard_aggregate(thrust::cpp::execution_policy<DerivedPolicy> &exec,
-                        const MatrixType& A, ArrayType& aggregates, ArrayType& roots)
+                        const MatrixType& A,
+                              ArrayType1& aggregates,
+                              ArrayType2& roots)
 {
     typedef typename MatrixType::format Format;
 

@@ -36,12 +36,12 @@ void galerkin_product(thrust::execution_policy<DerivedPolicy> &exec,
                       const MatrixType1& R,
                       const MatrixType2& A,
                       const MatrixType1& P,
-                      MatrixType3& RAP)
+                            MatrixType3& RAP)
 {
     // TODO test speed of R * (A * P) vs. (R * A) * P
     MatrixType3 AP;
-    cusp::multiply(A, P, AP);
-    cusp::multiply(R, AP, RAP);
+    cusp::multiply(exec, A, P, AP);
+    cusp::multiply(exec, R, AP, RAP);
 }
 
 } // end detail
@@ -54,11 +54,11 @@ void galerkin_product(const thrust::detail::execution_policy_base<DerivedPolicy>
                       const MatrixType1& R,
                       const MatrixType2& A,
                       const MatrixType1& P,
-                      MatrixType3& RAP)
+                            MatrixType3& RAP)
 {
     using cusp::precond::aggregation::detail::galerkin_product;
 
-    galerkin_product(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), R, A, P, RAP);
+    return galerkin_product(thrust::detail::derived_cast(thrust::detail::strip_const(exec)), R, A, P, RAP);
 }
 
 template <typename MatrixType1,
@@ -67,7 +67,7 @@ template <typename MatrixType1,
 void galerkin_product(const MatrixType1& R,
                       const MatrixType2& A,
                       const MatrixType1& P,
-                      MatrixType3& RAP)
+                            MatrixType3& RAP)
 {
     using thrust::system::detail::generic::select_system;
 
@@ -79,7 +79,7 @@ void galerkin_product(const MatrixType1& R,
     System2 system2;
     System3 system3;
 
-    cusp::precond::aggregation::galerkin_product(select_system(system1,system2,system3), R, A, P, RAP);
+    return cusp::precond::aggregation::galerkin_product(select_system(system1,system2,system3), R, A, P, RAP);
 }
 
 } // end namespace aggregation

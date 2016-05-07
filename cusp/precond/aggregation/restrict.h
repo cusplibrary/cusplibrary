@@ -30,14 +30,17 @@ namespace aggregation
 template <typename DerivedPolicy,
           typename MatrixType>
 void form_restriction(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-                      const MatrixType& P, MatrixType& R);
+                      const MatrixType& P,
+                            MatrixType& R);
 /* \endcond */
 
 template <typename MatrixType>
-void form_restriction(const MatrixType& P, MatrixType& R);
+void form_restriction(const MatrixType& P,
+                            MatrixType& R);
 
 } // end namespace aggregation
 } // end namespace precond
 } // end namespace cusp
 
 #include <cusp/precond/aggregation/detail/restrict.inl>
+

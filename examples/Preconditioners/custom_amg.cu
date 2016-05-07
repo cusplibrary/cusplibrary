@@ -8,7 +8,7 @@
 
 #include <iostream>
 
-struct custom_amg_policy : thrust::device_execution_policy<custom_amg_policy> {};
+struct custom_amg_policy : cusp::cuda::execution_policy<custom_amg_policy> {};
 
 // Use evolution strength measure
 template <typename MatrixType1, typename MatrixType2, typename SALevelType>
@@ -19,8 +19,8 @@ void strength_of_connection(custom_amg_policy, const MatrixType1& A, MatrixType2
 }
 
 // Always use standard aggregation
-template <typename MatrixType, typename ArrayType>
-void aggregate(custom_amg_policy, const MatrixType& C, ArrayType& aggregates, ArrayType& roots)
+template <typename MatrixType, typename ArrayType1, typename ArrayType2>
+void aggregate(custom_amg_policy, const MatrixType& C, ArrayType1& aggregates, ArrayType2& roots)
 {
     std::cout << "Calling my aggregation" << std::endl;
     cusp::precond::aggregation::standard_aggregate(C, aggregates, roots);

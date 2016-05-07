@@ -75,6 +75,30 @@ select_system(const cusp::cpp::execution_policy<System1> &system1, const executi
   return cross_system<System1,System2>(non_const_system1,non_const_system2);
 }
 
+template<typename System>
+inline __host__ __device__
+execution_policy<System>
+select_system(const execution_policy<System> &system, const par_t &)
+{
+  return system;
+}
+
+// template<typename System>
+// inline __host__ __device__
+// thrust::execution_policy<System>
+// select_system(const thrust::execution_policy<par_t>&, const thrust::execution_policy<System> &system)
+// {
+//   return system;
+// }
+
+// template<typename System>
+// inline __host__ __device__
+// cusp::system::cuda::detail::execution_policy<System>
+// select_system(const par_t&, const cusp::cuda::execution_policy<System> &system)
+// {
+//   return system;
+// }
+
 } // end detail
 
 

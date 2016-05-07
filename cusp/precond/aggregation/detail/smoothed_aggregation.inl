@@ -22,6 +22,8 @@
 #include <cusp/precond/aggregation/restrict.h>
 #include <cusp/precond/aggregation/galerkin_product.h>
 
+#include <cusp/detail/temporary_array.h>
+
 namespace cusp
 {
 namespace precond
@@ -72,7 +74,7 @@ template <typename IndexType, typename ValueType, typename MemorySpace, typename
 template <typename MatrixType, typename ArrayType>
 void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverType,Format>
 ::initialize(const MatrixType& A, const ArrayType& B,
-                typename thrust::detail::enable_if_convertible<typename MatrixType::format,cusp::known_format>::type*)
+             typename thrust::detail::enable_if_convertible<typename MatrixType::format,cusp::known_format>::type*)
 {
     using thrust::system::detail::generic::select_system;
 
@@ -89,7 +91,7 @@ template <typename IndexType, typename ValueType, typename MemorySpace, typename
 template <typename DerivedPolicy, typename MatrixType>
 void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverType,Format>
 ::initialize(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-                const MatrixType& A)
+             const MatrixType& A)
 {
     cusp::constant_array<ValueType> B(A.num_rows, 1);
 
@@ -100,7 +102,7 @@ template <typename IndexType, typename ValueType, typename MemorySpace, typename
 template <typename DerivedPolicy, typename MatrixType, typename ArrayType>
 void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverType,Format>
 ::initialize(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-                const MatrixType& A, const ArrayType& B)
+             const MatrixType& A, const ArrayType& B)
 {
     typedef typename detail::select_sa_matrix_view<MatrixType>::type View;
     typedef typename ML::level Level;
@@ -154,11 +156,12 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverTyp
 
         // compute aggregates
         sa_levels.back().aggregates.resize(A.num_rows, IndexType(0));
-        aggregate(exec, C, sa_levels.back().aggregates);
+        sa_levels.back().roots.resize(A.num_rows);
+        aggregate(exec, C, sa_levels.back().aggregates, sa_levels.back().roots);
     }
 
     SetupMatrixType P;
-    cusp::array1d<ValueType,MemorySpace>  B_coarse;
+    cusp::array1d<ValueType, MemorySpace> B_coarse;
 
     // compute tenative prolongator and coarse nullspace vector
     fit_candidates(exec, sa_levels.back().aggregates, sa_levels.back().B, sa_levels.back().T, B_coarse);
@@ -177,7 +180,8 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverTyp
     // Setup components for next level in hierarchy
     sa_levels.push_back(sa_level<SetupMatrixType>());
     sa_levels.back().A_.swap(RAP);
-    sa_levels.back().B.swap(B_coarse);
+    // sa_levels.back().B.swap(B_coarse);
+    cusp::copy(exec, B_coarse, sa_levels.back().B);
 
     ML::copy_or_swap_matrix(ML::levels.back().R, R);
     ML::copy_or_swap_matrix(ML::levels.back().P, P);
