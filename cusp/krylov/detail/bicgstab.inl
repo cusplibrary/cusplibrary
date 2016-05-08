@@ -76,7 +76,7 @@ void bicgstab(thrust::execution_policy<DerivedPolicy> &exec,
 
     ValueType r_r_star_old = blas::dotc(exec, r_star, r);
 
-    while (!monitor.finished(r))
+    while (!monitor.finished(exec, r))
     {
         // Mp = M*p
         cusp::multiply(exec, M, p, Mp);
@@ -90,7 +90,7 @@ void bicgstab(thrust::execution_policy<DerivedPolicy> &exec,
         // s_j = r_j - alpha * AMp
         blas::axpby(exec, r, AMp, s, ValueType(1), ValueType(-alpha));
 
-        if (monitor.finished(s)) {
+        if (monitor.finished(exec, s)) {
             // x += alpha*M*p_j
             blas::axpby(exec, x, Mp, x, ValueType(1), ValueType(alpha));
             break;

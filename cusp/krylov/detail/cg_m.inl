@@ -458,7 +458,7 @@ void cg_m(thrust::execution_policy<DerivedPolicy> &exec,
     //
     // Initialization is done. Solve iteratively
     //
-    while (!monitor.finished(r_0))
+    while (!monitor.finished(exec, r_0))
     {
         // recycle iterates
         rsq_0 = rsq_1;
