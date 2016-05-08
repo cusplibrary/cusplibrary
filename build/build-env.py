@@ -345,6 +345,9 @@ def Environment():
         if 'THRUST_PATH' not in os.environ :
             raise ValueError("Building without nvcc requires THRUST_PATH environment variable!")
 
+        if 'clang' in compiler_define :
+            env.Append(CFLAGS = ["-Wno-unused-local-typedef"]);
+
     # if compiler_define == 'gcc' or compiler_define == 'g++' :
     #     GCC_VERSION = subprocess.check_output([env['CXX'], '-dumpversion'])
     #     if StrictVersion(GCC_VERSION) >= StrictVersion("5.0.0") :
