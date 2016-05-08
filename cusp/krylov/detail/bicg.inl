@@ -114,7 +114,7 @@ void bicg(thrust::execution_policy<DerivedPolicy> &exec,
         // r_star -= alpha*q_star
         blas::axpby(exec, r_star, q_star, r_star, ValueType(1), ValueType(-alpha));
 
-        if (monitor.finished(r)) {
+        if (monitor.finished(exec, r)) {
             break;
         }
 

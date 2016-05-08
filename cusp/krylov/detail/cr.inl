@@ -79,7 +79,7 @@ void cr(thrust::execution_policy<DerivedPolicy> &exec,
     // rz = <r^H, z>
     ValueType rz = blas::dotc(exec, r, Az);
 
-    while (!monitor.finished(r))
+    while (!monitor.finished(exec, r))
     {
         // alpha <- <r,z>/<y,p>
         ValueType alpha =  rz / blas::dotc(exec, y, y);
