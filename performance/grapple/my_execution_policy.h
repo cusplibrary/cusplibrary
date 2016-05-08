@@ -4,6 +4,7 @@
 #include <thrust/execution_policy.h>
 
 #include <iostream>
+#include <iomanip>
 #include <stack>
 #include <string>
 #include <typeinfo>
