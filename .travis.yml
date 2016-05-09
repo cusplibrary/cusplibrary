@@ -30,9 +30,9 @@ env:
 
 matrix:
   allow_failures:
-    - THRUST_VERSION=1.7.2  BACKEND=cuda COMPILER=nvcc
-    - THRUST_VERSION=1.8.3  BACKEND=cuda COMPILER=nvcc
-    - THRUST_VERSION=master BACKEND=cuda COMPILER=nvcc
+    - env: THRUST_VERSION=1.7.2  BACKEND=cuda COMPILER=nvcc
+    - env: THRUST_VERSION=1.8.3  BACKEND=cuda COMPILER=nvcc
+    - env: THRUST_VERSION=master BACKEND=cuda COMPILER=nvcc
 
 install:
     - git clone -b $THRUST_VERSION https://github.com/sdalton1/thrust.git
