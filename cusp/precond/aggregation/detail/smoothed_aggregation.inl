@@ -43,8 +43,7 @@ smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverType,For
 template <typename IndexType, typename ValueType, typename MemorySpace, typename SmootherType, typename SolverType, typename Format>
 template <typename MatrixType, typename ArrayType>
 smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverType,Format>
-::smoothed_aggregation(const MatrixType& A, const ArrayType& B,
-                       typename thrust::detail::enable_if_convertible<typename ArrayType::format,cusp::array1d_format>::type*)
+::smoothed_aggregation(const MatrixType& A, const ArrayType& B)
     : ML()
 {
     initialize(A, B);
@@ -73,8 +72,7 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverTyp
 template <typename IndexType, typename ValueType, typename MemorySpace, typename SmootherType, typename SolverType, typename Format>
 template <typename MatrixType, typename ArrayType>
 void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverType,Format>
-::initialize(const MatrixType& A, const ArrayType& B,
-             typename thrust::detail::enable_if_convertible<typename MatrixType::format,cusp::known_format>::type*)
+::initialize(const MatrixType& A, const ArrayType& B)
 {
     using thrust::system::detail::generic::select_system;
 
@@ -85,17 +83,6 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverTyp
     System2 system2;
 
     initialize(select_system(system1,system2), A, B);
-}
-
-template <typename IndexType, typename ValueType, typename MemorySpace, typename SmootherType, typename SolverType, typename Format>
-template <typename DerivedPolicy, typename MatrixType>
-void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverType,Format>
-::initialize(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-             const MatrixType& A)
-{
-    cusp::constant_array<ValueType> B(A.num_rows, 1);
-
-    initialize(exec, A, B);
 }
 
 template <typename IndexType, typename ValueType, typename MemorySpace, typename SmootherType, typename SolverType, typename Format>

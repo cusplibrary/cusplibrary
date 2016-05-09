@@ -193,8 +193,7 @@ class smoothed_aggregation :
     template <typename MatrixType,
               typename ArrayType>
     smoothed_aggregation(const MatrixType& A,
-                         const ArrayType&  B,
-                         typename thrust::detail::enable_if_convertible<typename ArrayType::format,cusp::array1d_format>::type* = 0);
+                         const ArrayType&  B);
 
     /*! Construct a \p smoothed_aggregation preconditioner from a existing SA
      * \p smoothed_aggregation preconditioner.
@@ -227,15 +226,9 @@ class smoothed_aggregation :
     template <typename MatrixType,
               typename ArrayType>
     void initialize(const MatrixType& A,
-                    const ArrayType&  B,
-                    typename thrust::detail::enable_if_convertible<typename MatrixType::format,cusp::known_format>::type* = 0);
+                    const ArrayType&  B);
 
     /* \cond */
-    template <typename DerivedPolicy,
-              typename MatrixType>
-    void initialize(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
-                    const MatrixType& A);
-
     template <typename DerivedPolicy,
               typename MatrixType,
               typename ArrayType>

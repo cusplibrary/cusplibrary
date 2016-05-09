@@ -80,7 +80,8 @@ int main(void)
     custom_amg_policy exec;
 
     // initialize construction using custom policy to control inner routines
-    M.initialize(exec, A);
+    cusp::constant_array<ValueType> B(A.num_rows, ValueType(1));
+    M.initialize(exec, A, B);
 
     // solve
     cusp::krylov::cg(A, x, b, monitor, M);
