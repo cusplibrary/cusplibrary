@@ -22,7 +22,15 @@
 
 #include <cusp/detail/config.h>
 
+// get the execution policies definitions first
 #include <thrust/system/cuda/detail/execution_policy.h>
+
+// get the definition of par
+#include <thrust/system/cuda/detail/par.h>
+
+#if THRUST_VERSION < 100800
+#include <cusp/detail/thrust/system/cuda/detail/execute_on_stream.h>
+#endif
 
 namespace cusp
 {
