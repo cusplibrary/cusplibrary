@@ -48,6 +48,6 @@ install:
       fi
 
 script:
-    - scons compiler=$CC backend=$BACKEND
+    - scons -j 2 compiler=$CC backend=$BACKEND
     - if [[ $CC != "nvcc" ]]; then cd device_${BACKEND}_release && ./tester --verbose; fi
 
