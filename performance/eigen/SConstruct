@@ -11,7 +11,10 @@ except:
 
 env.Append(CPPPATH = [os.environ["HOME"] + "/.local/include"])
 env.Append(LIBPATH = [os.environ["HOME"] + "/.local/lib"])
-env.Append(LIBS = ["cublas", "openblas"])
+env.Append(LIBS = ["openblas"])
+
+if env['compiler'] == "nvcc":
+  env.Append(LIBS = ["cublas"])
 
 # find all .cus & .cpps in the current directory
 sources = []
@@ -20,7 +23,6 @@ extensions = ['*.cu', '*.cpp']
 for dir in directories:
   for ext in extensions:
     regexp = os.path.join(dir, ext)
-    #sources.extend(env.Glob(regexp, strings = True))
     sources.extend(glob.glob(regexp))
 
 # compile examples

@@ -27,71 +27,38 @@ namespace cusp
 namespace eigen
 {
 
-template <class LinearOperator,
-         class Vector>
+template <typename LinearOperator,
+          typename Array1d,
+          typename Array2d,
+          typename Monitor,
+          typename Preconditioner>
 void lobpcg(LinearOperator& A,
-            Vector& S,
-            Vector& X,
-            bool largest)
-{
-    typedef typename LinearOperator::value_type   ValueType;
-
-    cusp::constant_array<ValueType> b(A.num_rows, ValueType(1));
-    cusp::monitor<ValueType> monitor(b);
-
-    cusp::eigen::lobpcg(A, S, X, monitor, largest);
-}
-
-template <class LinearOperator,
-         class Vector,
-         class Monitor>
-void lobpcg(LinearOperator& A,
-            Vector& S,
-            Vector& X,
-            Monitor& monitor,
-            bool largest)
-{
-    typedef typename LinearOperator::value_type   ValueType;
-    typedef typename LinearOperator::memory_space MemorySpace;
-
-    cusp::identity_operator<ValueType,MemorySpace> M(A.num_rows, A.num_cols);
-
-    cusp::eigen::lobpcg(A, S, X, monitor, M, largest);
-}
-
-template <class LinearOperator,
-         class Vector,
-         class Monitor,
-         class Preconditioner>
-void lobpcg(LinearOperator& A,
-            Vector& S,
-            Vector& X,
+            Array1d& S,
+            Array2d& X,
             Monitor& monitor,
             Preconditioner& M,
             bool largest)
 {
-    typedef typename LinearOperator::index_type   IndexType;
     typedef typename LinearOperator::value_type   ValueType;
-    typedef typename LinearOperator::memory_space MemorySpace;
 
     typedef typename cusp::array1d<double,cusp::host_memory> VectorHost;
-    typedef typename cusp::array2d<double,cusp::host_memory,cusp::column_major> Array2d;
+    typedef typename cusp::array2d<double,cusp::host_memory,cusp::column_major> Array2dHost;
 
     const size_t N = A.num_rows;
 
     // Normalize
-    Vector& blockVectorX(X);
+    Array2d& blockVectorX(X);
     ValueType norm = cusp::blas::nrm2(blockVectorX);
     cusp::blas::scal(blockVectorX, ValueType(1.0/norm));
 
-    Vector blockVectorAX(N);
+    Array1d blockVectorAX(N);
 
-    Vector blockVectorR(N);
-    Vector blockVectorP(N, ValueType(0));
-    Vector blockVectorAP(N, ValueType(0));
+    Array1d blockVectorR(N);
+    Array1d blockVectorP(N, ValueType(0));
+    Array1d blockVectorAP(N, ValueType(0));
 
-    Vector activeBlockVectorR(N);
-    Vector activeBlockVectorAR(N);
+    Array1d activeBlockVectorR(N);
+    Array1d activeBlockVectorAR(N);
 
     cusp::multiply(A, blockVectorX, blockVectorAX);
 
@@ -132,8 +99,8 @@ void lobpcg(LinearOperator& A,
         // Compute symmetric Gram matrices
         size_t gram_size = monitor.iteration_count() > 0 ? 3 : 2;
 
-        Array2d gramA(gram_size, gram_size, ValueType(0));
-        Array2d gramB(gram_size, gram_size, ValueType(0));
+        Array2dHost gramA(gram_size, gram_size, ValueType(0));
+        Array2dHost gramB(gram_size, gram_size, ValueType(0));
 
         ValueType xaw = cusp::blas::dot( blockVectorX,        activeBlockVectorAR );
         ValueType waw = cusp::blas::dot( activeBlockVectorR, 	activeBlockVectorAR );
@@ -182,7 +149,7 @@ void lobpcg(LinearOperator& A,
 
         // Solve the generalized eigenvalue problem.
         VectorHost _lambda_h(gramA.num_rows, ValueType(0));
-        Array2d eigBlockVector_h(gramA.num_rows, gramA.num_cols, ValueType(0));
+        Array2dHost eigBlockVector_h(gramA.num_rows, gramA.num_cols, ValueType(0));
 
         cusp::lapack::sygv(gramA, gramB, _lambda_h, eigBlockVector_h);
 
@@ -215,5 +182,40 @@ void lobpcg(LinearOperator& A,
     S[0] = _lambda;
 }
 
+template <typename LinearOperator,
+          typename Array1d,
+          typename Array2d,
+          typename Monitor>
+void lobpcg(LinearOperator& A,
+            Array1d& S,
+            Array2d& X,
+            Monitor& monitor,
+            bool largest)
+{
+    typedef typename LinearOperator::value_type   ValueType;
+    typedef typename LinearOperator::memory_space MemorySpace;
+
+    cusp::identity_operator<ValueType,MemorySpace> M(A.num_rows, A.num_cols);
+
+    cusp::eigen::lobpcg(A, S, X, monitor, M, largest);
+}
+
+template <typename LinearOperator,
+          typename Array1d,
+          typename Array2d>
+void lobpcg(LinearOperator& A,
+            Array1d& S,
+            Array2d& X,
+            bool largest)
+{
+    typedef typename LinearOperator::value_type   ValueType;
+
+    cusp::constant_array<ValueType> b(A.num_rows, ValueType(1));
+    cusp::monitor<ValueType> monitor(b);
+
+    cusp::eigen::lobpcg(A, S, X, monitor, largest);
+}
+
 } // end namespace eigen
 } // end namespace cusp
+

@@ -34,30 +34,32 @@ namespace eigen
  */
 
 /* \cond */
-template <class LinearOperator,
-         class Vector>
+template <typename LinearOperator,
+          typename Array1d,
+          typename Array2d,
+          typename Monitor>
 void lobpcg(LinearOperator& A,
-            Vector& S,
-            Vector& X,
+            Array1d& S,
+            Array2d& X,
+            Monitor& monitor,
             bool largest = true);
 
-template <class LinearOperator,
-         class Vector,
-         class Monitor>
+template <typename LinearOperator,
+          typename Array1d,
+          typename Array2d>
 void lobpcg(LinearOperator& A,
-            Vector& S,
-            Vector& X,
-            Monitor& monitor,
+            Array1d& S,
+            Array2d& X,
             bool largest = true);
 /* \endcond */
 
 /**
  * \brief LOBPCG method
  *
- * \tparam LinearOperator is a matrix or subclass of \p linear_operator
+ * \tparam LinearOperator is a matrix or subtypename of \p linear_operator
  * \tparam Vector vector
  * \tparam Monitor is a \p monitor
- * \tparam Preconditioner is a matrix or subclass of \p linear_operator
+ * \tparam Preconditioner is a matrix or subtypename of \p linear_operator
  *
  * \param A matrix of the linear system
  * \param S eigenvalues
@@ -120,13 +122,14 @@ void lobpcg(LinearOperator& A,
  *  \see \p monitor
  *
  */
-template <class LinearOperator,
-         class Vector,
-         class Monitor,
-         class Preconditioner>
+template <typename LinearOperator,
+          typename Array1d,
+          typename Array2d,
+          typename Monitor,
+          typename Preconditioner>
 void lobpcg(LinearOperator& A,
-            Vector& S,
-            Vector& X,
+            Array1d& S,
+            Array2d& X,
             Monitor& monitor,
             Preconditioner& M,
             bool largest = true);
@@ -138,3 +141,4 @@ void lobpcg(LinearOperator& A,
 } // end namespace cusp
 
 #include <cusp/eigen/detail/lobpcg.inl>
+

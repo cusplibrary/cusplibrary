@@ -57,18 +57,20 @@ public:
     size_t maxIter;
     size_t extraIter;
     size_t stride;
+
+    ReorthStrategy reorth;
+    SpectrumPart eigPart;
+
+    ValueType memoryExpansionFactor;
+    ValueType tol;
+    ValueType doubleReorthGamma;
+    ValueType localReorthGamma;
+
     size_t defaultMinIterFactor;
     size_t defaultMaxIterFactor;
 
     ValueType eigLowCut;
     ValueType eigHighCut;
-    ValueType memoryExpansionFactor;
-    ValueType doubleReorthGamma;
-    ValueType localReorthGamma;
-    ValueType tol;
-
-    SpectrumPart eigPart;
-    ReorthStrategy reorth;
 
     lanczos_options() :
         computeEigVecs(false), verbose(false), minIter(0), maxIter(0), extraIter(10),

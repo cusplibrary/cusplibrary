@@ -25,6 +25,8 @@
 
 #include <cusp/lapack/detail/stubs.h>
 
+#include <cstdio>
+
 namespace cusp
 {
 namespace lapack
@@ -301,7 +303,7 @@ void sygv( thrust::execution_policy<DerivedPolicy> &exec,
     lapack_int n    = A.num_rows;
     lapack_int lda  = A.pitch;
     lapack_int ldb  = B.pitch;
-    const ValueType *a    = thrust::raw_pointer_cast(&eigvecs(0,0));
+    ValueType *a    = (ValueType *) thrust::raw_pointer_cast(&eigvecs(0,0));
     ValueType *b    = thrust::raw_pointer_cast(&temp(0,0));
     ValueType *w    = thrust::raw_pointer_cast(&eigvals[0]);
     lapack_int info = cusp::lapack::detail::sygv(order, itype, job, uplo, n, a, lda, b, ldb, w);

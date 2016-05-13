@@ -42,7 +42,6 @@ namespace eigen
 template <typename Matrix, typename Array1d, typename Array2d, typename LanczosOptions>
 void lanczos(const Matrix& A, Array1d& eigVals, Array2d& eigVecs, LanczosOptions& options)
 {
-    typedef typename Matrix::index_type   IndexType;
     typedef typename Matrix::value_type   ValueType;
     typedef typename Matrix::memory_space MemorySpace;
     typedef typename Array2d::view Array2dView;
@@ -513,7 +512,6 @@ template <typename Matrix, typename Array1d, typename Array2d>
 void lanczos(const Matrix& A, Array1d& eigVals, Array2d& eigVecs)
 {
     typedef typename Matrix::value_type   ValueType;
-    typedef typename Matrix::memory_space MemorySpace;
 
     cusp::eigen::lanczos_options<ValueType> options;
     options.computeEigVecs = eigVecs.num_cols > 0;
