@@ -56,7 +56,7 @@ void sort_by_row(thrust::execution_policy<DerivedPolicy> &exec,
     IndexType maxr = max_row;
 
     if(max_row == 0)
-        maxr = *thrust::max_element(row_indices.begin(), row_indices.end());
+        maxr = *thrust::max_element(exec, row_indices.begin(), row_indices.end());
 
     cusp::detail::temporary_array<IndexType, DerivedPolicy> permutation(exec, N);
     thrust::sequence(exec, permutation.begin(), permutation.end());
