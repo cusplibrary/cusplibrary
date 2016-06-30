@@ -28,6 +28,7 @@
 
 #include <cusp/system/cuda/detail/multiply/csr_block_spmv.h>
 
+#include <cusp/system/cuda/detail/multiply/dense.h>
 #include <cusp/system/cuda/detail/multiply/dia_spmv.h>
 #include <cusp/system/cuda/detail/multiply/ell_spmv.h>
 // #include <cusp/system/cuda/detail/multiply/hyb_spmv.h>
