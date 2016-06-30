@@ -154,7 +154,7 @@ void multiply(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
  *  int main(void)
  *  {
  *      // define multiply functors
- *      cusp::zero_functor<float> initialize;
+ *      cusp::constant_functor<float> initialize;
  *      thrust::multiplies<float> combine;
  *      thrust::plus<float>       reduce;
  *
@@ -252,7 +252,7 @@ void generalized_spgemm(const thrust::detail::execution_policy_base<DerivedPolic
  *  {
  *      // define multiply functors
  *      thrust::identity<float>   identity;
- *      cusp::zero_functor<float> zero;
+ *      cusp::constant_functor<float> zero;
  *      thrust::multiplies<float> combine;
  *      thrust::plus<float>       reduce;
  *
