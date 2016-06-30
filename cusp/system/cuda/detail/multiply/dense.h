@@ -55,11 +55,12 @@ void multiply(cuda::execution_policy<DerivedPolicy>& exec,
 
     Array2d A_(A);
     cusp::array1d<ValueType1,cusp::host_memory> x_(x);
-    cusp::array1d<ValueType2,cusp::host_memory> y_;
+    cusp::array1d<ValueType2,cusp::host_memory> y_(y.size());
 
-    cusp::multiply(A_,x_,y_);
+    cusp::multiply(A_, x_, y_, initialize, combine, reduce);
 
-    cusp::copy(exec, y_, y);
+    std::cout << "copying to output" << std::endl;
+    cusp::copy(y_, y);
 }
 
 template <typename DerivedPolicy,
@@ -86,11 +87,11 @@ void multiply(cuda::execution_policy<DerivedPolicy>& exec,
 
     Array2dMatrix1 A_(A);
     Array2dMatrix2 B_(B);
-    Array2dMatrix3 C_;
+    Array2dMatrix3 C_(A.num_rows, B.num_cols);
 
     cusp::multiply(A_, B_, C_, initialize, combine, reduce);
 
-    cusp::convert(exec, C_, C);
+    cusp::convert(C_, C);
 }
 
 } // end namespace detail

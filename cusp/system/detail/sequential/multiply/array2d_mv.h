@@ -33,12 +33,12 @@ namespace sequential
 {
 
 template <typename DerivedPolicy,
-         typename MatrixType,
-         typename VectorType1,
-         typename VectorType2,
-         typename UnaryFunction,
-         typename BinaryFunction1,
-         typename BinaryFunction2>
+          typename MatrixType,
+          typename VectorType1,
+          typename VectorType2,
+          typename UnaryFunction,
+          typename BinaryFunction1,
+          typename BinaryFunction2>
 void multiply(thrust::cpp::execution_policy<DerivedPolicy>& exec,
               const MatrixType& A,
               const VectorType1& x,
