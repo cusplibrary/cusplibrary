@@ -352,9 +352,6 @@ def Environment():
     #     GCC_VERSION = subprocess.check_output([env['CXX'], '-dumpversion'])
     #     if StrictVersion(GCC_VERSION) >= StrictVersion("5.0.0") :
 
-    # XXX should only include for GCC >= 5.0.0 and NVCC <= 7.5
-    env.Append(CPPDEFINES = ["_FORCE_INLINES"])
-
     # hack to silence unknown pragma warnings
     # env.Append(NVCCFLAGS = [compile_flag_prefix, '-Wno-unknown-pragmas'])
 
