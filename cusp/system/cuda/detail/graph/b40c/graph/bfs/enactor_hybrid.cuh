@@ -395,7 +395,9 @@ public:
 
                 // Run two-phase until done is not -1
                 VertexId two_phase_iteration = iteration;
-                while (done[0] < 0) {
+                /* while (done[0] < 0) { */
+                // TODO: Two-phase expansion incorrect on sm_30+
+                while (0) {
 
                     if (DEBUG) printf("\n%lld", (long long) iteration);
 
