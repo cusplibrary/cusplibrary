@@ -1,7 +1,7 @@
 <hr>
 <h3>CUSP : A C++ Templated Sparse Matrix Library</h3>
 
-Current release    : v0.5.1 (April 28, 2015)
+Current release    : v0.6.0 (Septemer 4, 2016)
 
 | Linux | Windows | Coverage |
 | ----- | ------- | -------- |
@@ -47,7 +47,7 @@ CUSP releases are labeled using version identifiers having three fields:
 |            |                                                                              | 08/30/2013 | [CUSP v0.4.0](https://github.com/cusplibrary/cusplibrary/archive/v0.4.0.zip) |
 |            |                                                                              | 03/08/2012 | [CUSP v0.3.1](https://github.com/cusplibrary/cusplibrary/archive/v0.3.1.zip) |
 |            |                                                                              | 02/04/2012 | [CUSP v0.3.0](https://github.com/cusplibrary/cusplibrary/archive/v0.3.0.zip) |
-|            |                                                                              | 05/30/2011 | [CUSP v0.2.0](https://github.com/cusplibrary/cusplibrary/archive/v0.2.0.zip) |
+| 09/04/2016 | [CUSP v0.6.0](https://github.com/cusplibrary/cusplibrary/archive/v0.6.0.zip) | 05/30/2011 | [CUSP v0.2.0](https://github.com/cusplibrary/cusplibrary/archive/v0.2.0.zip) |
 | 04/28/2015 | [CUSP v0.5.1](https://github.com/cusplibrary/cusplibrary/archive/v0.5.1.zip) | 07/10/2010 | [CUSP v0.1.0](https://github.com/cusplibrary/cusplibrary/archive/v0.1.0.zip) |
 
 
@@ -65,9 +65,9 @@ CUSP is developed as an open-source project by [NVIDIA Research](http://research
 @MISC{Cusp,
   author = "Steven Dalton and Nathan Bell and Luke Olson and Michael Garland",
   title = "Cusp: Generic Parallel Algorithms for Sparse Matrix and Graph Computations",
-  year = "2014",
+  year = "2016",
   url = "http://cusplibrary.github.io/",
-  note = "Version 0.5.0"
+  note = "Version 0.6.0"
 }
 ```
 
