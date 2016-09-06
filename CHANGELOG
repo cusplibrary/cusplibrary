@@ -3,16 +3,20 @@
 #######################################
 
 Summary
-  TODO
+  Cusp 0.6.0 provides support for CUDA 8.0RC and Thrust 1.8.3. This release
+  significantly extends the use of execution policies to all facets of the API
+  and integrates supports for custom Thrust-like policies specific to Cusp
+  algorithms. All internal algorithms allocate and free memory according to the
+  provided Thrust policy and support GPU specific system calls (setting streams).
 
 New Features
-  TODO
+  New interface to call Lapack, Cblas and Cublas routines.
 
 Breaking API changes
-  TODO
+  N/A
 
 Bug Fixes
-  TODO
+  Fixed BFS implementation on Kepler and above
 
 #######################################
 #            Cusp v0.5.1              #
