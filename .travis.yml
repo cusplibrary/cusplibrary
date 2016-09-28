@@ -3,30 +3,32 @@ sudo: required
 dist: trusty
 
 os:
-    - linux
+  - linux
 
 branches:
   only:
     - develop
 
 addons:
-    apt:
-      sources:
-          - llvm-toolchain-precise
-          - ubuntu-toolchain-r-test
-      packages:
-          - clang-3.9
+  apt:
+    sources:
+      - sourceline: 'deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-3.9 main'
+      - sourceline: 'deb-src http://apt.llvm.org/trusty/ llvm-toolchain-trusty-3.9 main'
+      - llvm-toolchain-trusty-3.9
+      - ubuntu-toolchain-r-test
+    packages:
+      - clang-3.9
 
 env:
-    - THRUST_VERSION=1.7.2  BACKEND=omp  COMPILER=gcc
-    - THRUST_VERSION=1.8.3  BACKEND=omp  COMPILER=gcc
-    - THRUST_VERSION=master BACKEND=omp  COMPILER=gcc
-    - THRUST_VERSION=1.7.2  BACKEND=omp  COMPILER=clang
-    - THRUST_VERSION=1.8.3  BACKEND=omp  COMPILER=clang
-    - THRUST_VERSION=master BACKEND=omp  COMPILER=clang
-    - THRUST_VERSION=1.7.2  BACKEND=cuda COMPILER=nvcc
-    - THRUST_VERSION=1.8.3  BACKEND=cuda COMPILER=nvcc
-    - THRUST_VERSION=master BACKEND=cuda COMPILER=nvcc
+  - THRUST_VERSION=1.7.2  BACKEND=omp  COMPILER=gcc
+  - THRUST_VERSION=1.8.3  BACKEND=omp  COMPILER=gcc
+  - THRUST_VERSION=master BACKEND=omp  COMPILER=gcc
+  - THRUST_VERSION=1.7.2  BACKEND=omp  COMPILER=clang
+  - THRUST_VERSION=1.8.3  BACKEND=omp  COMPILER=clang
+  - THRUST_VERSION=master BACKEND=omp  COMPILER=clang
+  - THRUST_VERSION=1.7.2  BACKEND=cuda COMPILER=nvcc
+  - THRUST_VERSION=1.8.3  BACKEND=cuda COMPILER=nvcc
+  - THRUST_VERSION=master BACKEND=cuda COMPILER=nvcc
 
 matrix:
   allow_failures:
@@ -35,25 +37,25 @@ matrix:
     - env: THRUST_VERSION=master BACKEND=cuda COMPILER=nvcc
 
 install:
-    - git clone -b $THRUST_VERSION https://github.com/sdalton1/thrust.git
-    - export THRUST_PATH=$PWD/thrust
-    - cd testing
-    - export CC=$COMPILER
-    - if [[ $CC == "clang" ]]; then
+ - git clone -b $THRUST_VERSION https://github.com/sdalton1/thrust.git
+ - export THRUST_PATH=$PWD/thrust
+ - cd testing
+ - export CC=$COMPILER
+ - if [[ $CC == "clang" ]]; then
           sudo ln -s /usr/bin/clang-3.9 /usr/bin/clang;
           sudo apt-get -y install libiomp-dev;
-      fi
-    - if [[ $CC == "nvcc" ]]; then
-          wget http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1404/x86_64/cuda-repo-ubuntu1404_7.5-18_amd64.deb;
-          sudo dpkg -i cuda-repo-ubuntu1404_7.5-18_amd64.deb;
+   fi
+ - if [[ $CC == "nvcc" ]]; then
+          wget http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1404/x86_64/cuda-repo-ubuntu1404_8.0.44-1_amd64.deb;
+          sudo dpkg -i cuda-repo-ubuntu1404_8.0.44-1_amd64.deb;
           sudo apt-get update -qq;
-          sudo apt-get -y install cuda-command-line-tools-7-5 cuda-core-7-5 cuda-cublas-dev-7-5;
-          sudo ln -s /usr/local/cuda-7.5 /usr/local/cuda;
+          sudo apt-get -y install cuda-command-line-tools-8-0 cuda-core-8-0 cuda-cublas-dev-8-0;
+          sudo ln -s /usr/local/cuda-8.0 /usr/local/cuda;
           export PATH=$PATH:/usr/local/cuda/bin;
           export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/bin/lib64;
-      fi
+   fi
 
 script:
-    - scons -j 2 compiler=$CC backend=$BACKEND
-    - if [[ $CC != "nvcc" ]]; then cd device_${BACKEND}_release && ./tester --verbose; fi
+  - scons -j 2 compiler=$CC backend=$BACKEND
+  - if [[ $CC != "nvcc" ]]; then cd device_${BACKEND}_release && ./tester --verbose; fi
 
