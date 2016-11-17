@@ -77,7 +77,8 @@ select_system(const cusp::cpp::execution_policy<System1> &system1, const executi
 
 template<typename System>
 inline __host__ __device__
-execution_policy<System>
+typename thrust::detail::disable_if<thrust::detail::is_convertible<thrust::any_system_tag,System>::value,execution_policy<System> &>::type
+// execution_policy<System>
 select_system(const execution_policy<System> &system, const par_t &)
 {
   return system;
