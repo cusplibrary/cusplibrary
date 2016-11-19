@@ -108,8 +108,14 @@ __global__ void BlockSpmvKernel(const unsigned int A_num_rows,
         {
             int num_cols = min(THREADS_PER_VECTOR,row_end - jj);
 
-            sdata[threadIdx.x] = thread_lane < num_cols ? A_column_indices[jj + thread_lane] : 0;
-            vdata[threadIdx.x] = thread_lane < num_cols ? A_values[jj + thread_lane] : 0;
+            sdata[threadIdx.x] = 0;
+            vdata[threadIdx.x] = 0;
+
+            if( thread_lane < num_cols )
+            {
+                sdata[threadIdx.x] = A_column_indices[jj + thread_lane];
+                vdata[threadIdx.x] = A_values[jj + thread_lane];
+            }
 
             for(IndexType kk = 0; kk < num_cols; kk++)
             {
