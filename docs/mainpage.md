@@ -23,9 +23,9 @@ Cusp is a library for sparse linear algebra and graph computations based on Thru
 
 # Example
 ~~~{.cpp}
-#include <cusp/hyb_matrix.h>
-#include <cusp/io/matrix_market.h>
-#include <cusp/krylov/cg.h>
+# include <cusp/hyb_matrix.h>
+# include <cusp/io/matrix_market.h>
+# include <cusp/krylov/cg.h>
 
 int main(void)
 {
