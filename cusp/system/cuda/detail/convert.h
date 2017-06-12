@@ -35,7 +35,12 @@ template <typename System1,
           typename System2,
           typename SourceType,
           typename DestinationType>
-void convert(thrust::system::cuda::detail::cross_system<System1,System2>& exec,
+void convert(
+#if THRUST_VERSION >= 100900
+    thrust::cuda_cub::cross_system<System1,System2>& exec,
+#else
+    thrust::system::cuda::detail::cross_system<System1,System2>& exec,
+#endif
              const SourceType& src,
                    DestinationType& dst)
 {

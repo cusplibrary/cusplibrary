@@ -309,15 +309,15 @@ void coo_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>
 
     if(coo_num_entries > 0)
     {
-        thrust::merge_by_key(thrust::make_zip_iterator(thrust::make_tuple(temp_row_indices_begin, temp_column_indices_begin)),
-                             thrust::make_zip_iterator(thrust::make_tuple(temp_row_indices_begin, temp_column_indices_begin)) + ell_num_entries,
-                             thrust::make_zip_iterator(thrust::make_tuple(matrix.coo.row_indices.begin(), matrix.coo.column_indices.begin())),
-                             thrust::make_zip_iterator(thrust::make_tuple(matrix.coo.row_indices.begin(), matrix.coo.column_indices.begin())) + coo_num_entries,
-                             thrust::counting_iterator<IndexType>(0),
-                             thrust::counting_iterator<IndexType>(ell_num_entries),
-                             thrust::make_discard_iterator(),
-                             indices.begin(),
-                             cusp::detail::coo_tuple_comp_functor<IndexType>());
+        // thrust::merge_by_key(thrust::make_zip_iterator(thrust::make_tuple(temp_row_indices_begin, temp_column_indices_begin)),
+        //                      thrust::make_zip_iterator(thrust::make_tuple(temp_row_indices_begin, temp_column_indices_begin)) + ell_num_entries,
+        //                      thrust::make_zip_iterator(thrust::make_tuple(matrix.coo.row_indices.begin(), matrix.coo.column_indices.begin())),
+        //                      thrust::make_zip_iterator(thrust::make_tuple(matrix.coo.row_indices.begin(), matrix.coo.column_indices.begin())) + coo_num_entries,
+        //                      thrust::counting_iterator<IndexType>(0),
+        //                      thrust::counting_iterator<IndexType>(ell_num_entries),
+        //                      thrust::make_discard_iterator(),
+        //                      indices.begin(),
+        //                      cusp::detail::coo_tuple_comp_functor<IndexType>());
 
         // filter out invalid indices
         JoinColumnIterator cols_iter = cusp::make_join_iterator(ell_num_entries, coo_num_entries, perm_column_indices_begin, matrix.coo.column_indices.begin(), indices.begin());
