@@ -21,7 +21,8 @@
 #include <thrust/extrema.h>
 
 #if THRUST_VERSION >= 100900
-#elif THRUST_VERSION >= 100803
+#include <cusp/system/cuda/detail/launch_calculator.h>
+#elif THRUST_VERSION >= 100802
 #include <thrust/system/cuda/detail/detail/launch_calculator.h>
 #elif THRUST_VERSION >= 100600
 #include <thrust/system/cuda/detail/arch.h>
@@ -46,9 +47,7 @@ namespace detail
 template <typename KernelFunction>
 size_t max_active_blocks(KernelFunction kernel, const size_t CTA_SIZE, const size_t dynamic_smem_bytes)
 {
-#if THRUST_VERSION >= 100900
-  return 0;
-#elif THRUST_VERSION >= 100700
+#if THRUST_VERSION >= 100700
   using namespace thrust::system::cuda::detail;
   function_attributes_t attributes = function_attributes(kernel);
   device_properties_t properties = device_properties();
