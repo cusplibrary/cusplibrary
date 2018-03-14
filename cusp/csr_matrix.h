@@ -129,9 +129,14 @@ public:
             typename values_array_type::const_view,
             IndexType, ValueType, MemorySpace> const_view;
 
-    typedef typename cusp::detail::coo_view_type<container,cusp::csr_format>::view            coo_view_type;
-    // TODO : Why does GCC 4.4 fail using const type? Is it necessary?
-    typedef typename cusp::detail::coo_view_type<container /*const*/,cusp::csr_format>::view  const_coo_view_type;
+    typedef typename cusp::detail::coo_view_type<row_offsets_array_type,
+                                                 column_indices_array_type,
+                                                 values_array_type,
+                                                 cusp::csr_format>::view coo_view_type;
+    typedef typename cusp::detail::coo_view_type<row_offsets_array_type,
+                                                 column_indices_array_type,
+                                                 values_array_type,
+                                                 cusp::csr_format>::view const_coo_view_type;
 
     template<typename MemorySpace2>
     struct rebind
@@ -317,8 +322,14 @@ public:
     typedef typename cusp::csr_matrix_view<ArrayType1, ArrayType2, ArrayType3, IndexType, ValueType, MemorySpace> view;
     typedef typename cusp::csr_matrix_view<ArrayType1, ArrayType2, ArrayType3, IndexType, ValueType, MemorySpace> const_view;
 
-    typedef typename cusp::detail::coo_view_type<view,cusp::csr_format>::view       coo_view_type;
-    typedef typename cusp::detail::coo_view_type<view const,cusp::csr_format>::view const_coo_view_type;
+    typedef typename cusp::detail::coo_view_type<row_offsets_array_type,
+                                                 column_indices_array_type,
+                                                 values_array_type,
+                                                 cusp::csr_format>::view coo_view_type;
+    typedef typename cusp::detail::coo_view_type<row_offsets_array_type,
+                                                 column_indices_array_type,
+                                                 values_array_type,
+                                                 cusp::csr_format>::view const_coo_view_type;
     /*! \endcond */
 
     /**

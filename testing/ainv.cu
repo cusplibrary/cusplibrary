@@ -55,7 +55,7 @@ void TestAINVHeap(void)
 
     }
 }
-DECLARE_UNITTEST(TestAINVHeap);
+/* DECLARE_UNITTEST(TestAINVHeap); */
 
 
 void TestAINVFactorization(void)
@@ -92,7 +92,7 @@ void TestAINVFactorization(void)
 
     ASSERT_EQUAL(monitor.converged(), true);
 }
-DECLARE_UNITTEST(TestAINVFactorization);
+/* DECLARE_UNITTEST(TestAINVFactorization); */
 
 void TestAINVSymmetry(void)
 {
@@ -144,7 +144,7 @@ void TestAINVSymmetry(void)
 
     // assert they returned identical results
 }
-DECLARE_UNITTEST(TestAINVSymmetry);
+/* DECLARE_UNITTEST(TestAINVSymmetry); */
 
 void TestAINVConvergence(void)
 {
@@ -257,5 +257,5 @@ void TestAINVConvergence(void)
     }
 
 }
-DECLARE_UNITTEST(TestAINVConvergence);
+/* DECLARE_UNITTEST(TestAINVConvergence); */
 

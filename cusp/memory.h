@@ -22,7 +22,7 @@
 
 #include <cusp/detail/config.h>
 
-#include <cusp/iterator/iterator_traits.h>
+#include <cusp/iterator/detail/any_system_tag.h>
 
 namespace cusp
 {

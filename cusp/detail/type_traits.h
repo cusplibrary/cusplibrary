@@ -25,8 +25,10 @@
 #include <cusp/detail/config.h>
 #include <cusp/detail/format.h>
 
-#include <cusp/functional.h>
+#include <cusp/coo_matrix.h>
 #include <cusp/complex.h>
+#include <cusp/functional.h>
+
 #include <cusp/iterator/join_iterator.h>
 
 #include <thrust/iterator/counting_iterator.h>
@@ -36,16 +38,11 @@
 namespace cusp
 {
 
-template <typename, typename>           class array1d;
 template <typename, typename, typename> class array2d;
 template <typename, typename, typename> class dia_matrix;
-template <typename, typename, typename> class coo_matrix;
 template <typename, typename, typename> class csr_matrix;
 template <typename, typename, typename> class ell_matrix;
 template <typename, typename, typename> class hyb_matrix;
-
-template <typename> class array1d_view;
-template <typename, typename, typename, typename, typename, typename> class coo_matrix_view;
 
 namespace detail
 {
@@ -57,53 +54,53 @@ struct is_matrix_type
   : thrust::detail::integral_constant<bool,thrust::detail::is_same<typename MatrixType::format,CompareTag>::value>
 {};
 
-template<typename MatrixType> struct is_array2d : is_matrix_type<MatrixType,array2d_format> {};
-template<typename MatrixType> struct is_coo     : is_matrix_type<MatrixType,coo_format> {};
-template<typename MatrixType> struct is_csr     : is_matrix_type<MatrixType,csr_format> {};
-template<typename MatrixType> struct is_dia     : is_matrix_type<MatrixType,dia_format> {};
-template<typename MatrixType> struct is_ell     : is_matrix_type<MatrixType,ell_format> {};
-template<typename MatrixType> struct is_hyb     : is_matrix_type<MatrixType,hyb_format> {};
+template<typename MatrixType> struct is_array2d : is_matrix_type<MatrixType,cusp::array2d_format> {};
+template<typename MatrixType> struct is_coo     : is_matrix_type<MatrixType,cusp::coo_format> {};
+template<typename MatrixType> struct is_csr     : is_matrix_type<MatrixType,cusp::csr_format> {};
+template<typename MatrixType> struct is_dia     : is_matrix_type<MatrixType,cusp::dia_format> {};
+template<typename MatrixType> struct is_ell     : is_matrix_type<MatrixType,cusp::ell_format> {};
+template<typename MatrixType> struct is_hyb     : is_matrix_type<MatrixType,cusp::hyb_format> {};
 
 template<typename IndexType, typename ValueType, typename MemorySpace, typename FormatTag> struct matrix_type {};
 
 template<typename IndexType, typename ValueType, typename MemorySpace>
-struct matrix_type<IndexType,ValueType,MemorySpace,array1d_format>
+struct matrix_type<IndexType,ValueType,MemorySpace,cusp::array1d_format>
 {
     typedef cusp::array1d<ValueType,MemorySpace> type;
 };
 
 template<typename IndexType, typename ValueType, typename MemorySpace>
-struct matrix_type<IndexType,ValueType,MemorySpace,array2d_format>
+struct matrix_type<IndexType,ValueType,MemorySpace,cusp::array2d_format>
 {
     typedef cusp::array2d<ValueType,MemorySpace,cusp::row_major> type;
 };
 
 template<typename IndexType, typename ValueType, typename MemorySpace>
-struct matrix_type<IndexType,ValueType,MemorySpace,dia_format>
+struct matrix_type<IndexType,ValueType,MemorySpace,cusp::dia_format>
 {
     typedef cusp::dia_matrix<IndexType,ValueType,MemorySpace> type;
 };
 
 template<typename IndexType, typename ValueType, typename MemorySpace>
-struct matrix_type<IndexType,ValueType,MemorySpace,coo_format>
+struct matrix_type<IndexType,ValueType,MemorySpace,cusp::coo_format>
 {
     typedef cusp::coo_matrix<IndexType,ValueType,MemorySpace> type;
 };
 
 template<typename IndexType, typename ValueType, typename MemorySpace>
-struct matrix_type<IndexType,ValueType,MemorySpace,csr_format>
+struct matrix_type<IndexType,ValueType,MemorySpace,cusp::csr_format>
 {
     typedef cusp::csr_matrix<IndexType,ValueType,MemorySpace> type;
 };
 
 template<typename IndexType, typename ValueType, typename MemorySpace>
-struct matrix_type<IndexType,ValueType,MemorySpace,ell_format>
+struct matrix_type<IndexType,ValueType,MemorySpace,cusp::ell_format>
 {
     typedef cusp::ell_matrix<IndexType,ValueType,MemorySpace> type;
 };
 
 template<typename IndexType, typename ValueType, typename MemorySpace>
-struct matrix_type<IndexType,ValueType,MemorySpace,hyb_format>
+struct matrix_type<IndexType,ValueType,MemorySpace,cusp::hyb_format>
 {
     typedef cusp::hyb_matrix<IndexType,ValueType,MemorySpace> type;
 };
@@ -115,7 +112,7 @@ struct get_index_type
 };
 
 template<typename MatrixType>
-struct get_index_type<MatrixType,array1d_format>
+struct get_index_type<MatrixType,cusp::array1d_format>
 {
     typedef int type;
 };
@@ -147,44 +144,45 @@ struct as_ell_type : as_matrix_type<MatrixType,MemorySpace,ell_format> {};
 template<typename MatrixType,typename MemorySpace=typename MatrixType::memory_space>
 struct as_hyb_type : as_matrix_type<MatrixType,MemorySpace,hyb_format> {};
 
-template<typename MatrixType,typename FormatTag = typename MatrixType::format>
-struct coo_view_type{};
-
-template<typename MatrixType>
-struct coo_view_type<MatrixType,csr_format>
+template<typename RowArray, typename ColumnArray, typename ValueArray>
+struct coo_view_type<RowArray,ColumnArray,ValueArray,cusp::csr_format>
 {
-    typedef typename MatrixType::index_type                                                              IndexType;
-    typedef typename MatrixType::value_type                                                              ValueType;
-    typedef typename MatrixType::memory_space                                                            MemorySpace;
+    typedef typename RowArray::value_type                                                              IndexType;
+    typedef typename ValueArray::value_type                                                            ValueType;
+    typedef typename ValueArray::memory_space                                                          MemorySpace;
 
-    typedef typename thrust::detail::remove_const<IndexType>::type                                       TempType;
-    typedef cusp::array1d<TempType,MemorySpace>                                                          Array1;
-    typedef cusp::array1d_view<typename MatrixType::column_indices_array_type::iterator>                 Array2;
-    typedef cusp::array1d_view<typename MatrixType::values_array_type::iterator>                         Array3;
+    typedef typename thrust::detail::remove_const<IndexType>::type                                     TempType;
+    typedef cusp::array1d<TempType,MemorySpace>                                                        Array1;
+    typedef cusp::array1d_view<typename ColumnArray::iterator>                                         Array2;
+    typedef cusp::array1d_view<typename ValueArray::iterator>                                          Array3;
 
-    typedef cusp::coo_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>                  view;
+    typedef cusp::coo_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>                view;
 };
 
-template<typename MatrixType>
-struct coo_view_type<MatrixType,dia_format>
+template<typename RowArray, typename ColumnArray, typename ValueArray>
+struct coo_view_type<RowArray,ColumnArray,ValueArray,cusp::dia_format>
 {
-    typedef typename MatrixType::index_type                                                              IndexType;
-    typedef typename MatrixType::value_type                                                              ValueType;
-    typedef typename MatrixType::memory_space                                                            MemorySpace;
+  public:
+    typedef RowArray   diagonal_offsets_array_type;
+    typedef ValueArray values_array_type;
+
+    typedef typename RowArray::value_type     IndexType;
+    typedef typename ValueArray::value_type   ValueType;
+    typedef typename ValueArray::memory_space MemorySpace;
 
     typedef typename thrust::detail::remove_const<IndexType>::type                                       TempType;
     typedef typename thrust::counting_iterator<TempType>                                                 CountingIterator;
     typedef typename thrust::transform_iterator<cusp::divide_value<TempType>, CountingIterator>          RowIndexIterator;
     typedef typename cusp::array1d<TempType,MemorySpace>::iterator                                       IndexIterator;
 
-    typedef typename MatrixType::diagonal_offsets_array_type::iterator                                   OffsetsIterator;
+    typedef typename diagonal_offsets_array_type::iterator                                               OffsetsIterator;
     typedef typename thrust::transform_iterator<modulus_value<TempType>, CountingIterator>               ModulusIterator;
     typedef typename thrust::permutation_iterator<OffsetsIterator,ModulusIterator>                       OffsetsPermIterator;
     typedef typename thrust::tuple<OffsetsPermIterator, RowIndexIterator>                                IteratorTuple;
     typedef typename thrust::zip_iterator<IteratorTuple>                                                 ZipIterator;
-    typedef typename thrust::transform_iterator<sum_pair_functor<IndexType>, ZipIterator>               ColumnIndexIterator;
+    typedef typename thrust::transform_iterator<sum_pair_functor<IndexType>, ZipIterator>                ColumnIndexIterator;
 
-    typedef typename MatrixType::values_array_type::values_array_type::iterator                          ValueIterator;
+    typedef typename values_array_type::iterator                          ValueIterator;
     typedef logical_to_other_physical_functor<IndexType, cusp::row_major, cusp::column_major>            PermFunctor;
     typedef typename thrust::transform_iterator<PermFunctor, CountingIterator>                           PermIndexIterator;
     typedef typename thrust::permutation_iterator<ValueIterator, PermIndexIterator>                      PermValueIterator;
@@ -200,18 +198,18 @@ struct coo_view_type<MatrixType,dia_format>
     typedef cusp::coo_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>                  view;
 };
 
-template<typename MatrixType>
-struct coo_view_type<MatrixType,ell_format>
+template<typename RowArray, typename ColumnArray, typename ValueArray>
+struct coo_view_type<RowArray,ColumnArray,ValueArray,cusp::ell_format>
 {
-    typedef typename MatrixType::index_type                                                              IndexType;
-    typedef typename MatrixType::value_type                                                              ValueType;
-    typedef typename MatrixType::memory_space                                                            MemorySpace;
+    typedef typename RowArray::value_type     IndexType;
+    typedef typename ValueArray::value_type   ValueType;
+    typedef typename ValueArray::memory_space MemorySpace;
 
     typedef typename thrust::detail::remove_const<IndexType>::type                                       TempType;
     typedef typename thrust::counting_iterator<TempType>                                                 CountingIterator;
     typedef thrust::transform_iterator<cusp::divide_value<TempType>, CountingIterator>                   RowIndexIterator;
-    typedef typename MatrixType::column_indices_array_type::values_array_type::iterator                  ColumnIndexIterator;
-    typedef typename MatrixType::values_array_type::values_array_type::iterator                          ValueIterator;
+    typedef typename ColumnArray::iterator                                                               ColumnIndexIterator;
+    typedef typename ValueArray::iterator                                                                ValueIterator;
 
     typedef cusp::detail::logical_to_other_physical_functor<TempType, cusp::row_major, cusp::column_major> PermFunctor;
     typedef thrust::transform_iterator<PermFunctor, CountingIterator>                                    PermIndexIterator;
@@ -230,19 +228,17 @@ struct coo_view_type<MatrixType,ell_format>
     typedef cusp::coo_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>                  view;
 };
 
-template<typename MatrixType>
-struct coo_view_type<MatrixType,hyb_format>
+template<typename RowArray, typename ColumnArray, typename ValueArray>
+struct coo_view_type<RowArray,ColumnArray,ValueArray,cusp::hyb_format>
 {
-    typedef typename MatrixType::index_type                                                              IndexType;
-    typedef typename MatrixType::value_type                                                              ValueType;
-    typedef typename MatrixType::memory_space                                                            MemorySpace;
+    typedef typename RowArray::value_type     IndexType;
+    typedef typename ValueArray::value_type   ValueType;
+    typedef typename ValueArray::memory_space MemorySpace;
+
     typedef typename thrust::detail::remove_const<IndexType>::type                                       TempType;
 
-    typedef typename MatrixType::ell_matrix_type                                                         ell_matrix_type;
-    typedef typename MatrixType::coo_matrix_type                                                         coo_matrix_type;
-
-    typedef coo_view_type<ell_matrix_type>                                                               ell_view_type;
-    typedef typename coo_matrix_type::view                                                               coo_view;
+    typedef coo_view_type<RowArray,ColumnArray,ValueArray,cusp::ell_format>                              ell_view_type;
+    typedef coo_matrix_view<RowArray,ColumnArray,ValueArray>                                             coo_view;
 
     typedef typename ell_view_type::PermIndexIterator                                                    EllPermIndexIterator;
     typedef typename ell_view_type::RowIndexIterator                                                     EllRowIndexIterator;
@@ -268,3 +264,4 @@ struct coo_view_type<MatrixType,hyb_format>
 } // end detail
 } // end cusp
 
+#include <cusp/detail/coo_matrix.inl>

@@ -29,11 +29,20 @@
 
 namespace cusp
 {
+namespace detail
+{
+template<typename RowArray, typename ColumnArray, typename ValueArray, typename FormatTag = void>
+struct coo_view_type{};
+}
 
 /*! \cond */
 // forward definition
-template <typename ArrayType1, typename ArrayType2, typename ArrayType3,
-          typename IndexType, typename ValueType, typename MemorySpace> class coo_matrix_view;
+template <typename ArrayType1,
+          typename ArrayType2,
+          typename ArrayType3,
+          typename IndexType,
+          typename ValueType,
+          typename MemorySpace> class coo_matrix_view;
 /*! \endcond */
 
 /*! \addtogroup sparse_matrices Sparse Matrices
@@ -596,4 +605,5 @@ make_coo_matrix_view(const MatrixType& m)
 
 } // end namespace cusp
 
-#include <cusp/detail/coo_matrix.inl>
+#include <cusp/detail/type_traits.h>
+

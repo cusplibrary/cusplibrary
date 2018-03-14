@@ -179,8 +179,8 @@ void VTEST##Complex(void)   {                                    \
 DECLARE_UNITTEST(VTEST##Complex);
 
 #define DECLARE_NUMERIC_UNITTEST(VTEST)                          \
-  DECLARE_REAL_UNITTEST(VTEST);                                  \
-  DECLARE_COMPLEX_UNITTEST(VTEST);
+  DECLARE_REAL_UNITTEST(VTEST);
+  // DECLARE_COMPLEX_UNITTEST(VTEST);
 
 // Macro to create instances of a test for several
 // data types and array sizes

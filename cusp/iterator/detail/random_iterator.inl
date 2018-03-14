@@ -17,7 +17,7 @@
 #pragma once
 
 #include <cusp/complex.h>
-#include <cusp/detail/type_traits.h>
+// #include <cusp/detail/type_traits.h>
 
 #include <thrust/iterator/counting_iterator.h>
 #include <thrust/iterator/iterator_traits.h>

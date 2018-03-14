@@ -14,11 +14,13 @@
  *  limitations under the License.
  */
 
-#include <memory>
+#include <cusp/iterator/iterator_traits.h>
 
 #include <thrust/device_allocator.h>
 #include <thrust/device_malloc_allocator.h>
 #include <thrust/iterator/iterator_traits.h>
+
+#include <memory>
 
 namespace cusp
 {
