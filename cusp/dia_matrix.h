@@ -27,6 +27,7 @@
 #include <cusp/detail/format.h>
 #include <cusp/detail/matrix_base.h>
 #include <cusp/detail/utils.h>
+#include <cusp/detail/type_traits.h>
 
 namespace cusp
 {
@@ -141,9 +142,15 @@ public:
             typename values_array_type::const_view,
             IndexType, ValueType, MemorySpace> const_view;
 
-    typedef typename cusp::detail::coo_view_type<container,cusp::dia_format>::view              coo_view_type;
+    typedef typename cusp::detail::coo_view_type<diagonal_offsets_array_type,
+                                                 diagonal_offsets_array_type,
+                                                 typename values_array_type::values_array_type,
+                                                 cusp::dia_format>::view coo_view_type;
     // TODO : Why does GCC 4.4 fail using const type? Is it necessary?
-    typedef typename cusp::detail::coo_view_type<container /*const*/,cusp::dia_format>::view        const_coo_view_type;
+    typedef typename cusp::detail::coo_view_type<diagonal_offsets_array_type,
+                                                 diagonal_offsets_array_type,
+                                                 typename values_array_type::values_array_type,
+                                                 cusp::dia_format>::view const_coo_view_type;
 
     template<typename MemorySpace2>
     struct rebind
@@ -313,10 +320,10 @@ public:
  *  \endcode
  */
 template <typename ArrayType1,
-         typename ArrayType2,
-         typename IndexType   = typename ArrayType1::value_type,
-         typename ValueType   = typename ArrayType2::value_type,
-         typename MemorySpace = typename cusp::minimum_space<typename ArrayType1::memory_space, typename ArrayType2::memory_space>::type >
+          typename ArrayType2,
+          typename IndexType   = typename ArrayType1::value_type,
+          typename ValueType   = typename ArrayType2::value_type,
+          typename MemorySpace = typename cusp::minimum_space<typename ArrayType1::memory_space, typename ArrayType2::memory_space>::type >
 class dia_matrix_view : public cusp::detail::matrix_base<IndexType,ValueType,MemorySpace,cusp::dia_format>
 {
 private:
@@ -331,8 +338,15 @@ public:
     typedef cusp::dia_matrix_view<ArrayType1, ArrayType2, IndexType, ValueType, MemorySpace> view;
     typedef cusp::dia_matrix_view<ArrayType1, ArrayType2, IndexType, ValueType, MemorySpace> const_view;
 
-    typedef typename cusp::detail::coo_view_type<view,cusp::dia_format>::view       coo_view_type;
-    typedef typename cusp::detail::coo_view_type<view const,cusp::dia_format>::view const_coo_view_type;
+    typedef typename cusp::detail::coo_view_type<diagonal_offsets_array_type,
+                                                 diagonal_offsets_array_type,
+                                                 typename values_array_type::values_array_type,
+                                                 cusp::dia_format>::view coo_view_type;
+    // TODO : Why does GCC 4.4 fail using const type? Is it necessary?
+    typedef typename cusp::detail::coo_view_type<diagonal_offsets_array_type,
+                                                 diagonal_offsets_array_type,
+                                                 typename values_array_type::values_array_type,
+                                                 cusp::dia_format>::view const_coo_view_type;
     /*! \endcond */
 
     /**

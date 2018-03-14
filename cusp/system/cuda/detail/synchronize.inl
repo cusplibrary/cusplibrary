@@ -14,13 +14,12 @@
  *  limitations under the License.
  */
 
-#pragma once
+#include <thrust/detail/config.h>
+#include <thrust/system/cuda/detail/guarded_cuda_runtime_api.h>
+#include <thrust/system/cuda/error.h>
+#include <thrust/system_error.h>
 
-#include <cusp/detail/config.h>
-
-#include <cusp/system/cuda/detail/execution_policy.h>
-
-#include <cusp/copy.h>
+#include <cusp/system/cuda/detail/synchronize.h>
 
 namespace cusp
 {
@@ -31,27 +30,25 @@ namespace cuda
 namespace detail
 {
 
-template <typename System1,
-          typename System2,
-          typename SourceType,
-          typename DestinationType>
-void convert(
-#if THRUST_VERSION >= 100900
-    thrust::cuda_cub::cross_system<System1,System2>& exec,
-#else
-    thrust::system::cuda::detail::cross_system<System1,System2>& exec,
-#endif
-             const SourceType& src,
-                   DestinationType& dst)
+void synchronize(const char *message)
 {
-    typedef typename DestinationType::container                Container;
-    typedef typename Container::template rebind<System1>::type DestinationType2;
+  cudaError_t error = cudaThreadSynchronize();
+  if(error)
+  {
+    throw thrust::system_error(error, thrust::cuda_category(), std::string("synchronize: ") + message);
+  } // end if
+} // end synchronize()
 
-    DestinationType2 tmp;
-
-    cusp::convert(src, tmp);
-    cusp::copy(tmp, dst);
-}
+void synchronize_if_enabled(const char *message)
+{
+// XXX this could potentially be a runtime decision
+#if __THRUST_SYNCHRONOUS
+  synchronize(message);
+#else
+  // WAR "unused parameter" warning
+  (void) message;
+#endif
+} // end synchronize_if_enabled()
 
 } // end namespace detail
 } // end namespace cuda

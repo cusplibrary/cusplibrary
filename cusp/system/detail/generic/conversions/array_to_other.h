@@ -43,6 +43,15 @@ namespace detail
 namespace generic
 {
 
+template<typename T>
+struct not_zero
+{
+    bool operator()(const T v)
+    {
+        return v != T(0);
+    }
+};
+
 template <typename DerivedPolicy, typename SourceType, typename DestinationType>
 void
 convert(thrust::execution_policy<DerivedPolicy>& exec,
@@ -145,7 +154,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     PermIndexIterator   perm_indices_begin(IndexIterator(0),   PermFunctor(src.num_rows, src.num_cols, src.pitch));
     PermValueIterator   perm_values_begin(src.values.begin(),  perm_indices_begin);
 
-    size_t num_coo_entries = thrust::count_if(exec, src.values.begin(), src.values.end(), _1 != ValueType(0));
+    size_t num_coo_entries = thrust::count_if(exec, src.values.begin(), src.values.end(), not_zero<ValueType>());
     dst.resize(src.num_rows, src.num_cols, num_coo_entries);
 
     thrust::copy_if(exec,

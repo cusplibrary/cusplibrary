@@ -168,7 +168,10 @@ template <typename MatrixType>
 void coo_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>
 ::construct_from(MatrixType& matrix, cusp::dia_format)
 {
-    typedef cusp::detail::coo_view_type<MatrixType>          dia_view_type;
+    typedef cusp::detail::coo_view_type<typename MatrixType::diagonal_offsets_array_type,
+                                        typename MatrixType::diagonal_offsets_array_type,
+                                        typename MatrixType::values_array_type::values_array_type,
+                                        cusp::dia_format>       dia_view_type;
 
     typedef typename dia_view_type::CountingIterator         CountingIterator;
     typedef typename dia_view_type::PermFunctor              PermFunctor;
@@ -219,7 +222,10 @@ template <typename MatrixType>
 void coo_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>
 ::construct_from(MatrixType& matrix, cusp::ell_format)
 {
-    typedef cusp::detail::coo_view_type<MatrixType>          ell_view_type;
+    typedef cusp::detail::coo_view_type<typename MatrixType::column_indices_array_type::values_array_type,
+                                        typename MatrixType::column_indices_array_type::values_array_type,
+                                        typename MatrixType::values_array_type::values_array_type,
+                                        cusp::ell_format>       ell_view_type;
 
     typedef typename ell_view_type::CountingIterator         CountingIterator;
     typedef typename ell_view_type::PermFunctor              PermFunctor;
@@ -267,7 +273,10 @@ void coo_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>
 {
     using namespace cusp::detail;
 
-    typedef cusp::detail::coo_view_type<MatrixType>                  hyb_view_type;
+    typedef cusp::detail::coo_view_type<typename MatrixType::coo_matrix_type::row_indices_array_type,
+                                        typename MatrixType::coo_matrix_type::column_indices_array_type,
+                                        typename MatrixType::coo_matrix_type::values_array_type,
+                                        cusp::hyb_format>       hyb_view_type;
 
     typedef typename hyb_view_type::ell_view_type::CountingIterator  CountingIterator;
     typedef typename hyb_view_type::ell_view_type::PermFunctor       PermFunctor;
@@ -309,15 +318,15 @@ void coo_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>
 
     if(coo_num_entries > 0)
     {
-        thrust::merge_by_key(thrust::make_zip_iterator(thrust::make_tuple(temp_row_indices_begin, temp_column_indices_begin)),
-                             thrust::make_zip_iterator(thrust::make_tuple(temp_row_indices_begin, temp_column_indices_begin)) + ell_num_entries,
-                             thrust::make_zip_iterator(thrust::make_tuple(matrix.coo.row_indices.begin(), matrix.coo.column_indices.begin())),
-                             thrust::make_zip_iterator(thrust::make_tuple(matrix.coo.row_indices.begin(), matrix.coo.column_indices.begin())) + coo_num_entries,
-                             thrust::counting_iterator<IndexType>(0),
-                             thrust::counting_iterator<IndexType>(ell_num_entries),
-                             thrust::make_discard_iterator(),
-                             indices.begin(),
-                             cusp::detail::coo_tuple_comp_functor<IndexType>());
+        // thrust::merge_by_key(thrust::make_zip_iterator(thrust::make_tuple(temp_row_indices_begin, temp_column_indices_begin)),
+        //                      thrust::make_zip_iterator(thrust::make_tuple(temp_row_indices_begin, temp_column_indices_begin)) + ell_num_entries,
+        //                      thrust::make_zip_iterator(thrust::make_tuple(matrix.coo.row_indices.begin(), matrix.coo.column_indices.begin())),
+        //                      thrust::make_zip_iterator(thrust::make_tuple(matrix.coo.row_indices.begin(), matrix.coo.column_indices.begin())) + coo_num_entries,
+        //                      thrust::counting_iterator<IndexType>(0),
+        //                      thrust::counting_iterator<IndexType>(ell_num_entries),
+        //                      thrust::make_discard_iterator(),
+        //                      indices.begin(),
+        //                      cusp::detail::coo_tuple_comp_functor<IndexType>());
 
         // filter out invalid indices
         JoinColumnIterator cols_iter = cusp::make_join_iterator(ell_num_entries, coo_num_entries, perm_column_indices_begin, matrix.coo.column_indices.begin(), indices.begin());

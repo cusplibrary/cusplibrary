@@ -1,5 +1,5 @@
 /*
- *  Copyright 2008-2014 NVIDIA Corporation
+ *  Copyright 2008-2013 NVIDIA Corporation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,30 +14,27 @@
  *  limitations under the License.
  */
 
-/*! \file memory.h
- *  \brief Memory spaces and allocators
- */
 
 #pragma once
 
-#include <cusp/detail/config.h>
-
-#include <cusp/iterator/detail/any_system_tag.h>
+#include <thrust/detail/config.h>
 
 namespace cusp
 {
+namespace system
+{
+namespace cuda
+{
+namespace detail
+{
 
-template<typename T, typename MemorySpace>
-struct default_memory_allocator;
+inline void synchronize(const char *message = "");
 
-template <typename MemorySpace1,
-          typename MemorySpace2=any_memory,
-          typename MemorySpace3=any_memory,
-          typename MemorySpace4=any_memory>
-struct minimum_space;
+inline void synchronize_if_enabled(const char *message = "");
 
-
+} // end namespace detail
+} // end namespace cuda
+} // end namespace system
 } // end namespace cusp
 
-#include <cusp/detail/memory.inl>
-
+#include <cusp/system/cuda/detail/synchronize.inl>

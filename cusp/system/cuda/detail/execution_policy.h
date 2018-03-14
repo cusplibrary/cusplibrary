@@ -43,7 +43,13 @@ namespace detail
 // allow conversion to tag when it is not a successor
 template<typename Derived>
 struct execution_policy
-    : public thrust::system::cuda::detail::execution_policy<Derived> {};
+    : public
+#if THRUST_VERSION >= 100900
+    thrust::system::cuda::execution_policy<Derived>
+#else
+    thrust::system::cuda::detail::execution_policy<Derived>
+#endif
+    {};
 
 } // end detail
 

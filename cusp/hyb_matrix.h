@@ -163,9 +163,14 @@ public:
             typename cusp::coo_matrix<IndexType,ValueType,MemorySpace>::const_view,
             IndexType, ValueType, MemorySpace> const_view;
 
-    typedef typename cusp::detail::coo_view_type<container,cusp::hyb_format>::view           coo_view_type;
-    // TODO : Why does GCC 4.4 fail using const type? Is it necessary?
-    typedef typename cusp::detail::coo_view_type<container /*const*/,cusp::hyb_format>::view const_coo_view_type;
+    typedef typename cusp::detail::coo_view_type<typename coo_matrix_type::row_indices_array_type,
+                                                 typename coo_matrix_type::column_indices_array_type,
+                                                 typename coo_matrix_type::values_array_type,
+                                                 cusp::hyb_format>::view       coo_view_type;
+    typedef typename cusp::detail::coo_view_type<typename coo_matrix_type::row_indices_array_type,
+                                                 typename coo_matrix_type::column_indices_array_type,
+                                                 typename coo_matrix_type::values_array_type,
+                                                 cusp::hyb_format>::view       const_coo_view_type;
 
     template<typename MemorySpace2>
     struct rebind
@@ -356,8 +361,14 @@ public:
     typedef typename cusp::hyb_matrix_view<MatrixType1, MatrixType2, IndexType, ValueType, MemorySpace> view;
     typedef typename cusp::hyb_matrix_view<MatrixType1, MatrixType2, IndexType, ValueType, MemorySpace> const_view;
 
-    typedef typename cusp::detail::coo_view_type<view,cusp::hyb_format>::view       coo_view_type;
-    typedef typename cusp::detail::coo_view_type<view const,cusp::hyb_format>::view const_coo_view_type;
+    typedef typename cusp::detail::coo_view_type<typename coo_matrix_type::row_indices_array_type,
+                                                 typename coo_matrix_type::column_indices_array_type,
+                                                 typename coo_matrix_type::values_array_type,
+                                                 cusp::hyb_format>::view       coo_view_type;
+    typedef typename cusp::detail::coo_view_type<typename coo_matrix_type::row_indices_array_type,
+                                                 typename coo_matrix_type::column_indices_array_type,
+                                                 typename coo_matrix_type::values_array_type,
+                                                 cusp::hyb_format>::view       const_coo_view_type;
     /*! \endcond */
 
     /*! View to the \p ELL portion of the HYB structure.

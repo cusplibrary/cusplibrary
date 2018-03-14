@@ -20,7 +20,9 @@
 
 #include <thrust/extrema.h>
 
-#if THRUST_VERSION >= 100700
+#if THRUST_VERSION >= 100900
+#include <cusp/system/cuda/detail/launch_calculator.h>
+#elif THRUST_VERSION >= 100802
 #include <thrust/system/cuda/detail/detail/launch_calculator.h>
 #elif THRUST_VERSION >= 100600
 #include <thrust/system/cuda/detail/arch.h>

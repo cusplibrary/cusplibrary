@@ -20,6 +20,9 @@
 #include <cusp/system/cuda/detail/execution_policy.h>
 #include <cusp/system/cuda/detail/cublas/execute_with_cublas.h>
 
+#if THRUST_VERSION >= 100900
+#include <thrust/system/cuda/detail/cross_system.h>
+#endif
 #include <thrust/detail/execute_with_allocator.h>
 
 namespace cusp
@@ -55,10 +58,19 @@ struct par_t : public cusp::system::cuda::detail::execution_policy<par_t>
 // cpp interop
 template<typename System1, typename System2>
 inline __host__ __device__
+#if THRUST_VERSION >= 100900
+thrust::cuda_cub::cross_system<System1,System2>
+#else
 thrust::system::cuda::detail::cross_system<System1,System2>
+#endif
 select_system(const execution_policy<System1> &system1, const cusp::cpp::execution_policy<System2> &system2)
 {
+  #if THRUST_VERSION >= 100900
+  using namespace thrust::cuda_cub;
+  #else
   using namespace thrust::system::cuda::detail;
+  #endif
+
   thrust::execution_policy<System1> &non_const_system1 = const_cast<execution_policy<System1>&>(system1);
   cusp::cpp::execution_policy<System2> &non_const_system2 = const_cast<cusp::cpp::execution_policy<System2>&>(system2);
   return cross_system<System1,System2>(non_const_system1,non_const_system2);
@@ -66,10 +78,19 @@ select_system(const execution_policy<System1> &system1, const cusp::cpp::executi
 
 template<typename System1, typename System2>
 inline __host__ __device__
+#if THRUST_VERSION >= 100900
+thrust::cuda_cub::cross_system<System1,System2>
+#else
 thrust::system::cuda::detail::cross_system<System1,System2>
+#endif
 select_system(const cusp::cpp::execution_policy<System1> &system1, const execution_policy<System2> &system2)
 {
+  #if THRUST_VERSION >= 100900
+  using namespace thrust::cuda_cub;
+  #else
   using namespace thrust::system::cuda::detail;
+  #endif
+
   cusp::cpp::execution_policy<System1> &non_const_system1 = const_cast<cusp::cpp::execution_policy<System1>&>(system1);
   thrust::execution_policy<System2> &non_const_system2 = const_cast<execution_policy<System2>&>(system2);
   return cross_system<System1,System2>(non_const_system1,non_const_system2);
