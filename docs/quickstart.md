@@ -26,9 +26,9 @@ Since Cusp is a C++ template library there is nothing to "build".  Simply downlo
 Let's compile a simple program to make sure all the prerequisites are satisfied.  Save the following source code to a file named `version.cu`.
 
 ~~~{.cpp}
-#include <thrust/version.h>
-#include <cusp/version.h>
-#include <iostream>
+# include <thrust/version.h>
+# include <cusp/version.h>
+# include <iostream>
 
 int main(void)
 {
@@ -104,8 +104,8 @@ When manipulating matrices it's important to understand the advantages and disad
 Cusp makes it easy to transfer data between the host and device and convert between sparse matrix formats.  For example,
 
 ~~~{.cpp}
-#include <cusp/csr_matrix.h>
-#include <cusp/hyb_matrix.h>
+# include <cusp/csr_matrix.h>
+# include <cusp/hyb_matrix.h>
 
 int main()
 {
