@@ -23,7 +23,7 @@ def get_cuda_paths():
         lib_path = '/usr/local/cuda/lib'
         inc_path = '/usr/local/cuda/include'
     else:
-        raise ValueError('Error: unknown OS {}.  Where is nvcc installed?'.format(os.name))
+        raise ValueError('Error: unknown OS({}).  Where is nvcc installed?'.format(os.name))
 
     lib_ext = ''
     if platform.machine()[-2:] == '64' and platform.platform()[:6] != 'Darwin':
@@ -55,11 +55,11 @@ def get_mkl_paths():
         arch64 = True
 
     if 'MKLROOT' not in os.environ:
-        raise ValueError("MKLROOT is not an environment variable")
+        raise ValueError('MKLROOT is not an environment variable')
 
     # determine defaults
     if os.name == 'nt':
-        raise ValueError("Intel MKL support for Windows not implemented.")
+        raise ValueError('Intel MKL support for Windows not implemented.')
     elif os.name == 'posix':
         lib_base = os.environ['MKLROOT'] + '/lib'
         dirs = os.listdir(lib_base)
@@ -77,7 +77,7 @@ def get_mkl_paths():
 
         inc_path = os.environ['MKLROOT'] + '/include'
     else:
-        raise ValueError('Error: unknown OS.  Where is nvcc installed?')
+        raise ValueError('Error: unknown OS({}).  Where is nvcc installed?'.format(os.name))
 
     return (lib_path, inc_path)
 
@@ -225,7 +225,7 @@ def getLINKFLAGS(mode, backend, hostspblas, LINK):
     return result
 
 
-def Environment(buildDir):
+def Environment():
     # allow the user discretion to choose the MSVC version
     vars = Variables()
     if os.name == 'nt':
@@ -249,8 +249,8 @@ def Environment(buildDir):
 
     # add a variable to handle compute capability
     vars.Add(
-        EnumVariable('arch', 'Compute capability code generation', 'sm_20',
-                     allowed_values=('sm_20', 'sm_21', 'sm_30', 'sm_35', 'sm_50', 'sm_52')))
+        EnumVariable('arch', 'Compute capability code generation', 'sm_50',
+                     allowed_values=('sm_20', 'sm_21', 'sm_30', 'sm_35', 'sm_50', 'sm_52', 'sm_60', 'sm_70')))
 
     # add a variable to handle warnings
     if os.name == 'posix':
@@ -285,10 +285,16 @@ def Environment(buildDir):
     # create an Environment
     env = OldEnvironment(tools=getTools(), variables=vars)
 
+    # get the absolute path to the directory containing
+    # this source file
+    thisFile = inspect.getabsfile(Environment)
+    thisDir = os.path.dirname(thisFile)
+
     compiler_define = env['compiler']
 
     # enable nvcc
-    env.Tool(compiler_define, toolpath=[buildDir])
+    # env.Tool(compiler_define, toolpath=[os.path.join(thisDir)])
+    env.Tool(compiler_define, toolpath=[os.path.join('../../build')])
 
     # get the preprocessor define to use for the backend
     backend_define = {'cuda'  : 'THRUST_DEVICE_SYSTEM_CUDA',
@@ -326,7 +332,6 @@ def Environment(buildDir):
 
         # get NVCC compiler switches
         env.Append(NVCCFLAGS=getNVCCFLAGS(env['mode'], env['backend'], env['arch']))
-        # env.Append(NVCCFLAGS=['-ccbin','clang'])
 
         # get CUDA paths
         (cuda_exe_path, cuda_lib_path, cuda_inc_path) = get_cuda_paths()
@@ -339,7 +344,9 @@ def Environment(buildDir):
         env.Append(NVCCFLAGS = ["-x", "c++"])
 
         if 'THRUST_PATH' not in os.environ :
-            raise ValueError("Building without nvcc requires THRUST_PATH environment variable!")
+            os.environ['THRUST_PATH'] = '/usr/local/cuda/include'
+
+            # raise ValueError("Building without nvcc requires THRUST_PATH environment variable!")
 
         if 'clang' in compiler_define :
             env.Append(CFLAGS = ["-Wno-unused-local-typedef"]);
@@ -368,7 +375,7 @@ def Environment(buildDir):
         if os.name == 'posix':
             env.Append(LIBPATH=['/usr/local/lib'])
         else:
-            raise ValueError("Unknown OS.  What is the Ocelot library path?")
+            raise ValueError('Unknown OS.  What is the Ocelot library path?')
     elif env['backend'] == 'omp':
         if os.name == 'posix':
             if compiler_define == 'gcc' :
@@ -378,7 +385,7 @@ def Environment(buildDir):
         elif os.name == 'nt':
             env.Append(LIBS=['VCOMP'])
         else:
-            raise ValueError("Unknown OS.  What is the name of the OpenMP library?")
+            raise ValueError('Unknown OS.  What is the name of the OpenMP library?')
 
     if env['deviceblas'] == 'cublas':
         env.Append(LIBS=['cublas'])
@@ -396,7 +403,7 @@ def Environment(buildDir):
     # set thrust include path
     # this needs to come before the CUDA include path appended above,
     # which may include a different version of thrust
-    env.Prepend(CPPPATH=os.path.dirname(buildDir))
+    env.Prepend(CPPPATH=os.path.dirname(thisDir))
 
     if 'THRUST_PATH' in os.environ:
         env.Prepend(CPPPATH=[os.path.abspath(os.environ['THRUST_PATH'])])
