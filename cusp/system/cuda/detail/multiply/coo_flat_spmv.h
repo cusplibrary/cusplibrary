@@ -214,7 +214,7 @@ __device__ void segreduce_block(const IndexType * idx, ValueType * val, BinaryFu
 //     the sum into the output vector (y) at the corresponding row
 //     index.
 //  7) The last thread in each warp (thread_lane == 31) writes
-//     its row index and partial sum into the designated spote in the
+//     its row index and partial sum into the designated spot in the
 //     carry_idx and carry_val arrays.  The carry arrays are indexed
 //     by warp_lane which is a number in [0, BLOCK_SIZE / 32).
 //
