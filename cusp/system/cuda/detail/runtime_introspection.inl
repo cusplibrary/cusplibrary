@@ -87,7 +87,7 @@ inline device_properties_t device_properties(int device_id)
 
         // disallow the compiler to move the write to properties_exist[device_id]
         // before the initialization of device_properties[device_id]
-        __thrust_compiler_fence();
+        // __thrust_compiler_fence();
 
         properties_exist[device_id] = true;
     }

@@ -335,7 +335,7 @@ struct Cta
 					int warp_id = threadIdx.x >> B40C_LOG_WARP_THREADS(KernelPolicy::CUDA_ARCH);
 					int lane_id = util::LaneId();
 
-					while (__any(tile->row_length[LOAD][VEC] >= KernelPolicy::WARP_GATHER_THRESHOLD)) {
+					while (__any_sync(tile->row_length[LOAD][VEC] >= KernelPolicy::WARP_GATHER_THRESHOLD, 0)) {
 
 						if (tile->row_length[LOAD][VEC] >= KernelPolicy::WARP_GATHER_THRESHOLD) {
 							// Vie for control of the warp
