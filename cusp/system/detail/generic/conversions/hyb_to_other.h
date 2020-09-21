@@ -43,7 +43,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     typedef typename SourceType::const_coo_view_type  CooViewType;
 
     CooViewType src_coo(src);
-    // cusp::copy(src_coo, dst);
+    cusp::copy(src_coo, dst);
 }
 
 } // end namespace generic
