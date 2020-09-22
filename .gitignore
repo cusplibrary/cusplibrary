@@ -108,11 +108,15 @@ performance/csr_vector/csr_vector
 performance/graph/breadth_first_search
 performance/graph/connected_components
 performance/graph/hilbert_curve
+performance/graph/maximal_independent_set
 performance/graph/maximum_flow
 performance/graph/pseudo_peripheral
 performance/graph/symmetric_rcm
+performance/graph/vertex_coloring
 performance/overhead/memory
+performance/solver/cg
 performance/spmv/spmv
+performance/spmm/spmm
 #<AutoIgnore/>
 
 *.user
