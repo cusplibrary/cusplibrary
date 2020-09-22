@@ -6,8 +6,8 @@ import glob
 try:
   Import('env')
 except:
-  exec open("../../build/build-env.py")
-  env = Environment()
+  exec(open('../../build/build-env.py').read())
+  env = Environment('../../build')
 
 # find all .cus & .cpps in the current directory
 sources = []
@@ -21,4 +21,3 @@ for dir in directories:
 # compile examples
 for src in sources:
   env.Program(src)
-

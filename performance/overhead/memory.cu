@@ -74,7 +74,7 @@ int main(void)
 
     std::cout << "cudaMalloc() & cudaFree()" << std::endl;
     benchmark(cudaMalloc_cudaFree());
-    
+
     std::cout << "thrust::device_malloc & thrust::device_free" << std::endl;
     benchmark(thrust_device_malloc_device_free());
 

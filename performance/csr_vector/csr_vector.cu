@@ -1,6 +1,3 @@
-#define CUSP_USE_TEXTURE_MEMORY
-
-#include <cusp/dia_matrix.h>
 #include <cusp/csr_matrix.h>
 #include <cusp/io/matrix_market.h>
 
@@ -9,35 +6,37 @@
 
 #include <iostream>
 
-#include <cusp/detail/device/spmv/csr_vector.h>
+#include <cusp/system/cuda/detail/multiply/csr_vector_spmv.h>
 #include "../timer.h"
 
-template <bool UseCache, unsigned int THREADS_PER_VECTOR, typename IndexType, typename ValueType>
-void perform_spmv(const cusp::csr_matrix<IndexType,ValueType,cusp::device_memory>& csr, 
-                  const ValueType * x, 
-                        ValueType * y)
+template <unsigned int THREADS_PER_VECTOR, typename MatrixType, typename VectorType1, typename VectorType2>
+void perform_spmv(const MatrixType& csr,
+                  const VectorType1& x,
+                        VectorType2& y)
 {
+    typedef typename MatrixType::index_type IndexType;
+    typedef typename MatrixType::value_type ValueType;
+
+    typedef typename MatrixType::row_offsets_array_type::const_iterator     RowIterator;
+    typedef typename MatrixType::column_indices_array_type::const_iterator  ColumnIterator;
+    typedef typename MatrixType::values_array_type::const_iterator          ValueIterator1;
+
+    typedef typename VectorType1::const_iterator                            ValueIterator2;
+    typedef typename VectorType2::iterator                                  ValueIterator3;
+
     const unsigned int VECTORS_PER_BLOCK  = 128 / THREADS_PER_VECTOR;
     const unsigned int THREADS_PER_BLOCK  = VECTORS_PER_BLOCK * THREADS_PER_VECTOR;
 
-    //const unsigned int MAX_BLOCKS = MAX_THREADS / THREADS_PER_BLOCK;
     const unsigned int MAX_BLOCKS = 16 * 1024;
     const unsigned int NUM_BLOCKS = std::min(MAX_BLOCKS, static_cast<unsigned int>((csr.num_rows + (VECTORS_PER_BLOCK - 1)) / VECTORS_PER_BLOCK));
-    
-    if (UseCache)
-        bind_x(x);
 
-    cusp::detail::device::spmv_csr_vector_kernel<IndexType, ValueType, VECTORS_PER_BLOCK, THREADS_PER_VECTOR, UseCache> <<<NUM_BLOCKS, THREADS_PER_BLOCK>>> 
-        (csr.num_rows,
-         thrust::raw_pointer_cast(&csr.row_offsets[0]),
-         thrust::raw_pointer_cast(&csr.column_indices[0]),
-         thrust::raw_pointer_cast(&csr.values[0]),
-         x, y);
-
-    if (UseCache)
-        unbind_x(x);
+    cusp::system::cuda::detail::spmv_csr_vector_kernel<RowIterator, ColumnIterator, ValueIterator1, ValueIterator2, ValueIterator3,
+                                                       UnaryFunction, BinaryFunction1, BinaryFunction2,
+                                                       VECTORS_PER_BLOCK, THREADS_PER_VECTOR>
+                                                      <<<NUM_BLOCKS, THREADS_PER_BLOCK, 0, s>>>
+        (csr.num_rows, csr.row_offsets.begin(), csr.column_indices.begin(), csr.values.begin());
 }
- 
+
 template <unsigned int ThreadsPerVector, typename IndexType, typename ValueType>
 float benchmark_matrix(const cusp::csr_matrix<IndexType,ValueType,cusp::device_memory>& csr)
 {
@@ -47,12 +46,12 @@ float benchmark_matrix(const cusp::csr_matrix<IndexType,ValueType,cusp::device_m
     cusp::array1d<ValueType, cusp::device_memory> y(csr.num_rows);
 
     // warmup
-    perform_spmv<true, ThreadsPerVector>(csr, thrust::raw_pointer_cast(&x[0]), thrust::raw_pointer_cast(&y[0]));
+    perform_spmv<ThreadsPerVector>(csr, x, y);
 
     // time several SpMV iterations
     timer t;
     for(size_t i = 0; i < num_iterations; i++)
-        perform_spmv<true, ThreadsPerVector>(csr, thrust::raw_pointer_cast(&x[0]), thrust::raw_pointer_cast(&y[0]));
+        perform_spmv<ThreadsPerVector>(csr, x, y);
     cudaThreadSynchronize();
 
     float sec_per_iteration = t.seconds_elapsed() / num_iterations;
@@ -63,15 +62,9 @@ float benchmark_matrix(const cusp::csr_matrix<IndexType,ValueType,cusp::device_m
 
 
 template <typename IndexType, typename ValueType>
-void make_synthetic_example(const IndexType N, const IndexType D, 
+void make_synthetic_example(const IndexType N, const IndexType D,
                             cusp::csr_matrix<IndexType, ValueType, cusp::device_memory>& csr)
 {
-//    // create DIA matrix with D diagonal bands
-//    const IndexType NNZ = N * D - (D * (D - 1)) / 2;
-//    cusp::dia_matrix<IndexType, ValueType, cusp::host_memory> dia(N, N, NNZ, D, N);
-//    thrust::sequence(dia.diagonal_offsets.begin(), dia.diagonal_offsets.end());
-//    thrust::fill(dia.values.values.begin(), dia.values.values.end(), 1);
-
     // create ELL matrix with D diagonals
     cusp::ell_matrix<IndexType, ValueType, cusp::host_memory> ell(N, D, N * D, D);
     for(IndexType i = 0; i < N; i++)
@@ -92,7 +85,7 @@ int main(int argc, char** argv)
 {
     typedef int   IndexType;
     typedef float ValueType;
-        
+
 
     if (argc == 1)
     {
@@ -136,4 +129,3 @@ int main(int argc, char** argv)
 
     return 0;
 }
-
