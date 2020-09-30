@@ -7,7 +7,7 @@ Current release    : v0.5.1 (April 28, 2015)
 | ----- | ------- | -------- |
 | [![Linux](https://travis-ci.org/sdalton1/cusplibrary.png)](https://travis-ci.org/sdalton1/cusplibrary) | [![Windows](https://ci.appveyor.com/api/projects/status/36pf1oqwkfq6xekn?svg=true)](https://ci.appveyor.com/project/StevenDalton/cusplibrary) | [![Coverage](https://coveralls.io/repos/sdalton1/cusplibrary/badge.svg?branch=master)](https://coveralls.io/r/sdalton1/cusplibrary?branch=master) |
 
-View the project at [CUSP Website](http://cusplibrary.github.io) and the [cusp-users discussion forum](http://groups.google.com/group/cusp-users) for information and questions.
+View the project at [CUSP Website](http://cusplibrary.github.io) and the [cusp-users discussion forum](http://groups.google.com/group/cusp-users) for informations and questions.
 
 <br><hr>
 <h3>A Simple Example</h3>
