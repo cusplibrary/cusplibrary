@@ -59,6 +59,7 @@ CUSP is developed as an open-source project by [NVIDIA Research](http://research
 [Steven Dalton](http://github.com/sdalton1) is the current primary contributor.
 
 <br><hr>
+cups library is  amazing 
 <h3>Citing</h3>
 
 ```shell
