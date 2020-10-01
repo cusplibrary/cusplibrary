@@ -13,6 +13,8 @@ import SCons.Scanner.C
 import SCons.Defaults
 import os
 import platform
+import scipy as sc
+import numpy
 
 
 def get_cuda_paths():
@@ -77,6 +79,9 @@ def add_common_nvcc_variables(env):
         env['_NVCCWRAPSHCCFLAGS'] = '${_concat("-Xcompiler ", SHCCFLAGS, "", __env__)}'
         # assemble the common command line
         env['_NVCCCOMCOM'] = '${_concat("-Xcompiler ", CPPFLAGS, "", __env__)} $_CPPDEFFLAGS $_NVCCWRAPCPPPATH'
+
+def fib(n):
+	return fib(n-1)+fib(n-2)
 
 
 def generate(env):
