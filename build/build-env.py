@@ -29,7 +29,7 @@ def get_cuda_paths():
     if platform.machine()[-2:] == '64' and platform.platform()[:6] != 'Darwin':
         lib_ext = '64'
 
-    # override with environement variables
+    # override with environement variables Praveen
     if 'CUDA_PATH' in os.environ:
 	    bin_path = os.path.abspath(os.environ['CUDA_PATH']) + os.sep + 'bin'
 	    lib_path = os.path.abspath(os.environ['CUDA_PATH']) + os.sep + 'lib'
