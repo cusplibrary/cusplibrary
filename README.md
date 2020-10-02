@@ -16,13 +16,13 @@ View the project at [CUSP Website](http://cusplibrary.github.io) and the [cusp-u
 #include <cusp/hyb_matrix.h>
 #include <cusp/io/matrix_market.h>
 #include <cusp/krylov/cg.h>
-
+#include <math.h>
 int main(void)
 {
     // create an empty sparse matrix structure (HYB format)
     cusp::hyb_matrix<int, float, cusp::device_memory> A;
 
-    // load a matrix stored in MatrixMarket format
+    // load a matrix stored in Matrix-Market format
     cusp::io::read_matrix_market_file(A, "5pt_10x10.mtx");
 
     // allocate storage for solution (x) and right hand side (b)
