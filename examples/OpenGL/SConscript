@@ -6,8 +6,8 @@ import glob
 try:
   Import('env')
 except:
-  exec open("../../build/build-env.py")
-  env = Environment()
+  exec( open("../../build/build-env.py").read() )
+  env = environment('../../build/')
 
 # OpenGl example not currently working on Windows
 if env['PLATFORM'] != "win32" and env['PLATFORM'] != "win64":

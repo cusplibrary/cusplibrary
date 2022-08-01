@@ -5,8 +5,8 @@ import inspect
 try:
   Import('env')
 except:
-  exec open("../build/build-env.py")
-  env = Environment()
+  exec( open("../build/build-env.py").read() )
+  env = environment("../build")
 
 # on windows we have to do /bigobj
 if env['PLATFORM'] == "win32" or env['PLATFORM'] == "win64":

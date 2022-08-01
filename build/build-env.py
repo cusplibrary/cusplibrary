@@ -27,7 +27,7 @@ def get_cuda_paths():
 
     lib_ext = ''
     if platform.machine()[-2:] == '64' and platform.platform()[:6] != 'Darwin':
-        lib_ext = '64'
+        lib_ext = '\\x64'
 
     # override with environement variables
     if 'CUDA_PATH' in os.environ:
@@ -225,7 +225,7 @@ def getLINKFLAGS(mode, backend, hostspblas, LINK):
     return result
 
 
-def Environment(buildDir):
+def environment(buildDir):
     # allow the user discretion to choose the MSVC version
     vars = Variables()
     if os.name == 'nt':
@@ -249,7 +249,7 @@ def Environment(buildDir):
 
     # add a variable to handle compute capability
     vars.Add(
-        EnumVariable('arch', 'Compute capability code generation', 'sm_20',
+        EnumVariable('arch', 'Compute capability code generation', 'sm_50',
                      allowed_values=('sm_20', 'sm_21', 'sm_30', 'sm_35', 'sm_50', 'sm_52')))
 
     # add a variable to handle warnings
@@ -283,10 +283,10 @@ def Environment(buildDir):
     vars.Add(deviceblas_variable)
 
     # create an Environment
-    env = OldEnvironment(tools=getTools(), variables=vars)
+    env = Environment(tools=getTools(), variables=vars)
 
     compiler_define = env['compiler']
-
+    
     # enable nvcc
     env.Tool(compiler_define, toolpath=[buildDir])
 

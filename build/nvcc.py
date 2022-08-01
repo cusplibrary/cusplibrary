@@ -35,7 +35,7 @@ def get_cuda_paths():
 
     lib_ext = ''
     if platform.machine()[-2:] == '64' and platform.platform()[:6] != 'Darwin':
-        lib_ext = '64'
+        lib_ext = '\\x64'
 
     # override with environement variables
     if 'CUDA_PATH' in os.environ:
@@ -66,7 +66,8 @@ def add_common_nvcc_variables(env):
     """
 
     # "NVCC common command line"
-    if not env.has_key('_NVCCCOMCOM'):
+    #if not env.has_key('_NVCCCOMCOM'):
+    if env.get('_NVCCCOMCOM') == None:
         # nvcc needs '-I' prepended before each include path, regardless of
         # platform
         env['_NVCCWRAPCPPPATH'] = '${_concat("-I ", CPPPATH, "", __env__)}'
