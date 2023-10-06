@@ -1,4 +1,26 @@
 #######################################
+#            Cusp v0.t.0              #
+#######################################
+
+Summary
+  Merge branch CUDA 10
+  Add support to CUDA 11
+
+New Features
+  Support CUDA 10/11 now
+
+Breaking API changes
+  NONE
+
+Bug Fixes
+  NONE
+
+######################################################
+#        Below are old change logs  from             #
+#        https://github.com/cusplibrary/cusplibrary  #
+######################################################
+
+#######################################
 #            Cusp v0.6.0              #
 #######################################
 
