@@ -16,7 +16,13 @@
 
 #include <thrust/detail/config.h>
 #include <thrust/system/cuda/detail/guarded_cuda_runtime_api.h>
+
+#if defined(__CUDACC_VER_MAJOR__) && (__CUDACC_VER_MAJOR__ >= 11)
+#include <thrust/detail/util/align.h>
+#else
 #include <thrust/detail/util/blocking.h>
+#endif
+
 #include <thrust/detail/minmax.h>
 #include <thrust/system_error.h>
 #include <thrust/system/cuda/error.h>
