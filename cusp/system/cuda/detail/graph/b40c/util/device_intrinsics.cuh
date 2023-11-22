@@ -93,7 +93,7 @@ template <int LOG_ACTIVE_WARPS, int LOG_ACTIVE_THREADS>
 __device__ __forceinline__ int TallyWarpVote(int predicate)
 {
 #if __CUDA_ARCH__ >= 200
-	return __popc(__ballot(predicate));
+	return __popc(__ballot_sync(predicate));
 #else
 	const int ACTIVE_WARPS = 1 << LOG_ACTIVE_WARPS;
 	const int ACTIVE_THREADS = 1 << LOG_ACTIVE_THREADS;
@@ -117,7 +117,7 @@ __device__ __forceinline__ int TallyWarpVote(
 	volatile int storage[2][1 << LOG_ACTIVE_THREADS])
 {
 #if __CUDA_ARCH__ >= 200
-	return __popc(__ballot(predicate));
+	return __popc(__ballot_sync(predicate));
 #else
 	return reduction::WarpReduce<LOG_ACTIVE_THREADS>::Invoke(
 		predicate, 
@@ -133,7 +133,7 @@ template <int LOG_ACTIVE_WARPS, int LOG_ACTIVE_THREADS>
 __device__ __forceinline__ int WarpVoteAll(int predicate)
 {
 #if __CUDA_ARCH__ >= 120
-	return __all(predicate);
+	return __all_sync(predicate);
 #else 
 	const int ACTIVE_THREADS = 1 << LOG_ACTIVE_THREADS;
 	return (TallyWarpVote<LOG_ACTIVE_WARPS, LOG_ACTIVE_THREADS>(predicate) == ACTIVE_THREADS);
@@ -148,7 +148,7 @@ template <int LOG_ACTIVE_THREADS>
 __device__ __forceinline__ int WarpVoteAll(int predicate)
 {
 #if __CUDA_ARCH__ >= 120
-	return __all(predicate);
+	return __all_sync(predicate);
 #else
 	const int ACTIVE_THREADS = 1 << LOG_ACTIVE_THREADS;
 	__shared__ volatile int storage[2][ACTIVE_THREADS];
@@ -164,7 +164,7 @@ template <int LOG_ACTIVE_WARPS, int LOG_ACTIVE_THREADS>
 __device__ __forceinline__ int WarpVoteAny(int predicate)
 {
 #if __CUDA_ARCH__ >= 120
-	return __any(predicate);
+	return __any_sync(predicate);
 #else
 	return TallyWarpVote<LOG_ACTIVE_WARPS, LOG_ACTIVE_THREADS>(predicate);
 #endif
@@ -178,7 +178,7 @@ template <int LOG_ACTIVE_THREADS>
 __device__ __forceinline__ int WarpVoteAny(int predicate)
 {
 #if __CUDA_ARCH__ >= 120
-	return __any(predicate);
+	return __any_sync(predicate);
 #else
 	const int ACTIVE_THREADS = 1 << LOG_ACTIVE_THREADS;
 	__shared__ volatile int storage[2][ACTIVE_THREADS];

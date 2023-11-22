@@ -32,7 +32,7 @@ namespace detail
 
 void synchronize(const char *message)
 {
-  cudaError_t error = cudaThreadSynchronize();
+  cudaError_t error = cudaDeviceSynchronize();
   if(error)
   {
     throw thrust::system_error(error, thrust::cuda_category(), std::string("synchronize: ") + message);

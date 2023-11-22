@@ -1,11 +1,5 @@
-EnsureSConsVersion(1, 2)
-
 import os
-
-import inspect
 import platform
-import subprocess
-from distutils.version import StrictVersion
 
 def get_cuda_paths():
     """Determines CUDA {bin,lib,include} paths
@@ -23,7 +17,7 @@ def get_cuda_paths():
         lib_path = '/usr/local/cuda/lib'
         inc_path = '/usr/local/cuda/include'
     else:
-        raise ValueError('Error: unknown OS {}.  Where is nvcc installed?'.format(os.name))
+        raise ValueError(f'Error: unknown OS {os.name}.  Where is nvcc installed?')
 
     lib_ext = ''
     if platform.machine()[-2:] == '64' and platform.platform()[:6] != 'Darwin':
@@ -31,9 +25,9 @@ def get_cuda_paths():
 
     # override with environement variables
     if 'CUDA_PATH' in os.environ:
-	    bin_path = os.path.abspath(os.environ['CUDA_PATH']) + os.sep + 'bin'
-	    lib_path = os.path.abspath(os.environ['CUDA_PATH']) + os.sep + 'lib'
-	    inc_path = os.path.abspath(os.environ['CUDA_PATH']) + os.sep + 'include'
+        bin_path = os.path.join(os.path.abspath(os.environ['CUDA_PATH']), 'bin')
+        lib_path = os.path.join(os.path.abspath(os.environ['CUDA_PATH']), 'lib')
+        inc_path = os.path.join(os.path.abspath(os.environ['CUDA_PATH']), 'include')
     if 'CUDA_BIN_PATH' in os.environ:
         bin_path = os.path.abspath(os.environ['CUDA_BIN_PATH'])
     if 'CUDA_LIB_PATH' in os.environ:
@@ -62,6 +56,7 @@ def get_mkl_paths():
         raise ValueError("Intel MKL support for Windows not implemented.")
     elif os.name == 'posix':
         lib_base = os.environ['MKLROOT'] + '/lib'
+        lib_path = lib_base
         dirs = os.listdir(lib_base)
         for dir in dirs:
             # select 64/32 bit MKL library path based on architecture
@@ -91,9 +86,6 @@ def getTools():
     else:
         result = ['default']
     return result
-
-
-OldEnvironment = Environment
 
 
 # this dictionary maps the name of a compiler program to a dictionary mapping the name of
@@ -198,8 +190,8 @@ def getCXXFLAGS(mode, backend, warn, warnings_as_errors, hostspblas, CXX):
 def getNVCCFLAGS(mode, backend, arch):
     result = ['-arch=' + arch]
     if mode == 'debug':
-        # turn on debug mode
-        # XXX make this work when we've debugged nvcc -G
+        # TODO turn on debug mode
+        # make this work when we've debugged nvcc -G
         # result.append('-G')
         pass
     return result
@@ -215,7 +207,7 @@ def getLINKFLAGS(mode, backend, hostspblas, LINK):
     # if platform.platform()[:6] == 'Darwin':
     #   result.append('-m32')
 
-    # XXX make this portable
+    # TODO make this portable
     if backend == 'ocelot':
         result.append(os.popen('OcelotConfig -l').read().split())
 
@@ -225,7 +217,7 @@ def getLINKFLAGS(mode, backend, hostspblas, LINK):
     return result
 
 
-def Environment(buildDir):
+def environment(buildDir, includeDir):
     # allow the user discretion to choose the MSVC version
     vars = Variables()
     if os.name == 'nt':
@@ -244,13 +236,13 @@ def Environment(buildDir):
     vars.Add(backend_variable)
 
     # add a variable to handle RELEASE/DEBUG mode
-    vars.Add(EnumVariable('mode', 'Release versus debug mode', 'release',
+    vars.Add(EnumVariable('mode', 'Release versus debug mode', 'debug',
                           allowed_values=('release', 'debug', 'coverage')))
 
     # add a variable to handle compute capability
     vars.Add(
-        EnumVariable('arch', 'Compute capability code generation', 'sm_20',
-                     allowed_values=('sm_20', 'sm_21', 'sm_30', 'sm_35', 'sm_50', 'sm_52')))
+        EnumVariable('arch', 'Compute capability code generation', 'sm_50',
+                     allowed_values=('sm_20', 'sm_30', 'sm_50', 'sm_60')))
 
     # add a variable to handle warnings
     if os.name == 'posix':
@@ -278,12 +270,12 @@ def Environment(buildDir):
     vars.Add(hostblas_variable)
 
     # add a variable to handle the device BLAS backend
-    deviceblas_variable = EnumVariable('deviceblas', 'Device BLAS library', 'cusp',
+    deviceblas_variable = EnumVariable('deviceblas', 'Device BLAS library', 'cublas',
                                        allowed_values=('cusp', 'cblas', 'cublas'))
     vars.Add(deviceblas_variable)
 
     # create an Environment
-    env = OldEnvironment(tools=getTools(), variables=vars)
+    env = Environment(tools=getTools(), variables=vars)
 
     compiler_define = env['compiler']
 
@@ -319,17 +311,13 @@ def Environment(buildDir):
     # get CXX compiler switches
     env.Append(CXXFLAGS=getCXXFLAGS(env['mode'], env['backend'], env['Wall'], env['Werror'], env['hostspblas'], env.subst('$CXX')))
 
-    compile_flag_prefix = ''
     if compiler_define == 'nvcc':
-
-        compile_flag_prefix = '-Xcompiler'
-
         # get NVCC compiler switches
         env.Append(NVCCFLAGS=getNVCCFLAGS(env['mode'], env['backend'], env['arch']))
         # env.Append(NVCCFLAGS=['-ccbin','clang'])
 
         # get CUDA paths
-        (cuda_exe_path, cuda_lib_path, cuda_inc_path) = get_cuda_paths()
+        _, cuda_lib_path, cuda_inc_path = get_cuda_paths()
         env.Append(LIBPATH=[cuda_lib_path])
         env.Append(CPPPATH=[cuda_inc_path])
 
@@ -344,20 +332,13 @@ def Environment(buildDir):
         if 'clang' in compiler_define :
             env.Append(CFLAGS = ["-Wno-unused-local-typedef"]);
 
-    # if compiler_define == 'gcc' or compiler_define == 'g++' :
-    #     GCC_VERSION = subprocess.check_output([env['CXX'], '-dumpversion'])
-    #     if StrictVersion(GCC_VERSION) >= StrictVersion("5.0.0") :
-
-    # hack to silence unknown pragma warnings
-    # env.Append(NVCCFLAGS = [compile_flag_prefix, '-Wno-unknown-pragmas'])
-
     # get linker switches
     env.Append(LINKFLAGS=getLINKFLAGS(env['mode'], env['backend'], env['hostspblas'], env.subst('$LINK')))
 
     # link against backend-specific runtimes
-    # XXX we shouldn't have to link against cudart unless we're using the
+    # TODO we shouldn't have to link against cudart unless we're using the
     #     cuda runtime, but cudafe inserts some dependencies when compiling .cu files
-    # XXX ideally this gets handled in nvcc.py if possible
+    # TODO ideally this gets handled in nvcc.py if possible
     if os.name != 'nt':
         env.Append(LIBS=['stdc++', 'm'])
 
