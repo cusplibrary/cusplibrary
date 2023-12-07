@@ -190,7 +190,7 @@ function_attributes_t closure_attributes(void)
 
         // disallow the compiler to move the write to attributes_exist[device_id]
         // before the initialization of function_attributes[device_id]
-        __thrust_compiler_fence();
+        // __thrust_compiler_fence();
 
         attributes_exist[device_id] = true;
     }

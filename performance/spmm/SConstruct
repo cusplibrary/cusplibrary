@@ -6,12 +6,10 @@ import glob
 try:
   Import('env')
 except:
-  exec open("../../build/build-env.py")
-  env = Environment()
+  exec(open('../../build/build-env.py').read())
+  env = Environment('../../build')
 
-env.Append(LIBS = ["-lcusparse"])
-
-env.Append(CPPPATH = "/home/steve/back40computing-read-only")
+env.Append(LIBS = ['-lcusparse'])
 
 # find all .cus & .cpps in the current directory
 sources = []
@@ -20,10 +18,8 @@ extensions = ['*.cu', '*.cpp']
 for dir in directories:
   for ext in extensions:
     regexp = os.path.join(dir, ext)
-    #sources.extend(env.Glob(regexp, strings = True))
     sources.extend(glob.glob(regexp))
 
 # compile examples
 for src in sources:
   env.Program(src)
-

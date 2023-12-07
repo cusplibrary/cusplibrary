@@ -16,7 +16,13 @@
 
 #include <thrust/detail/config.h>
 #include <thrust/system/cuda/detail/guarded_cuda_runtime_api.h>
+
+#if defined(__CUDACC_VER_MAJOR__) && (__CUDACC_VER_MAJOR__ >= 11)
+#include <thrust/detail/util/align.h>
+#else
 #include <thrust/detail/util/blocking.h>
+#endif
+
 #include <thrust/detail/minmax.h>
 #include <thrust/system_error.h>
 #include <thrust/system/cuda/error.h>
@@ -87,7 +93,7 @@ inline device_properties_t device_properties(int device_id)
 
         // disallow the compiler to move the write to properties_exist[device_id]
         // before the initialization of device_properties[device_id]
-        __thrust_compiler_fence();
+        // __thrust_compiler_fence();
 
         properties_exist[device_id] = true;
     }
