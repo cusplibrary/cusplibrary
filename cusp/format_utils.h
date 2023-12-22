@@ -158,7 +158,7 @@ void extract_diagonal(const thrust::detail::execution_policy_base<DerivedPolicy>
  * #include <cusp/array1d.h>
  * #include <cusp/coo_matrix.h>
  * #include <cusp/print.h>
- * #incldue <cusp/gallery/poisson.h>
+ * #include <cusp/gallery/poisson.h>
  *
  * #include <cusp/format_utils.h>
  *
@@ -210,7 +210,7 @@ size_t count_diagonals(const thrust::detail::execution_policy_base<DerivedPolicy
  * \par Example
  * \code
  * #include <cusp/coo_matrix.h>
- * #incldue <cusp/gallery/poisson.h>
+ * #include <cusp/gallery/poisson.h>
  *
  * #include <cusp/format_utils.h>
  *
@@ -255,7 +255,7 @@ size_t compute_max_entries_per_row(const thrust::detail::execution_policy_base<D
  * \par Example
  * \code
  * #include <cusp/csr_matrix.h>
- * #incldue <cusp/gallery/poisson.h>
+ * #include <cusp/gallery/poisson.h>
  *
  * #include <cusp/format_utils.h>
  *
@@ -299,7 +299,7 @@ size_t compute_optimal_entries_per_row(const thrust::detail::execution_policy_ba
  * \par Example
  * \code
  * #include <cusp/csr_matrix.h>
- * #incldue <cusp/gallery/poisson.h>
+ * #include <cusp/gallery/poisson.h>
  *
  * #include <cusp/format_utils.h>
  *
