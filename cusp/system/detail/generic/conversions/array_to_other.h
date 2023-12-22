@@ -46,7 +46,7 @@ namespace generic
 template<typename T>
 struct not_zero
 {
-    bool operator()(const T v)
+    __host__ __device__ bool operator()(const T v)
     {
         return v != T(0);
     }
@@ -162,7 +162,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
                     thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, column_indices_begin, perm_values_begin)) + src.num_entries,
                     perm_values_begin,
                     thrust::make_zip_iterator(thrust::make_tuple(dst.row_indices.begin(), dst.column_indices.begin(), dst.values.begin())),
-                    _1 != ValueType(0));
+                    _1 != 0);
 }
 
 } // end namespace generic

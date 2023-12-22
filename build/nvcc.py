@@ -39,9 +39,9 @@ def get_cuda_paths():
 
     # override with environement variables
     if 'CUDA_PATH' in os.environ:
-	    bin_path = os.path.abspath(os.environ['CUDA_PATH']) + os.sep + 'bin'
-	    lib_path = os.path.abspath(os.environ['CUDA_PATH']) + os.sep + 'lib'
-	    inc_path = os.path.abspath(os.environ['CUDA_PATH']) + os.sep + 'include'
+        bin_path = os.path.join(os.path.abspath(os.environ['CUDA_PATH']), 'bin')
+        lib_path = os.path.join(os.path.abspath(os.environ['CUDA_PATH']), 'lib')
+        inc_path = os.path.join(os.path.abspath(os.environ['CUDA_PATH']), 'include')
     if 'CUDA_BIN_PATH' in os.environ:
         bin_path = os.path.abspath(os.environ['CUDA_BIN_PATH'])
     if 'CUDA_LIB_PATH' in os.environ:
@@ -66,7 +66,7 @@ def add_common_nvcc_variables(env):
     """
 
     # "NVCC common command line"
-    if not env.has_key('_NVCCCOMCOM'):
+    if '_NVCCCOMCOM' not in env:
         # nvcc needs '-I' prepended before each include path, regardless of
         # platform
         env['_NVCCWRAPCPPPATH'] = '${_concat("-I ", CPPPATH, "", __env__)}'

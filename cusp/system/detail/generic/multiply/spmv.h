@@ -202,7 +202,11 @@ void multiply(thrust::execution_policy<DerivedPolicy> &exec,
     cusp::detail::temporary_array<IndexType, DerivedPolicy> rows(exec, A.num_rows);
     cusp::detail::temporary_array<ValueType, DerivedPolicy> vals(exec, A.num_rows);
 
-    if(A.num_entries == 0) return;
+    if(A.num_entries == 0)
+    {
+        thrust::transform(exec, C.begin(), C.end(), C.begin(), initialize);
+        return;
+    }
 
     typename IndexArray::iterator rows_end;
     typename ValueArray::iterator vals_end;

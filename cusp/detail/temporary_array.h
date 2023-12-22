@@ -28,7 +28,7 @@
 #include <thrust/detail/temporary_array.h>
 
 #if THRUST_VERSION >= 100800
-#define TEMP_HOST_DEVICE_DECORATORS __host__ __device__
+#define TEMP_HOST_DEVICE_DECORATORS __host__
 #else
 #define TEMP_HOST_DEVICE_DECORATORS
 #endif
