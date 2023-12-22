@@ -15,7 +15,7 @@
  */
 
 /*! \file smoothed_aggregation.h
- *  \brief Algebraic multigrid preconditoner based on smoothed aggregation.
+ *  \brief Algebraic multigrid preconditioner based on smoothed aggregation.
  *
  */
 
@@ -80,7 +80,7 @@ struct sa_level
  */
 
 /**
- *  \brief Algebraic multigrid preconditoner based on smoothed aggregation
+ *  \brief Algebraic multigrid preconditioner based on smoothed aggregation
  *
  *  \tparam IndexType Type used for matrix values (e.g. \c int or \c size_t).
  *  \tparam ValueType Type used for matrix values (e.g. \c float or \c double).

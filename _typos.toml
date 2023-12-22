@@ -4,6 +4,7 @@ MIS = "MIS"
 stoppoing = "stopping"
 [default.extend-identifiers]
 realy = "realy"
+project2nd = "project2nd"
 [default]
 extend-ignore-identifiers-re = [
         "GL_.*_lod",

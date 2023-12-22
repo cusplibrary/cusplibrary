@@ -101,7 +101,7 @@ void fit_candidates(thrust::execution_policy<DerivedPolicy> &exec,
     cusp::convert(exec, Q, Q_);
 }
 
-} // end namepace detail
+} // end namespace detail
 } // end namespace aggregation
 } // end namespace precond
 } // end namespace cusp

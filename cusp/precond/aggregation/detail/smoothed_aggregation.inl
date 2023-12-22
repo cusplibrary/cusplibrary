@@ -137,7 +137,7 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverTyp
     typedef typename ML::level Level;
 
     {
-        // compute stength of connection matrix
+        // compute strength of connection matrix
         SetupMatrixType C;
         strength_of_connection(exec, A, C, sa_levels.back());
 
@@ -150,7 +150,7 @@ void smoothed_aggregation<IndexType,ValueType,MemorySpace,SmootherType,SolverTyp
     SetupMatrixType P;
     cusp::array1d<ValueType, MemorySpace> B_coarse;
 
-    // compute tenative prolongator and coarse nullspace vector
+    // compute tentative prolongator and coarse nullspace vector
     fit_candidates(exec, sa_levels.back().aggregates, sa_levels.back().B, sa_levels.back().T, B_coarse);
 
     // compute prolongation operator
