@@ -79,12 +79,12 @@ void bicg(const LinearOperator& A,
  * \tparam Preconditioner is a matrix or subclass of \p linear_operator
  *
  * \param A matrix of the linear system
- * \param At conjugate tranpose of the matrix of the linear system
+ * \param At conjugate transpose of the matrix of the linear system
  * \param x approximate solution of the linear system
  * \param b right-hand side of the linear system
- * \param monitor montiors iteration and determines stopping conditions
+ * \param monitor monitors iteration and determines stopping conditions
  * \param M preconditioner for A
- * \param Mt conjugate tranpose of the preconditioner for A
+ * \param Mt conjugate transpose of the preconditioner for A
  *
  * \par Overview
  * Solves the linear system A x = b with preconditioner \p M.

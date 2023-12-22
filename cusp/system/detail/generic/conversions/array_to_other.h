@@ -139,7 +139,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     typedef typename DestinationType::index_type IndexType;
     typedef typename DestinationType::value_type ValueType;
 
-    // define types used to programatically generate row_indices
+    // define types used to programmatically generate row_indices
     typedef typename SourceType::orientation                                                            Orientation;
     typedef typename SourceType::values_array_type::const_iterator                                      ValueIterator;
     typedef cusp::detail::logical_to_other_physical_functor<IndexType, cusp::row_major, Orientation>    PermFunctor;

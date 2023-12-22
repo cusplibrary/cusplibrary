@@ -78,7 +78,7 @@ void bicgstab(const LinearOperator& A,
  * \param A matrix of the linear system
  * \param x approximate solution of the linear system
  * \param b right-hand side of the linear system
- * \param monitor montiors iteration and determines stopping conditions
+ * \param monitor monitors iteration and determines stopping conditions
  * \param M preconditioner for A
  *
  * \par Overview

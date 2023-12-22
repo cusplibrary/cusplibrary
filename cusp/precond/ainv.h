@@ -36,7 +36,7 @@ namespace precond
  *  \{
  */
 
-/*! \p scaled_bridson_ainv : Approximate Inverse preconditoner (from Bridson's "outer product" formulation)
+/*! \p scaled_bridson_ainv : Approximate Inverse preconditioner (from Bridson's "outer product" formulation)
  *  The diagonal matrix is folded into the factorization to reduce operation count during
  *  preconditioner application.  Not sure if this is a good idea or not, yet.
  *  This preconditioner allows for a novel dropping strategy, where rather than a fixed
@@ -73,7 +73,7 @@ public:
     /*! apply the preconditioner to vector \p x and store the result in \p y
      *
      * \param x input vector
-     * \param y ouput vector
+     * \param y output vector
      * \tparam VectorType1 vector
      * \tparam VectorType2 vector
      */
@@ -85,7 +85,7 @@ protected:
     cusp::array1d<ValueType, MemorySpace> temp1;
 };
 
-/*! \p bridson_ainv : Approximate Inverse preconditoner (from Bridson's "outer product" formulation)
+/*! \p bridson_ainv : Approximate Inverse preconditioner (from Bridson's "outer product" formulation)
  *  This preconditioner allows for a novel dropping strategy, where rather than a fixed
  *  drop tolerance, you can specify now many non-zeroes are allowed per row.  The non-zeroes
  *  will be chosen based on largest magnitude.  This idea has been applied to IC factorization,
@@ -121,7 +121,7 @@ public:
     /*! apply the preconditioner to vector \p x and store the result in \p y
      *
      * \param x input vector
-     * \param y ouput vector
+     * \param y output vector
      * \tparam VectorType1 vector
      * \tparam VectorType2 vector
      */
@@ -133,7 +133,7 @@ protected:
     cusp::array1d<ValueType, MemorySpace> temp2;
 };
 
-/*! \p nonsym_bridson_ainv : Approximate Inverse preconditoner (from Bridson's "outer product" formulation)
+/*! \p nonsym_bridson_ainv : Approximate Inverse preconditioner (from Bridson's "outer product" formulation)
  *  The non-symmetric form, which is identical to the standard form in the case of symmetric matrices, but
  *  handles non-symmtric matrices as well.  The storage and cost of applying the preconditioner
  *  are about the same, but build time is 2x higher.
@@ -165,7 +165,7 @@ public:
     /*! apply the preconditioner to vector \p x and store the result in \p y
      *
      * \param x input vector
-     * \param y ouput vector
+     * \param y output vector
      * \tparam VectorType1 vector
      * \tparam VectorType2 vector
      */

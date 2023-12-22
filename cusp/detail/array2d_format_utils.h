@@ -143,7 +143,7 @@ struct logical_to_physical_functor : public thrust::unary_function<IndexType,Ind
     }
 };
 
-// convert logical linear index in the (tranposed) destination into a physical index in the source
+// convert logical linear index in the (transposed) destination into a physical index in the source
 template <typename IndexType, typename Orientation1, typename Orientation2>
 struct transpose_index_functor : public thrust::unary_function<IndexType,IndexType>
 {

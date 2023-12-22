@@ -40,7 +40,7 @@ namespace precond
  *  \{
  */
 
-/** \brief Diagonal preconditoner (aka Jacobi preconditioner)
+/** \brief Diagonal preconditioner (aka Jacobi preconditioner)
  *
  *  \tparam ValueType Type used for matrix values (e.g. \c float or \c double).
  *  \tparam MemorySpace A memory space (e.g. \c cusp::host_memory or \c cusp::device_memory)
@@ -99,7 +99,7 @@ public:
     /*! apply the preconditioner to vector \p x and store the result in \p y
      *
      * \param x input vector
-     * \param y ouput vector
+     * \param y output vector
      * \tparam VectorType1 vector
      * \tparam VectorType2 vector
      */

@@ -252,7 +252,7 @@ template<typename T> __host__ __device__ inline complex<T> conj(const complex<T>
 template<typename T> __host__ __device__ inline complex<T> polar(const T& m, const T& theta = 0);
 
 /*! Returns the projection of a \p complex on the Riemann sphere.
- *  For all finite \p complex it returns the argument. For \p complexs
+ *  For all finite \p complex it returns the argument. For \p complexes
  *  with a non finite part returns (INFINITY,+/-0) where the sign of
  *  the zero matches the sign of the imaginary part of the argument.
  *

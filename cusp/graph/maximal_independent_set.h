@@ -61,7 +61,7 @@ size_t maximal_independent_set(const thrust::detail::execution_policy_base<Deriv
  *
  * Computes a maximal independent set (MIS) a graph. The MIS is a set of
  * vertices such that (1) no two vertices
- * are adjacent and (2) it is not possible to add another vertex to thes
+ * are adjacent and (2) it is not possible to add another vertex to the
  * set without violating the first property.  The MIS(k) is a generalization
  * of the MIS with the property that no two vertices in the set are joined
  * by a path of \p k edges or less.  The standard MIS is therefore a MIS(1).

@@ -447,7 +447,7 @@ void cg_m(thrust::execution_policy<DerivedPolicy> &exec,
     cusp::blas::copy(exec, b, r_0);
     rsq_1 = cusp::blas::dotc(exec, r_0, r_0);
 
-    // set up the intitial guess
+    // set up the initial guess
     //  cusp::blas::fill(x.begin(),x.end(),ValueType(0));
     cusp::blas::fill(exec, x, ValueType(0));
 

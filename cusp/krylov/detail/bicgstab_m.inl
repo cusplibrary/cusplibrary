@@ -767,7 +767,7 @@ void bicgstab_m(thrust::execution_policy<DerivedPolicy> &exec,
     cusp::blas::copy(b,w_1);
     cusp::blas::copy(w_1,w_0);
 
-    // set up the intitial guess
+    // set up the initial guess
     cusp::blas::fill(x,ValueType(0));
 
     // set up initial value of p_0 and p_0^\sigma

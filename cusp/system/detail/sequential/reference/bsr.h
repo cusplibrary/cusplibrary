@@ -244,7 +244,7 @@ void bsr_transpose(const I n_brow,
     const I nblks = Ap[n_brow];
     const I RC    = R*C;
 
-    //compute permutation of blocks using tranpose(CSR)
+    //compute permutation of blocks using transpose(CSR)
     std::vector<I> perm_in (nblks);
     std::vector<I> perm_out(nblks);
 

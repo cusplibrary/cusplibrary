@@ -23,7 +23,7 @@
 //! @param num_rows             number of rows in A
 //! @param num_cols             number of columns in A
 //! @param num_entries_per_row  number columns in each row (smaller rows are zero padded)
-//! @param stride               seperation between row entries (stride >= num_rows, for alignment)
+//! @param stride               separation between row entries (stride >= num_rows, for alignment)
 //! @param Aj                   ELL column indices
 //! @param Ax                   ELL nonzero values
 //! @param x                    column vector

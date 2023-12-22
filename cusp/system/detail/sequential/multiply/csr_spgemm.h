@@ -192,7 +192,7 @@ void multiply(thrust::cpp::execution_policy<DerivedPolicy>& exec,
                        C.row_offsets, C.column_indices, C.values,
                        initialize, combine, reduce);
 
-    // Resize output again since pass2 omits explict zeros
+    // Resize output again since pass2 omits explicit zeros
     C.resize(A.num_rows, B.num_cols, num_nonzeros);
 }
 

@@ -63,7 +63,7 @@ namespace util {
  ******************************************************************************/
 
 /**
- * Supress warnings for unused constants
+ * Suppress warnings for unused constants
  */
 template <typename T>
 __host__ __device__ __forceinline__ void SuppressUnusedConstantWarning(const T) {}

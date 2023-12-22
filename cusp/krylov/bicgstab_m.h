@@ -74,7 +74,7 @@ void bicgstab_m(const thrust::detail::execution_policy_base<DerivedPolicy> &exec
  * \param x approximate solution of the linear system
  * \param b right-hand side of the linear system
  * \param sigma array of shifts
- * \param monitor montiors iteration and determines stopping conditions
+ * \param monitor monitors iteration and determines stopping conditions
  *
  * \par Overview
  *

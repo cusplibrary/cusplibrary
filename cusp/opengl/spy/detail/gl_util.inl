@@ -302,7 +302,7 @@ void text_extends_world(float *width, float *height, const char *string, void* f
  * GL_U_TEXT_RIGHT_X -- x is the right horizatonal coordinate of the text string
  *
  * GL_U_TEXT_BOTTOM_Y -- default, y is the bottom vertical coordinate of the text string
- * GL_U_TEXT_CENTER_Y -- y is the center vertical coordinate of hte text string
+ * GL_U_TEXT_CENTER_Y -- y is the center vertical coordinate of the text string
  * GL_U_TEXT_TOP_Y -- default, y is the top vertical coordinate of the text string
  *
  * @param x the x coordinate of the text string

@@ -15,7 +15,7 @@
  */
 
 /*! \file smoothed_aggregation.h
- *  \brief Algebraic multigrid preconditoner based on smoothed aggregation.
+ *  \brief Algebraic multigrid preconditioner based on smoothed aggregation.
  *
  */
 

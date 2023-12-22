@@ -85,7 +85,7 @@ void gmres(const LinearOperator& A,
  * \param x approximate solution of the linear system
  * \param b right-hand side of the linear system
  * \param restart the method every restart inner iterations
- * \param monitor montiors iteration and determines stopping conditions
+ * \param monitor monitors iteration and determines stopping conditions
  * \param M preconditioner for A
  *
  * \par Overview
