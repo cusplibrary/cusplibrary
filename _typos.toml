@@ -1,5 +1,6 @@
 [default.extend-words]
 preconditioner = "preconditioner"
 MIS = "MIS"
+stoppoing = "stopping"
 [type.cpp]
 extend-glob = ["*.h"]

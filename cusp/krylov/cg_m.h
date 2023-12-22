@@ -71,7 +71,7 @@ void cg_m(const LinearOperator& A,
  * \param x solutions of the system
  * \param b right-hand side of the linear system
  * \param sigma array of shifts
- * \param monitor monitors interation and determines stoppoing conditions
+ * \param monitor monitors iteration and determines stopping conditions
  *
  * \par Overview
  *
