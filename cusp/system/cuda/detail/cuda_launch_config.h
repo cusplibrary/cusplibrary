@@ -65,7 +65,7 @@ struct function_attributes_t
  *  \param attributes The cudaFuncAttributes corresponding to a __global__ function of interest on a GPU of interest.
  *  \param properties The cudaDeviceProp corresponding to a GPU on which to launch the __global__ function of interest.
  *  \return A CUDA block size, in number of threads, which the resources of the GPU's streaming multiprocessor can
- *          accomodate and which is intended to promote occupancy. The result is equivalent to the one performed by
+ *          accommodate and which is intended to promote occupancy. The result is equivalent to the one performed by
  *          the "CUDA Occupancy Calculator".
  *  \note The __global__ function of interest is presumed to use 0 bytes of dynamically-allocated __shared__ memory.
  */
@@ -81,7 +81,7 @@ std::size_t block_size_with_maximum_potential_occupancy(const function_attribute
  *  \param block_size_to_dynamic_smem_bytes A unary function which maps an integer CUDA block size to the number of bytes
  *         of dynamically-allocated __shared__ memory required by a CUDA block of that size.
  *  \return A CUDA block size, in number of threads, which the resources of the GPU's streaming multiprocessor can
- *          accomodate and which is intended to promote occupancy. The result is equivalent to the one performed by
+ *          accommodate and which is intended to promote occupancy. The result is equivalent to the one performed by
  *          the "CUDA Occupancy Calculator".
  */
 template<typename UnaryFunction>

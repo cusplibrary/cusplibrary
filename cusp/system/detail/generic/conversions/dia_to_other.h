@@ -62,11 +62,11 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     typedef typename SourceType::index_type   IndexType;
     typedef typename SourceType::value_type   ValueType;
 
-    // define types used to programatically generate row_indices
+    // define types used to programmatically generate row_indices
     typedef thrust::counting_iterator<IndexType>                                                               IndexIterator;
     typedef thrust::transform_iterator<cusp::divide_value<IndexType>, IndexIterator>                           RowIndexIterator;
 
-    // define types used to programatically generate column_indices
+    // define types used to programmatically generate column_indices
     typedef typename SourceType::diagonal_offsets_array_type::const_iterator                                   ConstElementIterator;
     typedef thrust::transform_iterator<cusp::modulus_value<IndexType>, IndexIterator>                          ModulusIterator;
     typedef thrust::permutation_iterator<ConstElementIterator,ModulusIterator>                                 OffsetsPermIterator;
@@ -114,11 +114,11 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     typedef typename SourceType::index_type   IndexType;
     typedef typename SourceType::value_type   ValueType;
 
-    // define types used to programatically generate row_indices
+    // define types used to programmatically generate row_indices
     typedef thrust::counting_iterator<IndexType>                                                 IndexIterator;
     typedef thrust::transform_iterator<cusp::divide_value<IndexType>, IndexIterator>             RowIndexIterator;
 
-    // define types used to programatically generate column_indices
+    // define types used to programmatically generate column_indices
     typedef typename SourceType::diagonal_offsets_array_type::const_iterator                     ConstElementIterator;
     typedef thrust::transform_iterator<cusp::modulus_value<IndexType>, IndexIterator>            ModulusIterator;
     typedef thrust::permutation_iterator<ConstElementIterator,ModulusIterator>                   OffsetsPermIterator;
@@ -171,11 +171,11 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     typedef typename SourceType::value_type   ValueType;
     typedef typename SourceType::memory_space MemorySpace;
 
-    // define types used to programatically generate row_indices
+    // define types used to programmatically generate row_indices
     typedef thrust::counting_iterator<IndexType>                                        IndexIterator;
     typedef thrust::transform_iterator<cusp::modulus_value<IndexType>, IndexIterator>   RowIndexIterator;
 
-    // define types used to programatically generate column_indices
+    // define types used to programmatically generate column_indices
     typedef typename cusp::array1d<IndexType,MemorySpace>::const_iterator               ConstElementIterator;
     typedef thrust::transform_iterator<cusp::divide_value<IndexType>, IndexIterator>    DivideIterator;
     typedef thrust::permutation_iterator<ConstElementIterator,DivideIterator>           OffsetsPermIterator;

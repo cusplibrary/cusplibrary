@@ -294,15 +294,15 @@ void multiply(cuda::execution_policy<DerivedPolicy>& exec,
 
         // compute worspace requirements for each row
 #if THRUST_VERSION >= 100800
-        cusp::detail::temporary_array<IndexType, DerivedPolicy> cummulative_row_workspace(exec, A.num_rows);
+        cusp::detail::temporary_array<IndexType, DerivedPolicy> cumulative_row_workspace(exec, A.num_rows);
 #else
-        cusp::array1d<IndexType, MemorySpace> cummulative_row_workspace(A.num_rows);
+        cusp::array1d<IndexType, MemorySpace> cumulative_row_workspace(A.num_rows);
 #endif
 
         thrust::gather(exec,
                        A_row_offsets.begin() + 1, A_row_offsets.end(),
                        output_ptr.begin(),
-                       cummulative_row_workspace.begin());
+                       cumulative_row_workspace.begin());
 
         size_t begin_row = 0;
         size_t total_work = 0;
@@ -313,8 +313,8 @@ void multiply(cuda::execution_policy<DerivedPolicy>& exec,
 
             // find largest end_row such that the capacity of [begin_row, end_row) fits in the workspace_capacity
             size_t end_row = thrust::upper_bound(exec,
-                                                 cummulative_row_workspace.begin() + begin_row, cummulative_row_workspace.end(),
-                                                 IndexType(total_work + workspace_capacity)) - cummulative_row_workspace.begin();
+                                                 cumulative_row_workspace.begin() + begin_row, cumulative_row_workspace.end(),
+                                                 IndexType(total_work + workspace_capacity)) - cumulative_row_workspace.begin();
 
             size_t begin_segment = A_row_offsets[begin_row];
             size_t end_segment   = A_row_offsets[end_row];

@@ -27,7 +27,7 @@
  ******************************************************************************/
 
 /******************************************************************************
- * Utility code for working with vector types of arbitary typenames
+ * Utility code for working with vector types of arbitrary typenames
  ******************************************************************************/
 
 #pragma once

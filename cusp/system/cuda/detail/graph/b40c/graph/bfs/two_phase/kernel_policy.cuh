@@ -72,7 +72,7 @@ template <
 	util::io::ld::CacheModifier COLUMN_READ_MODIFIER,					// Load instruction cache-modifier for reading CSR column-indices
 	util::io::ld::CacheModifier ROW_OFFSET_ALIGNED_READ_MODIFIER,		// Load instruction cache-modifier for reading CSR row-offsets (when 8-byte aligned)
 	util::io::ld::CacheModifier ROW_OFFSET_UNALIGNED_READ_MODIFIER,		// Load instruction cache-modifier for reading CSR row-offsets (when 4-byte aligned)
-	util::io::st::CacheModifier QUEUE_WRITE_MODIFIER,					// Store instruction cache-modifier for writing outgoign frontier vertex-ids. Valid on SM2.0 or newer, where util::io::st::cg is req'd for fused-iteration implementations incorporating software global barriers.
+	util::io::st::CacheModifier QUEUE_WRITE_MODIFIER,					// Store instruction cache-modifier for writing outgoing frontier vertex-ids. Valid on SM2.0 or newer, where util::io::st::cg is req'd for fused-iteration implementations incorporating software global barriers.
 
 	// Tunable parameters (contract)
 	int CONTRACT_LOG_LOAD_VEC_SIZE,										// Number of incoming frontier vertex-ids to dequeue in a single load (log)

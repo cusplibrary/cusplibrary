@@ -80,7 +80,7 @@ template <
 	int _LOG_LOADS_PER_TILE,							// Number of such loads that constitute a tile of incoming frontier vertex-ids (log)
 	int _LOG_RAKING_THREADS,							// Number of raking threads to use for prefix sum (log), range [5, LOG_THREADS]
 	util::io::ld::CacheModifier _QUEUE_READ_MODIFIER,	// Load instruction cache-modifier for reading incoming frontier vertex-ids. Valid on SM2.0 or newer, where util::io::ld::cg is req'd for fused-iteration implementations incorporating software global barriers.
-	util::io::st::CacheModifier _QUEUE_WRITE_MODIFIER,	// Store instruction cache-modifier for writing outgoign frontier vertex-ids. Valid on SM2.0 or newer, where util::io::st::cg is req'd for fused-iteration implementations incorporating software global barriers.
+	util::io::st::CacheModifier _QUEUE_WRITE_MODIFIER,	// Store instruction cache-modifier for writing outgoing frontier vertex-ids. Valid on SM2.0 or newer, where util::io::st::cg is req'd for fused-iteration implementations incorporating software global barriers.
 	bool _WORK_STEALING,								// Whether or not incoming frontier tiles are distributed via work-stealing or by even-share.
 	int _END_BITMASK_CULL,								// BFS Iteration after which to skip bitmask filtering (Alternatively 0 to never perform bitmask filtering, -1 to always perform bitmask filtering)
 	int _LOG_SCHEDULE_GRANULARITY>						// The scheduling granularity of incoming frontier tiles (for even-share work distribution only) (log)

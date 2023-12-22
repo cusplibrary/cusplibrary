@@ -63,7 +63,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     typedef typename DestinationType::index_type IndexType;
     typedef typename DestinationType::value_type ValueType;
 
-    // define types used to programatically generate row_indices
+    // define types used to programmatically generate row_indices
     typedef thrust::counting_iterator<IndexType>                                                               IndexIterator;
     typedef thrust::transform_iterator<cusp::divide_value<IndexType>, IndexIterator>                           RowIndexIterator;
 
@@ -105,7 +105,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     typedef typename DestinationType::index_type   IndexType;
     typedef typename DestinationType::value_type   ValueType;
 
-    // define types used to programatically generate row_indices
+    // define types used to programmatically generate row_indices
     typedef thrust::counting_iterator<IndexType>                                                               IndexIterator;
     typedef thrust::transform_iterator<cusp::divide_value<IndexType>, IndexIterator>                           RowIndexIterator;
 

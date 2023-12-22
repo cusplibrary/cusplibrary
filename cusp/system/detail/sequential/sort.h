@@ -63,7 +63,7 @@ void counting_sort(thrust::cpp::execution_policy<DerivedPolicy>& exec,
     // initialize counts
     thrust::fill(exec, counts.begin(), counts.end(), size_t(0));
 
-    // count the number of occurences of each key
+    // count the number of occurrences of each key
     for(size_t i = 0; i < keys.size(); i++)
       counts[keys[i] + 1]++;
 
@@ -107,7 +107,7 @@ void counting_sort_by_key(thrust::cpp::execution_policy<DerivedPolicy>& exec,
     // initialize counts
     thrust::fill(exec, counts.begin(), counts.end(), size_t(0));
 
-    // count the number of occurences of each key
+    // count the number of occurrences of each key
     for(size_t i = 0; i < keys.size(); i++)
       counts[keys[i] + 1]++;
 

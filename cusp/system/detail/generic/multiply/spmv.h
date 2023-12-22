@@ -60,11 +60,11 @@ void multiply(thrust::execution_policy<DerivedPolicy> &exec,
     typedef typename LinearOperator::index_type   IndexType;
     typedef typename LinearOperator::value_type   ValueType;
 
-    // define types used to programatically generate row_indices
+    // define types used to programmatically generate row_indices
     typedef thrust::counting_iterator<IndexType>                                        IndexIterator;
     typedef thrust::transform_iterator<cusp::divide_value<IndexType>, IndexIterator>    RowIndexIterator;
 
-    // define types used to programatically generate column_indices
+    // define types used to programmatically generate column_indices
     typedef typename LinearOperator::diagonal_offsets_array_type::const_iterator        ConstElementIterator;
     typedef thrust::transform_iterator<cusp::modulus_value<IndexType>, IndexIterator>   ModulusIterator;
     typedef thrust::permutation_iterator<ConstElementIterator,ModulusIterator>          OffsetsPermIterator;
@@ -137,7 +137,7 @@ void multiply(thrust::execution_policy<DerivedPolicy> &exec,
 
     typedef cusp::detail::logical_to_other_physical_functor<IndexType,cusp::row_major,cusp::column_major>   LogicalFunctor;
 
-    // define types used to programatically generate row_indices
+    // define types used to programmatically generate row_indices
     typedef thrust::counting_iterator<IndexType>                                     IndexIterator;
     typedef thrust::transform_iterator<cusp::divide_value<IndexType>, IndexIterator> RowIndexIterator;
     typedef thrust::transform_iterator<LogicalFunctor, IndexIterator>                StrideIndexIterator;
