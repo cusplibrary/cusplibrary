@@ -1,2 +1,5 @@
 [default.extend-words]
 preconditioner = "preconditioner"
+MIS = "MIS"
+[type.cpp]
+extend-glob = ["*.h"]

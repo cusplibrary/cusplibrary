@@ -15,7 +15,7 @@
  */
 
 /*! \file pseudo_peripheral.h
- *  \brief Pseduo peripheral vertex of a graph
+ *  \brief Pseudo peripheral vertex of a graph
  */
 
 #pragma once
@@ -66,7 +66,7 @@ pseudo_peripheral_vertex(const thrust::detail::execution_policy_base<DerivedPoli
  * \return The computed pseudo-peripheral vertex
  *
  * \par Overview
- * Finds a pseduo-peripheral vertex in a graph. A peripheral vertex
+ * Finds a pseudo-peripheral vertex in a graph. A peripheral vertex
  * is the vertex which achieves the diameter of the graph, i.e. achieves the
  * maximum separation distance.
  *
