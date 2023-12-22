@@ -2,5 +2,15 @@
 preconditioner = "preconditioner"
 MIS = "MIS"
 stoppoing = "stopping"
+[default.extend-identifiers]
+realy = "realy"
+[default]
+extend-ignore-identifiers-re = [
+        "GL_.*_lod",
+        "GL_.*_lod_.*",
+        "GL_.*_LOD",
+        "GL_.*_LOD_.*",
+        "GL_.*_TESSELATION_.*",
+]
 [type.cpp]
 extend-glob = ["*.h"]

@@ -25,7 +25,7 @@ namespace spy
 
 #ifdef _WIN32
 #if _MSC_VER >= 0
-	// disable the trunctation warning
+	// disable the truncation warning
     #pragma warning ( push )
 	#pragma warning ( disable : 4305 )
 #endif // _MSC_VER >= 0
