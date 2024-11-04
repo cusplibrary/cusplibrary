@@ -10,15 +10,17 @@
 
 int main(void)
 {
-    int cuda_major =  CUDA_VERSION / 1000;
-    int cuda_minor = (CUDA_VERSION % 1000) / 10;
+    int cuda_major = CUDA_VERSION / 1000;
+    int cuda_minor = CUDA_VERSION % 1000 / 10;
     int thrust_major = THRUST_MAJOR_VERSION;
     int thrust_minor = THRUST_MINOR_VERSION;
+    int thrust_subminor = THRUST_SUBMINOR_VERSION;
     int cusp_major = CUSP_MAJOR_VERSION;
     int cusp_minor = CUSP_MINOR_VERSION;
+    int cusp_subminor = CUSP_SUBMINOR_VERSION;
     std::cout << "CUDA   v" << cuda_major   << "." << cuda_minor   << std::endl;
-    std::cout << "Thrust v" << thrust_major << "." << thrust_minor << std::endl;
-    std::cout << "Cusp   v" << cusp_major   << "." << cusp_minor   << std::endl;
+    std::cout << "Thrust v" << thrust_major << "." << thrust_minor << "." << thrust_subminor << std::endl;
+    std::cout << "Cusp   v" << cusp_major   << "." << cusp_minor   << "." << cusp_subminor   << std::endl;
 
     // create an empty sparse matrix structure (HYB format)
     cusp::hyb_matrix<int, float, cusp::device_memory> A;
