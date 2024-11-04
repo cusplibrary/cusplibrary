@@ -423,7 +423,7 @@ struct less_equal_value : public detail::base_functor< thrust::less_equal<T> >
  * \endcode
  */
 template<typename T>
-struct constant_functor : public thrust::unary_function<T,T>
+struct constant_functor
 {
     private:
       T val;
@@ -473,7 +473,7 @@ struct constant_functor : public thrust::unary_function<T,T>
  * \endcode
  */
 template <typename T>
-struct square_functor : public thrust::unary_function<T,T>
+struct square_functor
 {
     __host__ __device__
     T operator()(const T& x) const {
@@ -516,7 +516,7 @@ struct square_functor : public thrust::unary_function<T,T>
  * \endcode
  */
 template <typename T>
-struct sqrt_functor : public thrust::unary_function<T,T>
+struct sqrt_functor
 {
     __host__ __device__
     T operator()(const T& x) const {
@@ -562,7 +562,7 @@ struct sqrt_functor : public thrust::unary_function<T,T>
  * \endcode
  */
 template <typename T>
-struct reciprocal_functor : public thrust::unary_function<T,T>
+struct reciprocal_functor
 {
     __host__ __device__
     T operator()(const T& v) const {
@@ -605,7 +605,7 @@ struct reciprocal_functor : public thrust::unary_function<T,T>
  * \endcode
  */
 template<typename T>
-struct abs_functor : public thrust::unary_function<T, typename cusp::norm_type<T>::type>
+struct abs_functor
 {
     __host__ __device__
     typename cusp::norm_type<T>::type
@@ -650,7 +650,7 @@ struct abs_functor : public thrust::unary_function<T, typename cusp::norm_type<T
  * \endcode
  */
 template<typename T>
-struct abs_squared_functor : public thrust::unary_function<T, typename cusp::norm_type<T>::type>
+struct abs_squared_functor
 {
     __host__ __device__
     typename cusp::norm_type<T>::type
@@ -694,7 +694,7 @@ struct abs_squared_functor : public thrust::unary_function<T, typename cusp::nor
  * \endcode
  */
 template<typename T>
-struct conj_functor : public thrust::unary_function<T,T>
+struct conj_functor
 {
     __host__ __device__
     T operator()(const T& t) const {
@@ -737,7 +737,7 @@ struct conj_functor : public thrust::unary_function<T,T>
  * \endcode
  */
 template<typename T>
-struct norm_functor : public thrust::unary_function<T, typename cusp::norm_type<T>::type>
+struct norm_functor
 {
     __host__ __device__
     typename cusp::norm_type<T>::type

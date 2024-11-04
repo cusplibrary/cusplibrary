@@ -156,7 +156,7 @@ struct KERNEL_XP
 
 // like blas::copy, but copies the same array many times into a larger array
 template <typename ScalarType>
-struct KERNEL_VCOPY : thrust::unary_function<int, ScalarType>
+struct KERNEL_VCOPY
 {
     int N_t;
     const ScalarType *source;
@@ -188,7 +188,7 @@ struct KERNEL_DCOPY
 };
 
 template <typename T>
-struct XPAY : public thrust::binary_function<T,T,T>
+struct XPAY
 {
     T alpha;
 

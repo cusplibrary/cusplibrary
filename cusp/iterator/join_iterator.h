@@ -161,7 +161,7 @@ public:
     typedef typename thrust::tuple_element<tuple_size-1,Tuple>::type      IndexIterator;
     typedef thrust::transform_iterator<join_select_functor,IndexIterator> TransformIterator;
 
-    struct join_select_functor : public thrust::unary_function<difference_type,value_type>
+    struct join_select_functor
     {
         SizesTuple t1;
         Tuple t2;
