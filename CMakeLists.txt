@@ -70,7 +70,9 @@ install(
     DESTINATION "${CMAKE_INSTALL_DATADIR}/cusp"
 )
 
-
+# Cpack
+# -----
+set(CPACK_RESOURCE_FILE_LICENSE "${PROJECT_SOURCE_DIR}/LICENSE")
 include(CPack)
 
 #option(BUILD_EXAMPLES "Build examples." "ON")
