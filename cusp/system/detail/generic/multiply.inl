@@ -53,12 +53,12 @@ template <typename DerivedPolicy,
           typename LinearOperator,
           typename MatrixOrVector1,
           typename MatrixOrVector2>
-typename enable_if<
-thrust::detail::and_<
+typename ::cuda::std::__enable_if_t<
+::cuda::std::_And<
   has_member_operator_exec<DerivedPolicy,LinearOperator,MatrixOrVector1,MatrixOrVector2>,
-  thrust::detail::is_convertible<typename LinearOperator::format,cusp::unknown_format>
+  ::cuda::std::is_convertible<typename LinearOperator::format,cusp::unknown_format>
   >::value
->::type
+>
 multiply(thrust::execution_policy<DerivedPolicy> &exec,
          const LinearOperator&  A,
          const MatrixOrVector1& B,
@@ -71,12 +71,12 @@ template <typename DerivedPolicy,
           typename LinearOperator,
           typename MatrixOrVector1,
           typename MatrixOrVector2>
-typename enable_if<
-thrust::detail::and_<
+typename ::cuda::std::__enable_if_t<
+::cuda::std::_And<
   thrust::detail::not_<has_member_operator_exec<DerivedPolicy,LinearOperator,MatrixOrVector1,MatrixOrVector2> >,
-  thrust::detail::is_convertible<typename LinearOperator::format,cusp::unknown_format>
+  ::cuda::std::is_convertible<typename LinearOperator::format,cusp::unknown_format>
   >::value
->::type
+>
 multiply(thrust::execution_policy<DerivedPolicy> &exec,
          const LinearOperator&  A,
          const MatrixOrVector1& B,
