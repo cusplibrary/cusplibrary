@@ -18,3 +18,9 @@ add_example(Solvers cr)
 add_example(Solvers gmres)
 
 add_example(Version version)
+
+add_example(Views array1d)
+add_example(Views array2d_raw)
+add_example(Views cg_raw)
+add_example(Views csr_raw)
+add_example(Views csr_view)
