@@ -1,0 +1,20 @@
+include_directories(${})
+add_custom_target(all-examples)
+
+function(add_example DIRNAME NAME)
+  add_executable("${NAME}" "${DIRNAME}/${NAME}.cu")
+  target_link_libraries("${NAME}" PUBLIC CCCL::CCCL)
+  target_link_libraries("${NAME}" PUBLIC cusp)
+  add_custom_target("run_${NAME}" COMMAND "${NAME}" VERBATIM)
+  add_dependencies("run_${NAME}" "${NAME}")
+  add_dependencies(all-examples "run_${NAME}")
+endfunction()
+
+add_example(Solvers bicgstab)
+add_example(Solvers bicgstab_m)
+add_example(Solvers cg)
+add_example(Solvers cg_m)
+add_example(Solvers cr)
+add_example(Solvers gmres)
+
+add_example(Version version)

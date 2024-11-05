@@ -130,7 +130,7 @@ template <typename DerivedPolicy,
           typename MatrixType,
           typename ArrayType1,
           typename ArrayType2>
-typename thrust::detail::enable_if_convertible<typename MatrixType::memory_space,cusp::host_memory>::type
+thrust::detail::enable_if_convertible_t<typename MatrixType::memory_space,cusp::host_memory>
 aggregate(thrust::execution_policy<DerivedPolicy> &exec,
           const MatrixType& A,
                 ArrayType1& aggregates,

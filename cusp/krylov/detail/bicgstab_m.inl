@@ -888,7 +888,7 @@ template <typename LinearOperator,
           typename VectorType1,
           typename VectorType2,
           typename VectorType3>
-typename thrust::detail::enable_if_convertible<typename LinearOperator::format,cusp::known_format>::type
+thrust::detail::enable_if_convertible_t<typename LinearOperator::format,cusp::known_format>
 bicgstab_m(LinearOperator& A,
            VectorType1& x,
            VectorType2& b,
@@ -933,7 +933,7 @@ template <typename LinearOperator,
           typename VectorType2,
           typename VectorType3,
           typename Monitor>
-typename thrust::detail::enable_if_convertible<typename LinearOperator::format,cusp::known_format>::type
+thrust::detail::enable_if_convertible_t<typename LinearOperator::format,cusp::known_format>
 bicgstab_m(LinearOperator& A,
            VectorType1& x,
            VectorType2& b,
