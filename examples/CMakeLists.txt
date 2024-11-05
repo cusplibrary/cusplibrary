@@ -10,6 +10,16 @@ function(add_example DIRNAME NAME)
   add_dependencies(all-examples "run_${NAME}")
 endfunction()
 
+# FIXME: add_example(Preconditioners ainv)
+# FIXME: add_example(Preconditioners custom_amg)
+# FIXME: add_example(Preconditioners diagonal)
+# FIXME: add_example(Preconditioners smoothed_aggregation)
+# FIXME: file(COPY ${CMAKE_CURRENT_LIST_DIR}/Preconditioners/A.mtx DESTINATION ${CMAKE_BINARY_DIR}/examples/Preconditioners/A.mtx)
+
+add_example(Algorithms blas)
+add_example(Algorithms multiply)
+add_example(Algorithms transpose)
+
 add_example(Solvers bicgstab)
 add_example(Solvers bicgstab_m)
 add_example(Solvers cg)
