@@ -48,7 +48,7 @@ void bicgstab_m(const thrust::detail::execution_policy_base<DerivedPolicy> &exec
  */
 template <class LinearOperator,
           class VectorType1, class VectorType2, class VectorType3>
-typename thrust::detail::enable_if_convertible<typename LinearOperator::format,cusp::known_format>::type
+thrust::detail::enable_if_convertible_t<typename LinearOperator::format,cusp::known_format>
 bicgstab_m(LinearOperator& A,
            VectorType1& x, VectorType2& b, VectorType3& sigma);
 
@@ -137,7 +137,7 @@ void bicgstab_m(const thrust::detail::execution_policy_base<DerivedPolicy> &exec
 template <class LinearOperator,
           class VectorType1, class VectorType2, class VectorType3,
           class Monitor>
-typename thrust::detail::enable_if_convertible<typename LinearOperator::format,cusp::known_format>::type
+thrust::detail::enable_if_convertible_t<typename LinearOperator::format,cusp::known_format>
 bicgstab_m(LinearOperator& A,
            VectorType1& x, VectorType2& b, VectorType3& sigma,
            Monitor& monitor);

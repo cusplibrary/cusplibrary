@@ -22,7 +22,7 @@ option(BUILD_MAIN "Build main example." "ON")
 option(BUILD_EXAMPLES "Build main example." "ON")
 
 # if building something, then install CCCL
-if(BUILD_MAIN)
+if(BUILD_MAIN OR BUILD_EXAMPLES)
     include(cmake/CPM.cmake)
     CPMAddPackage(
         NAME CCCL
@@ -91,6 +91,10 @@ if(CCCL_ADDED AND BUILD_MAIN)
     file(COPY ${CMAKE_CURRENT_LIST_DIR}/testing/data/ DESTINATION ${CMAKE_BINARY_DIR}/testing//data/)
     target_link_libraries(example PUBLIC CCCL::CCCL)
     target_link_libraries(example PUBLIC cusp)
+endif()
+
+if(CCCL_ADDED AND BUILD_EXAMPLES)
+    add_subdirectory(examples)
 endif()
 
 
