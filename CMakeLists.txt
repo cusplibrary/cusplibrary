@@ -1,9 +1,11 @@
 # notes:
 # to set the install at configuration time:
-#   cmake -S $src_dir -B $build_dir -DCMAKE_INSTALL_PREFIX=$install_dir
-#   cmake -S $src_dir -B $build_dir --install-prefix=$install_dir # Since CMake 3.21
+#   cmake -S . -B build -DCMAKE_INSTALL_PREFIX=/path/to/install
+#   cmake -S . -B build --install-prefix=/path/to/install
 # to set the install at install time
-#   cmake --install $build_dir --prefix=$install_dir 
+#   cmake --install build --prefix=/path/to/install
+# to set the arch
+# cmake -S . -B build -DCMAKE_CUDA_ARCHITECTURES=50
 cmake_minimum_required(VERSION 3.29)
 
 project(
@@ -14,21 +16,34 @@ project(
     LANGUAGES CXX CUDA
 )
 
+# Options
+# -------
+option(BUILD_MAIN "Build main example." "ON")
+option(BUILD_EXAMPLES "Build main example." "ON")
+
+# if building something, then install CCCL
+if(BUILD_MAIN)
+    include(cmake/CPM.cmake)
+    CPMAddPackage(
+        NAME CCCL
+        GITHUB_REPOSITORY nvidia/cccl
+        VERSION 2.6.1
+    )
+endif()
+
 # Library definitions
 # ------------
-
 add_library(cusp INTERFACE)
+add_library(cusp::cusp ALIAS cusp)
 target_include_directories(
     cusp INTERFACE
-    "\$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/cusp>"
+    "\$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>"
     "\$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
 )
 
 # Version Info
 # ------------
-
 include(CMakePackageConfigHelpers)
-
 write_basic_package_version_file(
     "cuspConfigVersion.cmake"
     COMPATIBILITY SameMinorVersion
@@ -37,7 +52,6 @@ write_basic_package_version_file(
 
 # Install directions
 # --------------------
-
 include(GNUInstallDirs)
 set(package cusp)
 
@@ -70,14 +84,17 @@ install(
     DESTINATION "${CMAKE_INSTALL_DATADIR}/cusp"
 )
 
+# Builds
+# ------
+if(CCCL_ADDED AND BUILD_MAIN)
+    add_executable(example example.cu)
+    file(COPY ${CMAKE_CURRENT_LIST_DIR}/testing/data/ DESTINATION ${CMAKE_BINARY_DIR}/testing//data/)
+    target_link_libraries(example PUBLIC CCCL::CCCL)
+    target_link_libraries(example PUBLIC cusp)
+endif()
+
+
 # Cpack
 # -----
 set(CPACK_RESOURCE_FILE_LICENSE "${PROJECT_SOURCE_DIR}/LICENSE")
 include(CPack)
-
-#option(BUILD_EXAMPLES "Build examples." "ON")
-#if(BUILD_EXAMPLES)
-#    add_subdirectory(examples)
-#endif()
-#
-#include(cmake/dev-mode.cmake)
