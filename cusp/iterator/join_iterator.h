@@ -37,7 +37,7 @@ template <int size, typename T>
 struct constant_tuple
 {
     typedef thrust::detail::identity_<T>                 T_;
-    typedef thrust::detail::identity_<thrust::null_type> N_;
+    typedef thrust::detail::identity_<thrust::tuple<>>   N_;
 
     typedef
     ::cuda::std::tuple<typename thrust::detail::eval_if<(size > 0),T_,N_>::type,

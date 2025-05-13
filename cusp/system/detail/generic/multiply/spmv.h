@@ -286,7 +286,7 @@ void multiply(thrust::execution_policy<DerivedPolicy> &exec,
     typedef typename MatrixOrVector2::value_type ValueType;
 
     cusp::multiply(exec, A.ell, B, C, initialize, combine, reduce);
-    cusp::multiply(exec, A.coo, B, C, thrust::identity<ValueType>(), combine, reduce);
+    cusp::multiply(exec, A.coo, B, C, ::cuda::std::identity(), combine, reduce);
 }
 
 } // end namespace generic

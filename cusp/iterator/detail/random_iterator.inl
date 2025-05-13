@@ -78,7 +78,7 @@ struct random_functor_type
               thrust::detail::eval_if<::cuda::std::is_convertible<thrust::complex<float>,T>::value,
                 thrust::detail::identity_< integer_to_complex<T> >,
                 thrust::detail::identity_< integer_to_real<T> > >,
-           thrust::detail::identity_< thrust::identity<T> >
+           thrust::detail::identity_< ::cuda::std::identity >
            >::type type;
 };
 
