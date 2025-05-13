@@ -38,7 +38,7 @@ struct select_sa_matrix_type
   typedef cusp::coo_matrix<IndexType,ValueType,MemorySpace> COOType;
 
   typedef typename thrust::detail::eval_if<
-        thrust::detail::is_convertible<MemorySpace, cusp::host_memory>::value
+        ::cuda::std::is_convertible<MemorySpace, cusp::host_memory>::value
       , thrust::detail::identity_<CSRType>
       , thrust::detail::identity_<COOType>
     >::type type;
@@ -51,9 +51,9 @@ struct select_sa_matrix_view
   typedef typename MatrixType::format       Format;
 
   typedef typename thrust::detail::eval_if<
-        thrust::detail::is_convertible<MemorySpace, cusp::host_memory>::value
+        ::cuda::std::is_convertible<MemorySpace, cusp::host_memory>::value
       , typename thrust::detail::eval_if<
-          thrust::detail::is_same<Format, cusp::csr_format>::value
+          ::cuda::std::is_same<Format, cusp::csr_format>::value
           , thrust::detail::identity_<typename MatrixType::const_view>
           , cusp::detail::as_csr_type<MatrixType>
           >

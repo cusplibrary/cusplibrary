@@ -44,7 +44,7 @@ namespace generic
 {
 
 template<typename T>
-struct valid_index_functor : public thrust::unary_function<T,T>
+struct valid_index_functor
 {
     const T size;
 

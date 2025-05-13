@@ -353,7 +353,7 @@ public:
     /**
      * Storage for indices used to generate COO view.
      */
-    cusp::array1d<typename thrust::detail::remove_const<IndexType>::type,MemorySpace> indices;
+    cusp::array1d<::cuda::std::remove_const_t<IndexType>, MemorySpace> indices;
 
     /**
      * Construct an empty \p coo_matrix_view.

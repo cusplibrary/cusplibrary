@@ -251,7 +251,7 @@ void generalized_spgemm(const thrust::detail::execution_policy_base<DerivedPolic
  *  int main(void)
  *  {
  *      // define multiply functors
- *      thrust::identity<float>   identity;
+ *      cuda::std::identity   identity;
  *      cusp::constant_functor<float> zero;
  *      thrust::multiplies<float> combine;
  *      thrust::plus<float>       reduce;

@@ -44,6 +44,9 @@ if 'single_test' in env:
 this_file = inspect.currentframe().f_code.co_filename
 this_dir = os.path.dirname(this_file)
 env.Append(CPPPATH = [this_dir])
+env.Append(CPPPATH = ['/home/lukeo/cccl/thrust',
+                      '/home/lukeo/cccl/libcudacxx/include',
+                      '/home/lukeo/cccl/cub'])
 
 tester = env.Program('tester', sources)
 

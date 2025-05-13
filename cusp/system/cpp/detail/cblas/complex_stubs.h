@@ -61,7 +61,7 @@
 //   T dotc( const int n, const T* X, const int incX, const T* Y, const int incY )
 //   {
 //     typedef typename thrust::detail::eval_if<
-//       thrust::detail::is_same<V,float>::value,
+//       ::cuda::std::is_same<V,float>::value,
 //           thrust::detail::identity_<openblas_complex_float>,
 //           thrust::detail::identity_<openblas_complex_double>
 //     >::type Cmplx;
@@ -74,7 +74,7 @@
 //   T dotu( const int n, const T* X, const int incX, const T* Y, const int incY )
 //   {
 //     typedef typename thrust::detail::eval_if<
-//       thrust::detail::is_same<V,float>::value,
+//       ::cuda::std::is_same<V,float>::value,
 //           thrust::detail::identity_<openblas_complex_float>,
 //           thrust::detail::identity_<openblas_complex_double>
 //     >::type Cmplx;

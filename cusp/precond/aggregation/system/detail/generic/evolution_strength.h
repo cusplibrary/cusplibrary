@@ -35,7 +35,7 @@ namespace detail
 {
 
 template<typename ValueType>
-struct approx_error : public thrust::unary_function<ValueType,ValueType>
+struct approx_error
 {
     __host__ __device__
     ValueType operator()(const ValueType scale) const
@@ -45,7 +45,7 @@ struct approx_error : public thrust::unary_function<ValueType,ValueType>
 };
 
 template<typename ValueType>
-struct conditional_invert : public thrust::unary_function<ValueType,ValueType>
+struct conditional_invert
 {
     __host__ __device__
     ValueType operator()(const ValueType val) const
@@ -95,7 +95,7 @@ struct filter_small_ratios_and_large_angles
 };
 
 template<typename ValueType>
-struct set_perfect : public thrust::unary_function<ValueType,ValueType>
+struct set_perfect
 {
     const ValueType eps;
 
@@ -176,7 +176,7 @@ struct incomplete_inner_functor
 };
 
 template<typename DerivedPolicy, typename MatrixType1, typename MatrixType2, typename ArrayType>
-typename thrust::detail::enable_if_convertible<typename ArrayType::format,cusp::array1d_format>::type
+thrust::detail::enable_if_convertible_t<typename ArrayType::format,cusp::array1d_format>
 evolution_strength_of_connection(thrust::execution_policy<DerivedPolicy> &exec,
                                  const MatrixType1& A, MatrixType2& S, const ArrayType& B,
                                  double rho_DinvA, const double epsilon, cusp::coo_format)
@@ -341,7 +341,7 @@ evolution_strength_of_connection(thrust::execution_policy<DerivedPolicy> &exec,
                                  thrust::make_tuple(A.row_indices.begin(), A.column_indices.begin())),
                              cusp::equal_pair_functor<IndexType>()),
                          Atilde_symmetric.begin(),
-                         _1 = ValueType(1), thrust::identity<bool>());
+                         _1 = ValueType(1), ::cuda::std::identity<bool>());
 
     // Symmetrize the final result
     thrust::scatter(exec, Atilde_symmetric.begin(), Atilde_symmetric.end(), permutation.begin(), Dinv_A_T_values.begin());
@@ -364,7 +364,7 @@ evolution_strength_of_connection(thrust::execution_policy<DerivedPolicy> &exec,
 }
 
 template<typename DerivedPolicy, typename MatrixType1, typename MatrixType2, typename ArrayType>
-typename thrust::detail::enable_if_convertible<typename ArrayType::format,cusp::array1d_format>::type
+thrust::detail::enable_if_convertible_t<typename ArrayType::format,cusp::array1d_format>
 evolution_strength_of_connection(thrust::execution_policy<DerivedPolicy> &exec,
                                  const MatrixType1& A, MatrixType2& S, const ArrayType& B,
                                  double rho_DinvA, const double epsilon, cusp::csr_format)
@@ -387,7 +387,7 @@ evolution_strength_of_connection(thrust::execution_policy<DerivedPolicy> &exec,
 }
 
 template<typename DerivedPolicy, typename MatrixType1, typename MatrixType2, typename ArrayType>
-typename thrust::detail::enable_if_convertible<typename ArrayType::format,cusp::array1d_format>::type
+thrust::detail::enable_if_convertible_t<typename ArrayType::format,cusp::array1d_format>
 evolution_strength_of_connection(thrust::execution_policy<DerivedPolicy> &exec,
                                  const MatrixType1& A, MatrixType2& S, const ArrayType& B,
                                  double rho_DinvA, const double epsilon)

@@ -50,13 +50,13 @@ struct ops
     typedef thrust::minus<ValueType> Sub;
 
     typedef typename thrust::detail::eval_if<
-    thrust::detail::is_same<Sub, BinaryFunction>::value
+    ::cuda::std::is_same<Sub, BinaryFunction>::value
     , thrust::detail::identity_< thrust::negate<ValueType> >
     , thrust::detail::identity_< thrust::identity<ValueType> >
     >::type unary_op_type;
 
     typedef typename thrust::detail::eval_if<
-    thrust::detail::is_same<Sub, BinaryFunction>::value
+    ::cuda::std::is_same<Sub, BinaryFunction>::value
     , thrust::detail::identity_< thrust::plus<ValueType> >
     , thrust::detail::identity_< BinaryFunction >
     >::type binary_op_type;

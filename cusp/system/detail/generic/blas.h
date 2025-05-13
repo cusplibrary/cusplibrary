@@ -116,7 +116,7 @@ struct AXPBYPCZ
 };
 
 template <typename T>
-struct XMY : public thrust::binary_function<T,T,T>
+struct XMY
 {
     __host__ __device__
     T operator()(const T& x, const T& y)
@@ -126,7 +126,7 @@ struct XMY : public thrust::binary_function<T,T,T>
 };
 
 template<typename T>
-struct AMAX : public thrust::binary_function<T,T,bool>
+struct AMAX
 {
     __host__ __device__
     bool operator()(const T& lhs, const T& rhs)
