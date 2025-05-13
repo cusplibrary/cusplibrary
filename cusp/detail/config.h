@@ -35,4 +35,4 @@
 #endif
 
 // decorator for deprecated features
-#define CUSP_DEPRECATED THRUST_DEPRECATED
+#define CUSP_DEPRECATED CCCL_DEPRECATED
