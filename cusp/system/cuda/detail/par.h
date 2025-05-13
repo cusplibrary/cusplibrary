@@ -98,7 +98,7 @@ select_system(const cusp::cpp::execution_policy<System1> &system1, const executi
 
 template<typename System>
 inline __host__ __device__
-::cuda::std::__enable_if_t<!::cuda::std::is_convertible<thrust::any_system_tag,System>::value, execution_policy<System> &>
+::cuda::std::enable_if_t<!::cuda::std::is_convertible<thrust::any_system_tag,System>::value, execution_policy<System> &>
 // execution_policy<System>
 select_system(const execution_policy<System> &system, const par_t &)
 {

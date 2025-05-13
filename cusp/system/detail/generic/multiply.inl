@@ -53,7 +53,7 @@ template <typename DerivedPolicy,
           typename LinearOperator,
           typename MatrixOrVector1,
           typename MatrixOrVector2>
-typename ::cuda::std::__enable_if_t<
+typename ::cuda::std::enable_if<
 ::cuda::std::_And<
   has_member_operator_exec<DerivedPolicy,LinearOperator,MatrixOrVector1,MatrixOrVector2>,
   ::cuda::std::is_convertible<typename LinearOperator::format,cusp::unknown_format>
@@ -71,7 +71,7 @@ template <typename DerivedPolicy,
           typename LinearOperator,
           typename MatrixOrVector1,
           typename MatrixOrVector2>
-typename ::cuda::std::__enable_if_t<
+typename ::cuda::std::enable_if<
 ::cuda::std::_And<
   thrust::detail::not_<has_member_operator_exec<DerivedPolicy,LinearOperator,MatrixOrVector1,MatrixOrVector2> >,
   ::cuda::std::is_convertible<typename LinearOperator::format,cusp::unknown_format>

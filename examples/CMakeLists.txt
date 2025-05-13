@@ -1,3 +1,17 @@
+# cmake_minimum_required(VERSION 3.29)
+# 
+# project(cusp-examples LANGUAGES CXX CUDA)
+# 
+# if(PROJECT_IS_TOP_LEVEL)
+#   find_package(cusp REQUIRED)
+#   include(../cmake/CPM.cmake)
+#   CPMAddPackage(
+#       NAME CCCL
+#       GITHUB_REPOSITORY nvidia/cccl
+#       VERSION 2.6.1
+#   )
+# endif()
+
 add_custom_target(all-examples)
 
 function(add_example DIRNAME NAME)

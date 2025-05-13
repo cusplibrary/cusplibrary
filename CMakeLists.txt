@@ -18,8 +18,8 @@ project(
 
 # Options
 # -------
-option(BUILD_MAIN "Build main example." "ON")
-option(BUILD_EXAMPLES "Build main example." "ON")
+option(BUILD_MAIN "Build main example." "OFF")
+option(BUILD_EXAMPLES "Build main example." "OFF")
 
 # if building something, then install CCCL
 if(BUILD_MAIN OR BUILD_EXAMPLES)
@@ -86,14 +86,14 @@ install(
 
 # Builds
 # ------
-if(CCCL_ADDED AND BUILD_MAIN)
+if(BUILD_MAIN)
     add_executable(example example.cu)
     file(COPY ${CMAKE_CURRENT_LIST_DIR}/testing/data/ DESTINATION ${CMAKE_BINARY_DIR}/testing//data/)
     target_link_libraries(example PUBLIC CCCL::CCCL)
     target_link_libraries(example PUBLIC cusp)
 endif()
 
-if(CCCL_ADDED AND BUILD_EXAMPLES)
+if(BUILD_EXAMPLES)
     add_subdirectory(examples)
 endif()
 

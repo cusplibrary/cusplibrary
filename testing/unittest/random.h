@@ -18,7 +18,7 @@ inline unsigned int hash(unsigned int a)
     return a;
 }
 
-template<typename T, bool is_float = thrust::detail::is_floating_point<T>::value>
+template<typename T, bool is_float = ::cuda::std::is_floating_point<T>::value>
   struct random_integer
 {
   T operator()(unsigned int i) const
