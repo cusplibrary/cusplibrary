@@ -28,6 +28,7 @@
 #include <cusp/detail/config/device_system.h>
 #include <cusp/detail/config/host_blas_system.h>
 #include <cusp/detail/config/device_blas_system.h>
+#include <iostream>
 
 // Cusp supports Thrust v1.5 and above
 #if THRUST_VERSION < 100500
@@ -35,4 +36,4 @@
 #endif
 
 // decorator for deprecated features
-#define CUSP_DEPRECATED CCCL_DEPRECATED
+#define CUSP_DEPRECATED [[deprecated]]
