@@ -379,8 +379,11 @@ def environment(buildDir, includeDir):
     # which may include a different version of thrust
     env.Prepend(CPPPATH=os.path.dirname(buildDir))
 
-    if 'THRUST_PATH' in os.environ:
-        env.Prepend(CPPPATH=[os.path.abspath(os.environ['THRUST_PATH'])])
+    if 'CCCL_PATH' in os.environ:
+        env.Prepend(CPPPATH=[os.path.join(os.path.abspath(os.environ['CCCL_PATH']), 'thrust')])
+        env.Prepend(CPPPATH=[os.path.join(os.path.abspath(os.environ['CCCL_PATH']), 'libcudacxx/include')])
+        env.Prepend(CPPPATH=[os.path.join(os.path.abspath(os.environ['CCCL_PATH']), 'cub')])
+        print(env['CPPPATH'])
 
     # import the LD_LIBRARY_PATH so we can run commands which depend
     # on shared libraries
