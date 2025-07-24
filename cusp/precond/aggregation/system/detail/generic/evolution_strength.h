@@ -176,7 +176,7 @@ struct incomplete_inner_functor
 };
 
 template<typename DerivedPolicy, typename MatrixType1, typename MatrixType2, typename ArrayType>
-typename thrust::detail::enable_if_convertible<typename ArrayType::format,cusp::array1d_format>::type
+typename thrust::detail::enable_if_convertible_t<typename ArrayType::format,cusp::array1d_format>::type
 evolution_strength_of_connection(thrust::execution_policy<DerivedPolicy> &exec,
                                  const MatrixType1& A, MatrixType2& S, const ArrayType& B,
                                  double rho_DinvA, const double epsilon, cusp::coo_format)
@@ -364,7 +364,7 @@ evolution_strength_of_connection(thrust::execution_policy<DerivedPolicy> &exec,
 }
 
 template<typename DerivedPolicy, typename MatrixType1, typename MatrixType2, typename ArrayType>
-typename thrust::detail::enable_if_convertible<typename ArrayType::format,cusp::array1d_format>::type
+typename thrust::detail::enable_if_convertible_t<typename ArrayType::format,cusp::array1d_format>::type
 evolution_strength_of_connection(thrust::execution_policy<DerivedPolicy> &exec,
                                  const MatrixType1& A, MatrixType2& S, const ArrayType& B,
                                  double rho_DinvA, const double epsilon, cusp::csr_format)
@@ -387,7 +387,7 @@ evolution_strength_of_connection(thrust::execution_policy<DerivedPolicy> &exec,
 }
 
 template<typename DerivedPolicy, typename MatrixType1, typename MatrixType2, typename ArrayType>
-typename thrust::detail::enable_if_convertible<typename ArrayType::format,cusp::array1d_format>::type
+typename thrust::detail::enable_if_convertible_t<typename ArrayType::format,cusp::array1d_format>::type
 evolution_strength_of_connection(thrust::execution_policy<DerivedPolicy> &exec,
                                  const MatrixType1& A, MatrixType2& S, const ArrayType& B,
                                  double rho_DinvA, const double epsilon)

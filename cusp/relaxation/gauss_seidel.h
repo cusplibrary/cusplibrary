@@ -128,7 +128,7 @@ public:
      */
     template <typename MatrixType>
     gauss_seidel(const MatrixType& A, sweep default_direction=SYMMETRIC,
-                 typename thrust::detail::enable_if_convertible<typename MatrixType::format,cusp::csr_format>::type* = 0);
+                 thrust::detail::enable_if_convertible_t<typename MatrixType::format,cusp::csr_format>* = 0);
 
     /*! Copy constructor for \p gauss_seidel smoother.
      *
