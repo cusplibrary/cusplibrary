@@ -33,42 +33,24 @@ namespace cusp
 {
 
 /*! \cond */
-// template <int size, typename T>
-// struct constant_tuple
-// {
-//     typedef thrust::detail::identity_<T>                 T_;
-//     typedef thrust::detail::identity_<thrust::null_type> N_;
-//
-//     typedef
-//     thrust::tuple<typename thrust::detail::eval_if<(size > 0),T_,N_>::type,
-//                   typename thrust::detail::eval_if<(size > 1),T_,N_>::type,
-//                   typename thrust::detail::eval_if<(size > 2),T_,N_>::type,
-//                   typename thrust::detail::eval_if<(size > 3),T_,N_>::type,
-//                   typename thrust::detail::eval_if<(size > 4),T_,N_>::type,
-//                   typename thrust::detail::eval_if<(size > 5),T_,N_>::type,
-//                   typename thrust::detail::eval_if<(size > 6),T_,N_>::type,
-//                   typename thrust::detail::eval_if<(size > 7),T_,N_>::type,
-//                   typename thrust::detail::eval_if<(size > 8),T_,N_>::type,
-//                   typename thrust::detail::eval_if<(size > 9),T_,N_>::type> type;
-// };
+// Helper struct that does the actual work
+template <std::size_t N, typename T, typename Indices = std::make_index_sequence<N>>
+struct make_tuple_of_impl;
 
-// Recursive specialization to build the tuple type
-template <typename T, size_t N>
-struct MakeTupleType {
-    // Recursively build the tuple type by adding one 'T' at a time
-    using type = decltype(::cuda::std::tuple_cat(::cuda::std::tuple<T>(), typename MakeTupleType<T, N - 1>::type()));
+// Specialization that expands the index sequence into tuple parameters
+template <std::size_t N, typename T, std::size_t... Is>
+struct make_tuple_of_impl<N, T, std::index_sequence<Is...>> {
+    // A helper that ignores its template argument and always yields T
+    template<std::size_t>
+    using type_t = T;
+    
+    // Expand the indices `Is...` to create a pack of N types T
+    using type = ::cuda::std::tuple<type_t<Is>...>;
 };
 
-// Base case for the recursive template
-template <typename T>
-struct MakeTupleType<T, 0> {
-    // This specialization is for N=0, resulting in an empty tuple
-    using type = ::cuda::std::tuple<>;
-};
-
-// Alias for convenience
-template <size_t N, typename T>
-using constant_tuple = typename MakeTupleType<T, N>::type;
+// Final user-facing alias template
+template <std::size_t N, typename T>
+using make_tuple_of = typename make_tuple_of_impl<N, T>::type;
 
 template<typename T, typename V, int SIZE>
 struct join_search
@@ -175,7 +157,7 @@ public:
     // forward definition
     struct join_select_functor;
 
-    typedef constant_tuple<tuple_size-1,size_t>                           SizesTuple;
+    typedef make_tuple_of<tuple_size-1,size_t>                            SizesTuple;
     typedef typename thrust::tuple_element<tuple_size-1,Tuple>::type      IndexIterator;
     typedef thrust::transform_iterator<join_select_functor,IndexIterator> TransformIterator;
 
