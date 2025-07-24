@@ -112,25 +112,25 @@ public:
     typedef cusp::array2d_view<typename values_array_type::const_view, Orientation> const_view;
 
     typedef cusp::detail::row_or_column_view<
-        typename values_array_type::iterator,thrust::detail::is_same<Orientation,cusp::row_major>::value
+        typename values_array_type::iterator,std::is_same<Orientation,cusp::row_major>::value
       > row_view_type;
 
     typedef typename row_view_type::ArrayType row_view;
 
     typedef cusp::detail::row_or_column_view<
-        typename values_array_type::iterator,thrust::detail::is_same<Orientation,cusp::column_major>::value
+        typename values_array_type::iterator,std::is_same<Orientation,cusp::column_major>::value
       > column_view_type;
 
     typedef typename column_view_type::ArrayType column_view;
 
     typedef cusp::detail::row_or_column_view<
-        typename values_array_type::const_iterator,thrust::detail::is_same<Orientation,cusp::row_major>::value
+        typename values_array_type::const_iterator,std::is_same<Orientation,cusp::row_major>::value
       > const_row_view_type;
 
     typedef typename const_row_view_type::ArrayType const_row_view;
 
     typedef cusp::detail::row_or_column_view<
-        typename values_array_type::const_iterator,thrust::detail::is_same<Orientation,cusp::column_major>::value
+        typename values_array_type::const_iterator,std::is_same<Orientation,cusp::column_major>::value
       > const_column_view_type;
 
     typedef typename const_column_view_type::ArrayType const_column_view;
@@ -350,12 +350,12 @@ public:
     typedef cusp::array2d_view<ArrayView, Orientation> view;
 
     typedef cusp::detail::row_or_column_view<
-        typename values_array_type::iterator,thrust::detail::is_same<Orientation,cusp::row_major>::value
+        typename values_array_type::iterator,std::is_same<Orientation,cusp::row_major>::value
       > row_view_type;
     typedef typename row_view_type::ArrayType row_view;
 
     typedef cusp::detail::row_or_column_view<
-        typename values_array_type::iterator,thrust::detail::is_same<Orientation,cusp::column_major>::value
+        typename values_array_type::iterator,std::is_same<Orientation,cusp::column_major>::value
       > column_view_type;
     typedef typename column_view_type::ArrayType column_view;
 

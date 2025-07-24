@@ -37,8 +37,8 @@ static double DEFAULT_ABSOLUTE_TOL = 1e-4;
 template<typename T>
 struct value_type
 {
-    typedef typename thrust::detail::remove_const<
-    typename thrust::detail::remove_reference<
+    typedef typename std::remove_const<
+    typename std::remove_reference<
     T
     >::type
     >::type type;

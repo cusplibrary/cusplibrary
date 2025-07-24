@@ -188,7 +188,7 @@ def getCXXFLAGS(mode, backend, warn, warnings_as_errors, hostspblas, CXX):
 
 
 def getNVCCFLAGS(mode, backend, arch):
-    result = ['-arch=' + arch]
+    result = ['-arch=' + arch, '-std=c++17']
     if mode == 'debug':
         # TODO turn on debug mode
         # make this work when we've debugged nvcc -G

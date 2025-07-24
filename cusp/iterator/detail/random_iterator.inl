@@ -74,8 +74,8 @@ template<typename T>
 struct random_functor_type
 {
     typedef typename thrust::detail::eval_if<
-           thrust::detail::is_floating_point<typename cusp::norm_type<T>::type>::value,
-              thrust::detail::eval_if<thrust::detail::is_convertible<thrust::complex<float>,T>::value,
+           std::is_floating_point<typename cusp::norm_type<T>::type>::value,
+              thrust::detail::eval_if<std::is_convertible<thrust::complex<float>,T>::value,
                 thrust::detail::identity_< integer_to_complex<T> >,
                 thrust::detail::identity_< integer_to_real<T> > >,
            thrust::detail::identity_< thrust::identity<T> >
