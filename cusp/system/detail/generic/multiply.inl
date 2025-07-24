@@ -53,7 +53,7 @@ template <typename DerivedPolicy,
           typename LinearOperator,
           typename MatrixOrVector1,
           typename MatrixOrVector2>
-typename enable_if<
+typename std::enable_if<
 std::conjunction<
   has_member_operator_exec<DerivedPolicy,LinearOperator,MatrixOrVector1,MatrixOrVector2>,
   std::is_convertible<typename LinearOperator::format,cusp::unknown_format>
@@ -71,7 +71,7 @@ template <typename DerivedPolicy,
           typename LinearOperator,
           typename MatrixOrVector1,
           typename MatrixOrVector2>
-typename enable_if<
+typename std::enable_if<
 std::conjunction<
   thrust::detail::not_<has_member_operator_exec<DerivedPolicy,LinearOperator,MatrixOrVector1,MatrixOrVector2> >,
   std::is_convertible<typename LinearOperator::format,cusp::unknown_format>

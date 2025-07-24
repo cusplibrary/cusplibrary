@@ -14,8 +14,8 @@ void TestLinearOperator(void)
 
     ASSERT_EQUAL(A.num_rows, 4);
     ASSERT_EQUAL(A.num_cols, 3);
-    ASSERT_EQUAL((bool) (thrust::detail::is_same<typename LinearOperator::value_type,float>::value), true);
-    ASSERT_EQUAL((bool) (thrust::detail::is_same<typename LinearOperator::index_type,long>::value), true);
+    ASSERT_EQUAL((bool) (std::is_same<typename LinearOperator::value_type,float>::value), true);
+    ASSERT_EQUAL((bool) (std::is_same<typename LinearOperator::index_type,long>::value), true);
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestLinearOperator);
 
