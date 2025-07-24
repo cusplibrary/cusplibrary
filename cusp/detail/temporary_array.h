@@ -80,7 +80,7 @@ public:
     temporary_array(thrust::execution_policy<System> &system,
                     InputIterator first,
                     size_type n,
-                    typename thrust::detail::disable_if<thrust::detail::is_integral<InputIterator>::value>::type* = 0)
+                    typename thrust::detail::disable_if<std::is_integral<InputIterator>::value>::type* = 0)
         : super_t(system, first, n) {}
 
     template<typename InputIterator, typename InputSystem>

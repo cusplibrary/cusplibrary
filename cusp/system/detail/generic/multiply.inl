@@ -54,9 +54,9 @@ template <typename DerivedPolicy,
           typename MatrixOrVector1,
           typename MatrixOrVector2>
 typename enable_if<
-thrust::detail::and_<
+std::conjunction<
   has_member_operator_exec<DerivedPolicy,LinearOperator,MatrixOrVector1,MatrixOrVector2>,
-  thrust::detail::is_convertible<typename LinearOperator::format,cusp::unknown_format>
+  std::is_convertible<typename LinearOperator::format,cusp::unknown_format>
   >::value
 >::type
 multiply(thrust::execution_policy<DerivedPolicy> &exec,
@@ -72,9 +72,9 @@ template <typename DerivedPolicy,
           typename MatrixOrVector1,
           typename MatrixOrVector2>
 typename enable_if<
-thrust::detail::and_<
+std::conjunction<
   thrust::detail::not_<has_member_operator_exec<DerivedPolicy,LinearOperator,MatrixOrVector1,MatrixOrVector2> >,
-  thrust::detail::is_convertible<typename LinearOperator::format,cusp::unknown_format>
+  std::is_convertible<typename LinearOperator::format,cusp::unknown_format>
   >::value
 >::type
 multiply(thrust::execution_policy<DerivedPolicy> &exec,

@@ -227,7 +227,7 @@ struct row_or_column_view<Iterator,false>
 template <typename Orientation, typename IsTranspose = typename Orientation::transpose>
 struct transpose_orientation
       : thrust::detail::eval_if<
-          thrust::detail::is_same<Orientation, cusp::row_major_base<IsTranspose> >::value,
+          std::is_same<Orientation, cusp::row_major_base<IsTranspose> >::value,
           thrust::detail::identity_<cusp::column_major_base<thrust::detail::not_<IsTranspose> > >,
           thrust::detail::identity_<cusp::row_major_base<thrust::detail::not_<IsTranspose> > >
         > // if orientation

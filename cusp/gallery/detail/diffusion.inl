@@ -55,7 +55,7 @@ void diffusion(MatrixType& matrix,
     ValueType d;
     ValueType e;
 
-    if( thrust::detail::is_same<Method, FE>::value )
+    if( std::is_same<Method, FE>::value )
     {
         a = (-1.0*eps - 1.0)*CC + (-1.0*eps - 1.0)*SS + ( 3.0*eps - 3.0)*CS;
         b = ( 2.0*eps - 4.0)*CC + (-4.0*eps + 2.0)*SS;
@@ -69,7 +69,7 @@ void diffusion(MatrixType& matrix,
         d /= 6.0;
         e /= 6.0;
     }
-    else if( thrust::detail::is_same<Method, FD>::value )
+    else if( std::is_same<Method, FD>::value )
     {
         a = 0.5 * (eps-1.0) * CS;
         b = -(eps*SS + CC);
