@@ -28,7 +28,6 @@ namespace detail
 
 template <typename BinaryFunction>
 struct base_functor
-  : public thrust::unary_function<typename BinaryFunction::first_argument_type, typename BinaryFunction::result_type>
 {
     public:
 
@@ -74,10 +73,6 @@ struct coo_tuple_comp_functor
 
 template <typename BinaryFunction>
 struct combine_tuple_base_functor
-        : public thrust::unary_function<
-        thrust::tuple<typename BinaryFunction::first_argument_type,
-        typename BinaryFunction::second_argument_type>,
-        typename BinaryFunction::result_type>
 {
     BinaryFunction op;
 
@@ -132,7 +127,7 @@ struct speed_threshold_functor
 };
 
 template <typename IndexType>
-struct diagonal_index_functor : public thrust::unary_function<IndexType,IndexType>
+struct diagonal_index_functor
 {
     const IndexType pitch;
 

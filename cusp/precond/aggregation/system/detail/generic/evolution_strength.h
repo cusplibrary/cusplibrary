@@ -35,7 +35,7 @@ namespace detail
 {
 
 template<typename ValueType>
-struct approx_error : public thrust::unary_function<ValueType,ValueType>
+struct approx_error
 {
     __host__ __device__
     ValueType operator()(const ValueType scale) const
@@ -45,7 +45,7 @@ struct approx_error : public thrust::unary_function<ValueType,ValueType>
 };
 
 template<typename ValueType>
-struct conditional_invert : public thrust::unary_function<ValueType,ValueType>
+struct conditional_invert
 {
     __host__ __device__
     ValueType operator()(const ValueType val) const
@@ -95,7 +95,7 @@ struct filter_small_ratios_and_large_angles
 };
 
 template<typename ValueType>
-struct set_perfect : public thrust::unary_function<ValueType,ValueType>
+struct set_perfect
 {
     const ValueType eps;
 

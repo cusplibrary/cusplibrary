@@ -126,7 +126,7 @@ IndexType logical_to_other_physical(IndexType linear_index, IndexType num_rows, 
 
 // functors
 template <typename IndexType, typename Orientation>
-struct logical_to_physical_functor : public thrust::unary_function<IndexType,IndexType>
+struct logical_to_physical_functor
 {
     IndexType num_rows, num_cols, pitch;
 
@@ -145,7 +145,7 @@ struct logical_to_physical_functor : public thrust::unary_function<IndexType,Ind
 
 // convert logical linear index in the (transposed) destination into a physical index in the source
 template <typename IndexType, typename Orientation1, typename Orientation2>
-struct transpose_index_functor : public thrust::unary_function<IndexType,IndexType>
+struct transpose_index_functor
 {
     IndexType num_rows, num_cols, pitch; // source dimensions
 
@@ -167,7 +167,7 @@ struct transpose_index_functor : public thrust::unary_function<IndexType,IndexTy
 
 
 template <typename IndexType, typename Orientation1, typename Orientation2>
-struct logical_to_other_physical_functor : public thrust::unary_function<IndexType,IndexType>
+struct logical_to_other_physical_functor
 {
     IndexType num_rows, num_cols, pitch;
 
