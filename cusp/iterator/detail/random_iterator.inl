@@ -42,7 +42,7 @@ struct random_iterator_type
 };
 
 template <typename Real>
-struct integer_to_real : public thrust::unary_function<typename random_iterator_type<Real>::type,Real>
+struct integer_to_real
 {
     typedef typename random_iterator_type<Real>::type UnsignedInteger;
 
@@ -55,7 +55,7 @@ struct integer_to_real : public thrust::unary_function<typename random_iterator_
 };
 
 template <typename Complex>
-struct integer_to_complex : public thrust::unary_function<typename random_iterator_type<Complex>::type,Complex>
+struct integer_to_complex
 {
     typedef typename random_iterator_type<Complex>::type UnsignedInteger;
     typedef typename cusp::norm_type<Complex>::type Real;
@@ -84,7 +84,7 @@ struct random_functor_type
 
 // Integer hash functions
 template <typename IndexType, typename BaseType>
-struct random_integer_functor : public thrust::unary_function<IndexType,typename random_iterator_type<BaseType>::type>
+struct random_integer_functor
 {
     size_t seed;
 

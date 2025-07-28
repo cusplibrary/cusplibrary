@@ -135,7 +135,7 @@ static const unsigned int *s3d[] =
     istate3d +160, istate3d +168, istate3d +176, istate3d +184
 };
 
-struct hilbert_transform_2d : public thrust::unary_function<double,double>
+struct hilbert_transform_2d
 {
     template<typename Tuple>
     __host__
@@ -170,7 +170,7 @@ struct hilbert_transform_2d : public thrust::unary_function<double,double>
     }
 };
 
-struct hilbert_transform_3d : public thrust::unary_function<double,double>
+struct hilbert_transform_3d
 {
     template<typename Tuple>
     __host__

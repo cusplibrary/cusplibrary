@@ -53,7 +53,7 @@ namespace generic
 
 // functors
 template <typename IndexType, typename Orientation>
-struct array2d_map_functor : public thrust::unary_function<IndexType,IndexType>
+struct array2d_map_functor
 {
     IndexType pitch;
 
