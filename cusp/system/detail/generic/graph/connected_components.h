@@ -64,7 +64,7 @@ size_t connected_components(thrust::execution_policy<DerivedPolicy>& exec,
                               thrust::constant_iterator<VertexId>(num_components) + G.num_rows,
                               levels.begin(),
                               components.begin(),
-                              thrust::identity<VertexId>(),
+                              ::cuda::std::identity{},
                               _1 != UNSET );
         thrust::fill(exec, levels.begin(), levels.end(), UNSET);
         src = thrust::find(exec, components.begin(), components.end(), UNSET) - components.begin();

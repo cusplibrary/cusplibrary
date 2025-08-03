@@ -132,7 +132,7 @@ void CompareScaledSparseMatrixMatrixMultiply(DenseMatrixType A, DenseMatrixType 
 {
     typedef typename SparseMatrixType::value_type ValueType;
 
-    thrust::identity<ValueType>   initialize;
+    ::cuda::std::identity         initialize;
     thrust::multiplies<ValueType> combine;
     thrust::plus<ValueType>       reduce;
 
@@ -523,7 +523,7 @@ void CompareScaledSparseMatrixVectorMultiply(DenseMatrixType A)
     for(size_t i = 0; i < x.size(); i++)
         x[i] = i % 10;
 
-    thrust::identity<ValueType>   initialize;
+    ::cuda::std::identity         initialize;
     thrust::multiplies<ValueType> combine;
     thrust::plus<ValueType>       reduce;
 
