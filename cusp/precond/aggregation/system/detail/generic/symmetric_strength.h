@@ -104,7 +104,7 @@ void symmetric_strength_of_connection(thrust::execution_policy<DerivedPolicy> &e
     //                 thrust::make_zip_iterator(thrust::make_tuple(A.row_indices.begin(), A.column_indices.begin(), A.values.begin())) + A.num_entries,
     //                 copyflags.begin(),
     //                 thrust::make_zip_iterator(thrust::make_tuple(S.row_indices.begin(), S.column_indices.begin(), S.values.begin())),
-    //                 thrust::identity<bool>());
+    //                 ::cuda::std::identity{});
 
     // WAR for runtime error "cudaFuncGetAttributes: invalid device function"
     // using zip_iterators
@@ -113,19 +113,19 @@ void symmetric_strength_of_connection(thrust::execution_policy<DerivedPolicy> &e
                     A.row_indices.begin() + A.num_entries,
                     copyflags.begin(),
                     S.row_indices.begin(),
-                    thrust::identity<bool>());
+                    ::cuda::std::identity{});
     thrust::copy_if(exec,
                     A.column_indices.begin(),
                     A.column_indices.begin() + A.num_entries,
                     copyflags.begin(),
                     S.column_indices.begin(),
-                    thrust::identity<bool>());
+                    ::cuda::std::identity{});
     thrust::copy_if(exec,
                     A.values.begin(),
                     A.values.begin() + A.num_entries,
                     copyflags.begin(),
                     S.values.begin(),
-                    thrust::identity<bool>());
+                    ::cuda::std::identity{});
 }
 
 template <typename DerivedPolicy,

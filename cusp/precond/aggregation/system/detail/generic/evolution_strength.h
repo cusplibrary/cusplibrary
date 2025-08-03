@@ -341,7 +341,7 @@ evolution_strength_of_connection(thrust::execution_policy<DerivedPolicy> &exec,
                                  thrust::make_tuple(A.row_indices.begin(), A.column_indices.begin())),
                              cusp::equal_pair_functor<IndexType>()),
                          Atilde_symmetric.begin(),
-                         _1 = ValueType(1), thrust::identity<bool>());
+                         _1 = ValueType(1), ::cuda::std::identity{});
 
     // Symmetrize the final result
     thrust::scatter(exec, Atilde_symmetric.begin(), Atilde_symmetric.end(), permutation.begin(), Dinv_A_T_values.begin());

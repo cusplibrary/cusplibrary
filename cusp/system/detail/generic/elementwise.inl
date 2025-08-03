@@ -52,7 +52,7 @@ struct ops
     typedef typename thrust::detail::eval_if<
     std::is_same<Sub, BinaryFunction>::value
     , thrust::detail::identity_< thrust::negate<ValueType> >
-    , thrust::detail::identity_< thrust::identity<ValueType> >
+    , thrust::detail::identity_< ::cuda::std::identity >
     >::type unary_op_type;
 
     typedef typename thrust::detail::eval_if<
