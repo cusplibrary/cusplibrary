@@ -156,7 +156,7 @@ void TestGeneralizedSpGEMMDispatch()
 
     my_system sys(0);
 
-    thrust::identity<float>   initialize;
+    ::cuda::std::identity     initialize;
     thrust::multiplies<float> combine;
     thrust::plus<float>       reduce;
 
