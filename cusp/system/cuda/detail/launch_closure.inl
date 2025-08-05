@@ -190,7 +190,7 @@ function_attributes_t closure_attributes(void)
 
         // disallow the compiler to move the write to attributes_exist[device_id]
         // before the initialization of function_attributes[device_id]
-        __thrust_compiler_fence();
+        std::atomic_thread_fence(std::memory_order_seq_cst);
 
         attributes_exist[device_id] = true;
     }

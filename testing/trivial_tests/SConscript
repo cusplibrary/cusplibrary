@@ -46,6 +46,11 @@ folders = ['',              # main folder
            'precond/smoother/',
            'relaxation/']
 
+skiplist = ['breadth_first_search.h',
+            'connected_components.h',
+            'pseudo_peripheral.h',
+            'symmetric_rcm.h']
+
 sources  = []
 
 for folder in folders:
@@ -53,10 +58,11 @@ for folder in folders:
     pattern = os.path.join(os.path.join(cusp_abspath, folder), "*" + ext)
     for fullpath in glob.glob(pattern):
       headerfilename = os.path.basename(fullpath)
+      if headerfilename in skiplist:
+        continue
 
       cu  = env.CUFile(headerfilename.replace('.h', '.cu'), fullpath)
       cpp = env.CPPFile(headerfilename.replace('.h', '_cpp.cpp'), fullpath)
-
       sources.append(cu)
       #sources.append(cpp)  # TODO: re-enable this
 
