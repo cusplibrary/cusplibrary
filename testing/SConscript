@@ -29,7 +29,7 @@ for skip in skiplist:
   sources = [f for f in sources if os.path.basename(str(f)) != skip]
 
 # filter test files using a regular expression
-if 'tests' in env:
+if 'filtertests' in env:
   import re
 
   pattern = re.compile(env['tests'])
@@ -52,16 +52,14 @@ this_file = inspect.currentframe().f_code.co_filename
 this_dir = os.path.dirname(this_file)
 env.Append(CPPPATH = [this_dir])
 
-if ('only_trivial' not in env) and ('only_external' not in env):
+if env['tests'] in ('standard', 'all'):
+  print('main tests')
   tester = env.Program('tester', sources)
 
-print(env)
-if 'only_trivial' in env:
+if env['tests'] in ('external', 'all'):
+  print('only_external')
   SConscript('external_libs/SConscript', exports='env')
-if 'only_external' in env:
-  SConscript('trivial_tests/SConscript', exports='env')
 
-# invoke trivial_tests SConscript
-# if ('tests' not in env) and ('single_test' not in env) and (env['PLATFORM'] != "win32" and env['PLATFORM'] != "win64"):
-#   SConscript('external_libs/SConscript', exports='env')
-#   SConscript('trivial_tests/SConscript', exports='env')
+if env['tests'] in ('compile', 'all'):
+  print('only_compile')
+  SConscript('compile_tests/SConscript', exports='env')
