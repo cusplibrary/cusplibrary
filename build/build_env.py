@@ -225,54 +225,73 @@ def environment(buildDir, includeDir):
                  None, allowed_values=('8.0', '9.0', '10.0')))
 
     # add a variable to handle the device backend
-    compiler_variable = EnumVariable('compiler', 'The compiler to use', 'nvcc',
-                                     allowed_values=('nvcc', 'gcc', 'clang'))
-    vars.Add(compiler_variable)
+    vars.Add(EnumVariable('compiler',
+                          help='The compiler to use',
+                          default='nvcc',
+                          allowed_values=('nvcc', 'gcc', 'clang')))
 
     # add a variable to handle the device backend
-    backend_variable = EnumVariable(
-        'backend', 'The parallel device backend to target', 'cuda',
-        allowed_values=('cuda', 'omp', 'ocelot'))
-    vars.Add(backend_variable)
+    vars.Add(EnumVariable('backend',
+                          help='The parallel device backend to target',
+                          default='cuda',
+                          allowed_values=('cuda', 'omp', 'ocelot')))
 
     # add a variable to handle RELEASE/DEBUG mode
-    vars.Add(EnumVariable('mode', 'Release versus debug mode', 'debug',
+    vars.Add(EnumVariable('mode',
+                          help='Release versus debug mode',
+                          default='debug',
                           allowed_values=('release', 'debug', 'coverage')))
 
     # add a variable to handle compute capability
-    vars.Add(
-        EnumVariable('arch', 'Compute capability code generation', 'sm_50',
-                     allowed_values=('sm_20', 'sm_30', 'sm_50', 'sm_60')))
+    vars.Add(EnumVariable('arch',
+                          help='Compute capability code generation',
+                          default='sm_50',
+                          allowed_values=('sm_20', 'sm_30', 'sm_50', 'sm_60')))
 
     # add a variable to handle warnings
+    Walldefault = 'false'
     if os.name == 'posix':
-        vars.Add(BoolVariable('Wall', 'Enable all compilation warnings', 1))
-    else:
-        vars.Add(BoolVariable('Wall', 'Enable all compilation warnings', 0))
+        Walldefault = 'true'
+    vars.Add(BoolVariable('Wall',
+                          help='Enable all compilation warnings',
+                          default=Walldefault))
 
     # add a variable to treat warnings as errors
-    vars.Add(BoolVariable('Werror', 'Treat warnings as errors', 0))
+    vars.Add(BoolVariable('Werror',
+                          help='Treat warnings as errors',
+                          default=0))
 
     # add a variable to filter source files by a regex
-    vars.Add('tests', help='Filter test files using a regex')
+    vars.Add(EnumVariable('tests',
+                          help='Select test groups',
+                          default='standard',
+                          allowed_values=('standard', 'compile', 'external', 'all')))
+
+    # add a variable to filter source files by a regex
+    vars.Add('filter_tests',
+             help='Filter test files using a regex of the file contents')
 
     # add a variable to execute tests for a single file
-    vars.Add('single_test', help='Test a single file')
+    vars.Add('single_test',
+             help='Test a single file, for example "scons single_test=print"')
 
     # add a variable to handle the host sparse BLAS backend
-    hostspblas_variable = EnumVariable('hostspblas', 'Host sparse math library', 'cusp',
-                                       allowed_values=('cusp', 'mkl'))
-    vars.Add(hostspblas_variable)
+    vars.Add(EnumVariable('hostspblas',
+                          help='Host sparse math library',
+                          default='cusp',
+                          allowed_values=('cusp', 'mkl')))
 
     # add a variable to handle the host BLAS backend
-    hostblas_variable = EnumVariable('hostblas', 'Host BLAS library', 'cusp',
-                                     allowed_values=('cusp', 'cblas'))
-    vars.Add(hostblas_variable)
+    vars.Add(EnumVariable('hostblas',
+                          help='Host BLAS library',
+                          default='cusp',
+                          allowed_values=('cusp', 'cblas')))
 
     # add a variable to handle the device BLAS backend
-    deviceblas_variable = EnumVariable('deviceblas', 'Device BLAS library', 'cublas',
-                                       allowed_values=('cusp', 'cblas', 'cublas'))
-    vars.Add(deviceblas_variable)
+    vars.Add(EnumVariable('deviceblas',
+                          help='Device BLAS library',
+                          default='cublas',
+                          allowed_values=('cusp', 'cblas', 'cublas')))
 
     # create an Environment
     env = Environment(tools=getTools(), variables=vars)
