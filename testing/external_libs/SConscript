@@ -29,5 +29,7 @@ if env['compiler'] == 'nvcc':
   sources.extend(['cublas.cu'])
   env.AppendUnique(LIBS = ["cublas"])
 
-tester = env.Program('tester', sources)
-
+external_test = env.Program('test', sources)
+env.Alias('external_test', external_test)
+Help('scons external_test\n'
+     '    Builds a test from testing/external_libs/main.cu\n')
