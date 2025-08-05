@@ -52,10 +52,16 @@ this_file = inspect.currentframe().f_code.co_filename
 this_dir = os.path.dirname(this_file)
 env.Append(CPPPATH = [this_dir])
 
-tester = env.Program('tester', sources)
+if ('only_trivial' not in env) and ('only_external' not in env):
+  tester = env.Program('tester', sources)
 
-# invoke trivial_tests SConscript
-if ('tests' not in env) and ('single_test' not in env) and (env['PLATFORM'] != "win32" and env['PLATFORM'] != "win64"):
+print(env)
+if 'only_trivial' in env:
   SConscript('external_libs/SConscript', exports='env')
+if 'only_external' in env:
   SConscript('trivial_tests/SConscript', exports='env')
 
+# invoke trivial_tests SConscript
+# if ('tests' not in env) and ('single_test' not in env) and (env['PLATFORM'] != "win32" and env['PLATFORM'] != "win64"):
+#   SConscript('external_libs/SConscript', exports='env')
+#   SConscript('trivial_tests/SConscript', exports='env')
