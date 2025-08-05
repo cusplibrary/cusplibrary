@@ -262,13 +262,7 @@ def environment(buildDir, includeDir):
                           default=0))
 
     # add a variable to filter source files by a regex
-    vars.Add(EnumVariable('tests',
-                          help='Select test groups',
-                          default='standard',
-                          allowed_values=('standard', 'compile', 'external', 'all')))
-
-    # add a variable to filter source files by a regex
-    vars.Add('filter_tests',
+    vars.Add('filter_test',
              help='Filter test files using a regex of the file contents')
 
     # add a variable to execute tests for a single file
@@ -415,5 +409,6 @@ def environment(buildDir, includeDir):
 
     # generate help text
     Help(vars.GenerateHelpText(env))
+    Help('\n\n')
 
     return env

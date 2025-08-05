@@ -29,7 +29,7 @@ for skip in skiplist:
   sources = [f for f in sources if os.path.basename(str(f)) != skip]
 
 # filter test files using a regular expression
-if 'filtertests' in env:
+if 'filter_test' in env:
   import re
 
   pattern = re.compile(env['tests'])
@@ -52,14 +52,9 @@ this_file = inspect.currentframe().f_code.co_filename
 this_dir = os.path.dirname(this_file)
 env.Append(CPPPATH = [this_dir])
 
-if env['tests'] in ('standard', 'all'):
-  print('main tests')
-  tester = env.Program('tester', sources)
-
-if env['tests'] in ('external', 'all'):
-  print('only_external')
-  SConscript('external_libs/SConscript', exports='env')
-
-if env['tests'] in ('compile', 'all'):
-  print('only_compile')
-  SConscript('compile_tests/SConscript', exports='env')
+standard_test = env.Program(target='test', source=sources)
+env.Alias('standard_test', standard_test)
+Help('scons standard_test\n'
+     '    Builds standard unit tests from testing/*.cu\n')
+SConscript('external_libs/SConscript', exports='env')
+SConscript('compile_tests/SConscript', exports='env')

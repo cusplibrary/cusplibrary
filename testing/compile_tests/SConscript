@@ -73,5 +73,7 @@ for folder in folders:
 
 # and the file with main()
 sources.append('main.cu')
-tester = env.Program('tester', sources)
-
+compile_test = env.Program('test', sources)
+env.Alias('compile_test', compile_test)
+Help('scons compile_test\n'
+     '    Builds a test from testing/compile_test/main.cu\n')
