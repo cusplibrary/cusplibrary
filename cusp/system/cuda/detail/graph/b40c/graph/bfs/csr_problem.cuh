@@ -733,7 +733,7 @@ struct CsrProblem
 				-1,
 				graph_slices[gpu]->nodes);
 
-			if (retval = util::B40CPerror<0>(cudaThreadSynchronize(),
+			if (retval = util::B40CPerror<0>(cudaDeviceSynchronize(),
 				"MemsetKernel failed", __FILE__, __LINE__)) return retval;
 
 			// Initialize d_visited_mask elements to 0
@@ -743,7 +743,7 @@ struct CsrProblem
 				0,
 				visited_mask_elements);
 
-			if (retval = util::B40CPerror<0>(cudaThreadSynchronize(),
+			if (retval = util::B40CPerror<0>(cudaDeviceSynchronize(),
 				"MemsetKernel failed", __FILE__, __LINE__)) return retval;
 
 		}

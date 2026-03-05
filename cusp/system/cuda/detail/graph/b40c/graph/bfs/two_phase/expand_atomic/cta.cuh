@@ -55,6 +55,7 @@ namespace expand_atomic {
 /**
  * CTA tile-processing abstraction for BFS frontier expansion
  */
+#if CUDA_VERSION < 12000
 template <typename SizeT>
 struct RowOffsetTex
 {
@@ -62,6 +63,7 @@ struct RowOffsetTex
 };
 template <typename SizeT>
 texture<SizeT, cudaTextureType1D, cudaReadModeElementType> RowOffsetTex<SizeT>::ref;
+#endif
 
 template<typename SizeT, typename VertexId>
 struct Tex
@@ -72,6 +74,7 @@ struct Tex
   }
 };
 
+#if CUDA_VERSION < 12000
 template<typename VertexId>
 struct Tex<int, VertexId>
 {
@@ -80,6 +83,7 @@ struct Tex<int, VertexId>
      return tex1Dfetch(RowOffsetTex<int>::ref, row_id);
   }
 };
+#endif
 
 /**
  * Derivation of KernelPolicy that encapsulates tile-processing routines

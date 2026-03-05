@@ -56,6 +56,7 @@ namespace contract_atomic {
 /**
  * Templated texture reference for visited mask
  */
+#if CUDA_VERSION < 12000
 template <typename VisitedMask>
 struct BitmaskTex
 {
@@ -63,6 +64,7 @@ struct BitmaskTex
 };
 template <typename VisitedMask>
 texture<VisitedMask, cudaTextureType1D, cudaReadModeElementType> BitmaskTex<VisitedMask>::ref;
+#endif
 
 
 /**
@@ -187,9 +189,13 @@ struct Cta
 					VisitedMask mask_bit = 1 << (tile->vertex_id[LOAD][VEC] & 7);
 
 					// Read byte from from visited mask in tex
+#if CUDA_VERSION < 12000
 					VisitedMask tex_mask_byte = tex1Dfetch(
 						BitmaskTex<VisitedMask>::ref,
 						mask_byte_offset);
+#else
+					VisitedMask tex_mask_byte = cta->d_visited_mask[mask_byte_offset];
+#endif
 
 					if (mask_bit & tex_mask_byte) {
 
