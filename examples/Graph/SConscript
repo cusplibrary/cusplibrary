@@ -8,9 +8,16 @@ Import('env')
 # find all .cus & .cpps in the current and backend/ directories
 extensions = ['*.cu', '*.cpp']
 
+skiplist = ['breadth_first_search.cu',
+            'connected_components.cu',
+            'pseudo_peripheral.cu',
+            'symmetric_rcm.cu']
+
 for ext in extensions:
   regexp = os.path.join('.', ext)
   sources = env.Glob(regexp)
+
+  sources = [source for source in sources if str(source) not in skiplist]
 
   for source in sources:
     env.Program(source)
