@@ -168,6 +168,7 @@ protected:
             // Single-gpu graph slice
             typename CsrProblem::GraphSlice *graph_slice = csr_problem.graph_slices[0];
 
+#if CUDA_VERSION < 12000
             // Bind bitmask texture
             int bytes = (graph_slice->nodes + 8 - 1) / 8;
             cudaChannelFormatDesc bitmask_desc = cudaCreateChannelDesc<VisitedMask>();
@@ -206,6 +207,7 @@ protected:
                                               row_offsets_desc,
                                               (graph_slice->nodes + 1) * sizeof(SizeT)),
                                           "EnactorHybrid cudaBindTexture row_offset_tex_ref failed", __FILE__, __LINE__)) break;
+#endif
 
 
         } while (0);
@@ -252,7 +254,7 @@ public:
         VertexId &search_depth,
         double &avg_duty)
     {
-        cudaThreadSynchronize();
+        cudaDeviceSynchronize();
 
         total_queued = this->total_queued;
         search_depth = h_iteration - 1;
@@ -355,7 +357,7 @@ public:
                     fused_kernel_stats,
                     (VertexId *) d_iteration);
 
-                if (DEBUG && (retval = util::B40CPerror<0>(cudaThreadSynchronize(), "contract_expand_atomic::KernelGlobalBarrier failed ", __FILE__, __LINE__))) break;
+                if (DEBUG && (retval = util::B40CPerror<0>(cudaDeviceSynchronize(), "contract_expand_atomic::KernelGlobalBarrier failed ", __FILE__, __LINE__))) break;
                 cudaEventQuery(throttle_event);	// give host memory mapped visibility to GPU updates
 
                 // Retrieve output iteration
@@ -420,7 +422,7 @@ public:
                         graph_slice->frontier_elements[selector ^ 1],			// max vertex frontier vertices
                         this->filter_kernel_stats);
 
-                    if (DEBUG && (retval = util::B40CPerror<0>(cudaThreadSynchronize(), "filter_atomic::Kernel failed ", __FILE__, __LINE__))) break;
+                    if (DEBUG && (retval = util::B40CPerror<0>(cudaDeviceSynchronize(), "filter_atomic::Kernel failed ", __FILE__, __LINE__))) break;
                     cudaEventQuery(throttle_event);	// give host memory mapped visibility to GPU updates
 
                     queue_index++;
@@ -463,7 +465,7 @@ public:
                         graph_slice->frontier_elements[selector ^ 1],			// max out vertices
                         contract_kernel_stats);
 
-                    if (DEBUG && (retval = util::B40CPerror<0>(cudaThreadSynchronize(), "contract_atomic::Kernel failed ", __FILE__, __LINE__))) break;
+                    if (DEBUG && (retval = util::B40CPerror<0>(cudaDeviceSynchronize(), "contract_atomic::Kernel failed ", __FILE__, __LINE__))) break;
                     cudaEventQuery(throttle_event);	// give host memory mapped visibility to GPU updates
 
                     queue_index++;
@@ -511,7 +513,7 @@ public:
                         graph_slice->frontier_elements[selector ^ 1],		// max out vertices
                         expand_kernel_stats);
 
-                    if (DEBUG && (retval = util::B40CPerror<0>(cudaThreadSynchronize(), "expand_atomic::Kernel failed ", __FILE__, __LINE__))) break;
+                    if (DEBUG && (retval = util::B40CPerror<0>(cudaDeviceSynchronize(), "expand_atomic::Kernel failed ", __FILE__, __LINE__))) break;
                     cudaEventQuery(throttle_event);	// give host memory mapped visibility to GPU updates
 
                     queue_index++;

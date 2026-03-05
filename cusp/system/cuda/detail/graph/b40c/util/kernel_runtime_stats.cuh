@@ -229,7 +229,7 @@ public:
 				// Initialize to zero
 				util::MemsetKernel<unsigned long long><<<(grid_size + 128 - 1) / 128, 128>>>(
 					d_stat, 0, grid_size);
-				if (retval = util::B40CPerror<0>(cudaThreadSynchronize(),
+				if (retval = util::B40CPerror<0>(cudaDeviceSynchronize(),
 					"KernelRuntimeStatsLifetime MemsetKernel d_stat failed", __FILE__, __LINE__)) break;
 			}
 		} while (0);

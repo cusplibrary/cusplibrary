@@ -57,6 +57,7 @@ namespace contract_expand_atomic {
 /**
  * Templated texture reference for visited mask
  */
+#if CUDA_VERSION < 12000
 template <typename VisitedMask>
 struct BitmaskTex
 {
@@ -76,6 +77,7 @@ struct RowOffsetTex
 };
 template <typename SizeT>
 texture<SizeT, cudaTextureType1D, cudaReadModeElementType> RowOffsetTex<SizeT>::ref;
+#endif
 
 
 
