@@ -249,9 +249,9 @@ def environment(buildDir, includeDir):
                           allowed_values=('sm_20', 'sm_30', 'sm_50', 'sm_60')))
 
     # add a variable to handle warnings
-    Walldefault = 'false'
+    Walldefault = 'no'
     if os.name == 'posix':
-        Walldefault = 'true'
+        Walldefault = 'yes'
     vars.Add(BoolVariable('Wall',
                           help='Enable all compilation warnings',
                           default=Walldefault))
@@ -259,7 +259,7 @@ def environment(buildDir, includeDir):
     # add a variable to treat warnings as errors
     vars.Add(BoolVariable('Werror',
                           help='Treat warnings as errors',
-                          default=0))
+                          default='no'))
 
     # add a variable to filter source files by a regex
     vars.Add('filter_test',
@@ -409,6 +409,6 @@ def environment(buildDir, includeDir):
 
     # generate help text
     Help(vars.GenerateHelpText(env))
-    Help('\n\n')
+    Help('\n')
 
     return env

@@ -1,6 +1,5 @@
 import os
 import inspect
-import SCons
 
 # try to import an environment first
 Import('env')
