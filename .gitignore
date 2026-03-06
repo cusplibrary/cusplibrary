@@ -56,6 +56,7 @@ testing/*release
 
 # Ignore testing output
 testing/device_cuda_debug
+testing/device_omp_debug
 
 # Ignore build files
 #<AutoIgnore>
