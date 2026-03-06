@@ -1,0 +1,13 @@
+import os
+Import('env')
+
+env = env.Clone()
+env.Append(CPPPATH = [os.environ['HOME'] + '/.local/include'])
+env.Append(LIBPATH = [os.environ['HOME'] + '/.local/lib'])
+env.Append(LIBS = ['lapacke', 'openblas', 'cublas'])
+
+extensions = ['*.cu', '*.cpp']
+for ext in extensions:
+  regexp = os.path.join('.', ext)
+  for source in env.Glob(regexp):
+    env.Program(source)
