@@ -1,0 +1,14 @@
+import os
+
+try:
+  Import('env')
+except:
+  exec(open('../build/build_env.py').read())
+  env = environment('../build', '../')
+
+directories = [name for name in os.listdir('.') if os.path.isdir(name)]
+
+for dir in directories:
+  sconscript = dir + '/SConscript'
+  if os.path.exists(sconscript):
+    SConscript(sconscript, exports='env', duplicate=False)
