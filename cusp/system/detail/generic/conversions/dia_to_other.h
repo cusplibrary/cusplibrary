@@ -51,6 +51,23 @@ namespace detail
 namespace generic
 {
 
+template <typename IndexType, typename ValueType>
+struct is_valid_dia_entry
+{
+    // check that the column index is not out of bounds and value not zero
+    IndexType num_cols;
+
+    is_valid_dia_entry(IndexType num_cols) : num_cols(num_cols) {}
+
+    __host__ __device__
+    bool operator()(const thrust::tuple<IndexType, ValueType>& t) const
+    {
+        IndexType col = thrust::get<0>(t);
+        ValueType val = thrust::get<1>(t);
+        return col >= IndexType(0) && col < num_cols && val != ValueType(0);
+    }
+};
+
 template <typename DerivedPolicy, typename SourceType, typename DestinationType>
 void
 convert(thrust::execution_policy<DerivedPolicy>& exec,
@@ -94,13 +111,18 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     PermIndexIterator   perm_indices_begin(IndexIterator(0),   PermFunctor(src.values.num_rows, src.values.num_cols, src.values.pitch));
     PermValueIterator   perm_values_begin(src.values.values.begin(),  perm_indices_begin);
 
+    // copy_if filter if both value != 0 and column in [0, num_cols)
+    // The padding for incomplete diagonals should be excluded even if the value is non-zero
+    typedef thrust::zip_iterator<thrust::tuple<ColumnIndexIterator, PermValueIterator>> ColValIterator;
+    ColValIterator col_val_begin(thrust::make_tuple(column_indices_begin, perm_values_begin));
+
     thrust::copy_if
      (exec,
       thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, column_indices_begin, perm_values_begin)),
       thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, column_indices_begin, perm_values_begin)) + src.values.num_entries,
-      perm_values_begin,
+      col_val_begin,
       thrust::make_zip_iterator(thrust::make_tuple(dst.row_indices.begin(), dst.column_indices.begin(), dst.values.begin())),
-      thrust::placeholders::_1 != ValueType(0));
+      is_valid_dia_entry<IndexType, ValueType>((IndexType)src.num_cols));
 }
 
 template <typename DerivedPolicy, typename SourceType, typename DestinationType>
