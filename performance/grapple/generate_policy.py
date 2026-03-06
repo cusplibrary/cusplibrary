@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import os, sys, re, glob
 
@@ -6,7 +6,7 @@ from os.path import join, split, splitext
 
 def process_file(project_base_dir, fobj, filename, base_list, project_name) :
     enum_ids = [];
-    policy_tag_str = 'template\s*?<\s*?typename DerivedPolicy.*?>.*?;';
+    policy_tag_str = r'template\s*?<\s*?typename DerivedPolicy.*?>.*?;';
     inc_filename = filename.replace(project_base_dir + "/", "");
 
     with open(filename, "r") as fobj0:
@@ -27,11 +27,11 @@ def process_file(project_base_dir, fobj, filename, base_list, project_name) :
                 impl_file_list.extend([join(base_dir, "detail", splitext(base_file)[0] + "_if.inl")]);
 
             for impl_file in impl_file_list:
-                print "processing {}".format(impl_file);
+                print("processing {}".format(impl_file));
                 if os.path.isfile(impl_file):
                     with open(impl_file, "r") as fobj1:
 
-                        ext_policy_tag_str = 'template\s*?<\s*?typename DerivedPolicy.*?>.*?\{.*?\}';
+                        ext_policy_tag_str = r'template\s*?<\s*?typename DerivedPolicy.*?>.*?\{.*?\}';
                         text = fobj1.read();
                         output = re.findall(ext_policy_tag_str, text, re.DOTALL);
 
@@ -42,19 +42,19 @@ def process_file(project_base_dir, fobj, filename, base_list, project_name) :
                                 if '::execution_policy<' in routine :
                                     continue;
 
-                                name_search = re.search("using.*::(?P<name>\w+);", routine);
+                                name_search = re.search(r"using.*::(?P<name>\w+);", routine);
                                 if name_search :
                                     name = name_search.group("name")
                                 else :
                                     continue;
 
-                                routine = re.sub("typename\s*?DerivedPolicy,\s*?", "", routine);
-                                routine = re.sub("__host__\s*__device__", "", routine);
+                                routine = re.sub(r"typename\s*?DerivedPolicy,\s*?", "", routine);
+                                routine = re.sub(r"__host__\s*__device__", "", routine);
                                 routine = re.sub("const thrust::detail::execution_policy_base<DerivedPolicy>", "my_policy", routine);
-                                routine = re.sub("thrust::detail::derived_cast\(thrust::detail::strip_const\(exec\)\)",
+                                routine = re.sub(r"thrust::detail::derived_cast\(thrust::detail::strip_const\(exec\)\)",
                                                  "exec.get()" if name not in base_list else "exec.base()", routine);
 
-                                ret = re.search(r"template\s*?<.*?>\s*(?P<return_type>[\w\d,:<> ]+)\s*" + name + r"\s*?\(", routine, re.DOTALL);
+                                ret = re.search(r"template\s*?<.*?>\s*(?P<return_type>[\w\d,:<> ]+)\s*" + re.escape(name) + r"\s*?\(", routine, re.DOTALL);
                                 if not ret:
                                     raise ValueError("\n"+routine)
                                 return_type = ret.group("return_type").strip();
