@@ -44,7 +44,9 @@ if 'filter_test' in env:
 
 if 'single_test' in env:
   filename = env['single_test']+'.cu'
-  sources = ['testframework.cu', filename]
+  sources = ['testframework.cu']
+  if filename != 'testframework.cu':
+    sources.append(filename)
 
 # add the directory containing this file to the include path
 this_file = inspect.currentframe().f_code.co_filename
