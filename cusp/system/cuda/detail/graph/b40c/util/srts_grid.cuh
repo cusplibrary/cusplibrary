@@ -222,7 +222,7 @@ struct RakingGrid
 	 * its partial for raking reduction/scan into the first lane.  Positions in subsequent
 	 * lanes can be obtained via increments of LANE_STRIDE.
 	 */
-	static __host__ __device__ __forceinline__  LanePartial MyLanePartial(T *smem)
+	static _CCCL_HOST_DEVICE __forceinline__  LanePartial MyLanePartial(T *smem)
 	{
 		int row = threadIdx.x >> LOG_PARTIALS_PER_ROW;
 		int col = threadIdx.x & (PARTIALS_PER_ROW - 1);
@@ -235,7 +235,7 @@ struct RakingGrid
 	 * Returns the location in the smem grid where the calling thread can begin serial
 	 * raking/scanning
 	 */
-	static __host__ __device__ __forceinline__  RakingSegment MyRakingSegment(T *smem)
+	static _CCCL_HOST_DEVICE __forceinline__  RakingSegment MyRakingSegment(T *smem)
 	{
 		int row = threadIdx.x >> LOG_SEGS_PER_ROW;
 		int col = (threadIdx.x & (SEGS_PER_ROW - 1)) << LOG_PARTIALS_PER_SEG;
@@ -246,7 +246,7 @@ struct RakingGrid
 	/**
 	 * Displays configuration to standard out
 	 */
-	static __host__ __device__ __forceinline__ void Print()
+	static _CCCL_HOST_DEVICE __forceinline__ void Print()
 	{
 		printf("SCAN_LANES: %d\n"
 				"PARTIALS_PER_LANE: %d\n"

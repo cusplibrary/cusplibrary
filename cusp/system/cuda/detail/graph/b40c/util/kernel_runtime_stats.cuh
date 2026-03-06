@@ -76,7 +76,7 @@ public:
 	/**
 	 * Marks start time.  Typically called by thread-0.
 	 */
-	__device__ __forceinline__ void MarkStart()
+	_CCCL_DEVICE __forceinline__ void MarkStart()
 	{
 		start = clock();
 	}
@@ -84,7 +84,7 @@ public:
 	/**
 	 * Marks stop time.  Typically called by thread-0.
 	 */
-	__device__ __forceinline__ void MarkStop()
+	_CCCL_DEVICE __forceinline__ void MarkStop()
 	{
 		clock_t stop = clock();
 		clock_t runtime = (stop >= start) ?
@@ -98,7 +98,7 @@ public:
 	 * Typically called by thread-0.
 	 */
 	template <typename T>
-	__device__ __forceinline__ void Aggregate(T increment)
+	_CCCL_DEVICE __forceinline__ void Aggregate(T increment)
 	{
 		aggregate += increment;
 	}
@@ -106,7 +106,7 @@ public:
 	/**
 	 * Flushes statistics to global mem
 	 */
-	__device__ __forceinline__ void Flush()
+	_CCCL_DEVICE __forceinline__ void Flush()
 	{
 		if (d_stat != NULL) {
 			d_stat[blockIdx.x + (CLOCKS * gridDim.x)] = clocks;
@@ -117,7 +117,7 @@ public:
 	/**
 	 * Resets statistics. Typically called by thread-0.
 	 */
-	__device__ __forceinline__ void Reset() const
+	_CCCL_DEVICE __forceinline__ void Reset() const
 	{
 		if (d_stat != NULL) {
 			d_stat[blockIdx.x + (CLOCKS * gridDim.x)] = 0;

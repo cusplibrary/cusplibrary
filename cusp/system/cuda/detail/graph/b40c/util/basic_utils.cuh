@@ -66,14 +66,14 @@ namespace util {
  * Suppress warnings for unused constants
  */
 template <typename T>
-__host__ __device__ __forceinline__ void SuppressUnusedConstantWarning(const T) {}
+_CCCL_HOST_DEVICE __forceinline__ void SuppressUnusedConstantWarning(const T) {}
 
 
 /**
  * Perform a swap
  */
 template <typename T> 
-void __host__ __device__ __forceinline__ Swap(T &a, T &b) {
+void _CCCL_HOST_DEVICE __forceinline__ Swap(T &a, T &b) {
 	T temp = a;
 	a = b;
 	b = temp;
@@ -97,7 +97,7 @@ template <typename K, int magnitude, bool shift_left> struct MagnitudeShiftOp;
  * we force the issue earlier using structural template specialization.
  */
 template <typename K, int magnitude> 
-__device__ __forceinline__ K MagnitudeShift(K key)
+_CCCL_DEVICE __forceinline__ K MagnitudeShift(K key)
 {
 	return MagnitudeShiftOp<K, (magnitude > 0) ? magnitude : magnitude * -1, (magnitude > 0)>::Shift(key);
 }
@@ -105,7 +105,7 @@ __device__ __forceinline__ K MagnitudeShift(K key)
 template <typename K, int magnitude>
 struct MagnitudeShiftOp<K, magnitude, true>
 {
-	__device__ __forceinline__ static K Shift(K key)
+	_CCCL_DEVICE __forceinline__ static K Shift(K key)
 	{
 		return key << magnitude;
 	}
@@ -114,7 +114,7 @@ struct MagnitudeShiftOp<K, magnitude, true>
 template <typename K, int magnitude>
 struct MagnitudeShiftOp<K, magnitude, false>
 {
-	__device__ __forceinline__ static K Shift(K key)
+	_CCCL_DEVICE __forceinline__ static K Shift(K key)
 	{
 		return key >> magnitude;
 	}

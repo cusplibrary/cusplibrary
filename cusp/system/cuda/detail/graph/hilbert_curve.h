@@ -132,7 +132,7 @@ __constant__ static const unsigned int *s3d[] =
 struct hilbert_transform_2d
 {
     template<typename Tuple>
-    __device__
+    _CCCL_DEVICE
     double operator()(const Tuple& t) const
     {
         const double x = thrust::get<0>(t);
@@ -167,7 +167,7 @@ struct hilbert_transform_2d
 struct hilbert_transform_3d
 {
     template<typename Tuple>
-    __device__
+    _CCCL_DEVICE
     double operator()(const Tuple& t) const
     {
         const double x = thrust::get<0>(t);

@@ -172,7 +172,7 @@ struct KERNEL_ZB
     {}
 
     template <typename Tuple>
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     void operator()(Tuple t)
     {
         // compute \zeta_1^\sigma
@@ -202,7 +202,7 @@ struct KERNEL_A
     {}
 
     template <typename Tuple>
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     void operator()(Tuple t)
     {
         // compute \alpha_0^\sigma
@@ -219,7 +219,7 @@ struct KERNEL_W
     KERNEL_W(const ScalarType _beta_0) : beta_0(_beta_0) {}
 
     template <typename Tuple>
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     void operator()(Tuple t)
     {
         thrust::get<0>(t)=thrust::get<1>(t)+beta_0*thrust::get<2>(t);
@@ -237,7 +237,7 @@ struct KERNEL_S
     {}
 
     template <typename Tuple>
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     void operator()(Tuple t)
     {
         thrust::get<0>(t)=thrust::get<1>(t)
@@ -254,7 +254,7 @@ struct KERNEL_CHIRHO
     {}
 
     template <typename Tuple>
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     void operator()(Tuple t)
     {
         ScalarType den = ScalarType(1.0)+chi_0*thrust::get<3>(t);
@@ -303,7 +303,7 @@ struct KERNEL_XS
     {}
 
     template <typename Tuple>
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     void operator()(Tuple t)
     {
         int index = thrust::get<2>(t);
@@ -354,7 +354,7 @@ struct KERNEL_X
         raw_ptr_s_0_s(_raw_ptr_s_0_s)
     {}
 
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     ScalarType operator()(int index, ScalarType val)
     {
         unsigned int N_s = index / N;
@@ -382,7 +382,7 @@ struct KERNEL_P
         N(_N), alpha_0_s(_alpha_0_s), z_1_s(_z_1_s), r_0(_r_0)
     {}
 
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     ScalarType operator()(int index, ScalarType val)
     {
         unsigned int N_s = index / N;
@@ -404,7 +404,7 @@ struct KERNEL_VCOPY
         N_t(_N_t), source(_source)
     {}
 
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     ScalarType operator()(int index)
     {
         unsigned int N   = index % N_t;

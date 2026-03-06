@@ -71,15 +71,15 @@ struct ModifiedStore
 	 * Store operation we will provide specializations for
 	 */
 	template <typename T>
-	__device__ __forceinline__ static void St(T val, T *ptr);
+	_CCCL_DEVICE __forceinline__ static void St(T val, T *ptr);
 
 	/**
 	 * Vec-4 stores for 64-bit types are implemented as two vec-2 stores
 	 */
 #if CUDA_VERSION >= 12000
-	__device__ __forceinline__ static void St(double4_16a val, double4_16a* ptr)
+	_CCCL_DEVICE __forceinline__ static void St(double4_16a val, double4_16a* ptr)
 #else
-	__device__ __forceinline__ static void St(double4 val, double4* ptr)
+	_CCCL_DEVICE __forceinline__ static void St(double4 val, double4* ptr)
 #endif
 	{
 		ModifiedStore<CACHE_MODIFIER>::St(*reinterpret_cast<double2*>(&val.x), reinterpret_cast<double2*>(ptr));
@@ -87,9 +87,9 @@ struct ModifiedStore
 	}
 
 #if CUDA_VERSION >= 12000
-	__device__ __forceinline__ static void St(ulonglong4_16a val, ulonglong4_16a* ptr)
+	_CCCL_DEVICE __forceinline__ static void St(ulonglong4_16a val, ulonglong4_16a* ptr)
 #else
-	__device__ __forceinline__ static void St(ulonglong4 val, ulonglong4* ptr)
+	_CCCL_DEVICE __forceinline__ static void St(ulonglong4 val, ulonglong4* ptr)
 #endif
 	{
 		ModifiedStore<CACHE_MODIFIER>::St(*reinterpret_cast<ulonglong2*>(&val.x), reinterpret_cast<ulonglong2*>(ptr));
@@ -97,9 +97,9 @@ struct ModifiedStore
 	}
 
 #if CUDA_VERSION >= 12000
-	__device__ __forceinline__ static void St(longlong4_16a val, longlong4_16a* ptr)
+	_CCCL_DEVICE __forceinline__ static void St(longlong4_16a val, longlong4_16a* ptr)
 #else
-	__device__ __forceinline__ static void St(longlong4 val, longlong4* ptr)
+	_CCCL_DEVICE __forceinline__ static void St(longlong4 val, longlong4* ptr)
 #endif
 	{
 		ModifiedStore<CACHE_MODIFIER>::St(*reinterpret_cast<longlong2*>(&val.x), reinterpret_cast<longlong2*>(ptr));
@@ -116,7 +116,7 @@ struct ModifiedStore
 	 */
 	template <>
 	template <typename T>
-	__device__ __forceinline__ void ModifiedStore<st::NONE>::St(T val, T *ptr)
+	_CCCL_DEVICE __forceinline__ void ModifiedStore<st::NONE>::St(T val, T *ptr)
 	{
 		*ptr = val;
 	}
@@ -251,7 +251,7 @@ struct ModifiedStore
 
 	template <st::CacheModifier WRITE_MODIFIER>
 	template <typename T>
-	__device__ __forceinline__ void ModifiedStore<WRITE_MODIFIER>::St(T val, T *ptr)
+	_CCCL_DEVICE __forceinline__ void ModifiedStore<WRITE_MODIFIER>::St(T val, T *ptr)
 	{
 		*ptr = val;
 	}

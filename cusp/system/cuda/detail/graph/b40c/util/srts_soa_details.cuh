@@ -119,7 +119,7 @@ struct RakingSoaDetails<
 	/**
 	 * Constructor
 	 */
-	__host__ __device__ __forceinline__ RakingSoaDetails(
+	_CCCL_HOST_DEVICE __forceinline__ RakingSoaDetails(
 		GridStorageSoa smem_pools,
 		WarpscanSoa warpscan_partials) :
 
@@ -141,7 +141,7 @@ struct RakingSoaDetails<
 	/**
 	 * Constructor
 	 */
-	__host__ __device__ __forceinline__ RakingSoaDetails(
+	_CCCL_HOST_DEVICE __forceinline__ RakingSoaDetails(
 		GridStorageSoa smem_pools,
 		WarpscanSoa warpscan_partials,
 		TileTuple soa_tuple_identity) :
@@ -167,7 +167,7 @@ struct RakingSoaDetails<
 	/**
 	 * Return the cumulative partial left in the final warpscan cell
 	 */
-	__device__ __forceinline__ TileTuple CumulativePartial()
+	_CCCL_DEVICE __forceinline__ TileTuple CumulativePartial()
 	{
 		TileTuple retval;
 		warpscan_partials.Get(retval, 1, CUMULATIVE_THREAD);
@@ -240,7 +240,7 @@ struct RakingSoaDetails<
 	/**
 	 * Constructor
 	 */
-	__host__ __device__ __forceinline__ RakingSoaDetails(
+	_CCCL_HOST_DEVICE __forceinline__ RakingSoaDetails(
 		GridStorageSoa smem_pools,
 		WarpscanSoa warpscan_partials) :
 
@@ -266,7 +266,7 @@ struct RakingSoaDetails<
 	/**
 	 * Constructor
 	 */
-	__host__ __device__ __forceinline__ RakingSoaDetails(
+	_CCCL_HOST_DEVICE __forceinline__ RakingSoaDetails(
 		GridStorageSoa smem_pools,
 		WarpscanSoa warpscan_partials,
 		TileTuple soa_tuple_identity) :
@@ -293,7 +293,7 @@ struct RakingSoaDetails<
 	/**
 	 * Return the cumulative partial left in the final warpscan cell
 	 */
-	__device__ __forceinline__ TileTuple CumulativePartial()
+	_CCCL_DEVICE __forceinline__ TileTuple CumulativePartial()
 	{
 		return secondary_details.CumulativePartial();
 	}

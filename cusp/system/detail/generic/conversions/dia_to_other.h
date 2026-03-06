@@ -59,7 +59,7 @@ struct is_valid_dia_entry
 
     is_valid_dia_entry(IndexType num_cols) : num_cols(num_cols) {}
 
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     bool operator()(const thrust::tuple<IndexType, ValueType>& t) const
     {
         IndexType col = thrust::get<0>(t);

@@ -114,7 +114,7 @@ struct TexVector
     /**
      * Load
      */
-    static __device__ __forceinline__ ValueType Load(int offset)
+    static _CCCL_DEVICE __forceinline__ ValueType Load(int offset)
     {
         ValueType output;
         reinterpret_cast<typename TexVector<ValueType>::CastType &>(output) = tex1Dfetch(TexVector<ValueType>::ref, offset);
@@ -181,7 +181,7 @@ struct ReduceByKeyOp
 {
     BinaryFunction reduce_op;
 
-    __device__ __forceinline__ PartialType operator()(
+    _CCCL_DEVICE __forceinline__ PartialType operator()(
         const PartialType &first,
         const PartialType &second)
     {
@@ -210,7 +210,7 @@ struct BlockPrefixCallbackOp
     /**
      * Returns the block-wide running_prefix in thread-0
      */
-    __device__ __forceinline__ PartialProduct operator()(
+    _CCCL_DEVICE __forceinline__ PartialProduct operator()(
         const PartialProduct &block_aggregate)              ///< The aggregate sum of the BlockScan inputs
     {
         PartialProduct retval = running_prefix;
@@ -227,7 +227,7 @@ struct NewRowOp
 {
     /// Returns true if row_b is the start of a new row
     template <typename IndexType>
-    __device__ __forceinline__ bool operator()(
+    _CCCL_DEVICE __forceinline__ bool operator()(
         const IndexType& row_a,
         const IndexType& row_b)
     {
@@ -337,7 +337,7 @@ struct PersistentBlockSpmv
     /**
      * Constructor
      */
-    __device__ __forceinline__
+    _CCCL_DEVICE __forceinline__
     PersistentBlockSpmv(
         TempStorage                 &temp_storage,
         RowIterator                 d_rows,
@@ -388,7 +388,7 @@ struct PersistentBlockSpmv
      * Processes a COO input tile of edges, outputting dot products for each row
      */
     template <bool FULL_TILE>
-    __device__ __forceinline__ void ProcessTile(
+    _CCCL_DEVICE __forceinline__ void ProcessTile(
         int block_offset,
         int guarded_items = 0)
     {
@@ -491,7 +491,7 @@ struct PersistentBlockSpmv
     /**
      * Iterate over input tiles belonging to this thread block
      */
-    __device__ __forceinline__
+    _CCCL_DEVICE __forceinline__
     void ProcessTiles()
     {
         // Process full tiles
@@ -617,7 +617,7 @@ struct FinalizeSpmvBlock
     /**
      * Constructor
      */
-    __device__ __forceinline__
+    _CCCL_DEVICE __forceinline__
     FinalizeSpmvBlock(
         TempStorage                 &temp_storage,
         ValueIterator               d_result,
@@ -651,7 +651,7 @@ struct FinalizeSpmvBlock
      * Processes a COO input tile of edges, outputting dot products for each row
      */
     template <bool FULL_TILE>
-    __device__ __forceinline__
+    _CCCL_DEVICE __forceinline__
     void ProcessTile(
         int block_offset,
         int guarded_items = 0)
@@ -724,7 +724,7 @@ struct FinalizeSpmvBlock
     /**
      * Iterate over input tiles belonging to this thread block
      */
-    __device__ __forceinline__
+    _CCCL_DEVICE __forceinline__
     void ProcessTiles()
     {
         // Process full tiles

@@ -46,7 +46,7 @@ namespace generic
 template<typename T>
 struct not_zero
 {
-    __host__ __device__ bool operator()(const T v)
+    _CCCL_HOST_DEVICE bool operator()(const T v)
     {
         return v != T(0);
     }

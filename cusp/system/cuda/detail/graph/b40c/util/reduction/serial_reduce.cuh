@@ -55,7 +55,7 @@ struct SerialReduce
 	struct Iterate
 	{
 		template <typename T, typename ReductionOp>
-		static __device__ __forceinline__ T Invoke(T *partials, ReductionOp reduction_op)
+		static _CCCL_DEVICE __forceinline__ T Invoke(T *partials, ReductionOp reduction_op)
 		{
 			T a = Iterate<COUNT - 2, TOTAL>::Invoke(partials, reduction_op);
 			T b = partials[TOTAL - COUNT];
@@ -72,7 +72,7 @@ struct SerialReduce
 	struct Iterate<2, TOTAL>
 	{
 		template <typename T, typename ReductionOp>
-		static __device__ __forceinline__ T Invoke(T *partials, ReductionOp reduction_op)
+		static _CCCL_DEVICE __forceinline__ T Invoke(T *partials, ReductionOp reduction_op)
 		{
 			return reduction_op(partials[TOTAL - 2], partials[TOTAL - 1]);
 		}
@@ -83,7 +83,7 @@ struct SerialReduce
 	struct Iterate<1, TOTAL>
 	{
 		template <typename T, typename ReductionOp>
-		static __device__ __forceinline__ T Invoke(T *partials, ReductionOp reduction_op)
+		static _CCCL_DEVICE __forceinline__ T Invoke(T *partials, ReductionOp reduction_op)
 		{
 			return partials[TOTAL - 1];
 		}
@@ -97,7 +97,7 @@ struct SerialReduce
 	 * Serial reduction with the specified operator
 	 */
 	template <typename T, typename ReductionOp>
-	static __device__ __forceinline__ T Invoke(
+	static _CCCL_DEVICE __forceinline__ T Invoke(
 		T *partials,
 		ReductionOp reduction_op)
 	{
@@ -109,7 +109,7 @@ struct SerialReduce
 	 * Serial reduction with the addition operator
 	 */
 	template <typename T>
-	static __device__ __forceinline__ T Invoke(
+	static _CCCL_DEVICE __forceinline__ T Invoke(
 		T *partials)
 	{
 		Sum<T> reduction_op;
@@ -122,7 +122,7 @@ struct SerialReduce
 	 * given exclusive partial
 	 */
 	template <typename T, typename ReductionOp>
-	static __device__ __forceinline__ T Invoke(
+	static _CCCL_DEVICE __forceinline__ T Invoke(
 		T *partials,
 		T exclusive_partial,
 		ReductionOp reduction_op)
@@ -137,7 +137,7 @@ struct SerialReduce
 	 * given exclusive partial
 	 */
 	template <typename T, typename ReductionOp>
-	static __device__ __forceinline__ T Invoke(
+	static _CCCL_DEVICE __forceinline__ T Invoke(
 		T *partials,
 		T exclusive_partial)
 	{

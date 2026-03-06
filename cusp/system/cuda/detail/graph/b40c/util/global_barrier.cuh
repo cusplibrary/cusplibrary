@@ -61,7 +61,7 @@ protected :
 	/**
 	 * Simple wrapper for returning a CG-loaded SyncFlag at the specified pointer
 	 */
-	__device__ __forceinline__ SyncFlag LoadCG(SyncFlag* d_ptr) const
+	_CCCL_DEVICE __forceinline__ SyncFlag LoadCG(SyncFlag* d_ptr) const
 	{
 		SyncFlag retval;
 		util::io::ModifiedLoad<util::io::ld::cg>::Ld(retval, d_ptr);
@@ -79,7 +79,7 @@ public:
 	/**
 	 * Synchronize
 	 */
-	__device__ __forceinline__ void Sync() const
+	_CCCL_DEVICE __forceinline__ void Sync() const
 	{
         volatile SyncFlag *d_vol_sync = d_sync;
 

@@ -46,7 +46,7 @@ struct par_t : public cusp::system::cuda::detail::execution_policy<par_t>
     return thrust::detail::execute_with_allocator<Allocator, cusp::system::cuda::detail::execution_policy>(alloc);
   }
 
-  __host__ __device__
+  _CCCL_HOST_DEVICE
   inline cublas::execute_with_cublas with(const cublasHandle_t &handle) const
   {
     return cublas::execute_with_cublas(handle);
@@ -57,7 +57,7 @@ struct par_t : public cusp::system::cuda::detail::execution_policy<par_t>
 
 // cpp interop
 template<typename System1, typename System2>
-inline __host__ __device__
+inline _CCCL_HOST_DEVICE
 #if THRUST_VERSION >= 100900
 thrust::cuda_cub::cross_system<System1,System2>
 #else
@@ -77,7 +77,7 @@ select_system(const execution_policy<System1> &system1, const cusp::cpp::executi
 }
 
 template<typename System1, typename System2>
-inline __host__ __device__
+inline _CCCL_HOST_DEVICE
 #if THRUST_VERSION >= 100900
 thrust::cuda_cub::cross_system<System1,System2>
 #else
@@ -97,7 +97,7 @@ select_system(const cusp::cpp::execution_policy<System1> &system1, const executi
 }
 
 template<typename System>
-inline __host__ __device__
+inline _CCCL_HOST_DEVICE
 typename thrust::detail::disable_if<std::is_convertible<thrust::any_system_tag,System>::value,execution_policy<System> &>::type
 // execution_policy<System>
 select_system(const execution_policy<System> &system, const par_t &)
@@ -106,7 +106,7 @@ select_system(const execution_policy<System> &system, const par_t &)
 }
 
 // template<typename System>
-// inline __host__ __device__
+// inline _CCCL_HOST_DEVICE
 // thrust::execution_policy<System>
 // select_system(const thrust::execution_policy<par_t>&, const thrust::execution_policy<System> &system)
 // {
@@ -114,7 +114,7 @@ select_system(const execution_policy<System> &system, const par_t &)
 // }
 
 // template<typename System>
-// inline __host__ __device__
+// inline _CCCL_HOST_DEVICE
 // cusp::system::cuda::detail::execution_policy<System>
 // select_system(const par_t&, const cusp::cuda::execution_policy<System> &system)
 // {

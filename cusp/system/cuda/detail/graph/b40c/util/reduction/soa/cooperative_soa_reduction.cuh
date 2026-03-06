@@ -72,7 +72,7 @@ struct CooperativeSoaTileReduction
 			typename RakingSoaDetails,
 			typename TileSoa,
 			typename ReductionOp>
-		static __device__ __forceinline__ void Invoke(
+		static _CCCL_DEVICE __forceinline__ void Invoke(
 			RakingSoaDetails raking_soa_details,
 			TileSoa tile_soa,
 			ReductionOp reduction_op)
@@ -99,7 +99,7 @@ struct CooperativeSoaTileReduction
 			typename RakingSoaDetails,
 			typename TileSoa,
 			typename ReductionOp>
-		static __device__ __forceinline__ void Invoke(
+		static _CCCL_DEVICE __forceinline__ void Invoke(
 			RakingSoaDetails raking_soa_details,
 			TileSoa tile_soa,
 			ReductionOp reduction_op) {}
@@ -122,7 +122,7 @@ struct CooperativeSoaTileReduction
 		typename TileSoa,
 		typename TileTuple,
 		typename ReductionOp>
-	static __device__ __forceinline__ void ReduceTileWithCarry(
+	static _CCCL_DEVICE __forceinline__ void ReduceTileWithCarry(
 		RakingSoaDetails raking_soa_details,
 		TileSoa tile_soa,
 		TileTuple &carry,
@@ -148,7 +148,7 @@ struct CooperativeSoaTileReduction
 		typename RakingSoaDetails,
 		typename TileSoa,
 		typename ReductionOp>
-	static __device__ __forceinline__ void ReduceTile(
+	static _CCCL_DEVICE __forceinline__ void ReduceTile(
 		TileTuple &retval,
 		RakingSoaDetails raking_soa_details,
 		TileSoa tile_soa,
@@ -187,7 +187,7 @@ struct CooperativeSoaGridReduction<RakingSoaDetails, NullType>
 	template <
 		bool REDUCE_INTO_CARRY,
 		typename ReductionOp>
-	static __device__ __forceinline__ void ReduceTileWithCarry(
+	static _CCCL_DEVICE __forceinline__ void ReduceTileWithCarry(
 		RakingSoaDetails raking_soa_details,
 		TileTuple &carry,
 		ReductionOp reduction_op)
@@ -226,7 +226,7 @@ struct CooperativeSoaGridReduction<RakingSoaDetails, NullType>
 	 * Reduction in last-level raking grid.  Result is computed in all threads.
 	 */
 	template <typename ReductionOp>
-	static __device__ __forceinline__ TileTuple ReduceTile(
+	static _CCCL_DEVICE __forceinline__ TileTuple ReduceTile(
 		RakingSoaDetails raking_soa_details,
 		ReductionOp reduction_op)
 	{

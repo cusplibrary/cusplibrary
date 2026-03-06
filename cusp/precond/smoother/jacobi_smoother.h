@@ -41,7 +41,7 @@ struct jacobi_presmooth_functor
 
     jacobi_presmooth_functor(ValueType omega) : omega(omega) {}
 
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     ValueType operator()(const ValueType& b, const ValueType& d) const
     {
         return omega * b / d;

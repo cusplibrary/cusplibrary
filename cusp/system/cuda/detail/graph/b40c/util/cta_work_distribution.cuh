@@ -53,12 +53,12 @@ struct CtaWorkLimits
 	/**
 	 * Constructor
 	 */
-	__host__ __device__ __forceinline__ CtaWorkLimits() {}
+	_CCCL_HOST_DEVICE __forceinline__ CtaWorkLimits() {}
 
 	/**
 	 * Constructor
 	 */
-	__host__ __device__ __forceinline__ CtaWorkLimits(
+	_CCCL_HOST_DEVICE __forceinline__ CtaWorkLimits(
 		SizeT 	offset,
 		SizeT 	elements,
 		SizeT 	guarded_offset,
@@ -97,7 +97,7 @@ struct CtaWorkDistribution
 	 * Initializer
 	 */
 	template <int LOG_SCHEDULE_GRANULARITY>
-	__host__ __device__ __forceinline__ void Init(
+	_CCCL_HOST_DEVICE __forceinline__ void Init(
 		SizeT num_elements,
 		int grid_size)
 	{
@@ -113,7 +113,7 @@ struct CtaWorkDistribution
 	/**
 	 * Initializer
 	 */
-	__host__ __device__ __forceinline__ void Init(
+	_CCCL_HOST_DEVICE __forceinline__ void Init(
 		SizeT num_elements,
 		int grid_size,
 		int log_schedule_granularity)
@@ -134,7 +134,7 @@ struct CtaWorkDistribution
 	template <
 		int LOG_TILE_ELEMENTS,			// CTA tile size, i.e., granularity by which the CTA processes work
 		int LOG_SCHEDULE_GRANULARITY>	// Problem granularity by which work is distributed amongst CTA threadblocks
-	__host__ __device__ __forceinline__ void GetCtaWorkLimits(
+	_CCCL_HOST_DEVICE __forceinline__ void GetCtaWorkLimits(
 		CtaWorkLimits<SizeT> &work_limits)	// Out param
 	{
 		const int TILE_ELEMENTS 				= 1 << LOG_TILE_ELEMENTS;

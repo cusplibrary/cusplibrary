@@ -144,7 +144,7 @@ struct Cta
 			/**
 			 * InitFlags
 			 */
-			static __device__ __forceinline__ void InitFlags(Tile *tile)
+			static _CCCL_DEVICE __forceinline__ void InitFlags(Tile *tile)
 			{
 				// Initially valid if vertex-id is valid
 				tile->flags[LOAD][VEC] = (tile->vertex_id[LOAD][VEC] == -1) ? 0 : 1;
@@ -157,7 +157,7 @@ struct Cta
 			/**
 			 * BitmaskCull
 			 */
-			static __device__ __forceinline__ void BitmaskCull(
+			static _CCCL_DEVICE __forceinline__ void BitmaskCull(
 				Cta *cta,
 				Tile *tile)
 			{
@@ -220,13 +220,13 @@ struct Cta
 		struct Iterate<LOAD, LOAD_VEC_SIZE, dummy>
 		{
 			// InitFlags
-			static __device__ __forceinline__ void InitFlags(Tile *tile)
+			static _CCCL_DEVICE __forceinline__ void InitFlags(Tile *tile)
 			{
 				Iterate<LOAD + 1, 0>::InitFlags(tile);
 			}
 
 			// BitmaskCull
-			static __device__ __forceinline__ void BitmaskCull(Cta *cta, Tile *tile)
+			static _CCCL_DEVICE __forceinline__ void BitmaskCull(Cta *cta, Tile *tile)
 			{
 				Iterate<LOAD + 1, 0>::BitmaskCull(cta, tile);
 			}
@@ -240,10 +240,10 @@ struct Cta
 		struct Iterate<LOADS_PER_TILE, 0, dummy>
 		{
 			// InitFlags
-			static __device__ __forceinline__ void InitFlags(Tile *tile) {}
+			static _CCCL_DEVICE __forceinline__ void InitFlags(Tile *tile) {}
 
 			// BitmaskCull
-			static __device__ __forceinline__ void BitmaskCull(Cta *cta, Tile *tile) {}
+			static _CCCL_DEVICE __forceinline__ void BitmaskCull(Cta *cta, Tile *tile) {}
 		};
 
 
@@ -254,7 +254,7 @@ struct Cta
 		/**
 		 * Initializer
 		 */
-		__device__ __forceinline__ void InitFlags()
+		_CCCL_DEVICE __forceinline__ void InitFlags()
 		{
 			Iterate<0, 0>::InitFlags(this);
 		}
@@ -263,7 +263,7 @@ struct Cta
 		 * Culls vertices based upon whether or not we've set a bit for them
 		 * in the d_visited_mask bitmask
 		 */
-		__device__ __forceinline__ void BitmaskCull(Cta *cta)
+		_CCCL_DEVICE __forceinline__ void BitmaskCull(Cta *cta)
 		{
 			Iterate<0, 0>::BitmaskCull(cta, this);
 		}
@@ -280,7 +280,7 @@ struct Cta
 	/**
 	 * Constructor
 	 */
-	__device__ __forceinline__ Cta(
+	_CCCL_DEVICE __forceinline__ Cta(
 		VertexId 				queue_index,
 		SmemStorage 			&smem_storage,
 		VertexId 				*d_in,
@@ -311,7 +311,7 @@ struct Cta
 	/**
 	 * Process a single, full tile
 	 */
-	__device__ __forceinline__ void ProcessTile(
+	_CCCL_DEVICE __forceinline__ void ProcessTile(
 		SizeT cta_offset,
 		const SizeT &guarded_elements = KernelPolicy::TILE_ELEMENTS)
 	{

@@ -44,7 +44,7 @@ namespace util {
 /**
  * Terminates the calling thread
  */
-__device__ __forceinline__ void ThreadExit() {
+_CCCL_DEVICE __forceinline__ void ThreadExit() {
 	asm("exit;");
 }	
 
@@ -52,7 +52,7 @@ __device__ __forceinline__ void ThreadExit() {
 /**
  * Returns the warp lane ID of the calling thread
  */
-__device__ __forceinline__ unsigned int LaneId()
+_CCCL_DEVICE __forceinline__ unsigned int LaneId()
 {
 	unsigned int ret;
 	asm("mov.u32 %0, %laneid;" : "=r"(ret) );
@@ -63,7 +63,7 @@ __device__ __forceinline__ unsigned int LaneId()
 /**
  * The best way to multiply integers (24 effective bits or less)
  */
-__device__ __forceinline__ unsigned int FastMul(unsigned int a, unsigned int b)
+_CCCL_DEVICE __forceinline__ unsigned int FastMul(unsigned int a, unsigned int b)
 {
 #if __CUDA_ARCH__ >= 200
 	return a * b;
@@ -76,7 +76,7 @@ __device__ __forceinline__ unsigned int FastMul(unsigned int a, unsigned int b)
 /**
  * The best way to multiply integers (24 effective bits or less)
  */
-__device__ __forceinline__ int FastMul(int a, int b)
+_CCCL_DEVICE __forceinline__ int FastMul(int a, int b)
 {
 #if __CUDA_ARCH__ >= 200
 	return a * b;
@@ -90,7 +90,7 @@ __device__ __forceinline__ int FastMul(int a, int b)
  * The best way to tally a warp-vote
  */
 template <int LOG_ACTIVE_WARPS, int LOG_ACTIVE_THREADS>
-__device__ __forceinline__ int TallyWarpVote(int predicate)
+_CCCL_DEVICE __forceinline__ int TallyWarpVote(int predicate)
 {
 #if __CUDA_ARCH__ >= 200
 	return __popc(__ballot_sync(predicate));
@@ -112,7 +112,7 @@ __device__ __forceinline__ int TallyWarpVote(int predicate)
  * The best way to tally a warp-vote in the first warp
  */
 template <int LOG_ACTIVE_THREADS>
-__device__ __forceinline__ int TallyWarpVote(
+_CCCL_DEVICE __forceinline__ int TallyWarpVote(
 	int predicate,
 	volatile int storage[2][1 << LOG_ACTIVE_THREADS])
 {
@@ -130,7 +130,7 @@ __device__ __forceinline__ int TallyWarpVote(
  * The best way to warp-vote-all
  */
 template <int LOG_ACTIVE_WARPS, int LOG_ACTIVE_THREADS>
-__device__ __forceinline__ int WarpVoteAll(int predicate)
+_CCCL_DEVICE __forceinline__ int WarpVoteAll(int predicate)
 {
 #if __CUDA_ARCH__ >= 120
 	return __all_sync(predicate);
@@ -145,7 +145,7 @@ __device__ __forceinline__ int WarpVoteAll(int predicate)
  * The best way to warp-vote-all in the first warp
  */
 template <int LOG_ACTIVE_THREADS>
-__device__ __forceinline__ int WarpVoteAll(int predicate)
+_CCCL_DEVICE __forceinline__ int WarpVoteAll(int predicate)
 {
 #if __CUDA_ARCH__ >= 120
 	return __all_sync(predicate);
@@ -161,7 +161,7 @@ __device__ __forceinline__ int WarpVoteAll(int predicate)
  * The best way to warp-vote-any
  */
 template <int LOG_ACTIVE_WARPS, int LOG_ACTIVE_THREADS>
-__device__ __forceinline__ int WarpVoteAny(int predicate)
+_CCCL_DEVICE __forceinline__ int WarpVoteAny(int predicate)
 {
 #if __CUDA_ARCH__ >= 120
 	return __any_sync(predicate);
@@ -175,7 +175,7 @@ __device__ __forceinline__ int WarpVoteAny(int predicate)
  * The best way to warp-vote-any in the first warp
  */
 template <int LOG_ACTIVE_THREADS>
-__device__ __forceinline__ int WarpVoteAny(int predicate)
+_CCCL_DEVICE __forceinline__ int WarpVoteAny(int predicate)
 {
 #if __CUDA_ARCH__ >= 120
 	return __any_sync(predicate);
@@ -197,7 +197,7 @@ struct AtomicInt;
 template <typename T>
 struct AtomicInt<T, 4>
 {
-	static __device__ __forceinline__ T Add(T* ptr, T val)
+	static _CCCL_DEVICE __forceinline__ T Add(T* ptr, T val)
 	{
 		return atomicAdd((unsigned int *) ptr, (unsigned int) val);
 	}
@@ -206,7 +206,7 @@ struct AtomicInt<T, 4>
 template <typename T>
 struct AtomicInt<T, 8>
 {
-	static __device__ __forceinline__ T Add(T* ptr, T val)
+	static _CCCL_DEVICE __forceinline__ T Add(T* ptr, T val)
 	{
 		return atomicAdd((unsigned long long int *) ptr, (unsigned long long int) val);
 	}

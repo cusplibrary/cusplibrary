@@ -103,7 +103,7 @@ public:
 	 * thread-(COUNTERS - 1)
 	 */
 	template <typename SizeT>
-	__device__ __forceinline__ void Reset()
+	_CCCL_DEVICE __forceinline__ void Reset()
 	{
 		SizeT reset_val = 0;
 		util::io::ModifiedStore<util::io::st::cg>::St(
@@ -120,7 +120,7 @@ public:
 	 * Typically called by thread-0
 	 */
 	template <typename SizeT>
-	__device__ __forceinline__ SizeT Steal(int count)
+	_CCCL_DEVICE __forceinline__ SizeT Steal(int count)
 	{
 		SizeT* d_steal_counters = ((SizeT*) d_counters) + QUEUE_COUNTERS;
 		return util::AtomicInt<SizeT>::Add(d_steal_counters + progress_selector, count);
@@ -132,7 +132,7 @@ public:
 	 * Typically called by thread-0
 	 */
 	template <typename SizeT, typename IterationT>
-	__device__ __forceinline__ SizeT Steal(int count, IterationT iteration)
+	_CCCL_DEVICE __forceinline__ SizeT Steal(int count, IterationT iteration)
 	{
 		SizeT* d_steal_counters = ((SizeT*) d_counters) + QUEUE_COUNTERS;
 		return util::AtomicInt<SizeT>::Add(d_steal_counters + (iteration & 1), count);
@@ -143,7 +143,7 @@ public:
 	 * pass.  Typically called by thread-0 in block-0.
 	 */
 	template <typename SizeT>
-	__device__ __forceinline__ void PrepResetSteal()
+	_CCCL_DEVICE __forceinline__ void PrepResetSteal()
 	{
 		SizeT 	reset_val = 0;
 		SizeT* 	d_steal_counters = ((SizeT*) d_counters) + QUEUE_COUNTERS;
@@ -156,7 +156,7 @@ public:
 	 * Typically called by thread-0 in block-0.
 	 */
 	template <typename SizeT, typename IterationT>
-	__device__ __forceinline__ void PrepResetSteal(IterationT iteration)
+	_CCCL_DEVICE __forceinline__ void PrepResetSteal(IterationT iteration)
 	{
 		SizeT 	reset_val = 0;
 		SizeT* 	d_steal_counters = ((SizeT*) d_counters) + QUEUE_COUNTERS;
@@ -173,7 +173,7 @@ public:
 	 * Get counter for specified iteration
 	 */
 	template <typename SizeT, typename IterationT>
-	__device__ __forceinline__ SizeT* GetQueueCounter(IterationT iteration)
+	_CCCL_DEVICE __forceinline__ SizeT* GetQueueCounter(IterationT iteration)
 	{
 		return ((SizeT*) d_counters) + (iteration & 3);
 	}
@@ -182,7 +182,7 @@ public:
 	 * Load work queue length for specified iteration
 	 */
 	template <typename SizeT, typename IterationT>
-	__device__ __forceinline__ SizeT LoadQueueLength(IterationT iteration)
+	_CCCL_DEVICE __forceinline__ SizeT LoadQueueLength(IterationT iteration)
 	{
 		SizeT queue_length;
 		util::io::ModifiedLoad<util::io::ld::cg>::Ld(
@@ -194,7 +194,7 @@ public:
 	 * Store work queue length for specified iteration
 	 */
 	template <typename SizeT, typename IterationT>
-	__device__ __forceinline__ void StoreQueueLength(SizeT queue_length, IterationT iteration)
+	_CCCL_DEVICE __forceinline__ void StoreQueueLength(SizeT queue_length, IterationT iteration)
 	{
 		util::io::ModifiedStore<util::io::st::cg>::St(
 			queue_length, GetQueueCounter<SizeT>(iteration));
@@ -206,7 +206,7 @@ public:
 	 * Typically called by thread-0
 	 */
 	template <typename SizeT, typename IterationT>
-	__device__ __forceinline__ SizeT Enqueue(SizeT count, IterationT iteration)
+	_CCCL_DEVICE __forceinline__ SizeT Enqueue(SizeT count, IterationT iteration)
 	{
 		return util::AtomicInt<SizeT>::Add(
 			GetQueueCounter<SizeT>(iteration),
@@ -217,7 +217,7 @@ public:
 	 * Sets the overflow counter to non-zero
 	 */
 	template <typename SizeT>
-	__device__ __forceinline__ void SetOverflow ()
+	_CCCL_DEVICE __forceinline__ void SetOverflow ()
 	{
 		((SizeT*) d_counters)[QUEUE_COUNTERS + STEAL_COUNTERS] = 1;
 	}

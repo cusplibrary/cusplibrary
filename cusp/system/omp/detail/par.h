@@ -17,6 +17,7 @@
 #pragma once
 
 #include <cusp/detail/config.h>
+#include <thrust/detail/config.h>
 #include <cusp/system/omp/detail/execution_policy.h>
 #include <cusp/system/cpp/detail/par.h>
 
@@ -50,7 +51,7 @@ struct par_t : public cusp::system::omp::detail::execution_policy<par_t>
 //     because cusp::cpp::par does not directly inherit from thrust::cpp::par, we arbitrarily define the necessary
 //     select_system calls here to resolve this issue
 template<typename System1, typename System2>
-inline __host__ __device__
+inline _CCCL_HOST_DEVICE
   System1 select_system(execution_policy<System1> s, cusp::system::cpp::detail::execution_policy<System2>)
 {
   return thrust::detail::derived_cast(s);
@@ -58,7 +59,7 @@ inline __host__ __device__
 
 
 template<typename System1, typename System2>
-inline __host__ __device__
+inline _CCCL_HOST_DEVICE
   System2 select_system(cusp::system::cpp::detail::execution_policy<System1>, execution_policy<System2> s)
 {
   return thrust::detail::derived_cast(s);

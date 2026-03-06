@@ -69,7 +69,7 @@ struct function_attributes_t
  *          the "CUDA Occupancy Calculator".
  *  \note The __global__ function of interest is presumed to use 0 bytes of dynamically-allocated __shared__ memory.
  */
-inline __host__ __device__
+inline _CCCL_HOST_DEVICE
 std::size_t block_size_with_maximum_potential_occupancy(const function_attributes_t &attributes,
         const device_properties_t   &properties);
 
@@ -85,7 +85,7 @@ std::size_t block_size_with_maximum_potential_occupancy(const function_attribute
  *          the "CUDA Occupancy Calculator".
  */
 template<typename UnaryFunction>
-inline __host__ __device__
+inline _CCCL_HOST_DEVICE
 std::size_t block_size_with_maximum_potential_occupancy(const function_attributes_t &attributes,
         const device_properties_t   &properties,
         UnaryFunction block_size_to_dynamic_smem_size);
@@ -98,14 +98,14 @@ std::size_t block_size_with_maximum_potential_occupancy(const function_attribute
  *  \param attributes CUDA function attributes
  *  \param blocks_per_processor Number of blocks per streaming multiprocessor
  */
-inline __host__ __device__
+inline _CCCL_HOST_DEVICE
 size_t proportional_smem_allocation(const device_properties_t   &properties,
                                     const function_attributes_t &attributes,
                                     size_t blocks_per_processor);
 
 
 template<typename UnaryFunction>
-inline __host__ __device__
+inline _CCCL_HOST_DEVICE
 size_t max_blocksize_subject_to_smem_usage(const device_properties_t   &properties,
         const function_attributes_t &attributes,
         UnaryFunction blocksize_to_dynamic_smem_usage);
@@ -122,7 +122,7 @@ namespace util
 
 
 template<typename T>
-inline __host__ __device__
+inline _CCCL_HOST_DEVICE
 T min_(const T &lhs, const T &rhs)
 {
     return rhs < lhs ? rhs : lhs;
@@ -132,7 +132,7 @@ T min_(const T &lhs, const T &rhs)
 template <typename T>
 struct zero_function
 {
-    inline __host__ __device__
+    inline _CCCL_HOST_DEVICE
     T operator()(T)
     {
         return 0;
@@ -142,27 +142,27 @@ struct zero_function
 
 // x/y rounding towards +infinity for integers, used to determine # of blocks/warps etc.
 template<typename L, typename R>
-inline __host__ __device__ L divide_ri(const L x, const R y)
+inline _CCCL_HOST_DEVICE L divide_ri(const L x, const R y)
 {
     return (x + (y - 1)) / y;
 }
 
 // x/y rounding towards zero for integers, used to determine # of blocks/warps etc.
 template<typename L, typename R>
-inline __host__ __device__ L divide_rz(const L x, const R y)
+inline _CCCL_HOST_DEVICE L divide_rz(const L x, const R y)
 {
     return x / y;
 }
 
 // round x towards infinity to the next multiple of y
 template<typename L, typename R>
-inline __host__ __device__ L round_i(const L x, const R y) {
+inline _CCCL_HOST_DEVICE L round_i(const L x, const R y) {
     return y * divide_ri(x, y);
 }
 
 // round x towards zero to the next multiple of y
 template<typename L, typename R>
-inline __host__ __device__ L round_z(const L x, const R y) {
+inline _CCCL_HOST_DEVICE L round_z(const L x, const R y) {
     return y * divide_rz(x, y);
 }
 
@@ -171,7 +171,7 @@ inline __host__ __device__ L round_z(const L x, const R y) {
 
 
 // granularity of shared memory allocation
-inline __host__ __device__
+inline _CCCL_HOST_DEVICE
 size_t smem_allocation_unit(const device_properties_t &properties)
 {
     switch(properties.major)
@@ -189,7 +189,7 @@ size_t smem_allocation_unit(const device_properties_t &properties)
 
 
 // granularity of register allocation
-inline __host__ __device__
+inline _CCCL_HOST_DEVICE
 size_t reg_allocation_unit(const device_properties_t &properties, const size_t regsPerThread)
 {
     switch(properties.major)
@@ -220,14 +220,14 @@ size_t reg_allocation_unit(const device_properties_t &properties, const size_t r
 
 
 // granularity of warp allocation
-inline __host__ __device__
+inline _CCCL_HOST_DEVICE
 size_t warp_allocation_multiple(const device_properties_t &properties)
 {
     return (properties.major <= 1) ? 2 : 1;
 }
 
 // number of "sides" into which the multiprocessor is partitioned
-inline __host__ __device__
+inline _CCCL_HOST_DEVICE
 size_t num_sides_per_multiprocessor(const device_properties_t &properties)
 {
     switch(properties.major)
@@ -244,14 +244,14 @@ size_t num_sides_per_multiprocessor(const device_properties_t &properties)
 }
 
 
-inline __host__ __device__
+inline _CCCL_HOST_DEVICE
 size_t max_blocks_per_multiprocessor(const device_properties_t &properties)
 {
     return (properties.major <= 2) ? 8 : 16;
 }
 
 
-inline __host__ __device__
+inline _CCCL_HOST_DEVICE
 size_t max_active_blocks_per_multiprocessor(const device_properties_t    &properties,
         const function_attributes_t  &attributes,
         int CTA_SIZE,
@@ -317,7 +317,7 @@ size_t max_active_blocks_per_multiprocessor(const device_properties_t    &proper
 
 
 template<typename UnaryFunction>
-inline __host__ __device__
+inline _CCCL_HOST_DEVICE
 std::size_t block_size_with_maximum_potential_occupancy(const function_attributes_t &attributes,
         const device_properties_t   &properties,
         UnaryFunction block_size_to_dynamic_smem_size)
@@ -347,7 +347,7 @@ std::size_t block_size_with_maximum_potential_occupancy(const function_attribute
 }
 
 
-inline __host__ __device__
+inline _CCCL_HOST_DEVICE
 std::size_t block_size_with_maximum_potential_occupancy(const function_attributes_t &attributes,
         const device_properties_t   &properties)
 {
@@ -355,7 +355,7 @@ std::size_t block_size_with_maximum_potential_occupancy(const function_attribute
 }
 
 
-inline __host__ __device__
+inline _CCCL_HOST_DEVICE
 size_t proportional_smem_allocation(const device_properties_t   &properties,
                                     const function_attributes_t &attributes,
                                     size_t blocks_per_processor)
@@ -371,7 +371,7 @@ size_t proportional_smem_allocation(const device_properties_t   &properties,
 
 
 template<typename UnaryFunction>
-inline __host__ __device__
+inline _CCCL_HOST_DEVICE
 size_t max_blocksize_subject_to_smem_usage(const device_properties_t   &properties,
         const function_attributes_t &attributes,
         UnaryFunction blocksize_to_dynamic_smem_usage)

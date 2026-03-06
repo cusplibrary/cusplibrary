@@ -46,7 +46,7 @@ struct integer_to_real
 {
     typedef typename random_iterator_type<Real>::type UnsignedInteger;
 
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     Real operator()(const UnsignedInteger i) const
     {
         const Real integer_bound = Real(UnsignedInteger(1) << (4 * sizeof(UnsignedInteger))) * Real(UnsignedInteger(1) << (4 * sizeof(UnsignedInteger)));
@@ -63,7 +63,7 @@ struct integer_to_complex
 
     IntegerToRealGenerator generator;
 
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     Complex operator()(const UnsignedInteger i) const
     {
         return Complex(generator(i), generator(i + (1<<20)-1));
@@ -94,7 +94,7 @@ struct random_integer_functor
         : seed(seed) {}
 
     // source: http://www.concentric.net/~ttwang/tech/inthash.htm
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     T hash(const IndexType i, thrust::detail::false_type) const
     {
         unsigned int h = (unsigned int) i ^ (unsigned int) seed;
@@ -107,7 +107,7 @@ struct random_integer_functor
         return T(h);
     }
 
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     T hash(const IndexType i, thrust::detail::true_type) const
     {
         unsigned long long h = (unsigned long long) i ^ (unsigned long long) seed;
@@ -121,7 +121,7 @@ struct random_integer_functor
         return T(h);
     }
 
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     T operator()(const IndexType i) const
     {
         return hash(i, typename thrust::detail::integral_constant<bool, sizeof(IndexType) == 8 || sizeof(T) == 8>::type());

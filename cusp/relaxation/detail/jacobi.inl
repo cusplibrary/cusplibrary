@@ -36,7 +36,7 @@ struct jacobi_relax_functor
     jacobi_relax_functor(ValueType omega) : omega(omega) {}
 
     template <typename Tuple>
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     ValueType operator()(const Tuple& t)
     {
         const ValueType x = thrust::get<0>(t);

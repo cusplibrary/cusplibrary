@@ -76,7 +76,7 @@ struct WarpSoaReduce
 			typename Tuple,
 			typename WarpscanSoa,
 			typename ReductionOp>
-		static __device__ __forceinline__ Tuple Reduce(
+		static _CCCL_DEVICE __forceinline__ Tuple Reduce(
 			Tuple exclusive_partial,
 			WarpscanSoa warpscan_partials,
 			ReductionOp reduction_op,
@@ -111,7 +111,7 @@ struct WarpSoaReduce
 			typename Tuple,
 			typename WarpscanSoa,
 			typename ReductionOp>
-		static __device__ __forceinline__ Tuple Reduce(
+		static _CCCL_DEVICE __forceinline__ Tuple Reduce(
 			Tuple exclusive_partial,
 			WarpscanSoa warpscan_partials,
 			ReductionOp reduction_op,
@@ -133,7 +133,7 @@ struct WarpSoaReduce
 		typename Tuple,
 		typename WarpscanSoa,
 		typename ReductionOp>
-	static __device__ __forceinline__ Tuple Reduce(
+	static _CCCL_DEVICE __forceinline__ Tuple Reduce(
 		Tuple current_partial,					// Input partial
 		WarpscanSoa warpscan_partials,			// Smem for warpscanning containing at least two segments of size NUM_ELEMENTS
 		ReductionOp reduction_op,
@@ -160,7 +160,7 @@ struct WarpSoaReduce
 		typename Tuple,
 		typename WarpscanSoa,
 		typename ReductionOp>
-	static __device__ __forceinline__ Tuple ReduceInLast(
+	static _CCCL_DEVICE __forceinline__ Tuple ReduceInLast(
 		Tuple exclusive_partial,				// Input partial
 		WarpscanSoa warpscan_partials,			// Smem for warpscanning containing at least two segments of size NUM_ELEMENTS
 		ReductionOp reduction_op,

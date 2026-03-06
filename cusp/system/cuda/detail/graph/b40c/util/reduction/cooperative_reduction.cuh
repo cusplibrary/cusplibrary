@@ -68,7 +68,7 @@ struct CooperativeTileReduction
 	struct ReduceLane
 	{
 		template <typename RakingDetails, typename ReductionOp>
-		static __device__ __forceinline__ void Invoke(
+		static _CCCL_DEVICE __forceinline__ void Invoke(
 			RakingDetails raking_details,
 			typename RakingDetails::T data[RakingDetails::SCAN_LANES][VEC_SIZE],
 			ReductionOp reduction_op)
@@ -92,7 +92,7 @@ struct CooperativeTileReduction
 	struct ReduceLane<TOTAL_LANES, TOTAL_LANES>
 	{
 		template <typename RakingDetails, typename ReductionOp>
-		static __device__ __forceinline__ void Invoke(
+		static _CCCL_DEVICE __forceinline__ void Invoke(
 			RakingDetails raking_details,
 			typename RakingDetails::T data[RakingDetails::SCAN_LANES][VEC_SIZE],
 			ReductionOp reduction_op) {}
@@ -113,7 +113,7 @@ struct CooperativeTileReduction
 		bool REDUCE_INTO_CARRY, 				// Whether or not to assign carry or reduce into it
 		typename RakingDetails,
 		typename ReductionOp>
-	static __device__ __forceinline__ void ReduceTileWithCarry(
+	static _CCCL_DEVICE __forceinline__ void ReduceTileWithCarry(
 		RakingDetails raking_details,
 		typename RakingDetails::T data[RakingDetails::SCAN_LANES][VEC_SIZE],
 		typename RakingDetails::T &carry,
@@ -134,7 +134,7 @@ struct CooperativeTileReduction
 	 * No post-synchronization needed before grid reuse.
 	 */
 	template <typename RakingDetails, typename ReductionOp>
-	static __device__ __forceinline__ typename RakingDetails::T ReduceTile(
+	static _CCCL_DEVICE __forceinline__ typename RakingDetails::T ReduceTile(
 		RakingDetails raking_details,
 		typename RakingDetails::T data[RakingDetails::SCAN_LANES][VEC_SIZE],
 		ReductionOp reduction_op)
@@ -171,7 +171,7 @@ struct CooperativeGridReduction<RakingDetails, NullType>
 	template <
 		bool REDUCE_INTO_CARRY,
 		typename ReductionOp>
-	static __device__ __forceinline__ void ReduceTileWithCarry(
+	static _CCCL_DEVICE __forceinline__ void ReduceTileWithCarry(
 		RakingDetails raking_details,
 		T &carry,
 		ReductionOp reduction_op)
@@ -197,7 +197,7 @@ struct CooperativeGridReduction<RakingDetails, NullType>
 	 * Reduction in last-level raking grid.  Result is computed in all threads.
 	 */
 	template <typename ReductionOp>
-	static __device__ __forceinline__ T ReduceTile(
+	static _CCCL_DEVICE __forceinline__ T ReduceTile(
 		RakingDetails raking_details,
 		ReductionOp reduction_op)
 	{
@@ -232,7 +232,7 @@ struct CooperativeGridReduction
 	 * Reduction in raking grid.  Carry-in/out is updated only in raking threads (homogeneously)
 	 */
 	template <bool REDUCE_INTO_CARRY, typename ReductionOp>
-	static __device__ __forceinline__ void ReduceTileWithCarry(
+	static _CCCL_DEVICE __forceinline__ void ReduceTileWithCarry(
 		RakingDetails raking_details,
 		T &carry,
 		ReductionOp reduction_op)
@@ -259,7 +259,7 @@ struct CooperativeGridReduction
 	 * Reduction in raking grid.  Result is computed in all threads.
 	 */
 	template <typename ReductionOp>
-	static __device__ __forceinline__ T ReduceTile(
+	static _CCCL_DEVICE __forceinline__ T ReduceTile(
 		RakingDetails raking_details,
 		ReductionOp reduction_op)
 	{

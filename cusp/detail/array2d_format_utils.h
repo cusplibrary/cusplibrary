@@ -42,69 +42,69 @@ namespace detail
 // logical n -> physical n (translated)
 
 template <typename IndexType>
-__host__ __device__
+_CCCL_HOST_DEVICE
 IndexType minor_dimension(IndexType num_rows, IndexType num_cols, row_major)    {
     return num_cols;
 }
 
 template <typename IndexType>
-__host__ __device__
+_CCCL_HOST_DEVICE
 IndexType minor_dimension(IndexType num_rows, IndexType num_cols, column_major) {
     return num_rows;
 }
 
 template <typename IndexType>
-__host__ __device__
+_CCCL_HOST_DEVICE
 IndexType major_dimension(IndexType num_rows, IndexType num_cols, row_major)    {
     return num_rows;
 }
 
 template <typename IndexType>
-__host__ __device__
+_CCCL_HOST_DEVICE
 IndexType major_dimension(IndexType num_rows, IndexType num_cols, column_major) {
     return num_cols;
 }
 
 // convert logical linear index into a logical (i,j) index
 template <typename IndexType>
-__host__ __device__
+_CCCL_HOST_DEVICE
 IndexType linear_index_to_row_index(IndexType linear_index, IndexType num_rows, IndexType num_cols, row_major)    {
     return linear_index / num_cols;
 }
 
 template <typename IndexType>
-__host__ __device__
+_CCCL_HOST_DEVICE
 IndexType linear_index_to_col_index(IndexType linear_index, IndexType num_rows, IndexType num_cols, row_major)    {
     return linear_index % num_cols;
 }
 
 template <typename IndexType>
-__host__ __device__
+_CCCL_HOST_DEVICE
 IndexType linear_index_to_row_index(IndexType linear_index, IndexType num_rows, IndexType num_cols, column_major)    {
     return linear_index % num_rows;
 }
 
 template <typename IndexType>
-__host__ __device__
+_CCCL_HOST_DEVICE
 IndexType linear_index_to_col_index(IndexType linear_index, IndexType num_rows, IndexType num_cols, column_major)    {
     return linear_index / num_rows;
 }
 
 // convert a logical (i,j) index into a physical linear index
 template <typename IndexType, typename Bool>
-__host__ __device__ inline
+_CCCL_HOST_DEVICE inline
 IndexType index_of(IndexType i, IndexType j, IndexType pitch, row_major_base<Bool>)    {
     return i * pitch + j;
 }
 
 template <typename IndexType, typename Bool>
-__host__ __device__ inline
+_CCCL_HOST_DEVICE inline
 IndexType index_of(IndexType i, IndexType j, IndexType pitch, column_major_base<Bool>) {
     return j * pitch + i;
 }
 
 template <typename IndexType, typename Orientation>
-__host__ __device__
+_CCCL_HOST_DEVICE
 IndexType logical_to_physical(IndexType linear_index, IndexType num_rows, IndexType num_cols, IndexType pitch, Orientation)
 {
     IndexType i = linear_index_to_row_index(linear_index, num_rows, num_cols, Orientation());
@@ -115,7 +115,7 @@ IndexType logical_to_physical(IndexType linear_index, IndexType num_rows, IndexT
 
 // convert logical linear index in the source into a physical linear index in the destination
 template <typename IndexType, typename Orientation1, typename Orientation2>
-__host__ __device__
+_CCCL_HOST_DEVICE
 IndexType logical_to_other_physical(IndexType linear_index, IndexType num_rows, IndexType num_cols, IndexType pitch, Orientation1, Orientation2)
 {
     IndexType i = linear_index_to_row_index(linear_index, num_rows, num_cols, Orientation1());
@@ -130,13 +130,13 @@ struct logical_to_physical_functor
 {
     IndexType num_rows, num_cols, pitch;
 
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     logical_to_physical_functor(void) {}
 
     logical_to_physical_functor(IndexType num_rows, IndexType num_cols, IndexType pitch)
         : num_rows(num_rows), num_cols(num_cols), pitch(pitch) {}
 
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     IndexType operator()(const IndexType i) const
     {
         return logical_to_physical(i, num_rows, num_cols, pitch, Orientation());
@@ -149,13 +149,13 @@ struct transpose_index_functor
 {
     IndexType num_rows, num_cols, pitch; // source dimensions
 
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     transpose_index_functor(void) {}
 
     transpose_index_functor(IndexType num_rows, IndexType num_cols, IndexType pitch)
         : num_rows(num_rows), num_cols(num_cols), pitch(pitch) {}
 
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     IndexType operator()(IndexType linear_index)
     {
         IndexType i = linear_index_to_row_index(linear_index, num_cols, num_rows, Orientation2());
@@ -171,14 +171,14 @@ struct logical_to_other_physical_functor
 {
     IndexType num_rows, num_cols, pitch;
 
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     logical_to_other_physical_functor(void) {}
 
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     logical_to_other_physical_functor(IndexType num_rows, IndexType num_cols, IndexType pitch)
         : num_rows(num_rows), num_cols(num_cols), pitch(pitch) {}
 
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     IndexType operator()(const IndexType i) const
     {
         return logical_to_other_physical(i, num_rows, num_cols, pitch, Orientation1(), Orientation2());

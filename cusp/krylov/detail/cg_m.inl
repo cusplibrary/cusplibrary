@@ -78,7 +78,7 @@ struct KERNEL_ZB
     {}
 
     template <typename Tuple>
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     void operator()(Tuple t)
     {
         typedef typename cusp::norm_type<ScalarType>::type NormType;
@@ -110,7 +110,7 @@ struct KERNEL_A
     {}
 
     template <typename Tuple>
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     void operator()(Tuple t)
     {
         // compute \alpha_0^\sigma
@@ -135,7 +135,7 @@ struct KERNEL_XP
         beta_0_s(_beta_0_s), z_1_s(_z_1_s), r_0(_r_0) {}
 
     template <typename Tuple>
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     void operator()(Tuple t)
     {
         // return the transformed result
@@ -165,7 +165,7 @@ struct KERNEL_VCOPY
         N_t(_N_t), source(_source)
     {}
 
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     ScalarType operator()(int index)
     {
         unsigned int N   = index % N_t;
@@ -179,7 +179,7 @@ struct KERNEL_DCOPY
     KERNEL_DCOPY() {}
 
     template <typename Tuple>
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     void operator()(Tuple t)
     {
         thrust::get<2>(t)=thrust::get<1>(t);
@@ -194,7 +194,7 @@ struct XPAY
 
     XPAY(T _alpha) : alpha(_alpha) {}
 
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     T operator()(T x, T y)
     {
         return x + alpha * y;

@@ -51,7 +51,7 @@ struct valid_index_functor
     valid_index_functor(const T size)
         : size(size) {}
 
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     T operator()(const T col)
     {
         return (col < 0 || col >= size) ? 0 : col;

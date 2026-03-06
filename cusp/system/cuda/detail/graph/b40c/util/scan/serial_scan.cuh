@@ -57,7 +57,7 @@ struct SerialScan
 	struct Iterate
 	{
 		template <typename T, typename ReductionOp>
-		static __device__ __forceinline__ T Invoke(
+		static _CCCL_DEVICE __forceinline__ T Invoke(
 			T partials[],
 			T results[],
 			T exclusive_partial,
@@ -75,7 +75,7 @@ struct SerialScan
 	struct Iterate<TOTAL, TOTAL>
 	{
 		template <typename T, typename ReductionOp>
-		static __device__ __forceinline__ T Invoke(
+		static _CCCL_DEVICE __forceinline__ T Invoke(
 			T partials[], T results[], T exclusive_partial, ReductionOp scan_op)
 		{
 			return exclusive_partial;
@@ -90,7 +90,7 @@ struct SerialScan
 	 * Serial scan with the specified operator
 	 */
 	template <typename T, typename ReductionOp>
-	static __device__ __forceinline__ T Invoke(
+	static _CCCL_DEVICE __forceinline__ T Invoke(
 		T partials[],
 		T exclusive_partial,			// Exclusive partial to seed with
 		ReductionOp scan_op)
@@ -103,7 +103,7 @@ struct SerialScan
 	 * Serial scan with the addition operator
 	 */
 	template <typename T>
-	static __device__ __forceinline__ T Invoke(
+	static _CCCL_DEVICE __forceinline__ T Invoke(
 		T partials[],
 		T exclusive_partial)			// Exclusive partial to seed with
 	{
@@ -116,7 +116,7 @@ struct SerialScan
 	 * Serial scan with the specified operator
 	 */
 	template <typename T, typename ReductionOp>
-	static __device__ __forceinline__ T Invoke(
+	static _CCCL_DEVICE __forceinline__ T Invoke(
 		T partials[],
 		T results[],
 		T exclusive_partial,			// Exclusive partial to seed with
@@ -130,7 +130,7 @@ struct SerialScan
 	 * Serial scan with the addition operator
 	 */
 	template <typename T>
-	static __device__ __forceinline__ T Invoke(
+	static _CCCL_DEVICE __forceinline__ T Invoke(
 		T partials[],
 		T results[],
 		T exclusive_partial)			// Exclusive partial to seed with

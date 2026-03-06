@@ -55,7 +55,7 @@ struct par_t : public cusp::system::cpp::detail::execution_policy<par_t>
 //     because cusp::cpp::par does not directly inherit from thrust::cpp::par, we arbitrarily define the necessary
 //     select_system calls here to resolve this issue
 // template<typename System1, typename System2>
-// inline __host__ __device__
+// inline _CCCL_HOST_DEVICE
 //   System1 select_system(execution_policy<System1> s, thrust::system::cpp::detail::execution_policy<System2>)
 // {
 //   return thrust::detail::derived_cast(s);
@@ -63,14 +63,14 @@ struct par_t : public cusp::system::cpp::detail::execution_policy<par_t>
 //
 //
 // template<typename System1, typename System2>
-// inline __host__ __device__
+// inline _CCCL_HOST_DEVICE
 //   System2 select_system(thrust::system::cpp::detail::execution_policy<System1>, execution_policy<System2> s)
 // {
 //   return thrust::detail::derived_cast(s);
 // } // end select_system()
 
 // template<typename System>
-// inline __host__ __device__
+// inline _CCCL_HOST_DEVICE
 //   System select_system(execution_policy<System> s, thrust::system::cpp::detail::tag)
 // {
 //   return thrust::detail::derived_cast(s);
@@ -78,7 +78,7 @@ struct par_t : public cusp::system::cpp::detail::execution_policy<par_t>
 //
 //
 // template<typename System>
-// inline __host__ __device__
+// inline _CCCL_HOST_DEVICE
 //   System select_system(thrust::system::cpp::detail::tag, execution_policy<System> s)
 // {
 //   return thrust::detail::derived_cast(s);

@@ -91,7 +91,7 @@ struct sparse_inner_functor
     {}
 
     template <typename Tuple>
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     ValueType operator()(const Tuple& t) const
     {
         IndexType row = thrust::get<0>(t);

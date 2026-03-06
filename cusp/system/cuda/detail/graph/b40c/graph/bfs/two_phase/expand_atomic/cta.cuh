@@ -68,7 +68,7 @@ texture<SizeT, cudaTextureType1D, cudaReadModeElementType> RowOffsetTex<SizeT>::
 template<typename SizeT, typename VertexId>
 struct Tex
 {
-  static __device__ __forceinline__ VertexId fetch(SizeT* row_offsets, VertexId row_id)
+  static _CCCL_DEVICE __forceinline__ VertexId fetch(SizeT* row_offsets, VertexId row_id)
   {
      return row_offsets[row_id];
   }
@@ -78,7 +78,7 @@ struct Tex
 template<typename VertexId>
 struct Tex<int, VertexId>
 {
-  static __device__ __forceinline__ VertexId fetch(int* row_offsets, VertexId row_id)
+  static _CCCL_DEVICE __forceinline__ VertexId fetch(int* row_offsets, VertexId row_id)
   {
      return tex1Dfetch(RowOffsetTex<int>::ref, row_id);
   }
@@ -191,7 +191,7 @@ struct Cta
 			 * Init
 			 */
 			template <typename Tile>
-			static __device__ __forceinline__ void Init(Tile *tile)
+			static _CCCL_DEVICE __forceinline__ void Init(Tile *tile)
 			{
 				tile->row_length[LOAD][VEC] = 0;
 				tile->row_progress[LOAD][VEC] = 0;
@@ -203,7 +203,7 @@ struct Cta
 			 * Inspect
 			 */
 			template <typename Cta, typename Tile>
-			static __device__ __forceinline__ void Inspect(Cta *cta, Tile *tile)
+			static _CCCL_DEVICE __forceinline__ void Inspect(Cta *cta, Tile *tile)
 			{
 				if (tile->vertex_id[LOAD][VEC] != -1) {
 
@@ -234,7 +234,7 @@ struct Cta
 			 * Expand by CTA
 			 */
 			template <typename Cta, typename Tile>
-			static __device__ __forceinline__ void ExpandByCta(Cta *cta, Tile *tile)
+			static _CCCL_DEVICE __forceinline__ void ExpandByCta(Cta *cta, Tile *tile)
 			{
 				// CTA-based expansion/loading
 				while (true) {
@@ -331,7 +331,7 @@ struct Cta
 			 * Expand by warp
 			 */
 			template <typename Cta, typename Tile>
-			static __device__ __forceinline__ void ExpandByWarp(Cta *cta, Tile *tile)
+			static _CCCL_DEVICE __forceinline__ void ExpandByWarp(Cta *cta, Tile *tile)
 			{
 				if (KernelPolicy::WARP_GATHER_THRESHOLD < KernelPolicy::CTA_GATHER_THRESHOLD) {
 
@@ -417,7 +417,7 @@ struct Cta
 			 * Expand by scan
 			 */
 			template <typename Cta, typename Tile>
-			static __device__ __forceinline__ void ExpandByScan(Cta *cta, Tile *tile)
+			static _CCCL_DEVICE __forceinline__ void ExpandByScan(Cta *cta, Tile *tile)
 			{
 				// Attempt to make further progress on this dequeued item's neighbor
 				// list if its current offset into local scratch is in range
@@ -454,7 +454,7 @@ struct Cta
 			 * Init
 			 */
 			template <typename Tile>
-			static __device__ __forceinline__ void Init(Tile *tile)
+			static _CCCL_DEVICE __forceinline__ void Init(Tile *tile)
 			{
 				Iterate<LOAD + 1, 0>::Init(tile);
 			}
@@ -463,7 +463,7 @@ struct Cta
 			 * Inspect
 			 */
 			template <typename Cta, typename Tile>
-			static __device__ __forceinline__ void Inspect(Cta *cta, Tile *tile)
+			static _CCCL_DEVICE __forceinline__ void Inspect(Cta *cta, Tile *tile)
 			{
 				Iterate<LOAD + 1, 0>::Inspect(cta, tile);
 			}
@@ -472,7 +472,7 @@ struct Cta
 			 * Expand by CTA
 			 */
 			template <typename Cta, typename Tile>
-			static __device__ __forceinline__ void ExpandByCta(Cta *cta, Tile *tile)
+			static _CCCL_DEVICE __forceinline__ void ExpandByCta(Cta *cta, Tile *tile)
 			{
 				Iterate<LOAD + 1, 0>::ExpandByCta(cta, tile);
 			}
@@ -481,7 +481,7 @@ struct Cta
 			 * Expand by warp
 			 */
 			template <typename Cta, typename Tile>
-			static __device__ __forceinline__ void ExpandByWarp(Cta *cta, Tile *tile)
+			static _CCCL_DEVICE __forceinline__ void ExpandByWarp(Cta *cta, Tile *tile)
 			{
 				Iterate<LOAD + 1, 0>::ExpandByWarp(cta, tile);
 			}
@@ -490,7 +490,7 @@ struct Cta
 			 * Expand by scan
 			 */
 			template <typename Cta, typename Tile>
-			static __device__ __forceinline__ void ExpandByScan(Cta *cta, Tile *tile)
+			static _CCCL_DEVICE __forceinline__ void ExpandByScan(Cta *cta, Tile *tile)
 			{
 				Iterate<LOAD + 1, 0>::ExpandByScan(cta, tile);
 			}
@@ -504,23 +504,23 @@ struct Cta
 		{
 			// Init
 			template <typename Tile>
-			static __device__ __forceinline__ void Init(Tile *tile) {}
+			static _CCCL_DEVICE __forceinline__ void Init(Tile *tile) {}
 
 			// Inspect
 			template <typename Cta, typename Tile>
-			static __device__ __forceinline__ void Inspect(Cta *cta, Tile *tile) {}
+			static _CCCL_DEVICE __forceinline__ void Inspect(Cta *cta, Tile *tile) {}
 
 			// ExpandByCta
 			template <typename Cta, typename Tile>
-			static __device__ __forceinline__ void ExpandByCta(Cta *cta, Tile *tile) {}
+			static _CCCL_DEVICE __forceinline__ void ExpandByCta(Cta *cta, Tile *tile) {}
 
 			// ExpandByWarp
 			template <typename Cta, typename Tile>
-			static __device__ __forceinline__ void ExpandByWarp(Cta *cta, Tile *tile) {}
+			static _CCCL_DEVICE __forceinline__ void ExpandByWarp(Cta *cta, Tile *tile) {}
 
 			// ExpandByScan
 			template <typename Cta, typename Tile>
-			static __device__ __forceinline__ void ExpandByScan(Cta *cta, Tile *tile) {}
+			static _CCCL_DEVICE __forceinline__ void ExpandByScan(Cta *cta, Tile *tile) {}
 		};
 
 
@@ -531,7 +531,7 @@ struct Cta
 		/**
 		 * Constructor
 		 */
-		__device__ __forceinline__ Tile()
+		_CCCL_DEVICE __forceinline__ Tile()
 		{
 			Iterate<0, 0>::Init(this);
 		}
@@ -541,7 +541,7 @@ struct Cta
 		 * obtaining edge-list details
 		 */
 		template <typename Cta>
-		__device__ __forceinline__ void Inspect(Cta *cta)
+		_CCCL_DEVICE __forceinline__ void Inspect(Cta *cta)
 		{
 			Iterate<0, 0>::Inspect(cta, this);
 		}
@@ -550,7 +550,7 @@ struct Cta
 		 * Expands neighbor lists for valid vertices at CTA-expansion granularity
 		 */
 		template <typename Cta>
-		__device__ __forceinline__ void ExpandByCta(Cta *cta)
+		_CCCL_DEVICE __forceinline__ void ExpandByCta(Cta *cta)
 		{
 			Iterate<0, 0>::ExpandByCta(cta, this);
 		}
@@ -559,7 +559,7 @@ struct Cta
 		 * Expands neighbor lists for valid vertices a warp-expansion granularity
 		 */
 		template <typename Cta>
-		__device__ __forceinline__ void ExpandByWarp(Cta *cta)
+		_CCCL_DEVICE __forceinline__ void ExpandByWarp(Cta *cta)
 		{
 			Iterate<0, 0>::ExpandByWarp(cta, this);
 		}
@@ -568,7 +568,7 @@ struct Cta
 		 * Expands neighbor lists by local scan rank
 		 */
 		template <typename Cta>
-		__device__ __forceinline__ void ExpandByScan(Cta *cta)
+		_CCCL_DEVICE __forceinline__ void ExpandByScan(Cta *cta)
 		{
 			Iterate<0, 0>::ExpandByScan(cta, this);
 		}
@@ -582,7 +582,7 @@ struct Cta
 	/**
 	 * Constructor
 	 */
-	__device__ __forceinline__ Cta(
+	_CCCL_DEVICE __forceinline__ Cta(
 		VertexId 				queue_index,
 		int						num_gpus,
 		SmemStorage 			&smem_storage,
@@ -623,7 +623,7 @@ struct Cta
 	/**
 	 * Process a single tile
 	 */
-	__device__ __forceinline__ void ProcessTile(
+	_CCCL_DEVICE __forceinline__ void ProcessTile(
 		SizeT cta_offset,
 		SizeT guarded_elements = KernelPolicy::TILE_ELEMENTS)
 	{

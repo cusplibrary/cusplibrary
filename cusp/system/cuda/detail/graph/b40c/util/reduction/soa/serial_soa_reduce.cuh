@@ -61,7 +61,7 @@ struct SerialSoaReduce
 			typename Tuple,
 			typename RakingSoa,
 			typename ReductionOp>
-		static __host__ __device__ __forceinline__ Tuple Reduce(
+		static _CCCL_HOST_DEVICE __forceinline__ Tuple Reduce(
 			RakingSoa raking_partials,
 			Tuple exclusive_partial,
 			ReductionOp reduction_op)
@@ -83,7 +83,7 @@ struct SerialSoaReduce
 			typename Tuple,
 			typename RakingSoa,
 			typename ReductionOp>
-		static __host__ __device__ __forceinline__ Tuple Reduce(
+		static _CCCL_HOST_DEVICE __forceinline__ Tuple Reduce(
 			RakingSoa raking_partials,
 			Tuple exclusive_partial,
 			int row,
@@ -111,7 +111,7 @@ struct SerialSoaReduce
 			typename Tuple,
 			typename RakingSoa,
 			typename ReductionOp>
-		static __host__ __device__ __forceinline__ Tuple Reduce(
+		static _CCCL_HOST_DEVICE __forceinline__ Tuple Reduce(
 			RakingSoa raking_partials,
 			Tuple exclusive_partial,
 			ReductionOp reduction_op)
@@ -124,7 +124,7 @@ struct SerialSoaReduce
 			typename Tuple,
 			typename RakingSoa,
 			typename ReductionOp>
-		static __host__ __device__ __forceinline__ Tuple Reduce(
+		static _CCCL_HOST_DEVICE __forceinline__ Tuple Reduce(
 			RakingSoa raking_partials,
 			Tuple exclusive_partial,
 			int row,
@@ -146,7 +146,7 @@ struct SerialSoaReduce
 		typename Tuple,
 		typename RakingSoa,
 		typename ReductionOp>
-	static __host__ __device__ __forceinline__ void Reduce(
+	static _CCCL_HOST_DEVICE __forceinline__ void Reduce(
 		Tuple &retval,
 		RakingSoa raking_partials,
 		ReductionOp reduction_op)
@@ -167,7 +167,7 @@ struct SerialSoaReduce
 		typename Tuple,
 		typename RakingSoa,
 		typename ReductionOp>
-	static __host__ __device__ __forceinline__ Tuple SeedReduce(
+	static _CCCL_HOST_DEVICE __forceinline__ Tuple SeedReduce(
 		RakingSoa raking_partials,
 		Tuple exclusive_partial,
 		ReductionOp reduction_op)
@@ -184,7 +184,7 @@ struct SerialSoaReduce
 		typename Tuple,
 		typename RakingSoa,
 		typename ReductionOp>
-	static __host__ __device__ __forceinline__ void Reduce(
+	static _CCCL_HOST_DEVICE __forceinline__ void Reduce(
 		Tuple &retval,
 		RakingSoa raking_partials,
 		int row,
@@ -207,7 +207,7 @@ struct SerialSoaReduce
 		typename Tuple,
 		typename RakingSoa,
 		typename ReductionOp>
-	static __host__ __device__ __forceinline__ Tuple SeedReduce(
+	static _CCCL_HOST_DEVICE __forceinline__ Tuple SeedReduce(
 		RakingSoa raking_partials,
 		Tuple exclusive_partial,
 		int row,
