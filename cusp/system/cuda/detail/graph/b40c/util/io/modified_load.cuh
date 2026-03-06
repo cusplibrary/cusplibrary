@@ -89,19 +89,31 @@ struct ModifiedLoad
 	/**
 	 * Vec-4 loads for 64-bit types are implemented as two vec-2 loads
 	 */
+#if CUDA_VERSION >= 12000
+	__device__ __forceinline__ static void Ld(double4_16a &val, double4_16a* ptr)
+#else
 	__device__ __forceinline__ static void Ld(double4 &val, double4* ptr)
+#endif
 	{
 		ModifiedLoad<CACHE_MODIFIER>::Ld(*reinterpret_cast<double2*>(&val.x), reinterpret_cast<double2*>(ptr));
 		ModifiedLoad<CACHE_MODIFIER>::Ld(*reinterpret_cast<double2*>(&val.z), reinterpret_cast<double2*>(ptr) + 1);
 	}
 
+#if CUDA_VERSION >= 12000
+	__device__ __forceinline__ static void Ld(ulonglong4_16a &val, ulonglong4_16a* ptr)
+#else
 	__device__ __forceinline__ static void Ld(ulonglong4 &val, ulonglong4* ptr)
+#endif
 	{
 		ModifiedLoad<CACHE_MODIFIER>::Ld(*reinterpret_cast<ulonglong2*>(&val.x), reinterpret_cast<ulonglong2*>(ptr));
 		ModifiedLoad<CACHE_MODIFIER>::Ld(*reinterpret_cast<ulonglong2*>(&val.z), reinterpret_cast<ulonglong2*>(ptr) + 1);
 	}
 
+#if CUDA_VERSION >= 12000
+	__device__ __forceinline__ static void Ld(longlong4_16a &val, longlong4_16a* ptr)
+#else
 	__device__ __forceinline__ static void Ld(longlong4 &val, longlong4* ptr)
+#endif
 	{
 		ModifiedLoad<CACHE_MODIFIER>::Ld(*reinterpret_cast<longlong2*>(&val.x), reinterpret_cast<longlong2*>(ptr));
 		ModifiedLoad<CACHE_MODIFIER>::Ld(*reinterpret_cast<longlong2*>(&val.z), reinterpret_cast<longlong2*>(ptr) + 1);

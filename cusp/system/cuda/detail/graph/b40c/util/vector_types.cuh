@@ -100,25 +100,37 @@ struct VecType<T, 4> {
  * Macro for expanding partially-specialized built-in vector types
  */
 #define B40C_DEFINE_VECTOR_TYPE(base_type,short_type)                           \
-  template<> struct VecType<base_type, 1> { typedef short_type##1 Type; };      \
-  template<> struct VecType<base_type, 2> { typedef short_type##2 Type; };      \
-  template<> struct VecType<base_type, 4> { typedef short_type##4 Type; };     
+  template<> struct VecType<base_type, 1> {typedef short_type##1 Type;};      \
+  template<> struct VecType<base_type, 2> {typedef short_type##2 Type;};      \
+  template<> struct VecType<base_type, 4> {typedef short_type##4 Type;};
 
-B40C_DEFINE_VECTOR_TYPE(char,               char)
-B40C_DEFINE_VECTOR_TYPE(signed char,        char)
-B40C_DEFINE_VECTOR_TYPE(short,              short)
-B40C_DEFINE_VECTOR_TYPE(int,                int)
-B40C_DEFINE_VECTOR_TYPE(long,               long)
-B40C_DEFINE_VECTOR_TYPE(long long,          longlong)
-B40C_DEFINE_VECTOR_TYPE(unsigned char,      uchar)
-B40C_DEFINE_VECTOR_TYPE(unsigned short,     ushort)
-B40C_DEFINE_VECTOR_TYPE(unsigned int,       uint)
-B40C_DEFINE_VECTOR_TYPE(unsigned long,      ulong)
-B40C_DEFINE_VECTOR_TYPE(unsigned long long, ulonglong)
-B40C_DEFINE_VECTOR_TYPE(float,              float)
-B40C_DEFINE_VECTOR_TYPE(double,             double)
+#if CUDA_VERSION >= 12000
+// On CUDA 12+, vec-4 of 64-bit types use explicitly aligned variants to avoid deprecation
+#define B40C_DEFINE_VECTOR_TYPE_ALIGNED4(base_type,short_type,vec4_type)        \
+  template<> struct VecType<base_type, 1> {typedef short_type##1 Type;};      \
+  template<> struct VecType<base_type, 2> {typedef short_type##2 Type;};      \
+  template<> struct VecType<base_type, 4> {typedef vec4_type Type;};
+#else
+#define B40C_DEFINE_VECTOR_TYPE_ALIGNED4(base_type,short_type,vec4_type)        \
+  B40C_DEFINE_VECTOR_TYPE(base_type, short_type)
+#endif
+
+B40C_DEFINE_VECTOR_TYPE(char, char)
+B40C_DEFINE_VECTOR_TYPE(signed char, char)
+B40C_DEFINE_VECTOR_TYPE(short, short)
+B40C_DEFINE_VECTOR_TYPE(int, int)
+B40C_DEFINE_VECTOR_TYPE_ALIGNED4(long, long, long4_16a)
+B40C_DEFINE_VECTOR_TYPE_ALIGNED4(long long, longlong, longlong4_16a)
+B40C_DEFINE_VECTOR_TYPE(unsigned char, uchar)
+B40C_DEFINE_VECTOR_TYPE(unsigned short, ushort)
+B40C_DEFINE_VECTOR_TYPE(unsigned int, uint)
+B40C_DEFINE_VECTOR_TYPE_ALIGNED4(unsigned long, ulong, ulong4_16a)
+B40C_DEFINE_VECTOR_TYPE_ALIGNED4(unsigned long long, ulonglong, ulonglong4_16a)
+B40C_DEFINE_VECTOR_TYPE(float, float)
+B40C_DEFINE_VECTOR_TYPE_ALIGNED4(double, double, double4_16a)
 
 #undef B40C_DEFINE_VECTOR_TYPE
+#undef B40C_DEFINE_VECTOR_TYPE_ALIGNED4
 
 
 } // namespace util
