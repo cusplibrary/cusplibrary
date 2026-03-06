@@ -20,12 +20,12 @@ for dir in directories:
     regexp = os.path.join(dir, ext)
     sources.extend(env.Glob(regexp))
 
-skiplist = ['breadth_first_search.cu',
-            'connected_components.cu',
-            'pseudo_peripheral.cu',
-            'symmetric_rcm.cu']
-for skip in skiplist:
-  sources = [f for f in sources if os.path.basename(str(f)) != skip]
+#skiplist = ['breadth_first_search.cu',
+#            'connected_components.cu',
+#            'pseudo_peripheral.cu',
+#            'symmetric_rcm.cu']
+#for skip in skiplist:
+#  sources = [f for f in sources if os.path.basename(str(f)) != skip]
 
 # filter test files using a regular expression
 if 'filter_test' in env:
