@@ -1,0 +1,10 @@
+import os
+Import('env')
+
+env = env.Clone()
+
+extensions = ['*.cu', '*.cpp']
+for ext in extensions:
+  regexp = os.path.join('.', ext)
+  for source in env.Glob(regexp):
+    env.Program(source)
