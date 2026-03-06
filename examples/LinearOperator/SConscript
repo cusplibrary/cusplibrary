@@ -13,8 +13,6 @@ for ext in extensions:
   sources = env.Glob(regexp)
 
   for source in sources:
-    if str(source) == 'block_matrix.cu':
-        continue
     if (str(source) == 'stencil.cu') and (env['compiler'] != 'nvcc'):
         continue
 

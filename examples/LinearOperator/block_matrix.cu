@@ -2,6 +2,7 @@
 #include <cusp/linear_operator.h>
 #include <cusp/gallery/poisson.h>
 #include <cusp/krylov/cg.h>
+#include <cusp/print.h>
 
 #include <thrust/functional.h>
 
@@ -16,7 +17,7 @@ private:
     typedef cusp::linear_operator<ValueType,MemorySpace> Parent;
     typedef std::vector<MatrixType> MatrixList;
 
-    typedef cusp::detail::plus_value<IndexType>                             ShiftOp;
+    typedef cusp::plus_value<IndexType>                                     ShiftOp;
     typedef typename MatrixType::row_indices_array_type::const_iterator     RowIterator;
     typedef typename MatrixType::column_indices_array_type::const_iterator  ColumnIterator;
 
@@ -228,9 +229,6 @@ public:
                                           B_t_map.begin(),
                                           B_t_map.begin());
 
-            cusp::print(K_row_offsets);
-            cusp::print(B_t_row_lengths);
-            cusp::print(B_t_map);
             // scatter final index offsets into indices array
             thrust::scatter(thrust::counting_iterator<IndexType>(C_offset + D_offset),
                             thrust::counting_iterator<IndexType>(C_offset + D_offset + B_t.num_entries),
