@@ -116,6 +116,10 @@ performance/graph/maximum_flow
 performance/graph/pseudo_peripheral
 performance/graph/symmetric_rcm
 performance/graph/vertex_coloring
+performance/grapple/cg
+performance/grapple/my_cusp_func.h
+performance/grapple/my_policy_map.h
+performance/grapple/my_thrust_func.h
 performance/overhead/memory
 performance/solver/cg
 performance/spmm/spmm
