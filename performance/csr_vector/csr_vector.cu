@@ -1,43 +1,30 @@
-#define CUSP_USE_TEXTURE_MEMORY
-
 #include <cusp/dia_matrix.h>
 #include <cusp/csr_matrix.h>
 #include <cusp/io/matrix_market.h>
+#include <cusp/functional.h>
+#include <cusp/system/cuda/detail/multiply/csr_vector_spmv.h>
+#include <cusp/system/cuda/detail/par.h>
 
 #include <thrust/sequence.h>
 #include <thrust/fill.h>
+#include <thrust/functional.h>
 
 #include <iostream>
 
-#include <cusp/detail/device/spmv/csr_vector.h>
 #include "../timer.h"
 
-template <bool UseCache, unsigned int THREADS_PER_VECTOR, typename IndexType, typename ValueType>
-void perform_spmv(const cusp::csr_matrix<IndexType,ValueType,cusp::device_memory>& csr, 
-                  const ValueType * x, 
-                        ValueType * y)
+template <unsigned int THREADS_PER_VECTOR, typename IndexType, typename ValueType>
+void perform_spmv(const cusp::csr_matrix<IndexType,ValueType,cusp::device_memory>& csr,
+                  cusp::array1d<ValueType, cusp::device_memory>& x,
+                  cusp::array1d<ValueType, cusp::device_memory>& y)
 {
-    const unsigned int VECTORS_PER_BLOCK  = 128 / THREADS_PER_VECTOR;
-    const unsigned int THREADS_PER_BLOCK  = VECTORS_PER_BLOCK * THREADS_PER_VECTOR;
-
-    //const unsigned int MAX_BLOCKS = MAX_THREADS / THREADS_PER_BLOCK;
-    const unsigned int MAX_BLOCKS = 16 * 1024;
-    const unsigned int NUM_BLOCKS = std::min(MAX_BLOCKS, static_cast<unsigned int>((csr.num_rows + (VECTORS_PER_BLOCK - 1)) / VECTORS_PER_BLOCK));
-    
-    if (UseCache)
-        bind_x(x);
-
-    cusp::detail::device::spmv_csr_vector_kernel<IndexType, ValueType, VECTORS_PER_BLOCK, THREADS_PER_VECTOR, UseCache> <<<NUM_BLOCKS, THREADS_PER_BLOCK>>> 
-        (csr.num_rows,
-         thrust::raw_pointer_cast(&csr.row_offsets[0]),
-         thrust::raw_pointer_cast(&csr.column_indices[0]),
-         thrust::raw_pointer_cast(&csr.values[0]),
-         x, y);
-
-    if (UseCache)
-        unbind_x(x);
+    cusp::system::cuda::detail::par_t exec;
+    cusp::constant_functor<ValueType> initialize;
+    thrust::multiplies<ValueType>     combine;
+    thrust::plus<ValueType>           reduce;
+    cusp::system::cuda::detail::__spmv_csr_vector<THREADS_PER_VECTOR>(exec, csr, x, y, initialize, combine, reduce);
 }
- 
+
 template <unsigned int ThreadsPerVector, typename IndexType, typename ValueType>
 float benchmark_matrix(const cusp::csr_matrix<IndexType,ValueType,cusp::device_memory>& csr)
 {
@@ -47,13 +34,14 @@ float benchmark_matrix(const cusp::csr_matrix<IndexType,ValueType,cusp::device_m
     cusp::array1d<ValueType, cusp::device_memory> y(csr.num_rows);
 
     // warmup
-    perform_spmv<true, ThreadsPerVector>(csr, thrust::raw_pointer_cast(&x[0]), thrust::raw_pointer_cast(&y[0]));
+    perform_spmv<ThreadsPerVector>(csr, x, y);
 
     // time several SpMV iterations
     timer t;
-    for(size_t i = 0; i < num_iterations; i++)
-        perform_spmv<true, ThreadsPerVector>(csr, thrust::raw_pointer_cast(&x[0]), thrust::raw_pointer_cast(&y[0]));
-    cudaThreadSynchronize();
+    for(size_t i = 0; i < num_iterations; i++) {
+        perform_spmv<ThreadsPerVector>(csr, x, y);
+    }
+    cudaDeviceSynchronize();
 
     float sec_per_iteration = t.seconds_elapsed() / num_iterations;
     float gflops = 2.0 * (csr.num_entries/sec_per_iteration) / 1e9;
@@ -136,4 +124,3 @@ int main(int argc, char** argv)
 
     return 0;
 }
-
