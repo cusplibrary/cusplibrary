@@ -75,7 +75,7 @@ struct CooperativeSoaTileScan
 			typename RakingSoaDetails,
 			typename TileSoa,
 			typename ReductionOp>
-		static __device__ __forceinline__ void Invoke(
+		static _CCCL_DEVICE __forceinline__ void Invoke(
 			RakingSoaDetails raking_soa_details,
 			TileSoa tile_soa,
 			ReductionOp scan_op)
@@ -102,7 +102,7 @@ struct CooperativeSoaTileScan
 			typename RakingSoaDetails,
 			typename TileSoa,
 			typename ReductionOp>
-		static __device__ __forceinline__ void Invoke(
+		static _CCCL_DEVICE __forceinline__ void Invoke(
 			RakingSoaDetails raking_soa_details,
 			TileSoa tile_soa,
 			ReductionOp scan_op) {}
@@ -125,7 +125,7 @@ struct CooperativeSoaTileScan
 		typename TileSoa,
 		typename TileTuple,
 		typename ReductionOp>
-	static __device__ __forceinline__ void ScanTileWithCarry(
+	static _CCCL_DEVICE __forceinline__ void ScanTileWithCarry(
 		RakingSoaDetails raking_soa_details,
 		TileSoa tile_soa,
 		TileTuple &carry,
@@ -159,7 +159,7 @@ struct CooperativeSoaTileScan
 		typename TileSoa,
 		typename TileTuple,
 		typename ReductionOp>
-	static __device__ __forceinline__ void ScanTile(
+	static _CCCL_DEVICE __forceinline__ void ScanTile(
 		TileTuple &retval,
 		RakingSoaDetails raking_soa_details,
 		TileSoa tile_soa,
@@ -206,7 +206,7 @@ struct CooperativeSoaGridScan<RakingSoaDetails, NullType>
 	 * Scan in last-level raking grid.
 	 */
 	template <typename ReductionOp>
-	static __device__ __forceinline__ void ScanTile(
+	static _CCCL_DEVICE __forceinline__ void ScanTile(
 		RakingSoaDetails raking_soa_details,
 		ReductionOp scan_op)
 	{
@@ -238,7 +238,7 @@ struct CooperativeSoaGridScan<RakingSoaDetails, NullType>
 	template <
 		bool REDUCE_INTO_CARRY,
 		typename ReductionOp>
-	static __device__ __forceinline__ void ScanTileWithCarry(
+	static _CCCL_DEVICE __forceinline__ void ScanTileWithCarry(
 		RakingSoaDetails raking_soa_details,
 		TileTuple &carry,
 		ReductionOp scan_op)
@@ -310,7 +310,7 @@ struct CooperativeSoaGridScan
 	 * Scan in last-level raking grid.
 	 */
 	template <typename ReductionOp>
-	static __device__ __forceinline__ void ScanTile(
+	static _CCCL_DEVICE __forceinline__ void ScanTile(
 		RakingSoaDetails raking_soa_details,
 		ReductionOp scan_op)
 	{
@@ -358,7 +358,7 @@ struct CooperativeSoaGridScan
 	template <
 		bool REDUCE_INTO_CARRY,
 		typename ReductionOp>
-	static __device__ __forceinline__ void ScanTileWithCarry(
+	static _CCCL_DEVICE __forceinline__ void ScanTileWithCarry(
 		RakingSoaDetails raking_soa_details,
 		TileTuple &carry,
 		ReductionOp scan_op)

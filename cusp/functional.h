@@ -93,7 +93,7 @@ template <typename> struct combine_tuple_base_functor;
 template <typename T>
 struct plus_value : public detail::base_functor< thrust::plus<T> >
 {
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     plus_value(const T value = T(0)) : detail::base_functor< thrust::plus<T> >(value) {}
 };
 
@@ -135,7 +135,7 @@ struct plus_value : public detail::base_functor< thrust::plus<T> >
 template <typename T>
 struct divide_value : public detail::base_functor< thrust::divides<T> >
 {
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     divide_value(const T value = T(0)) : detail::base_functor< thrust::divides<T> >(value) {}
 };
 
@@ -177,7 +177,7 @@ struct divide_value : public detail::base_functor< thrust::divides<T> >
 template <typename T>
 struct modulus_value : public detail::base_functor< thrust::modulus<T> >
 {
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     modulus_value(const T value = T(0)) : detail::base_functor< thrust::modulus<T> >(value) {}
 };
 
@@ -219,7 +219,7 @@ struct modulus_value : public detail::base_functor< thrust::modulus<T> >
 template <typename T>
 struct multiplies_value : public detail::base_functor< thrust::multiplies<T> >
 {
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     multiplies_value(const T value) : detail::base_functor< thrust::multiplies<T> >(value) {}
 };
 
@@ -260,7 +260,7 @@ struct multiplies_value : public detail::base_functor< thrust::multiplies<T> >
 template <typename T>
 struct greater_value : public detail::base_functor< thrust::greater<T> >
 {
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     greater_value(const T value) : detail::base_functor< thrust::greater<T> >(value) {}
 };
 
@@ -301,7 +301,7 @@ struct greater_value : public detail::base_functor< thrust::greater<T> >
 template <typename T>
 struct greater_equal_value : public detail::base_functor< thrust::greater_equal<T> >
 {
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     greater_equal_value(const T value) : detail::base_functor< thrust::greater_equal<T> >(value) {}
 };
 
@@ -343,7 +343,7 @@ struct greater_equal_value : public detail::base_functor< thrust::greater_equal<
 template <typename T>
 struct less_value : public detail::base_functor< thrust::less<T> >
 {
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     less_value(const T value) : detail::base_functor< thrust::less<T> >(value) {}
 };
 
@@ -384,7 +384,7 @@ struct less_value : public detail::base_functor< thrust::less<T> >
 template <typename T>
 struct less_equal_value : public detail::base_functor< thrust::less_equal<T> >
 {
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     less_equal_value(const T value) : detail::base_functor< thrust::less_equal<T> >(value) {}
 };
 
@@ -429,10 +429,10 @@ struct constant_functor
       T val;
 
     public:
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     constant_functor(const T val = 0) : val(val) {}
 
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     T operator()(const T& x) const {
         return val;
     }
@@ -475,7 +475,7 @@ struct constant_functor
 template <typename T>
 struct square_functor
 {
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     T operator()(const T& x) const {
         return x * x;
     }
@@ -518,7 +518,7 @@ struct square_functor
 template <typename T>
 struct sqrt_functor
 {
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     T operator()(const T& x) const {
         using thrust::sqrt;
         using std::sqrt;
@@ -564,7 +564,7 @@ struct sqrt_functor
 template <typename T>
 struct reciprocal_functor
 {
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     T operator()(const T& v) const {
         return T(1.0) / v;
     }
@@ -607,7 +607,7 @@ struct reciprocal_functor
 template<typename T>
 struct abs_functor
 {
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     typename cusp::norm_type<T>::type
     operator()(const T& t) const {
         return cusp::abs(t);
@@ -652,7 +652,7 @@ struct abs_functor
 template<typename T>
 struct abs_squared_functor
 {
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     typename cusp::norm_type<T>::type
     operator()(const T& t) const {
         return cusp::square_functor<typename cusp::norm_type<T>::type>()(cusp::abs(t));
@@ -696,7 +696,7 @@ struct abs_squared_functor
 template<typename T>
 struct conj_functor
 {
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     T operator()(const T& t) const {
         return cusp::conj(t);
     }
@@ -739,7 +739,7 @@ struct conj_functor
 template<typename T>
 struct norm_functor
 {
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     typename cusp::norm_type<T>::type
     operator()(const T& t) const {
         return cusp::norm(t);

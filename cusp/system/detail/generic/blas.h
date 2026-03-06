@@ -52,7 +52,7 @@ struct SCAL
         : alpha(_alpha) {}
 
     template <typename T2>
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     void operator()(T2& x)
     {
         x = T(alpha) * x;
@@ -69,7 +69,7 @@ struct AXPY
         : alpha(_alpha) {}
 
     template <typename Tuple>
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     void operator()(Tuple t)
     {
         thrust::get<1>(t) = alpha * thrust::get<0>(t) +
@@ -87,7 +87,7 @@ struct AXPBY
         : alpha(_alpha), beta(_beta) {}
 
     template <typename Tuple>
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     void operator()(Tuple t)
     {
         thrust::get<2>(t) = alpha * thrust::get<0>(t) +
@@ -106,7 +106,7 @@ struct AXPBYPCZ
         : alpha(_alpha), beta(_beta), gamma(_gamma) {}
 
     template <typename Tuple>
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     void operator()(Tuple t)
     {
         thrust::get<3>(t) = alpha * thrust::get<0>(t) +
@@ -118,7 +118,7 @@ struct AXPBYPCZ
 template <typename T>
 struct XMY
 {
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     T operator()(const T& x, const T& y)
     {
         return x * y;
@@ -128,7 +128,7 @@ struct XMY
 template<typename T>
 struct AMAX
 {
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     bool operator()(const T& lhs, const T& rhs)
     {
         return cusp::abs(lhs) < cusp::abs(rhs);

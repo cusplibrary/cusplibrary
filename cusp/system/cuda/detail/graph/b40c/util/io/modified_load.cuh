@@ -84,15 +84,15 @@ struct ModifiedLoad
 	 * Load operation we will provide specializations for
 	 */
 	template <typename T>
-	__device__ __forceinline__ static void Ld(T &val, T *ptr);
+	_CCCL_DEVICE __forceinline__ static void Ld(T &val, T *ptr);
 
 	/**
 	 * Vec-4 loads for 64-bit types are implemented as two vec-2 loads
 	 */
 #if CUDA_VERSION >= 12000
-	__device__ __forceinline__ static void Ld(double4_16a &val, double4_16a* ptr)
+	_CCCL_DEVICE __forceinline__ static void Ld(double4_16a &val, double4_16a* ptr)
 #else
-	__device__ __forceinline__ static void Ld(double4 &val, double4* ptr)
+	_CCCL_DEVICE __forceinline__ static void Ld(double4 &val, double4* ptr)
 #endif
 	{
 		ModifiedLoad<CACHE_MODIFIER>::Ld(*reinterpret_cast<double2*>(&val.x), reinterpret_cast<double2*>(ptr));
@@ -100,9 +100,9 @@ struct ModifiedLoad
 	}
 
 #if CUDA_VERSION >= 12000
-	__device__ __forceinline__ static void Ld(ulonglong4_16a &val, ulonglong4_16a* ptr)
+	_CCCL_DEVICE __forceinline__ static void Ld(ulonglong4_16a &val, ulonglong4_16a* ptr)
 #else
-	__device__ __forceinline__ static void Ld(ulonglong4 &val, ulonglong4* ptr)
+	_CCCL_DEVICE __forceinline__ static void Ld(ulonglong4 &val, ulonglong4* ptr)
 #endif
 	{
 		ModifiedLoad<CACHE_MODIFIER>::Ld(*reinterpret_cast<ulonglong2*>(&val.x), reinterpret_cast<ulonglong2*>(ptr));
@@ -110,9 +110,9 @@ struct ModifiedLoad
 	}
 
 #if CUDA_VERSION >= 12000
-	__device__ __forceinline__ static void Ld(longlong4_16a &val, longlong4_16a* ptr)
+	_CCCL_DEVICE __forceinline__ static void Ld(longlong4_16a &val, longlong4_16a* ptr)
 #else
-	__device__ __forceinline__ static void Ld(longlong4 &val, longlong4* ptr)
+	_CCCL_DEVICE __forceinline__ static void Ld(longlong4 &val, longlong4* ptr)
 #endif
 	{
 		ModifiedLoad<CACHE_MODIFIER>::Ld(*reinterpret_cast<longlong2*>(&val.x), reinterpret_cast<longlong2*>(ptr));
@@ -128,7 +128,7 @@ struct ModifiedLoad
 	 */
 	template <>
 	template <typename T>
-	__device__ __forceinline__ void ModifiedLoad<ld::NONE>::Ld(T &val, T *ptr)
+	_CCCL_DEVICE __forceinline__ void ModifiedLoad<ld::NONE>::Ld(T &val, T *ptr)
 	{
 		val = *ptr;
 	}
@@ -259,7 +259,7 @@ struct ModifiedLoad
 
 	template <ld::CacheModifier READ_MODIFIER>
 	template <typename T>
-	__device__ __forceinline__ void ModifiedLoad<READ_MODIFIER>::Ld(T &val, T *ptr)
+	_CCCL_DEVICE __forceinline__ void ModifiedLoad<READ_MODIFIER>::Ld(T &val, T *ptr)
 	{
 		val = *ptr;
 	}

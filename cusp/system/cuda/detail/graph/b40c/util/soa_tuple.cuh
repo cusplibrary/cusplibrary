@@ -66,13 +66,13 @@ struct Tuple<_T0, NullType, NullType, NullType>
 	T0 t0;
 
 	// Constructors
-	__host__ __device__ __forceinline__ Tuple() {}
-	__host__ __device__ __forceinline__ Tuple(T0 t0) : t0(t0) {}
+	_CCCL_HOST_DEVICE __forceinline__ Tuple() {}
+	_CCCL_HOST_DEVICE __forceinline__ Tuple(T0 t0) : t0(t0) {}
 
 	// Manipulators
 
 	template <typename TupleSlice>
-	__host__ __device__ __forceinline__ void Set(
+	_CCCL_HOST_DEVICE __forceinline__ void Set(
 		const TupleSlice &tuple,
 		const int col)
 	{
@@ -80,7 +80,7 @@ struct Tuple<_T0, NullType, NullType, NullType>
 	}
 
 	template <typename TupleSlice>
-	__host__ __device__ __forceinline__ void Set(
+	_CCCL_HOST_DEVICE __forceinline__ void Set(
 		const TupleSlice &tuple,
 		const int row,
 		const int col)
@@ -89,7 +89,7 @@ struct Tuple<_T0, NullType, NullType, NullType>
 	}
 
 	template <typename TupleSlice>
-	__host__ __device__ __forceinline__ void Get(
+	_CCCL_HOST_DEVICE __forceinline__ void Get(
 		TupleSlice &retval,
 		const int col) const
 	{
@@ -97,7 +97,7 @@ struct Tuple<_T0, NullType, NullType, NullType>
 	}
 
 	template <typename TupleSlice>
-	__host__ __device__ __forceinline__ void Get(
+	_CCCL_HOST_DEVICE __forceinline__ void Get(
 		TupleSlice &retval,
 		const int row,
 		const int col) const
@@ -129,14 +129,14 @@ struct Tuple<_T0, _T1, NullType, NullType>
 
 
 	// Constructors
-	__host__ __device__ __forceinline__ Tuple() {}
-	__host__ __device__ __forceinline__ Tuple(T0 t0) : t0(t0) {}
-	__host__ __device__ __forceinline__ Tuple(T0 t0, T1 t1) : t0(t0), t1(t1) {}
+	_CCCL_HOST_DEVICE __forceinline__ Tuple() {}
+	_CCCL_HOST_DEVICE __forceinline__ Tuple(T0 t0) : t0(t0) {}
+	_CCCL_HOST_DEVICE __forceinline__ Tuple(T0 t0, T1 t1) : t0(t0), t1(t1) {}
 
 	// Manipulators
 
 	template <typename TupleSlice>
-	__host__ __device__ __forceinline__ void Set(
+	_CCCL_HOST_DEVICE __forceinline__ void Set(
 		const TupleSlice &tuple,
 		const int col)
 	{
@@ -145,7 +145,7 @@ struct Tuple<_T0, _T1, NullType, NullType>
 	}
 
 	template <typename TupleSlice>
-	__host__ __device__ __forceinline__ void Set(
+	_CCCL_HOST_DEVICE __forceinline__ void Set(
 		const TupleSlice &tuple,
 		const int row,
 		const int col)
@@ -155,7 +155,7 @@ struct Tuple<_T0, _T1, NullType, NullType>
 	}
 
 	template <typename TupleSlice>
-	__host__ __device__ __forceinline__ void Get(
+	_CCCL_HOST_DEVICE __forceinline__ void Get(
 		TupleSlice &retval,
 		const int col) const
 	{
@@ -163,7 +163,7 @@ struct Tuple<_T0, _T1, NullType, NullType>
 	}
 
 	template <typename TupleSlice>
-	__host__ __device__ __forceinline__ void Get(
+	_CCCL_HOST_DEVICE __forceinline__ void Get(
 		TupleSlice &retval,
 		const int row,
 		const int col) const
@@ -197,12 +197,12 @@ struct Tuple<_T0, _T1, _T2, NullType>
 	T2 t2;
 
 	// Constructor
-	__host__ __device__ __forceinline__ Tuple(T0 t0, T1 t1, T2 t2) : t0(t0), t1(t1), t2(t2) {}
+	_CCCL_HOST_DEVICE __forceinline__ Tuple(T0 t0, T1 t1, T2 t2) : t0(t0), t1(t1), t2(t2) {}
 
 	// Manipulators
 
 	template <typename TupleSlice>
-	__host__ __device__ __forceinline__ void Set(
+	_CCCL_HOST_DEVICE __forceinline__ void Set(
 		const TupleSlice &tuple,
 		const int col)
 	{
@@ -212,7 +212,7 @@ struct Tuple<_T0, _T1, _T2, NullType>
 	}
 
 	template <typename TupleSlice>
-	__host__ __device__ __forceinline__ void Set(
+	_CCCL_HOST_DEVICE __forceinline__ void Set(
 		const TupleSlice &tuple,
 		const int row,
 		const int col)
@@ -223,7 +223,7 @@ struct Tuple<_T0, _T1, _T2, NullType>
 	}
 
 	template <typename TupleSlice>
-	__host__ __device__ __forceinline__ void Get(
+	_CCCL_HOST_DEVICE __forceinline__ void Get(
 		TupleSlice &retval,
 		const int col) const
 	{
@@ -234,7 +234,7 @@ struct Tuple<_T0, _T1, _T2, NullType>
 	}
 
 	template <typename TupleSlice>
-	__host__ __device__ __forceinline__ void Get(
+	_CCCL_HOST_DEVICE __forceinline__ void Get(
 		TupleSlice &retval,
 		const int row,
 		const int col) const
@@ -274,12 +274,12 @@ struct Tuple
 	T3 t3;
 
 	// Constructor
-	__host__ __device__ __forceinline__ Tuple(T0 t0, T1 t1, T2 t2, T3 t3) : t0(t0), t1(t1), t2(t2), t3(t3) {}
+	_CCCL_HOST_DEVICE __forceinline__ Tuple(T0 t0, T1 t1, T2 t2, T3 t3) : t0(t0), t1(t1), t2(t2), t3(t3) {}
 
 	// Manipulators
 
 	template <typename TupleSlice>
-	__host__ __device__ __forceinline__ void Set(
+	_CCCL_HOST_DEVICE __forceinline__ void Set(
 		const TupleSlice &tuple,
 		const int col)
 	{
@@ -290,7 +290,7 @@ struct Tuple
 	}
 
 	template <typename TupleSlice>
-	__host__ __device__ __forceinline__ void Set(
+	_CCCL_HOST_DEVICE __forceinline__ void Set(
 		const TupleSlice &tuple,
 		const int row,
 		const int col)
@@ -302,7 +302,7 @@ struct Tuple
 	}
 
 	template <typename TupleSlice>
-	__host__ __device__ __forceinline__ void Get(
+	_CCCL_HOST_DEVICE __forceinline__ void Get(
 		TupleSlice &retval,
 		const int col) const
 	{
@@ -314,7 +314,7 @@ struct Tuple
 	}
 
 	template <typename TupleSlice>
-	__host__ __device__ __forceinline__ void Get(
+	_CCCL_HOST_DEVICE __forceinline__ void Get(
 		TupleSlice &retval,
 		const int row,
 		const int col) const

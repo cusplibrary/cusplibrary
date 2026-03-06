@@ -51,7 +51,7 @@ struct norm_type< cusp::complex<T> >
 
 using thrust::conj;
 template<typename T>
-__host__ __device__
+_CCCL_HOST_DEVICE
 inline T
 conj(const T& z)
 {
@@ -60,7 +60,7 @@ conj(const T& z)
 
 using thrust::abs;
 template <typename T>
-__host__ __device__
+_CCCL_HOST_DEVICE
 inline typename cusp::norm_type<T>::type
 abs(const T& z)
 {
@@ -69,7 +69,7 @@ abs(const T& z)
 
 using thrust::norm;
 template <typename T>
-__host__ __device__
+_CCCL_HOST_DEVICE
 inline typename cusp::norm_type<T>::type
 norm(const T& z)
 {
@@ -119,7 +119,7 @@ public:
      *  \param re The real part of the number.
      *  \param im The imaginary part of the number.
      */
-    inline __host__ __device__
+    inline _CCCL_HOST_DEVICE
     complex(const T & re = T(), const T& im = T());
 
     /*! This copy constructor copies from a \p complex with a type that
@@ -130,7 +130,7 @@ public:
      *  \tparam X is convertible to \c value_type.
      */
     template <typename X>
-    inline __host__ __device__
+    inline _CCCL_HOST_DEVICE
     complex(const complex<X> & z);
 
     /*! This copy constructor copies from a <tt>std::complex</tt> with a type that
@@ -141,7 +141,7 @@ public:
      *  \tparam X is convertible to \c value_type.
      */
     template <typename X>
-    inline __host__
+    inline _CCCL_HOST
     complex(const std::complex<X> & z);
 
 
@@ -153,7 +153,7 @@ public:
      *
      *  \param z The \p complex to be Added.
      */
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     inline complex<T>& operator+=(const complex<T> z);
 
     /*! Subtracts a \p complex from this \p complex and
@@ -161,7 +161,7 @@ public:
      *
      *  \param z The \p complex to be subtracted.
      */
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     inline complex<T>& operator-=(const complex<T> z);
 
     /*! Multiplies this \p complex by another \p complex and
@@ -169,7 +169,7 @@ public:
      *
      *  \param z The \p complex to be multiplied.
      */
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     inline complex<T>& operator*=(const complex<T> z);
 
     /*! Divides this \p complex by another \p complex and
@@ -177,7 +177,7 @@ public:
      *
      *  \param z The \p complex to be divided.
      */
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     inline complex<T>& operator/=(const complex<T> z);
 
 
@@ -189,25 +189,25 @@ public:
 
     /*! Returns the real part of this \p complex.
      */
-    __host__ __device__ inline T real() const volatile {
+    _CCCL_HOST_DEVICE inline T real() const volatile {
         return m_data[0];
     }
 
     /*! Returns the imaginary part of this \p complex.
      */
-    __host__ __device__ inline T imag() const volatile {
+    _CCCL_HOST_DEVICE inline T imag() const volatile {
         return m_data[1];
     }
 
     /*! Returns the real part of this \p complex.
      */
-    __host__ __device__ inline T real() const {
+    _CCCL_HOST_DEVICE inline T real() const {
         return m_data[0];
     }
 
     /*! Returns the imaginary part of this \p complex.
      */
-    __host__ __device__ inline T imag() const {
+    _CCCL_HOST_DEVICE inline T imag() const {
         return m_data[1];
     }
 
@@ -222,7 +222,7 @@ public:
      *
      *  \param re The new real part of this \p complex.
      */
-    __host__ __device__ inline void real(T re)volatile {
+    _CCCL_HOST_DEVICE inline void real(T re)volatile {
         m_data[0] = re;
     }
 
@@ -230,7 +230,7 @@ public:
      *
      *  \param im The new imaginary part of this \p complex.e
      */
-    __host__ __device__ inline void imag(T im)volatile {
+    _CCCL_HOST_DEVICE inline void imag(T im)volatile {
         m_data[1] = im;
     }
 
@@ -238,7 +238,7 @@ public:
      *
      *  \param re The new real part of this \p complex.
      */
-    __host__ __device__ inline void real(T re) {
+    _CCCL_HOST_DEVICE inline void real(T re) {
         m_data[0] = re;
     }
 
@@ -246,7 +246,7 @@ public:
      *
      *  \param im The new imaginary part of this \p complex.
      */
-    __host__ __device__ inline void imag(T im) {
+    _CCCL_HOST_DEVICE inline void imag(T im) {
         m_data[1] = im;
     }
 
@@ -271,32 +271,32 @@ private:
  *
  *  \param z The \p complex from which to calculate the absolute value.
  */
-template<typename T> __host__ __device__ inline T abs(const complex<T>& z);
+template<typename T> _CCCL_HOST_DEVICE inline T abs(const complex<T>& z);
 
 /*! Returns the phase angle (also known as argument) in radians of a \p complex.
  *
  *  \param z The \p complex from which to calculate the phase angle.
  */
-template<typename T> __host__ __device__ inline T arg(const complex<T>& z);
+template<typename T> _CCCL_HOST_DEVICE inline T arg(const complex<T>& z);
 
 /*! Returns the square of the magnitude of a \p complex.
  *
  *  \param z The \p complex from which to calculate the norm.
  */
-template<typename T> __host__ __device__ inline T norm(const complex<T>& z);
+template<typename T> _CCCL_HOST_DEVICE inline T norm(const complex<T>& z);
 
 /*! Returns the complex conjugate of a \p complex.
  *
  *  \param z The \p complex from which to calculate the complex conjugate.
  */
-template<typename T> __host__ __device__ inline complex<T> conj(const complex<T>& z);
+template<typename T> _CCCL_HOST_DEVICE inline complex<T> conj(const complex<T>& z);
 
 /*! Returns a \p complex with the specified magnitude and phase.
  *
  *  \param m The magnitude of the returned \p complex.
  *  \param theta The phase of the returned \p complex in radians.
  */
-template<typename T> __host__ __device__ inline complex<T> polar(const T& m, const T& theta = 0);
+template<typename T> _CCCL_HOST_DEVICE inline complex<T> polar(const T& m, const T& theta = 0);
 
 /*! Returns the projection of a \p complex on the Riemann sphere.
  *  For all finite \p complex it returns the argument. For \p complexes
@@ -305,7 +305,7 @@ template<typename T> __host__ __device__ inline complex<T> polar(const T& m, con
  *
  *  \param z The \p complex argument.
  */
-template<typename T> __host__ __device__ inline complex<T> proj(const T& z);
+template<typename T> _CCCL_HOST_DEVICE inline complex<T> proj(const T& z);
 
 
 
@@ -316,84 +316,84 @@ template<typename T> __host__ __device__ inline complex<T> proj(const T& z);
  *  \param lhs The first \p complex.
  *  \param rhs The second \p complex.
  */
-template <typename T> __host__ __device__ inline complex<T> operator*(const complex<T>& lhs, const complex<T>& rhs);
+template <typename T> _CCCL_HOST_DEVICE inline complex<T> operator*(const complex<T>& lhs, const complex<T>& rhs);
 
 /*! Multiplies a \p complex number by a scalar.
  *
  *  \param lhs The \p complex.
  *  \param rhs The scalar.
  */
-template <typename T> __host__ __device__ inline complex<T> operator*(const complex<T>& lhs, const T & rhs);
+template <typename T> _CCCL_HOST_DEVICE inline complex<T> operator*(const complex<T>& lhs, const T & rhs);
 
 /*! Multiplies a scalr by a \p complex number.
  *
  *  \param lhs The scalar.
  *  \param rhs The \p complex.
  */
-template <typename T> __host__ __device__ inline complex<T> operator*(const T& lhs, const complex<T>& rhs);
+template <typename T> _CCCL_HOST_DEVICE inline complex<T> operator*(const T& lhs, const complex<T>& rhs);
 
 /*! Divides two \p complex numbers.
  *
  *  \param lhs The numerator (dividend).
  *  \param rhs The denomimator (divisor).
  */
-template <typename T> __host__ __device__ inline complex<T> operator/(const complex<T>& lhs, const complex<T>& rhs);
+template <typename T> _CCCL_HOST_DEVICE inline complex<T> operator/(const complex<T>& lhs, const complex<T>& rhs);
 
 /*! Divides a \p complex number by a scalar.
  *
  *  \param lhs The complex numerator (dividend).
  *  \param rhs The scalar denomimator (divisor).
  */
-template <typename T> __host__ __device__ inline complex<T> operator/(const complex<T>& lhs, const T & rhs);
+template <typename T> _CCCL_HOST_DEVICE inline complex<T> operator/(const complex<T>& lhs, const T & rhs);
 
 /*! Divides a scalar by a \p complex number.
  *
  *  \param lhs The scalar numerator (dividend).
  *  \param rhs The complex denomimator (divisor).
  */
-template <typename T> __host__ __device__ inline complex<T> operator/(const T& lhs, const complex<T> & rhs);
+template <typename T> _CCCL_HOST_DEVICE inline complex<T> operator/(const T& lhs, const complex<T> & rhs);
 
 /*! Adds two \p complex numbers.
  *
  *  \param lhs The first \p complex.
  *  \param rhs The second \p complex.
  */
-template <typename T> __host__ __device__ inline complex<T> operator+(const complex<T>& lhs, const complex<T>& rhs);
+template <typename T> _CCCL_HOST_DEVICE inline complex<T> operator+(const complex<T>& lhs, const complex<T>& rhs);
 
 /*! Adds a scalar to a \p complex number.
  *
  *  \param lhs The \p complex.
  *  \param rhs The scalar.
  */
-template <typename T> __host__ __device__ inline complex<T> operator+(const complex<T>& lhs, const T & rhs);
+template <typename T> _CCCL_HOST_DEVICE inline complex<T> operator+(const complex<T>& lhs, const T & rhs);
 
 /*! Adds a \p complex number to a scalar.
  *
  *  \param lhs The scalar.
  *  \param rhs The \p complex.
  */
-template <typename T> __host__ __device__ inline complex<T> operator+(const T& lhs, const complex<T>& rhs);
+template <typename T> _CCCL_HOST_DEVICE inline complex<T> operator+(const T& lhs, const complex<T>& rhs);
 
 /*! Subtracts two \p complex numbers.
  *
  *  \param lhs The first \p complex (minuend).
  *  \param rhs The second \p complex (subtrahend).
  */
-template <typename T> __host__ __device__ inline complex<T> operator-(const complex<T>& lhs, const complex<T>& rhs);
+template <typename T> _CCCL_HOST_DEVICE inline complex<T> operator-(const complex<T>& lhs, const complex<T>& rhs);
 
 /*! Subtracts a scalar from a \p complex number.
  *
  *  \param lhs The \p complex (minuend).
  *  \param rhs The scalar (subtrahend).
  */
-template <typename T> __host__ __device__ inline complex<T> operator-(const complex<T>& lhs, const T & rhs);
+template <typename T> _CCCL_HOST_DEVICE inline complex<T> operator-(const complex<T>& lhs, const T & rhs);
 
 /*! Subtracts a \p complex number from a scalar.
  *
  *  \param lhs The scalar (minuend).
  *  \param rhs The \p complex (subtrahend).
  */
-template <typename T> __host__ __device__ inline complex<T> operator-(const T& lhs, const complex<T>& rhs);
+template <typename T> _CCCL_HOST_DEVICE inline complex<T> operator-(const T& lhs, const complex<T>& rhs);
 
 
 
@@ -403,13 +403,13 @@ template <typename T> __host__ __device__ inline complex<T> operator-(const T& l
  *
  *  \param rhs The \p complex argument.
  */
-template <typename T> __host__ __device__ inline complex<T> operator+(const complex<T>& rhs);
+template <typename T> _CCCL_HOST_DEVICE inline complex<T> operator+(const complex<T>& rhs);
 
 /*! Unary minus, returns the additive inverse (negation) of its \p complex argument.
  *
  *  \param rhs The \p complex argument.
  */
-template <typename T> __host__ __device__ inline complex<T> operator-(const complex<T>& rhs);
+template <typename T> _CCCL_HOST_DEVICE inline complex<T> operator-(const complex<T>& rhs);
 
 
 
@@ -419,19 +419,19 @@ template <typename T> __host__ __device__ inline complex<T> operator-(const comp
  *
  *  \param z The \p complex argument.
  */
-template <typename T> __host__ __device__ complex<T> exp(const complex<T>& z);
+template <typename T> _CCCL_HOST_DEVICE complex<T> exp(const complex<T>& z);
 
 /*! Returns the complex natural logarithm of a \p complex number.
  *
  *  \param z The \p complex argument.
  */
-template <typename T> __host__ __device__ complex<T> log(const complex<T>& z);
+template <typename T> _CCCL_HOST_DEVICE complex<T> log(const complex<T>& z);
 
 /*! Returns the complex base 10 logarithm of a \p complex number.
  *
  *  \param z The \p complex argument.
  */
-template <typename T> __host__ __device__ inline complex<T> log10(const complex<T>& z);
+template <typename T> _CCCL_HOST_DEVICE inline complex<T> log10(const complex<T>& z);
 
 
 
@@ -442,21 +442,21 @@ template <typename T> __host__ __device__ inline complex<T> log10(const complex<
  *  \param x The base.
  *  \param y The exponent.
  */
-template <typename T> __host__ __device__ complex<T> pow(const complex<T>& x, const complex<T>& y);
+template <typename T> _CCCL_HOST_DEVICE complex<T> pow(const complex<T>& x, const complex<T>& y);
 
 /*! Returns a \p complex number raised to a scalar.
  *
  *  \param x The \p complex base.
  *  \param y The scalar exponent.
  */
-template <typename T> __host__ __device__ complex<T> pow(const complex<T>& x, const T& y);
+template <typename T> _CCCL_HOST_DEVICE complex<T> pow(const complex<T>& x, const T& y);
 
 /*! Returns a scalar raised to a \p complex number.
  *
  *  \param x The scalar base.
  *  \param y The \p complex exponent.
  */
-template <typename T> __host__ __device__ complex<T> pow(const T& x, const complex<T>& y);
+template <typename T> _CCCL_HOST_DEVICE complex<T> pow(const T& x, const complex<T>& y);
 
 #if !defined _MSC_VER
 /*! Returns a \p complex number raised to another. The types of the two \p complex should be compatible
@@ -465,7 +465,7 @@ template <typename T> __host__ __device__ complex<T> pow(const T& x, const compl
  *  \param x The base.
  *  \param y The exponent.
  */
-template <typename T, typename U> __host__ __device__ complex<typename detail::promoted_numerical_type<T,U>::type > pow(const complex<T>& x, const complex<U>& y);
+template <typename T, typename U> _CCCL_HOST_DEVICE complex<typename detail::promoted_numerical_type<T,U>::type > pow(const complex<T>& x, const complex<U>& y);
 
 /*! Returns a \p complex number raised to a scalar. The type of the \p complex should be compatible with the scalar
  * and the type of the returned \p complex is the promoted type of the two arguments.
@@ -473,7 +473,7 @@ template <typename T, typename U> __host__ __device__ complex<typename detail::p
  *  \param x The base.
  *  \param y The exponent.
  */
-template <typename T, typename U> __host__ __device__ complex<typename detail::promoted_numerical_type<T,U>::type > pow(const complex<T>& x, const U& y);
+template <typename T, typename U> _CCCL_HOST_DEVICE complex<typename detail::promoted_numerical_type<T,U>::type > pow(const complex<T>& x, const U& y);
 
 /*! Returns a scalar raised to a \p complex number. The type of the \p complex should be compatible with the scalar
  * and the type of the returned \p complex is the promoted type of the two arguments.
@@ -481,7 +481,7 @@ template <typename T, typename U> __host__ __device__ complex<typename detail::p
  *  \param x The base.
  *  \param y The exponent.
  */
-template <typename T, typename U> __host__ __device__ complex<typename detail::promoted_numerical_type<T,U>::type > pow(const T& x,const complex<U>& y);
+template <typename T, typename U> _CCCL_HOST_DEVICE complex<typename detail::promoted_numerical_type<T,U>::type > pow(const T& x,const complex<U>& y);
 
 #endif // !defined _MSC_VER
 
@@ -489,7 +489,7 @@ template <typename T, typename U> __host__ __device__ complex<typename detail::p
  *
  *  \param z The \p complex argument.
  */
-template <typename T> __host__ __device__ complex<T> sqrt(const complex<T>&z);
+template <typename T> _CCCL_HOST_DEVICE complex<T> sqrt(const complex<T>&z);
 
 
 
@@ -499,19 +499,19 @@ template <typename T> __host__ __device__ complex<T> sqrt(const complex<T>&z);
  *
  *  \param z The \p complex argument.
  */
-template <typename T> __host__ __device__ complex<T> cos(const complex<T>&z);
+template <typename T> _CCCL_HOST_DEVICE complex<T> cos(const complex<T>&z);
 
 /*! Returns the complex sine of a \p complex number.
  *
  *  \param z The \p complex argument.
  */
-template <typename T> __host__ __device__ complex<T> sin(const complex<T>&z);
+template <typename T> _CCCL_HOST_DEVICE complex<T> sin(const complex<T>&z);
 
 /*! Returns the complex tangent of a \p complex number.
  *
  *  \param z The \p complex argument.
  */
-template <typename T> __host__ __device__ complex<T> tan(const complex<T>&z);
+template <typename T> _CCCL_HOST_DEVICE complex<T> tan(const complex<T>&z);
 
 
 
@@ -521,19 +521,19 @@ template <typename T> __host__ __device__ complex<T> tan(const complex<T>&z);
  *
  *  \param z The \p complex argument.
  */
-template <typename T> __host__ __device__ complex<T> cosh(const complex<T>& z);
+template <typename T> _CCCL_HOST_DEVICE complex<T> cosh(const complex<T>& z);
 
 /*! Returns the complex hyperbolic sine of a \p complex number.
  *
  *  \param z The \p complex argument.
  */
-template <typename T> __host__ __device__ complex<T> sinh(const complex<T>&z);
+template <typename T> _CCCL_HOST_DEVICE complex<T> sinh(const complex<T>&z);
 
 /*! Returns the complex hyperbolic tangent of a \p complex number.
  *
  *  \param z The \p complex argument.
  */
-template <typename T> __host__ __device__ complex<T> tanh(const complex<T>&z);
+template <typename T> _CCCL_HOST_DEVICE complex<T> tanh(const complex<T>&z);
 
 
 
@@ -546,7 +546,7 @@ template <typename T> __host__ __device__ complex<T> tanh(const complex<T>&z);
  *
  *  \param z The \p complex argument.
  */
-template <typename T> __host__ __device__ complex<T> acos(const complex<T>& z);
+template <typename T> _CCCL_HOST_DEVICE complex<T> acos(const complex<T>& z);
 
 /*! Returns the complex arc sine of a \p complex number.
  *
@@ -555,7 +555,7 @@ template <typename T> __host__ __device__ complex<T> acos(const complex<T>& z);
  *
  *  \param z The \p complex argument.
  */
-template <typename T> __host__ __device__ complex<T> asin(const complex<T>& z);
+template <typename T> _CCCL_HOST_DEVICE complex<T> asin(const complex<T>& z);
 
 /*! Returns the complex arc tangent of a \p complex number.
  *
@@ -564,7 +564,7 @@ template <typename T> __host__ __device__ complex<T> asin(const complex<T>& z);
  *
  *  \param z The \p complex argument.
  */
-template <typename T> __host__ __device__ complex<T> atan(const complex<T>& z);
+template <typename T> _CCCL_HOST_DEVICE complex<T> atan(const complex<T>& z);
 
 
 
@@ -577,7 +577,7 @@ template <typename T> __host__ __device__ complex<T> atan(const complex<T>& z);
  *
  *  \param z The \p complex argument.
  */
-template <typename T> __host__ __device__ complex<T> acosh(const complex<T>& z);
+template <typename T> _CCCL_HOST_DEVICE complex<T> acosh(const complex<T>& z);
 
 /*! Returns the complex inverse hyperbolic sine of a \p complex number.
  *
@@ -586,7 +586,7 @@ template <typename T> __host__ __device__ complex<T> acosh(const complex<T>& z);
  *
  *  \param z The \p complex argument.
  */
-template <typename T> __host__ __device__ complex<T> asinh(const complex<T>& z);
+template <typename T> _CCCL_HOST_DEVICE complex<T> asinh(const complex<T>& z);
 
 /*! Returns the complex inverse hyperbolic tangent of a \p complex number.
  *
@@ -595,7 +595,7 @@ template <typename T> __host__ __device__ complex<T> asinh(const complex<T>& z);
  *
  *  \param z The \p complex argument.
  */
-template <typename T> __host__ __device__ complex<T> atanh(const complex<T>& z);
+template <typename T> _CCCL_HOST_DEVICE complex<T> atanh(const complex<T>& z);
 
 
 
@@ -633,42 +633,42 @@ operator>>(std::basic_istream<charT, traits>& is, complex<ValueType>& z);
  *  \param lhs The first \p complex.
  *  \param rhs The second \p complex.
  */
-template <typename T> __host__ __device__ inline bool operator==(const complex<T>& lhs, const complex<T>& rhs);
+template <typename T> _CCCL_HOST_DEVICE inline bool operator==(const complex<T>& lhs, const complex<T>& rhs);
 
 /*! Returns true if the imaginary part of the  \p complex number is zero and the real part is equal to the scalar. Returns false otherwise.
  *
  *  \param lhs The scalar.
  *  \param rhs The \p complex.
  */
-template <typename T> __host__ __device__ inline bool operator==(const T & lhs, const complex<T>& rhs);
+template <typename T> _CCCL_HOST_DEVICE inline bool operator==(const T & lhs, const complex<T>& rhs);
 
 /*! Returns true if the imaginary part of the  \p complex number is zero and the real part is equal to the scalar. Returns false otherwise.
  *
  *  \param lhs The \p complex.
  *  \param rhs The scalar.
  */
-template <typename T> __host__ __device__ inline bool operator==(const complex<T> & lhs, const T& rhs);
+template <typename T> _CCCL_HOST_DEVICE inline bool operator==(const complex<T> & lhs, const T& rhs);
 
 /*! Returns true if two \p complex numbers are different and false otherwise.
  *
  *  \param lhs The first \p complex.
  *  \param rhs The second \p complex.
  */
-template <typename T> __host__ __device__ inline bool operator!=(const complex<T>& lhs, const complex<T>& rhs);
+template <typename T> _CCCL_HOST_DEVICE inline bool operator!=(const complex<T>& lhs, const complex<T>& rhs);
 
 /*! Returns true if the imaginary part of the  \p complex number is not zero or the real part is different from the scalar. Returns false otherwise.
  *
  *  \param lhs The scalar.
  *  \param rhs The \p complex.
  */
-template <typename T> __host__ __device__ inline bool operator!=(const T & lhs, const complex<T>& rhs);
+template <typename T> _CCCL_HOST_DEVICE inline bool operator!=(const T & lhs, const complex<T>& rhs);
 
 /*! Returns true if the imaginary part of the \p complex number is not zero or the real part is different from the scalar. Returns false otherwise.
  *
  *  \param lhs The \p complex.
  *  \param rhs The scalar.
  */
-template <typename T> __host__ __device__ inline bool operator!=(const complex<T> & lhs, const T& rhs);
+template <typename T> _CCCL_HOST_DEVICE inline bool operator!=(const complex<T> & lhs, const T& rhs);
 
 #include <thrust/detail/complex/complex.inl>
 

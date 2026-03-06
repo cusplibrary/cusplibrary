@@ -39,7 +39,7 @@ namespace detail
 struct process_mis_nodes
 {
     template <typename Tuple>
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     void operator()(Tuple t)
     {
         if (thrust::get<1>(t) == 1)                     // undecided node
@@ -53,7 +53,7 @@ struct process_mis_nodes
 struct process_non_mis_nodes
 {
     template <typename Tuple>
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     void operator()(Tuple t)
     {
         if (thrust::get<0>(t) == 1)            // undecided node

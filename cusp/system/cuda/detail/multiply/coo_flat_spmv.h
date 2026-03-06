@@ -37,7 +37,7 @@ namespace detail
 
 // segmented reduction in shared memory
 template <typename IndexType, typename ValueType, typename BinaryFunction>
-__device__ ValueType segreduce_warp(const IndexType thread_lane, IndexType row, ValueType val, IndexType * rows, ValueType * vals, BinaryFunction reduce)
+_CCCL_DEVICE ValueType segreduce_warp(const IndexType thread_lane, IndexType row, ValueType val, IndexType * rows, ValueType * vals, BinaryFunction reduce)
 {
     rows[threadIdx.x] = row;
     vals[threadIdx.x] = val;
@@ -62,7 +62,7 @@ __device__ ValueType segreduce_warp(const IndexType thread_lane, IndexType row, 
 }
 
 template <typename IndexType, typename ValueType, typename BinaryFunction>
-__device__ void segreduce_block(const IndexType * idx, ValueType * val, BinaryFunction reduce)
+_CCCL_DEVICE void segreduce_block(const IndexType * idx, ValueType * val, BinaryFunction reduce)
 {
     ValueType left = 0;
     if( threadIdx.x >=   1 && idx[threadIdx.x] == idx[threadIdx.x -   1] ) {

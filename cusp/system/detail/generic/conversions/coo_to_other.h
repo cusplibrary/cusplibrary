@@ -61,7 +61,7 @@ struct array2d_map_functor
         : pitch(pitch) {}
 
     template<typename Tuple>
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     IndexType operator()(const Tuple& t) const
     {
         IndexType row = thrust::get<0>(t);

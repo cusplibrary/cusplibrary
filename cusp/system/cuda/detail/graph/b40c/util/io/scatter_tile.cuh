@@ -72,7 +72,7 @@ struct ScatterTile
 	{
 		// Unguarded
 		template <typename T, void Transform(T&), typename SizeT>
-		static __device__ __forceinline__ void Invoke(
+		static _CCCL_DEVICE __forceinline__ void Invoke(
 			T *dest,
 			T data[][LOAD_VEC_SIZE],
 			SizeT scatter_offsets[][LOAD_VEC_SIZE])
@@ -86,7 +86,7 @@ struct ScatterTile
 
 		// Guarded by flags
 		template <typename T, void Transform(T&), typename Flag, typename SizeT>
-		static __device__ __forceinline__ void Invoke(
+		static _CCCL_DEVICE __forceinline__ void Invoke(
 			T *dest,
 			T data[][LOAD_VEC_SIZE],
 			SizeT scatter_offsets[][LOAD_VEC_SIZE],
@@ -104,7 +104,7 @@ struct ScatterTile
 
 		// Guarded by partial tile size
 		template <typename T, void Transform(T&), typename SizeT>
-		static __device__ __forceinline__ void Invoke(
+		static _CCCL_DEVICE __forceinline__ void Invoke(
 			T *dest,
 			T data[][LOAD_VEC_SIZE],
 			SizeT scatter_offsets[][LOAD_VEC_SIZE],
@@ -124,7 +124,7 @@ struct ScatterTile
 
 		// Guarded by flags and partial tile size
 		template <typename T, void Transform(T&), typename Flag, typename SizeT>
-		static __device__ __forceinline__ void Invoke(
+		static _CCCL_DEVICE __forceinline__ void Invoke(
 			T *dest,
 			T data[][LOAD_VEC_SIZE],
 			SizeT scatter_offsets[][LOAD_VEC_SIZE],
@@ -151,7 +151,7 @@ struct ScatterTile
 	{
 		// Unguarded
 		template <typename T, void Transform(T&), typename SizeT>
-		static __device__ __forceinline__ void Invoke(
+		static _CCCL_DEVICE __forceinline__ void Invoke(
 			T *dest,
 			T data[][LOAD_VEC_SIZE],
 			SizeT scatter_offsets[][LOAD_VEC_SIZE])
@@ -162,7 +162,7 @@ struct ScatterTile
 
 		// Guarded by flags
 		template <typename T, void Transform(T&), typename Flag, typename SizeT>
-		static __device__ __forceinline__ void Invoke(
+		static _CCCL_DEVICE __forceinline__ void Invoke(
 			T *dest,
 			T data[][LOAD_VEC_SIZE],
 			SizeT scatter_offsets[][LOAD_VEC_SIZE],
@@ -174,7 +174,7 @@ struct ScatterTile
 
 		// Guarded by partial tile size
 		template <typename T, void Transform(T&), typename SizeT>
-		static __device__ __forceinline__ void Invoke(
+		static _CCCL_DEVICE __forceinline__ void Invoke(
 			T *dest,
 			T data[][LOAD_VEC_SIZE],
 			SizeT scatter_offsets[][LOAD_VEC_SIZE],
@@ -186,7 +186,7 @@ struct ScatterTile
 
 		// Guarded by flags and partial tile size
 		template <typename T, void Transform(T&), typename Flag, typename SizeT>
-		static __device__ __forceinline__ void Invoke(
+		static _CCCL_DEVICE __forceinline__ void Invoke(
 			T *dest,
 			T data[][LOAD_VEC_SIZE],
 			SizeT scatter_offsets[][LOAD_VEC_SIZE],
@@ -205,14 +205,14 @@ struct ScatterTile
 	{
 		// Unguarded
 		template <typename T, void Transform(T&), typename SizeT>
-		static __device__ __forceinline__ void Invoke(
+		static _CCCL_DEVICE __forceinline__ void Invoke(
 			T *dest,
 			T data[][LOAD_VEC_SIZE],
 			SizeT scatter_offsets[][LOAD_VEC_SIZE]) {}
 
 		// Guarded by flags
 		template <typename T, void Transform(T&), typename Flag, typename SizeT>
-		static __device__ __forceinline__ void Invoke(
+		static _CCCL_DEVICE __forceinline__ void Invoke(
 			T *dest,
 			T data[][LOAD_VEC_SIZE],
 			SizeT scatter_offsets[][LOAD_VEC_SIZE],
@@ -220,7 +220,7 @@ struct ScatterTile
 
 		// Guarded by partial tile size
 		template <typename T, void Transform(T&), typename SizeT>
-		static __device__ __forceinline__ void Invoke(
+		static _CCCL_DEVICE __forceinline__ void Invoke(
 			T *dest,
 			T data[][LOAD_VEC_SIZE],
 			SizeT scatter_offsets[][LOAD_VEC_SIZE],
@@ -228,7 +228,7 @@ struct ScatterTile
 
 		// Guarded by flags and partial tile size
 		template <typename T, void Transform(T&), typename Flag, typename SizeT>
-		static __device__ __forceinline__ void Invoke(
+		static _CCCL_DEVICE __forceinline__ void Invoke(
 			T *dest,
 			T data[][LOAD_VEC_SIZE],
 			SizeT scatter_offsets[][LOAD_VEC_SIZE],
@@ -249,7 +249,7 @@ struct ScatterTile
 		typename T,
 		void Transform(T&), 							// Assignment function to transform the stored value
 		typename SizeT>
-	static __device__ __forceinline__ void Scatter(
+	static _CCCL_DEVICE __forceinline__ void Scatter(
 		T *dest,
 		T data[][LOAD_VEC_SIZE],
 		SizeT scatter_offsets[][LOAD_VEC_SIZE],
@@ -274,7 +274,7 @@ struct ScatterTile
 	 * the tile is not exceeding the partial tile size
 	 */
 	template <typename T, typename SizeT>
-	static __device__ __forceinline__ void Scatter(
+	static _CCCL_DEVICE __forceinline__ void Scatter(
 		T *dest,
 		T data[][LOAD_VEC_SIZE],
 		SizeT scatter_offsets[][LOAD_VEC_SIZE],
@@ -294,7 +294,7 @@ struct ScatterTile
 		void Transform(T&), 							// Assignment function to transform the stored value
 		typename Flag,
 		typename SizeT>
-	static __device__ __forceinline__ void Scatter(
+	static _CCCL_DEVICE __forceinline__ void Scatter(
 		T *dest,
 		T data[][LOAD_VEC_SIZE],
 		Flag flags[][LOAD_VEC_SIZE],
@@ -321,7 +321,7 @@ struct ScatterTile
 	 * the tile is not exceeding the partial tile size
 	 */
 	template <typename T, typename Flag, typename SizeT>
-	static __device__ __forceinline__ void Scatter(
+	static _CCCL_DEVICE __forceinline__ void Scatter(
 		T *dest,
 		T data[][LOAD_VEC_SIZE],
 		Flag flags[][LOAD_VEC_SIZE],

@@ -72,7 +72,7 @@ struct TreeReduce
 			typename T,
 			typename TreeT,
 			typename ReductionOp>
-		static __device__ __forceinline__ T Invoke(
+		static _CCCL_DEVICE __forceinline__ T Invoke(
 			T my_partial,
 			TreeT reduction_tree[CTA_THREADS],
 			int num_elements,
@@ -104,7 +104,7 @@ struct TreeReduce
 			typename T,
 			typename TreeT,
 			typename ReductionOp>
-		static __device__ __forceinline__ T Invoke(
+		static _CCCL_DEVICE __forceinline__ T Invoke(
 			T my_partial,
 			TreeT reduction_tree[CTA_THREADS],
 			int num_elements,
@@ -146,7 +146,7 @@ struct TreeReduce
 			typename T,
 			typename TreeT,
 			typename ReductionOp>
-		static __device__ __forceinline__ T Invoke(
+		static _CCCL_DEVICE __forceinline__ T Invoke(
 			T my_partial,
 			TreeT reduction_tree[CTA_THREADS],
 			int num_elements,
@@ -183,7 +183,7 @@ struct TreeReduce
 			typename T,
 			typename TreeT,
 			typename ReductionOp>
-		static __device__ __forceinline__ T Invoke(
+		static _CCCL_DEVICE __forceinline__ T Invoke(
 			T my_partial,
 			TreeT reduction_tree[CTA_THREADS],
 			int num_elements,
@@ -210,7 +210,7 @@ struct TreeReduce
 		typename T,
 		typename TreeT,
 		typename ReductionOp>
-	static __device__ __forceinline__ T Invoke(
+	static _CCCL_DEVICE __forceinline__ T Invoke(
 		T my_partial,									// Input partial
 		TreeT reduction_tree[CTA_THREADS],			// Shared memory for tree scan
 		int num_elements,								// Number of valid elements to actually reduce (may be less than number of cta-threads)
@@ -246,7 +246,7 @@ struct TreeReduce
 		typename T,
 		typename TreeT,
 		typename ReductionOp>
-	static __device__ __forceinline__ T Invoke(
+	static _CCCL_DEVICE __forceinline__ T Invoke(
 		T my_partial,								// Input partial
 		TreeT reduction_tree[CTA_THREADS],		// Shared memory for tree scan
 		ReductionOp reduction_op)					// Reduction operator
@@ -277,7 +277,7 @@ struct TreeReduce
 	template <
 		typename T,
 		typename TreeT>
-	static __device__ __forceinline__ T Invoke(
+	static _CCCL_DEVICE __forceinline__ T Invoke(
 		T my_partial,									// Input partial
 		TreeT reduction_tree[CTA_THREADS],			// Shared memory for tree scan
 		int num_elements)								// Number of valid elements to actually reduce (may be less than number of cta-threads)
@@ -296,7 +296,7 @@ struct TreeReduce
 	template <
 		typename T,
 		typename TreeT>
-	static __device__ __forceinline__ T Invoke(
+	static _CCCL_DEVICE __forceinline__ T Invoke(
 		T my_partial,								// Input partial
 		TreeT reduction_tree[CTA_THREADS])		// Shared memory for tree scan
 	{

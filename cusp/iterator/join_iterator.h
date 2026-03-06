@@ -56,7 +56,7 @@ template<typename T, typename V, int SIZE>
 struct join_search
 {
     template<typename SizesTuple, typename Tuple>
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     V operator()(const SizesTuple &t1, const Tuple& t2, const T i) const
     {
         return (i >= T(thrust::get<SIZE-2>(t1))) ? V(thrust::get<SIZE-1>(t2)[i]) : join_search<T,V,SIZE-1>()(t1,t2,i);
@@ -67,7 +67,7 @@ template<typename T, typename V>
 struct join_search<T,V,2>
 {
     template<typename SizesTuple, typename Tuple>
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     V operator()(const SizesTuple &t1, const Tuple& t2, const T i) const
     {
         return i >= T(::cuda::std::get<0>(t1)) ? thrust::get<1>(t2)[i] : thrust::get<0>(t2)[i];
@@ -166,14 +166,14 @@ public:
         SizesTuple t1;
         Tuple t2;
 
-        __host__ __device__
+        _CCCL_HOST_DEVICE
         join_select_functor(void) {}
 
-        __host__ __device__
+        _CCCL_HOST_DEVICE
         join_select_functor(const SizesTuple& t1, const Tuple& t2)
             : t1(t1), t2(t2) {}
 
-        __host__ __device__
+        _CCCL_HOST_DEVICE
         value_type operator()(const difference_type& i)
         {
             return join_search<difference_type,value_type,tuple_size-1>()(t1,t2,i);

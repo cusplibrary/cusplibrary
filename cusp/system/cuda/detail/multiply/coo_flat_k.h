@@ -40,7 +40,7 @@ namespace detail
 template<unsigned int CTA_SIZE,
          typename KeyIterator,
          typename ValueIterator>
-__device__
+_CCCL_DEVICE
 void scan_by_key(KeyIterator keys, ValueIterator vals)
 {
     typedef typename thrust::iterator_value<KeyIterator>::type   KeyType;

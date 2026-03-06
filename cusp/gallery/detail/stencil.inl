@@ -33,7 +33,7 @@ namespace detail
 template <typename StencilPoint, typename GridDimension, typename IndexType, int i, int n>
 struct inside_grid_helper
 {
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     static bool inside_grid(StencilPoint point, GridDimension grid, IndexType index)
     {
         IndexType x = index % thrust::get<i>(grid) + thrust::get<i>(thrust::get<0>(point));
@@ -48,7 +48,7 @@ struct inside_grid_helper
 template <typename StencilPoint, typename GridDimension, typename IndexType, int n>
 struct inside_grid_helper<StencilPoint,GridDimension,IndexType,n,n>
 {
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     static bool inside_grid(StencilPoint point, GridDimension grid, IndexType index)
     {
         return true;
@@ -56,7 +56,7 @@ struct inside_grid_helper<StencilPoint,GridDimension,IndexType,n,n>
 };
 
 template <typename StencilPoint, typename GridDimension, typename IndexType>
-__host__ __device__
+_CCCL_HOST_DEVICE
 bool inside_grid(StencilPoint point, GridDimension grid, IndexType index)
 {
     return inside_grid_helper<StencilPoint,GridDimension,IndexType, 0, thrust::tuple_size<GridDimension>::value >::inside_grid(point, grid, index);
@@ -123,7 +123,7 @@ struct fill_diagonal_entries
     fill_diagonal_entries(StencilPoint point, GridDimension grid)
         : point(point), grid(grid) {}
 
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     ValueType operator()(IndexType index)
     {
         if (inside_grid(point, grid, index))

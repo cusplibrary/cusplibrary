@@ -63,7 +63,7 @@ struct SerialSoaScan
 			typename Tuple,
 			typename RakingSoa,
 			typename ReductionOp>
-		static __host__ __device__ __forceinline__ Tuple Scan(
+		static _CCCL_HOST_DEVICE __forceinline__ Tuple Scan(
 			RakingSoa raking_partials,
 			RakingSoa raking_results,
 			Tuple exclusive_partial,
@@ -94,7 +94,7 @@ struct SerialSoaScan
 			typename Tuple,
 			typename RakingSoa,
 			typename ReductionOp>
-		static __host__ __device__ __forceinline__ Tuple Scan(
+		static _CCCL_HOST_DEVICE __forceinline__ Tuple Scan(
 			RakingSoa raking_partials,
 			RakingSoa raking_results,
 			Tuple exclusive_partial,
@@ -131,7 +131,7 @@ struct SerialSoaScan
 			typename Tuple,
 			typename RakingSoa,
 			typename ReductionOp>
-		static __host__ __device__ __forceinline__ Tuple Scan(
+		static _CCCL_HOST_DEVICE __forceinline__ Tuple Scan(
 			RakingSoa raking_partials,
 			RakingSoa raking_results,
 			Tuple exclusive_partial,
@@ -145,7 +145,7 @@ struct SerialSoaScan
 			typename Tuple,
 			typename RakingSoa,
 			typename ReductionOp>
-		static __host__ __device__ __forceinline__ Tuple Scan(
+		static _CCCL_HOST_DEVICE __forceinline__ Tuple Scan(
 			RakingSoa raking_partials,
 			RakingSoa raking_results,
 			Tuple exclusive_partial,
@@ -169,7 +169,7 @@ struct SerialSoaScan
 		typename Tuple,
 		typename RakingSoa,
 		typename ReductionOp>
-	static __host__ __device__ __forceinline__ Tuple Scan(
+	static _CCCL_HOST_DEVICE __forceinline__ Tuple Scan(
 		RakingSoa raking_partials,			// Scan input/output
 		Tuple exclusive_partial,			// Exclusive partial to seed with
 		ReductionOp scan_op)
@@ -187,7 +187,7 @@ struct SerialSoaScan
 		typename Tuple,
 		typename RakingSoa,
 		typename ReductionOp>
-	static __host__ __device__ __forceinline__ Tuple Scan(
+	static _CCCL_HOST_DEVICE __forceinline__ Tuple Scan(
 		RakingSoa raking_partials,			// Scan input
 		RakingSoa raking_results,			// Scan output
 		Tuple exclusive_partial,			// Exclusive partial to seed with
@@ -206,7 +206,7 @@ struct SerialSoaScan
 		typename Tuple,
 		typename RakingSoa,
 		typename ReductionOp>
-	static __host__ __device__ __forceinline__ Tuple Scan(
+	static _CCCL_HOST_DEVICE __forceinline__ Tuple Scan(
 		RakingSoa raking_partials,			// Scan input/output
 		Tuple exclusive_partial,			// Exclusive partial to seed with
 		int row,
@@ -225,7 +225,7 @@ struct SerialSoaScan
 		typename Tuple,
 		typename RakingSoa,
 		typename ReductionOp>
-	static __host__ __device__ __forceinline__ Tuple Scan(
+	static _CCCL_HOST_DEVICE __forceinline__ Tuple Scan(
 		RakingSoa raking_partials,			// Scan input
 		RakingSoa raking_results,			// Scan output
 		Tuple exclusive_partial,			// Exclusive partial to seed with

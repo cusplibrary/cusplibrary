@@ -77,7 +77,7 @@ struct LoadTile
 	{
 		// Vector (unguarded)
 		template <typename T, void Transform(T&), typename VectorType>
-		static __device__ __forceinline__ void LoadVector(
+		static _CCCL_DEVICE __forceinline__ void LoadVector(
 			T data[][LOAD_VEC_SIZE],
 			VectorType vectors[],
 			VectorType *d_in_vectors)
@@ -91,7 +91,7 @@ struct LoadTile
 
 		// Regular (unguarded)
 		template <typename T, void Transform(T&)>
-		static __device__ __forceinline__ void LoadValid(
+		static _CCCL_DEVICE __forceinline__ void LoadValid(
 			T data[][LOAD_VEC_SIZE],
 			T *d_in)
 		{
@@ -106,7 +106,7 @@ struct LoadTile
 
 		// Regular (guarded)
 		template <typename T, void Transform(T&), typename SizeT>
-		static __device__ __forceinline__ void LoadValid(
+		static _CCCL_DEVICE __forceinline__ void LoadValid(
 			T data[][LOAD_VEC_SIZE],
 			T *d_in,
 			const SizeT &guarded_elements)
@@ -124,7 +124,7 @@ struct LoadTile
 
 		// Regular (guarded with out-of-bounds default)
 		template <typename T, void Transform(T&), typename SizeT>
-		static __device__ __forceinline__ void LoadValid(
+		static _CCCL_DEVICE __forceinline__ void LoadValid(
 			T data[][LOAD_VEC_SIZE],
 			T oob_default,
 			T *d_in,
@@ -153,7 +153,7 @@ struct LoadTile
 	{
 		// Vector (unguarded)
 		template <typename T, void Transform(T&), typename VectorType>
-		static __device__ __forceinline__ void LoadVector(
+		static _CCCL_DEVICE __forceinline__ void LoadVector(
 			T data[][LOAD_VEC_SIZE],
 			VectorType vectors[],
 			VectorType *d_in_vectors)
@@ -166,7 +166,7 @@ struct LoadTile
 
 		// Regular (unguarded)
 		template <typename T, void Transform(T&)>
-		static __device__ __forceinline__ void LoadValid(
+		static _CCCL_DEVICE __forceinline__ void LoadValid(
 			T data[][LOAD_VEC_SIZE],
 			T *d_in)
 		{
@@ -181,7 +181,7 @@ struct LoadTile
 
 		// Regular (guarded)
 		template <typename T, void Transform(T&), typename SizeT>
-		static __device__ __forceinline__ void LoadValid(
+		static _CCCL_DEVICE __forceinline__ void LoadValid(
 			T data[][LOAD_VEC_SIZE],
 			T *d_in,
 			const SizeT &guarded_elements)
@@ -199,7 +199,7 @@ struct LoadTile
 
 		// Regular (guarded with out-of-bounds default)
 		template <typename T, void Transform(T&), typename SizeT>
-		static __device__ __forceinline__ void LoadValid(
+		static _CCCL_DEVICE __forceinline__ void LoadValid(
 			T data[][LOAD_VEC_SIZE],
 			T oob_default,
 			T *d_in,
@@ -228,7 +228,7 @@ struct LoadTile
 	{
 		// Vector (unguarded)
 		template <typename T, void Transform(T&), typename VectorType>
-		static __device__ __forceinline__ void LoadVector(
+		static _CCCL_DEVICE __forceinline__ void LoadVector(
 			T data[][LOAD_VEC_SIZE],
 			VectorType vectors[],
 			VectorType *d_in_vectors)
@@ -239,7 +239,7 @@ struct LoadTile
 
 		// Regular (unguarded)
 		template <typename T, void Transform(T&)>
-		static __device__ __forceinline__ void LoadValid(
+		static _CCCL_DEVICE __forceinline__ void LoadValid(
 			T data[][LOAD_VEC_SIZE],
 			T *d_in)
 		{
@@ -249,7 +249,7 @@ struct LoadTile
 
 		// Regular (guarded)
 		template <typename T, void Transform(T&), typename SizeT>
-		static __device__ __forceinline__ void LoadValid(
+		static _CCCL_DEVICE __forceinline__ void LoadValid(
 			T data[][LOAD_VEC_SIZE],
 			T *d_in,
 			const SizeT &guarded_elements)
@@ -260,7 +260,7 @@ struct LoadTile
 
 		// Regular (guarded with out-of-bounds default)
 		template <typename T, void Transform(T&), typename SizeT>
-		static __device__ __forceinline__ void LoadValid(
+		static _CCCL_DEVICE __forceinline__ void LoadValid(
 			T data[][LOAD_VEC_SIZE],
 			T oob_default,
 			T *d_in,
@@ -279,27 +279,27 @@ struct LoadTile
 	{
 		// Vector (unguarded)
 		template <typename T, void Transform(T&), typename VectorType>
-		static __device__ __forceinline__ void LoadVector(
+		static _CCCL_DEVICE __forceinline__ void LoadVector(
 			T data[][LOAD_VEC_SIZE],
 			VectorType vectors[],
 			VectorType *d_in_vectors) {}
 
 		// Regular (unguarded)
 		template <typename T, void Transform(T&)>
-		static __device__ __forceinline__ void LoadValid(
+		static _CCCL_DEVICE __forceinline__ void LoadValid(
 			T data[][LOAD_VEC_SIZE],
 			T *d_in) {}
 
 		// Regular (guarded)
 		template <typename T, void Transform(T&), typename SizeT>
-		static __device__ __forceinline__ void LoadValid(
+		static _CCCL_DEVICE __forceinline__ void LoadValid(
 			T data[][LOAD_VEC_SIZE],
 			T *d_in,
 			const SizeT &guarded_elements) {}
 
 		// Regular (guarded with out-of-bounds default)
 		template <typename T, void Transform(T&), typename SizeT>
-		static __device__ __forceinline__ void LoadValid(
+		static _CCCL_DEVICE __forceinline__ void LoadValid(
 			T data[][LOAD_VEC_SIZE],
 			T oob_default,
 			T *d_in,
@@ -318,7 +318,7 @@ struct LoadTile
 		typename T,
 		void Transform(T&),
 		typename SizeT>
-	static __device__ __forceinline__ void LoadValid(
+	static _CCCL_DEVICE __forceinline__ void LoadValid(
 		T data[][LOAD_VEC_SIZE],
 		T *d_in,
 		SizeT cta_offset)
@@ -350,7 +350,7 @@ struct LoadTile
 	template <
 		typename T,
 		typename SizeT>
-	static __device__ __forceinline__ void LoadValid(
+	static _CCCL_DEVICE __forceinline__ void LoadValid(
 		T data[][LOAD_VEC_SIZE],
 		T *d_in,
 		SizeT cta_offset)
@@ -366,7 +366,7 @@ struct LoadTile
 		typename T,
 		void Transform(T&),
 		typename SizeT>
-	static __device__ __forceinline__ void LoadValid(
+	static _CCCL_DEVICE __forceinline__ void LoadValid(
 		T data[][LOAD_VEC_SIZE],
 		T *d_in,
 		SizeT cta_offset,
@@ -389,7 +389,7 @@ struct LoadTile
 		typename T,
 		void Transform(T&),
 		typename SizeT>
-	static __device__ __forceinline__ void LoadValid(
+	static _CCCL_DEVICE __forceinline__ void LoadValid(
 		T data[][LOAD_VEC_SIZE],
 		T *d_in,
 		SizeT cta_offset,
@@ -410,7 +410,7 @@ struct LoadTile
 	template <
 		typename T,
 		typename SizeT>
-	static __device__ __forceinline__ void LoadValid(
+	static _CCCL_DEVICE __forceinline__ void LoadValid(
 		T data[][LOAD_VEC_SIZE],
 		T *d_in,
 		SizeT cta_offset,
@@ -428,7 +428,7 @@ struct LoadTile
 	template <
 		typename T,
 		typename SizeT>
-	static __device__ __forceinline__ void LoadValid(
+	static _CCCL_DEVICE __forceinline__ void LoadValid(
 		T data[][LOAD_VEC_SIZE],
 		T *d_in,
 		SizeT cta_offset,

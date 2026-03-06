@@ -65,7 +65,7 @@ struct InitializeTile
 	struct Iterate
 	{
 		template <typename T, typename S>
-		static __device__ __forceinline__ void Copy(
+		static _CCCL_DEVICE __forceinline__ void Copy(
 			T target[][LOAD_VEC_SIZE],
 			S source[][LOAD_VEC_SIZE])
 		{
@@ -74,7 +74,7 @@ struct InitializeTile
 		}
 
 		template <typename T, typename S>
-		static __device__ __forceinline__ void Init(
+		static _CCCL_DEVICE __forceinline__ void Init(
 			T target[][LOAD_VEC_SIZE],
 			S datum)
 		{
@@ -83,7 +83,7 @@ struct InitializeTile
 		}
 
 		template <typename T, typename S, typename TransformOp>
-		static __device__ __forceinline__ void Transform(
+		static _CCCL_DEVICE __forceinline__ void Transform(
 			T target[][LOAD_VEC_SIZE],
 			S source[][LOAD_VEC_SIZE],
 			TransformOp transform_op)
@@ -93,7 +93,7 @@ struct InitializeTile
 		}
 
 		template <typename T, typename S, typename TransformOp, typename SizeT>
-		static __device__ __forceinline__ void Transform(
+		static _CCCL_DEVICE __forceinline__ void Transform(
 			T target[][LOAD_VEC_SIZE],
 			S source[][LOAD_VEC_SIZE],
 			TransformOp transform_op,
@@ -115,7 +115,7 @@ struct InitializeTile
 		}
 
 		template <typename SoaT, typename SoaS, typename TransformOp>
-		static __device__ __forceinline__ void Transform(
+		static _CCCL_DEVICE __forceinline__ void Transform(
 			SoaT target_soa,
 			SoaS source_soa,
 			TransformOp transform_op)
@@ -133,7 +133,7 @@ struct InitializeTile
 	struct Iterate<LOAD, LOAD_VEC_SIZE>
 	{
 		template <typename T, typename S>
-		static __device__ __forceinline__ void Copy(
+		static _CCCL_DEVICE __forceinline__ void Copy(
 			T target[][LOAD_VEC_SIZE],
 			S source[][LOAD_VEC_SIZE])
 		{
@@ -141,7 +141,7 @@ struct InitializeTile
 		}
 
 		template <typename T, typename S>
-		static __device__ __forceinline__ void Init(
+		static _CCCL_DEVICE __forceinline__ void Init(
 			T target[][LOAD_VEC_SIZE],
 			S datum)
 		{
@@ -149,7 +149,7 @@ struct InitializeTile
 		}
 
 		template <typename T, typename S, typename TransformOp>
-		static __device__ __forceinline__ void Transform(
+		static _CCCL_DEVICE __forceinline__ void Transform(
 			T target[][LOAD_VEC_SIZE],
 			S source[][LOAD_VEC_SIZE],
 			TransformOp transform_op)
@@ -158,7 +158,7 @@ struct InitializeTile
 		}
 
 		template <typename T, typename S, typename TransformOp, typename SizeT>
-		static __device__ __forceinline__ void Transform(
+		static _CCCL_DEVICE __forceinline__ void Transform(
 			T target[][LOAD_VEC_SIZE],
 			S source[][LOAD_VEC_SIZE],
 			TransformOp transform_op,
@@ -169,7 +169,7 @@ struct InitializeTile
 		}
 
 		template <typename SoaT, typename SoaS, typename TransformOp>
-		static __device__ __forceinline__ void Transform(
+		static _CCCL_DEVICE __forceinline__ void Transform(
 			SoaT target_soa,
 			SoaS source_soa,
 			TransformOp transform_op)
@@ -183,23 +183,23 @@ struct InitializeTile
 	struct Iterate<LOADS_PER_TILE, VEC>
 	{
 		template <typename T, typename S>
-		static __device__ __forceinline__ void Copy(
+		static _CCCL_DEVICE __forceinline__ void Copy(
 			T target[][LOAD_VEC_SIZE],
 			S source[][LOAD_VEC_SIZE]) {}
 
 		template <typename T, typename S>
-		static __device__ __forceinline__ void Init(
+		static _CCCL_DEVICE __forceinline__ void Init(
 			T target[][LOAD_VEC_SIZE],
 			S datum) {}
 
 		template <typename T, typename S, typename TransformOp>
-		static __device__ __forceinline__ void Transform(
+		static _CCCL_DEVICE __forceinline__ void Transform(
 			T target[][LOAD_VEC_SIZE],
 			S source[][LOAD_VEC_SIZE],
 			TransformOp transform_op) {}
 
 		template <typename T, typename S, typename TransformOp, typename SizeT>
-		static __device__ __forceinline__ void Transform(
+		static _CCCL_DEVICE __forceinline__ void Transform(
 			T target[][LOAD_VEC_SIZE],
 			S source[][LOAD_VEC_SIZE],
 			TransformOp transform_op,
@@ -207,7 +207,7 @@ struct InitializeTile
 			T oob_default) {}
 
 		template <typename SoaT, typename SoaS, typename TransformOp>
-		static __device__ __forceinline__ void Transform(
+		static _CCCL_DEVICE __forceinline__ void Transform(
 			SoaT target_soa,
 			SoaS source_soa,
 			TransformOp transform_op) {}
@@ -222,7 +222,7 @@ struct InitializeTile
 	 * Copy source to target
 	 */
 	template <typename T, typename S>
-	static __device__ __forceinline__ void Copy(
+	static _CCCL_DEVICE __forceinline__ void Copy(
 		T target[][LOAD_VEC_SIZE],
 		S source[][LOAD_VEC_SIZE])
 	{
@@ -234,7 +234,7 @@ struct InitializeTile
 	 * Initialize target with datum
 	 */
 	template <typename T, typename S>
-	static __device__ __forceinline__ void Init(
+	static _CCCL_DEVICE __forceinline__ void Init(
 		T target[][LOAD_VEC_SIZE],
 		S datum)
 	{
@@ -246,7 +246,7 @@ struct InitializeTile
 	 * Apply unary transform_op operator to source
 	 */
 	template <typename T, typename S, typename TransformOp>
-	static __device__ __forceinline__ void Transform(
+	static _CCCL_DEVICE __forceinline__ void Transform(
 		T target[][LOAD_VEC_SIZE],
 		S source[][LOAD_VEC_SIZE],
 		TransformOp transform_op)
@@ -258,7 +258,7 @@ struct InitializeTile
 	 * Apply unary transform_op operator to source (guarded)
 	 */
 	template <typename T, typename S, typename TransformOp, typename SizeT>
-	static __device__ __forceinline__ void Transform(
+	static _CCCL_DEVICE __forceinline__ void Transform(
 		T target[][LOAD_VEC_SIZE],
 		S source[][LOAD_VEC_SIZE],
 		TransformOp transform_op,
@@ -286,7 +286,7 @@ struct InitializeTile
 	 * Apply structure-of-array transform_op operator to source
 	 */
 	template <typename SoaT, typename SoaS, typename TransformOp>
-	static __device__ __forceinline__ void Transform(
+	static _CCCL_DEVICE __forceinline__ void Transform(
 		SoaT target_soa,
 		SoaS source_soa,
 		TransformOp transform_op)

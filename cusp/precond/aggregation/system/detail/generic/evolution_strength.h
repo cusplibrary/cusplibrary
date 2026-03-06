@@ -37,7 +37,7 @@ namespace detail
 template<typename ValueType>
 struct approx_error
 {
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     ValueType operator()(const ValueType scale) const
     {
         return abs(1.0 - scale);
@@ -47,7 +47,7 @@ struct approx_error
 template<typename ValueType>
 struct conditional_invert
 {
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     ValueType operator()(const ValueType val) const
     {
         return (val != 0.0) ? 1.0 / val : val;
@@ -61,7 +61,7 @@ struct distance_filter_functor
 
     distance_filter_functor(T epsilon) : epsilon(epsilon) {}
 
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     T operator()(const T& A_val, const T& S_val) const
     {
         return (A_val >= (epsilon*S_val)) ? 0 : A_val;
@@ -71,7 +71,7 @@ struct distance_filter_functor
 template<typename T>
 struct non_zero_minimum
 {
-    __host__ __device__ T operator()(const T &lhs, const T &rhs) const
+    _CCCL_HOST_DEVICE T operator()(const T &lhs, const T &rhs) const
     {
         if(lhs == 0) return rhs;
         if(rhs == 0) return lhs;
@@ -83,7 +83,7 @@ template<typename ValueType>
 struct filter_small_ratios_and_large_angles
 {
     template<typename Tuple>
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     ValueType operator()(const Tuple& t) const
     {
         ValueType val = thrust::get<0>(t);
@@ -101,7 +101,7 @@ struct set_perfect
 
     set_perfect(void) : eps(std::sqrt(std::numeric_limits<ValueType>::epsilon())) {}
 
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     ValueType operator()(const ValueType val) const
     {
         return ((val < eps) && (val != 0)) ? 1e-4 : val;
@@ -118,7 +118,7 @@ struct Atilde_functor
     {}
 
     template <typename Tuple>
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     ValueType operator()(const Tuple& t) const
     {
         int row = thrust::get<0>(t);
@@ -141,7 +141,7 @@ struct incomplete_inner_functor
     {}
 
     template <typename Tuple>
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     ValueType operator()(const Tuple& t) const
     {
         ValueType sum = 0.0;

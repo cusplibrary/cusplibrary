@@ -72,7 +72,7 @@ struct StoreTile
 	{
 		// Vector
 		template <typename VectorType>
-		static __device__ __forceinline__ void Invoke(
+		static _CCCL_DEVICE __forceinline__ void Invoke(
 			VectorType vectors[],
 			VectorType *d_in_vectors)
 		{
@@ -81,7 +81,7 @@ struct StoreTile
 
 		// Unguarded
 		template <typename T>
-		static __device__ __forceinline__ void Invoke(
+		static _CCCL_DEVICE __forceinline__ void Invoke(
 			T data[][LOAD_VEC_SIZE],
 			T *d_out)
 		{
@@ -94,7 +94,7 @@ struct StoreTile
 
 		// Guarded
 		template <typename T, typename SizeT>
-		static __device__ __forceinline__ void Invoke(
+		static _CCCL_DEVICE __forceinline__ void Invoke(
 			T data[][LOAD_VEC_SIZE],
 			T *d_out,
 			const SizeT &guarded_elements)
@@ -114,7 +114,7 @@ struct StoreTile
 	{
 		// Vector
 		template <typename VectorType>
-		static __device__ __forceinline__ void Invoke(
+		static _CCCL_DEVICE __forceinline__ void Invoke(
 			VectorType vectors[],
 			VectorType *d_in_vectors)
 		{
@@ -126,7 +126,7 @@ struct StoreTile
 
 		// Unguarded
 		template <typename T>
-		static __device__ __forceinline__ void Invoke(
+		static _CCCL_DEVICE __forceinline__ void Invoke(
 			T data[][LOAD_VEC_SIZE],
 			T *d_out)
 		{
@@ -135,7 +135,7 @@ struct StoreTile
 
 		// Guarded
 		template <typename T, typename SizeT>
-		static __device__ __forceinline__ void Invoke(
+		static _CCCL_DEVICE __forceinline__ void Invoke(
 			T data[][LOAD_VEC_SIZE],
 			T *d_out,
 			const SizeT &guarded_elements)
@@ -150,18 +150,18 @@ struct StoreTile
 	{
 		// Vector
 		template <typename VectorType>
-		static __device__ __forceinline__ void Invoke(
+		static _CCCL_DEVICE __forceinline__ void Invoke(
 			VectorType vectors[], VectorType *d_in_vectors) {}
 
 		// Unguarded
 		template <typename T>
-		static __device__ __forceinline__ void Invoke(
+		static _CCCL_DEVICE __forceinline__ void Invoke(
 			T data[][LOAD_VEC_SIZE],
 			T *d_out) {}
 
 		// Guarded
 		template <typename T, typename SizeT>
-		static __device__ __forceinline__ void Invoke(
+		static _CCCL_DEVICE __forceinline__ void Invoke(
 			T data[][LOAD_VEC_SIZE],
 			T *d_out,
 			const SizeT &guarded_elements) {}
@@ -176,7 +176,7 @@ struct StoreTile
 	 * Store a full tile
 	 */
 	template <typename T, typename SizeT>
-	static __device__ __forceinline__ void Store(
+	static _CCCL_DEVICE __forceinline__ void Store(
 		T data[][LOAD_VEC_SIZE],
 		T *d_out,
 		SizeT cta_offset)
@@ -205,7 +205,7 @@ struct StoreTile
 	 * Store guarded_elements of a tile
 	 */
 	template <typename T, typename SizeT>
-	static __device__ __forceinline__ void Store(
+	static _CCCL_DEVICE __forceinline__ void Store(
 		T data[][LOAD_VEC_SIZE],
 		T *d_out,
 		SizeT cta_offset,

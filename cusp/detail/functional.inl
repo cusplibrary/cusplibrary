@@ -37,10 +37,10 @@ struct base_functor
     T value;
     BinaryFunction op;
 
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     base_functor(const T value) : value(value) {}
 
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     base_functor operator=(const base_functor& base)
     {
         value = base.value;
@@ -48,7 +48,7 @@ struct base_functor
         return *this;
     }
 
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     result_type operator()(const T x)
     {
         return op(x, value);
@@ -59,7 +59,7 @@ template<typename IndexType>
 struct coo_tuple_comp_functor
 {
     template<typename Tuple1, typename Tuple2>
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     bool operator()(const Tuple1& t1, const Tuple2& t2) const
     {
         const IndexType i1 = thrust::get<0>(t1);
@@ -77,7 +77,7 @@ struct combine_tuple_base_functor
     BinaryFunction op;
 
     template<typename Tuple>
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     typename BinaryFunction::result_type
     operator()(const Tuple& t)
     {
@@ -96,7 +96,7 @@ struct occupied_diagonal_functor
         : num_rows(num_rows) {}
 
     template <typename Tuple>
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     IndexType operator()(const Tuple& t) const
     {
         const IndexType i = thrust::get<0>(t);
@@ -119,7 +119,7 @@ struct speed_threshold_functor
     {}
 
     template <typename IndexType>
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     bool operator()(const IndexType rows) const
     {
         return relative_speed * (num_rows-rows) < num_rows || (size_t) (num_rows-rows) < breakeven_threshold;
@@ -135,7 +135,7 @@ struct diagonal_index_functor
         : pitch(pitch) {}
 
     template <typename Tuple>
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     IndexType operator()(const Tuple& t) const
     {
         const IndexType row  = thrust::get<0>(t);
@@ -154,7 +154,7 @@ struct is_valid_ell_index_functor
         : num_rows(num_rows) {}
 
     template <typename Tuple>
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     bool operator()(const Tuple& t) const
     {
         const IndexType i = thrust::get<0>(t);
@@ -174,7 +174,7 @@ struct is_valid_coo_index_functor
         : num_rows(num_rows), num_cols(num_cols) {}
 
     template <typename Tuple>
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     bool operator()(const Tuple& t) const
     {
         const IndexType i = thrust::get<0>(t);

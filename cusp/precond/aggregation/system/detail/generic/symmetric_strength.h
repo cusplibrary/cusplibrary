@@ -49,7 +49,7 @@ struct is_strong_connection
     is_strong_connection(const NormType theta) : theta(theta) {}
 
     template <typename Tuple>
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     bool operator()(const Tuple& t) const
     {
         NormType nAij = cusp::abs(thrust::get<0>(t));

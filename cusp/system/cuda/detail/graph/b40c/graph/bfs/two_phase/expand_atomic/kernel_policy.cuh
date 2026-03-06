@@ -187,7 +187,7 @@ struct KernelPolicy : _ProblemType
 		};
 
 		// SOA scan operator
-		__device__ __forceinline__ TileTuple operator()(
+		_CCCL_DEVICE __forceinline__ TileTuple operator()(
 			const TileTuple &first,
 			const TileTuple &second)
 		{
@@ -195,7 +195,7 @@ struct KernelPolicy : _ProblemType
 		}
 
 		// SOA identity operator
-		__device__ __forceinline__ TileTuple operator()()
+		_CCCL_DEVICE __forceinline__ TileTuple operator()()
 		{
 			return TileTuple(0,0);
 		}

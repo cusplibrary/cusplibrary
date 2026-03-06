@@ -54,7 +54,7 @@ template <typename KernelPolicy, bool WORK_STEALING>
 struct SweepPass
 {
 	template <typename SmemStorage>
-	static __device__ __forceinline__ void Invoke(
+	static _CCCL_DEVICE __forceinline__ void Invoke(
 		typename KernelPolicy::VertexId 		&iteration,
 		typename KernelPolicy::VertexId 		&queue_index,
 		typename KernelPolicy::VertexId 		&steal_index,
@@ -119,7 +119,7 @@ struct SweepPass
 
 
 template <typename SizeT, typename StealIndex>
-__device__ __forceinline__ SizeT StealWork(
+_CCCL_DEVICE __forceinline__ SizeT StealWork(
 	util::CtaWorkProgress &work_progress,
 	int count,
 	StealIndex steal_index)
@@ -145,7 +145,7 @@ template <typename KernelPolicy>
 struct SweepPass <KernelPolicy, true>
 {
 	template <typename SmemStorage>
-	static __device__ __forceinline__ void Invoke(
+	static _CCCL_DEVICE __forceinline__ void Invoke(
 		typename KernelPolicy::VertexId 		&iteration,
 		typename KernelPolicy::VertexId 		&queue_index,
 		typename KernelPolicy::VertexId 		&steal_index,
@@ -219,7 +219,7 @@ struct Dispatch
 	/**
 	 * fused-iteration functionality
 	 */
-	static __device__ __forceinline__ void KernelGlobalBarrier(
+	static _CCCL_DEVICE __forceinline__ void KernelGlobalBarrier(
 		VertexId 					&iteration,
 		VertexId					&queue_index,
 		VertexId					&steal_index,
@@ -244,7 +244,7 @@ struct Dispatch
 	/**
 	 * Normal kernel functionality
 	 */
-	static __device__ __forceinline__ void Kernel(
+	static _CCCL_DEVICE __forceinline__ void Kernel(
 		VertexId 						&iteration,
 		VertexId						&queue_index,
 		VertexId						&steal_index,
@@ -280,7 +280,7 @@ struct Dispatch<KernelPolicy, true>
 	/**
 	 * fused-iteration functionality
 	 */
-	static __device__ __forceinline__ void KernelGlobalBarrier(
+	static _CCCL_DEVICE __forceinline__ void KernelGlobalBarrier(
 		VertexId 					&iteration,
 		VertexId					&queue_index,
 		VertexId					&steal_index,
@@ -559,7 +559,7 @@ struct Dispatch<KernelPolicy, true>
 	/**
 	 * Normal kernel functionality
 	 */
-	static __device__ __forceinline__ void Kernel(
+	static _CCCL_DEVICE __forceinline__ void Kernel(
 		VertexId 						&iteration,
 		VertexId						&queue_index,
 		VertexId						&steal_index,

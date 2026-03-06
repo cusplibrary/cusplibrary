@@ -7,7 +7,7 @@
 #include <cusp/krylov/cg.h>
 
 inline
-__host__ __device__
+_CCCL_HOST_DEVICE
 unsigned int hash32(unsigned int a)
 {
     a = (a + 0x7ed55d16) + (a << 12);
@@ -21,7 +21,7 @@ unsigned int hash32(unsigned int a)
 
 struct hash_01
 {
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     float operator()(const unsigned int& index) const
     {
         return (float)(hash32(index)) / ((float)0xffffffff);

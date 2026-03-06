@@ -92,7 +92,7 @@ struct RakingDetails<RakingGrid, NullType> : RakingGrid
 	/**
 	 * Constructor
 	 */
-	__device__ __forceinline__ RakingDetails(
+	_CCCL_DEVICE __forceinline__ RakingDetails(
 		T *smem_pool) :
 			smem_pool(smem_pool),
 			lane_partial(RakingGrid::MyLanePartial(smem_pool))						// set lane partial pointer
@@ -108,7 +108,7 @@ struct RakingDetails<RakingGrid, NullType> : RakingGrid
 	/**
 	 * Constructor
 	 */
-	__device__ __forceinline__ RakingDetails(
+	_CCCL_DEVICE __forceinline__ RakingDetails(
 		T *smem_pool,
 		WarpscanStorage warpscan) :
 			smem_pool(smem_pool),
@@ -126,7 +126,7 @@ struct RakingDetails<RakingGrid, NullType> : RakingGrid
 	/**
 	 * Constructor
 	 */
-	__device__ __forceinline__ RakingDetails(
+	_CCCL_DEVICE __forceinline__ RakingDetails(
 		T *smem_pool,
 		WarpscanStorage warpscan,
 		T warpscan_identity) :
@@ -148,7 +148,7 @@ struct RakingDetails<RakingGrid, NullType> : RakingGrid
 	/**
 	 * Return the cumulative partial left in the final warpscan cell
 	 */
-	__device__ __forceinline__ T CumulativePartial() const
+	_CCCL_DEVICE __forceinline__ T CumulativePartial() const
 	{
 		return warpscan[1][CUMULATIVE_THREAD];
 	}
@@ -157,7 +157,7 @@ struct RakingDetails<RakingGrid, NullType> : RakingGrid
 	/**
 	 * Return the queue reservation in the first warpscan cell
 	 */
-	__device__ __forceinline__ T QueueReservation() const
+	_CCCL_DEVICE __forceinline__ T QueueReservation() const
 	{
 		return warpscan[1][QUEUE_RSVN_THREAD];
 	}
@@ -166,7 +166,7 @@ struct RakingDetails<RakingGrid, NullType> : RakingGrid
 	/**
 	 *
 	 */
-	__device__ __forceinline__ T* SmemPool()
+	_CCCL_DEVICE __forceinline__ T* SmemPool()
 	{
 		return smem_pool;
 	}
@@ -211,7 +211,7 @@ struct RakingDetails : RakingGrid
 	/**
 	 * Constructor
 	 */
-	__device__ __forceinline__ RakingDetails(
+	_CCCL_DEVICE __forceinline__ RakingDetails(
 		T *smem_pool) :
 			lane_partial(RakingGrid::MyLanePartial(smem_pool)),							// set lane partial pointer
 			secondary_details(
@@ -226,7 +226,7 @@ struct RakingDetails : RakingGrid
 	/**
 	 * Constructor
 	 */
-	__device__ __forceinline__ RakingDetails(
+	_CCCL_DEVICE __forceinline__ RakingDetails(
 		T *smem_pool,
 		WarpscanStorage warpscan) :
 			lane_partial(RakingGrid::MyLanePartial(smem_pool)),							// set lane partial pointer
@@ -244,7 +244,7 @@ struct RakingDetails : RakingGrid
 	/**
 	 * Constructor
 	 */
-	__device__ __forceinline__ RakingDetails(
+	_CCCL_DEVICE __forceinline__ RakingDetails(
 		T *smem_pool,
 		WarpscanStorage warpscan,
 		T warpscan_identity) :
@@ -264,7 +264,7 @@ struct RakingDetails : RakingGrid
 	/**
 	 * Return the cumulative partial left in the final warpscan cell
 	 */
-	__device__ __forceinline__ T CumulativePartial() const
+	_CCCL_DEVICE __forceinline__ T CumulativePartial() const
 	{
 		return secondary_details.CumulativePartial();
 	}
@@ -272,7 +272,7 @@ struct RakingDetails : RakingGrid
 	/**
 	 * Return the queue reservation in the first warpscan cell
 	 */
-	__device__ __forceinline__ T QueueReservation() const
+	_CCCL_DEVICE __forceinline__ T QueueReservation() const
 	{
 		return secondary_details.QueueReservation();
 	}
@@ -280,7 +280,7 @@ struct RakingDetails : RakingGrid
 	/**
 	 *
 	 */
-	__device__ __forceinline__ T* SmemPool()
+	_CCCL_DEVICE __forceinline__ T* SmemPool()
 	{
 		return secondary_details.SmemPool();
 	}

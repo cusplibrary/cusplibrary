@@ -45,7 +45,7 @@ class execute_with_cublas_base
       : m_handle(handle)
     {}
 
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     DerivedPolicy with(const cublasHandle_t& h) const
     {
       // create a copy of *this to return
@@ -60,13 +60,13 @@ class execute_with_cublas_base
 
   private:
 
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     friend inline cublasHandle_t const& handle(const execute_with_cublas_base &exec)
     {
       return exec.m_handle;
     }
 
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     inline void set_handle(const cublasHandle_t &h)
     {
       m_handle = h;
@@ -82,7 +82,7 @@ class execute_with_cublas
 
   public:
 
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     inline execute_with_cublas(const cublasHandle_t& h)
       : super_t(h)
     {}

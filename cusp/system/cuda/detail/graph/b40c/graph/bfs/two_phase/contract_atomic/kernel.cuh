@@ -54,7 +54,7 @@ namespace contract_atomic {
 template <typename KernelPolicy, bool WORK_STEALING>
 struct SweepPass
 {
-	static __device__ __forceinline__ void Invoke(
+	static _CCCL_DEVICE __forceinline__ void Invoke(
 		typename KernelPolicy::VertexId 		&iteration,
 		typename KernelPolicy::VertexId 		&queue_index,
 		typename KernelPolicy::VertexId 		&steal_index,
@@ -118,7 +118,7 @@ struct SweepPass
  * Atomically steal work from a global work progress construct
  */
 template <typename SizeT, typename StealIndex>
-__device__ __forceinline__ SizeT StealWork(
+_CCCL_DEVICE __forceinline__ SizeT StealWork(
 	util::CtaWorkProgress &work_progress,
 	int count,
 	StealIndex steal_index)
@@ -142,7 +142,7 @@ __device__ __forceinline__ SizeT StealWork(
 template <typename KernelPolicy>
 struct SweepPass <KernelPolicy, true>
 {
-	static __device__ __forceinline__ void Invoke(
+	static _CCCL_DEVICE __forceinline__ void Invoke(
 		typename KernelPolicy::VertexId 		&iteration,
 		typename KernelPolicy::VertexId 		&queue_index,
 		typename KernelPolicy::VertexId 		&steal_index,
@@ -208,7 +208,7 @@ struct Dispatch
 	typedef typename KernelPolicy::SizeT SizeT;
 	typedef typename KernelPolicy::VisitedMask VisitedMask;
 
-	static __device__ __forceinline__ void Kernel(
+	static _CCCL_DEVICE __forceinline__ void Kernel(
 		VertexId 					&src,
 		VertexId 					&iteration,
 		SizeT						&num_elements,
@@ -241,7 +241,7 @@ struct Dispatch<KernelPolicy, true>
 	typedef typename KernelPolicy::SizeT SizeT;
 	typedef typename KernelPolicy::VisitedMask VisitedMask;
 
-	static __device__ __forceinline__ void Kernel(
+	static _CCCL_DEVICE __forceinline__ void Kernel(
 		VertexId 					&src,
 		VertexId 					&iteration,
 		SizeT						&num_elements,

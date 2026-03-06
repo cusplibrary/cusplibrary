@@ -58,7 +58,7 @@ struct is_ell_entry
         : num_rows(num_rows), pitch(pitch), invalid_index(invalid_index) {}
 
     template <typename Tuple>
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     bool operator()(const Tuple& t) const
     {
         IndexType n = thrust::get<0>(t);
@@ -79,7 +79,7 @@ struct is_ell_entry_in_bounds
         : num_rows(num_rows), num_cols(num_cols), pitch(pitch), invalid_index(invalid_index) {}
 
     template <typename Tuple>
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     bool operator()(const Tuple& t) const
     {
         IndexType n = thrust::get<0>(t);

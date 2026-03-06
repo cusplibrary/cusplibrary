@@ -72,7 +72,7 @@ struct CooperativeTileScan
 	struct ScanLane
 	{
 		template <typename RakingDetails, typename ReductionOp>
-		static __device__ __forceinline__ void Invoke(
+		static _CCCL_DEVICE __forceinline__ void Invoke(
 			RakingDetails raking_details,
 			typename RakingDetails::T data[RakingDetails::SCAN_LANES][VEC_SIZE],
 			ReductionOp scan_op)
@@ -95,7 +95,7 @@ struct CooperativeTileScan
 	struct ScanLane<TOTAL_LANES, TOTAL_LANES>
 	{
 		template <typename RakingDetails, typename ReductionOp>
-		static __device__ __forceinline__ void Invoke(
+		static _CCCL_DEVICE __forceinline__ void Invoke(
 			RakingDetails raking_details,
 			typename RakingDetails::T data[RakingDetails::SCAN_LANES][VEC_SIZE],
 			ReductionOp scan_op) {}
@@ -112,7 +112,7 @@ struct CooperativeTileScan
 	 * No post-synchronization needed before grid reuse.
 	 */
 	template <typename RakingDetails, typename ReductionOp>
-	static __device__ __forceinline__ typename RakingDetails::T ScanTile(
+	static _CCCL_DEVICE __forceinline__ typename RakingDetails::T ScanTile(
 		RakingDetails raking_details,
 		typename RakingDetails::T data[RakingDetails::SCAN_LANES][VEC_SIZE],
 		ReductionOp scan_op)
@@ -143,7 +143,7 @@ struct CooperativeTileScan
 	 * No post-synchronization needed before grid reuse.
 	 */
 	template <typename RakingDetails, typename ReductionOp>
-	static __device__ __forceinline__ void ScanTileWithCarry(
+	static _CCCL_DEVICE __forceinline__ void ScanTileWithCarry(
 		RakingDetails raking_details,
 		typename RakingDetails::T data[RakingDetails::SCAN_LANES][VEC_SIZE],
 		typename RakingDetails::T &carry,
@@ -172,7 +172,7 @@ struct CooperativeTileScan
 	 * No post-synchronization needed before grid reuse.
 	 */
 	template <typename RakingDetails, typename ReductionOp>
-	static __device__ __forceinline__ typename RakingDetails::T ScanTileWithEnqueue(
+	static _CCCL_DEVICE __forceinline__ typename RakingDetails::T ScanTileWithEnqueue(
 		RakingDetails raking_details,
 		typename RakingDetails::T data[RakingDetails::SCAN_LANES][VEC_SIZE],
 		typename RakingDetails::T* d_enqueue_counter,
@@ -204,7 +204,7 @@ struct CooperativeTileScan
 	 * No post-synchronization needed before grid reuse.
 	 */
 	template <typename RakingDetails, typename ReductionOp>
-	static __device__ __forceinline__ typename RakingDetails::T ScanTileWithEnqueue(
+	static _CCCL_DEVICE __forceinline__ typename RakingDetails::T ScanTileWithEnqueue(
 		RakingDetails raking_details,
 		typename RakingDetails::T data[RakingDetails::SCAN_LANES][VEC_SIZE],
 		typename RakingDetails::T *d_enqueue_counter,
@@ -250,7 +250,7 @@ struct CooperativeGridScan<RakingDetails, NullType>
 	 * Scan in last-level raking grid.
 	 */
 	template <typename ReductionOp>
-	static __device__ __forceinline__ void ScanTile(
+	static _CCCL_DEVICE __forceinline__ void ScanTile(
 		RakingDetails raking_details,
 		ReductionOp scan_op)
 	{
@@ -276,7 +276,7 @@ struct CooperativeGridScan<RakingDetails, NullType>
 	 * Scan in last-level raking grid.  Carry-in/out is updated only in raking threads
 	 */
 	template <typename ReductionOp>
-	static __device__ __forceinline__ void ScanTileWithCarry(
+	static _CCCL_DEVICE __forceinline__ void ScanTileWithCarry(
 		RakingDetails raking_details,
 		T &carry,
 		ReductionOp scan_op)
@@ -309,7 +309,7 @@ struct CooperativeGridScan<RakingDetails, NullType>
 	 * Scan in last-level raking grid with atomic enqueue
 	 */
 	template <typename ReductionOp>
-	static __device__ __forceinline__ void ScanTileWithEnqueue(
+	static _CCCL_DEVICE __forceinline__ void ScanTileWithEnqueue(
 		RakingDetails raking_details,
 		T *d_enqueue_counter,
 		ReductionOp scan_op)
@@ -348,7 +348,7 @@ struct CooperativeGridScan<RakingDetails, NullType>
 	 * Scan in last-level raking grid with atomic enqueue
 	 */
 	template <typename ReductionOp>
-	static __device__ __forceinline__ void ScanTileWithEnqueue(
+	static _CCCL_DEVICE __forceinline__ void ScanTileWithEnqueue(
 		RakingDetails raking_details,
 		T *d_enqueue_counter,
 		T &enqueue_offset,
@@ -394,7 +394,7 @@ struct CooperativeGridScan
 	 * Scan in raking grid.
 	 */
 	template <typename ReductionOp>
-	static __device__ __forceinline__ void ScanTile(
+	static _CCCL_DEVICE __forceinline__ void ScanTile(
 		RakingDetails raking_details,
 		ReductionOp scan_op)
 	{
@@ -431,7 +431,7 @@ struct CooperativeGridScan
 	 * Scan in raking grid.  Carry-in/out is updated only in raking threads (homogeneously)
 	 */
 	template <typename ReductionOp>
-	static __device__ __forceinline__ void ScanTileWithCarry(
+	static _CCCL_DEVICE __forceinline__ void ScanTileWithCarry(
 		RakingDetails raking_details,
 		T &carry,
 		ReductionOp scan_op)
@@ -469,7 +469,7 @@ struct CooperativeGridScan
 	 * Scan in raking grid.  Carry-in/out is updated only in raking threads (homogeneously)
 	 */
 	template <typename ReductionOp>
-	static __device__ __forceinline__ void ScanTileWithEnqueue(
+	static _CCCL_DEVICE __forceinline__ void ScanTileWithEnqueue(
 		RakingDetails raking_details,
 		T* d_enqueue_counter,
 		ReductionOp scan_op)

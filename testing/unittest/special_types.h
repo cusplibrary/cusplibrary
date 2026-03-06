@@ -8,21 +8,21 @@ struct FixedVector
 {
     T data[N];
 
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     FixedVector()
     {
         for(unsigned int i = 0; i < N; i++)
             data[i] = T();
     }
 
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     FixedVector(T init)
     {
         for(unsigned int i = 0; i < N; i++)
             data[i] = init;
     }
 
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     FixedVector operator+(const FixedVector& bs) const
     {
         FixedVector output;
@@ -31,7 +31,7 @@ struct FixedVector
         return output;
     }
 
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     bool operator<(const FixedVector& bs) const
     {
         for(unsigned int i = 0; i < N; i++)
@@ -44,7 +44,7 @@ struct FixedVector
         return false;
     }
 
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     bool operator==(const FixedVector& bs) const
     {
         for(unsigned int i = 0; i < N; i++)
@@ -62,35 +62,35 @@ struct key_value
     typedef Key   key_type;
     typedef Value value_type;
 
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     key_value(void)
         : key(), value()
     {}
 
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     key_value(key_type k, value_type v)
         : key(k), value(v)
     {}
 
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     bool operator<(const key_value &rhs) const
     {
         return key < rhs.key;
     }
 
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     bool operator>(const key_value &rhs) const
     {
         return key > rhs.key;
     }
 
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     bool operator==(const key_value &rhs) const
     {
         return key == rhs.key && value == rhs.value;
     }
 
-    __host__ __device__
+    _CCCL_HOST_DEVICE
     bool operator!=(const key_value &rhs) const
     {
         return !operator==(rhs);

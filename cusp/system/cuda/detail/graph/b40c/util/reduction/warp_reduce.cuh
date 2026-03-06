@@ -70,7 +70,7 @@ struct WarpReduce
 	struct Iterate
 	{
 		template <typename T, typename WarpscanT, typename ReductionOp>
-		static __device__ __forceinline__ T Invoke(
+		static _CCCL_DEVICE __forceinline__ T Invoke(
 			T exclusive_partial,
 			WarpscanT warpscan[][NUM_ELEMENTS],
 			ReductionOp reduction_op,
@@ -100,7 +100,7 @@ struct WarpReduce
 	struct Iterate<0, __dummy>
 	{
 		template <typename T, typename WarpscanT, typename ReductionOp>
-		static __device__ __forceinline__ T Invoke(
+		static _CCCL_DEVICE __forceinline__ T Invoke(
 			T partial,
 			WarpscanT warpscan[][NUM_ELEMENTS],
 			ReductionOp reduction_op,
@@ -119,7 +119,7 @@ struct WarpReduce
 	 * Warp reduction with the specified operator, result is returned in last warpscan thread
 	 */
 	template <typename T, typename WarpscanT, typename ReductionOp>
-	static __device__ __forceinline__ T InvokeSingle(
+	static _CCCL_DEVICE __forceinline__ T InvokeSingle(
 		T partial,								// Input partial
 		WarpscanT warpscan[][NUM_ELEMENTS],		// Smem for warpscanning containing at least two segments of size NUM_ELEMENTS
 		ReductionOp reduction_op,				// Reduction operator
@@ -134,7 +134,7 @@ struct WarpReduce
 	 * Warp reduction with the addition operator, result is returned in last warpscan thread
 	 */
 	template <typename T, typename WarpscanT>
-	static __device__ __forceinline__ T InvokeSingle(
+	static _CCCL_DEVICE __forceinline__ T InvokeSingle(
 		T partial,								// Input partial
 		WarpscanT warpscan[][NUM_ELEMENTS],		// Smem for warpscanning containing at least two segments of size NUM_ELEMENTS
 		int warpscan_tid = threadIdx.x)			// Thread's local index into a segment of NUM_ELEMENTS items
@@ -148,7 +148,7 @@ struct WarpReduce
 	 * Warp reduction with the specified operator, result is returned in all warpscan threads)
 	 */
 	template <typename T, typename WarpscanT, typename ReductionOp>
-	static __device__ __forceinline__ T Invoke(
+	static _CCCL_DEVICE __forceinline__ T Invoke(
 		T current_partial,						// Input partial
 		WarpscanT warpscan[][NUM_ELEMENTS],		// Smem for warpscanning containing at least two segments of size NUM_ELEMENTS
 		ReductionOp reduction_op,				// Reduction operator
@@ -171,7 +171,7 @@ struct WarpReduce
 	 * Warp reduction with the addition operator, result is returned in all warpscan threads)
 	 */
 	template <typename T, typename WarpscanT>
-	static __device__ __forceinline__ T Invoke(
+	static _CCCL_DEVICE __forceinline__ T Invoke(
 		T current_partial,						// Input partial
 		WarpscanT warpscan[][NUM_ELEMENTS],		// Smem for warpscanning containing at least two segments of size NUM_ELEMENTS
 		int warpscan_tid = threadIdx.x)			// Thread's local index into a segment of NUM_ELEMENTS items

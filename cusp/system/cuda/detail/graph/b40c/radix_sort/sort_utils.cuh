@@ -50,7 +50,7 @@ namespace radix_sort {
 template <typename T, int BIT_START, int NUM_BITS> 
 struct ExtractKeyBits 
 {
-	__device__ __forceinline__ static void Extract(int &bits, T source)
+	_CCCL_DEVICE __forceinline__ static void Extract(int &bits, T source)
 	{
 #if __CUDA_ARCH__ >= 200
 		asm("bfe.u32 %0, %1, %2, %3;" : "=r"(bits) : "r"((unsigned int) source), "r"(BIT_START), "r"(NUM_BITS));
@@ -68,7 +68,7 @@ struct ExtractKeyBits
 template <int BIT_START, int NUM_BITS> 
 struct ExtractKeyBits<unsigned long long, BIT_START, NUM_BITS> 
 {
-	__device__ __forceinline__ static void Extract(int &bits, const unsigned long long &source) 
+	_CCCL_DEVICE __forceinline__ static void Extract(int &bits, const unsigned long long &source) 
 	{
 		if (BIT_START >= 32) {											// For extraction on GT200, the compiler goes nuts and shoves hundreds of bytes to lmem unless we use different extractions for upper/lower
 			const unsigned long long MASK = (1 << NUM_BITS) - 1;
@@ -91,10 +91,10 @@ struct NopKeyConversion
 	static const bool MustApply = false;		// We may early-exit this pass
 
 	template <typename T>
-	__device__ __host__ __forceinline__ static void Preprocess(T &key) {}
+	_CCCL_HOST_DEVICE __forceinline__ static void Preprocess(T &key) {}
 
 	template <typename T>
-	__device__ __host__ __forceinline__ static void Postprocess(T &key) {}
+	_CCCL_HOST_DEVICE __forceinline__ static void Postprocess(T &key) {}
 };
 
 
@@ -105,9 +105,9 @@ struct UnsignedIntegerKeyConversion
 	
 	static const bool MustApply = false;		// We may early-exit this pass
 
-	__device__ __host__ __forceinline__ static void Preprocess(UnsignedBits &converted_key) {}
+	_CCCL_HOST_DEVICE __forceinline__ static void Preprocess(UnsignedBits &converted_key) {}
 
-	__device__ __host__ __forceinline__ static void Postprocess(UnsignedBits &converted_key) {}  
+	_CCCL_HOST_DEVICE __forceinline__ static void Postprocess(UnsignedBits &converted_key) {}  
 };
 
 
@@ -118,13 +118,13 @@ struct SignedIntegerKeyConversion
 
 	static const bool MustApply = true;		// We must not early-exit this pass (conversion necessary)
 
-	__device__ __host__ __forceinline__ static void Preprocess(UnsignedBits &converted_key)
+	_CCCL_HOST_DEVICE __forceinline__ static void Preprocess(UnsignedBits &converted_key)
 	{
 		const UnsignedBits HIGH_BIT = ((UnsignedBits) 0x1) << ((sizeof(UnsignedBits) * 8) - 1);
 		converted_key ^= HIGH_BIT;
 	}
 
-	__device__ __host__ __forceinline__ static void Postprocess(UnsignedBits &converted_key)  
+	_CCCL_HOST_DEVICE __forceinline__ static void Postprocess(UnsignedBits &converted_key)  
 	{
 		const UnsignedBits HIGH_BIT = ((UnsignedBits) 0x1) << ((sizeof(UnsignedBits) * 8) - 1);
 		converted_key ^= HIGH_BIT;	
@@ -139,14 +139,14 @@ struct FloatingPointKeyConversion
 
 	static const bool MustApply = true;		// We must not early-exit this pass (conversion necessary)
 
-	__device__ __host__ __forceinline__ static void Preprocess(UnsignedBits &converted_key)
+	_CCCL_HOST_DEVICE __forceinline__ static void Preprocess(UnsignedBits &converted_key)
 	{
 		const UnsignedBits HIGH_BIT = ((UnsignedBits) 0x1) << ((sizeof(UnsignedBits) * 8) - 1);
 		UnsignedBits mask = (converted_key & HIGH_BIT) ? (UnsignedBits) -1 : HIGH_BIT;
 		converted_key ^= mask;
 	}
 
-	__device__ __host__ __forceinline__ static void Postprocess(UnsignedBits &converted_key) 
+	_CCCL_HOST_DEVICE __forceinline__ static void Postprocess(UnsignedBits &converted_key) 
 	{
 		const UnsignedBits HIGH_BIT = ((UnsignedBits) 0x1) << ((sizeof(UnsignedBits) * 8) - 1);
 		UnsignedBits mask = (converted_key & HIGH_BIT) ? HIGH_BIT : (UnsignedBits) -1; 

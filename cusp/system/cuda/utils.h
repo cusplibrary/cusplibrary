@@ -27,7 +27,7 @@ namespace cuda
 {
 
 template <typename Size1, typename Size2>
-__host__ __device__
+_CCCL_HOST_DEVICE
 Size1 DIVIDE_INTO(Size1 N, Size2 granularity)
 {
     return (N + (granularity - 1)) / granularity;

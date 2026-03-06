@@ -163,7 +163,7 @@ struct Cta
 			/**
 			 * InitFlags
 			 */
-			static __device__ __forceinline__ void InitFlags(Tile *tile)
+			static _CCCL_DEVICE __forceinline__ void InitFlags(Tile *tile)
 			{
 				// Initially valid if vertex-id is valid
 				tile->flags[LOAD][VEC] = (tile->vertex_id[LOAD][VEC] == -1) ? 0 : 1;
@@ -176,7 +176,7 @@ struct Cta
 			/**
 			 * BitmaskCull
 			 */
-			static __device__ __forceinline__ void BitmaskCull(
+			static _CCCL_DEVICE __forceinline__ void BitmaskCull(
 				Cta *cta,
 				Tile *tile)
 			{
@@ -234,7 +234,7 @@ struct Cta
 			/**
 			 * VertexCull
 			 */
-			static __device__ __forceinline__ void VertexCull(
+			static _CCCL_DEVICE __forceinline__ void VertexCull(
 				Cta *cta,
 				Tile *tile)
 			{
@@ -281,7 +281,7 @@ struct Cta
 			/**
 			 * HistoryCull
 			 */
-			static __device__ __forceinline__ void HistoryCull(
+			static _CCCL_DEVICE __forceinline__ void HistoryCull(
 				Cta *cta,
 				Tile *tile)
 			{
@@ -308,7 +308,7 @@ struct Cta
 			/**
 			 * WarpCull
 			 */
-			static __device__ __forceinline__ void WarpCull(
+			static _CCCL_DEVICE __forceinline__ void WarpCull(
 				Cta *cta,
 				Tile *tile)
 			{
@@ -343,31 +343,31 @@ struct Cta
 		struct Iterate<LOAD, LOAD_VEC_SIZE, dummy>
 		{
 			// InitFlags
-			static __device__ __forceinline__ void InitFlags(Tile *tile)
+			static _CCCL_DEVICE __forceinline__ void InitFlags(Tile *tile)
 			{
 				Iterate<LOAD + 1, 0>::InitFlags(tile);
 			}
 
 			// BitmaskCull
-			static __device__ __forceinline__ void BitmaskCull(Cta *cta, Tile *tile)
+			static _CCCL_DEVICE __forceinline__ void BitmaskCull(Cta *cta, Tile *tile)
 			{
 				Iterate<LOAD + 1, 0>::BitmaskCull(cta, tile);
 			}
 
 			// VertexCull
-			static __device__ __forceinline__ void VertexCull(Cta *cta, Tile *tile)
+			static _CCCL_DEVICE __forceinline__ void VertexCull(Cta *cta, Tile *tile)
 			{
 				Iterate<LOAD + 1, 0>::VertexCull(cta, tile);
 			}
 
 			// HistoryCull
-			static __device__ __forceinline__ void HistoryCull(Cta *cta, Tile *tile)
+			static _CCCL_DEVICE __forceinline__ void HistoryCull(Cta *cta, Tile *tile)
 			{
 				Iterate<LOAD + 1, 0>::HistoryCull(cta, tile);
 			}
 
 			// WarpCull
-			static __device__ __forceinline__ void WarpCull(Cta *cta, Tile *tile)
+			static _CCCL_DEVICE __forceinline__ void WarpCull(Cta *cta, Tile *tile)
 			{
 				Iterate<LOAD + 1, 0>::WarpCull(cta, tile);
 			}
@@ -382,19 +382,19 @@ struct Cta
 		struct Iterate<LOADS_PER_TILE, 0, dummy>
 		{
 			// InitFlags
-			static __device__ __forceinline__ void InitFlags(Tile *tile) {}
+			static _CCCL_DEVICE __forceinline__ void InitFlags(Tile *tile) {}
 
 			// BitmaskCull
-			static __device__ __forceinline__ void BitmaskCull(Cta *cta, Tile *tile) {}
+			static _CCCL_DEVICE __forceinline__ void BitmaskCull(Cta *cta, Tile *tile) {}
 
 			// VertexCull
-			static __device__ __forceinline__ void VertexCull(Cta *cta, Tile *tile) {}
+			static _CCCL_DEVICE __forceinline__ void VertexCull(Cta *cta, Tile *tile) {}
 
 			// HistoryCull
-			static __device__ __forceinline__ void HistoryCull(Cta *cta, Tile *tile) {}
+			static _CCCL_DEVICE __forceinline__ void HistoryCull(Cta *cta, Tile *tile) {}
 
 			// WarpCull
-			static __device__ __forceinline__ void WarpCull(Cta *cta, Tile *tile) {}
+			static _CCCL_DEVICE __forceinline__ void WarpCull(Cta *cta, Tile *tile) {}
 		};
 
 
@@ -405,7 +405,7 @@ struct Cta
 		/**
 		 * Initializer
 		 */
-		__device__ __forceinline__ void InitFlags()
+		_CCCL_DEVICE __forceinline__ void InitFlags()
 		{
 			Iterate<0, 0>::InitFlags(this);
 		}
@@ -414,7 +414,7 @@ struct Cta
 		 * Culls vertices based upon whether or not we've set a bit for them
 		 * in the d_visited_mask bitmask
 		 */
-		__device__ __forceinline__ void BitmaskCull(Cta *cta)
+		_CCCL_DEVICE __forceinline__ void BitmaskCull(Cta *cta)
 		{
 			Iterate<0, 0>::BitmaskCull(cta, this);
 		}
@@ -422,7 +422,7 @@ struct Cta
 		/**
 		 * Culls vertices
 		 */
-		__device__ __forceinline__ void VertexCull(Cta *cta)
+		_CCCL_DEVICE __forceinline__ void VertexCull(Cta *cta)
 		{
 			Iterate<0, 0>::VertexCull(cta, this);
 		}
@@ -430,7 +430,7 @@ struct Cta
 		/**
 		 * Culls duplicates within the warp
 		 */
-		__device__ __forceinline__ void WarpCull(Cta *cta)
+		_CCCL_DEVICE __forceinline__ void WarpCull(Cta *cta)
 		{
 			Iterate<0, 0>::WarpCull(cta, this);
 		}
@@ -438,7 +438,7 @@ struct Cta
 		/**
 		 * Culls duplicates within recent CTA history
 		 */
-		__device__ __forceinline__ void HistoryCull(Cta *cta)
+		_CCCL_DEVICE __forceinline__ void HistoryCull(Cta *cta)
 		{
 			Iterate<0, 0>::HistoryCull(cta, this);
 		}
@@ -454,7 +454,7 @@ struct Cta
 	/**
 	 * Constructor
 	 */
-	__device__ __forceinline__ Cta(
+	_CCCL_DEVICE __forceinline__ Cta(
 		VertexId 				iteration,
 		VertexId 				queue_index,
 		int						num_gpus,
@@ -499,7 +499,7 @@ struct Cta
 	/**
 	 * Process a single, full tile
 	 */
-	__device__ __forceinline__ void ProcessTile(
+	_CCCL_DEVICE __forceinline__ void ProcessTile(
 		SizeT cta_offset,
 		const SizeT &guarded_elements = KernelPolicy::TILE_ELEMENTS)
 	{
