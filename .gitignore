@@ -118,6 +118,7 @@ performance/graph/symmetric_rcm
 performance/graph/vertex_coloring
 performance/overhead/memory
 performance/solver/cg
+performance/spmm/spmm
 performance/spmv/spmv
 
 *.user
