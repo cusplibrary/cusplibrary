@@ -21,7 +21,7 @@ void benchmark_matrix(const Matrix& A)
     cusp::array1d<ValueType, MemorySpace> x(N,0);
     cusp::array1d<ValueType, MemorySpace> b(N,1);
 
-    cusp::monitor<ValueType> monitor(b, 2000, 1e-5);
+    cusp::monitor<ValueType> monitor(b, 20, 1e-5);
 
     // time solver
     timer t;
