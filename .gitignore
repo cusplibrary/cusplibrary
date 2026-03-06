@@ -54,6 +54,9 @@ tester
 # Ignore all build release files
 testing/*release
 
+# Ignore testing output
+testing/device_cuda_debug
+
 # Ignore build files
 #<AutoIgnore>
 examples/Algorithms/maximal_independent_set
