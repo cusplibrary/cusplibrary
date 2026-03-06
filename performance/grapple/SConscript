@@ -1,0 +1,11 @@
+import os
+Import('env')
+
+env = env.Clone()
+env.Append(LIBS = ['lapacke'])
+
+extensions = ['*.cu', '*.cpp']
+for ext in extensions:
+  regexp = os.path.join('.', ext)
+  for source in env.Glob(regexp):
+    env.Program(source)
