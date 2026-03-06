@@ -98,7 +98,7 @@ float time_spmv(TestMatrix& test_matrix, TestKernel test_spmv, double seconds = 
     // warmup
     timer time_one_iteration;
     test_spmv(test_matrix, test_x, test_y);
-    cudaThreadSynchronize();
+    cudaDeviceSynchronize();
     double estimated_time = time_one_iteration.seconds_elapsed();
 
     // determine # of seconds dynamically
@@ -112,7 +112,7 @@ float time_spmv(TestMatrix& test_matrix, TestKernel test_spmv, double seconds = 
     timer t;
     for(size_t i = 0; i < num_iterations; i++)
         test_spmv(test_matrix, test_x, test_y);
-    cudaThreadSynchronize();
+    cudaDeviceSynchronize();
 
     float sec_per_iteration = t.seconds_elapsed() / num_iterations;
 
@@ -136,7 +136,7 @@ float time_spmv_block(TestMatrix& test_matrix, size_t num_cols, TestKernel test_
     // warmup
     timer time_one_iteration;
     test_spmv(test_matrix, test_x, test_y);
-    cudaThreadSynchronize();
+    cudaDeviceSynchronize();
     double estimated_time = time_one_iteration.seconds_elapsed();
 
     // determine # of seconds dynamically
@@ -150,7 +150,7 @@ float time_spmv_block(TestMatrix& test_matrix, size_t num_cols, TestKernel test_
     timer t;
     for(size_t i = 0; i < num_iterations; i++)
       test_spmv(test_matrix, test_x, test_y);
-    cudaThreadSynchronize();
+    cudaDeviceSynchronize();
 
     float sec_per_iteration = t.seconds_elapsed() / num_iterations;
 
