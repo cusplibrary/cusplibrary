@@ -246,7 +246,7 @@ def environment(buildDir, includeDir):
     vars.Add(EnumVariable('arch',
                           help='Compute capability code generation',
                           default='sm_50',
-                          allowed_values=('sm_20', 'sm_30', 'sm_50', 'sm_60')))
+                          allowed_values=('sm_20', 'sm_30', 'sm_50', 'sm_60', 'sm_90')))
 
     # add a variable to handle warnings
     Walldefault = 'no'
