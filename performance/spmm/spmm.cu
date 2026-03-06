@@ -22,9 +22,9 @@ cusparseMatDescr_t descrC = 0;
 #define CLEANUP(s)                                   \
 do {                                                 \
     printf ("%s\n", s);                              \
-    if (descrA)              cusparseDestroyMatDescr(descrA);\
-    if (descrB)              cusparseDestroyMatDescr(descrB);\
-    if (descrC)              cusparseDestroyMatDescr(descrC);\
+    if (descrA)             cusparseDestroyMatDescr(descrA);\
+    if (descrB)             cusparseDestroyMatDescr(descrB);\
+    if (descrC)             cusparseDestroyMatDescr(descrC);\
     if (handle)             cusparseDestroy(handle); \
     cudaDeviceReset();          \
     fflush (stdout);                                 \
@@ -103,17 +103,14 @@ float time_cusparse(const InputType& A,
 {
     if( cusparse_init() )
     {
-	throw cusp::runtime_exception("CUSPARSE init failed");
+        throw cusp::runtime_exception("CUSPARSE init failed");
     }
-
-    typedef typename MatrixType::index_type IndexType;
-    typedef typename MatrixType::value_type ValueType;
 
     unsigned int N = 10;
 
-    int m = A.num_rows;
-    int n = A.num_cols;
-    int k = B.num_cols;
+    int m    = A.num_rows;
+    int n    = A.num_cols;
+    int k    = B.num_cols;
     int nnzA = A.num_entries;
     int nnzB = B.num_entries;
 
@@ -123,56 +120,80 @@ float time_cusparse(const InputType& A,
     MatrixType A_(A);
     MatrixType B_(B);
 
-    int * csrRowPtrA = thrust::raw_pointer_cast(&A_.row_offsets[0]);
-    int * csrColIndA = thrust::raw_pointer_cast(&A_.column_indices[0]);
-    float * csrValA  = thrust::raw_pointer_cast(&A_.values[0]);
+    int *   csrRowPtrA = thrust::raw_pointer_cast(&A_.row_offsets[0]);
+    int *   csrColIndA = thrust::raw_pointer_cast(&A_.column_indices[0]);
+    float * csrValA    = thrust::raw_pointer_cast(&A_.values[0]);
 
-    int * csrRowPtrB = thrust::raw_pointer_cast(&B_.row_offsets[0]);
-    int * csrColIndB = thrust::raw_pointer_cast(&B_.column_indices[0]);
-    float * csrValB  = thrust::raw_pointer_cast(&B_.values[0]);
+    int *   csrRowPtrB = thrust::raw_pointer_cast(&B_.row_offsets[0]);
+    int *   csrColIndB = thrust::raw_pointer_cast(&B_.column_indices[0]);
+    float * csrValB    = thrust::raw_pointer_cast(&B_.values[0]);
 
-    int * csrRowPtrC;
-    int * csrColIndC;
+    cusparseSpMatDescr_t matA, matB, matC;
+    cusparseCreateCsr(&matA, m, n, nnzA, csrRowPtrA, csrColIndA, csrValA,
+                      CUSPARSE_INDEX_32I, CUSPARSE_INDEX_32I, CUSPARSE_INDEX_BASE_ZERO, CUDA_R_32F);
+    cusparseCreateCsr(&matB, n, k, nnzB, csrRowPtrB, csrColIndB, csrValB,
+                      CUSPARSE_INDEX_32I, CUSPARSE_INDEX_32I, CUSPARSE_INDEX_BASE_ZERO, CUDA_R_32F);
+    cusparseCreateCsr(&matC, m, k, 0, NULL, NULL, NULL,
+                      CUSPARSE_INDEX_32I, CUSPARSE_INDEX_32I, CUSPARSE_INDEX_BASE_ZERO, CUDA_R_32F);
+
+    float alpha = 1.0f, beta = 0.0f;
+
+    cusparseSpGEMMDescr_t spgemmDesc;
+    cusparseSpGEMM_createDescr(&spgemmDesc);
+
+    /* estimate work */
+    size_t bufferSize1 = 0;
+    void * dBuffer1    = NULL;
+    cusparseSpGEMM_workEstimation(handle, transA, transB, &alpha, matA, matB, &beta, matC,
+                                   CUDA_R_32F, CUSPARSE_SPGEMM_DEFAULT, spgemmDesc, &bufferSize1, NULL);
+    cudaMalloc(&dBuffer1, bufferSize1 ? bufferSize1 : 1);
+    cusparseSpGEMM_workEstimation(handle, transA, transB, &alpha, matA, matB, &beta, matC,
+                                   CUDA_R_32F, CUSPARSE_SPGEMM_DEFAULT, spgemmDesc, &bufferSize1, dBuffer1);
+
+    /* execute (two calls)*/
+    size_t bufferSize2 = 0;
+    void * dBuffer2    = NULL;
+    cusparseSpGEMM_compute(handle, transA, transB, &alpha, matA, matB, &beta, matC,
+                            CUDA_R_32F, CUSPARSE_SPGEMM_DEFAULT, spgemmDesc, &bufferSize2, NULL);
+    cudaMalloc(&dBuffer2, bufferSize2 ? bufferSize2 : 1);
+
+    cusparseSpGEMM_compute(handle, transA, transB, &alpha, matA, matB, &beta, matC,
+                            CUDA_R_32F, CUSPARSE_SPGEMM_DEFAULT, spgemmDesc, &bufferSize2, dBuffer2);
+
+    /* compute output C */
+    int64_t C_rows, C_cols, C_nnz;
+    cusparseSpMatGetSize(matC, &C_rows, &C_cols, &C_nnz);
+
+    int *   csrRowPtrC;
+    int *   csrColIndC;
     float * csrValC;
+    cudaMalloc(&csrRowPtrC, (m + 1) * sizeof(int));
+    cudaMalloc(&csrColIndC, C_nnz * sizeof(int));
+    cudaMalloc(&csrValC,    C_nnz * sizeof(float));
+    cusparseCsrSetPointers(matC, csrRowPtrC, csrColIndC, csrValC);
 
     timer t;
-
     for(unsigned int i = 0; i < N; i++)
     {
-        int baseC, nnzC;
-        cudaMalloc((void**)&csrRowPtrC, sizeof(int)*(m+1));
-        status = cusparseXcsrgemmNnz(handle, transA, transB, m, n, k,
-                                     descrA, nnzA, csrRowPtrA, csrColIndA,
-                                     descrB, nnzB, csrRowPtrB, csrColIndB,
-                                     descrC, csrRowPtrC, &nnzC );
-        if (status != CUSPARSE_STATUS_SUCCESS) {
-            CLEANUP("CSR Matrix-Matrix multiplication failed");
-            return 1;
-        }
-        cudaMemcpy(&nnzC , csrRowPtrC+m, sizeof(int), cudaMemcpyDeviceToHost);
-        cudaMemcpy(&baseC, csrRowPtrC  , sizeof(int), cudaMemcpyDeviceToHost);
-        nnzC -= baseC;
-        cudaMalloc((void**)&csrColIndC, sizeof(int)*nnzC);
-        cudaMalloc((void**)&csrValC   , sizeof(float)*nnzC);
-        status = cusparseScsrgemm(handle, transA, transB, m, n, k,
-                                  descrA, nnzA,
-                                  csrValA, csrRowPtrA, csrColIndA,
-                                  descrB, nnzB,
-                                  csrValB, csrRowPtrB, csrColIndB,
-                                  descrC,
-                                  csrValC, csrRowPtrC, csrColIndC);
-
-        if (status != CUSPARSE_STATUS_SUCCESS) {
-            CLEANUP("CSR Matrix-Matrix multiplication failed");
-            return 1;
-        }
-
-        cudaFree(csrRowPtrC);
-        cudaFree(csrColIndC);
-        cudaFree(csrValC);
+        cusparseSpGEMM_compute(handle, transA, transB, &alpha, matA, matB, &beta, matC,
+                                CUDA_R_32F, CUSPARSE_SPGEMM_DEFAULT, spgemmDesc, &bufferSize2, dBuffer2);
+        cusparseSpGEMM_copy(handle, transA, transB, &alpha, matA, matB, &beta, matC,
+                             CUDA_R_32F, CUSPARSE_SPGEMM_DEFAULT, spgemmDesc);
     }
+    cudaDeviceSynchronize();
+    float elapsed = t.milliseconds_elapsed() / N;
 
-    return t.milliseconds_elapsed() / N;
+    cusparseSpGEMM_destroyDescr(spgemmDesc);
+    cusparseDestroySpMat(matA);
+    cusparseDestroySpMat(matB);
+    cusparseDestroySpMat(matC);
+    cudaFree(dBuffer1);
+    cudaFree(dBuffer2);
+    cudaFree(csrRowPtrC);
+    cudaFree(csrColIndC);
+    cudaFree(csrValC);
+
+    return elapsed;
 }
 
 int main(int argc, char ** argv)
