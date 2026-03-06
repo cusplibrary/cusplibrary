@@ -50,6 +50,7 @@ def process_file(project_base_dir, fobj, filename, base_list, project_name) :
 
                                 routine = re.sub(r"typename\s*?DerivedPolicy,\s*?", "", routine);
                                 routine = re.sub(r"__host__\s*__device__", "", routine);
+                                routine = re.sub(r"_CCCL_HOST_DEVICE\s*", "", routine);
                                 routine = re.sub("const thrust::detail::execution_policy_base<DerivedPolicy>", "my_policy", routine);
                                 routine = re.sub(r"thrust::detail::derived_cast\(thrust::detail::strip_const\(exec\)\)",
                                                  "exec.get()" if name not in base_list else "exec.base()", routine);
@@ -65,23 +66,31 @@ def process_file(project_base_dir, fobj, filename, base_list, project_name) :
                                 lines = routine.split("\n")
 
                                 out_lines = []
-                                for line in lines:
+                                i = 0
+                                while i < len(lines):
+                                    line = lines[i]
                                     if line :
                                         if "return" in line :
+                                            # Collect full return statement (may span multiple lines)
+                                            return_stmt = line
+                                            while not return_stmt.rstrip().endswith(';') and i + 1 < len(lines):
+                                                i += 1
+                                                return_stmt += "\n" + lines[i]
                                             enum_id = "__{}_{}__".format(project_name.upper(), name.upper());
                                             if enum_id not in enum_ids :
                                                 enum_ids.append(enum_id);
                                             out_lines.append("\n  exec.start({});".format(enum_id));
                                             if "void" in return_type:
-                                                out_lines.append("  " + line.split("return ",1)[1]);
+                                                out_lines.append("  " + return_stmt.split("return ",1)[1]);
                                             else :
-                                                out_lines.append("  {} ret = {}".format(return_type, line.split("return ",1)[1]));
+                                                out_lines.append("  {} ret = {}".format(return_type, return_stmt.split("return ",1)[1]));
                                             out_lines.append("  exec.stop();");
 
                                             if "void" not in return_type:
                                                 out_lines.append("\n  return ret;");
                                         else :
                                             out_lines.append(line)
+                                    i += 1
 
 
                                 routine = "\n".join(out_lines);
@@ -111,11 +120,11 @@ def generate(base_dir, project_name, dir_list, base_list, start_index) :
 
 if __name__ == "__main__" :
 
-    thrust_base = os.path.join(os.environ["HOME"], "thrust");
+    thrust_base = os.path.join(os.path.abspath(os.environ["CCCL_PATH"]), "thrust");
     thrust_base_funcs = ["for_each", "for_each_n", "inclusive_scan", "exclusive_scan", "reduce"];
     global_ids = generate(thrust_base, "thrust", ["thrust"], thrust_base_funcs, 0);
 
-    cusp_base = os.path.join(os.environ["HOME"], "cusplibrary");
+    cusp_base = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."));
     cusp_base_funcs = [];
     ids = generate(cusp_base, "cusp", ["cusp", "cusp/krylov", "cusp/graph", "cusp/lapack"], cusp_base_funcs, 0);
     global_ids.extend(ids);
