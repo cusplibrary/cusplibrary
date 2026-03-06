@@ -30,7 +30,7 @@ void benchmark_matrix(const Matrix& A)
 
     float time = t.seconds_elapsed();
 
-    cudaThreadSynchronize();
+    cudaDeviceSynchronize();
 
     if (monitor.converged())
         std::cout << "  Successfully converged";

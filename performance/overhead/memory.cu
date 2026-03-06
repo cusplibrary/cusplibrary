@@ -30,8 +30,9 @@ struct thrust_device_malloc_device_free
 {
     void operator()(size_t n)
     {
-        thrust::device_ptr<char> buff = thrust::device_malloc<char>(n);
-        thrust::device_free(buff);
+        char * buff;
+        cudaMalloc(&buff, n);
+        cudaFree(buff);
     }
 };
 
@@ -57,7 +58,7 @@ void benchmark(TestFunction f, size_t max_n = (size_t) 1 << 30, size_t num_itera
         {
             f(n);
         }
-        cudaThreadSynchronize();
+        cudaDeviceSynchronize();
 
         float ms = t.milliseconds_elapsed() / num_iterations;
         std::cout << std::setw(12) << n;
