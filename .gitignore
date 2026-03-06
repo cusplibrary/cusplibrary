@@ -104,15 +104,20 @@ examples/Version/version
 performance/amg/smoothed_aggregation
 performance/blas/blas
 performance/blas/cublas
+performance/conversions/conversions
 performance/csr_vector/csr_vector
+performance/eigen/lanczos
+performance/eigen/lobpcg
 performance/graph/breadth_first_search
 performance/graph/connected_components
 performance/graph/hilbert_curve
+performance/graph/maximal_independent_set
 performance/graph/maximum_flow
 performance/graph/pseudo_peripheral
 performance/graph/symmetric_rcm
+performance/graph/vertex_coloring
 performance/overhead/memory
+performance/solver/cg
 performance/spmv/spmv
-#<AutoIgnore/>
 
 *.user
