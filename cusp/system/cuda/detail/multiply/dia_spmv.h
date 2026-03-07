@@ -150,7 +150,7 @@ void multiply(cuda::execution_policy<DerivedPolicy>& exec,
     const size_t MAX_BLOCKS = cusp::system::cuda::detail::max_active_blocks(
                                spmv_dia_kernel<OffsetsIterator, ValueIterator1, ValueIterator2, ValueIterator3, UnaryFunction, BinaryFunction1, BinaryFunction2, BLOCK_SIZE>,
                                BLOCK_SIZE, (size_t) sizeof(IndexType) * BLOCK_SIZE);
-    const size_t NUM_BLOCKS = std::min<size_t>(MAX_BLOCKS, DIVIDE_INTO(A.num_rows, BLOCK_SIZE));
+    const size_t NUM_BLOCKS = ::cuda::std::min<size_t>(MAX_BLOCKS, DIVIDE_INTO(A.num_rows, BLOCK_SIZE));
 
     const IndexType num_diagonals = A.values.num_cols;
     const IndexType pitch         = A.values.pitch;

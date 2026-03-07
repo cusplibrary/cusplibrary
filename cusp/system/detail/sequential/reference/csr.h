@@ -54,7 +54,7 @@ void csr_diagonal(const I n_row,
 	              const T Ax[],
 	                    T Yx[])
 {
-    const I N = std::min(n_row, n_col);
+    const I N = ::cuda::std::min(n_row, n_col);
 
     for(I i = 0; i < N; i++){
         const I row_start = Ap[i];

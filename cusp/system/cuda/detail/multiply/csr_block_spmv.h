@@ -163,7 +163,7 @@ void __spmv_csr_block(cuda::execution_policy<DerivedPolicy>& exec,
                                   UnaryFunction, BinaryFunction1, BinaryFunction2,
                                   VECTORS_PER_BLOCK, THREADS_PER_VECTOR>,
                                   THREADS_PER_BLOCK, (size_t) 0);
-    const size_t NUM_BLOCKS = std::min(20 * MAX_BLOCKS, DIVIDE_INTO(A.num_rows, VECTORS_PER_BLOCK));
+    const size_t NUM_BLOCKS = ::cuda::std::min(20 * MAX_BLOCKS, DIVIDE_INTO(A.num_rows, VECTORS_PER_BLOCK));
 
     cudaStream_t s = stream(thrust::detail::derived_cast(exec));
 

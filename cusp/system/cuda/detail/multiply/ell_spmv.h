@@ -116,7 +116,7 @@ void multiply(cuda::execution_policy<DerivedPolicy>& exec,
     const size_t BLOCK_SIZE = 256;
     const size_t MAX_BLOCKS = cusp::system::cuda::detail::max_active_blocks(
                                   spmv_ell_kernel<IndexType,ValueType,UnaryFunction,BinaryFunction1,BinaryFunction2,BLOCK_SIZE>, BLOCK_SIZE, (size_t) 0);
-    const size_t NUM_BLOCKS = std::min<size_t>(MAX_BLOCKS, DIVIDE_INTO(A.num_rows, BLOCK_SIZE));
+    const size_t NUM_BLOCKS = ::cuda::std::min<size_t>(MAX_BLOCKS, DIVIDE_INTO(A.num_rows, BLOCK_SIZE));
 
     const IndexType pitch               = A.column_indices.pitch;
     const IndexType num_entries_per_row = A.column_indices.num_cols;

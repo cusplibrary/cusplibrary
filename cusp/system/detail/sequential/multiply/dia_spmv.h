@@ -63,11 +63,11 @@ void multiply(thrust::cpp::execution_policy<DerivedPolicy>& exec,
     {
         const IndexType k = A.diagonal_offsets[i];
 
-        const size_t i_start = std::max<IndexType>(0, -k);
-        const size_t j_start = std::max<IndexType>(0,  k);
+        const size_t i_start = ::cuda::std::max<IndexType>(0, -k);
+        const size_t j_start = ::cuda::std::max<IndexType>(0,  k);
 
         // number of elements to process in this diagonal
-        const size_t N = std::min(A.num_rows - i_start, A.num_cols - j_start);
+        const size_t N = ::cuda::std::min(A.num_rows - i_start, A.num_cols - j_start);
 
         for(size_t n = 0; n < N; n++)
         {

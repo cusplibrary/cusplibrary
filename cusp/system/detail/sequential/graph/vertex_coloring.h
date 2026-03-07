@@ -50,7 +50,7 @@ size_t vertex_coloring(thrust::cpp::execution_policy<DerivedPolicy>& exec,
 
     thrust::fill(exec, colors.begin(), colors.end(), N-1);
 
-    cusp::detail::temporary_array<size_t, DerivedPolicy> mark(exec, N, std::numeric_limits<IndexType>::max());
+    cusp::detail::temporary_array<size_t, DerivedPolicy> mark(exec, N, ::cuda::std::numeric_limits<IndexType>::max());
 
     for(size_t vertex = 0; vertex < N; vertex++)
     {

@@ -56,7 +56,7 @@ int lu_factor(cusp::array2d<ValueType,MemorySpace,Orientation>& A,
         // interchange the two rows.
         if (pivot[k] != k)
             for (int j = 0; j < n; j++)
-                std::swap(A(k,j), A(pivot[k],j));
+                ::cuda::std::swap(A(k,j), A(pivot[k],j));
 
         // and if the matrix is singular, return error
         if (A(k,k) == ValueType(0))
@@ -93,7 +93,7 @@ int lu_solve(const cusp::array2d<ValueType,MemorySpace,Orientation>& A,
     for (int k = 0; k < n; k++)
     {
         if (pivot[k] != k)
-            std::swap(x[k],x[pivot[k]]);
+            ::cuda::std::swap(x[k],x[pivot[k]]);
 
         for (int i = 0; i < k; i++)
             x[k] -= A(k,i) * x[i];

@@ -97,7 +97,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     const float max_fill   = 3.0;
     const float threshold  = 1e6; // 1M entries
     const float size       = float(occupied_diagonals) * float(src.num_rows);
-    const float fill_ratio = size / std::max(1.0f, float(src.num_entries));
+    const float fill_ratio = size / ::cuda::std::max(1.0f, float(src.num_entries));
 
     if (max_fill < fill_ratio && size > threshold)
         throw cusp::format_conversion_exception("dia_matrix fill-in would exceed maximum tolerance");
@@ -178,7 +178,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
         const float max_fill  = 3.0;
         const float threshold  = 1e6; // 1M entries
         const float size       = float(max_entries_per_row) * float(src.num_rows);
-        const float fill_ratio = size / std::max(1.0f, float(src.num_entries));
+        const float fill_ratio = size / ::cuda::std::max(1.0f, float(src.num_entries));
 
         if (max_fill < fill_ratio && size > threshold)
             throw cusp::format_conversion_exception("ell_matrix fill-in would exceed maximum tolerance");

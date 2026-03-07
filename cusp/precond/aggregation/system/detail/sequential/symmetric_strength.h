@@ -69,7 +69,7 @@ void symmetric_strength_of_connection(thrust::cpp::execution_policy<DerivedPolic
             const ValueType Ajj = diagonal[j];
 
             //  |A(i,j)| >= theta * sqrt(|A(i,i)|*|A(j,j)|)
-            if(cusp::abs(Aij) >= theta * std::sqrt(cusp::abs(Aii) * cusp::abs(Ajj)))
+            if(cusp::abs(Aij) >= theta * ::cuda::std::sqrt(cusp::abs(Aii) * cusp::abs(Ajj)))
                 num_entries++;
         }
     }
@@ -94,7 +94,7 @@ void symmetric_strength_of_connection(thrust::cpp::execution_policy<DerivedPolic
             const ValueType Ajj = diagonal[j];
 
             //  |A(i,j)| >= theta * sqrt(|A(i,i)|*|A(j,j)|)
-            if(cusp::abs(Aij) >= theta * std::sqrt(cusp::abs(Aii) * cusp::abs(Ajj)))
+            if(cusp::abs(Aij) >= theta * ::cuda::std::sqrt(cusp::abs(Aii) * cusp::abs(Ajj)))
             {
                 S.column_indices[num_entries] =   j;
                 S.values[num_entries]         = Aij;

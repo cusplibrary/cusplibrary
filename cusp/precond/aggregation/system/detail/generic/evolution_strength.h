@@ -99,7 +99,7 @@ struct set_perfect
 {
     const ValueType eps;
 
-    set_perfect(void) : eps(std::sqrt(std::numeric_limits<ValueType>::epsilon())) {}
+    set_perfect(void) : eps(::cuda::std::sqrt(::cuda::std::numeric_limits<ValueType>::epsilon())) {}
 
     _CCCL_HOST_DEVICE
     ValueType operator()(const ValueType val) const
@@ -317,9 +317,9 @@ evolution_strength_of_connection(thrust::execution_policy<DerivedPolicy> &exec,
     thrust::scatter(exec, Atilde_symmetric.begin(), Atilde_symmetric.end(), permutation.begin(), Dinv_A_T_values.begin());
 
     // Apply distance filter
-    if(epsilon != std::numeric_limits<ValueType>::infinity())
+    if(epsilon != ::cuda::std::numeric_limits<ValueType>::infinity())
     {
-        thrust::fill(exec, smallest_per_row.begin(), smallest_per_row.end(), std::numeric_limits<ValueType>::max());
+        thrust::fill(exec, smallest_per_row.begin(), smallest_per_row.end(), ::cuda::std::numeric_limits<ValueType>::max());
 
         thrust::reduce_by_key(exec,
                               A.row_indices.begin(), A.row_indices.end(), Atilde_symmetric.begin(),

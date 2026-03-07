@@ -50,5 +50,7 @@ standard_test = env.Program(target='test', source=sources)
 env.Alias('standard_test', standard_test)
 Help('scons standard_test\n'
      '    Builds standard unit tests from testing/*.cu\n')
-SConscript('external_libs/SConscript', exports='env')
-SConscript('compile_tests/SConscript', exports='env')
+
+if 'single_test' not in env:
+  SConscript('external_libs/SConscript', exports='env')
+  SConscript('compile_tests/SConscript', exports='env')

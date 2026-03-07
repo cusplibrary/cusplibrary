@@ -51,7 +51,7 @@ template <typename ,typename ,typename> struct logical_to_other_physical_functor
 
 template<typename MatrixType, typename CompareTag>
 struct is_matrix_type
-  : thrust::detail::integral_constant<bool,std::is_same<typename MatrixType::format,CompareTag>::value>
+  : thrust::detail::integral_constant<bool,::cuda::std::is_same<typename MatrixType::format,CompareTag>::value>
 {};
 
 template<typename MatrixType> struct is_array2d : is_matrix_type<MatrixType,cusp::array2d_format> {};
@@ -151,7 +151,7 @@ struct coo_view_type<RowArray,ColumnArray,ValueArray,cusp::csr_format>
     typedef typename ValueArray::value_type                                                            ValueType;
     typedef typename ValueArray::memory_space                                                          MemorySpace;
 
-    typedef typename std::remove_const<IndexType>::type                                                TempType;
+    typedef typename ::cuda::std::remove_const<IndexType>::type                                                TempType;
     typedef cusp::array1d<TempType,MemorySpace>                                                        Array1;
     typedef cusp::array1d_view<typename ColumnArray::iterator>                                         Array2;
     typedef cusp::array1d_view<typename ValueArray::iterator>                                          Array3;
@@ -170,7 +170,7 @@ struct coo_view_type<RowArray,ColumnArray,ValueArray,cusp::dia_format>
     typedef typename ValueArray::value_type   ValueType;
     typedef typename ValueArray::memory_space MemorySpace;
 
-    typedef typename std::remove_const<IndexType>::type                                                  TempType;
+    typedef typename ::cuda::std::remove_const<IndexType>::type                                                  TempType;
     typedef typename thrust::counting_iterator<TempType>                                                 CountingIterator;
     typedef typename thrust::transform_iterator<cusp::divide_value<TempType>, CountingIterator>          RowIndexIterator;
     typedef typename cusp::array1d<TempType,MemorySpace>::iterator                                       IndexIterator;
@@ -205,7 +205,7 @@ struct coo_view_type<RowArray,ColumnArray,ValueArray,cusp::ell_format>
     typedef typename ValueArray::value_type   ValueType;
     typedef typename ValueArray::memory_space MemorySpace;
 
-    typedef typename std::remove_const<IndexType>::type                                                  TempType;
+    typedef typename ::cuda::std::remove_const<IndexType>::type                                                  TempType;
     typedef typename thrust::counting_iterator<TempType>                                                 CountingIterator;
     typedef thrust::transform_iterator<cusp::divide_value<TempType>, CountingIterator>                   RowIndexIterator;
     typedef typename ColumnArray::iterator                                                               ColumnIndexIterator;
@@ -235,7 +235,7 @@ struct coo_view_type<RowArray,ColumnArray,ValueArray,cusp::hyb_format>
     typedef typename ValueArray::value_type   ValueType;
     typedef typename ValueArray::memory_space MemorySpace;
 
-    typedef typename std::remove_const<IndexType>::type                                                  TempType;
+    typedef typename ::cuda::std::remove_const<IndexType>::type                                                  TempType;
 
     typedef coo_view_type<RowArray,ColumnArray,ValueArray,cusp::ell_format>                              ell_view_type;
     typedef coo_matrix_view<RowArray,ColumnArray,ValueArray>                                             coo_view;

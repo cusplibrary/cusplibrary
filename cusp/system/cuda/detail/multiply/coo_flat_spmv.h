@@ -432,7 +432,7 @@ void __spmv_coo_flat(cuda::execution_policy<DerivedPolicy>& exec,
     const unsigned int WARPS_PER_BLOCK = BLOCK_SIZE / WARP_SIZE;
 
     const unsigned int num_units  = A.num_entries / WARP_SIZE;
-    const unsigned int num_warps  = std::min(num_units, WARPS_PER_BLOCK * MAX_BLOCKS);
+    const unsigned int num_warps  = ::cuda::std::min(num_units, WARPS_PER_BLOCK * MAX_BLOCKS);
     const unsigned int num_blocks = DIVIDE_INTO(num_warps, WARPS_PER_BLOCK);
     const unsigned int num_iters  = DIVIDE_INTO(num_units, num_warps);
 
