@@ -56,25 +56,45 @@ git clone git@github.com:NVIDIA/cccl.git
 nvcc -Icccl/thrust -Icccl/libcudacxx/include -Icccl/cub -I. example.cu -o example
 ```
 
-### Stable Releases
+### Status
 
-CUSP releases are labeled using version identifiers having three fields:
+CUSP is up-to-date with CCCL v2.8.5.  It has been tested with CUDA 13.
 
-| Date | Version | Date | Version |
-| ---- | ------- | ---- | ------- |
-|            |                                                                              | 03/13/2015 | [CUSP v0.5.0](https://github.com/cusplibrary/cusplibrary/archive/v0.5.0.zip) |
-|            |                                                                              | 08/30/2013 | [CUSP v0.4.0](https://github.com/cusplibrary/cusplibrary/archive/v0.4.0.zip) |
-|            |                                                                              | 03/08/2012 | [CUSP v0.3.1](https://github.com/cusplibrary/cusplibrary/archive/v0.3.1.zip) |
-|            |                                                                              | 02/04/2012 | [CUSP v0.3.0](https://github.com/cusplibrary/cusplibrary/archive/v0.3.0.zip) |
-|            |                                                                              | 05/30/2011 | [CUSP v0.2.0](https://github.com/cusplibrary/cusplibrary/archive/v0.2.0.zip) |
-| 04/28/2015 | [CUSP v0.5.1](https://github.com/cusplibrary/cusplibrary/archive/v0.5.1.zip) | 07/10/2010 | [CUSP v0.1.0](https://github.com/cusplibrary/cusplibrary/archive/v0.1.0.zip) |
+### To build:
 
+First point to CCCL (and to THRUST if using a `gcc` build).  For example with CCCL in your home directory:
+```shell
+export CCCL_PATH=$HOME/cccl
+export THRUST_PATH=$HOME/cccl/thrust
+```
+
+Next, you must have a recent version of Scons for the build:
+```shell
+pip install scons
+```
+
+To build/run with gcc, use an `omp` backend with CUSP blas:
+```shell
+scons compiler=gcc backend=omp deviceblas=cusp mode=release -j 16
+```
+
+To build/run with nvcc, use:
+```shell
+scons arch=sm_90 -j 16
+```
+(see https://arnon.dk/matching-sm-architectures-arch-and-gencode-for-various-nvidia-cards/ for a full list)
+
+A single test can be run with `scons single_test=poisson`, for example.
+
+Examples can be found in `examples` and performance results can be found in `performance` with similar scons instructions.
 
 ### Contributors
 
-CUSP is developed as an open-source project by [NVIDIA Research](http://research.nvidia.com).
-[Nathan Bell](http:github.com/wnbell) was the original creator and
-[Steven Dalton](http://github.com/sdalton1) is the current primary contributor.
+CUSP is developed as an open-source project with [NVIDIA Research](https://research.nvidia.com).
+[Nathan Bell](https:github.com/wnbell) was the original creator.
+It is currently developed by 
+[Steven Dalton](https://github.com/sdalton1) and
+[Luke Olson](https://github.com/lukeolson)
 
 CUSP is available under the Apache v2.0 open source [LICENSE](./LICENSE)
 
@@ -84,7 +104,8 @@ CUSP is available under the Apache v2.0 open source [LICENSE](./LICENSE)
 @MISC{Cusp,
   author = "Steven Dalton and Nathan Bell and Luke Olson and Michael Garland",
   title = "Cusp: Generic Parallel Algorithms for Sparse Matrix and Graph Computations",
-  year = "2014",
-  url = "http://cusplibrary.github.io/", note = "Version 0.5.0"
+  year = "2026",
+  url = "https://github.com/cusplibrary/cusplibrary",
+  note = "Version 0.6.0"
 }
 ```
