@@ -32,8 +32,6 @@
 #include <thrust/iterator/counting_iterator.h>
 #include <thrust/reduce.h>
 
-#include <thrust/detail/integer_traits.h>
-
 #include <algorithm>
 
 namespace cusp

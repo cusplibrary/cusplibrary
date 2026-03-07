@@ -54,9 +54,12 @@
 #include <cusp/system/cuda/arch.h>
 #include <cusp/system/cuda/utils.h>
 #include <cusp/system/cuda/detail/multiply/coo_serial.h>
+#include <cusp/system/cuda/detail/runtime_introspection.h>
 
 #include <thrust/device_ptr.h>
 #include <thrust/extrema.h>
+
+#include <cub/cub.cuh>
 
 namespace cusp
 {
@@ -69,7 +72,7 @@ namespace detail
 namespace cub_coo_spmv_detail
 {
 
-using namespace thrust::system::cuda::detail::cub_;
+using namespace cub;
 
 /******************************************************************************
  * Texture referencing
@@ -82,7 +85,7 @@ template <typename ValueType>
 struct TexVector
 {
     // Texture type to actually use (e.g., because CUDA doesn't load doubles as texture items)
-    typedef typename If<(Equals<ValueType, double>::VALUE), uint2, ValueType>::Type CastType;
+    typedef ::cuda::std::conditional_t<::cuda::std::is_same<ValueType, double>::value, uint2, ValueType> CastType;
 
     // Texture reference type
     typedef texture<CastType, cudaTextureType1D, cudaReadModeElementType> TexRef;
@@ -904,7 +907,7 @@ void spmv_coo(cusp::system::cuda::detail::execution_policy<DerivedPolicy>& exec,
 
     // int sm_count = -1;
     // cudaDeviceGetAttribute (&sm_count, cudaDevAttrMultiProcessorCount, 0);
-    thrust::system::cuda::detail::device_properties_t properties = thrust::system::cuda::detail::device_properties();
+    cusp::system::cuda::detail::device_properties_t properties = cusp::system::cuda::detail::device_properties();
     int sm_count = properties.multiProcessorCount;
     int max_coo_grid_size   = sm_count * coo_sm_occupancy * COO_SUBSCRIPTION_FACTOR;
 

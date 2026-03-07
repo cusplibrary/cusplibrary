@@ -21,7 +21,6 @@
 
 #include <thrust/iterator/counting_iterator.h>
 #include <thrust/iterator/iterator_traits.h>
-#include <thrust/detail/numeric_traits.h>
 #include <thrust/detail/type_traits.h>
 
 #include <cstddef>
