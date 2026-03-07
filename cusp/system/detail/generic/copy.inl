@@ -147,7 +147,12 @@ void copy_array2d(thrust::execution_policy<DerivedPolicy>& exec,
 
     // prefer coalesced writes to coalesced reads
     cusp::detail::logical_to_other_physical_functor<size_t, Orientation2, Orientation1> func1(src.num_rows, src.num_cols, src.pitch);
-    cusp::detail::logical_to_physical_functor      <size_t, Orientation2>               func2(dst.num_rows, dst.num_cols, dst.pitch);
+    // dst.pitch is set by resize() above so avoid GCC (false-positive)
+    // warning -Wmaybe-uninitialized with the following
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+    cusp::detail::logical_to_physical_functor <size_t, Orientation2> func2(dst.num_rows, dst.num_cols, dst.pitch);
+#pragma GCC diagnostic pop
 
     thrust::copy(exec,
                  thrust::make_permutation_iterator(src.values.begin(), thrust::make_transform_iterator(begin, func1)),
