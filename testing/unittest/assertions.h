@@ -178,8 +178,8 @@ template <typename ForwardIterator1, typename ForwardIterator2, typename BinaryP
 void assert_equal(ForwardIterator1 first1, ForwardIterator1 last1, ForwardIterator2 first2, ForwardIterator2 last2, BinaryPredicate op,
                   const std::string& filename = "unknown", int lineno = -1)
 {
-    typedef typename thrust::iterator_difference<ForwardIterator1>::type difference_type;
-    typedef typename thrust::iterator_value<ForwardIterator1>::type InputType;
+    typedef typename ::cuda::std::iterator_traits<ForwardIterator1>::difference_type difference_type;
+    typedef typename ::cuda::std::iterator_traits<ForwardIterator1>::value_type InputType;
 
     bool failure = false;
 

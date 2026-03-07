@@ -275,10 +275,10 @@ struct PersistentBlockSpmv
     typedef int HeadFlag;
 
     // Partial dot product type
-    typedef typename thrust::iterator_value<PartialIterator>::type    PartialProduct;
+    typedef typename ::cuda::std::iterator_traits<PartialIterator>::value_type    PartialProduct;
 
     // base types
-    typedef typename thrust::iterator_value<ValueIterator1>::type     ValueType;
+    typedef typename ::cuda::std::iterator_traits<ValueIterator1>::value_type     ValueType;
     typedef typename PartialProduct::index_type                       IndexType;
 
     // Parameterized BlockScan type for reduce-value-by-row scan
@@ -575,8 +575,8 @@ struct FinalizeSpmvBlock
         TILE_ITEMS = BLOCK_THREADS * ITEMS_PER_THREAD,
     };
 
-    typedef typename thrust::iterator_value<PartialIterator>::type    PartialProduct;
-    typedef typename thrust::iterator_value<ValueIterator>::type      ValueType;
+    typedef typename ::cuda::std::iterator_traits<PartialIterator>::value_type    PartialProduct;
+    typedef typename ::cuda::std::iterator_traits<ValueIterator>::value_type      ValueType;
     typedef typename PartialProduct::index_type                       IndexType;
 
     // Head flag type

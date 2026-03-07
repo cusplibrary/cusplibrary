@@ -71,8 +71,8 @@ spmv_dia_kernel(const int num_rows,
                 BinaryFunction1 combine,
                 BinaryFunction2 reduce)
 {
-    typedef typename thrust::iterator_value<OffsetsIterator>::type IndexType;
-    typedef typename thrust::iterator_value<ValueIterator1>::type  ValueType;
+    typedef typename ::cuda::std::iterator_traits<OffsetsIterator>::value_type IndexType;
+    typedef typename ::cuda::std::iterator_traits<ValueIterator1>::value_type  ValueType;
 
     __shared__ IndexType offsets[BLOCK_SIZE];
 

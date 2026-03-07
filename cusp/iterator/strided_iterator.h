@@ -80,12 +80,12 @@ class strided_iterator
 public:
 
     /*! \cond */
-    typedef typename thrust::iterator_value<RandomAccessIterator>::type                       value_type;
+    typedef typename ::cuda::std::iterator_traits<RandomAccessIterator>::value_type                       value_type;
     typedef typename thrust::iterator_system<RandomAccessIterator>::type                      memory_space;
-    typedef typename thrust::iterator_pointer<RandomAccessIterator>::type                     pointer;
-    typedef typename thrust::iterator_reference<RandomAccessIterator>::type                   reference;
-    typedef typename thrust::iterator_difference<RandomAccessIterator>::type                  difference_type;
-    typedef typename thrust::iterator_difference<RandomAccessIterator>::type                  size_type;
+    typedef typename ::cuda::std::iterator_traits<RandomAccessIterator>::pointer                     pointer;
+    typedef typename ::cuda::std::iterator_traits<RandomAccessIterator>::reference                   reference;
+    typedef typename ::cuda::std::iterator_traits<RandomAccessIterator>::difference_type                  difference_type;
+    typedef typename ::cuda::std::iterator_traits<RandomAccessIterator>::difference_type                  size_type;
 
     typedef cusp::multiplies_value<difference_type>                                           StrideFunctor;
     typedef typename thrust::counting_iterator<difference_type>                               CountingIterator;

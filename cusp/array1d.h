@@ -373,11 +373,11 @@ public :
     typedef cusp::array1d_format                                                format;
 
     typedef typename cusp::iterator_system<space>::type                         memory_space;
-    typedef typename thrust::iterator_value<RandomAccessIterator>::type         value_type;
-    typedef typename thrust::iterator_pointer<RandomAccessIterator>::type       pointer;
-    typedef typename thrust::iterator_reference<RandomAccessIterator>::type     reference;
-    typedef typename thrust::iterator_difference<RandomAccessIterator>::type    difference_type;
-    // typedef typename thrust::iterator_difference<RandomAccessIterator>::type    size_type;
+    typedef typename ::cuda::std::iterator_traits<RandomAccessIterator>::value_type         value_type;
+    typedef typename ::cuda::std::iterator_traits<RandomAccessIterator>::pointer       pointer;
+    typedef typename ::cuda::std::iterator_traits<RandomAccessIterator>::reference     reference;
+    typedef typename ::cuda::std::iterator_traits<RandomAccessIterator>::difference_type    difference_type;
+    // typedef typename ::cuda::std::iterator_traits<RandomAccessIterator>::difference_type    size_type;
     typedef size_t                                                              size_type;
 
     typedef typename cusp::array1d<value_type,memory_space>                     container;

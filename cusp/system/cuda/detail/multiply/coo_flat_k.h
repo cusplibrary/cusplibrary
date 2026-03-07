@@ -43,8 +43,8 @@ template<unsigned int CTA_SIZE,
 _CCCL_DEVICE
 void scan_by_key(KeyIterator keys, ValueIterator vals)
 {
-    typedef typename thrust::iterator_value<KeyIterator>::type   KeyType;
-    typedef typename thrust::iterator_value<ValueIterator>::type ValueType;
+    typedef typename ::cuda::std::iterator_traits<KeyIterator>::value_type   KeyType;
+    typedef typename ::cuda::std::iterator_traits<ValueIterator>::value_type ValueType;
 
     KeyType   key = keys[threadIdx.x];
     ValueType val = vals[threadIdx.x];
