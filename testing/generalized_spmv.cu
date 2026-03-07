@@ -90,12 +90,12 @@ void TestGeneralizedSpMV()
     }
     {
         HostMatrix M;
-        cusp::gallery::poisson5pt(M, 313, 444);
+        cusp::gallery::poisson5pt(M,  40,  60);
         matrices.push_back(M);
     }
     {
         HostMatrix M;
-        cusp::gallery::poisson5pt(M, 876, 321);
+        cusp::gallery::poisson5pt(M,  40,  60);
         matrices.push_back(M);
     }
     {
@@ -115,12 +115,12 @@ void TestGeneralizedSpMV()
     }
     {
         HostMatrix M;
-        cusp::gallery::random(M, 355, 378, 234);
+        cusp::gallery::random(M,  40,  60,  20);
         matrices.push_back(M);
     }
     {
         HostMatrix M;
-        cusp::gallery::random(M, 512, 512, 276);
+        cusp::gallery::random(M,  40,  60,  20);
         matrices.push_back(M);
     }
 

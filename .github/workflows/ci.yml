@@ -39,3 +39,54 @@ jobs:
     - name: Run tests
       working-directory: testing/device_omp_release
       run: ./test
+
+  Coverage:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: Install scons
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install scons
+
+    - name: Install dependencies
+      run: sudo apt-get install -y liblapacke-dev libopenblas-dev lcov
+
+    - name: Checkout CCCL v2.8.5
+      uses: actions/checkout@v4
+      with:
+        repository: NVIDIA/cccl
+        ref: v2.8.5
+        path: cccl
+
+    - name: Build tests (coverage)
+      working-directory: testing
+      run: |
+        CCCL_PATH=${{ github.workspace }}/cccl \
+        THRUST_PATH=${{ github.workspace }}/cccl/thrust \
+        scons compiler=gcc backend=omp deviceblas=cusp mode=coverage -j $(nproc)
+
+    - name: Run tests (coverage)
+      working-directory: testing/device_omp_coverage
+      run: ./test
+
+    - name: Collect coverage
+      working-directory: testing
+      run: |
+        lcov --capture \
+             --directory device_omp_coverage \
+             --output-file coverage.info
+        lcov --extract coverage.info '*/cusplibrary/cusp/*' \
+             --output-file coverage_filtered.info
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v5
+      with:
+        files: testing/coverage_filtered.info
