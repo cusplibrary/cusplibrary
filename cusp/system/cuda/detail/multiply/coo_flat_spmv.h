@@ -250,7 +250,7 @@ spmv_coo_flat_kernel(const IndexType num_nonzeros,
     const IndexType warp_id     = thread_id   / WARP_SIZE;                                       // global warp index
 
     const IndexType interval_begin = warp_id * interval_size;                                    // warp's offset into I,J,V
-    const IndexType interval_end   = thrust::min(interval_begin + interval_size, num_nonzeros);  // end of warps's work
+    const IndexType interval_end   = ::cuda::std::min(interval_begin + interval_size, num_nonzeros);  // end of warps's work
 
     const IndexType idx = 16 * (threadIdx.x/32 + 1) + threadIdx.x;                               // thread's index into padded rows array
 

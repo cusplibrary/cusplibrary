@@ -177,7 +177,7 @@ void extract_diagonal(thrust::execution_policy<DerivedPolicy> &exec,
 
     Format format;
 
-    output.resize(thrust::min(A.num_rows, A.num_cols));
+    output.resize(::cuda::std::min(A.num_rows, A.num_cols));
 
     // dispatch on matrix format
     return extract_diagonal(exec, A, output, format);

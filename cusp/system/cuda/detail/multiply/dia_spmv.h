@@ -82,7 +82,7 @@ spmv_dia_kernel(const int num_rows,
     for(IndexType base = 0; base < num_diagonals; base += BLOCK_SIZE)
     {
         // read a chunk of the diagonal offsets into shared memory
-        const IndexType chunk_size = thrust::min(IndexType(BLOCK_SIZE), num_diagonals - base);
+        const IndexType chunk_size = ::cuda::std::min(IndexType(BLOCK_SIZE), num_diagonals - base);
 
         if(threadIdx.x < chunk_size)
             offsets[threadIdx.x] = diagonal_offsets[base + threadIdx.x];

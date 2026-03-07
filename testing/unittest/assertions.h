@@ -186,7 +186,7 @@ void assert_equal(ForwardIterator1 first1, ForwardIterator1 last1, ForwardIterat
     difference_type length1 = thrust::distance(first1, last1);
     difference_type length2 = thrust::distance(first2, last2);
 
-    difference_type min_length = thrust::min(length1, length2);
+    difference_type min_length = ::cuda::std::min(length1, length2);
 
     unittest::UnitTestFailure f;
     f << "[" << filename << ":" << lineno << "] ";
