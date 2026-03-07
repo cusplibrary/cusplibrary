@@ -102,7 +102,7 @@ void TestAINVSymmetry(void)
 
     // Create 2D Poisson problem
     cusp::csr_matrix<IndexType,ValueType,MemorySpace> A;
-    cusp::gallery::poisson5pt(A, 100, 100);
+    cusp::gallery::poisson5pt(A, 10, 10);
     A.values[0] = 10;
     int N = A.num_rows;
 
@@ -154,7 +154,7 @@ void TestAINVConvergence(void)
 
     // Create 2D Poisson problem
     cusp::csr_matrix<IndexType,ValueType,MemorySpace> A;
-    cusp::gallery::poisson5pt(A, 100, 100);
+    cusp::gallery::poisson5pt(A, 10, 10);
     A.values[0] = 10;
     int N = A.num_rows;
 

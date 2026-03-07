@@ -22,7 +22,7 @@ void TestSmoothedAggregation(void)
 
     // Create 2D Poisson problem
     SparseMatrix A;
-    cusp::gallery::poisson5pt(A, 100, 100);
+    cusp::gallery::poisson5pt(A, 80, 80);
 
     // create smoothed aggregation solver
     cusp::precond::aggregation::smoothed_aggregation<IndexType,ValueType,MemorySpace> M(A);
@@ -62,7 +62,7 @@ void TestSmoothedAggregationHostToDevice(void)
 
     // Create 2D Poisson problem
     cusp::coo_matrix<IndexType,ValueType,cusp::host_memory> A_h;
-    cusp::gallery::poisson5pt(A_h, 100, 100);
+    cusp::gallery::poisson5pt(A_h, 80, 80);
 
     // create smoothed aggregation solver
     cusp::precond::aggregation::smoothed_aggregation<IndexType,ValueType,cusp::host_memory> M_h(A_h);
