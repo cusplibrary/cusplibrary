@@ -196,7 +196,7 @@ void __spmv_csr_vector(cuda::execution_policy<DerivedPolicy>& exec,
                                   spmv_csr_vector_kernel<RowIterator, ColumnIterator, ValueIterator1, ValueIterator2, ValueIterator3,
                                   UnaryFunction, BinaryFunction1, BinaryFunction2,
                                   VECTORS_PER_BLOCK, THREADS_PER_VECTOR>, THREADS_PER_BLOCK, (size_t) 0);
-    const size_t NUM_BLOCKS = std::min<size_t>(MAX_BLOCKS, DIVIDE_INTO(A.num_rows, VECTORS_PER_BLOCK));
+    const size_t NUM_BLOCKS = ::cuda::std::min<size_t>(MAX_BLOCKS, DIVIDE_INTO(A.num_rows, VECTORS_PER_BLOCK));
 
     cudaStream_t s = stream(thrust::detail::derived_cast(exec));
 

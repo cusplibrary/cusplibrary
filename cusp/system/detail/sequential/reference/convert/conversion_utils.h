@@ -61,7 +61,7 @@ size_t compute_max_entries_per_row(const Matrix& csr, cusp::csr_format)
 {
     size_t max_entries_per_row = 0;
     for(size_t i = 0; i < csr.num_rows; i++)
-        max_entries_per_row = std::max<size_t>(max_entries_per_row, csr.row_offsets[i+1] - csr.row_offsets[i]);
+        max_entries_per_row = ::cuda::std::max<size_t>(max_entries_per_row, csr.row_offsets[i+1] - csr.row_offsets[i]);
     return max_entries_per_row;
 }
 
@@ -76,7 +76,7 @@ size_t compute_optimal_entries_per_row(const Matrix& csr,
     // compute maximum row length
     size_t max_cols_per_row = 0;
     for(size_t i = 0; i < csr.num_rows; i++)
-        max_cols_per_row = std::max<size_t>(max_cols_per_row, csr.row_offsets[i+1] - csr.row_offsets[i]);
+        max_cols_per_row = ::cuda::std::max<size_t>(max_cols_per_row, csr.row_offsets[i+1] - csr.row_offsets[i]);
 
     // compute distribution of nnz per row
     std::vector<IndexType> histogram(max_cols_per_row + 1, 0);

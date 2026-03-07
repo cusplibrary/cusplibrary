@@ -70,7 +70,7 @@ struct function_attributes_t
  *  \note The __global__ function of interest is presumed to use 0 bytes of dynamically-allocated __shared__ memory.
  */
 inline _CCCL_HOST_DEVICE
-std::size_t block_size_with_maximum_potential_occupancy(const function_attributes_t &attributes,
+::cuda::std::size_t block_size_with_maximum_potential_occupancy(const function_attributes_t &attributes,
         const device_properties_t   &properties);
 
 /*! Computes a block size in number of threads for a CUDA kernel using a occupancy-promoting heuristic.
@@ -86,7 +86,7 @@ std::size_t block_size_with_maximum_potential_occupancy(const function_attribute
  */
 template<typename UnaryFunction>
 inline _CCCL_HOST_DEVICE
-std::size_t block_size_with_maximum_potential_occupancy(const function_attributes_t &attributes,
+::cuda::std::size_t block_size_with_maximum_potential_occupancy(const function_attributes_t &attributes,
         const device_properties_t   &properties,
         UnaryFunction block_size_to_dynamic_smem_size);
 
@@ -115,7 +115,7 @@ size_t max_blocksize_subject_to_smem_usage(const device_properties_t   &properti
 namespace cuda_launch_config_detail
 {
 
-using std::size_t;
+using ::cuda::std::size_t;
 
 namespace util
 {
@@ -318,7 +318,7 @@ size_t max_active_blocks_per_multiprocessor(const device_properties_t    &proper
 
 template<typename UnaryFunction>
 inline _CCCL_HOST_DEVICE
-std::size_t block_size_with_maximum_potential_occupancy(const function_attributes_t &attributes,
+::cuda::std::size_t block_size_with_maximum_potential_occupancy(const function_attributes_t &attributes,
         const device_properties_t   &properties,
         UnaryFunction block_size_to_dynamic_smem_size)
 {
@@ -348,10 +348,10 @@ std::size_t block_size_with_maximum_potential_occupancy(const function_attribute
 
 
 inline _CCCL_HOST_DEVICE
-std::size_t block_size_with_maximum_potential_occupancy(const function_attributes_t &attributes,
+::cuda::std::size_t block_size_with_maximum_potential_occupancy(const function_attributes_t &attributes,
         const device_properties_t   &properties)
 {
-    return block_size_with_maximum_potential_occupancy(attributes, properties, cuda_launch_config_detail::util::zero_function<std::size_t>());
+    return block_size_with_maximum_potential_occupancy(attributes, properties, cuda_launch_config_detail::util::zero_function<::cuda::std::size_t>());
 }
 
 

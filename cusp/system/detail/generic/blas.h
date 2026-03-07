@@ -336,7 +336,7 @@ nrm2(thrust::execution_policy<DerivedPolicy>& exec,
 
     NormType init = 0;
 
-    return std::sqrt(thrust::transform_reduce(exec, x.begin(), x.end(), unary_op, init, binary_op));
+    return ::cuda::std::sqrt(thrust::transform_reduce(exec, x.begin(), x.end(), unary_op, init, binary_op));
 }
 
 template <typename DerivedPolicy,

@@ -90,7 +90,7 @@ public:
     typedef size_t                                                                         size_type;
     typedef thrust::random_access_traversal_tag                                            iterator_category;
 
-    typedef std::ptrdiff_t                                                                 IndexType;
+    typedef ::cuda::std::ptrdiff_t                                                                 IndexType;
     typedef detail::random_integer_functor<IndexType,T>                                    IndexFunctor;
     typedef typename thrust::counting_iterator<IndexType>                                  CountingIterator;
     typedef typename thrust::transform_iterator<IndexFunctor, CountingIterator, IndexType> RandomCountingIterator;

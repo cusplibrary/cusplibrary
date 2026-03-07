@@ -490,8 +490,8 @@ void gemm(cublas::execute_with_cublas_base<DerivedPolicy>& exec,
         if(!a_trans)
             transb = (transb == CUBLAS_OP_N) ? CUBLAS_OP_T : CUBLAS_OP_N;
 
-        std::swap(lda, ldb);
-        std::swap(A_p, B_p);
+        ::cuda::std::swap(lda, ldb);
+        ::cuda::std::swap(A_p, B_p);
     }
 
     ValueType alpha0 = ValueType(alpha);

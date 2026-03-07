@@ -95,7 +95,7 @@ void spmv_csr_scalar(cuda::execution_policy<DerivedPolicy>& exec,
 
     const size_t BLOCK_SIZE = 256;
     const size_t MAX_BLOCKS = cusp::system::cuda::detail::max_active_blocks(spmv_csr_scalar_kernel<IndexType, ValueType>, BLOCK_SIZE, (size_t) 0);
-    const size_t NUM_BLOCKS = std::min(MAX_BLOCKS, DIVIDE_INTO(A.num_rows, BLOCK_SIZE));
+    const size_t NUM_BLOCKS = ::cuda::std::min(MAX_BLOCKS, DIVIDE_INTO(A.num_rows, BLOCK_SIZE));
 
     cudaStream_t s = stream(thrust::detail::derived_cast(exec));
 

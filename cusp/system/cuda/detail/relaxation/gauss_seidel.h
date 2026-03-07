@@ -146,7 +146,7 @@ void gauss_seidel_spmv(cuda::execution_policy<DerivedPolicy>& exec,
     const size_t VECTORS_PER_BLOCK  = THREADS_PER_BLOCK / THREADS_PER_VECTOR;
 
     const size_t MAX_BLOCKS = cusp::system::cuda::detail::max_active_blocks(gauss_seidel_kernel<IndexType, ValueType, VECTORS_PER_BLOCK, THREADS_PER_VECTOR>, THREADS_PER_BLOCK, (size_t) 0);
-    const size_t NUM_BLOCKS = std::min<size_t>(MAX_BLOCKS, DIVIDE_INTO(num_rows, VECTORS_PER_BLOCK));
+    const size_t NUM_BLOCKS = ::cuda::std::min<size_t>(MAX_BLOCKS, DIVIDE_INTO(num_rows, VECTORS_PER_BLOCK));
 
     const IndexType * R = thrust::raw_pointer_cast(&A.row_offsets[0]);
     const IndexType * J = thrust::raw_pointer_cast(&A.column_indices[0]);

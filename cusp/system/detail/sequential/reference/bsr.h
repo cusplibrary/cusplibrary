@@ -36,7 +36,7 @@ void bsr_diagonal(const I n_brow,
 	              const T Ax[],
 	                    T Yx[])
 {
-    const I D  = std::min(R*n_brow, C*n_bcol);
+    const I D  = ::cuda::std::min(R*n_brow, C*n_bcol);
     const I RC = R*C;
 
     for(I i = 0; i < D; i++){
@@ -45,7 +45,7 @@ void bsr_diagonal(const I n_brow,
 
     if ( R == C ){
         //main diagonal with square blocks
-        const I end = std::min(n_brow,n_bcol);
+        const I end = ::cuda::std::min(n_brow,n_bcol);
         for(I i = 0; i < end; i++){
             for(I jj = Ap[i]; jj < Ap[i+1]; jj++){
                 if (i == Aj[jj]){

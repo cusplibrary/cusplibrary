@@ -34,14 +34,14 @@ namespace cusp
 
 /*! \cond */
 // Helper struct that does the actual work
-template <std::size_t N, typename T, typename Indices = std::make_index_sequence<N>>
+template <::cuda::std::size_t N, typename T, typename Indices = ::cuda::std::make_index_sequence<N>>
 struct make_tuple_of_impl;
 
 // Specialization that expands the index sequence into tuple parameters
-template <std::size_t N, typename T, std::size_t... Is>
-struct make_tuple_of_impl<N, T, std::index_sequence<Is...>> {
+template <::cuda::std::size_t N, typename T, ::cuda::std::size_t... Is>
+struct make_tuple_of_impl<N, T, ::cuda::std::index_sequence<Is...>> {
     // A helper that ignores its template argument and always yields T
-    template<std::size_t>
+    template<::cuda::std::size_t>
     using type_t = T;
     
     // Expand the indices `Is...` to create a pack of N types T
@@ -49,7 +49,7 @@ struct make_tuple_of_impl<N, T, std::index_sequence<Is...>> {
 };
 
 // Final user-facing alias template
-template <std::size_t N, typename T>
+template <::cuda::std::size_t N, typename T>
 using make_tuple_of = typename make_tuple_of_impl<N, T>::type;
 
 template<typename T, typename V, int SIZE>

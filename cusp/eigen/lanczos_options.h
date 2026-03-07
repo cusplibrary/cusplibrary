@@ -75,10 +75,10 @@ public:
     lanczos_options() :
         computeEigVecs(false), verbose(false), minIter(0), maxIter(0), extraIter(10),
         stride(10), reorth(None), eigPart(LA), memoryExpansionFactor(1.2), tol(1e-4),
-        doubleReorthGamma(1.0/std::sqrt(2.0)), localReorthGamma(1.0/std::sqrt(2.0)),
+        doubleReorthGamma(1.0/::cuda::std::sqrt(2.0)), localReorthGamma(1.0/::cuda::std::sqrt(2.0)),
         defaultMinIterFactor(5), defaultMaxIterFactor(50),
-        eigLowCut(std::numeric_limits<ValueType>::infinity()),
-        eigHighCut(-std::numeric_limits<ValueType>::infinity())
+        eigLowCut(::cuda::std::numeric_limits<ValueType>::infinity()),
+        eigHighCut(-::cuda::std::numeric_limits<ValueType>::infinity())
     {}
 
     lanczos_options(const lanczos_options<ValueType>& opts);
