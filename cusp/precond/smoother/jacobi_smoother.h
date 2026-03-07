@@ -64,7 +64,7 @@ public:
     size_t num_iters;
     BaseSmoother M;
 
-    jacobi_smoother(void) {}
+    jacobi_smoother(void) : num_iters(0) {}
 
     template <typename ValueType2, typename MemorySpace2>
     jacobi_smoother(const jacobi_smoother<ValueType2,MemorySpace2>& A) : num_iters(A.num_iters), M(A.M) {}

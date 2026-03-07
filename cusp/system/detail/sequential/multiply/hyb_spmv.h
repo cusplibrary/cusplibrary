@@ -50,8 +50,6 @@ void multiply(thrust::cpp::execution_policy<DerivedPolicy>& exec,
               cusp::array1d_format,
               cusp::array1d_format)
 {
-    typedef typename VectorType2::value_type ValueType;
-
     multiply(exec, A.ell, x, y, initialize, combine, reduce, cusp::ell_format(), cusp::array1d_format(), cusp::array1d_format());
     multiply(exec, A.coo, x, y, ::cuda::std::identity{}, combine, reduce, cusp::coo_format(), cusp::array1d_format(), cusp::array1d_format());
 }
