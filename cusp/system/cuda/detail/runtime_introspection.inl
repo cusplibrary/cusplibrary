@@ -16,7 +16,6 @@
 
 #include <thrust/detail/config.h>
 // #include <thrust/system/cuda/detail/guarded_cuda_runtime_api.h>
-#include <thrust/detail/minmax.h>
 #include <thrust/system_error.h>
 #include <thrust/system/cuda/error.h>
 

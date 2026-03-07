@@ -48,7 +48,7 @@ template <typename KernelFunction>
 size_t max_active_blocks(KernelFunction kernel, const size_t CTA_SIZE, const size_t dynamic_smem_bytes)
 {
 #if THRUST_VERSION >= 100700
-  using namespace thrust::system::cuda::detail;
+  using namespace cusp::system::cuda::detail;
   function_attributes_t attributes = function_attributes(kernel);
   device_properties_t properties = device_properties();
   return properties.multiProcessorCount * cuda_launch_config_detail::max_active_blocks_per_multiprocessor(properties, attributes, CTA_SIZE, dynamic_smem_bytes);

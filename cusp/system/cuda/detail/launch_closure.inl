@@ -14,7 +14,6 @@
  *  limitations under the License.
  */
 
-#include <thrust/detail/minmax.h>
 #include <thrust/detail/type_traits.h>
 #include <thrust/detail/temporary_array.h>
 #include <thrust/system/cuda/detail/execution_policy.h>
@@ -40,7 +39,7 @@ namespace cuda
 namespace detail
 {
 
-#if THRUST_DEVICE_COMPILER == THRUST_DEVICE_COMPILER_NVCC
+#ifdef __CUDACC__
 template<typename Closure>
 __global__ __launch_bounds__(Closure::context_type::ThreadsPerBlock::value, Closure::context_type::BlocksPerMultiprocessor::value)
 void launch_closure_by_value(Closure f)
@@ -79,13 +78,13 @@ template<typename Closure,
 template<typename Size1, typename Size2, typename Size3>
 static void launch(Closure f, Size1 num_blocks, Size2 block_size, Size3 smem_size)
 {
-#if THRUST_DEVICE_COMPILER == THRUST_DEVICE_COMPILER_NVCC
+#ifdef __CUDACC__
     if(num_blocks > 0)
     {
         launch_closure_by_value<<<(unsigned int) num_blocks, (unsigned int) block_size, (unsigned int) smem_size>>>(f);
         synchronize_if_enabled("launch_closure_by_value");
     }
-#endif // THRUST_DEVICE_COMPILER_NVCC
+#endif // __CUDACC__
 }
         }; // end closure_launcher_base
 
@@ -103,7 +102,7 @@ struct closure_launcher_base<Closure,false>
     template<typename Size1, typename Size2, typename Size3>
     static void launch(Closure f, Size1 num_blocks, Size2 block_size, Size3 smem_size)
     {
-#if THRUST_DEVICE_COMPILER == THRUST_DEVICE_COMPILER_NVCC
+#ifdef __CUDACC__
         if(num_blocks > 0)
         {
             // use temporary storage for the closure
@@ -116,7 +115,7 @@ struct closure_launcher_base<Closure,false>
             detail::launch_closure_by_pointer<<<(unsigned int) num_blocks, (unsigned int) block_size, (unsigned int) smem_size>>>((&closure_storage[0]).get());
             synchronize_if_enabled("launch_closure_by_pointer");
         }
-#endif // THRUST_DEVICE_COMPILER_NVCC
+#endif // __CUDACC__
     }
 };
 

@@ -15,7 +15,7 @@
  */
 
 // do not attempt to compile this file with any other compiler
-#if THRUST_DEVICE_COMPILER == THRUST_DEVICE_COMPILER_NVCC
+#if defined(__CUDACC__)
 
 #include <cusp/system/cuda/detail/runtime_introspection.h>
 #include <cusp/system/cuda/detail/cuda_launch_config.h>
@@ -96,5 +96,5 @@ thrust::tuple<size_t,size_t,size_t> launch_calculator<Closure>::with_variable_bl
 } // end namespace system
 } // end namespace cusp
 
-#endif // THRUST_DEVICE_COMPILER == THRUST_DEVICE_COMPILER_NVCC
+#endif // defined(__CUDACC__)
 

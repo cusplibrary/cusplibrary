@@ -22,6 +22,8 @@
 
 #include <thrust/device_ptr.h>
 
+#include <cub/warp/warp_reduce.cuh>
+
 #include <algorithm>
 
 namespace cusp
@@ -71,7 +73,7 @@ spmv_csr_vector_kernel(const unsigned int num_rows,
                        BinaryFunction1 combine,
                        BinaryFunction2 reduce)
 {
-    using namespace thrust::system::cuda::detail::cub_;
+    using namespace cub;
 
     typedef typename thrust::iterator_value<RowIterator>::type    IndexType;
     typedef typename thrust::iterator_value<ValueIterator1>::type ValueType;
