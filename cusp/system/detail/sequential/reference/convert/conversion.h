@@ -194,7 +194,7 @@ void csr_to_hyb(const Matrix1& src, Matrix2& dst,
     // compute number of nonzeros in the ELL and COO portions
     size_t num_ell_entries = 0;
     for(size_t i = 0; i < src.num_rows; i++)
-        num_ell_entries += thrust::min<size_t>(num_entries_per_row, src.row_offsets[i+1] - src.row_offsets[i]);
+        num_ell_entries += ::cuda::std::min<size_t>(num_entries_per_row, src.row_offsets[i+1] - src.row_offsets[i]);
 
     IndexType num_coo_entries = src.num_entries - num_ell_entries;
 
@@ -244,7 +244,7 @@ void csr_to_ell(const Matrix1& src, Matrix2& dst,
     // compute number of nonzeros
     size_t num_entries = 0;
     for(size_t i = 0; i < src.num_rows; i++)
-        num_entries += thrust::min<size_t>(num_entries_per_row, src.row_offsets[i+1] - src.row_offsets[i]);
+        num_entries += ::cuda::std::min<size_t>(num_entries_per_row, src.row_offsets[i+1] - src.row_offsets[i]);
 
     dst.resize(src.num_rows, src.num_cols, num_entries, num_entries_per_row, alignment);
 

@@ -214,7 +214,7 @@ void multiply(thrust::execution_policy<DerivedPolicy>& exec,
 
     size_t coo_num_nonzeros = output_ptr[A.num_entries];
 
-    size_t workspace_capacity = thrust::min<size_t>(coo_num_nonzeros, 16 << 20);
+    size_t workspace_capacity = ::cuda::std::min<size_t>(coo_num_nonzeros, 16 << 20);
 
     {
         size_t free = ::cuda::std::numeric_limits<unsigned int>::max();
@@ -223,7 +223,7 @@ void multiply(thrust::execution_policy<DerivedPolicy>& exec,
         size_t max_workspace_capacity = free / (4 * sizeof(IndexType) + sizeof(ValueType));
 
         // use at most one third of the remaining capacity
-        workspace_capacity = thrust::min<size_t>(max_workspace_capacity / 3, workspace_capacity);
+        workspace_capacity = ::cuda::std::min<size_t>(max_workspace_capacity / 3, workspace_capacity);
     }
 
     // workspace arrays
