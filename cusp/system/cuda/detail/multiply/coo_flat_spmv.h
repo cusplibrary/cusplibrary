@@ -240,7 +240,7 @@ spmv_coo_flat_kernel(const IndexType num_nonzeros,
                      BinaryFunction1 combine,
                      BinaryFunction2 reduce)
 {
-    typedef typename thrust::iterator_value<ValueIterator1>::type ValueType;
+    typedef typename ::cuda::std::iterator_traits<ValueIterator1>::value_type ValueType;
 
     __shared__ volatile IndexType rows[48 *(BLOCK_SIZE/32)];
     __shared__ volatile ValueType vals[BLOCK_SIZE];
@@ -321,8 +321,8 @@ spmv_coo_reduce_update_kernel(const unsigned int num_warps,
                               ValueIterator2 y,
                               BinaryFunction reduce)
 {
-    typedef typename thrust::iterator_value<IndexIterator>::type IndexType;
-    typedef typename thrust::iterator_value<ValueIterator1>::type ValueType;
+    typedef typename ::cuda::std::iterator_traits<IndexIterator>::value_type IndexType;
+    typedef typename ::cuda::std::iterator_traits<ValueIterator1>::value_type ValueType;
 
     __shared__ IndexType rows[BLOCK_SIZE + 1];
     __shared__ ValueType vals[BLOCK_SIZE + 1];

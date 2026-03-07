@@ -45,7 +45,7 @@ spmv_coo_serial_kernel(const int num_entries,
                        BinaryFunction1 combine,
                        BinaryFunction2 reduce)
 {
-    typedef typename thrust::iterator_value<RowIterator>::type IndexType;
+    typedef typename ::cuda::std::iterator_traits<RowIterator>::value_type IndexType;
 
     for(IndexType n = 0; n < num_entries; n++)
     {

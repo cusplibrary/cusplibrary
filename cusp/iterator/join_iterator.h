@@ -144,11 +144,11 @@ public:
 
     /*! \cond */
     typedef typename thrust::tuple_element<0,Tuple>::type          Iterator1;
-    typedef typename thrust::iterator_value<Iterator1>::type       value_type;
-    typedef typename thrust::iterator_pointer<Iterator1>::type     pointer;
-    typedef typename thrust::iterator_reference<Iterator1>::type   reference;
-    typedef typename thrust::iterator_difference<Iterator1>::type  difference_type;
-    typedef typename thrust::iterator_difference<Iterator1>::type  size_type;
+    typedef typename ::cuda::std::iterator_traits<Iterator1>::value_type       value_type;
+    typedef typename ::cuda::std::iterator_traits<Iterator1>::pointer     pointer;
+    typedef typename ::cuda::std::iterator_traits<Iterator1>::reference   reference;
+    typedef typename ::cuda::std::iterator_traits<Iterator1>::difference_type  difference_type;
+    typedef typename ::cuda::std::iterator_traits<Iterator1>::difference_type  size_type;
     typedef typename thrust::iterator_system<Iterator1>::type      space;
     typedef typename cusp::iterator_system<space>::type            memory_space;
 

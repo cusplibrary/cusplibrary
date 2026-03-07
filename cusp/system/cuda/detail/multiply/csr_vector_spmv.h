@@ -71,8 +71,8 @@ spmv_csr_vector_kernel(const unsigned int num_rows,
                        BinaryFunction1 combine,
                        BinaryFunction2 reduce)
 {
-    typedef typename thrust::iterator_value<RowIterator>::type    IndexType;
-    typedef typename thrust::iterator_value<ValueIterator1>::type ValueType;
+    typedef typename ::cuda::std::iterator_traits<RowIterator>::value_type    IndexType;
+    typedef typename ::cuda::std::iterator_traits<ValueIterator1>::value_type ValueType;
 
     __shared__ volatile ValueType sdata[VECTORS_PER_BLOCK * THREADS_PER_VECTOR + THREADS_PER_VECTOR / 2];  // padded to avoid reduction conditionals
     __shared__ volatile IndexType ptrs[VECTORS_PER_BLOCK][2];
