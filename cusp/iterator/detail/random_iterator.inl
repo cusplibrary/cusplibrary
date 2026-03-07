@@ -70,6 +70,17 @@ struct integer_to_complex
     }
 };
 
+// By-value cast functor for integer random values. Avoids the dangling-reference
+// UB that arises when cuda::std::identity (which returns T&&) is applied to a
+// prvalue produced by the inner transform_iterator under -O3.
+template<typename T>
+struct integer_to_integer
+{
+    template<typename orig_type>
+    _CCCL_HOST_DEVICE
+    T operator()(orig_type f) const { return static_cast<T>(f); }
+};
+
 template<typename T>
 struct random_functor_type
 {
@@ -78,7 +89,7 @@ struct random_functor_type
               thrust::detail::eval_if<std::is_convertible<thrust::complex<float>,T>::value,
                 thrust::detail::identity_< integer_to_complex<T> >,
                 thrust::detail::identity_< integer_to_real<T> > >,
-           thrust::detail::identity_< ::cuda::std::identity >
+           thrust::detail::identity_< integer_to_integer<T> >
            >::type type;
 };
 
