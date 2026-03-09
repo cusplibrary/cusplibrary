@@ -13,4 +13,5 @@ for ext in extensions:
   sources = env.Glob(regexp)
 
   for source in sources:
-    env.Program(source)
+    prog = env.Program(source)
+    env.Clean(prog, 'A.mtx')
