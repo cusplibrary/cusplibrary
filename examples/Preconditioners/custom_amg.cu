@@ -8,7 +8,11 @@
 
 #include <iostream>
 
+#ifdef __CUDACC__
 struct custom_amg_policy : cusp::cuda::execution_policy<custom_amg_policy> {};
+#else
+struct custom_amg_policy : cusp::omp::execution_policy<custom_amg_policy> {};
+#endif
 
 // Use evolution strength measure
 template <typename MatrixType1, typename MatrixType2, typename SALevelType>
@@ -55,7 +59,11 @@ int main(void)
 {
     typedef int                 IndexType;
     typedef float               ValueType;
+#ifdef __CUDACC__
     typedef cusp::device_memory MemorySpace;
+#else
+    typedef cusp::host_memory   MemorySpace;
+#endif
 
     // create an empty sparse matrix structure
     cusp::coo_matrix<IndexType, ValueType, MemorySpace> A;

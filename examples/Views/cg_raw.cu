@@ -4,6 +4,13 @@
 #include <cusp/print.h>
 #include <cusp/krylov/cg.h>
 
+#ifdef __CUDACC__
+#include <cuda_runtime_api.h>
+#else
+#include <cstdlib>
+#include <cstring>
+#endif
+
 // This example shows how to solve a linear system A * x = b
 // where the matrix A and vectors x and b are stored in
 // "raw" memory on the device.  The matrix A will be wrapped
@@ -32,74 +39,86 @@ int main(void)
     float host_x[4] = {0,0,0,0};
     float host_b[4] = {1,2,2,1};
 
-    // allocate device memory for CSR format
+    // allocate memory
     int   * device_I;
-    cudaMalloc(&device_I, 10 * sizeof(int));
     int   * device_J;
-    cudaMalloc(&device_J, 10 * sizeof(int));
     float * device_V;
-    cudaMalloc(&device_V, 10 * sizeof(float));
-
-    // allocate device memory for x and y arrays
     float * device_x;
-    cudaMalloc(&device_x, 4 * sizeof(float));
     float * device_b;
-    cudaMalloc(&device_b, 4 * sizeof(float));
+#ifdef __CUDACC__
+    cudaMalloc(&device_I, 10 * sizeof(int));
+    cudaMalloc(&device_J, 10 * sizeof(int));
+    cudaMalloc(&device_V, 10 * sizeof(float));
+    cudaMalloc(&device_x,  4 * sizeof(float));
+    cudaMalloc(&device_b,  4 * sizeof(float));
 
-    // copy raw data from host to device
     cudaMemcpy(device_I, host_I, 10 * sizeof(int),   cudaMemcpyHostToDevice);
     cudaMemcpy(device_J, host_J, 10 * sizeof(int),   cudaMemcpyHostToDevice);
     cudaMemcpy(device_V, host_V, 10 * sizeof(float), cudaMemcpyHostToDevice);
     cudaMemcpy(device_x, host_x,  4 * sizeof(float), cudaMemcpyHostToDevice);
     cudaMemcpy(device_b, host_b,  4 * sizeof(float), cudaMemcpyHostToDevice);
 
-    // matrices and vectors now reside on the device
+    thrust::device_ptr<int>   wrapped_I(device_I);
+    thrust::device_ptr<int>   wrapped_J(device_J);
+    thrust::device_ptr<float> wrapped_V(device_V);
+    thrust::device_ptr<float> wrapped_x(device_x);
+    thrust::device_ptr<float> wrapped_b(device_b);
 
-    // *NOTE* raw pointers must be wrapped with thrust::device_ptr!
-    thrust::device_ptr<int>   wrapped_device_I(device_I);
-    thrust::device_ptr<int>   wrapped_device_J(device_J);
-    thrust::device_ptr<float> wrapped_device_V(device_V);
-    thrust::device_ptr<float> wrapped_device_x(device_x);
-    thrust::device_ptr<float> wrapped_device_b(device_b);
+    typedef typename cusp::array1d_view< thrust::device_ptr<int>   > IndexArrayView;
+    typedef typename cusp::array1d_view< thrust::device_ptr<float> > ValueArrayView;
+#else
+    device_I = (int*)  malloc(10 * sizeof(int));
+    device_J = (int*)  malloc(10 * sizeof(int));
+    device_V = (float*)malloc(10 * sizeof(float));
+    device_x = (float*)malloc( 4 * sizeof(float));
+    device_b = (float*)malloc( 4 * sizeof(float));
 
-    // use array1d_view to wrap the individual arrays
-    typedef typename cusp::array1d_view< thrust::device_ptr<int>   > DeviceIndexArrayView;
-    typedef typename cusp::array1d_view< thrust::device_ptr<float> > DeviceValueArrayView;
+    memcpy(device_I, host_I, 10 * sizeof(int));
+    memcpy(device_J, host_J, 10 * sizeof(int));
+    memcpy(device_V, host_V, 10 * sizeof(float));
+    memcpy(device_x, host_x,  4 * sizeof(float));
+    memcpy(device_b, host_b,  4 * sizeof(float));
 
-    DeviceIndexArrayView row_indices   (wrapped_device_I, wrapped_device_I + 10);
-    DeviceIndexArrayView column_indices(wrapped_device_J, wrapped_device_J + 10);
-    DeviceValueArrayView values        (wrapped_device_V, wrapped_device_V + 10);
-    DeviceValueArrayView x             (wrapped_device_x, wrapped_device_x + 4);
-    DeviceValueArrayView b             (wrapped_device_b, wrapped_device_b + 4);
+    int*   wrapped_I = device_I;
+    int*   wrapped_J = device_J;
+    float* wrapped_V = device_V;
+    float* wrapped_x = device_x;
+    float* wrapped_b = device_b;
 
-    // combine the three array1d_views into a coo_matrix_view
-    typedef cusp::coo_matrix_view<DeviceIndexArrayView,
-            DeviceIndexArrayView,
-            DeviceValueArrayView> DeviceView;
+    typedef typename cusp::array1d_view<int*>   IndexArrayView;
+    typedef typename cusp::array1d_view<float*> ValueArrayView;
+#endif
 
-    // construct a coo_matrix_view from the array1d_views
-    DeviceView A(4, 4, 10, row_indices, column_indices, values);
+    IndexArrayView row_indices   (wrapped_I, wrapped_I + 10);
+    IndexArrayView column_indices(wrapped_J, wrapped_J + 10);
+    ValueArrayView values        (wrapped_V, wrapped_V + 10);
+    ValueArrayView x             (wrapped_x, wrapped_x + 4);
+    ValueArrayView b             (wrapped_b, wrapped_b + 4);
 
-    // set stopping criteria:
-    //  iteration_limit    = 100
-    //  relative_tolerance = 1e-5
-    //  absolute_tolerance = 0
-    //  verbose            = true
+    typedef cusp::coo_matrix_view<IndexArrayView, IndexArrayView, ValueArrayView> View;
+
+    View A(4, 4, 10, row_indices, column_indices, values);
+
     cusp::monitor<float> monitor(b, 100, 1e-5, 0, true);
 
-    // solve the linear system A * x = b with the Conjugate Gradient method
     cusp::krylov::cg(A, x, b, monitor);
 
     // copy the solution back to the host
-    cudaMemcpy(host_x, device_x,  4 * sizeof(float), cudaMemcpyDeviceToHost);
-
-    // free device arrays
+#ifdef __CUDACC__
+    cudaMemcpy(host_x, device_x, 4 * sizeof(float), cudaMemcpyDeviceToHost);
     cudaFree(device_I);
     cudaFree(device_J);
     cudaFree(device_V);
     cudaFree(device_x);
     cudaFree(device_b);
+#else
+    memcpy(host_x, device_x, 4 * sizeof(float));
+    free(device_I);
+    free(device_J);
+    free(device_V);
+    free(device_x);
+    free(device_b);
+#endif
 
     return 0;
 }
-

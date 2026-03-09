@@ -63,7 +63,7 @@ public:
         Parent::resize(num_rows, num_rows, num_entries);
 
         // resize indices to total number of nonzeros
-        indices.resize(num_entries, -1);
+        indices.resize(num_entries, unsigned(-1));
 
         size_t row = 0;
         size_t col = 0;

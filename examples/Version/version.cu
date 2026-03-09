@@ -1,3 +1,6 @@
+#ifdef __CUDACC__
+#include <cuda.h>
+#endif
 #include <thrust/version.h>
 #include <cusp/version.h>
 #include <iostream>
@@ -6,7 +9,7 @@ int main(void)
 {
     std::cout << "The following libraries were found:" << std::endl;
 
-#if THRUST_HOST_COMPILER == THRUST_HOST_COMPILER_NVCC
+#if defined(__CUDACC__)
     std::cout << "    CUDA   v" << (CUDA_VERSION / 1000) << "." <<
                                    (CUDA_VERSION % 1000) / 10 << std::endl;
 #endif
