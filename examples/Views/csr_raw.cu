@@ -2,6 +2,10 @@
 #include <cusp/multiply.h>
 #include <cusp/print.h>
 
+#ifdef __CUDACC__
+#include <cuda_runtime_api.h>
+#endif
+
 // This example shows how to wrap "raw" host and device memory
 // with a csr_matrix_view.  This situation arises when interfacing
 // Cusp with data that is managed externally.  Once raw data has
@@ -26,6 +30,7 @@ int main(void)
     float host_x[3] = {1,1,1};
     float host_y[4] = {0,0,0,0};
 
+#ifdef __CUDACC__
     // allocate device memory for CSR format
     int   * device_Ap;
     cudaMalloc(&device_Ap, 5 * sizeof(int));
@@ -46,6 +51,7 @@ int main(void)
     cudaMemcpy(device_Ax, host_Ax, 6 * sizeof(float), cudaMemcpyHostToDevice);
     cudaMemcpy(device_x,  host_x,  3 * sizeof(float), cudaMemcpyHostToDevice);
     cudaMemcpy(device_y,  host_y,  4 * sizeof(float), cudaMemcpyHostToDevice);
+#endif // __CUDACC__
 
     // wrap the host memory with a csr_matrix_view
     {
@@ -84,6 +90,7 @@ int main(void)
     }
 
     // wrap the device memory with a csr_matrix_view
+#ifdef __CUDACC__
     {
         // *NOTE* raw pointers must be wrapped with thrust::device_ptr!
         thrust::device_ptr<int>   wrapped_device_Ap(device_Ap);
@@ -131,6 +138,7 @@ int main(void)
     cudaFree(device_Ax);
     cudaFree(device_x);
     cudaFree(device_y);
+#endif // __CUDACC__
 
     return 0;
 }
