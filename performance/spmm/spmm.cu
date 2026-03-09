@@ -81,7 +81,7 @@ float time_spmm(const InputType& A,
         A_ = A;
         B_ = B;
     }
-    catch (cusp::format_conversion_exception)
+    catch (const cusp::format_conversion_exception&)
     {
         return -1;
     }
