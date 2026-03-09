@@ -38,7 +38,7 @@ jobs:
 
     - name: Run tests
       working-directory: testing/device_omp_release
-      run: ./test
+      run: OMP_NUM_THREADS=4 ./test
 
   Coverage:
     runs-on: ubuntu-latest
@@ -75,7 +75,7 @@ jobs:
 
     - name: Run tests (coverage)
       working-directory: testing/device_omp_coverage
-      run: ./test
+      run: OMP_NUM_THREADS=4 ./test
 
     - name: Collect coverage
       working-directory: testing
