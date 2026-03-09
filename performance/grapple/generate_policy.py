@@ -55,6 +55,11 @@ def process_file(project_base_dir, fobj, filename, base_list, project_name) :
                                 routine = re.sub(r"thrust::detail::derived_cast\(thrust::detail::strip_const\(exec\)\)",
                                                  "exec.get()" if name not in base_list else "exec.base()", routine);
 
+                                # qualify unscoped 'detail::' with the project namespace so
+                                # generated trampolines compile at global scope
+                                ns = "thrust" if project_name == "thrust" else "cusp";
+                                routine = re.sub(r'(?<![:\w])detail::', ns + '::detail::', routine);
+
                                 ret = re.search(r"template\s*?<.*?>\s*(?P<return_type>[\w\d,:<> ]+)\s*" + re.escape(name) + r"\s*?\(", routine, re.DOTALL);
                                 if not ret:
                                     raise ValueError("\n"+routine)

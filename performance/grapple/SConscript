@@ -4,8 +4,30 @@ Import('env')
 env = env.Clone()
 env.Append(LIBS = ['lapacke'])
 
+# generate my_policy_map.h, my_thrust_func.h and my_cusp_func.h
+import subprocess, os as _os
+def run_generate_policy(target, source, env):
+    script = str(source[0].abspath)
+    cwd    = str(source[0].dir.abspath)
+    child_env = _os.environ.copy()
+    # ensure CCCL_PATH is available if passed via SCons CPPPATH
+    if 'CCCL_PATH' not in child_env:
+        # derive from the first CPPPATH entry that contains 'cccl'
+        for p in env.get('CPPPATH', []):
+            if 'cccl' in str(p):
+                child_env['CCCL_PATH'] = str(p).split('/cccl/')[0] + '/cccl'
+                break
+    subprocess.check_call(['python3', script], cwd=cwd, env=child_env)
+
+generated = env.Command(
+    ['my_policy_map.h', 'my_thrust_func.h', 'my_cusp_func.h'],
+    ['generate_policy.py'],
+    run_generate_policy,
+)
+
 extensions = ['*.cu', '*.cpp']
 for ext in extensions:
   regexp = os.path.join('.', ext)
   for source in env.Glob(regexp):
-    env.Program(source)
+    prog = env.Program(source)
+    env.Depends(prog, generated)

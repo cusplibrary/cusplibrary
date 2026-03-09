@@ -66,7 +66,7 @@ public:
             throw cusp::runtime_exception("cudaEventCreate failed (end)");
     }
 
-    ~timer(void)
+    ~timer(void) noexcept(false)
     {
         if((error = cudaEventDestroy(start)) != cudaSuccess)
             throw cusp::runtime_exception("cudaEventDestroy failed (start)");

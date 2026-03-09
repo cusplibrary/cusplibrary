@@ -262,7 +262,7 @@ void test_dia(HostMatrix& host_matrix)
     {
         test_matrix_on_host = host_matrix;
     }
-    catch (cusp::format_conversion_exception)
+    catch (const cusp::format_conversion_exception&)
     {
         std::cout << "\tRefusing to convert to DIA format" << std::endl;
         return;
@@ -289,7 +289,7 @@ void test_ell(HostMatrix& host_matrix)
     {
         test_matrix_on_host = host_matrix;
     }
-    catch (cusp::format_conversion_exception)
+    catch (const cusp::format_conversion_exception&)
     {
         std::cout << "\tRefusing to convert to ELL format" << std::endl;
         return;
