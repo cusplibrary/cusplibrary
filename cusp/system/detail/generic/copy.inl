@@ -115,6 +115,8 @@ void copy_array2d(thrust::execution_policy<DerivedPolicy>& exec,
     // will preserve destination pitch if possible
     dst.resize(src.num_rows, src.num_cols);
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
     if (dst.pitch == src.pitch)
     {
         cusp::copy(src.values, dst.values);
@@ -132,6 +134,7 @@ void copy_array2d(thrust::execution_policy<DerivedPolicy>& exec,
                      thrust::make_permutation_iterator(src.values.begin(), thrust::make_transform_iterator(end,   func1)),
                      thrust::make_permutation_iterator(dst.values.begin(), thrust::make_transform_iterator(begin, func2)));
     }
+#pragma GCC diagnostic pop
 }
 
 template <typename DerivedPolicy, typename T1, typename T2,

@@ -78,7 +78,7 @@ struct combine_tuple_base_functor
 
     template<typename Tuple>
     _CCCL_HOST_DEVICE
-    auto operator()(const Tuple& t) -> decltype(op(thrust::get<0>(t), thrust::get<1>(t)))
+    auto operator()(const Tuple& t) const
     {
         return op(thrust::get<0>(t),thrust::get<1>(t));
     }
