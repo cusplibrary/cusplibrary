@@ -26,7 +26,7 @@
 #include <thrust/system/cuda/detail/execution_policy.h>
 
 // get the definition of par
-#include <thrust/system/cuda/detail/par.h>
+#include <thrust/system/cuda/detail/execution_policy.h>
 
 #if THRUST_VERSION < 100800
 #include <cusp/detail/thrust/system/cuda/detail/execute_on_stream.h>

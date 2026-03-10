@@ -34,13 +34,13 @@ Size1 DIVIDE_INTO(Size1 N, Size2 granularity)
 }
 
 template <typename T>
-thrust::pair<T,T> uniform_splitting(const T N, const T granularity, const T max_intervals)
+::cuda::std::pair<T,T> uniform_splitting(const T N, const T granularity, const T max_intervals)
 {
     const T grains  = DIVIDE_INTO(N, granularity);
 
     // one grain per interval
     if (grains <= max_intervals)
-        return thrust::make_pair(granularity, grains);
+        return ::cuda::std::make_pair(granularity, grains);
 
     // insures that:
     //     num_intervals * interval_size is >= N
@@ -50,7 +50,7 @@ thrust::pair<T,T> uniform_splitting(const T N, const T granularity, const T max_
     const T interval_size       = grains_per_interval * granularity;
     const T num_intervals       = DIVIDE_INTO(N, interval_size);
 
-    return thrust::make_pair(interval_size, num_intervals);
+    return ::cuda::std::make_pair(interval_size, num_intervals);
 }
 
 } // end namespace cuda

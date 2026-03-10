@@ -226,8 +226,8 @@ void hilbert_curve(thrust::cpp::execution_policy<DerivedPolicy>& exec,
     if( (dims != 2) && (dims != 3) )
         throw cusp::invalid_input_exception("Hilbert curve partitioning only implemented for 2D or 3D data.");
 
-    thrust::pair<Iterator,Iterator> x_iter = thrust::minmax_element(exec, coord.column(0).begin(), coord.column(0).end());
-    thrust::pair<Iterator,Iterator> y_iter = thrust::minmax_element(exec, coord.column(1).begin(), coord.column(1).end());
+    ::cuda::std::pair<Iterator,Iterator> x_iter = thrust::minmax_element(exec, coord.column(0).begin(), coord.column(0).end());
+    ::cuda::std::pair<Iterator,Iterator> y_iter = thrust::minmax_element(exec, coord.column(1).begin(), coord.column(1).end());
 
     ValueType xmin = *x_iter.first;
     ValueType xmax = *x_iter.second;
@@ -248,7 +248,7 @@ void hilbert_curve(thrust::cpp::execution_policy<DerivedPolicy>& exec,
     }
     else
     {
-        thrust::pair<Iterator,Iterator> z_iter = thrust::minmax_element(exec, coord.column(2).begin(), coord.column(2).end());
+        ::cuda::std::pair<Iterator,Iterator> z_iter = thrust::minmax_element(exec, coord.column(2).begin(), coord.column(2).end());
         ValueType zmin = *z_iter.first;
         ValueType zmax = *z_iter.second;
 
