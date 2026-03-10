@@ -39,17 +39,11 @@ namespace detail
   template <typename FormatType, typename MemorySpace>
   struct select_format_type
   {
-    typedef typename thrust::detail::eval_if<
-        ::cuda::std::is_same<MemorySpace, cusp::host_memory>::value
-      , thrust::detail::identity_<cusp::csr_format>
-      , thrust::detail::identity_<cusp::hyb_format>
-      >::type DefaultFormat;
+    typedef ::cuda::std::conditional_t<::cuda::std::is_same<MemorySpace, cusp::host_memory>::value,
+                                       cusp::csr_format, cusp::hyb_format> DefaultFormat;
 
-    typedef typename thrust::detail::eval_if<
-          ::cuda::std::is_same<FormatType, thrust::use_default>::value
-        , thrust::detail::identity_<DefaultFormat>
-        , thrust::detail::identity_<FormatType>
-      >::type type;
+    typedef ::cuda::std::conditional_t<::cuda::std::is_same<FormatType, thrust::use_default>::value,
+                                       DefaultFormat, FormatType> type;
   };
 
   template <typename SmootherType, typename ValueType, typename MemorySpace>
@@ -57,11 +51,8 @@ namespace detail
   {
     typedef cusp::precond::jacobi_smoother<ValueType,MemorySpace> JacobiSmoother;
 
-    typedef typename thrust::detail::eval_if<
-          ::cuda::std::is_same<SmootherType, thrust::use_default>::value
-        , thrust::detail::identity_<JacobiSmoother>
-        , thrust::detail::identity_<SmootherType>
-      >::type type;
+    typedef ::cuda::std::conditional_t<::cuda::std::is_same<SmootherType, thrust::use_default>::value,
+                                       JacobiSmoother, SmootherType> type;
   };
 
   template <typename SolverType, typename ValueType, typename MemorySpace>
@@ -69,11 +60,8 @@ namespace detail
   {
     typedef cusp::detail::lu_solver<ValueType,cusp::host_memory> LUSolver;
 
-    typedef typename thrust::detail::eval_if<
-          ::cuda::std::is_same<SolverType, thrust::use_default>::value
-        , thrust::detail::identity_<LUSolver>
-        , thrust::detail::identity_<SolverType>
-      >::type type;
+    typedef ::cuda::std::conditional_t<::cuda::std::is_same<SolverType, thrust::use_default>::value,
+                                       LUSolver, SolverType> type;
   };
 } // end detail namespace
 

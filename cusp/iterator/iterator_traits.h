@@ -43,34 +43,34 @@ namespace cusp
 template<typename Space>
 struct iterator_system
         // convertible to host iterator?
-        : thrust::detail::eval_if<
+        : ::cuda::std::conditional<
           ::cuda::std::disjunction<
             ::cuda::std::is_same<Space, thrust::host_system_tag>,
             ::cuda::std::is_same<Space, cusp::host_memory>
         >::value,
 
-        thrust::detail::identity_<cusp::host_memory>,
+        cusp::host_memory,
 
         // convertible to device iterator?
-        thrust::detail::eval_if<
+        ::cuda::std::conditional_t<
           ::cuda::std::disjunction<
             ::cuda::std::is_same<Space, thrust::device_system_tag>,
             ::cuda::std::is_same<Space, cusp::device_memory>
         >::value,
 
-        thrust::detail::identity_<cusp::device_memory>,
+        cusp::device_memory,
 
         // convertible to any iterator?
-        thrust::detail::eval_if<
+        ::cuda::std::conditional_t<
           ::cuda::std::disjunction<
             ::cuda::std::is_same<Space, thrust::any_system_tag>,
             ::cuda::std::is_same<Space, cusp::any_memory>
         >::value,
 
-        thrust::detail::identity_<cusp::any_memory>,
+        cusp::any_memory,
 
         // unknown system
-        thrust::detail::identity_<void>
+        void
         > // if any
         > // if device
         > // if host

@@ -44,11 +44,8 @@ struct cblas_row_major { const static CBLAS_ORDER order = CblasRowMajor; };
 struct cblas_col_major { const static CBLAS_ORDER order = CblasColMajor; };
 
 template< typename LayoutFormat >
-struct Orientation : thrust::detail::eval_if<
-                        ::cuda::std::is_same<LayoutFormat, cusp::row_major>::value,
-                        thrust::detail::identity_<cblas_row_major>,
-                        thrust::detail::identity_<cblas_col_major>
-                     >
+struct Orientation : ::cuda::std::conditional<::cuda::std::is_same<LayoutFormat, cusp::row_major>::value,
+                                              cblas_row_major, cblas_col_major>
 {};
 
 } // end namespace cblas

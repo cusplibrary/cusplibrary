@@ -44,14 +44,12 @@ struct cublas_transpose_op { const static cublasOperation_t order = CUBLAS_OP_T;
 struct cublas_normal_op    { const static cublasOperation_t order = CUBLAS_OP_N; };
 
 template< typename LayoutFormat >
-struct Orientation : thrust::detail::eval_if<
+struct Orientation : ::cuda::std::conditional<
                           ::cuda::std::disjunction<
                               ::cuda::std::is_same<LayoutFormat, cusp::row_major_base<thrust::detail::true_type> >,
                               ::cuda::std::is_same<LayoutFormat, cusp::column_major_base<thrust::detail::false_type> >
-                          >::value, // end or_
-                          thrust::detail::identity_<cublas_normal_op>,
-                          thrust::detail::identity_<cublas_transpose_op>
-                       >
+                          >::value,
+                          cublas_normal_op, cublas_transpose_op>
 {};
 
 } // end namespace cublas

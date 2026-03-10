@@ -49,17 +49,11 @@ struct ops
     typedef typename BinaryFunction::result_type ValueType;
     typedef thrust::minus<ValueType> Sub;
 
-    typedef typename thrust::detail::eval_if<
-    std::is_same<Sub, BinaryFunction>::value
-    , thrust::detail::identity_< thrust::negate<ValueType> >
-    , thrust::detail::identity_< ::cuda::std::identity >
-    >::type unary_op_type;
+    typedef ::cuda::std::conditional_t<std::is_same<Sub, BinaryFunction>::value,
+                                       thrust::negate<ValueType>, ::cuda::std::identity> unary_op_type;
 
-    typedef typename thrust::detail::eval_if<
-    std::is_same<Sub, BinaryFunction>::value
-    , thrust::detail::identity_< thrust::plus<ValueType> >
-    , thrust::detail::identity_< BinaryFunction >
-    >::type binary_op_type;
+    typedef ::cuda::std::conditional_t<std::is_same<Sub, BinaryFunction>::value,
+                                       thrust::plus<ValueType>, BinaryFunction> binary_op_type;
 };
 
 } // end elementwise_detail namespace
