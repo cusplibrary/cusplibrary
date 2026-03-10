@@ -149,12 +149,12 @@ void generate_matrix_from_stencil(cusp::dia_matrix<IndexType,ValueType,MemorySpa
     cusp::array1d<IndexType,MemorySpace> grid_indices(num_dimensions);
     detail::unpack_tuple(grid, grid_indices.begin());
 
-    IndexType num_rows = thrust::reduce(grid_indices.begin(), grid_indices.end(), IndexType(1), thrust::multiplies<IndexType>());
+    IndexType num_rows = thrust::reduce(grid_indices.begin(), grid_indices.end(), IndexType(1), ::cuda::std::multiplies<IndexType>());
 
     IndexType num_diagonals = stencil.size();
 
     cusp::array1d<IndexType,MemorySpace> strides(grid_indices.size());
-    thrust::exclusive_scan(grid_indices.begin(), grid_indices.end(), strides.begin(), IndexType(1), thrust::multiplies<IndexType>());
+    thrust::exclusive_scan(grid_indices.begin(), grid_indices.end(), strides.begin(), IndexType(1), ::cuda::std::multiplies<IndexType>());
 
     cusp::array1d<IndexType,MemorySpace> offsets(stencil.size(), 0);
     cusp::array1d<StencilPoint,cusp::host_memory> stencil_host(stencil);

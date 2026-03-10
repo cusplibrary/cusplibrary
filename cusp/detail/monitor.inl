@@ -245,8 +245,8 @@ monitor<ValueType>
 {
     size_t num = residuals.size();
     cusp::array1d<Real,cusp::host_memory> avg_vec(num-1);
-    thrust::transform(residuals.begin() + 1, residuals.end(), residuals.begin(), avg_vec.begin(), thrust::divides<Real>());
-    Real sum = thrust::reduce(avg_vec.begin(), avg_vec.end(), Real(0), thrust::plus<Real>());
+    thrust::transform(residuals.begin() + 1, residuals.end(), residuals.begin(), avg_vec.begin(), ::cuda::std::divides<Real>());
+    Real sum = thrust::reduce(avg_vec.begin(), avg_vec.end(), Real(0), ::cuda::std::plus<Real>());
     return sum / Real(avg_vec.size());
 }
 } // end namespace cusp

@@ -91,10 +91,10 @@ template <typename> struct combine_tuple_base_functor;
  * \endcode
  */
 template <typename T>
-struct plus_value : public detail::base_functor< thrust::plus<T> >
+struct plus_value : public detail::base_functor< ::cuda::std::plus<T> >
 {
     _CCCL_HOST_DEVICE
-    plus_value(const T value = T(0)) : detail::base_functor< thrust::plus<T> >(value) {}
+    plus_value(const T value = T(0)) : detail::base_functor< ::cuda::std::plus<T> >(value) {}
 };
 
 /**
@@ -133,10 +133,10 @@ struct plus_value : public detail::base_functor< thrust::plus<T> >
  * \endcode
  */
 template <typename T>
-struct divide_value : public detail::base_functor< thrust::divides<T> >
+struct divide_value : public detail::base_functor< ::cuda::std::divides<T> >
 {
     _CCCL_HOST_DEVICE
-    divide_value(const T value = T(0)) : detail::base_functor< thrust::divides<T> >(value) {}
+    divide_value(const T value = T(0)) : detail::base_functor< ::cuda::std::divides<T> >(value) {}
 };
 
 /**
@@ -175,10 +175,10 @@ struct divide_value : public detail::base_functor< thrust::divides<T> >
  * \endcode
  */
 template <typename T>
-struct modulus_value : public detail::base_functor< thrust::modulus<T> >
+struct modulus_value : public detail::base_functor< ::cuda::std::modulus<T> >
 {
     _CCCL_HOST_DEVICE
-    modulus_value(const T value = T(0)) : detail::base_functor< thrust::modulus<T> >(value) {}
+    modulus_value(const T value = T(0)) : detail::base_functor< ::cuda::std::modulus<T> >(value) {}
 };
 
 /**
@@ -217,10 +217,10 @@ struct modulus_value : public detail::base_functor< thrust::modulus<T> >
  * \endcode
  */
 template <typename T>
-struct multiplies_value : public detail::base_functor< thrust::multiplies<T> >
+struct multiplies_value : public detail::base_functor< ::cuda::std::multiplies<T> >
 {
     _CCCL_HOST_DEVICE
-    multiplies_value(const T value) : detail::base_functor< thrust::multiplies<T> >(value) {}
+    multiplies_value(const T value) : detail::base_functor< ::cuda::std::multiplies<T> >(value) {}
 };
 
 /**
@@ -258,10 +258,10 @@ struct multiplies_value : public detail::base_functor< thrust::multiplies<T> >
  * \endcode
  */
 template <typename T>
-struct greater_value : public detail::base_functor< thrust::greater<T> >
+struct greater_value : public detail::base_functor< ::cuda::std::greater<T> >
 {
     _CCCL_HOST_DEVICE
-    greater_value(const T value) : detail::base_functor< thrust::greater<T> >(value) {}
+    greater_value(const T value) : detail::base_functor< ::cuda::std::greater<T> >(value) {}
 };
 
 /**
@@ -299,10 +299,10 @@ struct greater_value : public detail::base_functor< thrust::greater<T> >
  * \endcode
  */
 template <typename T>
-struct greater_equal_value : public detail::base_functor< thrust::greater_equal<T> >
+struct greater_equal_value : public detail::base_functor< ::cuda::std::greater_equal<T> >
 {
     _CCCL_HOST_DEVICE
-    greater_equal_value(const T value) : detail::base_functor< thrust::greater_equal<T> >(value) {}
+    greater_equal_value(const T value) : detail::base_functor< ::cuda::std::greater_equal<T> >(value) {}
 };
 
 /**
@@ -341,10 +341,10 @@ struct greater_equal_value : public detail::base_functor< thrust::greater_equal<
  * \endcode
  */
 template <typename T>
-struct less_value : public detail::base_functor< thrust::less<T> >
+struct less_value : public detail::base_functor< ::cuda::std::less<T> >
 {
     _CCCL_HOST_DEVICE
-    less_value(const T value) : detail::base_functor< thrust::less<T> >(value) {}
+    less_value(const T value) : detail::base_functor< ::cuda::std::less<T> >(value) {}
 };
 
 /**
@@ -382,10 +382,10 @@ struct less_value : public detail::base_functor< thrust::less<T> >
  * \endcode
  */
 template <typename T>
-struct less_equal_value : public detail::base_functor< thrust::less_equal<T> >
+struct less_equal_value : public detail::base_functor< ::cuda::std::less_equal<T> >
 {
     _CCCL_HOST_DEVICE
-    less_equal_value(const T value) : detail::base_functor< thrust::less_equal<T> >(value) {}
+    less_equal_value(const T value) : detail::base_functor< ::cuda::std::less_equal<T> >(value) {}
 };
 
 /**
@@ -787,7 +787,7 @@ struct norm_functor
  * \endcode
  */
 template <typename T>
-struct sum_pair_functor : public detail::combine_tuple_base_functor< thrust::plus<T> > {};
+struct sum_pair_functor : public detail::combine_tuple_base_functor< ::cuda::std::plus<T> > {};
 
 /**
  * \brief \p divide_pair_functor is a function object that divides the first element of
@@ -831,7 +831,7 @@ struct sum_pair_functor : public detail::combine_tuple_base_functor< thrust::plu
  * \endcode
  */
 template <typename T>
-struct divide_pair_functor : public detail::combine_tuple_base_functor< thrust::divides<T> > {};
+struct divide_pair_functor : public detail::combine_tuple_base_functor< ::cuda::std::divides<T> > {};
 
 /**
  * \brief \p equal_pair_functor is a function object that compares 2 element tuple entries.
@@ -874,7 +874,7 @@ struct divide_pair_functor : public detail::combine_tuple_base_functor< thrust::
  * \endcode
  */
 template <typename T>
-struct equal_pair_functor : public detail::combine_tuple_base_functor< thrust::equal_to<T> > {};
+struct equal_pair_functor : public detail::combine_tuple_base_functor< ::cuda::std::equal_to<T> > {};
 
 /**
  * \brief \p not_equal_pair_functor is a function object that compares 2 element tuple entries.
@@ -917,7 +917,7 @@ struct equal_pair_functor : public detail::combine_tuple_base_functor< thrust::e
  * \endcode
  */
 template <typename T>
-struct not_equal_pair_functor : public detail::combine_tuple_base_functor< thrust::not_equal_to<T> > {};
+struct not_equal_pair_functor : public detail::combine_tuple_base_functor< ::cuda::std::not_equal_to<T> > {};
 
 /*! \}
  */

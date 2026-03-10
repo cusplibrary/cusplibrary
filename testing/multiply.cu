@@ -133,8 +133,8 @@ void CompareScaledSparseMatrixMatrixMultiply(DenseMatrixType A, DenseMatrixType 
     typedef typename SparseMatrixType::value_type ValueType;
 
     ::cuda::std::identity         initialize;
-    thrust::multiplies<ValueType> combine;
-    thrust::plus<ValueType>       reduce;
+    ::cuda::std::multiplies<ValueType> combine;
+    ::cuda::std::plus<ValueType>       reduce;
 
     DenseMatrixType C(A);
     cusp::multiply(A, B, C, initialize, combine, reduce);
@@ -524,8 +524,8 @@ void CompareScaledSparseMatrixVectorMultiply(DenseMatrixType A)
         x[i] = i % 10;
 
     ::cuda::std::identity         initialize;
-    thrust::multiplies<ValueType> combine;
-    thrust::plus<ValueType>       reduce;
+    ::cuda::std::multiplies<ValueType> combine;
+    ::cuda::std::plus<ValueType>       reduce;
 
     // compute reference output
     cusp::multiply(A, x, y, initialize, combine, reduce);
@@ -849,7 +849,7 @@ void TestMatrixVectorMultiplyDispatch()
         my_system sys(0);
 
         // call with explicit dispatching
-        cusp::multiply(sys, A, x, x, cusp::constant_functor<float>(), thrust::multiplies<float>(), thrust::plus<float>());
+        cusp::multiply(sys, A, x, x, cusp::constant_functor<float>(), ::cuda::std::multiplies<float>(), ::cuda::std::plus<float>());
 
         // check if dispatch policy was used
         ASSERT_EQUAL(true, sys.is_valid());

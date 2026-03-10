@@ -225,7 +225,7 @@ evolution_strength_of_connection(thrust::execution_policy<DerivedPolicy> &exec,
                       Dinv_A_values.begin(), Dinv_A_values.end(),
                       thrust::make_permutation_iterator(D.begin(), A.row_indices.begin()),
                       Dinv_A_values.begin(),
-                      thrust::divides<ValueType>());
+                      ::cuda::std::divides<ValueType>());
 
     if(rho_DinvA == 0.0)
     {
@@ -276,22 +276,22 @@ evolution_strength_of_connection(thrust::execution_policy<DerivedPolicy> &exec,
                       thrust::constant_iterator<ValueType>(1), thrust::constant_iterator<ValueType>(1) + M,
                       thrust::make_permutation_iterator(DAtilde.begin(), A.row_indices.begin()),
                       Atilde_values.begin(),
-                      thrust::multiplies<ValueType>());
+                      ::cuda::std::multiplies<ValueType>());
 
     // Scale columns
     thrust::transform(exec,
                       Atilde_values.begin(), Atilde_values.end(),
                       thrust::make_permutation_iterator(Bmat_forscaling.begin(), A.column_indices.begin()),
                       Atilde_values.begin(),
-                      thrust::multiplies<ValueType>());
+                      ::cuda::std::multiplies<ValueType>());
 
     // Calculate angle
     cusp::blas::xmy(exec, data, Atilde_values, angle);
-    thrust::transform(exec, angle.begin(), angle.end(), thrust::constant_iterator<ValueType>(0), neg_angle.begin(), thrust::less<ValueType>());
+    thrust::transform(exec, angle.begin(), angle.end(), thrust::constant_iterator<ValueType>(0), neg_angle.begin(), ::cuda::std::less<ValueType>());
 
     // Calculate approximation ratio
-    thrust::transform(exec, Atilde_values.begin(), Atilde_values.end(), data.begin(), Atilde_values.begin(), thrust::divides<ValueType>());
-    thrust::transform(exec, Atilde_values.begin(), Atilde_values.end(), thrust::constant_iterator<ValueType>(1e-4), weak_ratio.begin(), thrust::less<ValueType>());
+    thrust::transform(exec, Atilde_values.begin(), Atilde_values.end(), data.begin(), Atilde_values.begin(), ::cuda::std::divides<ValueType>());
+    thrust::transform(exec, Atilde_values.begin(), Atilde_values.end(), thrust::constant_iterator<ValueType>(1e-4), weak_ratio.begin(), ::cuda::std::less<ValueType>());
 
     // Calculate approximation error
     thrust::transform(exec, Atilde_values.begin(), Atilde_values.end(), Atilde_values.begin(), approx_error<ValueType>());
@@ -324,7 +324,7 @@ evolution_strength_of_connection(thrust::execution_policy<DerivedPolicy> &exec,
         thrust::reduce_by_key(exec,
                               A.row_indices.begin(), A.row_indices.end(), Atilde_symmetric.begin(),
                               thrust::make_discard_iterator(), smallest_per_row.begin(),
-                              thrust::equal_to<IndexType>(), non_zero_minimum<ValueType>());
+                              ::cuda::std::equal_to<IndexType>(), non_zero_minimum<ValueType>());
 
         thrust::transform(exec,
                           Atilde_symmetric.begin(), Atilde_symmetric.end(),

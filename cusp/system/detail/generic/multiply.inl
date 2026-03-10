@@ -98,8 +98,8 @@ multiply(thrust::execution_policy<DerivedPolicy> &exec,
     typedef typename LinearOperator::value_type ValueType;
 
     cusp::constant_functor<ValueType> initialize(0);
-    thrust::multiplies<ValueType> combine;
-    thrust::plus<ValueType> reduce;
+    ::cuda::std::multiplies<ValueType> combine;
+    ::cuda::std::plus<ValueType> reduce;
 
     cusp::multiply(exec, A, B, C, initialize, combine, reduce);
 }

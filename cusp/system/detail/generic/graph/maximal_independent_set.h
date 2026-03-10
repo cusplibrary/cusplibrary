@@ -193,7 +193,7 @@ size_t maximal_independent_set(thrust::execution_policy<DerivedPolicy>& exec,
     // mark all mis nodes
     thrust::transform(exec, states.begin(), states.end(),
                       thrust::constant_iterator<NodeStateType>(2),
-                      stencil.begin(), thrust::equal_to<NodeStateType>());
+                      stencil.begin(), ::cuda::std::equal_to<NodeStateType>());
 
     // return the size of the MIS
     return thrust::count(exec, stencil.begin(), stencil.end(), typename ArrayType::value_type(true));

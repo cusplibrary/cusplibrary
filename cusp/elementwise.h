@@ -88,7 +88,7 @@ void elementwise(const thrust::detail::execution_policy_base<DerivedPolicy>& exe
  *
  *      // compute the sum
  *      cusp::array2d<float, cusp::host_memory> C;
- *      cusp::elementwise(A, B, C, thrust::plus<int>());
+ *      cusp::elementwise(A, B, C, ::cuda::std::plus<int>());
  *
  *      // print C
  *      cusp::print(C);

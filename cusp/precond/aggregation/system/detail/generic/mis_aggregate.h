@@ -99,7 +99,7 @@ void mis_to_aggregates(thrust::execution_policy<DerivedPolicy>& exec,
     cusp::generalized_spmv(exec, A, x, x, y, thrust::project2nd<Tuple,Tuple>(), thrust::maximum<Tuple>());
 
     // boost mis0 values so they win in second round
-    thrust::transform(exec, mis.begin(), mis.end(), mis1.begin(), mis1.begin(), thrust::plus<IndexType>());
+    thrust::transform(exec, mis.begin(), mis.end(), mis1.begin(), mis1.begin(), ::cuda::std::plus<IndexType>());
 
     // find the largest (mis[j],j) 2-ring neighbor for each node
     cusp::generalized_spmv(exec, A, y, y, z, thrust::project2nd<Tuple,Tuple>(), thrust::maximum<Tuple>());
@@ -155,7 +155,7 @@ void mis_aggregate(thrust::execution_policy<DerivedPolicy> &exec,
         thrust::transform(exec,
                           aggregate_counts.begin(), aggregate_counts.end(),
                           thrust::constant_iterator<IndexType>(1), isone.begin(),
-                          thrust::equal_to<IndexType>());
+                          ::cuda::std::equal_to<IndexType>());
         // [1, 1, 0, 1, 1, 0] -> [0, 1, 2, 2, 3, 3]
         thrust::exclusive_scan(exec,
                                thrust::make_transform_iterator(isone.begin(), thrust::logical_not<bool>()),

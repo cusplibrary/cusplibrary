@@ -127,8 +127,8 @@ void spmv_csr_scalar(const MatrixType&  A,
     System3 system3;
 
     cusp::constant_functor<ValueType> initialize(0);
-    thrust::multiplies<ValueType> combine;
-    thrust::plus<ValueType> reduce;
+    ::cuda::std::multiplies<ValueType> combine;
+    ::cuda::std::plus<ValueType> reduce;
 
     spmv_csr_scalar(thrust::detail::derived_cast(
                       thrust::detail::strip_const(

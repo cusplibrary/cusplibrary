@@ -107,7 +107,7 @@ void multiply(thrust::execution_policy<DerivedPolicy> &exec,
                               cusp::detail::combine_tuple_base_functor<BinaryFunction1>()),
                           thrust::make_discard_iterator(),
                           vals.begin(),
-                          thrust::equal_to<IndexType>(),
+                          ::cuda::std::equal_to<IndexType>(),
                           reduce);
 
     thrust::transform(exec,
@@ -171,7 +171,7 @@ void multiply(thrust::execution_policy<DerivedPolicy> &exec,
                           stride_indices_begin),
                           thrust::make_discard_iterator(),
                           vals.begin(),
-                          thrust::equal_to<IndexType>(),
+                          ::cuda::std::equal_to<IndexType>(),
                           reduce);
 
     thrust::transform(exec, vals.begin(), vals.end(),
@@ -223,7 +223,7 @@ void multiply(thrust::execution_policy<DerivedPolicy> &exec,
                               cusp::detail::combine_tuple_base_functor<BinaryFunction1>()),
                               rows.begin(),
                               vals.begin(),
-                              thrust::equal_to<IndexType>(),
+                              ::cuda::std::equal_to<IndexType>(),
                               reduce);
 
     thrust::transform(exec, C.begin(), C.end(), C.begin(), initialize);

@@ -261,7 +261,7 @@ void hilbert_curve(cuda::execution_policy<DerivedPolicy>& exec,
     cusp::detail::temporary_array<PartType, DerivedPolicy> uniform_parts(exec, num_points);
     thrust::transform(exec,
                       thrust::counting_iterator<PartType>(0), thrust::counting_iterator<PartType>(num_points),
-                      thrust::constant_iterator<PartType>(num_points/num_parts), uniform_parts.begin(), thrust::divides<PartType>());
+                      thrust::constant_iterator<PartType>(num_points/num_parts), uniform_parts.begin(), ::cuda::std::divides<PartType>());
     thrust::gather(exec, perm.begin(), perm.end(), uniform_parts.begin(), parts.begin());
 }
 

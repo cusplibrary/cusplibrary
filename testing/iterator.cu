@@ -36,7 +36,7 @@ void TestStridedIterator(void)
     // construct strided_iterator
     StridedIterator iter(CountingIterator(0), CountingIterator(20), 5);
 
-    ASSERT_EQUAL(thrust::distance(iter.begin(), iter.end()), 4);
+    ASSERT_EQUAL(::cuda::std::distance(iter.begin(), iter.end()), 4);
     ASSERT_EQUAL(iter[0],  0);
     ASSERT_EQUAL(iter[1],  5);
     ASSERT_EQUAL(iter[2], 10);
