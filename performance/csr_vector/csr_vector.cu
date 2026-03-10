@@ -20,8 +20,8 @@ void perform_spmv(const cusp::csr_matrix<IndexType,ValueType,cusp::device_memory
 {
     cusp::system::cuda::detail::par_t exec;
     cusp::constant_functor<ValueType> initialize;
-    thrust::multiplies<ValueType>     combine;
-    thrust::plus<ValueType>           reduce;
+    ::cuda::std::multiplies<ValueType> combine;
+    ::cuda::std::plus<ValueType>       reduce;
     cusp::system::cuda::detail::__spmv_csr_vector<THREADS_PER_VECTOR>(exec, csr, x, y, initialize, combine, reduce);
 }
 

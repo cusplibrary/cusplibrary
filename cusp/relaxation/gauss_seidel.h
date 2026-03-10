@@ -114,7 +114,7 @@ public:
 
     /*! This constructor creates an empty \p gauss_seidel smoother.
      */
-    gauss_seidel(void) {}
+    gauss_seidel(void) : default_direction(SYMMETRIC) {}
 
     /*! This constructor creates a \p gauss_seidel smoother using a given
      *  matrix and sweeping strategy (FORWARD, BACKWARD, SYMMETRIC).
