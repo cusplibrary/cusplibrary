@@ -18,8 +18,8 @@ void CompareGeneralizedSparseMatrixMatrixMultiply(DenseMatrixType A, DenseMatrix
     typedef typename SparseMatrixType::value_type ValueType;
 
     cusp::constant_functor<ValueType> initialize(0);
-    thrust::multiplies<ValueType> combine;
-    thrust::plus<ValueType>       reduce;
+    ::cuda::std::multiplies<ValueType> combine;
+    ::cuda::std::plus<ValueType>       reduce;
 
     DenseMatrixType C(A);
     cusp::multiply(A, B, C, initialize, combine, reduce);
@@ -157,8 +157,8 @@ void TestGeneralizedSpGEMMDispatch()
     my_system sys(0);
 
     ::cuda::std::identity     initialize;
-    thrust::multiplies<float> combine;
-    thrust::plus<float>       reduce;
+    ::cuda::std::multiplies<float> combine;
+    ::cuda::std::plus<float>       reduce;
 
     // call with explicit dispatching
     cusp::generalized_spgemm(sys, A, B, C, initialize, combine, reduce);

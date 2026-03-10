@@ -258,7 +258,7 @@ size_t compute_max_entries_per_row(thrust::execution_policy<DerivedPolicy> &exec
                               row_offsets.begin(),
                               IndexType(0),
                               thrust::maximum<IndexType>(),
-                              thrust::minus<IndexType>());
+                              ::cuda::std::minus<IndexType>());
 
     return max_entries_per_row;
 }

@@ -47,13 +47,13 @@ template <typename BinaryFunction>
 struct ops
 {
     typedef typename BinaryFunction::result_type ValueType;
-    typedef thrust::minus<ValueType> Sub;
+    typedef ::cuda::std::minus<ValueType> Sub;
 
     typedef ::cuda::std::conditional_t<std::is_same<Sub, BinaryFunction>::value,
-                                       thrust::negate<ValueType>, ::cuda::std::identity> unary_op_type;
+                                       ::cuda::std::negate<ValueType>, ::cuda::std::identity> unary_op_type;
 
     typedef ::cuda::std::conditional_t<std::is_same<Sub, BinaryFunction>::value,
-                                       thrust::plus<ValueType>, BinaryFunction> binary_op_type;
+                                       ::cuda::std::plus<ValueType>, BinaryFunction> binary_op_type;
 };
 
 } // end elementwise_detail namespace
@@ -165,8 +165,8 @@ void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
                                          combined_tuples + num_entries - 1,
                                          combined_tuples + 1,
                                          IndexType(1),
-                                         thrust::plus<IndexType>(),
-                                         thrust::not_equal_to< thrust::tuple<IndexType,IndexType> >());
+                                         ::cuda::std::plus<IndexType>(),
+                                         ::cuda::std::not_equal_to< thrust::tuple<IndexType,IndexType> >());
 
     // allocate space for output
     C.resize(A.num_rows, A.num_cols, C_nnz);
@@ -178,7 +178,7 @@ void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
                           combined_values,
                           thrust::make_zip_iterator(thrust::make_tuple(C.row_indices.begin(), C.column_indices.begin())),
                           C.values.begin(),
-                          thrust::equal_to< thrust::tuple<IndexType,IndexType> >(),
+                          ::cuda::std::equal_to< thrust::tuple<IndexType,IndexType> >(),
                           BinaryOp());
 #else
     cusp::detail::temporary_array<IndexType, DerivedPolicy> rows(exec, num_entries);
@@ -203,8 +203,8 @@ void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
                                             thrust::make_zip_iterator(thrust::make_tuple(rows.end (),  cols.end()))   - 1,
                                             thrust::make_zip_iterator(thrust::make_tuple(rows.begin(), cols.begin())) + 1,
                                             IndexType(1),
-                                            thrust::plus<IndexType>(),
-                                            thrust::not_equal_to< thrust::tuple<IndexType,IndexType> >());
+                                            ::cuda::std::plus<IndexType>(),
+                                            ::cuda::std::not_equal_to< thrust::tuple<IndexType,IndexType> >());
 
     // allocate space for output
     C.resize(A.num_rows, A.num_cols, C_nnz);
@@ -216,7 +216,7 @@ void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
                           vals.begin(),
                           thrust::make_zip_iterator(thrust::make_tuple(C.row_indices.begin(), C.column_indices.begin())),
                           C.values.begin(),
-                          thrust::equal_to< thrust::tuple<IndexType,IndexType> >(),
+                          ::cuda::std::equal_to< thrust::tuple<IndexType,IndexType> >(),
                           BinaryOp());
 #endif
 

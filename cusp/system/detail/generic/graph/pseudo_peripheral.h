@@ -57,7 +57,7 @@ pseudo_peripheral_vertex(thrust::execution_policy<DerivedPolicy>& exec,
     thrust::transform(exec,
                       G.row_offsets.begin() + 1, G.row_offsets.end(),
                       G.row_offsets.begin(), row_lengths.begin(),
-                      thrust::minus<IndexType>());
+                      ::cuda::std::minus<IndexType>());
 
     while(1)
     {

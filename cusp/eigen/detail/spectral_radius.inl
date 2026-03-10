@@ -87,8 +87,8 @@ double disks_spectral_radius(const MatrixType& A, coo_format)
      thrust::make_transform_iterator(A.values.begin(), cusp::abs_functor<ValueType>()),
      thrust::make_discard_iterator(),
      row_sums.begin(),
-     thrust::equal_to<IndexType>(),
-     thrust::plus<NormType>());
+     ::cuda::std::equal_to<IndexType>(),
+     ::cuda::std::plus<NormType>());
 
     return *thrust::max_element(row_sums.begin(), row_sums.end());
 }

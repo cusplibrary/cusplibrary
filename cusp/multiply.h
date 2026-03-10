@@ -155,8 +155,8 @@ void multiply(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
  *  {
  *      // define multiply functors
  *      cusp::constant_functor<float> initialize;
- *      thrust::multiplies<float> combine;
- *      thrust::plus<float>       reduce;
+ *      ::cuda::std::multiplies<float> combine;
+ *      ::cuda::std::plus<float>       reduce;
  *
  *      // initialize matrix
  *      cusp::array2d<float, cusp::host_memory> A(2,2);
@@ -253,8 +253,8 @@ void generalized_spgemm(const thrust::detail::execution_policy_base<DerivedPolic
  *      // define multiply functors
  *      ::cuda::std::identity   identity;
  *      cusp::constant_functor<float> zero;
- *      thrust::multiplies<float> combine;
- *      thrust::plus<float>       reduce;
+ *      ::cuda::std::multiplies<float> combine;
+ *      ::cuda::std::plus<float>       reduce;
  *
  *      // initialize matrix
  *      cusp::coo_matrix<int,float,cusp::host_memory> A;
@@ -339,8 +339,8 @@ void generalized_spmv(const thrust::detail::execution_policy_base<DerivedPolicy>
  *  int main(void)
  *  {
  *      // define multiply functors
- *      thrust::multiplies<float>          combine;
- *      thrust::plus<float>                reduce;
+ *      ::cuda::std::multiplies<float>          combine;
+ *      ::cuda::std::plus<float>                reduce;
  *
  *      // initialize matrix
  *      cusp::array2d<float, cusp::host_memory> A(2,2);

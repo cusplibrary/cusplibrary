@@ -95,7 +95,7 @@ void fit_candidates(thrust::execution_policy<DerivedPolicy> &exec,
                       Q.values.begin(), Q.values.end(),
                       thrust::make_permutation_iterator(R.begin(), Q.column_indices.begin()),
                       Q.values.begin(),
-                      thrust::divides<ValueType>());
+                      ::cuda::std::divides<ValueType>());
 
     // copy/convert Q to output matrix Q_
     cusp::convert(exec, Q, Q_);

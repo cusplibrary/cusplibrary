@@ -85,7 +85,7 @@ void smooth_prolongator(thrust::execution_policy<DerivedPolicy> &exec,
                               temp.values.begin(), temp.values.begin() + S.num_entries,
                               thrust::make_permutation_iterator(D.begin(), S.row_indices.begin()),
                               temp.values.begin(),
-                              thrust::divides<ValueType>());
+                              ::cuda::std::divides<ValueType>());
         }
 
         // temp <- temp + T
@@ -103,8 +103,8 @@ void smooth_prolongator(thrust::execution_policy<DerivedPolicy> &exec,
                                               thrust::make_zip_iterator(thrust::make_tuple(temp.row_indices.end (),  temp.column_indices.end()))   - 1,
                                               thrust::make_zip_iterator(thrust::make_tuple(temp.row_indices.begin(), temp.column_indices.begin())) + 1,
                                               IndexType(0),
-                                              thrust::plus<IndexType>(),
-                                              thrust::not_equal_to< thrust::tuple<IndexType,IndexType> >()) + 1;
+                                              ::cuda::std::plus<IndexType>(),
+                                              ::cuda::std::not_equal_to< thrust::tuple<IndexType,IndexType> >()) + 1;
 
         // allocate space for output
         P.resize(temp.num_rows, temp.num_cols, NNZ);
@@ -116,8 +116,8 @@ void smooth_prolongator(thrust::execution_policy<DerivedPolicy> &exec,
                               temp.values.begin(),
                               thrust::make_zip_iterator(thrust::make_tuple(P.row_indices.begin(), P.column_indices.begin())),
                               P.values.begin(),
-                              thrust::equal_to< thrust::tuple<IndexType,IndexType> >(),
-                              thrust::plus<ValueType>());
+                              ::cuda::std::equal_to< thrust::tuple<IndexType,IndexType> >(),
+                              ::cuda::std::plus<ValueType>());
     }
     else
     {
@@ -133,7 +133,7 @@ void smooth_prolongator(thrust::execution_policy<DerivedPolicy> &exec,
                           D_inv_S.values.begin() + S.num_entries,
                           thrust::make_permutation_iterator(D.begin(), S.row_indices.begin()),
                           D_inv_S.values.begin(),
-                          thrust::divides<ValueType>());
+                          ::cuda::std::divides<ValueType>());
 
         const ValueType lambda = omega / rho_Dinv_S;
         cusp::blas::scal(exec, D_inv_S.values, lambda);

@@ -124,7 +124,7 @@ public:
      */
     iterator end(void) const
     {
-        return begin() + (thrust::distance(first,last) + (stride - 1)) / stride;
+        return begin() + (::cuda::std::distance(first,last) + (stride - 1)) / stride;
     }
 
     /*! \brief Subscript access to the data contained in this iterator.

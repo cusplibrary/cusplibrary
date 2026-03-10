@@ -134,8 +134,8 @@ void coo_spmm_helper(thrust::execution_policy<DerivedPolicy>& exec,
                                           thrust::make_zip_iterator(thrust::make_tuple(I.end (),  J.end()))   - 1,
                                           thrust::make_zip_iterator(thrust::make_tuple(I.begin(), J.begin())) + 1,
                                           IndexType(0),
-                                          thrust::plus<IndexType>(),
-                                          thrust::not_equal_to< thrust::tuple<IndexType,IndexType> >()) + 1;
+                                          ::cuda::std::plus<IndexType>(),
+                                          ::cuda::std::not_equal_to< thrust::tuple<IndexType,IndexType> >()) + 1;
 
     // allocate space for output
     C.resize(A.num_rows, B.num_cols, NNZ);
@@ -148,7 +148,7 @@ void coo_spmm_helper(thrust::execution_policy<DerivedPolicy>& exec,
      V.begin(),
      thrust::make_zip_iterator(thrust::make_tuple(C.row_indices.begin(), C.column_indices.begin())),
      C.values.begin(),
-     thrust::equal_to< thrust::tuple<IndexType,IndexType> >(),
+     ::cuda::std::equal_to< thrust::tuple<IndexType,IndexType> >(),
      reduce);
 }
 
@@ -192,7 +192,7 @@ void multiply(thrust::execution_policy<DerivedPolicy>& exec,
                       B_row_offsets.end(),
                       B_row_offsets.begin(),
                       B_row_lengths.begin(),
-                      thrust::minus<IndexType>());
+                      ::cuda::std::minus<IndexType>());
 
     // for each element A(i,j) compute the number of nonzero elements in B(j,:)
     cusp::detail::temporary_array<IndexType,DerivedPolicy> segment_lengths(exec, A.num_entries);

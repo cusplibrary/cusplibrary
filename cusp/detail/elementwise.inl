@@ -74,7 +74,7 @@ void add(const MatrixType1& A,
                MatrixType3& C)
 {
     typedef typename MatrixType1::value_type   ValueType;
-    typedef thrust::plus<ValueType>            Op;
+    typedef ::cuda::std::plus<ValueType>            Op;
 
     Op op;
 
@@ -89,7 +89,7 @@ void subtract(const MatrixType1& A,
                     MatrixType3& C)
 {
     typedef typename MatrixType1::value_type   ValueType;
-    typedef thrust::minus<ValueType>           Op;
+    typedef ::cuda::std::minus<ValueType>           Op;
 
     Op op;
 

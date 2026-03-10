@@ -166,7 +166,7 @@ asum(thrust::execution_policy<DerivedPolicy>& exec,
     typedef typename cusp::norm_type<ValueType>::type NormType;
 
     cusp::abs_functor<ValueType> unary_op;
-    thrust::plus<NormType>       binary_op;
+    ::cuda::std::plus<NormType>       binary_op;
 
     NormType init = 0;
 
@@ -332,7 +332,7 @@ nrm2(thrust::execution_policy<DerivedPolicy>& exec,
     typedef typename cusp::norm_type<ValueType>::type NormType;
 
     cusp::abs_squared_functor<ValueType> unary_op;
-    thrust::plus<NormType>               binary_op;
+    ::cuda::std::plus<NormType>               binary_op;
 
     NormType init = 0;
 
