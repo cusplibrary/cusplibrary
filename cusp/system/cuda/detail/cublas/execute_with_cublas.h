@@ -82,7 +82,6 @@ class execute_with_cublas
 
   public:
 
-    _CCCL_HOST_DEVICE
     inline execute_with_cublas(const cublasHandle_t& h)
       : super_t(h)
     {}
