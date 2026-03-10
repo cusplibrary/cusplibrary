@@ -56,7 +56,7 @@ public:
     size_t num_iters;
     BaseSmoother M;
 
-    gauss_seidel_smoother(void) {}
+    gauss_seidel_smoother(void) : num_iters(0) {}
 
     template <typename ValueType2, typename MemorySpace2>
     gauss_seidel_smoother(const gauss_seidel_smoother<ValueType2,MemorySpace2>& A)

@@ -30,7 +30,7 @@ float time_conversion(const InputType& A)
     {
         S = A;
     }
-    catch (cusp::format_conversion_exception)
+    catch (const cusp::format_conversion_exception&)
     {
         return -1;
     }
@@ -39,7 +39,7 @@ float time_conversion(const InputType& A)
     {
         DestinationType D(S);
     }
-    catch (cusp::format_conversion_exception)
+    catch (const cusp::format_conversion_exception&)
     {
         return -1;
     }
