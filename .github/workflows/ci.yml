@@ -22,11 +22,11 @@ jobs:
     - name: Install dependencies
       run: sudo apt-get install -y liblapacke-dev libopenblas-dev
 
-    - name: Checkout CCCL v2.8.5
+    - name: Checkout CCCL
       uses: actions/checkout@v4
       with:
         repository: NVIDIA/cccl
-        ref: v2.8.5
+        ref: v3.1.4
         path: cccl
 
     - name: Build tests
@@ -59,11 +59,11 @@ jobs:
     - name: Install dependencies
       run: sudo apt-get install -y liblapacke-dev libopenblas-dev lcov
 
-    - name: Checkout CCCL v2.8.5
+    - name: Checkout CCCL
       uses: actions/checkout@v4
       with:
         repository: NVIDIA/cccl
-        ref: v2.8.5
+        ref: v3.1.4
         path: cccl
 
     - name: Build tests (coverage)
