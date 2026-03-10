@@ -18,8 +18,10 @@
 
 #include <thrust/device_allocator.h>
 #include <thrust/device_malloc_allocator.h>
+#include <thrust/iterator/detail/minimum_system.h>
 #include <thrust/iterator/iterator_traits.h>
 
+#include <cuda/std/type_traits>
 #include <memory>
 
 namespace cusp
@@ -27,17 +29,17 @@ namespace cusp
 
 template<typename T, typename MemorySpace>
 struct default_memory_allocator
-        : thrust::detail::eval_if<
-        std::is_same<MemorySpace, host_memory>::value,
-        thrust::detail::identity_< std::allocator<T> >,
-        thrust::detail::identity_< thrust::device_malloc_allocator<T> >
+        : ::cuda::std::conditional<
+        ::cuda::std::is_same<MemorySpace, host_memory>::value,
+        std::allocator<T>,
+        thrust::device_malloc_allocator<T>
         >
 {};
 
 template <typename MemorySpace1, typename MemorySpace2, typename MemorySpace3, typename MemorySpace4>
 struct minimum_space
 {
-    typedef typename thrust::detail::minimum_system<MemorySpace1, MemorySpace2, MemorySpace3, MemorySpace4>::type type;
+    typedef thrust::detail::minimum_system_t<MemorySpace1, MemorySpace2, MemorySpace3, MemorySpace4> type;
 };
 
 } // end namespace cusp

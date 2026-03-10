@@ -33,11 +33,7 @@ namespace detail
 template<typename T>
 struct random_iterator_type
 {
-    typedef typename thrust::detail::eval_if<
-           sizeof(T) <= 4,
-           thrust::detail::identity_< unsigned int >,
-           thrust::detail::identity_< unsigned long long >
-        >::type type;
+    typedef ::cuda::std::conditional_t<sizeof(T) <= 4, unsigned int, unsigned long long> type;
 };
 
 template <typename Real>
@@ -83,13 +79,11 @@ struct integer_to_integer
 template<typename T>
 struct random_functor_type
 {
-    typedef typename thrust::detail::eval_if<
+    typedef ::cuda::std::conditional_t<
            std::is_floating_point<typename cusp::norm_type<T>::type>::value,
-              thrust::detail::eval_if<std::is_convertible<thrust::complex<float>,T>::value,
-                thrust::detail::identity_< integer_to_complex<T> >,
-                thrust::detail::identity_< integer_to_real<T> > >,
-           thrust::detail::identity_< integer_to_integer<T> >
-           >::type type;
+           ::cuda::std::conditional_t<std::is_convertible<thrust::complex<float>,T>::value, integer_to_complex<T>, integer_to_real<T>>,
+           integer_to_integer<T>
+           > type;
 };
 
 // Integer hash functions
