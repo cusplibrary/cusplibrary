@@ -34,7 +34,7 @@ jobs:
       run: |
         CCCL_PATH=${{ github.workspace }}/cccl \
         THRUST_PATH=${{ github.workspace }}/cccl/thrust \
-        scons compiler=gcc backend=omp deviceblas=cusp mode=release
+        scons compiler=gcc backend=omp deviceblas=cusp mode=release -j $(nproc)
 
     - name: Run tests
       working-directory: testing/device_omp_release
