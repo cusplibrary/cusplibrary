@@ -34,16 +34,16 @@ namespace detail
 ///////////////////////////////////
 
 template <typename IndexVector>
-thrust::pair<typename IndexVector::value_type, typename IndexVector::value_type>
+::cuda::std::pair<typename IndexVector::value_type, typename IndexVector::value_type>
 index_range(const IndexVector& indices)
 {
 //    // return a pair<> containing the min and max value in a range
-//    thrust::pair<typename IndexVector::const_iterator, typename IndexVector::const_iterator> iter = thrust::minmax_element(indices.begin(), indices.end());
-//    return thrust::make_pair(*iter.first, *iter.second);
+//    ::cuda::std::pair<typename IndexVector::const_iterator, typename IndexVector::const_iterator> iter = thrust::minmax_element(indices.begin(), indices.end());
+//    return ::cuda::std::make_pair(*iter.first, *iter.second);
 
     // WAR lack of const_iterator in array1d_view
-    return thrust::make_pair
-           (*thrust::min_element(indices.begin(), indices.end()),
+    return ::cuda::std::make_pair(
+           *thrust::min_element(indices.begin(), indices.end()),
             *thrust::max_element(indices.begin(), indices.end()));
 }
 
@@ -125,7 +125,7 @@ bool is_valid_matrix(const MatrixType& A,
     if (A.num_entries > 0)
     {
         // check that row indices are within [0, num_rows)
-        thrust::pair<IndexType,IndexType> min_max_row = index_range(A.row_indices);
+        ::cuda::std::pair<IndexType,IndexType> min_max_row = index_range(A.row_indices);
         if (min_max_row.first < 0)
         {
             ostream << "row indices should be non-negative";
@@ -145,7 +145,7 @@ bool is_valid_matrix(const MatrixType& A,
         }
 
         // check that column indices are within [0, num_cols)
-        thrust::pair<IndexType,IndexType> min_max_col = index_range(A.column_indices);
+        ::cuda::std::pair<IndexType,IndexType> min_max_col = index_range(A.column_indices);
         if (min_max_col.first < 0)
         {
             ostream << "column indices should be non-negative";
@@ -217,7 +217,7 @@ bool is_valid_matrix(const MatrixType& A,
     if (A.num_entries > 0)
     {
         // check that column indices are within [0, num_cols)
-        thrust::pair<IndexType,IndexType> min_max = index_range(A.column_indices);
+        ::cuda::std::pair<IndexType,IndexType> min_max = index_range(A.column_indices);
 
         if (min_max.first < 0)
         {

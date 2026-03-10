@@ -57,7 +57,7 @@ private:
      *  chosen by a heuristic and num_blocks_per_multiprocessor is the maximum
      *  number of such blocks that can execute on a streaming multiprocessor at once.
      */
-    thrust::pair<size_t, size_t> default_block_configuration() const;
+    ::cuda::std::pair<size_t, size_t> default_block_configuration() const;
 
     /*! Returns a pair (num_threads_per_block, num_blocks_per_multiprocessor)
      *  where num_threads_per_block is a valid block size for an instance of Closure
@@ -68,7 +68,7 @@ private:
      *                                 dynamically-allocated bytes of shared memory
      */
     template<typename UnaryFunction>
-    thrust::pair<size_t, size_t> default_block_configuration(UnaryFunction block_size_to_smem_size) const;
+    ::cuda::std::pair<size_t, size_t> default_block_configuration(UnaryFunction block_size_to_smem_size) const;
 };
 
 } // end namespace detail
