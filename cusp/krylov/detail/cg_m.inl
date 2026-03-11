@@ -84,15 +84,15 @@ struct KERNEL_ZB
         typedef typename cusp::norm_type<ScalarType>::type NormType;
 
         // compute \zeta_1^\sigma
-        ScalarType z1, b0, z0=thrust::get<2>(t), zm1 = thrust::get<3>(t),
-                           sigma = thrust::get<4>(t);
+        ScalarType z1, b0, z0=::cuda::std::get<2>(t), zm1 = ::cuda::std::get<3>(t),
+                           sigma = ::cuda::std::get<4>(t);
         z1 = z0*zm1*beta_m1/(beta_0*alpha_0*(zm1-z0)
                              +beta_m1*zm1*(ScalarType(1)-beta_0*sigma));
         b0 = beta_0*z1/z0;
         if ( cusp::abs(z1) < NormType(1e-30) )
             z1 = ScalarType(1e-18);
-        thrust::get<0>(t) = z1;
-        thrust::get<1>(t) = b0;
+        ::cuda::std::get<0>(t) = z1;
+        ::cuda::std::get<1>(t) = b0;
     }
 };
 
@@ -114,8 +114,8 @@ struct KERNEL_A
     void operator()(Tuple t)
     {
         // compute \alpha_0^\sigma
-        thrust::get<0>(t)=alpha_0/beta_0*thrust::get<2>(t)*thrust::get<3>(t)/
-                          thrust::get<1>(t);
+        ::cuda::std::get<0>(t)=alpha_0/beta_0*::cuda::std::get<2>(t)*::cuda::std::get<3>(t)/
+                          ::cuda::std::get<1>(t);
     }
 };
 
@@ -139,9 +139,9 @@ struct KERNEL_XP
     void operator()(Tuple t)
     {
         // return the transformed result
-        ScalarType x = thrust::get<0>(t);
-        ScalarType p_0 = thrust::get<1>(t);
-        int index = thrust::get<2>(t);
+        ScalarType x = ::cuda::std::get<0>(t);
+        ScalarType p_0 = ::cuda::std::get<1>(t);
+        int index = ::cuda::std::get<2>(t);
 
         int N_s = index / N;
         int N_i = index % N;
@@ -149,8 +149,8 @@ struct KERNEL_XP
         x = x-beta_0_s[N_s]*p_0;
         p_0 = z_1_s[N_s]*r_0[N_i]+alpha_0_s[N_s]*p_0;
 
-        thrust::get<0>(t) = x;
-        thrust::get<1>(t) = p_0;
+        ::cuda::std::get<0>(t) = x;
+        ::cuda::std::get<1>(t) = p_0;
     }
 };
 
@@ -182,8 +182,8 @@ struct KERNEL_DCOPY
     _CCCL_HOST_DEVICE
     void operator()(Tuple t)
     {
-        thrust::get<2>(t)=thrust::get<1>(t);
-        thrust::get<1>(t)=thrust::get<0>(t);
+        ::cuda::std::get<2>(t)=::cuda::std::get<1>(t);
+        ::cuda::std::get<1>(t)=::cuda::std::get<0>(t);
     }
 };
 
@@ -227,8 +227,8 @@ void compute_zb_m(InputIterator1 z_0_s_b, InputIterator1 z_0_s_e,
 {
     size_t N = z_0_s_e - z_0_s_b;
     thrust::for_each(
-        thrust::make_zip_iterator(thrust::make_tuple(z_1_s_b,b_0_s_b,z_0_s_b,z_m1_s_b,sig_b)),
-        thrust::make_zip_iterator(thrust::make_tuple(z_1_s_b,b_0_s_b,z_0_s_b,z_m1_s_b,sig_b))+N,
+        thrust::make_zip_iterator(::cuda::std::make_tuple(z_1_s_b,b_0_s_b,z_0_s_b,z_m1_s_b,sig_b)),
+        thrust::make_zip_iterator(::cuda::std::make_tuple(z_1_s_b,b_0_s_b,z_0_s_b,z_m1_s_b,sig_b))+N,
         cusp::krylov::cg_detail::detail_m::KERNEL_ZB<ScalarType>(beta_m1,beta_0,alpha_0)
     );
 }
@@ -263,8 +263,8 @@ void compute_a_m(InputIterator1 z_0_s_b, InputIterator1 z_0_s_e,
 {
     size_t N = z_0_s_e - z_0_s_b;
     thrust::for_each(
-        thrust::make_zip_iterator(thrust::make_tuple(alpha_0_s_b,z_0_s_b,z_1_s_b,beta_0_s_b)),
-        thrust::make_zip_iterator(thrust::make_tuple(alpha_0_s_b,z_0_s_b,z_1_s_b,beta_0_s_b))+N,
+        thrust::make_zip_iterator(::cuda::std::make_tuple(alpha_0_s_b,z_0_s_b,z_1_s_b,beta_0_s_b)),
+        thrust::make_zip_iterator(::cuda::std::make_tuple(alpha_0_s_b,z_0_s_b,z_1_s_b,beta_0_s_b))+N,
         cusp::krylov::cg_detail::detail_m::KERNEL_A<ScalarType>(beta_0,alpha_0));
 }
 
@@ -315,8 +315,8 @@ void compute_xp_m(const Array1& alpha_0_s, const Array2& z_1_s,
 
     // compute new x,p
     thrust::for_each(
-        thrust::make_zip_iterator(thrust::make_tuple(x_0_s.begin(), p_0_s.begin(),counter)),
-        thrust::make_zip_iterator(thrust::make_tuple(x_0_s.begin(), p_0_s.begin(),counter))+N_t,
+        thrust::make_zip_iterator(::cuda::std::make_tuple(x_0_s.begin(), p_0_s.begin(),counter)),
+        thrust::make_zip_iterator(::cuda::std::make_tuple(x_0_s.begin(), p_0_s.begin(),counter))+N_t,
         cusp::krylov::cg_detail::detail_m::KERNEL_XP<ScalarType>(N, raw_ptr_alpha_0_s, raw_ptr_beta_0_s, raw_ptr_z_1_s, raw_ptr_r_0));
 }
 
@@ -329,8 +329,8 @@ void doublecopy(const Array1& s, Array2& sd, Array3& d)
 
     // recycle
     thrust::for_each(
-        thrust::make_zip_iterator(thrust::make_tuple(s.begin(), sd.begin(), d.begin())),
-        thrust::make_zip_iterator(thrust::make_tuple(s.begin(), sd.begin(), d.begin())) + N,
+        thrust::make_zip_iterator(::cuda::std::make_tuple(s.begin(), sd.begin(), d.begin())),
+        thrust::make_zip_iterator(::cuda::std::make_tuple(s.begin(), sd.begin(), d.begin())) + N,
         cusp::krylov::cg_detail::detail_m::KERNEL_DCOPY());
 }
 

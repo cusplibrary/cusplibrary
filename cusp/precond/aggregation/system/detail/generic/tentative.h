@@ -63,10 +63,10 @@ void fit_candidates(thrust::execution_policy<DerivedPolicy> &exec,
 
     // gather values into Q
     thrust::copy_if(exec,
-                    thrust::make_zip_iterator(thrust::make_tuple(thrust::counting_iterator<IndexType>(0), aggregates.begin(), B.begin())),
-                    thrust::make_zip_iterator(thrust::make_tuple(thrust::counting_iterator<IndexType>(aggregates.size()), aggregates.end(), B.end())),
+                    thrust::make_zip_iterator(::cuda::std::make_tuple(thrust::counting_iterator<IndexType>(0), aggregates.begin(), B.begin())),
+                    thrust::make_zip_iterator(::cuda::std::make_tuple(thrust::counting_iterator<IndexType>(aggregates.size()), aggregates.end(), B.end())),
                     aggregates.begin(),
-                    thrust::make_zip_iterator(thrust::make_tuple(Q.row_indices.begin(), Q.column_indices.begin(), Q.values.begin())),
+                    thrust::make_zip_iterator(::cuda::std::make_tuple(Q.row_indices.begin(), Q.column_indices.begin(), Q.values.begin())),
                     _1 != -1);
 
     // compute norm over each aggregate

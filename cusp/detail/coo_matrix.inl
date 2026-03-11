@@ -122,8 +122,8 @@ coo_matrix<IndexType,ValueType,MemorySpace>
 ::is_sorted_by_row_and_column(void)
 {
     return thrust::is_sorted
-           (thrust::make_zip_iterator(thrust::make_tuple(row_indices.begin(), column_indices.begin())),
-            thrust::make_zip_iterator(thrust::make_tuple(row_indices.end(),   column_indices.end())));
+           (thrust::make_zip_iterator(::cuda::std::make_tuple(row_indices.begin(), column_indices.begin())),
+            thrust::make_zip_iterator(::cuda::std::make_tuple(row_indices.end(),   column_indices.end())));
 }
 
 ///////////////////////
@@ -195,7 +195,7 @@ void coo_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>
     RowIndexIterator    row_indices_begin(CountingIterator(0), cusp::divide_value<IndexType>(matrix.values.num_cols));
     ModulusIterator     gather_indices_begin(CountingIterator(0), cusp::modulus_value<IndexType>(matrix.values.num_cols));
     OffsetsPermIterator offsets_begin(matrix.diagonal_offsets.begin(), gather_indices_begin);
-    ZipIterator         offset_modulus_tuple(thrust::make_tuple(offsets_begin, row_indices_begin));
+    ZipIterator         offset_modulus_tuple(::cuda::std::make_tuple(offsets_begin, row_indices_begin));
 
     ColumnIndexIterator column_indices_begin(offset_modulus_tuple, cusp::sum_pair_functor<IndexType>());
     PermIndexIterator   perm_indices_begin(CountingIterator(0),   PermFunctor(matrix.values.num_rows, matrix.values.num_cols, matrix.values.pitch));
@@ -318,10 +318,10 @@ void coo_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>
 
     if(coo_num_entries > 0)
     {
-        thrust::merge_by_key(thrust::make_zip_iterator(thrust::make_tuple(temp_row_indices_begin, temp_column_indices_begin)),
-                             thrust::make_zip_iterator(thrust::make_tuple(temp_row_indices_begin, temp_column_indices_begin)) + ell_num_entries,
-                             thrust::make_zip_iterator(thrust::make_tuple(matrix.coo.row_indices.begin(), matrix.coo.column_indices.begin())),
-                             thrust::make_zip_iterator(thrust::make_tuple(matrix.coo.row_indices.begin(), matrix.coo.column_indices.begin())) + coo_num_entries,
+        thrust::merge_by_key(thrust::make_zip_iterator(::cuda::std::make_tuple(temp_row_indices_begin, temp_column_indices_begin)),
+                             thrust::make_zip_iterator(::cuda::std::make_tuple(temp_row_indices_begin, temp_column_indices_begin)) + ell_num_entries,
+                             thrust::make_zip_iterator(::cuda::std::make_tuple(matrix.coo.row_indices.begin(), matrix.coo.column_indices.begin())),
+                             thrust::make_zip_iterator(::cuda::std::make_tuple(matrix.coo.row_indices.begin(), matrix.coo.column_indices.begin())) + coo_num_entries,
                              thrust::counting_iterator<IndexType>(0),
                              thrust::counting_iterator<IndexType>(ell_num_entries),
                              thrust::make_discard_iterator(),
@@ -396,8 +396,8 @@ coo_matrix_view<Array1,Array2,Array3,IndexType,ValueType,MemorySpace>
 ::is_sorted_by_row_and_column(void)
 {
     return thrust::is_sorted
-           (thrust::make_zip_iterator(thrust::make_tuple(row_indices.begin(), column_indices.begin())),
-            thrust::make_zip_iterator(thrust::make_tuple(row_indices.end(),   column_indices.end())));
+           (thrust::make_zip_iterator(::cuda::std::make_tuple(row_indices.begin(), column_indices.begin())),
+            thrust::make_zip_iterator(::cuda::std::make_tuple(row_indices.end(),   column_indices.end())));
 }
 
 } // end namespace cusp

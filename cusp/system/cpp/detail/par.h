@@ -20,6 +20,9 @@
 #include <cusp/system/cpp/detail/execution_policy.h>
 #include <thrust/detail/execute_with_allocator.h>
 
+// Forward declaration to avoid circular includes when defining select_system overloads below
+namespace thrust { namespace system { namespace omp { namespace detail { struct tag; } } } }
+
 namespace cusp
 {
 namespace system
@@ -83,6 +86,19 @@ struct par_t : public cusp::system::cpp::detail::execution_policy<par_t>
 // {
 //   return thrust::detail::derived_cast(s);
 // } // end select_system()
+
+// omp::tag conversion needed in CCCL >=3.3.0
+inline _CCCL_HOST_DEVICE
+par_t select_system(par_t s, thrust::system::omp::detail::tag)
+{
+    return s;
+}
+
+inline _CCCL_HOST_DEVICE
+par_t select_system(thrust::system::omp::detail::tag, par_t s)
+{
+    return s;
+}
 
 } // end detail
 

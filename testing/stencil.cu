@@ -6,8 +6,8 @@ void TestGenerateMatrixFromStencil1d(void)
 {
     typedef int   IndexType;
     typedef float ValueType;
-    typedef thrust::tuple<IndexType>              StencilIndex;
-    typedef thrust::tuple<StencilIndex,ValueType> StencilPoint;
+    typedef ::cuda::std::tuple<IndexType>              StencilIndex;
+    typedef ::cuda::std::tuple<StencilIndex,ValueType> StencilPoint;
 
     cusp::array1d<StencilPoint, cusp::host_memory> stencil;
 
@@ -50,8 +50,8 @@ void TestGenerateMatrixFromStencil2d(void)
 {
     typedef int   IndexType;
     typedef float ValueType;
-    typedef thrust::tuple<IndexType,IndexType>    StencilIndex;
-    typedef thrust::tuple<StencilIndex,ValueType> StencilPoint;
+    typedef ::cuda::std::tuple<IndexType,IndexType>    StencilIndex;
+    typedef ::cuda::std::tuple<StencilIndex,ValueType> StencilPoint;
 
     cusp::array1d<StencilPoint, cusp::host_memory> stencil;
 

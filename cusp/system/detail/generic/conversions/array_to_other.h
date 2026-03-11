@@ -158,10 +158,10 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     dst.resize(src.num_rows, src.num_cols, num_coo_entries);
 
     thrust::copy_if(exec,
-                    thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, column_indices_begin, perm_values_begin)),
-                    thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, column_indices_begin, perm_values_begin)) + src.num_entries,
+                    thrust::make_zip_iterator(::cuda::std::make_tuple(row_indices_begin, column_indices_begin, perm_values_begin)),
+                    thrust::make_zip_iterator(::cuda::std::make_tuple(row_indices_begin, column_indices_begin, perm_values_begin)) + src.num_entries,
                     perm_values_begin,
-                    thrust::make_zip_iterator(thrust::make_tuple(dst.row_indices.begin(), dst.column_indices.begin(), dst.values.begin())),
+                    thrust::make_zip_iterator(::cuda::std::make_tuple(dst.row_indices.begin(), dst.column_indices.begin(), dst.values.begin())),
                     _1 != 0);
 }
 

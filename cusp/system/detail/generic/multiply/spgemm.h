@@ -130,9 +130,9 @@ void coo_spmm_helper(thrust::execution_policy<DerivedPolicy>& exec,
 
     // compute unique number of nonzeros in the output
     IndexType NNZ = thrust::inner_product(exec,
-                                          thrust::make_zip_iterator(thrust::make_tuple(I.begin(), J.begin())),
-                                          thrust::make_zip_iterator(thrust::make_tuple(I.end (),  J.end()))   - 1,
-                                          thrust::make_zip_iterator(thrust::make_tuple(I.begin(), J.begin())) + 1,
+                                          thrust::make_zip_iterator(::cuda::std::make_tuple(I.begin(), J.begin())),
+                                          thrust::make_zip_iterator(::cuda::std::make_tuple(I.end (),  J.end()))   - 1,
+                                          thrust::make_zip_iterator(::cuda::std::make_tuple(I.begin(), J.begin())) + 1,
                                           IndexType(0),
                                           ::cuda::std::plus<IndexType>(),
                                           ::cuda::std::not_equal_to< ::cuda::std::tuple<IndexType,IndexType> >()) + 1;
@@ -143,10 +143,10 @@ void coo_spmm_helper(thrust::execution_policy<DerivedPolicy>& exec,
     // sum values with the same (i,j)
     thrust::reduce_by_key
     (exec,
-     thrust::make_zip_iterator(thrust::make_tuple(I.begin(), J.begin())),
-     thrust::make_zip_iterator(thrust::make_tuple(I.end(),   J.end())),
+     thrust::make_zip_iterator(::cuda::std::make_tuple(I.begin(), J.begin())),
+     thrust::make_zip_iterator(::cuda::std::make_tuple(I.end(),   J.end())),
      V.begin(),
-     thrust::make_zip_iterator(thrust::make_tuple(C.row_indices.begin(), C.column_indices.begin())),
+     thrust::make_zip_iterator(::cuda::std::make_tuple(C.row_indices.begin(), C.column_indices.begin())),
      C.values.begin(),
      ::cuda::std::equal_to< ::cuda::std::tuple<IndexType,IndexType> >(),
      reduce);
@@ -390,13 +390,13 @@ void multiply(thrust::execution_policy<DerivedPolicy>& exec,
         int num_reduced_entries =
             thrust::remove_if(exec,
                 thrust::make_zip_iterator(
-                  thrust::make_tuple(C_.row_indices.begin(), C_.column_indices.begin(), C_.values.begin())),
+                  ::cuda::std::make_tuple(C_.row_indices.begin(), C_.column_indices.begin(), C_.values.begin())),
                 thrust::make_zip_iterator(
-                  thrust::make_tuple(C_.row_indices.end(),   C_.column_indices.end(), C_.values.end())),
+                  ::cuda::std::make_tuple(C_.row_indices.end(),   C_.column_indices.end(), C_.values.end())),
                 C_.values.begin(),
                 thrust::placeholders::_1 == ValueType(0)) -
             thrust::make_zip_iterator(
-                thrust::make_tuple(C_.row_indices.begin(), C_.column_indices.begin(), C_.values.begin()));
+                ::cuda::std::make_tuple(C_.row_indices.begin(), C_.column_indices.begin(), C_.values.begin()));
 
         C_.resize(C_.num_rows, C_.num_cols, num_reduced_entries);
     }

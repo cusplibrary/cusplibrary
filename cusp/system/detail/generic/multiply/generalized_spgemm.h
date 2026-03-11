@@ -94,9 +94,9 @@ struct sparse_inner_functor
     _CCCL_HOST_DEVICE
     ValueType operator()(const Tuple& t) const
     {
-        IndexType row = thrust::get<0>(t);
-        IndexType col = thrust::get<1>(t);
-        ValueType sum = initialize(thrust::get<2>(t));
+        IndexType row = ::cuda::std::get<0>(t);
+        IndexType col = ::cuda::std::get<1>(t);
+        ValueType sum = initialize(::cuda::std::get<2>(t));
 
         int A_pos = A_row_offsets[row];
         int A_end = A_row_offsets[row + 1];
@@ -167,8 +167,8 @@ void generalized_spgemm(thrust::execution_policy<DerivedPolicy> &exec,
     InnerOp incomp_op(A, B, A_row_offsets, B_row_offsets, permutation, initialize, combine, reduce);
 
     thrust::transform(exec,
-                      thrust::make_zip_iterator(thrust::make_tuple(C.row_indices.begin(), C.column_indices.begin(), C.values.begin())),
-                      thrust::make_zip_iterator(thrust::make_tuple(C.row_indices.begin(), C.column_indices.begin(), C.values.begin())) + C.num_entries,
+                      thrust::make_zip_iterator(::cuda::std::make_tuple(C.row_indices.begin(), C.column_indices.begin(), C.values.begin())),
+                      thrust::make_zip_iterator(::cuda::std::make_tuple(C.row_indices.begin(), C.column_indices.begin(), C.values.begin())) + C.num_entries,
                       C.values.begin(),
                       incomp_op);
 }

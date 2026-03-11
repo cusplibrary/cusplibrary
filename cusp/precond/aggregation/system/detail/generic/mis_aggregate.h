@@ -86,9 +86,9 @@ void mis_to_aggregates(thrust::execution_policy<DerivedPolicy>& exec,
     ArrayType idx2(exec, N);
 
     CountingIterator count_begin(0);
-    ZipIterator1 x_iter(thrust::make_tuple(mis.begin(),  count_begin));
-    ZipIterator2 y_iter(thrust::make_tuple(mis1.begin(), idx1.begin()));
-    ZipIterator2 z_iter(thrust::make_tuple(mis2.begin(), idx2.begin()));
+    ZipIterator1 x_iter(::cuda::std::make_tuple(mis.begin(),  count_begin));
+    ZipIterator2 y_iter(::cuda::std::make_tuple(mis1.begin(), idx1.begin()));
+    ZipIterator2 z_iter(::cuda::std::make_tuple(mis2.begin(), idx2.begin()));
 
     ArrayViewType1 x(x_iter, x_iter + N);
     ArrayViewType2 y(y_iter, y_iter + N);

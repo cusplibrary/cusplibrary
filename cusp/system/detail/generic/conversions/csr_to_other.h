@@ -104,8 +104,8 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
 
     cusp::detail::temporary_array<IndexType, DerivedPolicy> diag_map(exec, src.num_entries);
     thrust::transform(exec,
-                      thrust::make_zip_iterator( thrust::make_tuple( row_indices.begin(), src.column_indices.begin() ) ),
-                      thrust::make_zip_iterator( thrust::make_tuple( row_indices.end()  , src.column_indices.end() ) )  ,
+                      thrust::make_zip_iterator( ::cuda::std::make_tuple( row_indices.begin(), src.column_indices.begin() ) ),
+                      thrust::make_zip_iterator( ::cuda::std::make_tuple( row_indices.end()  , src.column_indices.end() ) )  ,
                       diag_map.begin(),
                       cusp::detail::occupied_diagonal_functor<IndexType>(src.num_rows));
 
@@ -143,7 +143,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     thrust::scatter(exec,
                     src.values.begin(), src.values.end(),
                     thrust::make_transform_iterator(
-                        thrust::make_zip_iterator( thrust::make_tuple( row_indices.begin(), diag_map.begin() ) ),
+                        thrust::make_zip_iterator( ::cuda::std::make_tuple( row_indices.begin(), diag_map.begin() ) ),
                         cusp::detail::diagonal_index_functor<IndexType>(dst.values.pitch)),
                     dst.values.values.begin());
 
@@ -277,10 +277,10 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     thrust::fill(exec, dst.ell.values.values.begin(),         dst.ell.values.values.end(),         ValueType(0));
 
     thrust::copy_if(exec,
-                    thrust::make_zip_iterator( thrust::make_tuple( row_indices.begin(), src.column_indices.begin(), src.values.begin() ) ),
-                    thrust::make_zip_iterator( thrust::make_tuple( row_indices.end()  , src.column_indices.end()  , src.values.end()   ) ),
+                    thrust::make_zip_iterator( ::cuda::std::make_tuple( row_indices.begin(), src.column_indices.begin(), src.values.begin() ) ),
+                    thrust::make_zip_iterator( ::cuda::std::make_tuple( row_indices.end()  , src.column_indices.end()  , src.values.end()   ) ),
                     indices.begin(),
-                    thrust::make_zip_iterator( thrust::make_tuple( dst.coo.row_indices.begin(), dst.coo.column_indices.begin(), dst.coo.values.begin() ) ),
+                    thrust::make_zip_iterator( ::cuda::std::make_tuple( dst.coo.row_indices.begin(), dst.coo.column_indices.begin(), dst.coo.values.begin() ) ),
                     cusp::greater_equal_value<size_t>(num_entries_per_row) );
 
     // next, scale by pitch and add row index

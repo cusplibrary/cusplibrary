@@ -147,7 +147,7 @@ template<typename Closure, typename Size>
 void launch_closure(Closure f, Size num_blocks)
 {
     launch_calculator<Closure> calculator;
-    launch_closure(f, num_blocks, thrust::get<1>(calculator.with_variable_block_size()));
+    launch_closure(f, num_blocks, ::cuda::std::get<1>(calculator.with_variable_block_size()));
 } // end launch_closure()
 
 template<typename Closure, typename Size1, typename Size2>

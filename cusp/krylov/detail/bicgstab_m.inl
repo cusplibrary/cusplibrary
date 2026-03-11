@@ -176,15 +176,15 @@ struct KERNEL_ZB
     void operator()(Tuple t)
     {
         // compute \zeta_1^\sigma
-        ScalarType z1, b0, z0=thrust::get<2>(t), zm1 = thrust::get<3>(t),
-                           sigma = thrust::get<4>(t);
+        ScalarType z1, b0, z0=::cuda::std::get<2>(t), zm1 = ::cuda::std::get<3>(t),
+                           sigma = ::cuda::std::get<4>(t);
         z1 = z0*zm1*beta_m1/(beta_0*alpha_0*(zm1-z0)
                              +beta_m1*zm1*(ScalarType(1)-beta_0*sigma));
         b0 = beta_0*z1/z0;
         if ( abs(z1) < ScalarType(1e-30) )
             z1 = ScalarType(1e-18);
-        thrust::get<0>(t) = z1;
-        thrust::get<1>(t) = b0;
+        ::cuda::std::get<0>(t) = z1;
+        ::cuda::std::get<1>(t) = b0;
     }
 };
 
@@ -206,8 +206,8 @@ struct KERNEL_A
     void operator()(Tuple t)
     {
         // compute \alpha_0^\sigma
-        thrust::get<0>(t)=alpha_0/beta_0*thrust::get<2>(t)*thrust::get<3>(t)/
-                          thrust::get<1>(t);
+        ::cuda::std::get<0>(t)=alpha_0/beta_0*::cuda::std::get<2>(t)*::cuda::std::get<3>(t)/
+                          ::cuda::std::get<1>(t);
     }
 };
 
@@ -222,7 +222,7 @@ struct KERNEL_W
     _CCCL_HOST_DEVICE
     void operator()(Tuple t)
     {
-        thrust::get<0>(t)=thrust::get<1>(t)+beta_0*thrust::get<2>(t);
+        ::cuda::std::get<0>(t)=::cuda::std::get<1>(t)+beta_0*::cuda::std::get<2>(t);
     }
 };
 
@@ -240,8 +240,8 @@ struct KERNEL_S
     _CCCL_HOST_DEVICE
     void operator()(Tuple t)
     {
-        thrust::get<0>(t)=thrust::get<1>(t)
-                          +alpha_1*(thrust::get<0>(t)-chi_0*thrust::get<2>(t));
+        ::cuda::std::get<0>(t)=::cuda::std::get<1>(t)
+                          +alpha_1*(::cuda::std::get<0>(t)-chi_0*::cuda::std::get<2>(t));
     }
 };
 
@@ -257,9 +257,9 @@ struct KERNEL_CHIRHO
     _CCCL_HOST_DEVICE
     void operator()(Tuple t)
     {
-        ScalarType den = ScalarType(1.0)+chi_0*thrust::get<3>(t);
-        thrust::get<0>(t)=chi_0/den;
-        thrust::get<1>(t)=thrust::get<2>(t)/den;
+        ScalarType den = ScalarType(1.0)+chi_0*::cuda::std::get<3>(t);
+        ::cuda::std::get<0>(t)=chi_0/den;
+        ::cuda::std::get<1>(t)=::cuda::std::get<2>(t)/den;
     }
 };
 
@@ -306,7 +306,7 @@ struct KERNEL_XS
     _CCCL_HOST_DEVICE
     void operator()(Tuple t)
     {
-        int index = thrust::get<2>(t);
+        int index = ::cuda::std::get<2>(t);
         int N_s = index / N;
         int N_n = index % N;
 
@@ -315,11 +315,11 @@ struct KERNEL_XS
         ScalarType b0s = rp_beta_0_s[N_s];
         ScalarType c0s = rp_chi_0_s[N_s];
         ScalarType w1 = rp_w_1[N_n];
-        ScalarType s_0 = thrust::get<0>(t);
+        ScalarType s_0 = ::cuda::std::get<0>(t);
 
-        thrust::get<1>(t) = thrust::get<1>(t)-b0s*s_0
+        ::cuda::std::get<1>(t) = ::cuda::std::get<1>(t)-b0s*s_0
                             +c0s*rp_rho_0_s[N_s]*z1s*w1;
-        thrust::get<0>(t) = z1s*rp_rho_1_s[N_s]*rp_r_1[N_n]
+        ::cuda::std::get<0>(t) = z1s*rp_rho_1_s[N_s]*rp_r_1[N_n]
                             +rp_alpha_1_s[N_s]*
                             (s_0-c0s*rp_rho_0_s[N_s]
                              /b0s*(z1s*w1-rp_zeta_0_s[N_s]*rp_r_0[N_n]));
@@ -439,8 +439,8 @@ void compute_zb_m(InputIterator1 z_0_s_b, InputIterator1 z_0_s_e,
 {
     size_t N = z_0_s_e - z_0_s_b;
     thrust::for_each(
-        thrust::make_zip_iterator(thrust::make_tuple(z_1_s_b,b_0_s_b,z_0_s_b,z_m1_s_b,sig_b)),
-        thrust::make_zip_iterator(thrust::make_tuple(z_1_s_b,b_0_s_b,z_0_s_b,z_m1_s_b,sig_b))+N,
+        thrust::make_zip_iterator(::cuda::std::make_tuple(z_1_s_b,b_0_s_b,z_0_s_b,z_m1_s_b,sig_b)),
+        thrust::make_zip_iterator(::cuda::std::make_tuple(z_1_s_b,b_0_s_b,z_0_s_b,z_m1_s_b,sig_b))+N,
         cusp::krylov::bicg_detail::detail_m::KERNEL_ZB<ScalarType>(beta_m1,beta_0,alpha_0)
     );
 }
@@ -475,8 +475,8 @@ void compute_a_m(InputIterator1 z_0_s_b, InputIterator1 z_0_s_e,
 {
     size_t N = z_0_s_e - z_0_s_b;
     thrust::for_each(
-        thrust::make_zip_iterator(thrust::make_tuple(alpha_0_s_b,z_0_s_b,z_1_s_b,beta_0_s_b)),
-        thrust::make_zip_iterator(thrust::make_tuple(alpha_0_s_b,z_0_s_b,z_1_s_b,beta_0_s_b))+N,
+        thrust::make_zip_iterator(::cuda::std::make_tuple(alpha_0_s_b,z_0_s_b,z_1_s_b,beta_0_s_b)),
+        thrust::make_zip_iterator(::cuda::std::make_tuple(alpha_0_s_b,z_0_s_b,z_1_s_b,beta_0_s_b))+N,
         cusp::krylov::bicg_detail::detail_m::KERNEL_A<ScalarType>(beta_0,alpha_0));
 }
 
@@ -539,8 +539,8 @@ void compute_xs_m(const Array1& beta_0_s, const Array2& chi_0_s,
 
     // compute x
     thrust::for_each(
-        thrust::make_zip_iterator(thrust::make_tuple(s_0_s.begin(),x.begin(),count)),
-        thrust::make_zip_iterator(thrust::make_tuple(s_0_s.begin(),x.begin(),count))+N_t,
+        thrust::make_zip_iterator(::cuda::std::make_tuple(s_0_s.begin(),x.begin(),count)),
+        thrust::make_zip_iterator(::cuda::std::make_tuple(s_0_s.begin(),x.begin(),count))+N_t,
         cusp::krylov::bicg_detail::detail_m::KERNEL_XS<ScalarType>(N, raw_ptr_beta_0_s, raw_ptr_chi_0_s, raw_ptr_rho_0_s, raw_ptr_zeta_0_s, raw_ptr_alpha_1_s, raw_ptr_rho_1_s, raw_ptr_zeta_1_s, raw_ptr_r_0, raw_ptr_r_1, raw_ptr_w_1));
 }
 
@@ -552,8 +552,8 @@ void compute_w_1_m(InputIterator1 r_0_b, InputIterator1 r_0_e,
 {
     size_t N = r_0_e-r_0_b;
     thrust::for_each(
-        thrust::make_zip_iterator(thrust::make_tuple(w_1_b,r_0_b,As_b)),
-        thrust::make_zip_iterator(thrust::make_tuple(w_1_b,r_0_b,As_b))+N,
+        thrust::make_zip_iterator(::cuda::std::make_tuple(w_1_b,r_0_b,As_b)),
+        thrust::make_zip_iterator(::cuda::std::make_tuple(w_1_b,r_0_b,As_b))+N,
         cusp::krylov::bicg_detail::detail_m::KERNEL_W<ScalarType>(beta_0));
 }
 
@@ -578,8 +578,8 @@ void compute_r_1_m(InputIterator1 w_1_b, InputIterator1 w_1_e,
 {
     size_t N = w_1_e-w_1_b;
     thrust::for_each(
-        thrust::make_zip_iterator(thrust::make_tuple(r_1_b,w_1_b,Aw_b)),
-        thrust::make_zip_iterator(thrust::make_tuple(r_1_b,w_1_b,Aw_b))+N,
+        thrust::make_zip_iterator(::cuda::std::make_tuple(r_1_b,w_1_b,Aw_b)),
+        thrust::make_zip_iterator(::cuda::std::make_tuple(r_1_b,w_1_b,Aw_b))+N,
         cusp::krylov::bicg_detail::detail_m::KERNEL_W<ScalarType>(-chi_0));
 }
 
@@ -604,8 +604,8 @@ void compute_s_0_m(InputIterator1 r_1_b, InputIterator1 r_1_e,
 {
     size_t N = r_1_e-r_1_b;
     thrust::for_each(
-        thrust::make_zip_iterator(thrust::make_tuple(s_0_b,r_1_b,As_b)),
-        thrust::make_zip_iterator(thrust::make_tuple(s_0_b,r_1_b,As_b))+N,
+        thrust::make_zip_iterator(::cuda::std::make_tuple(s_0_b,r_1_b,As_b)),
+        thrust::make_zip_iterator(::cuda::std::make_tuple(s_0_b,r_1_b,As_b))+N,
         cusp::krylov::bicg_detail::detail_m::KERNEL_S<ScalarType>(alpha_1,chi_0));
 }
 
@@ -641,8 +641,8 @@ void compute_chirho_m(InputIterator1 rho_0_s_b,
 {
     size_t N = rho_0_s_e-rho_0_s_b;
     thrust::for_each(
-        thrust::make_zip_iterator(thrust::make_tuple(chi_0_s_b,rho_1_s_b,rho_0_s_b,sigma_b)),
-        thrust::make_zip_iterator(thrust::make_tuple(chi_0_s_b,rho_1_s_b,rho_0_s_b,sigma_b))+N,
+        thrust::make_zip_iterator(::cuda::std::make_tuple(chi_0_s_b,rho_1_s_b,rho_0_s_b,sigma_b)),
+        thrust::make_zip_iterator(::cuda::std::make_tuple(chi_0_s_b,rho_1_s_b,rho_0_s_b,sigma_b))+N,
         cusp::krylov::bicg_detail::detail_m::KERNEL_CHIRHO<ScalarType>(chi_0));
 }
 

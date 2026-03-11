@@ -473,16 +473,16 @@ void TestArray1dViewZipIterator(void)
     B[3] = 80;
 
     typedef typename cusp::array1d<int, MemorySpace>::iterator Iterator;
-    typedef typename thrust::tuple<Iterator,Iterator>          IteratorTuple;
+    typedef typename ::cuda::std::tuple<Iterator,Iterator>          IteratorTuple;
     typedef typename thrust::zip_iterator<IteratorTuple>       ZipIterator;
 
-    ZipIterator begin = thrust::make_zip_iterator(thrust::make_tuple(A.begin(), B.begin()));
+    ZipIterator begin = thrust::make_zip_iterator(::cuda::std::make_tuple(A.begin(), B.begin()));
 
     cusp::array1d_view<ZipIterator> V(begin, begin + 4);
 
     ASSERT_EQUAL(V.size(), 4);
-    ASSERT_EQUAL_QUIET(V[0], thrust::make_tuple(10,50));
-    ASSERT_EQUAL_QUIET(V[3], thrust::make_tuple(40,80));
+    ASSERT_EQUAL_QUIET(V[0], ::cuda::std::make_tuple(10,50));
+    ASSERT_EQUAL_QUIET(V[3], ::cuda::std::make_tuple(40,80));
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestArray1dViewZipIterator)
 

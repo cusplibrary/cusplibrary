@@ -72,8 +72,8 @@ struct AXPY
     _CCCL_HOST_DEVICE
     void operator()(Tuple t)
     {
-        thrust::get<1>(t) = alpha * thrust::get<0>(t) +
-                            thrust::get<1>(t);
+        ::cuda::std::get<1>(t) = alpha * ::cuda::std::get<0>(t) +
+                            ::cuda::std::get<1>(t);
     }
 };
 
@@ -90,8 +90,8 @@ struct AXPBY
     _CCCL_HOST_DEVICE
     void operator()(Tuple t)
     {
-        thrust::get<2>(t) = alpha * thrust::get<0>(t) +
-                            beta  * thrust::get<1>(t);
+        ::cuda::std::get<2>(t) = alpha * ::cuda::std::get<0>(t) +
+                            beta  * ::cuda::std::get<1>(t);
     }
 };
 
@@ -109,9 +109,9 @@ struct AXPBYPCZ
     _CCCL_HOST_DEVICE
     void operator()(Tuple t)
     {
-        thrust::get<3>(t) = alpha * thrust::get<0>(t) +
-                            beta  * thrust::get<1>(t) +
-                            gamma * thrust::get<2>(t);
+        ::cuda::std::get<3>(t) = alpha * ::cuda::std::get<0>(t) +
+                            beta  * ::cuda::std::get<1>(t) +
+                            gamma * ::cuda::std::get<2>(t);
     }
 };
 
@@ -189,8 +189,8 @@ void axpy(thrust::execution_policy<DerivedPolicy>& exec,
     size_t N = x.size();
 
     thrust::for_each(exec,
-                     thrust::make_zip_iterator(thrust::make_tuple(x.begin(), y.begin())),
-                     thrust::make_zip_iterator(thrust::make_tuple(x.begin(), y.begin())) + N,
+                     thrust::make_zip_iterator(::cuda::std::make_tuple(x.begin(), y.begin())),
+                     thrust::make_zip_iterator(::cuda::std::make_tuple(x.begin(), y.begin())) + N,
                      AXPY<ValueType>(alpha));
 }
 
@@ -214,8 +214,8 @@ void axpby(thrust::execution_policy<DerivedPolicy> &exec,
     size_t N = x.size();
 
     thrust::for_each(exec,
-                     thrust::make_zip_iterator(thrust::make_tuple(x.begin(), y.begin(), z.begin())),
-                     thrust::make_zip_iterator(thrust::make_tuple(x.begin(), y.begin(), z.begin())) + N,
+                     thrust::make_zip_iterator(::cuda::std::make_tuple(x.begin(), y.begin(), z.begin())),
+                     thrust::make_zip_iterator(::cuda::std::make_tuple(x.begin(), y.begin(), z.begin())) + N,
                      AXPBY<ValueType,ValueType>(alpha, beta));
 }
 
@@ -243,8 +243,8 @@ void axpbypcz(thrust::execution_policy<DerivedPolicy> &exec,
     size_t N = x.size();
 
     thrust::for_each(exec,
-                     thrust::make_zip_iterator(thrust::make_tuple(x.begin(), y.begin(), z.begin(), output.begin())),
-                     thrust::make_zip_iterator(thrust::make_tuple(x.begin(), y.begin(), z.begin(), output.begin())) + N,
+                     thrust::make_zip_iterator(::cuda::std::make_tuple(x.begin(), y.begin(), z.begin(), output.begin())),
+                     thrust::make_zip_iterator(::cuda::std::make_tuple(x.begin(), y.begin(), z.begin(), output.begin())) + N,
                      AXPBYPCZ<ValueType,ValueType,ValueType>(alpha, beta, gamma));
 }
 

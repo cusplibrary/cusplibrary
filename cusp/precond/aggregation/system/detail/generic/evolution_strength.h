@@ -86,9 +86,9 @@ struct filter_small_ratios_and_large_angles
     _CCCL_HOST_DEVICE
     ValueType operator()(const Tuple& t) const
     {
-        ValueType val = thrust::get<0>(t);
-        bool angle    = thrust::get<1>(t);
-        bool ratio    = thrust::get<2>(t);
+        ValueType val = ::cuda::std::get<0>(t);
+        bool angle    = ::cuda::std::get<1>(t);
+        bool ratio    = ::cuda::std::get<2>(t);
 
         return (angle || ratio) ? 0 : val;
     }
@@ -121,9 +121,9 @@ struct Atilde_functor
     _CCCL_HOST_DEVICE
     ValueType operator()(const Tuple& t) const
     {
-        int row = thrust::get<0>(t);
-        int col = thrust::get<1>(t);
-        ValueType val = thrust::get<2>(t);
+        int row = ::cuda::std::get<0>(t);
+        int col = ::cuda::std::get<1>(t);
+        ValueType val = ::cuda::std::get<2>(t);
         ValueType temp = row == col;
 
         return temp - (1.0 / rho_DinvA) * val;
@@ -146,8 +146,8 @@ struct incomplete_inner_functor
     {
         ValueType sum = 0.0;
 
-        int row   = thrust::get<0>(t);
-        int col   = thrust::get<1>(t);
+        int row   = ::cuda::std::get<0>(t);
+        int col   = ::cuda::std::get<1>(t);
 
         int A_pos = Ap[row];
         int A_end = Ap[row+1];
@@ -237,8 +237,8 @@ evolution_strength_of_connection(thrust::execution_policy<DerivedPolicy> &exec,
     cusp::indices_to_offsets(exec, A.row_indices, A_row_offsets);
 
     thrust::transform(exec,
-                      thrust::make_zip_iterator(thrust::make_tuple(A.row_indices.begin(), A.column_indices.begin(), Dinv_A_values.begin())),
-                      thrust::make_zip_iterator(thrust::make_tuple(A.row_indices.begin(), A.column_indices.begin(), Dinv_A_values.begin())) + M,
+                      thrust::make_zip_iterator(::cuda::std::make_tuple(A.row_indices.begin(), A.column_indices.begin(), Dinv_A_values.begin())),
+                      thrust::make_zip_iterator(::cuda::std::make_tuple(A.row_indices.begin(), A.column_indices.begin(), Dinv_A_values.begin())) + M,
                       Dinv_A_values.begin(),
                       Atilde_functor<ValueType>(rho_DinvA));
 
@@ -256,8 +256,8 @@ evolution_strength_of_connection(thrust::execution_policy<DerivedPolicy> &exec,
                 thrust::raw_pointer_cast(&Dinv_A_T_values[0]));
 
         thrust::transform(exec,
-                          thrust::make_zip_iterator(thrust::make_tuple(A.row_indices.begin(), A.column_indices.begin())),
-                          thrust::make_zip_iterator(thrust::make_tuple(A.row_indices.begin(), A.column_indices.begin())) + M,
+                          thrust::make_zip_iterator(::cuda::std::make_tuple(A.row_indices.begin(), A.column_indices.begin())),
+                          thrust::make_zip_iterator(::cuda::std::make_tuple(A.row_indices.begin(), A.column_indices.begin())) + M,
                           Atilde_values.begin(),
                           incomp_op);
     }
@@ -298,8 +298,8 @@ evolution_strength_of_connection(thrust::execution_policy<DerivedPolicy> &exec,
 
     // Set small ratios and large angles to weak
     thrust::transform(exec,
-                      thrust::make_zip_iterator(thrust::make_tuple(Atilde_values.begin(), neg_angle.begin(), weak_ratio.begin())),
-                      thrust::make_zip_iterator(thrust::make_tuple(Atilde_values.begin(), neg_angle.begin(), weak_ratio.begin())) + M,
+                      thrust::make_zip_iterator(::cuda::std::make_tuple(Atilde_values.begin(), neg_angle.begin(), weak_ratio.begin())),
+                      thrust::make_zip_iterator(::cuda::std::make_tuple(Atilde_values.begin(), neg_angle.begin(), weak_ratio.begin())) + M,
                       Atilde_values.begin(),
                       filter_small_ratios_and_large_angles<ValueType>());
 
@@ -338,7 +338,7 @@ evolution_strength_of_connection(thrust::execution_policy<DerivedPolicy> &exec,
                          Atilde_symmetric.begin(), Atilde_symmetric.end(),
                          thrust::make_transform_iterator(
                              thrust::make_zip_iterator(
-                                 thrust::make_tuple(A.row_indices.begin(), A.column_indices.begin())),
+                                 ::cuda::std::make_tuple(A.row_indices.begin(), A.column_indices.begin())),
                              cusp::equal_pair_functor<IndexType>()),
                          Atilde_symmetric.begin(),
                          _1 = ValueType(1), ::cuda::std::identity{});
@@ -356,10 +356,10 @@ evolution_strength_of_connection(thrust::execution_policy<DerivedPolicy> &exec,
 
     S.resize(N, N, M - num_zeros);
     thrust::copy_if(exec,
-                    thrust::make_zip_iterator(thrust::make_tuple(A.row_indices.begin(), A.column_indices.begin())),
-                    thrust::make_zip_iterator(thrust::make_tuple(A.row_indices.begin(), A.column_indices.begin())) + A.num_entries,
+                    thrust::make_zip_iterator(::cuda::std::make_tuple(A.row_indices.begin(), A.column_indices.begin())),
+                    thrust::make_zip_iterator(::cuda::std::make_tuple(A.row_indices.begin(), A.column_indices.begin())) + A.num_entries,
                     Atilde_symmetric.begin(),
-                    thrust::make_zip_iterator(thrust::make_tuple(S.row_indices.begin(), S.column_indices.begin())),
+                    thrust::make_zip_iterator(::cuda::std::make_tuple(S.row_indices.begin(), S.column_indices.begin())),
                     _1 != 0);
 }
 

@@ -757,7 +757,7 @@ struct norm_functor
  * \p sum_pair_functor is a function object. Specifically, it is an Adaptable Unary Function.
  *  If \c f(c) is an object of class <tt>sum_pair_functor<T></tt>, and \c x is an object
  *  of class \c ::cuda::std::tuple<T,T>, then <tt>f(x)</tt> returns
- *  <tt>thrust::get<0>(x) + thrust::get<1>(x)</tt>.
+ *  <tt>::cuda::std::get<0>(x) + ::cuda::std::get<1>(x)</tt>.
  *
  * \par Example
  * \code
@@ -776,8 +776,8 @@ struct norm_functor
  *    cusp::array1d<int, cusp::host_memory> v(5, 0);
  *
  *    // compute output vector as transform of tens
- *    thrust::transform(thrust::make_zip_iterator(thrust::make_tuple(ones.begin(), counting.begin())),
- *                      thrust::make_zip_iterator(thrust::make_tuple(ones.begin(), counting.begin())) + v.size(),
+ *    thrust::transform(thrust::make_zip_iterator(::cuda::std::make_tuple(ones.begin(), counting.begin())),
+ *                      thrust::make_zip_iterator(::cuda::std::make_tuple(ones.begin(), counting.begin())) + v.size(),
  *                      v.begin(),
  *                      cusp::sum_pair_functor<int>());
  *
@@ -801,7 +801,7 @@ struct sum_pair_functor : public detail::combine_tuple_base_functor< ::cuda::std
  * \p divide_pair_functor is a function object. Specifically, it is an Adaptable Unary Function.
  *  If \c f(c) is an object of class <tt>divide_pair_functor<T></tt>, and \c x is an object
  *  of class \c ::cuda::std::tuple<T,T>, then <tt>f(x)</tt> returns
- *  <tt>thrust::get<0>(x) / thrust::get<1>(x)</tt>.
+ *  <tt>::cuda::std::get<0>(x) / ::cuda::std::get<1>(x)</tt>.
  *
  * \par Example
  * \code
@@ -820,8 +820,8 @@ struct sum_pair_functor : public detail::combine_tuple_base_functor< ::cuda::std
  *    cusp::array1d<float, cusp::host_memory> v(5, 0);
  *
  *    // compute output vector as transform of tens
- *    thrust::transform(thrust::make_zip_iterator(thrust::make_tuple(counting.begin(), twos.begin())),
- *                      thrust::make_zip_iterator(thrust::make_tuple(counting.begin(), twos.begin())) + v.size(),
+ *    thrust::transform(thrust::make_zip_iterator(::cuda::std::make_tuple(counting.begin(), twos.begin())),
+ *                      thrust::make_zip_iterator(::cuda::std::make_tuple(counting.begin(), twos.begin())) + v.size(),
  *                      v.begin(),
  *                      cusp::divide_pair_functor<float>());
  *
@@ -844,7 +844,7 @@ struct divide_pair_functor : public detail::combine_tuple_base_functor< ::cuda::
  * \p equal_pair_functor is a function object. Specifically, it is an Adaptable Unary Function.
  *  If \c f(c) is an object of class <tt>equal_pair_functor<T></tt>, and \c x is an object
  *  of class \c ::cuda::std::tuple<T,T>, then <tt>f(x)</tt> returns
- *  <tt>thrust::get<0>(x) == thrust::get<1>(x)</tt>.
+ *  <tt>::cuda::std::get<0>(x) == ::cuda::std::get<1>(x)</tt>.
  *
  * \par Example
  * \code
@@ -863,8 +863,8 @@ struct divide_pair_functor : public detail::combine_tuple_base_functor< ::cuda::
  *    cusp::array1d<bool, cusp::host_memory> v(5, false);
  *
  *    // compute output vector as transform of tens
- *    thrust::transform(thrust::make_zip_iterator(thrust::make_tuple(counting.begin(), twos.begin())),
- *                      thrust::make_zip_iterator(thrust::make_tuple(counting.begin(), twos.begin())) + v.size(),
+ *    thrust::transform(thrust::make_zip_iterator(::cuda::std::make_tuple(counting.begin(), twos.begin())),
+ *                      thrust::make_zip_iterator(::cuda::std::make_tuple(counting.begin(), twos.begin())) + v.size(),
  *                      v.begin(),
  *                      cusp::equal_pair_functor<float>());
  *
@@ -887,7 +887,7 @@ struct equal_pair_functor : public detail::combine_tuple_base_functor< ::cuda::s
  * \p not_equal_pair_functor is a function object. Specifically, it is an Adaptable Unary Function.
  *  If \c f(c) is an object of class <tt>not_equal_pair_functor<T></tt>, and \c x is an object
  *  of class \c ::cuda::std::tuple<T,T>, then <tt>f(x)</tt> returns
- *  <tt>thrust::get<0>(x) != thrust::get<1>(x)</tt>.
+ *  <tt>::cuda::std::get<0>(x) != ::cuda::std::get<1>(x)</tt>.
  *
  * \par Example
  * \code
@@ -906,8 +906,8 @@ struct equal_pair_functor : public detail::combine_tuple_base_functor< ::cuda::s
  *    cusp::array1d<bool, cusp::host_memory> v(5, false);
  *
  *    // compute output vector as transform of tens
- *    thrust::transform(thrust::make_zip_iterator(thrust::make_tuple(counting.begin(), twos.begin())),
- *                      thrust::make_zip_iterator(thrust::make_tuple(counting.begin(), twos.begin())) + v.size(),
+ *    thrust::transform(thrust::make_zip_iterator(::cuda::std::make_tuple(counting.begin(), twos.begin())),
+ *                      thrust::make_zip_iterator(::cuda::std::make_tuple(counting.begin(), twos.begin())) + v.size(),
  *                      v.begin(),
  *                      cusp::not_equal_pair_functor<float>());
  *

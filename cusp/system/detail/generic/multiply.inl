@@ -28,6 +28,7 @@
 #include <cusp/system/detail/generic/multiply/spmv.h>
 
 #include <thrust/functional.h>
+#include <thrust/detail/type_traits/is_call_possible.h>
 
 namespace cusp
 {

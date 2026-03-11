@@ -87,10 +87,10 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     // copy valid entries to mixed COO/CSR format
     thrust::copy_if
      (exec,
-      thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, perm_column_indices_begin, perm_values_begin)),
-      thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, perm_column_indices_begin, perm_values_begin)) + src.values.num_entries,
+      thrust::make_zip_iterator(::cuda::std::make_tuple(row_indices_begin, perm_column_indices_begin, perm_values_begin)),
+      thrust::make_zip_iterator(::cuda::std::make_tuple(row_indices_begin, perm_column_indices_begin, perm_values_begin)) + src.values.num_entries,
       perm_values_begin,
-      thrust::make_zip_iterator(thrust::make_tuple(dst.row_indices.begin(), dst.column_indices.begin(), dst.values.begin())),
+      thrust::make_zip_iterator(::cuda::std::make_tuple(dst.row_indices.begin(), dst.column_indices.begin(), dst.values.begin())),
       thrust::placeholders::_1 != ValueType(0));
 }
 
@@ -132,10 +132,10 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     // copy valid entries to mixed COO/CSR format
     thrust::copy_if
      (exec,
-      thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, perm_column_indices_begin, perm_values_begin)),
-      thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, perm_column_indices_begin, perm_values_begin)) + src.values.num_entries,
+      thrust::make_zip_iterator(::cuda::std::make_tuple(row_indices_begin, perm_column_indices_begin, perm_values_begin)),
+      thrust::make_zip_iterator(::cuda::std::make_tuple(row_indices_begin, perm_column_indices_begin, perm_values_begin)) + src.values.num_entries,
       perm_values_begin,
-      thrust::make_zip_iterator(thrust::make_tuple(row_indices.begin(), dst.column_indices.begin(), dst.values.begin())),
+      thrust::make_zip_iterator(::cuda::std::make_tuple(row_indices.begin(), dst.column_indices.begin(), dst.values.begin())),
       thrust::placeholders::_1 != ValueType(0));
 
     // convert COO row_indices to CSR row_offsets

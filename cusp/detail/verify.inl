@@ -61,8 +61,8 @@ struct is_ell_entry
     _CCCL_HOST_DEVICE
     bool operator()(const Tuple& t) const
     {
-        IndexType n = thrust::get<0>(t);
-        IndexType j = thrust::get<1>(t);
+        IndexType n = ::cuda::std::get<0>(t);
+        IndexType j = ::cuda::std::get<1>(t);
         return (n % pitch < num_rows) && (j != invalid_index);
     }
 };
@@ -82,8 +82,8 @@ struct is_ell_entry_in_bounds
     _CCCL_HOST_DEVICE
     bool operator()(const Tuple& t) const
     {
-        IndexType n = thrust::get<0>(t);
-        IndexType j = thrust::get<1>(t);
+        IndexType n = ::cuda::std::get<0>(t);
+        IndexType j = ::cuda::std::get<1>(t);
         return (n % pitch < num_rows) && (j != invalid_index) && (j >= 0) && (j < num_cols);
     }
 };
@@ -285,12 +285,12 @@ bool is_valid_matrix(const MatrixType& A,
     size_t true_num_entries =
         thrust::count_if(thrust::make_zip_iterator
                          (
-                             thrust::make_tuple(thrust::counting_iterator<IndexType>(0),
+                             ::cuda::std::make_tuple(thrust::counting_iterator<IndexType>(0),
                                      A.column_indices.values.begin())
                          ),
                          thrust::make_zip_iterator
                          (
-                             thrust::make_tuple(thrust::counting_iterator<IndexType>(0),
+                             ::cuda::std::make_tuple(thrust::counting_iterator<IndexType>(0),
                                      A.column_indices.values.begin())
                          ) + A.column_indices.values.size(),
                          is_ell_entry<IndexType>(A.num_rows, A.column_indices.pitch, invalid_index));
@@ -308,12 +308,12 @@ bool is_valid_matrix(const MatrixType& A,
         size_t num_entries_in_bounds =
             thrust::count_if(thrust::make_zip_iterator
                              (
-                                 thrust::make_tuple(thrust::counting_iterator<IndexType>(0),
+                                 ::cuda::std::make_tuple(thrust::counting_iterator<IndexType>(0),
                                          A.column_indices.values.begin())
                              ),
                              thrust::make_zip_iterator
                              (
-                                 thrust::make_tuple(thrust::counting_iterator<IndexType>(0),
+                                 ::cuda::std::make_tuple(thrust::counting_iterator<IndexType>(0),
                                          A.column_indices.values.begin())
                              ) + A.column_indices.values.size(),
                              is_ell_entry_in_bounds<IndexType>(A.num_rows, A.num_cols, A.column_indices.pitch, invalid_index));

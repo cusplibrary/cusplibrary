@@ -42,10 +42,10 @@ struct process_mis_nodes
     _CCCL_HOST_DEVICE
     void operator()(Tuple t)
     {
-        if (thrust::get<1>(t) == 1)                     // undecided node
+        if (::cuda::std::get<1>(t) == 1)                     // undecided node
         {
-            if (thrust::get<0>(t) == thrust::get<3>(t)) // i == maximal_index
-                thrust::get<1>(t) = 2;                    // mis_node
+            if (::cuda::std::get<0>(t) == ::cuda::std::get<3>(t)) // i == maximal_index
+                ::cuda::std::get<1>(t) = 2;                    // mis_node
         }
     }
 };
@@ -56,10 +56,10 @@ struct process_non_mis_nodes
     _CCCL_HOST_DEVICE
     void operator()(Tuple t)
     {
-        if (thrust::get<0>(t) == 1)            // undecided node
+        if (::cuda::std::get<0>(t) == 1)            // undecided node
         {
-            if (thrust::get<1>(t) == 2)        // maximal_state == mis_node
-                thrust::get<0>(t) = 0;           // non_mis_node
+            if (::cuda::std::get<1>(t) == 2)        // maximal_state == mis_node
+                ::cuda::std::get<0>(t) = 0;           // non_mis_node
         }
     }
 };
@@ -116,9 +116,9 @@ void compute_mis_states(thrust::execution_policy<DerivedPolicy>& exec,
     CooView A(N, N, M, make_array1d_view(row_indices), make_array1d_view(column_indices), values);
 
     CountingIterator count_begin(0);
-    ZipIterator1 x_iter(thrust::make_tuple(states.begin(), random_values.begin(), count_begin));
-    ZipIterator2 y_iter(thrust::make_tuple(last_states.begin(), last_values.begin(), last_indices.begin()));
-    ZipIterator2 z_iter(thrust::make_tuple(maximal_states.begin(), maximal_values.begin(), maximal_indices.begin()));
+    ZipIterator1 x_iter(::cuda::std::make_tuple(states.begin(), random_values.begin(), count_begin));
+    ZipIterator2 y_iter(::cuda::std::make_tuple(last_states.begin(), last_values.begin(), last_indices.begin()));
+    ZipIterator2 z_iter(::cuda::std::make_tuple(maximal_states.begin(), maximal_values.begin(), maximal_indices.begin()));
 
     ArrayType1 x(x_iter, x_iter + N);
     ArrayType2 y(y_iter, y_iter + N);
@@ -142,11 +142,11 @@ void compute_mis_states(thrust::execution_policy<DerivedPolicy>& exec,
         // label local maxima as MIS nodes
         thrust::for_each(exec,
                          thrust::make_zip_iterator(
-                             thrust::make_tuple(
+                             ::cuda::std::make_tuple(
                                thrust::counting_iterator<IndexType>(0), states.begin(),
                                maximal_states.begin(), maximal_indices.begin())),
                          thrust::make_zip_iterator(
-                             thrust::make_tuple(
+                             ::cuda::std::make_tuple(
                                thrust::counting_iterator<IndexType>(0), states.begin(),
                                maximal_states.begin(), maximal_indices.begin())) + N,
                          process_mis_nodes());
@@ -154,9 +154,9 @@ void compute_mis_states(thrust::execution_policy<DerivedPolicy>& exec,
         // label k-ring neighbors of MIS nodes as non-MIS nodes
         thrust::for_each(exec,
                          thrust::make_zip_iterator(
-                             thrust::make_tuple(states.begin(), thrust::make_permutation_iterator(states.begin(), maximal_indices.begin()))),
+                             ::cuda::std::make_tuple(states.begin(), thrust::make_permutation_iterator(states.begin(), maximal_indices.begin()))),
                          thrust::make_zip_iterator(
-                             thrust::make_tuple(states.begin(), thrust::make_permutation_iterator(states.begin(), maximal_indices.begin()))) + N,
+                             ::cuda::std::make_tuple(states.begin(), thrust::make_permutation_iterator(states.begin(), maximal_indices.begin()))) + N,
                          process_non_mis_nodes());
 
         active_nodes = thrust::count(exec, states.begin(), states.end(), 1);
