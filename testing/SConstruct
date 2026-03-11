@@ -16,3 +16,6 @@ targets = 'device_{0}_{1}'.format(env['backend'], env['mode'])
 # invoke trivial_tests SConscript
 SConscript('SConscript', exports='env', variant_dir=targets, duplicate=False)
 Clean('.', targets)
+Clean('compile_test', targets)
+Clean('standard_test', targets)
+Clean('external_test', targets)

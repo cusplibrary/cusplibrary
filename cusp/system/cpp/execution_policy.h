@@ -25,9 +25,6 @@
 // get the execution policies definitions first
 #include <thrust/system/cpp/detail/execution_policy.h>
 
-// get the definition of par
-#include <thrust/system/cpp/detail/par.h>
-
 #include <cusp/system/detail/sequential/execution_policy.h>
 
 // now get all the algorithm definitions
