@@ -42,39 +42,39 @@ struct gen_op3 : public lapack_format {};
 template< typename LayoutFormat >
 struct Orientation {static const lapack_int type;};
 template<>
-const lapack_int Orientation<cusp::row_major>::type    = LAPACK_ROW_MAJOR;
+inline const lapack_int Orientation<cusp::row_major>::type    = LAPACK_ROW_MAJOR;
 template<>
-const lapack_int Orientation<cusp::column_major>::type = LAPACK_COL_MAJOR;
+inline const lapack_int Orientation<cusp::column_major>::type = LAPACK_COL_MAJOR;
 
 template< typename TriangularFormat >
 struct UpperOrLower {static const char type;};
 template<>
-const char UpperOrLower<upper>::type = 'U';
+inline const char UpperOrLower<upper>::type = 'U';
 template<>
-const char UpperOrLower<lower>::type = 'L';
+inline const char UpperOrLower<lower>::type = 'L';
 
 template< typename DiagonalFormat >
 struct UnitOrNonunit {static const char type;};
 template<>
-const char UnitOrNonunit<unit>::type    = 'U';
+inline const char UnitOrNonunit<unit>::type    = 'U';
 template<>
-const char UnitOrNonunit<nonunit>::type = 'N';
+inline const char UnitOrNonunit<nonunit>::type = 'N';
 
 template< typename JobType >
 struct EvalsOrEvecs {static const char type;};
 template<>
-const char EvalsOrEvecs<evals>::type = 'N';
+inline const char EvalsOrEvecs<evals>::type = 'N';
 template<>
-const char EvalsOrEvecs<evecs>::type = 'V';
+inline const char EvalsOrEvecs<evecs>::type = 'V';
 
 template< typename OpType >
 struct GenEigOp {static const char type;};
 template<>
-const char GenEigOp<gen_op1>::type = 1;
+inline const char GenEigOp<gen_op1>::type = 1;
 template<>
-const char GenEigOp<gen_op2>::type = 2;
+inline const char GenEigOp<gen_op2>::type = 2;
 template<>
-const char GenEigOp<gen_op3>::type = 3;
+inline const char GenEigOp<gen_op3>::type = 3;
 
 } // end namespace lapack
 } // end namespace cusp
