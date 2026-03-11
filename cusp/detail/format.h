@@ -54,8 +54,8 @@ struct row_major_base : public orientation<is_transpose> {};
 template<typename is_transpose>
 struct column_major_base : public orientation<is_transpose> {};
 
-typedef row_major_base<thrust::detail::false_type>    row_major;
-typedef column_major_base<thrust::detail::false_type> column_major;
+typedef row_major_base<::cuda::std::false_type>    row_major;
+typedef column_major_base<::cuda::std::false_type> column_major;
 
 } // end namespace cusp
 

@@ -60,7 +60,7 @@ struct is_valid_dia_entry
     is_valid_dia_entry(IndexType num_cols) : num_cols(num_cols) {}
 
     _CCCL_HOST_DEVICE
-    bool operator()(const thrust::tuple<IndexType, ValueType>& t) const
+    bool operator()(const ::cuda::std::tuple<IndexType, ValueType>& t) const
     {
         IndexType col = thrust::get<0>(t);
         ValueType val = thrust::get<1>(t);
@@ -87,7 +87,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     typedef typename SourceType::diagonal_offsets_array_type::const_iterator                                   ConstElementIterator;
     typedef thrust::transform_iterator<cusp::modulus_value<IndexType>, IndexIterator>                          ModulusIterator;
     typedef thrust::permutation_iterator<ConstElementIterator,ModulusIterator>                                 OffsetsPermIterator;
-    typedef thrust::tuple<OffsetsPermIterator, RowIndexIterator>                                               IteratorTuple;
+    typedef ::cuda::std::tuple<OffsetsPermIterator, RowIndexIterator>                                               IteratorTuple;
     typedef thrust::zip_iterator<IteratorTuple>                                                                ZipIterator;
     typedef thrust::transform_iterator<cusp::sum_pair_functor<IndexType>, ZipIterator>                         ColumnIndexIterator;
 
@@ -113,7 +113,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
 
     // copy_if filter if both value != 0 and column in [0, num_cols)
     // The padding for incomplete diagonals should be excluded even if the value is non-zero
-    typedef thrust::zip_iterator<thrust::tuple<ColumnIndexIterator, PermValueIterator>> ColValIterator;
+    typedef thrust::zip_iterator<::cuda::std::tuple<ColumnIndexIterator, PermValueIterator>> ColValIterator;
     ColValIterator col_val_begin(thrust::make_tuple(column_indices_begin, perm_values_begin));
 
     thrust::copy_if
@@ -144,7 +144,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     typedef typename SourceType::diagonal_offsets_array_type::const_iterator                     ConstElementIterator;
     typedef thrust::transform_iterator<cusp::modulus_value<IndexType>, IndexIterator>            ModulusIterator;
     typedef thrust::permutation_iterator<ConstElementIterator,ModulusIterator>                   OffsetsPermIterator;
-    typedef thrust::tuple<OffsetsPermIterator, RowIndexIterator>                                 IteratorTuple;
+    typedef ::cuda::std::tuple<OffsetsPermIterator, RowIndexIterator>                                 IteratorTuple;
     typedef thrust::zip_iterator<IteratorTuple>                                                  ZipIterator;
     typedef thrust::transform_iterator<cusp::sum_pair_functor<IndexType>, ZipIterator>           ColumnIndexIterator;
 
@@ -201,7 +201,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     typedef typename cusp::array1d<IndexType,MemorySpace>::const_iterator               ConstElementIterator;
     typedef thrust::transform_iterator<cusp::divide_value<IndexType>, IndexIterator>    DivideIterator;
     typedef thrust::permutation_iterator<ConstElementIterator,DivideIterator>           OffsetsPermIterator;
-    typedef thrust::tuple<OffsetsPermIterator, RowIndexIterator>                        IteratorTuple;
+    typedef ::cuda::std::tuple<OffsetsPermIterator, RowIndexIterator>                        IteratorTuple;
     typedef thrust::zip_iterator<IteratorTuple>                                         ZipIterator;
     typedef thrust::transform_iterator<cusp::sum_pair_functor<IndexType>, ZipIterator>  ColumnIndexIterator;
 

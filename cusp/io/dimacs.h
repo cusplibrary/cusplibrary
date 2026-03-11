@@ -54,7 +54,7 @@ namespace io
  * int main(void)
  * {
  *     // read matrix stored in A.mtx into a coo_matrix
- *     thrust::tuple<int,int> nodes;
+ *     ::cuda::std::tuple<int,int> nodes;
  *     cusp::coo_matrix<int, float, cusp::device_memory> A;
  *     nodes = cusp::io::read_dimacs_file(A, "A.dimacs");
  *
@@ -66,7 +66,7 @@ namespace io
  * \see \p write_dimacs_stream
  */
 template <typename Matrix>
-thrust::tuple<typename Matrix::index_type, typename Matrix::index_type>
+::cuda::std::tuple<typename Matrix::index_type, typename Matrix::index_type>
 read_dimacs_file(Matrix& mtx, const std::string& filename);
 
 /**
@@ -89,7 +89,7 @@ read_dimacs_file(Matrix& mtx, const std::string& filename);
  * int main(void)
  * {
  *     // read matrix stored in A.mtx into a coo_matrix
- *     thrust::tuple<int,int> nodes;
+ *     ::cuda::std::tuple<int,int> nodes;
  *     cusp::coo_matrix<int, float, cusp::device_memory> A;
  *     nodes = cusp::io::read_dimacs_stream(A, std::cin);
  *
@@ -101,7 +101,7 @@ read_dimacs_file(Matrix& mtx, const std::string& filename);
  * \see \p write_dimacs_stream
  */
 template <typename Matrix, typename Stream>
-thrust::tuple<typename Matrix::index_type, typename Matrix::index_type>
+::cuda::std::tuple<typename Matrix::index_type, typename Matrix::index_type>
 read_dimacs_stream(Matrix& mtx, Stream& input);
 
 
@@ -132,7 +132,7 @@ read_dimacs_stream(Matrix& mtx, Stream& input);
  *     A(3,0) =  0;  A(3,1) =  0;  A(3,2) =  0;  A(3,3) =  0;
  *
  *     // save A into Dimacs file
- *     thrust::tuple<int,int> nodes(0,3);
+ *     ::cuda::std::tuple<int,int> nodes(0,3);
  *     cusp::io::write_dimacs_file(A, nodes, "A.dimacs");
  *
  *     return 0;
@@ -144,7 +144,7 @@ read_dimacs_stream(Matrix& mtx, Stream& input);
  */
 template <typename Matrix>
 void write_dimacs_file(const Matrix& mtx,
-                       const thrust::tuple<typename Matrix::index_type,typename Matrix::index_type>& t,
+                       const ::cuda::std::tuple<typename Matrix::index_type,typename Matrix::index_type>& t,
                        const std::string& filename);
 
 /**
@@ -172,7 +172,7 @@ void write_dimacs_file(const Matrix& mtx,
  *     A(3,0) =  0;  A(3,1) =  0;  A(3,2) =  0;  A(3,3) =  0;
  *
  *     // save A into Dimacs file
- *     thrust::tuple<int,int> nodes(0,3);
+ *     ::cuda::std::tuple<int,int> nodes(0,3);
  *     cusp::io::write_dimacs_stream(A, nodes, std::cout);
  *
  *     return 0;
@@ -184,7 +184,7 @@ void write_dimacs_file(const Matrix& mtx,
  */
 template <typename Matrix, typename Stream>
 void write_dimacs_stream(const Matrix& mtx,
-                         const thrust::tuple<typename Matrix::index_type,typename Matrix::index_type>& t,
+                         const ::cuda::std::tuple<typename Matrix::index_type,typename Matrix::index_type>& t,
                          Stream& output);
 
 /*! \}

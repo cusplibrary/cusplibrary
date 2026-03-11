@@ -104,7 +104,7 @@ void smooth_prolongator(thrust::execution_policy<DerivedPolicy> &exec,
                                               thrust::make_zip_iterator(thrust::make_tuple(temp.row_indices.begin(), temp.column_indices.begin())) + 1,
                                               IndexType(0),
                                               ::cuda::std::plus<IndexType>(),
-                                              ::cuda::std::not_equal_to< thrust::tuple<IndexType,IndexType> >()) + 1;
+                                              ::cuda::std::not_equal_to< ::cuda::std::tuple<IndexType,IndexType> >()) + 1;
 
         // allocate space for output
         P.resize(temp.num_rows, temp.num_cols, NNZ);
@@ -116,7 +116,7 @@ void smooth_prolongator(thrust::execution_policy<DerivedPolicy> &exec,
                               temp.values.begin(),
                               thrust::make_zip_iterator(thrust::make_tuple(P.row_indices.begin(), P.column_indices.begin())),
                               P.values.begin(),
-                              ::cuda::std::equal_to< thrust::tuple<IndexType,IndexType> >(),
+                              ::cuda::std::equal_to< ::cuda::std::tuple<IndexType,IndexType> >(),
                               ::cuda::std::plus<ValueType>());
     }
     else

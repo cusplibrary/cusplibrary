@@ -68,7 +68,7 @@ void multiply(thrust::execution_policy<DerivedPolicy> &exec,
     typedef typename LinearOperator::diagonal_offsets_array_type::const_iterator        ConstElementIterator;
     typedef thrust::transform_iterator<cusp::modulus_value<IndexType>, IndexIterator>   ModulusIterator;
     typedef thrust::permutation_iterator<ConstElementIterator,ModulusIterator>          OffsetsPermIterator;
-    typedef thrust::tuple<OffsetsPermIterator, RowIndexIterator>                        IteratorTuple;
+    typedef ::cuda::std::tuple<OffsetsPermIterator, RowIndexIterator>                        IteratorTuple;
     typedef thrust::zip_iterator<IteratorTuple>                                         ZipIterator;
     typedef thrust::transform_iterator<cusp::sum_pair_functor<IndexType>, ZipIterator> ColumnIndexIterator;
 

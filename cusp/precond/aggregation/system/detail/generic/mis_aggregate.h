@@ -52,7 +52,7 @@ void mis_to_aggregates(thrust::execution_policy<DerivedPolicy>& exec,
 
     typedef typename ArrayType1::const_iterator                          ConstArrayIterator;
 
-    typedef thrust::tuple<IndexType,IndexType>                           Tuple;
+    typedef ::cuda::std::tuple<IndexType,IndexType>                           Tuple;
     typedef typename thrust::counting_iterator<IndexType>                CountingIterator;
 
     typedef typename MatrixType::row_indices_array_type::const_view      RowView;
@@ -60,12 +60,12 @@ void mis_to_aggregates(thrust::execution_policy<DerivedPolicy>& exec,
     typedef typename cusp::constant_array<Tuple>                         ValueView;
     typedef typename cusp::coo_matrix_view<RowView,ColumnView,ValueView> CooView;
 
-    typedef thrust::tuple<ConstArrayIterator,CountingIterator>           IteratorTuple1;
+    typedef ::cuda::std::tuple<ConstArrayIterator,CountingIterator>           IteratorTuple1;
     typedef typename thrust::zip_iterator<IteratorTuple1>                ZipIterator1;
     typedef typename cusp::array1d_view<ZipIterator1>                    ArrayViewType1;
 
     typedef typename ArrayType::iterator                                 ArrayIterator;
-    typedef thrust::tuple<ArrayIterator,ArrayIterator>                   IteratorTuple2;
+    typedef ::cuda::std::tuple<ArrayIterator,ArrayIterator>                   IteratorTuple2;
     typedef typename thrust::zip_iterator<IteratorTuple2>                ZipIterator2;
     typedef typename cusp::array1d_view<ZipIterator2>                    ArrayViewType2;
 

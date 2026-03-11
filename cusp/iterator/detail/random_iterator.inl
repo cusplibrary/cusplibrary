@@ -99,7 +99,7 @@ struct random_integer_functor
 
     // source: http://www.concentric.net/~ttwang/tech/inthash.htm
     _CCCL_HOST_DEVICE
-    T hash(const IndexType i, thrust::detail::false_type) const
+    T hash(const IndexType i, ::cuda::std::false_type) const
     {
         unsigned int h = (unsigned int) i ^ (unsigned int) seed;
         h = ~h + (h << 15);
@@ -112,7 +112,7 @@ struct random_integer_functor
     }
 
     _CCCL_HOST_DEVICE
-    T hash(const IndexType i, thrust::detail::true_type) const
+    T hash(const IndexType i, ::cuda::std::true_type) const
     {
         unsigned long long h = (unsigned long long) i ^ (unsigned long long) seed;
         h = ~h + (h << 21);

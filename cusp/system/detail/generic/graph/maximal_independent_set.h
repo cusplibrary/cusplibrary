@@ -85,13 +85,13 @@ void compute_mis_states(thrust::execution_policy<DerivedPolicy>& exec,
     typedef typename cusp::detail::temporary_array<RandomType,    DerivedPolicy>::iterator RandomIterator;
     typedef typename cusp::detail::temporary_array<IndexType,     DerivedPolicy>::iterator IndexIterator;
 
-    typedef typename thrust::tuple<NodeStateType,RandomType,IndexType>        Tuple1;
-    typedef thrust::tuple<StatesIterator,RandomIterator,CountingIterator>     IteratorTuple1;
+    typedef typename ::cuda::std::tuple<NodeStateType,RandomType,IndexType>        Tuple1;
+    typedef ::cuda::std::tuple<StatesIterator,RandomIterator,CountingIterator>     IteratorTuple1;
     typedef typename thrust::zip_iterator<IteratorTuple1>                     ZipIterator1;
     typedef typename cusp::array1d_view<ZipIterator1>                         ArrayType1;
 
-    typedef typename thrust::tuple<NodeStateType,RandomType,IndexType>        Tuple2;
-    typedef thrust::tuple<StatesIterator,RandomIterator,IndexIterator>        IteratorTuple2;
+    typedef typename ::cuda::std::tuple<NodeStateType,RandomType,IndexType>        Tuple2;
+    typedef ::cuda::std::tuple<StatesIterator,RandomIterator,IndexIterator>        IteratorTuple2;
     typedef typename thrust::zip_iterator<IteratorTuple2>                     ZipIterator2;
     typedef typename cusp::array1d_view<ZipIterator2>                         ArrayType2;
 

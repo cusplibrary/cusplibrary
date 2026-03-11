@@ -135,7 +135,7 @@ void coo_spmm_helper(thrust::execution_policy<DerivedPolicy>& exec,
                                           thrust::make_zip_iterator(thrust::make_tuple(I.begin(), J.begin())) + 1,
                                           IndexType(0),
                                           ::cuda::std::plus<IndexType>(),
-                                          ::cuda::std::not_equal_to< thrust::tuple<IndexType,IndexType> >()) + 1;
+                                          ::cuda::std::not_equal_to< ::cuda::std::tuple<IndexType,IndexType> >()) + 1;
 
     // allocate space for output
     C.resize(A.num_rows, B.num_cols, NNZ);
@@ -148,7 +148,7 @@ void coo_spmm_helper(thrust::execution_policy<DerivedPolicy>& exec,
      V.begin(),
      thrust::make_zip_iterator(thrust::make_tuple(C.row_indices.begin(), C.column_indices.begin())),
      C.values.begin(),
-     ::cuda::std::equal_to< thrust::tuple<IndexType,IndexType> >(),
+     ::cuda::std::equal_to< ::cuda::std::tuple<IndexType,IndexType> >(),
      reduce);
 }
 
