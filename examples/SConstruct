@@ -18,3 +18,5 @@ print(directories)
 for dir in directories:
   # invoke trivial_tests SConscript
   SConscript(dir + '/SConscript', exports='env', duplicate=False)
+
+env.Clean(env.Dir('.'), 'A.mtx')
