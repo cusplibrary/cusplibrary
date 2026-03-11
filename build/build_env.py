@@ -207,10 +207,6 @@ def getLINKFLAGS(mode, backend, hostspblas, LINK):
     # if platform.platform()[:6] == 'Darwin':
     #   result.append('-m32')
 
-    # TODO make this portable
-    if backend == 'ocelot':
-        result.append(os.popen('OcelotConfig -l').read().split())
-
     if hostspblas == 'mkl':
         result.append('-fopenmp')
 
@@ -234,7 +230,7 @@ def environment(buildDir, includeDir):
     vars.Add(EnumVariable('backend',
                           help='The parallel device backend to target',
                           default='cuda',
-                          allowed_values=('cuda', 'omp', 'ocelot')))
+                          allowed_values=('cuda', 'omp')))
 
     # add a variable to handle RELEASE/DEBUG mode
     vars.Add(EnumVariable('mode',
@@ -296,9 +292,8 @@ def environment(buildDir, includeDir):
     env.Tool(compiler_define, toolpath=[buildDir])
 
     # get the preprocessor define to use for the backend
-    backend_define = {'cuda'  : 'THRUST_DEVICE_SYSTEM_CUDA',
-                      'omp'   : 'THRUST_DEVICE_SYSTEM_OMP',
-                      'ocelot': 'THRUST_DEVICE_SYSTEM_CUDA'
+    backend_define = {'cuda': 'THRUST_DEVICE_SYSTEM_CUDA',
+                      'omp' : 'THRUST_DEVICE_SYSTEM_OMP',
                      }[env['backend']]
     env.Append(CFLAGS   = ['-DTHRUST_DEVICE_SYSTEM=%s' % backend_define])
     env.Append(CXXFLAGS = ['-DTHRUST_DEVICE_SYSTEM=%s' % backend_define])
@@ -358,12 +353,7 @@ def environment(buildDir, includeDir):
     if env['mode'] == 'coverage':
         env.Append(LIBS=['gcov'])
 
-    if env['backend'] == 'ocelot':
-        if os.name == 'posix':
-            env.Append(LIBPATH=['/usr/local/lib'])
-        else:
-            raise ValueError("Unknown OS.  What is the Ocelot library path?")
-    elif env['backend'] == 'omp':
+    if env['backend'] == 'omp':
         if os.name == 'posix':
             if compiler_define == 'gcc' :
                 env.Append(LIBS=['gomp'])
