@@ -13,7 +13,7 @@ const char random_file_name[] = "test_93298409283221.dimacs";
 void TestReadDimacsFileCoordinateRealGeneral(void)
 {
     // load matrix
-    thrust::tuple<int,int> nodes(-1,-1);
+    ::cuda::std::tuple<int,int> nodes(-1,-1);
     cusp::coo_matrix<int, float, cusp::host_memory> coo;
     nodes = cusp::io::read_dimacs_file(coo, "../data/test/coordinate_real_general.dimacs");
 
@@ -49,8 +49,8 @@ void TestReadDimacsFileCoordinateRealGeneral(void)
     E(4,4) =  1.200e+01;
 
     ASSERT_EQUAL(D == E, true);
-    ASSERT_EQUAL(thrust::get<0>(nodes), 0);
-    ASSERT_EQUAL(thrust::get<1>(nodes), 3);
+    ASSERT_EQUAL(::cuda::std::get<0>(nodes), 0);
+    ASSERT_EQUAL(::cuda::std::get<1>(nodes), 3);
 }
 DECLARE_UNITTEST(TestReadDimacsFileCoordinateRealGeneral);
 
@@ -58,7 +58,7 @@ template <typename MemorySpace>
 void TestReadDimacsFileToCsrMatrix(void)
 {
     // load matrix
-    thrust::tuple<int,int> nodes(-1,-1);
+    ::cuda::std::tuple<int,int> nodes(-1,-1);
     cusp::csr_matrix<int, float, MemorySpace> csr;
     nodes = cusp::io::read_dimacs_file(csr, "../data/test/coordinate_real_general.dimacs");
 
@@ -94,8 +94,8 @@ void TestReadDimacsFileToCsrMatrix(void)
     E(4,4) =  1.200e+01;
 
     ASSERT_EQUAL(D == E, true);
-    ASSERT_EQUAL(thrust::get<0>(nodes), 0);
-    ASSERT_EQUAL(thrust::get<1>(nodes), 3);
+    ASSERT_EQUAL(::cuda::std::get<0>(nodes), 0);
+    ASSERT_EQUAL(::cuda::std::get<1>(nodes), 3);
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestReadDimacsFileToCsrMatrix);
 
@@ -120,13 +120,13 @@ void TestWriteDimacsFileCoordinateRealGeneral(void)
     // convert to coo
     cusp::coo_matrix<int, int, MemorySpace> coo(E);
 
-    thrust::tuple<int,int> nodes(0,3);
+    ::cuda::std::tuple<int,int> nodes(0,3);
 
     // write coo to file
     cusp::io::write_dimacs_file(coo, nodes, random_file_name);
 
-    thrust::get<0>(nodes) = -1;
-    thrust::get<1>(nodes) = -1;
+    ::cuda::std::get<0>(nodes) = -1;
+    ::cuda::std::get<1>(nodes) = -1;
 
     // read file back
     nodes = cusp::io::read_dimacs_file(coo, random_file_name);
@@ -136,8 +136,8 @@ void TestWriteDimacsFileCoordinateRealGeneral(void)
     // compare to initial matrix
     cusp::array2d<int, cusp::host_memory> D(coo);
     ASSERT_EQUAL(D == E, true);
-    ASSERT_EQUAL(thrust::get<0>(nodes), 0);
-    ASSERT_EQUAL(thrust::get<1>(nodes), 3);
+    ASSERT_EQUAL(::cuda::std::get<0>(nodes), 0);
+    ASSERT_EQUAL(::cuda::std::get<1>(nodes), 3);
 }
 DECLARE_HOST_DEVICE_UNITTEST(TestWriteDimacsFileCoordinateRealGeneral);
 

@@ -64,8 +64,8 @@ struct array2d_map_functor
     _CCCL_HOST_DEVICE
     IndexType operator()(const Tuple& t) const
     {
-        IndexType row = thrust::get<0>(t);
-        IndexType col = thrust::get<1>(t);
+        IndexType row = ::cuda::std::get<0>(t);
+        IndexType col = ::cuda::std::get<1>(t);
 
         return cusp::detail::index_of(row, col, pitch, Orientation());
     }
@@ -108,7 +108,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
                     src.values.begin(), src.values.end(),
                     thrust::make_transform_iterator(
                         thrust::make_zip_iterator(
-                            thrust::make_tuple(src.row_indices.begin(), src.column_indices.begin())),
+                            ::cuda::std::make_tuple(src.row_indices.begin(), src.column_indices.begin())),
                         array2d_map_functor<IndexType,Orientation>(dst.pitch)),
                     dst.values.begin());
 }
@@ -162,8 +162,8 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     // compute number of occupied diagonals and enumerate them
     cusp::detail::temporary_array<IndexType, DerivedPolicy> diag_map(exec, src.num_entries);
     thrust::transform(exec,
-                      thrust::make_zip_iterator( thrust::make_tuple( src.row_indices.begin(), src.column_indices.begin() ) ),
-                      thrust::make_zip_iterator( thrust::make_tuple( src.row_indices.end()  , src.column_indices.end() ) )  ,
+                      thrust::make_zip_iterator( ::cuda::std::make_tuple( src.row_indices.begin(), src.column_indices.begin() ) ),
+                      thrust::make_zip_iterator( ::cuda::std::make_tuple( src.row_indices.end()  , src.column_indices.end() ) )  ,
                       diag_map.begin(),
                       cusp::detail::occupied_diagonal_functor<IndexType>(src.num_rows));
 
@@ -200,7 +200,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     thrust::scatter(exec,
                     src.values.begin(), src.values.end(),
                     thrust::make_transform_iterator(
-                        thrust::make_zip_iterator( thrust::make_tuple( src.row_indices.begin(), diag_map.begin() ) ),
+                        thrust::make_zip_iterator( ::cuda::std::make_tuple( src.row_indices.begin(), diag_map.begin() ) ),
                         cusp::detail::diagonal_index_functor<IndexType>(dst.values.pitch)),
                     dst.values.values.begin());
 
@@ -338,10 +338,10 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     // write tail of each row to COO portion
     thrust::copy_if
     (exec,
-     thrust::make_zip_iterator( thrust::make_tuple( src.row_indices.begin(), src.column_indices.begin(), src.values.begin() ) ),
-     thrust::make_zip_iterator( thrust::make_tuple( src.row_indices.end()  , src.column_indices.end()  , src.values.end()   ) ),
+     thrust::make_zip_iterator( ::cuda::std::make_tuple( src.row_indices.begin(), src.column_indices.begin(), src.values.begin() ) ),
+     thrust::make_zip_iterator( ::cuda::std::make_tuple( src.row_indices.end()  , src.column_indices.end()  , src.values.end()   ) ),
      indices.begin(),
-     thrust::make_zip_iterator( thrust::make_tuple( dst.coo.row_indices.begin(), dst.coo.column_indices.begin(), dst.coo.values.begin() ) ),
+     thrust::make_zip_iterator( ::cuda::std::make_tuple( dst.coo.row_indices.begin(), dst.coo.column_indices.begin(), dst.coo.values.begin() ) ),
      cusp::greater_equal_value<size_t>(num_entries_per_row) );
 
     assert(dst.ell.column_indices.pitch == dst.ell.values.pitch);
@@ -369,11 +369,11 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
                        dst.ell.values.values.begin(),
                        cusp::less_value<size_t>(dst.ell.values.values.size()));
 //// fused version appears to be slightly slower
-//  thrust::scatter_if(thrust::make_zip_iterator(thrust::make_tuple(src.column_indices.begin(), src.values.begin())),
-//                     thrust::make_zip_iterator(thrust::make_tuple(src.column_indices.end(),   src.values.end())),
+//  thrust::scatter_if(thrust::make_zip_iterator(::cuda::std::make_tuple(src.column_indices.begin(), src.values.begin())),
+//                     thrust::make_zip_iterator(::cuda::std::make_tuple(src.column_indices.end(),   src.values.end())),
 //                     indices.begin(),
 //                     indices.begin(),
-//                     thrust::make_zip_iterator(thrust::make_tuple(dst.ell.column_indices.values.begin(), dst.ell.values.values.begin())),
+//                     thrust::make_zip_iterator(::cuda::std::make_tuple(dst.ell.column_indices.values.begin(), dst.ell.values.values.begin())),
 //                     less_than<size_t>(dst.ell.column_indices.values.size()));
 }
 

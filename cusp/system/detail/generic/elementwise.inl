@@ -139,8 +139,8 @@ void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
     typedef ::cuda::std::tuple<ValueIterator1, TransValueIterator, IndexIterator>                         TransValueTuple;
     typedef typename cusp::join_iterator<TransValueTuple>::iterator                                  JoinValueIterator;
 
-    ZipIterator1 A_tuples(thrust::make_tuple(A.row_indices.begin(), A.column_indices.begin()));
-    ZipIterator2 B_tuples(thrust::make_tuple(B.row_indices.begin(), B.column_indices.begin()));
+    ZipIterator1 A_tuples(::cuda::std::make_tuple(A.row_indices.begin(), A.column_indices.begin()));
+    ZipIterator2 B_tuples(::cuda::std::make_tuple(B.row_indices.begin(), B.column_indices.begin()));
 
     cusp::detail::temporary_array<IndexType, DerivedPolicy> indices(exec, num_entries);
     thrust::sequence(exec, indices.begin(), indices.end());
@@ -176,7 +176,7 @@ void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
                           combined_tuples,
                           combined_tuples + num_entries,
                           combined_values,
-                          thrust::make_zip_iterator(thrust::make_tuple(C.row_indices.begin(), C.column_indices.begin())),
+                          thrust::make_zip_iterator(::cuda::std::make_tuple(C.row_indices.begin(), C.column_indices.begin())),
                           C.values.begin(),
                           ::cuda::std::equal_to< ::cuda::std::tuple<IndexType,IndexType> >(),
                           BinaryOp());
@@ -199,9 +199,9 @@ void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
 
     // compute unique number of nonzeros in the output
     IndexType C_nnz = thrust::inner_product(exec,
-                                            thrust::make_zip_iterator(thrust::make_tuple(rows.begin(), cols.begin())),
-                                            thrust::make_zip_iterator(thrust::make_tuple(rows.end (),  cols.end()))   - 1,
-                                            thrust::make_zip_iterator(thrust::make_tuple(rows.begin(), cols.begin())) + 1,
+                                            thrust::make_zip_iterator(::cuda::std::make_tuple(rows.begin(), cols.begin())),
+                                            thrust::make_zip_iterator(::cuda::std::make_tuple(rows.end (),  cols.end()))   - 1,
+                                            thrust::make_zip_iterator(::cuda::std::make_tuple(rows.begin(), cols.begin())) + 1,
                                             IndexType(1),
                                             ::cuda::std::plus<IndexType>(),
                                             ::cuda::std::not_equal_to< ::cuda::std::tuple<IndexType,IndexType> >());
@@ -211,10 +211,10 @@ void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
 
     // sum values with the same (i,j)
     thrust::reduce_by_key(exec,
-                          thrust::make_zip_iterator(thrust::make_tuple(rows.begin(), cols.begin())),
-                          thrust::make_zip_iterator(thrust::make_tuple(rows.end(),   cols.end())),
+                          thrust::make_zip_iterator(::cuda::std::make_tuple(rows.begin(), cols.begin())),
+                          thrust::make_zip_iterator(::cuda::std::make_tuple(rows.end(),   cols.end())),
                           vals.begin(),
-                          thrust::make_zip_iterator(thrust::make_tuple(C.row_indices.begin(), C.column_indices.begin())),
+                          thrust::make_zip_iterator(::cuda::std::make_tuple(C.row_indices.begin(), C.column_indices.begin())),
                           C.values.begin(),
                           ::cuda::std::equal_to< ::cuda::std::tuple<IndexType,IndexType> >(),
                           BinaryOp());
@@ -230,13 +230,13 @@ void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
             thrust::remove_if(
                 exec,
                 thrust::make_zip_iterator(
-                    thrust::make_tuple(C.row_indices.begin(), C.column_indices.begin(), C.values.begin())),
+                    ::cuda::std::make_tuple(C.row_indices.begin(), C.column_indices.begin(), C.values.begin())),
                 thrust::make_zip_iterator(
-                    thrust::make_tuple(C.row_indices.end(),   C.column_indices.end(), C.values.end())),
+                    ::cuda::std::make_tuple(C.row_indices.end(),   C.column_indices.end(), C.values.end())),
                 C.values.begin(),
                 _1 == ValueType(0)) -
                 thrust::make_zip_iterator(
-                  thrust::make_tuple(C.row_indices.begin(), C.column_indices.begin(), C.values.begin()));
+                  ::cuda::std::make_tuple(C.row_indices.begin(), C.column_indices.begin(), C.values.begin()));
 
         C.resize(C.num_rows, C.num_cols, num_reduced_entries);
     }

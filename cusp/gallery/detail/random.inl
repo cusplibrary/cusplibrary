@@ -52,9 +52,9 @@ void random(MatrixType& matrix,
     // sort indices by (row,column)
     coo.sort_by_row_and_column();
 
-    size_t num_entries = thrust::unique(thrust::make_zip_iterator(thrust::make_tuple(coo.row_indices.begin(), coo.column_indices.begin())),
-                                        thrust::make_zip_iterator(thrust::make_tuple(coo.row_indices.end(),   coo.column_indices.end())))
-                         - thrust::make_zip_iterator(thrust::make_tuple(coo.row_indices.begin(), coo.column_indices.begin()));
+    size_t num_entries = thrust::unique(thrust::make_zip_iterator(::cuda::std::make_tuple(coo.row_indices.begin(), coo.column_indices.begin())),
+                                        thrust::make_zip_iterator(::cuda::std::make_tuple(coo.row_indices.end(),   coo.column_indices.end())))
+                         - thrust::make_zip_iterator(::cuda::std::make_tuple(coo.row_indices.begin(), coo.column_indices.begin()));
 
     coo.resize(m, n, num_entries);
 

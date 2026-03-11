@@ -52,9 +52,9 @@ struct is_strong_connection
     _CCCL_HOST_DEVICE
     bool operator()(const Tuple& t) const
     {
-        NormType nAij = cusp::abs(thrust::get<0>(t));
-        NormType nAii = cusp::abs(thrust::get<1>(t));
-        NormType nAjj = cusp::abs(thrust::get<2>(t));
+        NormType nAij = cusp::abs(::cuda::std::get<0>(t));
+        NormType nAii = cusp::abs(::cuda::std::get<1>(t));
+        NormType nAjj = cusp::abs(::cuda::std::get<2>(t));
 
         // square everything to eliminate the sqrt()
         return (nAij*nAij) >= ((theta*theta) * (nAii * nAjj));
@@ -82,10 +82,10 @@ void symmetric_strength_of_connection(thrust::execution_policy<DerivedPolicy> &e
 
     // this is just zipping up (A[i,j],A[i,i],A[j,j]) and applying is_strong_connection to each tuple
     thrust::transform(exec,
-                      thrust::make_zip_iterator(thrust::make_tuple(A.values.begin(),
+                      thrust::make_zip_iterator(::cuda::std::make_tuple(A.values.begin(),
                                                 thrust::make_permutation_iterator(diagonal.begin(), A.row_indices.begin()),
                                                 thrust::make_permutation_iterator(diagonal.begin(), A.column_indices.begin()))),
-                      thrust::make_zip_iterator(thrust::make_tuple(A.values.begin(),
+                      thrust::make_zip_iterator(::cuda::std::make_tuple(A.values.begin(),
                                                 thrust::make_permutation_iterator(diagonal.begin(), A.row_indices.begin()),
                                                 thrust::make_permutation_iterator(diagonal.begin(), A.column_indices.begin()))) + A.num_entries,
                       copyflags.begin(),
@@ -100,10 +100,10 @@ void symmetric_strength_of_connection(thrust::execution_policy<DerivedPolicy> &e
 
     // copy strong connections to output
     // thrust::copy_if(exec,
-    //                 thrust::make_zip_iterator(thrust::make_tuple(A.row_indices.begin(), A.column_indices.begin(), A.values.begin())),
-    //                 thrust::make_zip_iterator(thrust::make_tuple(A.row_indices.begin(), A.column_indices.begin(), A.values.begin())) + A.num_entries,
+    //                 thrust::make_zip_iterator(::cuda::std::make_tuple(A.row_indices.begin(), A.column_indices.begin(), A.values.begin())),
+    //                 thrust::make_zip_iterator(::cuda::std::make_tuple(A.row_indices.begin(), A.column_indices.begin(), A.values.begin())) + A.num_entries,
     //                 copyflags.begin(),
-    //                 thrust::make_zip_iterator(thrust::make_tuple(S.row_indices.begin(), S.column_indices.begin(), S.values.begin())),
+    //                 thrust::make_zip_iterator(::cuda::std::make_tuple(S.row_indices.begin(), S.column_indices.begin(), S.values.begin())),
     //                 ::cuda::std::identity{});
 
     // WAR for runtime error "cudaFuncGetAttributes: invalid device function"

@@ -135,8 +135,8 @@ struct hilbert_transform_2d
     _CCCL_DEVICE
     double operator()(const Tuple& t) const
     {
-        const double x = thrust::get<0>(t);
-        const double y = thrust::get<1>(t);
+        const double x = ::cuda::std::get<0>(t);
+        const double y = ::cuda::std::get<1>(t);
 
         int level;
         unsigned int key[2], c[2], temp, state;
@@ -170,9 +170,9 @@ struct hilbert_transform_3d
     _CCCL_DEVICE
     double operator()(const Tuple& t) const
     {
-        const double x = thrust::get<0>(t);
-        const double y = thrust::get<1>(t);
-        const double z = thrust::get<2>(t);
+        const double x = ::cuda::std::get<0>(t);
+        const double y = ::cuda::std::get<1>(t);
+        const double z = ::cuda::std::get<2>(t);
 
         int level;
         unsigned int key[2], c[3], temp, state;
@@ -235,8 +235,8 @@ void hilbert_curve(cuda::execution_policy<DerivedPolicy>& exec,
     if( dims == 2 )
     {
         thrust::transform(exec,
-                          thrust::make_zip_iterator(thrust::make_tuple(coord.column(0).begin(), coord.column(1).begin())),
-                          thrust::make_zip_iterator(thrust::make_tuple(coord.column(0).end(), coord.column(1).end())),
+                          thrust::make_zip_iterator(::cuda::std::make_tuple(coord.column(0).begin(), coord.column(1).begin())),
+                          thrust::make_zip_iterator(::cuda::std::make_tuple(coord.column(0).end(), coord.column(1).end())),
                           hilbert_keys.begin(), hilbert_transform_2d());
     }
     else
@@ -249,8 +249,8 @@ void hilbert_curve(cuda::execution_policy<DerivedPolicy>& exec,
             throw cusp::invalid_input_exception("Hilbert coordinates should be in the range [0,1]");
 
         thrust::transform(exec,
-                          thrust::make_zip_iterator(thrust::make_tuple(coord.column(0).begin(), coord.column(1).begin(), coord.column(2).begin())),
-                          thrust::make_zip_iterator(thrust::make_tuple(coord.column(0).end(), coord.column(1).end(), coord.column(2).end())),
+                          thrust::make_zip_iterator(::cuda::std::make_tuple(coord.column(0).begin(), coord.column(1).begin(), coord.column(2).begin())),
+                          thrust::make_zip_iterator(::cuda::std::make_tuple(coord.column(0).end(), coord.column(1).end(), coord.column(2).end())),
                           hilbert_keys.begin(), hilbert_transform_3d());
     }
 

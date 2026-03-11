@@ -12,7 +12,7 @@ void TestJoinIterator(void)
     typedef typename Vector::value_type T;
     typedef thrust::counting_iterator<T> CountingIterator;
     typedef thrust::constant_iterator<T> ConstantIterator;
-    typedef typename cusp::join_iterator< thrust::tuple<CountingIterator,ConstantIterator,CountingIterator> >::iterator JoinIterator;
+    typedef typename cusp::join_iterator< ::cuda::std::tuple<CountingIterator,ConstantIterator,CountingIterator> >::iterator JoinIterator;
 
     // construct join_iterator
     JoinIterator iter = cusp::make_join_iterator(5, 5, CountingIterator(0), ConstantIterator(9), CountingIterator(0));

@@ -39,10 +39,10 @@ struct jacobi_relax_functor
     _CCCL_HOST_DEVICE
     ValueType operator()(const Tuple& t)
     {
-        const ValueType x = thrust::get<0>(t);
-        const ValueType d = thrust::get<1>(t);
-        const ValueType b = thrust::get<2>(t);
-        const ValueType y = thrust::get<3>(t);
+        const ValueType x = ::cuda::std::get<0>(t);
+        const ValueType d = ::cuda::std::get<1>(t);
+        const ValueType b = ::cuda::std::get<2>(t);
+        const ValueType y = ::cuda::std::get<3>(t);
 
         return x + omega * (b - y) / d;
     }
@@ -80,8 +80,8 @@ void jacobi<ValueType,MemorySpace>
     cusp::multiply(A, x, temp);
 
     // x <- x + omega * D^-1 * (b - y)
-    thrust::transform(thrust::make_zip_iterator(thrust::make_tuple(x.begin(), diagonal.begin(), b.begin(), temp.begin())),
-                      thrust::make_zip_iterator(thrust::make_tuple(x.end(),   diagonal.end(),   b.end(),   temp.end())),
+    thrust::transform(thrust::make_zip_iterator(::cuda::std::make_tuple(x.begin(), diagonal.begin(), b.begin(), temp.begin())),
+                      thrust::make_zip_iterator(::cuda::std::make_tuple(x.end(),   diagonal.end(),   b.end(),   temp.end())),
                       x.begin(),
                       detail::jacobi_relax_functor<ValueType>(omega));
 }

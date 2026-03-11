@@ -71,8 +71,8 @@ void sort_by_row(thrust::execution_policy<DerivedPolicy> &exec,
     // use permutation to reorder the values
     thrust::gather(exec,
                    permutation.begin(), permutation.end(),
-                   thrust::make_zip_iterator(thrust::make_tuple(temp1.begin(),   temp2.begin())),
-                   thrust::make_zip_iterator(thrust::make_tuple(column_indices.begin(), values.begin())));
+                   thrust::make_zip_iterator(::cuda::std::make_tuple(temp1.begin(),   temp2.begin())),
+                   thrust::make_zip_iterator(::cuda::std::make_tuple(column_indices.begin(), values.begin())));
 }
 
 template <typename DerivedPolicy, typename ArrayType1, typename ArrayType2, typename ArrayType3>

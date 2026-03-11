@@ -107,7 +107,7 @@ void generalized_spmv(thrust::execution_policy<DerivedPolicy> &exec,
 
     ModulusIterator gather_indices_begin(IndexIterator(0), cusp::modulus_value<IndexType>(A.values.num_cols));
     OffsetsPermIterator offsets_begin(A.diagonal_offsets.begin(), gather_indices_begin);
-    ZipIterator offset_modulus_tuple(thrust::make_tuple(offsets_begin, row_indices_begin));
+    ZipIterator offset_modulus_tuple(::cuda::std::make_tuple(offsets_begin, row_indices_begin));
     ColumnIndexIterator column_indices_begin(offset_modulus_tuple, cusp::sum_pair_functor<IndexType>());
 
     PermIndexIterator   perm_indices_begin(IndexIterator(0),   PermFunctor(A.values.num_rows, A.values.num_cols, A.values.pitch));
@@ -121,7 +121,7 @@ void generalized_spmv(thrust::execution_policy<DerivedPolicy> &exec,
                           row_indices_begin, row_indices_begin + A.values.num_entries,
                           thrust::make_transform_iterator(
                               thrust::make_zip_iterator(
-                                  thrust::make_tuple(
+                                  ::cuda::std::make_tuple(
                                       perm_values_begin,
                                       thrust::make_permutation_iterator(x.begin(),
                                               thrust::make_transform_iterator(column_indices_begin,
@@ -184,7 +184,7 @@ void generalized_spmv(thrust::execution_policy<DerivedPolicy> &exec,
                           thrust::make_permutation_iterator(
                               thrust::make_transform_iterator(
                                   thrust::make_zip_iterator(
-                                      thrust::make_tuple(
+                                      ::cuda::std::make_tuple(
                                           A.values.values.begin(),
                                           thrust::make_permutation_iterator(x.begin(),
                                               thrust::make_transform_iterator(A.column_indices.values.begin(),
@@ -234,12 +234,12 @@ void generalized_spmv(thrust::execution_policy<DerivedPolicy> &exec,
     typename IndexArray::iterator rows_end;
     typename ValueArray::iterator vals_end;
 
-    thrust::tie(rows_end, vals_end) =
+    ::cuda::std::tie(rows_end, vals_end) =
         thrust::reduce_by_key(exec,
                               A.row_indices.begin(), A.row_indices.end(),
                               thrust::make_transform_iterator(
                                   thrust::make_zip_iterator(
-                                      thrust::make_tuple(
+                                      ::cuda::std::make_tuple(
                                           A.values.begin(),
                                           thrust::make_permutation_iterator(x.begin(), A.column_indices.begin()))),
                                   cusp::detail::combine_tuple_base_functor<BinaryFunction1>()),

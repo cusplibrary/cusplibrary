@@ -132,7 +132,7 @@ read_dimacs_stream(cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& coo,
     // sort indices by (row,column)
     coo.sort_by_row_and_column();
 
-    return thrust::tie(src,snk);
+    return ::cuda::std::tie(src,snk);
 }
 
 template <typename Matrix, typename Stream, typename Format>
@@ -158,8 +158,8 @@ void write_dimacs_stream(const cusp::coo_matrix<IndexType,ValueType,cusp::host_m
                          Stream& output)
 {
     output << "p max " << coo.num_rows << " " << coo.num_entries << std::endl;
-    output << "n " << (thrust::get<0>(t) + 1) << " s" << std::endl;
-    output << "n " << (thrust::get<1>(t) + 1) << " t" << std::endl;
+    output << "n " << (::cuda::std::get<0>(t) + 1) << " s" << std::endl;
+    output << "n " << (::cuda::std::get<1>(t) + 1) << " t" << std::endl;
 
     for(size_t i = 0; i < coo.num_entries; i++)
     {

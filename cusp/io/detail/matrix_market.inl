@@ -149,7 +149,7 @@ read_input_size(Stream& input)
     std::istringstream(tokens[1]) >> num_cols;
     std::istringstream(tokens[2]) >> num_entries;
 
-    return thrust::tie(num_rows, num_cols, num_entries);
+    return ::cuda::std::tie(num_rows, num_cols, num_entries);
 }
 
 template <typename MatrixType, typename Stream>
@@ -303,7 +303,7 @@ void read_coordinate_stream(cusp::csr_matrix<IndexType,ValueType,cusp::host_memo
     typedef cusp::coo_matrix_view<IndexView,IndexView,ValueView> CooView;
 
     size_t num_rows, num_cols, num_entries;
-    thrust::tie(num_rows, num_cols, num_entries) = read_input_size(input);
+    ::cuda::std::tie(num_rows, num_cols, num_entries) = read_input_size(input);
 
     cusp::array1d<IndexType,cusp::host_memory> row_indices(num_entries);
     csr.resize(num_rows, num_cols, num_entries);
@@ -321,7 +321,7 @@ template <typename IndexType, typename ValueType, typename Stream>
 void read_coordinate_stream(cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& coo, Stream& input, const matrix_market_banner& banner)
 {
     size_t num_rows, num_cols, num_entries;
-    thrust::tie(num_rows, num_cols, num_entries) = read_input_size(input);
+    ::cuda::std::tie(num_rows, num_cols, num_entries) = read_input_size(input);
 
     coo.resize(num_rows, num_cols, num_entries);
     read_coordinate_stream(coo, input, banner, cusp::host_memory(), cusp::coo_format());

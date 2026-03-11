@@ -62,10 +62,10 @@ struct coo_tuple_comp_functor
     _CCCL_HOST_DEVICE
     bool operator()(const Tuple1& t1, const Tuple2& t2) const
     {
-        const IndexType i1 = thrust::get<0>(t1);
-        const IndexType j1 = thrust::get<1>(t1);
-        const IndexType i2 = thrust::get<0>(t2);
-        const IndexType j2 = thrust::get<1>(t2);
+        const IndexType i1 = ::cuda::std::get<0>(t1);
+        const IndexType j1 = ::cuda::std::get<1>(t1);
+        const IndexType i2 = ::cuda::std::get<0>(t2);
+        const IndexType j2 = ::cuda::std::get<1>(t2);
 
         return (i1 < i2) || ((i1 == i2) && (j1 < j2));
     }
@@ -80,7 +80,7 @@ struct combine_tuple_base_functor
     _CCCL_HOST_DEVICE
     auto operator()(const Tuple& t) const
     {
-        return op(thrust::get<0>(t),thrust::get<1>(t));
+        return op(::cuda::std::get<0>(t),::cuda::std::get<1>(t));
     }
 };
 
@@ -98,8 +98,8 @@ struct occupied_diagonal_functor
     _CCCL_HOST_DEVICE
     IndexType operator()(const Tuple& t) const
     {
-        const IndexType i = thrust::get<0>(t);
-        const IndexType j = thrust::get<1>(t);
+        const IndexType i = ::cuda::std::get<0>(t);
+        const IndexType j = ::cuda::std::get<1>(t);
 
         return j - i + num_rows;
     }
@@ -137,8 +137,8 @@ struct diagonal_index_functor
     _CCCL_HOST_DEVICE
     IndexType operator()(const Tuple& t) const
     {
-        const IndexType row  = thrust::get<0>(t);
-        const IndexType diag = thrust::get<1>(t);
+        const IndexType row  = ::cuda::std::get<0>(t);
+        const IndexType diag = ::cuda::std::get<1>(t);
 
         return (diag * pitch) + row;
     }
@@ -156,8 +156,8 @@ struct is_valid_ell_index_functor
     _CCCL_HOST_DEVICE
     bool operator()(const Tuple& t) const
     {
-        const IndexType i = thrust::get<0>(t);
-        const IndexType j = thrust::get<1>(t);
+        const IndexType i = ::cuda::std::get<0>(t);
+        const IndexType j = ::cuda::std::get<1>(t);
 
         return i < num_rows && j != IndexType(-1);
     }
@@ -176,9 +176,9 @@ struct is_valid_coo_index_functor
     _CCCL_HOST_DEVICE
     bool operator()(const Tuple& t) const
     {
-        const IndexType i = thrust::get<0>(t);
-        const IndexType j = thrust::get<1>(t);
-        const ValueType value = thrust::get<2>(t);
+        const IndexType i = ::cuda::std::get<0>(t);
+        const IndexType j = ::cuda::std::get<1>(t);
+        const ValueType value = ::cuda::std::get<2>(t);
 
         return ( i > IndexType(-1) && i < num_rows ) &&
                ( j > IndexType(-1) && j < num_cols ) &&

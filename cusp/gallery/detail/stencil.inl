@@ -36,12 +36,12 @@ struct inside_grid_helper
     _CCCL_HOST_DEVICE
     static bool inside_grid(StencilPoint point, GridDimension grid, IndexType index)
     {
-        IndexType x = index % thrust::get<i>(grid) + thrust::get<i>(thrust::get<0>(point));
+        IndexType x = index % ::cuda::std::get<i>(grid) + ::cuda::std::get<i>(::cuda::std::get<0>(point));
 
-        if (x < 0 || x >= thrust::get<i>(grid))
+        if (x < 0 || x >= ::cuda::std::get<i>(grid))
             return false;
         else
-            return inside_grid_helper<StencilPoint,GridDimension,IndexType,i + 1,n>::inside_grid(point, grid, index / thrust::get<i>(grid));
+            return inside_grid_helper<StencilPoint,GridDimension,IndexType,i + 1,n>::inside_grid(point, grid, index / ::cuda::std::get<i>(grid));
     }
 };
 
@@ -59,7 +59,7 @@ template <typename StencilPoint, typename GridDimension, typename IndexType>
 _CCCL_HOST_DEVICE
 bool inside_grid(StencilPoint point, GridDimension grid, IndexType index)
 {
-    return inside_grid_helper<StencilPoint,GridDimension,IndexType, 0, thrust::tuple_size<GridDimension>::value >::inside_grid(point, grid, index);
+    return inside_grid_helper<StencilPoint,GridDimension,IndexType, 0, ::cuda::std::tuple_size<GridDimension>::value >::inside_grid(point, grid, index);
 }
 
 
@@ -68,7 +68,7 @@ struct tuple_for_each_helper
 {
     static UnaryFunction for_each(Tuple& t, UnaryFunction f)
     {
-        f(thrust::get<i>(t));
+        f(::cuda::std::get<i>(t));
 
         return tuple_for_each_helper<Tuple,UnaryFunction,i + 1,size>::for_each(t, f);
     }
@@ -86,7 +86,7 @@ struct tuple_for_each_helper<Tuple,UnaryFunction,size,size>
 template <typename Tuple, typename UnaryFunction>
 UnaryFunction tuple_for_each(Tuple& t, UnaryFunction f)
 {
-    return tuple_for_each_helper<Tuple, UnaryFunction, 0, thrust::tuple_size<Tuple>::value>::for_each(t, f);
+    return tuple_for_each_helper<Tuple, UnaryFunction, 0, ::cuda::std::tuple_size<Tuple>::value>::for_each(t, f);
 }
 
 
@@ -127,7 +127,7 @@ struct fill_diagonal_entries
     ValueType operator()(IndexType index)
     {
         if (inside_grid(point, grid, index))
-            return thrust::get<1>(point);
+            return ::cuda::std::get<1>(point);
         else
             return ValueType(0);
     }
@@ -144,7 +144,7 @@ void generate_matrix_from_stencil(cusp::dia_matrix<IndexType,ValueType,MemorySpa
                                   const cusp::array1d<StencilPoint,MemorySpace>& stencil,
                                   const GridDimension& grid)
 {
-    IndexType num_dimensions = thrust::tuple_size<GridDimension>::value;
+    IndexType num_dimensions = ::cuda::std::tuple_size<GridDimension>::value;
 
     cusp::array1d<IndexType,MemorySpace> grid_indices(num_dimensions);
     detail::unpack_tuple(grid, grid_indices.begin());
@@ -162,7 +162,7 @@ void generate_matrix_from_stencil(cusp::dia_matrix<IndexType,ValueType,MemorySpa
     for(size_t i = 0; i < offsets.size(); i++)
     {
         cusp::array1d<IndexType,MemorySpace> stencil_indices(num_dimensions);
-        detail::unpack_tuple(thrust::get<0>(stencil_host[i]), stencil_indices.begin());
+        detail::unpack_tuple(::cuda::std::get<0>(stencil_host[i]), stencil_indices.begin());
 
         for(IndexType j = 0; j < num_dimensions; j++)
         {

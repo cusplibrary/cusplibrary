@@ -62,8 +62,8 @@ struct is_valid_dia_entry
     _CCCL_HOST_DEVICE
     bool operator()(const ::cuda::std::tuple<IndexType, ValueType>& t) const
     {
-        IndexType col = thrust::get<0>(t);
-        ValueType val = thrust::get<1>(t);
+        IndexType col = ::cuda::std::get<0>(t);
+        ValueType val = ::cuda::std::get<1>(t);
         return col >= IndexType(0) && col < num_cols && val != ValueType(0);
     }
 };
@@ -105,7 +105,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
 
     ModulusIterator gather_indices_begin(IndexIterator(0), cusp::modulus_value<IndexType>(src.values.num_cols));
     OffsetsPermIterator offsets_begin(src.diagonal_offsets.begin(), gather_indices_begin);
-    ZipIterator offset_modulus_tuple(thrust::make_tuple(offsets_begin, row_indices_begin));
+    ZipIterator offset_modulus_tuple(::cuda::std::make_tuple(offsets_begin, row_indices_begin));
     ColumnIndexIterator column_indices_begin(offset_modulus_tuple, cusp::sum_pair_functor<IndexType>());
 
     PermIndexIterator   perm_indices_begin(IndexIterator(0),   PermFunctor(src.values.num_rows, src.values.num_cols, src.values.pitch));
@@ -114,14 +114,14 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
     // copy_if filter if both value != 0 and column in [0, num_cols)
     // The padding for incomplete diagonals should be excluded even if the value is non-zero
     typedef thrust::zip_iterator<::cuda::std::tuple<ColumnIndexIterator, PermValueIterator>> ColValIterator;
-    ColValIterator col_val_begin(thrust::make_tuple(column_indices_begin, perm_values_begin));
+    ColValIterator col_val_begin(::cuda::std::make_tuple(column_indices_begin, perm_values_begin));
 
     thrust::copy_if
      (exec,
-      thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, column_indices_begin, perm_values_begin)),
-      thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, column_indices_begin, perm_values_begin)) + src.values.num_entries,
+      thrust::make_zip_iterator(::cuda::std::make_tuple(row_indices_begin, column_indices_begin, perm_values_begin)),
+      thrust::make_zip_iterator(::cuda::std::make_tuple(row_indices_begin, column_indices_begin, perm_values_begin)) + src.values.num_entries,
       col_val_begin,
-      thrust::make_zip_iterator(thrust::make_tuple(dst.row_indices.begin(), dst.column_indices.begin(), dst.values.begin())),
+      thrust::make_zip_iterator(::cuda::std::make_tuple(dst.row_indices.begin(), dst.column_indices.begin(), dst.values.begin())),
       is_valid_dia_entry<IndexType, ValueType>((IndexType)src.num_cols));
 }
 
@@ -162,7 +162,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
 
     ModulusIterator gather_indices_begin(IndexIterator(0), cusp::modulus_value<IndexType>(src.values.num_cols));
     OffsetsPermIterator offsets_begin(src.diagonal_offsets.begin(), gather_indices_begin);
-    ZipIterator offset_modulus_tuple(thrust::make_tuple(offsets_begin, row_indices_begin));
+    ZipIterator offset_modulus_tuple(::cuda::std::make_tuple(offsets_begin, row_indices_begin));
     ColumnIndexIterator column_indices_begin(offset_modulus_tuple, cusp::sum_pair_functor<IndexType>());
 
     PermIndexIterator   perm_indices_begin(IndexIterator(0), PermFunctor(src.values.num_rows, src.values.num_cols, src.values.pitch));
@@ -172,10 +172,10 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
 
     thrust::copy_if
      (exec,
-      thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, column_indices_begin, perm_values_begin)),
-      thrust::make_zip_iterator(thrust::make_tuple(row_indices_begin, column_indices_begin, perm_values_begin)) + src.values.num_entries,
+      thrust::make_zip_iterator(::cuda::std::make_tuple(row_indices_begin, column_indices_begin, perm_values_begin)),
+      thrust::make_zip_iterator(::cuda::std::make_tuple(row_indices_begin, column_indices_begin, perm_values_begin)) + src.values.num_entries,
       perm_values_begin,
-      thrust::make_zip_iterator(thrust::make_tuple(row_indices.begin(), dst.column_indices.begin(), dst.values.begin())),
+      thrust::make_zip_iterator(::cuda::std::make_tuple(row_indices.begin(), dst.column_indices.begin(), dst.values.begin())),
       thrust::placeholders::_1 != ValueType(0));
 
     cusp::indices_to_offsets(exec, row_indices, dst.row_offsets);
@@ -221,7 +221,7 @@ convert(thrust::execution_policy<DerivedPolicy>& exec,
 
     DivideIterator gather_indices_begin(IndexIterator(0), cusp::divide_value<IndexType>(pitch));
     OffsetsPermIterator offsets_begin(src.diagonal_offsets.begin(), gather_indices_begin);
-    ZipIterator offset_modulus_tuple(thrust::make_tuple(offsets_begin, row_indices_begin));
+    ZipIterator offset_modulus_tuple(::cuda::std::make_tuple(offsets_begin, row_indices_begin));
     ColumnIndexIterator column_indices_begin(offset_modulus_tuple, cusp::sum_pair_functor<IndexType>());
 
     thrust::replace_copy_if(exec,
