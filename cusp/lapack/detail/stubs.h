@@ -33,97 +33,97 @@
   CUSP_LAPACK_EXPAND_COMPLEX_DEFS(FUNC_MACRO)
 
 #define CUSP_LAPACK_GETRF(T,V,name)                                                                        \
-  lapack_int getrf( lapack_int order, lapack_int m, lapack_int n, T* a, lapack_int lda, lapack_int* ipiv ) \
+  inline lapack_int getrf( lapack_int order, lapack_int m, lapack_int n, T* a, lapack_int lda, lapack_int* ipiv ) \
   {                                                                                                        \
     return LAPACKE_##name##getrf(order, m, n, (V*) a, lda, ipiv);                                          \
   }
 
 #define CUSP_LAPACK_POTRF(T,V,name)                                                                        \
-  lapack_int potrf( lapack_int order, char uplo, lapack_int n, T* a, lapack_int lda )                      \
+  inline lapack_int potrf( lapack_int order, char uplo, lapack_int n, T* a, lapack_int lda )                      \
   {                                                                                                        \
     return LAPACKE_##name##potrf(order, uplo, n, (V*) a, lda);                                             \
   }
 
 #define CUSP_LAPACK_SYTRF(T,V,name)                                                                        \
-  lapack_int sytrf( lapack_int order, char uplo, lapack_int n, T* a, lapack_int lda, lapack_int* ipiv )    \
+  inline lapack_int sytrf( lapack_int order, char uplo, lapack_int n, T* a, lapack_int lda, lapack_int* ipiv )    \
   {                                                                                                        \
     return LAPACKE_##name##sytrf(order, uplo, n, (V*) a, lda, ipiv);                                       \
   }
 
 #define CUSP_LAPACK_GETRS(T,V,name)                                                                        \
-  lapack_int getrs( lapack_int order, char trans, lapack_int n, lapack_int nrhs, const T* a,               \
+  inline lapack_int getrs( lapack_int order, char trans, lapack_int n, lapack_int nrhs, const T* a,               \
   lapack_int lda, const lapack_int* ipiv, T* b, lapack_int ldb )                                           \
   {                                                                                                        \
     return LAPACKE_##name##getrs(order, trans, n, nrhs, (V*) a, lda, ipiv, (V*) b, ldb);                   \
   }
 
 #define CUSP_LAPACK_POTRS(T,V,name)                                                                        \
-  lapack_int potrs( lapack_int order, char uplo, lapack_int n, lapack_int nrhs, const T* a,                \
+  inline lapack_int potrs( lapack_int order, char uplo, lapack_int n, lapack_int nrhs, const T* a,                \
   lapack_int lda, T* b, lapack_int ldb )                                                                   \
   {                                                                                                        \
     return LAPACKE_##name##potrs(order, uplo, n, nrhs, (V*) a, lda, (V*) b, ldb);                          \
   }
 
 #define CUSP_LAPACK_SYTRS(T,V,name)                                                                        \
-  lapack_int sytrs( lapack_int order, char uplo, lapack_int n, lapack_int nrhs, const T* a,                \
+  inline lapack_int sytrs( lapack_int order, char uplo, lapack_int n, lapack_int nrhs, const T* a,                \
   lapack_int lda, const lapack_int* ipiv, T* b, lapack_int ldb )                                           \
   {                                                                                                        \
     return LAPACKE_##name##sytrs(order, uplo, n, nrhs, (V*) a, lda, ipiv, (V*) b, ldb);                    \
   }
 
 #define CUSP_LAPACK_TRTRS(T,V,name)                                                                        \
-  lapack_int trtrs( lapack_int order, char uplo, char trans, char diag, lapack_int n, lapack_int nrhs,     \
+  inline lapack_int trtrs( lapack_int order, char uplo, char trans, char diag, lapack_int n, lapack_int nrhs,     \
   const T* a, lapack_int lda, T* b, lapack_int ldb )                                                       \
   {                                                                                                        \
     return LAPACKE_##name##trtrs(order, uplo, trans, diag, n, nrhs, (V*) a, lda, (V*) b, ldb);             \
   }
 
 #define CUSP_LAPACK_GETRI(T,V,name)                                                                        \
-  lapack_int getri( lapack_int order, lapack_int n, T* a, lapack_int lda, const lapack_int* ipiv )         \
+  inline lapack_int getri( lapack_int order, lapack_int n, T* a, lapack_int lda, const lapack_int* ipiv )         \
   {                                                                                                        \
     return LAPACKE_##name##getri(order, n, (V*) a, lda, ipiv);                                             \
   }
 
 #define CUSP_LAPACK_POTRI(T,V,name)                                                                        \
-  lapack_int potri( lapack_int order, char uplo, lapack_int n, T* a, lapack_int lda )                      \
+  inline lapack_int potri( lapack_int order, char uplo, lapack_int n, T* a, lapack_int lda )                      \
   {                                                                                                        \
     return LAPACKE_##name##potri(order, uplo, n, (V*) a, lda);                                             \
   }
 
 #define CUSP_LAPACK_SYTRI(T,V,name)                                                                        \
-  lapack_int sytri( lapack_int order, char uplo, lapack_int n, T* a, lapack_int lda,                       \
+  inline lapack_int sytri( lapack_int order, char uplo, lapack_int n, T* a, lapack_int lda,                       \
   const lapack_int* ipiv )                                                                                 \
   {                                                                                                        \
     return LAPACKE_##name##sytri(order, uplo, n, (V*) a, lda, ipiv);                                       \
   }
 
 #define CUSP_LAPACK_TRTRI(T,V,name)                                                                        \
-  lapack_int trtri( lapack_int order, char uplo, char diag, lapack_int n, T* a, lapack_int lda )           \
+  inline lapack_int trtri( lapack_int order, char uplo, char diag, lapack_int n, T* a, lapack_int lda )           \
   {                                                                                                        \
     return LAPACKE_##name##trtri(order, uplo, diag, n, (V*) a, lda);                                       \
   }
 
 #define CUSP_LAPACK_SYEV(T,V,name)                                                                         \
-  lapack_int syev( lapack_int order, char job, char uplo, lapack_int n, T* a, lapack_int lda, T* w )       \
+  inline lapack_int syev( lapack_int order, char job, char uplo, lapack_int n, T* a, lapack_int lda, T* w )       \
   {                                                                                                        \
     return LAPACKE_##name##syev(order, job, uplo, n, (V*) a, lda, (V*) w);                                 \
   }
 
 #define CUSP_LAPACK_STEV(T,V,name)                                                                         \
-  lapack_int stev( lapack_int order, char job, lapack_int n, T* a, T* b, T* z, lapack_int ldz )            \
+  inline lapack_int stev( lapack_int order, char job, lapack_int n, T* a, T* b, T* z, lapack_int ldz )            \
   {                                                                                                        \
     return LAPACKE_##name##stev(order, job, n, (V*) a, (V*) b, (V*) z, ldz);                               \
   }
 
 #define CUSP_LAPACK_SYGV(T,V,name)                                                                         \
-  lapack_int sygv( lapack_int order, lapack_int itype, char job, char uplo, lapack_int n,                  \
+  inline lapack_int sygv( lapack_int order, lapack_int itype, char job, char uplo, lapack_int n,                  \
                    T* a, lapack_int lda, T* b, lapack_int ldb, T* w )                                      \
   {                                                                                                        \
     return LAPACKE_##name##sygv(order, itype, job, uplo, n, (V*) a, lda, (V*) b, ldb, (V*) w);             \
   }
 
 #define CUSP_LAPACK_GESV(T,V,name)                                                                         \
-  lapack_int gesv( lapack_int order, lapack_int n, lapack_int nrhs, T* a, lapack_int lda,                  \
+  inline lapack_int gesv( lapack_int order, lapack_int n, lapack_int nrhs, T* a, lapack_int lda,                  \
                    lapack_int* ipiv, T* b, lapack_int ldb)                                                 \
   {                                                                                                        \
     return LAPACKE_##name##gesv(order, n, nrhs, (V*) a, lda, ipiv, (V*) b, ldb);                           \
