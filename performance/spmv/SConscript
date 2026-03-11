@@ -7,4 +7,5 @@ extensions = ['*.cu', '*.cpp']
 for ext in extensions:
   regexp = os.path.join('.', ext)
   for source in env.Glob(regexp):
-    env.Program(source)
+    prog = env.Program(source)
+    env.Clean(prog, 'benchmark_output.log')
