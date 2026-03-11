@@ -24,6 +24,7 @@
 #include <cusp/system/cuda/detail/multiply/coo_serial.h>
 #include <cusp/system/cuda/detail/multiply/coo_flat_spmv.h>
 
+#include <cuda/cmath>
 #include <algorithm>
 
 // Note: Unlike the other kernels this kernel implements y += A*x
@@ -318,10 +319,10 @@ void __spmv_coo_flat_k(const coo_matrix<IndexType,ValueType,cusp::device_memory>
     const unsigned int N = coo.num_entries;
 
     const unsigned int unit_size  = CTA_SIZE * K;
-    const unsigned int num_units  = thrust::detail::divide_ri(N, unit_size);
+    const unsigned int num_units  = ::cuda::ceil_div(N, unit_size);
     const unsigned int max_blocks = 120; //thrust::experimental::arch::max_active_blocks(scan_intervals<CTA_SIZE,K,InputIterator,OutputIterator,BinaryFunction>, CTA_SIZE, 0);
     const unsigned int num_blocks = ::cuda::std::min(max_blocks, num_units);
-    const unsigned int num_iters  = thrust::detail::divide_ri(num_units, num_blocks);
+    const unsigned int num_iters  = ::cuda::ceil_div(num_units, num_blocks);
 
     const unsigned int interval_size = unit_size * num_iters;
 
