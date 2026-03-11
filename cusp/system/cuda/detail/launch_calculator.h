@@ -43,12 +43,12 @@ public:
 
     launch_calculator(const device_properties_t& properties, const function_attributes_t& attributes);
 
-    thrust::tuple<size_t,size_t,size_t> with_variable_block_size(void) const;
+    ::cuda::std::tuple<size_t,size_t,size_t> with_variable_block_size(void) const;
 
     template <typename UnaryFunction>
-    thrust::tuple<size_t,size_t,size_t> with_variable_block_size(UnaryFunction block_size_to_smem_size) const;
+    ::cuda::std::tuple<size_t,size_t,size_t> with_variable_block_size(UnaryFunction block_size_to_smem_size) const;
 
-    thrust::tuple<size_t,size_t,size_t> with_variable_block_size_available_smem(void) const;
+    ::cuda::std::tuple<size_t,size_t,size_t> with_variable_block_size_available_smem(void) const;
 
 private:
 

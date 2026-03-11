@@ -40,8 +40,8 @@ void diffusion(MatrixType& matrix,
     typedef typename MatrixType::index_type       IndexType;
     typedef typename MatrixType::value_type       ValueType;
     typedef typename MatrixType::memory_space     MemorySpace;
-    typedef thrust::tuple<IndexType,IndexType>    StencilIndex;
-    typedef thrust::tuple<StencilIndex,ValueType> StencilPoint;
+    typedef ::cuda::std::tuple<IndexType,IndexType>    StencilIndex;
+    typedef ::cuda::std::tuple<StencilIndex,ValueType> StencilPoint;
 
     ValueType C = cos(theta);
     ValueType S = sin(theta);

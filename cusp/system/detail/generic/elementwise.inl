@@ -122,21 +122,21 @@ void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
     typedef typename CooView1::row_indices_array_type::const_iterator                                RowIterator1;
     typedef typename CooView1::column_indices_array_type::const_iterator                             ColumnIterator1;
     typedef typename CooView1::values_array_type::const_iterator                                     ValueIterator1;
-    typedef thrust::tuple<RowIterator1,ColumnIterator1>                                              IteratorTuple1;
+    typedef ::cuda::std::tuple<RowIterator1,ColumnIterator1>                                              IteratorTuple1;
     typedef thrust::zip_iterator<IteratorTuple1>                                                     ZipIterator1;
 
     typedef typename CooView2::row_indices_array_type::const_iterator                                RowIterator2;
     typedef typename CooView2::column_indices_array_type::const_iterator                             ColumnIterator2;
     typedef typename CooView2::values_array_type::const_iterator                                     ValueIterator2;
-    typedef thrust::tuple<RowIterator2,ColumnIterator2>                                              IteratorTuple2;
+    typedef ::cuda::std::tuple<RowIterator2,ColumnIterator2>                                              IteratorTuple2;
     typedef thrust::zip_iterator<IteratorTuple2>                                                     ZipIterator2;
 
     typedef typename cusp::detail::temporary_array<IndexType, DerivedPolicy>::iterator               IndexIterator;
-    typedef thrust::tuple<ZipIterator1, ZipIterator2, IndexIterator>                                 ZipTuple;
+    typedef ::cuda::std::tuple<ZipIterator1, ZipIterator2, IndexIterator>                                 ZipTuple;
     typedef typename cusp::join_iterator<ZipTuple>::iterator                                         JoinIndexIterator;
 
     typedef thrust::transform_iterator<UnaryOp, ValueIterator2>                                      TransValueIterator;
-    typedef thrust::tuple<ValueIterator1, TransValueIterator, IndexIterator>                         TransValueTuple;
+    typedef ::cuda::std::tuple<ValueIterator1, TransValueIterator, IndexIterator>                         TransValueTuple;
     typedef typename cusp::join_iterator<TransValueTuple>::iterator                                  JoinValueIterator;
 
     ZipIterator1 A_tuples(thrust::make_tuple(A.row_indices.begin(), A.column_indices.begin()));
@@ -166,7 +166,7 @@ void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
                                          combined_tuples + 1,
                                          IndexType(1),
                                          ::cuda::std::plus<IndexType>(),
-                                         ::cuda::std::not_equal_to< thrust::tuple<IndexType,IndexType> >());
+                                         ::cuda::std::not_equal_to< ::cuda::std::tuple<IndexType,IndexType> >());
 
     // allocate space for output
     C.resize(A.num_rows, A.num_cols, C_nnz);
@@ -178,7 +178,7 @@ void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
                           combined_values,
                           thrust::make_zip_iterator(thrust::make_tuple(C.row_indices.begin(), C.column_indices.begin())),
                           C.values.begin(),
-                          ::cuda::std::equal_to< thrust::tuple<IndexType,IndexType> >(),
+                          ::cuda::std::equal_to< ::cuda::std::tuple<IndexType,IndexType> >(),
                           BinaryOp());
 #else
     cusp::detail::temporary_array<IndexType, DerivedPolicy> rows(exec, num_entries);
@@ -204,7 +204,7 @@ void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
                                             thrust::make_zip_iterator(thrust::make_tuple(rows.begin(), cols.begin())) + 1,
                                             IndexType(1),
                                             ::cuda::std::plus<IndexType>(),
-                                            ::cuda::std::not_equal_to< thrust::tuple<IndexType,IndexType> >());
+                                            ::cuda::std::not_equal_to< ::cuda::std::tuple<IndexType,IndexType> >());
 
     // allocate space for output
     C.resize(A.num_rows, A.num_cols, C_nnz);
@@ -216,7 +216,7 @@ void elementwise(thrust::execution_policy<DerivedPolicy>& exec,
                           vals.begin(),
                           thrust::make_zip_iterator(thrust::make_tuple(C.row_indices.begin(), C.column_indices.begin())),
                           C.values.begin(),
-                          ::cuda::std::equal_to< thrust::tuple<IndexType,IndexType> >(),
+                          ::cuda::std::equal_to< ::cuda::std::tuple<IndexType,IndexType> >(),
                           BinaryOp());
 #endif
 

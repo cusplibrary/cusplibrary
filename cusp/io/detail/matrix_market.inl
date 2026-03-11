@@ -124,7 +124,7 @@ void write_value(Stream& output, const cusp::complex<ScalarType>& value)
 }
 
 template<typename Stream>
-thrust::tuple<size_t,size_t,size_t>
+::cuda::std::tuple<size_t,size_t,size_t>
 read_input_size(Stream& input)
 {
     // read file contents line by line

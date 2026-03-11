@@ -69,26 +69,26 @@ template <typename Closure>
 }
 
 template <typename Closure>
-thrust::tuple<size_t,size_t,size_t> launch_calculator<Closure>::with_variable_block_size(void) const
+::cuda::std::tuple<size_t,size_t,size_t> launch_calculator<Closure>::with_variable_block_size(void) const
 {
     ::cuda::std::pair<size_t, size_t> config = default_block_configuration();
-    return thrust::tuple<size_t,size_t,size_t>(config.second * properties.multiProcessorCount, config.first, 0);
+    return ::cuda::std::tuple<size_t,size_t,size_t>(config.second * properties.multiProcessorCount, config.first, 0);
 }
 
 template <typename Closure>
 template <typename UnaryFunction>
-thrust::tuple<size_t,size_t,size_t> launch_calculator<Closure>::with_variable_block_size(UnaryFunction block_size_to_smem_size) const
+::cuda::std::tuple<size_t,size_t,size_t> launch_calculator<Closure>::with_variable_block_size(UnaryFunction block_size_to_smem_size) const
 {
     ::cuda::std::pair<size_t, size_t> config = default_block_configuration(block_size_to_smem_size);
-    return thrust::tuple<size_t,size_t,size_t>(config.second * properties.multiProcessorCount, config.first, block_size_to_smem_size(config.first));
+    return ::cuda::std::tuple<size_t,size_t,size_t>(config.second * properties.multiProcessorCount, config.first, block_size_to_smem_size(config.first));
 }
 
 template <typename Closure>
-thrust::tuple<size_t,size_t,size_t> launch_calculator<Closure>::with_variable_block_size_available_smem(void) const
+::cuda::std::tuple<size_t,size_t,size_t> launch_calculator<Closure>::with_variable_block_size_available_smem(void) const
 {
     ::cuda::std::pair<size_t, size_t> config = default_block_configuration();
     size_t smem_per_block = proportional_smem_allocation(properties, attributes, config.second);
-    return thrust::tuple<size_t,size_t,size_t>(config.second * properties.multiProcessorCount, config.first, smem_per_block);
+    return ::cuda::std::tuple<size_t,size_t,size_t>(config.second * properties.multiProcessorCount, config.first, smem_per_block);
 }
 
 } // end namespace detail

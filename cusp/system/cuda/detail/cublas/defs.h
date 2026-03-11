@@ -46,8 +46,8 @@ struct cublas_normal_op    { const static cublasOperation_t order = CUBLAS_OP_N;
 template< typename LayoutFormat >
 struct Orientation : ::cuda::std::conditional<
                           ::cuda::std::disjunction<
-                              ::cuda::std::is_same<LayoutFormat, cusp::row_major_base<thrust::detail::true_type> >,
-                              ::cuda::std::is_same<LayoutFormat, cusp::column_major_base<thrust::detail::false_type> >
+                              ::cuda::std::is_same<LayoutFormat, cusp::row_major_base<::cuda::std::true_type> >,
+                              ::cuda::std::is_same<LayoutFormat, cusp::column_major_base<::cuda::std::false_type> >
                           >::value,
                           cublas_normal_op, cublas_transpose_op>
 {};

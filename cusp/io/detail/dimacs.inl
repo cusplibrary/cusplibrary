@@ -41,7 +41,7 @@ namespace detail
 {
 
 template <typename IndexType, typename ValueType, typename Stream>
-thrust::tuple<IndexType,IndexType>
+::cuda::std::tuple<IndexType,IndexType>
 read_dimacs_stream(cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& coo, Stream& input)
 {
     // read file contents line by line
@@ -136,7 +136,7 @@ read_dimacs_stream(cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& coo,
 }
 
 template <typename Matrix, typename Stream, typename Format>
-thrust::tuple<typename Matrix::index_type, typename Matrix::index_type>
+::cuda::std::tuple<typename Matrix::index_type, typename Matrix::index_type>
 read_dimacs_stream(Matrix& mtx, Stream& input, Format)
 {
     // general case
@@ -145,7 +145,7 @@ read_dimacs_stream(Matrix& mtx, Stream& input, Format)
 
     cusp::coo_matrix<IndexType,ValueType,cusp::host_memory> temp;
 
-    thrust::tuple<IndexType,IndexType> ret = read_dimacs_stream(temp, input);
+    ::cuda::std::tuple<IndexType,IndexType> ret = read_dimacs_stream(temp, input);
 
     cusp::convert(temp, mtx);
 
@@ -154,7 +154,7 @@ read_dimacs_stream(Matrix& mtx, Stream& input, Format)
 
 template <typename IndexType, typename ValueType, typename Stream>
 void write_dimacs_stream(const cusp::coo_matrix<IndexType,ValueType,cusp::host_memory>& coo,
-                         const thrust::tuple<IndexType,IndexType>& t,
+                         const ::cuda::std::tuple<IndexType,IndexType>& t,
                          Stream& output)
 {
     output << "p max " << coo.num_rows << " " << coo.num_entries << std::endl;
@@ -174,7 +174,7 @@ void write_dimacs_stream(const cusp::coo_matrix<IndexType,ValueType,cusp::host_m
 
 template <typename Matrix, typename Stream>
 void write_dimacs_stream(const Matrix& mtx,
-                         const thrust::tuple<typename Matrix::index_type,typename Matrix::index_type>& t,
+                         const ::cuda::std::tuple<typename Matrix::index_type,typename Matrix::index_type>& t,
                          Stream& output,
                          cusp::sparse_format)
 {
@@ -191,7 +191,7 @@ void write_dimacs_stream(const Matrix& mtx,
 
 
 template <typename Matrix>
-thrust::tuple<typename Matrix::index_type, typename Matrix::index_type>
+::cuda::std::tuple<typename Matrix::index_type, typename Matrix::index_type>
 read_dimacs_file(Matrix& mtx, const std::string& filename)
 {
     std::ifstream file(filename.c_str());
@@ -214,7 +214,7 @@ read_dimacs_file(Matrix& mtx, const std::string& filename)
 }
 
 template <typename Matrix, typename Stream>
-thrust::tuple<typename Matrix::index_type, typename Matrix::index_type>
+::cuda::std::tuple<typename Matrix::index_type, typename Matrix::index_type>
 read_dimacs_stream(Matrix& mtx, Stream& input)
 {
     return cusp::io::detail::read_dimacs_stream(mtx, input, typename Matrix::format());
@@ -222,7 +222,7 @@ read_dimacs_stream(Matrix& mtx, Stream& input)
 
 template <typename Matrix>
 void write_dimacs_file(const Matrix& mtx,
-                       const thrust::tuple<typename Matrix::index_type,typename Matrix::index_type>& t,
+                       const ::cuda::std::tuple<typename Matrix::index_type,typename Matrix::index_type>& t,
                        const std::string& filename)
 {
     std::ofstream file(filename.c_str());
@@ -244,7 +244,7 @@ void write_dimacs_file(const Matrix& mtx,
 
 template <typename Matrix, typename Stream>
 void write_dimacs_stream(const Matrix& mtx,
-                         const thrust::tuple<typename Matrix::index_type,typename Matrix::index_type>& t,
+                         const ::cuda::std::tuple<typename Matrix::index_type,typename Matrix::index_type>& t,
                          Stream& output)
 {
     cusp::io::detail::write_dimacs_stream(mtx, t, output, typename Matrix::format());

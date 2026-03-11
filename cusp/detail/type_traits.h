@@ -178,7 +178,7 @@ struct coo_view_type<RowArray,ColumnArray,ValueArray,cusp::dia_format>
     typedef typename diagonal_offsets_array_type::iterator                                               OffsetsIterator;
     typedef typename thrust::transform_iterator<modulus_value<TempType>, CountingIterator>               ModulusIterator;
     typedef typename thrust::permutation_iterator<OffsetsIterator,ModulusIterator>                       OffsetsPermIterator;
-    typedef typename thrust::tuple<OffsetsPermIterator, RowIndexIterator>                                IteratorTuple;
+    typedef typename ::cuda::std::tuple<OffsetsPermIterator, RowIndexIterator>                                IteratorTuple;
     typedef typename thrust::zip_iterator<IteratorTuple>                                                 ZipIterator;
     typedef typename thrust::transform_iterator<sum_pair_functor<IndexType>, ZipIterator>                ColumnIndexIterator;
 
@@ -250,9 +250,9 @@ struct coo_view_type<RowArray,ColumnArray,ValueArray,cusp::hyb_format>
     typedef typename coo_view::values_array_type::iterator                                               CooValueIterator;
 
     typedef typename cusp::array1d<TempType,MemorySpace>::iterator                                       IndexIterator;
-    typedef cusp::join_iterator< thrust::tuple<EllRowIndexIterator,   CooRowIndexIterator,   IndexIterator> >  JoinRowIterator;
-    typedef cusp::join_iterator< thrust::tuple<EllColumnIndexIterator,CooColumnIndexIterator,IndexIterator> >  JoinColumnIterator;
-    typedef cusp::join_iterator< thrust::tuple<EllValueIterator,      CooValueIterator,      IndexIterator> >  JoinValueIterator;
+    typedef cusp::join_iterator< ::cuda::std::tuple<EllRowIndexIterator,   CooRowIndexIterator,   IndexIterator> >  JoinRowIterator;
+    typedef cusp::join_iterator< ::cuda::std::tuple<EllColumnIndexIterator,CooColumnIndexIterator,IndexIterator> >  JoinColumnIterator;
+    typedef cusp::join_iterator< ::cuda::std::tuple<EllValueIterator,      CooValueIterator,      IndexIterator> >  JoinValueIterator;
 
     typedef cusp::array1d_view<typename JoinRowIterator::iterator>                                       Array1;
     typedef cusp::array1d_view<typename JoinColumnIterator::iterator>                                    Array2;

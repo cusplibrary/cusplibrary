@@ -750,13 +750,13 @@ struct norm_functor
  * \brief \p sum_pair_functor is a function object that computes the sum of a 2 element tuple.
  *
  *  \param T is a model of <a href="http://www.sgi.com/tech/stl/Assignable.html">Assignable</a>,
- *          and if \c x is an object of type \p thrust::tuple<T,T>, then <tt>x=c</tt> must be defined
+ *          and if \c x is an object of type \p ::cuda::std::tuple<T,T>, then <tt>x=c</tt> must be defined
  *          and must have a return type that is convertible to \c T.
  *
  * \par Overview
  * \p sum_pair_functor is a function object. Specifically, it is an Adaptable Unary Function.
  *  If \c f(c) is an object of class <tt>sum_pair_functor<T></tt>, and \c x is an object
- *  of class \c thrust::tuple<T,T>, then <tt>f(x)</tt> returns
+ *  of class \c ::cuda::std::tuple<T,T>, then <tt>f(x)</tt> returns
  *  <tt>thrust::get<0>(x) + thrust::get<1>(x)</tt>.
  *
  * \par Example
@@ -794,13 +794,13 @@ struct sum_pair_functor : public detail::combine_tuple_base_functor< ::cuda::std
  * a 2 element tuple by the second element.
  *
  *  \param T is a model of <a href="http://www.sgi.com/tech/stl/Assignable.html">Assignable</a>,
- *          and if \c x is an object of type \p thrust::tuple<T,T>, then <tt>x=c</tt> must be defined
+ *          and if \c x is an object of type \p ::cuda::std::tuple<T,T>, then <tt>x=c</tt> must be defined
  *          and must have a return type that is convertible to \c T.
  *
  * \par Overview
  * \p divide_pair_functor is a function object. Specifically, it is an Adaptable Unary Function.
  *  If \c f(c) is an object of class <tt>divide_pair_functor<T></tt>, and \c x is an object
- *  of class \c thrust::tuple<T,T>, then <tt>f(x)</tt> returns
+ *  of class \c ::cuda::std::tuple<T,T>, then <tt>f(x)</tt> returns
  *  <tt>thrust::get<0>(x) / thrust::get<1>(x)</tt>.
  *
  * \par Example
@@ -837,13 +837,13 @@ struct divide_pair_functor : public detail::combine_tuple_base_functor< ::cuda::
  * \brief \p equal_pair_functor is a function object that compares 2 element tuple entries.
  *
  *  \param T is a model of <a href="http://www.sgi.com/tech/stl/Assignable.html">Assignable</a>,
- *          and if \c x is an object of type \p thrust::tuple<T,T>, then <tt>x=c</tt> must be defined
+ *          and if \c x is an object of type \p ::cuda::std::tuple<T,T>, then <tt>x=c</tt> must be defined
  *          and must have a return type that is convertible to \c T.
  *
  * \par Overview
  * \p equal_pair_functor is a function object. Specifically, it is an Adaptable Unary Function.
  *  If \c f(c) is an object of class <tt>equal_pair_functor<T></tt>, and \c x is an object
- *  of class \c thrust::tuple<T,T>, then <tt>f(x)</tt> returns
+ *  of class \c ::cuda::std::tuple<T,T>, then <tt>f(x)</tt> returns
  *  <tt>thrust::get<0>(x) == thrust::get<1>(x)</tt>.
  *
  * \par Example
@@ -880,13 +880,13 @@ struct equal_pair_functor : public detail::combine_tuple_base_functor< ::cuda::s
  * \brief \p not_equal_pair_functor is a function object that compares 2 element tuple entries.
  *
  *  \param T is a model of <a href="http://www.sgi.com/tech/stl/Assignable.html">Assignable</a>,
- *          and if \c x is an object of type \p thrust::tuple<T,T>, then <tt>x=c</tt> must be defined
+ *          and if \c x is an object of type \p ::cuda::std::tuple<T,T>, then <tt>x=c</tt> must be defined
  *          and must have a return type that is convertible to \c T.
  *
  * \par Overview
  * \p not_equal_pair_functor is a function object. Specifically, it is an Adaptable Unary Function.
  *  If \c f(c) is an object of class <tt>not_equal_pair_functor<T></tt>, and \c x is an object
- *  of class \c thrust::tuple<T,T>, then <tt>f(x)</tt> returns
+ *  of class \c ::cuda::std::tuple<T,T>, then <tt>f(x)</tt> returns
  *  <tt>thrust::get<0>(x) != thrust::get<1>(x)</tt>.
  *
  * \par Example

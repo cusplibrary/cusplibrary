@@ -31,8 +31,8 @@ void grid2d(MatrixType& matrix,
     typedef typename MatrixType::index_type       IndexType;
     typedef typename MatrixType::value_type       ValueType;
     typedef typename MatrixType::memory_space     MemorySpace;
-    typedef thrust::tuple<IndexType,IndexType>    StencilIndex;
-    typedef thrust::tuple<StencilIndex,ValueType> StencilPoint;
+    typedef ::cuda::std::tuple<IndexType,IndexType>    StencilIndex;
+    typedef ::cuda::std::tuple<StencilIndex,ValueType> StencilPoint;
 
     cusp::array1d<StencilPoint, MemorySpace> stencil;
     stencil.push_back(StencilPoint(StencilIndex(  0, -1), 1));
@@ -52,8 +52,8 @@ void grid3d(MatrixType& matrix,
     typedef typename MatrixType::index_type              IndexType;
     typedef typename MatrixType::value_type              ValueType;
     typedef typename MatrixType::memory_space            MemorySpace;
-    typedef thrust::tuple<IndexType,IndexType,IndexType> StencilIndex;
-    typedef thrust::tuple<StencilIndex,ValueType> 	     StencilPoint;
+    typedef ::cuda::std::tuple<IndexType,IndexType,IndexType> StencilIndex;
+    typedef ::cuda::std::tuple<StencilIndex,ValueType> 	     StencilPoint;
 
     cusp::array1d<StencilPoint, MemorySpace> stencil;
     for( IndexType k = -1; k <= 1; k++ )
