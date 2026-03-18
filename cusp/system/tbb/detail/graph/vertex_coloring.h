@@ -17,5 +17,20 @@
 #pragma once
 
 #include <cusp/detail/config.h>
+#include <cusp/system/cpp/detail/graph/vertex_coloring.h>
 
-// this system has no special version of this algorithm
+namespace cusp
+{
+namespace system
+{
+namespace tbb
+{
+namespace detail
+{
+
+using cusp::system::detail::sequential::vertex_coloring;
+
+} // end namespace detail
+} // end namespace tbb
+} // end namespace system
+} // end namespace cusp

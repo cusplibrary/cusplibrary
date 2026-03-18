@@ -70,7 +70,10 @@ struct join_search<T,V,2>
     _CCCL_HOST_DEVICE
     V operator()(const SizesTuple &t1, const Tuple& t2, const T i) const
     {
-        return i >= T(::cuda::std::get<0>(t1)) ? ::cuda::std::get<1>(t2)[i] : ::cuda::std::get<0>(t2)[i];
+        if (i >= T(::cuda::std::get<0>(t1)))
+            return ::cuda::std::get<1>(t2)[i];
+        else
+            return ::cuda::std::get<0>(t2)[i];
     }
 };
 /*! \endcond */
