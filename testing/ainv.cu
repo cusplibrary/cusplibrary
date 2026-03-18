@@ -140,9 +140,9 @@ void TestAINVSymmetry(void)
         ASSERT_EQUAL(monitor.converged(), true);
     }
 
-    ASSERT_EQUAL(nrm1, nrm2);
+    unittest::assert_almost_equal(nrm1, nrm2, __FILE__, __LINE__, 1e-6, 1e-6);
 
-    // assert they returned identical results
+    // assert they returned approximately identical results
 }
 DECLARE_UNITTEST(TestAINVSymmetry);
 

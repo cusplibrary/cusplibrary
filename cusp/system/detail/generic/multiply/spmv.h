@@ -95,8 +95,11 @@ void multiply(thrust::execution_policy<DerivedPolicy> &exec,
 
     cusp::detail::temporary_array<ValueType, DerivedPolicy> vals(exec, A.num_rows);
 
+    // Use a larger size (num_rows * num_diags), not A.values.values.size() which
+    // includes column-major pitch padding and leads to an out-of-bounds index error (valgrind)
+    const size_t num_logical_elements = (size_t)A.values.num_rows * A.values.num_cols;
     thrust::reduce_by_key(exec,
-                          row_indices_begin, row_indices_begin + A.values.values.size(),
+                          row_indices_begin, row_indices_begin + num_logical_elements,
                           thrust::make_transform_iterator(
                               thrust::make_zip_iterator(
                                   ::cuda::std::make_tuple(

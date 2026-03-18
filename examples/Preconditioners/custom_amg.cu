@@ -5,11 +5,14 @@
 #include <cusp/precond/aggregation/smoothed_aggregation.h>
 
 #include <thrust/execution_policy.h>
+#include <thrust/detail/config/device_system.h>
 
 #include <iostream>
 
 #ifdef __CUDACC__
 struct custom_amg_policy : cusp::cuda::execution_policy<custom_amg_policy> {};
+#elif THRUST_DEVICE_SYSTEM == THRUST_DEVICE_SYSTEM_TBB
+struct custom_amg_policy : cusp::tbb::execution_policy<custom_amg_policy> {};
 #else
 struct custom_amg_policy : cusp::omp::execution_policy<custom_amg_policy> {};
 #endif

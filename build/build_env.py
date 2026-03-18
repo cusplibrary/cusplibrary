@@ -230,7 +230,7 @@ def environment(buildDir, includeDir):
     vars.Add(EnumVariable('backend',
                           help='The parallel device backend to target',
                           default='cuda',
-                          allowed_values=('cuda', 'omp')))
+                          allowed_values=('cuda', 'omp', 'tbb')))
 
     # add a variable to handle RELEASE/DEBUG mode
     vars.Add(EnumVariable('mode',
@@ -294,6 +294,7 @@ def environment(buildDir, includeDir):
     # get the preprocessor define to use for the backend
     backend_define = {'cuda': 'THRUST_DEVICE_SYSTEM_CUDA',
                       'omp' : 'THRUST_DEVICE_SYSTEM_OMP',
+                      'tbb' : 'THRUST_DEVICE_SYSTEM_TBB',
                      }[env['backend']]
     env.Append(CFLAGS   = ['-DTHRUST_DEVICE_SYSTEM=%s' % backend_define])
     env.Append(CXXFLAGS = ['-DTHRUST_DEVICE_SYSTEM=%s' % backend_define])
@@ -363,6 +364,8 @@ def environment(buildDir, includeDir):
             env.Append(LIBS=['VCOMP'])
         else:
             raise ValueError("Unknown OS.  What is the name of the OpenMP library?")
+    elif env['backend'] == 'tbb':
+        env.Append(LIBS=['tbb'])
 
     if env['deviceblas'] == 'cublas':
         env.Append(LIBS=['cublas'])

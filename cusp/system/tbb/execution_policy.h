@@ -25,9 +25,6 @@
 // get the execution policies definitions first
 #include <thrust/system/tbb/detail/execution_policy.h>
 
-// get the definition of par
-#include <thrust/system/tbb/detail/par.h>
-
 // now get all the algorithm definitions
 
 #include <cusp/system/tbb/detail/blas.h>

@@ -17,5 +17,34 @@
 #pragma once
 
 #include <cusp/detail/config.h>
+#include <cusp/detail/format.h>
+#include <cusp/detail/type_traits.h>
+#include <cusp/system/cpp/detail/graph/maximal_independent_set.h>
 
-// this system has no special version of this algorithm
+namespace cusp
+{
+namespace system
+{
+namespace tbb
+{
+namespace detail
+{
+
+using cusp::system::detail::sequential::maximal_independent_set;
+
+// redirect to the sequential greedy implementation (via CSR conversion) to
+// avoid data races in the generic parallel COO algorithm
+template <typename DerivedPolicy, typename MatrixType, typename ArrayType>
+size_t maximal_independent_set(cusp::system::tbb::detail::execution_policy<DerivedPolicy>& exec,
+                               const MatrixType& G, ArrayType& stencil, const size_t k)
+{
+    typename cusp::detail::as_csr_type<MatrixType>::type G_csr(G);
+
+    return cusp::system::detail::sequential::maximal_independent_set(exec, G_csr, stencil,
+                                                                     k, cusp::csr_format());
+}
+
+} // end namespace detail
+} // end namespace tbb
+} // end namespace system
+} // end namespace cusp

@@ -21,6 +21,7 @@
 #include <cusp/system/cpp/detail/par.h>
 
 #include <thrust/detail/execute_with_allocator.h>
+#include <thrust/system/tbb/detail/execution_policy.h>
 
 namespace cusp
 {
@@ -63,6 +64,19 @@ inline _CCCL_HOST_DEVICE
 {
   return thrust::detail::derived_cast(s);
 } // end select_system()
+
+// tbb::tag conversion needed in CCCL >=3.3.0
+inline _CCCL_HOST_DEVICE
+par_t select_system(par_t s, thrust::system::tbb::detail::tag)
+{
+    return s;
+}
+
+inline _CCCL_HOST_DEVICE
+par_t select_system(thrust::system::tbb::detail::tag, par_t s)
+{
+    return s;
+}
 
 } // end detail
 
