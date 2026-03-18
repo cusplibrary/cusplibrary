@@ -5,6 +5,17 @@ on: [push]
 jobs:
   Test:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        backend: [omp, tbb]
+        include:
+          - backend: omp
+            libs: ""
+            env_prefix: "OMP_NUM_THREADS=4"
+          - backend: tbb
+            libs: "libtbb-dev"
+            env_prefix: ""
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -20,7 +31,7 @@ jobs:
         python -m pip install scons
 
     - name: Install dependencies
-      run: sudo apt-get install -y liblapacke-dev libopenblas-dev
+      run: sudo apt-get install -y liblapacke-dev libopenblas-dev ${{ matrix.libs }}
 
     - name: Checkout CCCL
       uses: actions/checkout@v4
@@ -34,11 +45,11 @@ jobs:
       run: |
         CCCL_PATH=${{ github.workspace }}/cccl \
         THRUST_PATH=${{ github.workspace }}/cccl/thrust \
-        scons compiler=gcc backend=omp deviceblas=cusp mode=release -j $(nproc)
+        scons compiler=gcc backend=${{ matrix.backend }} deviceblas=cusp mode=release -j $(nproc)
 
     - name: Run tests
-      working-directory: testing/device_omp_release
-      run: OMP_NUM_THREADS=4 ./test
+      working-directory: testing/device_${{ matrix.backend }}_release
+      run: ${{ matrix.env_prefix }} ./test
 
   Coverage:
     runs-on: ubuntu-latest
