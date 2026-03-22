@@ -1,10 +1,17 @@
 [default.extend-words]
 preconditioner = "preconditioner"
 MIS = "MIS"
-stoppoing = "stopping"
+# BLAS parameter
+iy = "iy"
+# Journal abbreviation: "SIAM J. Sci. Comput."
+Comput = "Comput"
+# Author name
+Tak = "Tak"
+
 [default.extend-identifiers]
 realy = "realy"
 project2nd = "project2nd"
+
 [default]
 extend-ignore-identifiers-re = [
         "GL_.*_lod",
@@ -12,6 +19,10 @@ extend-ignore-identifiers-re = [
         "GL_.*_LOD",
         "GL_.*_LOD_.*",
         "GL_.*_TESSELATION_.*",
+        "GL_.*[Pp][Nn].*",
+        "gl[Pp][Nn].*",
+        "#gae.*",
 ]
+
 [type.cpp]
 extend-glob = ["*.h"]
