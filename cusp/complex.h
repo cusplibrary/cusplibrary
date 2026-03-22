@@ -335,21 +335,21 @@ template <typename T> _CCCL_HOST_DEVICE inline complex<T> operator*(const T& lhs
 /*! Divides two \p complex numbers.
  *
  *  \param lhs The numerator (dividend).
- *  \param rhs The denomimator (divisor).
+ *  \param rhs The denominator (divisor).
  */
 template <typename T> _CCCL_HOST_DEVICE inline complex<T> operator/(const complex<T>& lhs, const complex<T>& rhs);
 
 /*! Divides a \p complex number by a scalar.
  *
  *  \param lhs The complex numerator (dividend).
- *  \param rhs The scalar denomimator (divisor).
+ *  \param rhs The scalar denominator (divisor).
  */
 template <typename T> _CCCL_HOST_DEVICE inline complex<T> operator/(const complex<T>& lhs, const T & rhs);
 
 /*! Divides a scalar by a \p complex number.
  *
  *  \param lhs The scalar numerator (dividend).
- *  \param rhs The complex denomimator (divisor).
+ *  \param rhs The complex denominator (divisor).
  */
 template <typename T> _CCCL_HOST_DEVICE inline complex<T> operator/(const T& lhs, const complex<T> & rhs);
 

@@ -266,7 +266,7 @@ void multiply(thrust::execution_policy<DerivedPolicy>& exec,
         cusp::detail::temporary_array<IndexType,DerivedPolicy> A_row_offsets(exec, A.num_rows + 1);
         cusp::indices_to_offsets(exec, A.row_indices, A_row_offsets);
 
-        // compute worspace requirements for each row
+        // compute workspace requirements for each row
         cusp::detail::temporary_array<IndexType,DerivedPolicy> cumulative_row_workspace(exec, A.num_rows);
         thrust::gather(exec,
                        A_row_offsets.begin() + 1,

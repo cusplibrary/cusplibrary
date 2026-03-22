@@ -237,7 +237,7 @@ float spring_color_map[64][3] =
 
 #ifdef _WIN32
 #if _MSC_VER >= 0
-	// enable the trunction warning
+	// enable the truncation warning
     #pragma warning ( pop )
 #endif // _MSC_VER >= 0
 #endif

@@ -3,72 +3,70 @@
 
 ## Introduction
 
-This page describes how to develop CUDA applications with CUSP, a C++ template library for sparse matrix computations.  This guide is intended to be accessible, even to developers with limited C++ experience.
+This page describes how to develop CUDA applications with CUSP, a C++ template library for sparse matrix computations.
 
 ## Prerequisites
 
-[Cusp v0.4.0](https://github.com/cusplibrary/cusplibrary/archive/v0.4.0.zip) requires [CUDA 5.5 (or newer)](http://www.nvidia.com/object/cuda_get.html).  You can check the CUDA installation by using nvcc on the command line as follows :
+CUSP requires CUDA. Check the CUDA installation by using nvcc on the command line as follows:
 
-~~~{.shell}
-$ nvcc --version
-nvcc: NVIDIA (R) Cuda compiler driver
-Copyright (c) 2005-2014 NVIDIA Corporation
-Built on Thu_Jul_17_21:41:27_CDT_2014
-Cuda compilation tools, release 6.5, V6.5.12
-~~~
+```shell
+nvcc --version
+```
 
-Since Cusp is a C++ template library there is nothing to "build".  Simply download the newest version of Cusp from [here](https://github.com/cusplibrary/cusplibrary/releases) and extract the contents of each zip file to a directory.  We suggest installing Cusp to the CUDA `include` directory, which is usually
-  *    `/usr/local/cuda/include/` on a Linux and Mac OSX
-  *    `C:\CUDA\include\` on a Windows system
+CUSP is a template library and requires no "build".  Clone or download the latest version of [CUSP](https://github.com/cusplibrary/cusplibrary/releases).
 
-## Simple Example
+## Example
 
-Let's compile a simple program to make sure all the prerequisites are satisfied.  Save the following source code to a file named `version.cu`.
+The following example will check that the prerequisites are satisfied.  Save the following source code to a file named `version.cu`.
 
-~~~{.cpp}
+```cpp
+#include <cuda.h>
 #include <thrust/version.h>
 #include <cusp/version.h>
+
 #include <iostream>
 
 int main(void)
 {
     int cuda_major =  CUDA_VERSION / 1000;
     int cuda_minor = (CUDA_VERSION % 1000) / 10;
-
     int thrust_major = THRUST_MAJOR_VERSION;
     int thrust_minor = THRUST_MINOR_VERSION;
-
     int cusp_major = CUSP_MAJOR_VERSION;
     int cusp_minor = CUSP_MINOR_VERSION;
-
     std::cout << "CUDA   v" << cuda_major   << "." << cuda_minor   << std::endl;
     std::cout << "Thrust v" << thrust_major << "." << thrust_minor << std::endl;
     std::cout << "Cusp   v" << cusp_major   << "." << cusp_minor   << std::endl;
 
     return 0;
 }
-~~~
+```
 
-Now compile `version.cu` with `nvcc`.  If Cusp was installed to the CUDA `include` directory then the following commands should work.
+Set the CUSP and THRUST (CCCL) paths:
+```shell
+export CCCL_PATH=$HOME/somepath
+export CUSP_PATH=$HOME/somepath
+```
 
-~~~{.shell}
-$ nvcc version.cu -o version
-$ ls
-thrust  version version.cu
-$ ./version
-CUDA   v6.5
-Thrust v1.7
-Cusp   v0.4
-~~~
+Now compile `version.cu` with `nvcc`:
+
+```shell
+nvcc version.cu -o version -I$CUSP_PATH
+nvcc version.cu -o version
+```
 
 ## Other Examples
 
-Additional Cusp examples are available for [download](http://github.com/cusplibrary/cusplibrary/tree/master/examples) or [online browsing](examples.html).  These examples can be compiled using the same procedure as above.  For instance, the Conjugate Gradient solver example is compiled and run as follows:
+Additional CUSP examples are available at https://github.com/cusplibrary/cusplibrary/tree/main/examples can be compiled using the same steps as above.  For instance, the conjugate gradient solver example is compiled and run as follows:
 
-~~~{.shell}
-$ cd examples/Solvers/
-$ nvcc -O2 cg.cu -o cg
-$ ./cg
+```shell
+cd examples/Solvers/
+nvcc -O2 cg.cu -o cg
+```
+
+Then
+```shell
+./cg
 Solver will continue until residual norm 0.01 or reaching 100 iterations
 Iteration Number  | Residual Norm
             0       1.000000e+01
@@ -85,7 +83,7 @@ Iteration Number  | Residual Norm
            11       1.144415e-02
            12       1.824176e-03
 Successfully converged after 12 iterations.
-~~~
+```
 
 ## Sparse Matrices
 
@@ -97,13 +95,13 @@ Cusp natively supports several sparse matrix formats:
   * [Hybrid (HYB)](classcusp_1_1hyb__matrix.html)
   * [Permutation](classcusp_1_1permutation__matrix.html)
 
-When manipulating matrices it's important to understand the advantages and disadvantages of each format.  Broadly speaking, the DIA and ELL formats are the most efficient for computing sparse matrix-vector products, and therefore are the fastest formats for solving sparse linear systems with iterative methods (e.g. Conjugate Gradients).  The COO and CSR formats are more flexible than DIA and ELL and easier manipulate.  The HYB format is a hybrid combination of the ELL (fast) and COO (flexible) formats and is a good default choice.  Refer to the matrix format [examples](examples.html) for additional information.
+When manipulating matrices it is important to consider the advantages and disadvantages of each format.  In general, the DIA and ELL formats are the most efficient for computing sparse matrix-vector products, and therefore are the fastest formats for solving sparse linear systems with iterative methods (e.g. conjugate gradient).  The COO and CSR formats are more flexible than DIA and ELL and easier manipulate.  The HYB format is a hybrid combination of the ELL (fast) and COO (flexible) formats and is a good default choice.  Refer to the matrix format [examples](examples.html) for additional information.
 
 ## Format Conversions
 
-Cusp makes it easy to transfer data between the host and device and convert between sparse matrix formats.  For example,
+CUSP facilitates the transfer of data between the host and device and the conversion between sparse matrix formats.  For example,
 
-~~~{.cpp}
+```cpp
 #include <cusp/csr_matrix.h>
 #include <cusp/hyb_matrix.h>
 
@@ -117,13 +115,13 @@ int main()
   cusp::csr_matrix<int,float,cusp::device_memory> csr_device(csr_host);
 
   // Convert the matrix to HYB format on the device
-  cusp::hyb_matrix<int,float,cusp::device_memory> csr_device(csr_device);
+  cusp::hyb_matrix<int,float,cusp::device_memory> hyb_device(csr_device);
 }
-~~~
+```
 
 ## Iterative Solvers
 
-Cusp provides a variety of [iterative methods](http://en.wikipedia.org/wiki/Iterative_method) for solving sparse linear systems.  Established [Krylov subspace](http://en.wikipedia.org/wiki/Krylov_subspace)
+Cusp provides a variety of [iterative methods](https://en.wikipedia.org/wiki/Iterative_method) for solving sparse linear systems.  Established [Krylov subspace](https://en.wikipedia.org/wiki/Krylov_subspace)
 methods are available:
   * [Conjugate-Gradient(CG)](group__krylov__methods.html#ga6aa97799b77e1de21fc88be236c6e4a8)
   * [Conjugate-Residual(CR)](group__krylov__methods.html#gae73aeb8fd04ee86a128240ac62c20e33)
@@ -135,33 +133,23 @@ methods are available:
 
 More detailed examples are available [here](examples.html).
 
-\include cg.cu
-
 ## Preconditioners
 
-[Preconditioners](http://en.wikipedia.org/wiki/Preconditioner) are a way to improve the [rate of convergence](http://en.wikipedia.org/wiki/Rate_of_convergence) of iterative solvers.  The good preconditioner is fast to compute and approximates the inverse of the matrix in some sense. Cusp provides the following preconditioners:
+CUSP provides the following [preconditioners](https://en.wikipedia.org/wiki/Preconditioner):
 
   * [Algebraic Multigrid (AMG) based on Smoothed Aggregation](classcusp_1_1precond_1_1aggregation_1_1smoothed__aggregation.html)
   * [Approximate Inverse(AINV)](classcusp_1_1precond_1_1bridson__ainv.html)
   * [Diagonal](classcusp_1_1precond_1_1diagonal.html)
 
-\include smoothed_aggregation.cu
-
 ## User-Defined Linear Operators
 
-Sometimes it is useful to solve a linear system `A * x = b` without converting the matrix `A` into one of Cusp's formats.  For this reason Cusp supports user-defined [linear operators](classcusp_1_1linear__operator.html) that take in a vector `x` and compute the result `y = A * x`.  These black-box operators can be used to interface [matrix-free methods](http://en.wikipedia.org/wiki/Matrix-free_methods) with Cusp's iterative solvers.
-
-\include stencil.cu
+It may be useful to solve a linear system `A x = b` without converting the matrix `A` into a CUSP matrix format.  CUSP supports user-defined [linear operators](classcusp_1_1linear__operator.html) that take a vector `x` as input and compute the matrix-vector product `y = A * x` as output.  These operators can be used with the iterative solvers in CUSP.
 
 ## Additional Resources
-
-This guide only scratches the surface of what you can do with Cusp.  The following resources can help you learn to do more with Thrust or provide assistance when problems arise.
 
   * Comprehensive [Documentation](modules.html) of Cusp's API
   * A list of [Frequently Asked Questions](https://code.google.com/p/cusp-library/wiki/FrequentlyAskedQuestions)
   * Collection of [example](examples.html) programs
-
-We strongly encourage users to subscribe to the [cusp-users](http://groups.google.com/group/cusp-users) mailing list.  The mailing list is a great place to seek out help from the Cusp developers and other Cusp users.
 
 <!-- include Algorithms examples  -->
 \example blas.cu

@@ -217,7 +217,7 @@ public:
     void print(void);
 
     /**
-     *  \brief Returns the immedidate convergence rate.
+     *  \brief Returns the immediate convergence rate.
      *
      *  \return immediate convergence rate.
      */

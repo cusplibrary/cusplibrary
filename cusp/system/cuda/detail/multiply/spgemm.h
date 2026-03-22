@@ -292,7 +292,7 @@ void multiply(cuda::execution_policy<DerivedPolicy>& exec,
 
         cusp::indices_to_offsets(exec, A.row_indices, A_row_offsets);
 
-        // compute worspace requirements for each row
+        // compute workspace requirements for each row
 #if THRUST_VERSION >= 100800
         cusp::detail::temporary_array<IndexType, DerivedPolicy> cumulative_row_workspace(exec, A.num_rows);
 #else
