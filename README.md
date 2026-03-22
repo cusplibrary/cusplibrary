@@ -58,7 +58,7 @@ nvcc -Icccl/thrust -Icccl/libcudacxx/include -Icccl/cub -I. example.cu -o exampl
 
 ### Status
 
-CUSP is up-to-date with CCCL v2.8.5.  It has been tested with CUDA 13.
+CUSP is up-to-date with CCCL v3.3.  It has been tested with CUDA 13.
 
 ### To build:
 
