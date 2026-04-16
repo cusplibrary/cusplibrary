@@ -184,7 +184,7 @@ public:
     };
     /*! \endcond */
 
-    // type of the join_iterator
+    /** \brief The type of the join_iterator. */
     typedef TransformIterator iterator;
 
     /*! \brief This constructor builds a \p join_iterator from two iterators.
@@ -236,6 +236,7 @@ protected:
     /*! \endcond */
 };
 
+/** \brief Convenience function to create a join_iterator from 2 ranges. */
 template <typename T1, typename T2, typename T3>
 typename join_iterator< ::cuda::std::tuple<T1,T2,T3> >::iterator
 make_join_iterator(const size_t s1, const size_t s2, const T1& t1, const T2& t2, const T3& t3)
@@ -245,6 +246,7 @@ make_join_iterator(const size_t s1, const size_t s2, const T1& t1, const T2& t2,
                                 ::cuda::std::make_tuple(t1, t2-s1, t3)).begin();
 }
 
+/** \brief Convenience function to create a join_iterator from 3 ranges. */
 template <typename T1, typename T2, typename T3, typename T4>
 typename join_iterator< ::cuda::std::tuple<T1,T2,T3,T4> >::iterator
 make_join_iterator(const size_t s1, const size_t s2, const size_t s3,
@@ -255,6 +257,7 @@ make_join_iterator(const size_t s1, const size_t s2, const size_t s3,
                                 ::cuda::std::make_tuple(t1, t2-s1, t3-s1-s2, t4)).begin();
 }
 
+/** \brief Convenience function to create a join_iterator from 4 ranges. */
 template <typename T1, typename T2, typename T3, typename T4, typename T5>
 typename join_iterator< ::cuda::std::tuple<T1,T2,T3,T4,T5> >::iterator
 make_join_iterator(const size_t s1, const size_t s2, const size_t s3, const size_t s4,
@@ -265,6 +268,7 @@ make_join_iterator(const size_t s1, const size_t s2, const size_t s3, const size
                                 ::cuda::std::make_tuple(t1, t2-s1, t3-s1-s2, t4-s1-s2-s3, t5)).begin();
 }
 
+/** \brief Convenience function to create a join_iterator from 5 ranges. */
 template <typename T1, typename T2, typename T3, typename T4, typename T5, typename T6>
 typename join_iterator< ::cuda::std::tuple<T1,T2,T3,T4,T5,T6> >::iterator
 make_join_iterator(const size_t s1, const size_t s2, const size_t s3, const size_t s4, const size_t s5,
@@ -275,6 +279,7 @@ make_join_iterator(const size_t s1, const size_t s2, const size_t s3, const size
                                 ::cuda::std::make_tuple(t1, t2-s1, t3-s1-s2, t4-s1-s2-s3, t5-s1-s2-s3-s4, t6)).begin();
 }
 
+/** \brief Convenience function to create a join_iterator from 6 ranges. */
 template <typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7>
 typename join_iterator< ::cuda::std::tuple<T1,T2,T3,T4,T5,T6,T7> >::iterator
 make_join_iterator(const size_t s1, const size_t s2, const size_t s3, const size_t s4, const size_t s5, const size_t s6,
@@ -285,6 +290,7 @@ make_join_iterator(const size_t s1, const size_t s2, const size_t s3, const size
                                 ::cuda::std::make_tuple(t1, t2-s1, t3-s1-s2, t4-s1-s2-s3, t5-s1-s2-s3-s4, t6-s1-s2-s3-s4-s5, t7)).begin();
 }
 
+/** \brief Convenience function to create a join_iterator from 7 ranges. */
 template <typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8>
 typename join_iterator< ::cuda::std::tuple<T1,T2,T3,T4,T5,T6,T7,T8> >::iterator
 make_join_iterator(const size_t s1, const size_t s2, const size_t s3, const size_t s4, const size_t s5, const size_t s6, const size_t s7,
@@ -295,6 +301,7 @@ make_join_iterator(const size_t s1, const size_t s2, const size_t s3, const size
                                 ::cuda::std::make_tuple(t1, t2-s1, t3-s1-s2, t4-s1-s2-s3, t5-s1-s2-s3-s4, t6-s1-s2-s3-s4-s5, t7-s1-s2-s3-s4-s5-s6, t8)).begin();
 }
 
+/** \brief Convenience function to create a join_iterator from 8 ranges. */
 template <typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8, typename T9>
 typename join_iterator< ::cuda::std::tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9> >::iterator
 make_join_iterator(const size_t s1, const size_t s2, const size_t s3, const size_t s4, const size_t s5, const size_t s6, const size_t s7, const size_t s8,
@@ -305,6 +312,7 @@ make_join_iterator(const size_t s1, const size_t s2, const size_t s3, const size
                                 ::cuda::std::make_tuple(t1, t2-s1, t3-s1-s2, t4-s1-s2-s3, t5-s1-s2-s3-s4, t6-s1-s2-s3-s4-s5, t7-s1-s2-s3-s4-s5-s6, t8-s1-s2-s3-s4-s5-s6-s7, t9)).begin();
 }
 
+/** \brief Convenience function to create a join_iterator from 9 ranges. */
 template <typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8, typename T9, typename T10>
 typename join_iterator< ::cuda::std::tuple<T1,T2,T3,T4,T5,T6,T7,T8,T9,T10> >::iterator
 make_join_iterator(const size_t s1, const size_t s2, const size_t s3, const size_t s4, const size_t s5, const size_t s6, const size_t s7, const size_t s8, const size_t s9,

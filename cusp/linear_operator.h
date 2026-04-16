@@ -201,6 +201,15 @@ public:
     identity_operator(IndexType num_rows, IndexType num_cols)
         : Parent(num_rows, num_cols) {}
 
+    /** \brief Apply the identity operator to vector \p x using an explicit execution policy.
+     *
+     *  \tparam DerivedPolicy execution policy
+     *  \tparam VectorType1 Type of the input vector
+     *  \tparam VectorType2 Type of the output vector
+     *  \param exec the execution policy
+     *  \param x input vector
+     *  \param y output vector
+     */
     template <typename DerivedPolicy, typename VectorType1, typename VectorType2>
     void operator()(thrust::execution_policy<DerivedPolicy>& exec, const VectorType1& x, VectorType2& y) const
     {

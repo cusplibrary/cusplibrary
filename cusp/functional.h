@@ -93,6 +93,7 @@ template <typename> struct combine_tuple_base_functor;
 template <typename T>
 struct plus_value : public detail::base_functor< ::cuda::std::plus<T> >
 {
+    /** \brief Construct with the given constant \p value. */
     _CCCL_HOST_DEVICE
     plus_value(const T value = T(0)) : detail::base_functor< ::cuda::std::plus<T> >(value) {}
 };
@@ -135,6 +136,7 @@ struct plus_value : public detail::base_functor< ::cuda::std::plus<T> >
 template <typename T>
 struct divide_value : public detail::base_functor< ::cuda::std::divides<T> >
 {
+    /** \brief Construct with the given constant \p value. */
     _CCCL_HOST_DEVICE
     divide_value(const T value = T(0)) : detail::base_functor< ::cuda::std::divides<T> >(value) {}
 };
@@ -177,6 +179,7 @@ struct divide_value : public detail::base_functor< ::cuda::std::divides<T> >
 template <typename T>
 struct modulus_value : public detail::base_functor< ::cuda::std::modulus<T> >
 {
+    /** \brief Construct with the given constant \p value. */
     _CCCL_HOST_DEVICE
     modulus_value(const T value = T(0)) : detail::base_functor< ::cuda::std::modulus<T> >(value) {}
 };
@@ -219,6 +222,7 @@ struct modulus_value : public detail::base_functor< ::cuda::std::modulus<T> >
 template <typename T>
 struct multiplies_value : public detail::base_functor< ::cuda::std::multiplies<T> >
 {
+    /** \brief Construct with the given constant \p value. */
     _CCCL_HOST_DEVICE
     multiplies_value(const T value) : detail::base_functor< ::cuda::std::multiplies<T> >(value) {}
 };
@@ -260,6 +264,7 @@ struct multiplies_value : public detail::base_functor< ::cuda::std::multiplies<T
 template <typename T>
 struct greater_value : public detail::base_functor< ::cuda::std::greater<T> >
 {
+    /** \brief Construct with the given constant \p value. */
     _CCCL_HOST_DEVICE
     greater_value(const T value) : detail::base_functor< ::cuda::std::greater<T> >(value) {}
 };
@@ -301,6 +306,7 @@ struct greater_value : public detail::base_functor< ::cuda::std::greater<T> >
 template <typename T>
 struct greater_equal_value : public detail::base_functor< ::cuda::std::greater_equal<T> >
 {
+    /** \brief Construct with the given constant \p value. */
     _CCCL_HOST_DEVICE
     greater_equal_value(const T value) : detail::base_functor< ::cuda::std::greater_equal<T> >(value) {}
 };
@@ -343,6 +349,7 @@ struct greater_equal_value : public detail::base_functor< ::cuda::std::greater_e
 template <typename T>
 struct less_value : public detail::base_functor< ::cuda::std::less<T> >
 {
+    /** \brief Construct with the given constant \p value. */
     _CCCL_HOST_DEVICE
     less_value(const T value) : detail::base_functor< ::cuda::std::less<T> >(value) {}
 };
@@ -384,6 +391,7 @@ struct less_value : public detail::base_functor< ::cuda::std::less<T> >
 template <typename T>
 struct less_equal_value : public detail::base_functor< ::cuda::std::less_equal<T> >
 {
+    /** \brief Construct with the given constant \p value. */
     _CCCL_HOST_DEVICE
     less_equal_value(const T value) : detail::base_functor< ::cuda::std::less_equal<T> >(value) {}
 };
@@ -429,9 +437,11 @@ struct constant_functor
       T val;
 
     public:
+    /** \brief Construct with the given constant \p val. */
     _CCCL_HOST_DEVICE
     constant_functor(const T val = 0) : val(val) {}
 
+    /** \brief Return the stored constant, ignoring input \p x. */
     _CCCL_HOST_DEVICE
     T operator()(const T& x) const {
         return val;
@@ -475,6 +485,7 @@ struct constant_functor
 template <typename T>
 struct square_functor
 {
+    /** \brief Return the square of \p x. */
     _CCCL_HOST_DEVICE
     T operator()(const T& x) const {
         return x * x;
@@ -518,6 +529,7 @@ struct square_functor
 template <typename T>
 struct sqrt_functor
 {
+    /** \brief Return the square root of \p x. */
     _CCCL_HOST_DEVICE
     T operator()(const T& x) const {
         using thrust::sqrt;
@@ -564,6 +576,7 @@ struct sqrt_functor
 template <typename T>
 struct reciprocal_functor
 {
+    /** \brief Return the reciprocal of \p v. */
     _CCCL_HOST_DEVICE
     T operator()(const T& v) const {
         return T(1.0) / v;
@@ -607,6 +620,7 @@ struct reciprocal_functor
 template<typename T>
 struct abs_functor
 {
+    /** \brief Return the absolute value of \p t. */
     _CCCL_HOST_DEVICE
     typename cusp::norm_type<T>::type
     operator()(const T& t) const {
@@ -652,6 +666,7 @@ struct abs_functor
 template<typename T>
 struct abs_squared_functor
 {
+    /** \brief Return the squared absolute value of \p t. */
     _CCCL_HOST_DEVICE
     typename cusp::norm_type<T>::type
     operator()(const T& t) const {
@@ -696,6 +711,7 @@ struct abs_squared_functor
 template<typename T>
 struct conj_functor
 {
+    /** \brief Return the complex conjugate of \p t. */
     _CCCL_HOST_DEVICE
     T operator()(const T& t) const {
         return cusp::conj(t);
@@ -739,6 +755,7 @@ struct conj_functor
 template<typename T>
 struct norm_functor
 {
+    /** \brief Return the norm of \p t. */
     _CCCL_HOST_DEVICE
     typename cusp::norm_type<T>::type
     operator()(const T& t) const {
