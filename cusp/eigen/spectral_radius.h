@@ -127,6 +127,7 @@ double estimate_rho_Dinv_A(const MatrixType& A);
  * \tparam MatrixType type of a sparse or dense matrix
  *
  * \param A matrix of the linear system
+ * \param k number of Lanczos iterations
  *
  * \return spectral radius approximation
  *
@@ -170,6 +171,8 @@ double estimate_spectral_radius(const MatrixType& A, size_t k = 20);
  * \tparam MatrixType type of a sparse or dense matrix
  *
  * \param A matrix of the linear system
+ * \param k number of iterations
+ * \param symmetric if true use Lanczos, otherwise use Arnoldi
  *
  * \return spectral radius approximation
  *

@@ -138,6 +138,9 @@ void multiply(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
  * \param A input matrix
  * \param B input vector
  * \param C output vector
+ * \param initialize unary function used to initialize the output
+ * \param combine binary function used to combine entries
+ * \param reduce binary function used to reduce entries
  *
  * \par Example
  *
@@ -234,6 +237,9 @@ void generalized_spgemm(const thrust::detail::execution_policy_base<DerivedPolic
  * \param A first input matrix
  * \param B second input matrix
  * \param C output matrix
+ * \param initialize unary function used to initialize the output
+ * \param combine binary function used to combine entries
+ * \param reduce binary function used to reduce entries
  *
  * \par Example
  *
@@ -324,6 +330,8 @@ void generalized_spmv(const thrust::detail::execution_policy_base<DerivedPolicy>
  * \param x input vector
  * \param y input vector
  * \param z output vector
+ * \param combine binary function used to combine entries
+ * \param reduce binary function used to reduce entries
  *
  * \par Example
  *
