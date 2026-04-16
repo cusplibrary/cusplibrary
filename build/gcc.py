@@ -62,12 +62,14 @@ def generate(env):
 
     # set the "CUDA Compiler Command" environment variable
     # windows is picky about getting the full filename of the executable
+    gcc_compiler = os.environ.get('GCC_COMPILER', 'gcc')
     if os.name == 'nt':
-        env['NVCC'] = 'gcc.exe'
-        env['SHNVCC'] = 'gcc.exe'
+        env['NVCC'] = gcc_compiler + '.exe'
+        env['SHNVCC'] = gcc_compiler + '.exe'
     else:
-        env['NVCC'] = 'gcc'
-        env['SHNVCC'] = 'gcc'
+        env['NVCC'] = gcc_compiler
+        env['SHNVCC'] = gcc_compiler
+        env['LINK'] = gcc_compiler
 
     # set the include path, and pass both c compiler flags and c++ compiler
     # flags

@@ -85,6 +85,7 @@ using thrust::sqrt;
  *  \addtogroup numerics Numerics
  *  \par Overview
  *  Basic numeric types
+ *  \{
  */
 
 /**
@@ -672,10 +673,10 @@ template <typename T> _CCCL_HOST_DEVICE inline bool operator!=(const complex<T> 
 
 #include <thrust/detail/complex/complex.inl>
 
-#endif
-
 /*! \}
  */
+
+#endif
 
 } // end namespace cusp
 
