@@ -47,8 +47,6 @@ namespace eigen
  * \param H dense matrix of ritz values
  * \param k maximum number of outer Arnoldi iterations
  *
- * \return spectral radius approximation
- *
  * \par Overview
  * Approximates the spectral radius A using a specified number of
  * Arnoldi iterations.
