@@ -289,7 +289,6 @@ public:
      *  \param iteration_limit maximum number of solver iterations to allow
      *  \param relative_tolerance determines convergence criteria
      *  \param absolute_tolerance determines convergence criteria
-     *  \param verbose Controls printing status updates during execution
      *
      *  \deprecated As of v0.4.0 monitors have been unified. Use monitor
      *  instead.
@@ -329,7 +328,6 @@ public:
      *  \param iteration_limit maximum number of solver iterations to allow
      *  \param relative_tolerance determines convergence criteria
      *  \param absolute_tolerance determines convergence criteria
-     *  \param verbose Controls printing status updates during execution
      *
      *  \deprecated As of v0.4.0 monitors have been unified. Use monitor
      *  instead.
@@ -369,7 +367,6 @@ public:
      *  \param iteration_limit maximum number of solver iterations to allow
      *  \param relative_tolerance determines convergence criteria
      *  \param absolute_tolerance determines convergence criteria
-     *  \param verbose Controls printing status updates during execution
      *
      *  \deprecated As of v0.4.0 monitors have been unified. Use monitor
      *  instead.
