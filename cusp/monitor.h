@@ -256,6 +256,12 @@ private:
 };
 
 // TODO : Remove convergence, default, and verbose monitors in v0.6.0
+
+/**
+ *  \brief Deprecated convergence monitor.
+ *
+ *  \deprecated As of v0.4.0 monitors have been unified. Use \p monitor instead.
+ */
 template <typename ValueType>
 class convergence_monitor : public monitor<ValueType>
 {
@@ -290,6 +296,11 @@ public:
     : Parent(b, iteration_limit, relative_tolerance, absolute_tolerance, false) {}
 };
 
+/**
+ *  \brief Deprecated default monitor.
+ *
+ *  \deprecated As of v0.4.0 monitors have been unified. Use \p monitor instead.
+ */
 template <typename ValueType>
 class default_monitor : public monitor<ValueType>
 {
@@ -324,6 +335,11 @@ public:
     : Parent(b, iteration_limit, relative_tolerance, absolute_tolerance, false) {}
 };
 
+/**
+ *  \brief Deprecated verbose monitor.
+ *
+ *  \deprecated As of v0.4.0 monitors have been unified. Use \p monitor instead.
+ */
 template <typename ValueType>
 class verbose_monitor : public monitor<ValueType>
 {
