@@ -57,8 +57,9 @@ void lanczos(const MatrixType& A,
  * \tparam Array2d matrix of eigenvectors
  *
  * \param A matrix of the linear system
- * \param eigvals eigenvalues
- * \param eigvecs eigenvectors
+ * \param eigVals eigenvalues
+ * \param eigVecs eigenvectors
+ * \param options Lanczos solver options
  *
  * \par Overview
  * Computes the extreme eigenpairs of hermitian linear systems A x = s x.

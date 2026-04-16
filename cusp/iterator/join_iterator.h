@@ -187,13 +187,9 @@ public:
     /** \brief The type of the join_iterator. */
     typedef TransformIterator iterator;
 
-    /*! \brief This constructor builds a \p join_iterator from two iterators.
-     *  \param first_begin The beginning of the first range.
-     *  \param first_end The end of the first range.
-     *  \param second_begin The beginning of the second range.
-     *  \param second_end The end of the second range.
-     *  \param indices_begin The permutation indices used to order entries
-     *  from the two joined iterators.
+    /*! \brief This constructor builds a \p join_iterator from a tuple of sizes and a tuple of iterators.
+     *  \param t1 Tuple of cumulative sizes for each range.
+     *  \param t2 Tuple of iterators for each range.
      */
     join_iterator(const SizesTuple& t1, const Tuple& t2) : t1(t1), t2(t2) {}
 
