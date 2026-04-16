@@ -55,14 +55,16 @@ private:
     typedef linear_operator<ValueType, MemorySpace> Parent;
 
 public:
+    /** \brief The approximate inverse factor W. */
     cusp::hyb_matrix<int, ValueType, MemorySpace> w;
+    /** \brief The transpose of the approximate inverse factor W. */
     cusp::hyb_matrix<int, ValueType, MemorySpace> w_t;
 
     /*! construct a \p ainv preconditioner
      *
      * \param A matrix to precondition
-     * \tparam MatrixType matrix
-     * \param ValueType drop_tolerance Tolerance for dropping during factorization
+     * \tparam MatrixTypeA matrix
+     * \param drop_tolerance Tolerance for dropping during factorization
      * \param nonzero_per_row Count of non-zeroes allowed per row of the factored matrix.  If negative or lin_dropping==true, this will be ignored.
      * \param lin_dropping When true, this will use the dropping strategy from Lin & More, where the per-row count will be based on A's structure.
      * \param lin_param when lin_dropping set to true, this indicates how many additional non-zeros per row to include
@@ -82,7 +84,9 @@ public:
 
 protected:
 
+    /*! \cond */
     cusp::array1d<ValueType, MemorySpace> temp1;
+    /*! \endcond */
 };
 
 /*! \p bridson_ainv : Approximate Inverse preconditioner (from Bridson's "outer product" formulation)
@@ -102,15 +106,18 @@ private:
     typedef linear_operator<ValueType, MemorySpace> Parent;
 
 public:
+    /** \brief The approximate inverse factor W. */
     cusp::hyb_matrix<int, ValueType, MemorySpace> w;
+    /** \brief The transpose of the approximate inverse factor W. */
     cusp::hyb_matrix<int, ValueType, MemorySpace> w_t;
+    /** \brief The diagonal entries of the factorization. */
     cusp::array1d<ValueType, MemorySpace> diagonals;
 
     /*! construct a \p ainv preconditioner
      *
      * \param A matrix to precondition
      * \tparam MatrixTypeA matrix
-     * \param ValueType drop_tolerance Tolerance for dropping during factorization
+     * \param drop_tolerance Tolerance for dropping during factorization
      * \param nonzero_per_row Count of non-zeroes allowed per row of the factored matrix.  If negative or lin_dropping==true, this will be ignored.
      * \param lin_dropping When true, this will use the dropping strategy from Lin & More, where the per-row count will be based on A's structure.
      * \param lin_param when lin_dropping set to true, this indicates how many additional non-zeros per row to include
@@ -129,8 +136,10 @@ public:
     void operator()(const VectorType1& x, VectorType2& y);
 
 protected:
+    /*! \cond */
     cusp::array1d<ValueType, MemorySpace> temp1;
     cusp::array1d<ValueType, MemorySpace> temp2;
+    /*! \endcond */
 };
 
 /*! \p nonsym_bridson_ainv : Approximate Inverse preconditioner (from Bridson's "outer product" formulation)
@@ -146,15 +155,18 @@ private:
     typedef linear_operator<ValueType, MemorySpace> Parent;
 
 public:
+    /** \brief The transpose of the approximate inverse factor W. */
     cusp::hyb_matrix<int, ValueType, MemorySpace> w_t;
+    /** \brief The approximate inverse factor Z. */
     cusp::hyb_matrix<int, ValueType, MemorySpace> z;
+    /** \brief The diagonal entries of the factorization. */
     cusp::array1d<ValueType, MemorySpace> diagonals;
 
     /*! construct a \p ainv preconditioner
      *
      * \param A matrix to precondition
      * \tparam MatrixTypeA matrix
-     * \param ValueType drop_tolerance Tolerance for dropping during factorization
+     * \param drop_tolerance Tolerance for dropping during factorization
      * \param nonzero_per_row Count of non-zeroes allowed per row of the factored matrix.  If negative or lin_dropping==true, this will be ignored.
      * \param lin_dropping When true, this will use the dropping strategy from Lin & More, where the per-row count will be based on A's structure.
      * \param lin_param when lin_dropping set to true, this indicates how many additional non-zeros per row to include
@@ -173,8 +185,10 @@ public:
     void operator()(const VectorType1& x, VectorType2& y);
 
 protected:
+    /*! \cond */
     cusp::array1d<ValueType, MemorySpace> temp1;
     cusp::array1d<ValueType, MemorySpace> temp2;
+    /*! \endcond */
 };
 /*! \}
  */

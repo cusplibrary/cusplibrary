@@ -101,6 +101,7 @@ template <typename ValueType>
 class monitor
 {
 public:
+    /** \brief A real-valued type used for norms and tolerances. */
     typedef typename cusp::norm_type<ValueType>::type Real;
 
     /**
@@ -184,6 +185,13 @@ public:
     template <typename Vector>
     bool finished(const Vector& r);
 
+    /** \brief Applies convergence criteria using an explicit execution policy.
+     *
+     *  \tparam DerivedPolicy execution policy
+     *  \tparam Vector vector
+     *  \param exec the execution policy
+     *  \param r residual vector of the linear system (r = b - A x)
+     */
     template <typename DerivedPolicy, typename Vector>
     bool finished(thrust::execution_policy<DerivedPolicy> &exec, const Vector& r);
 
@@ -237,9 +245,7 @@ public:
      */
     Real average_rate(void);
 
-    /*
-     * Array holding the residuals per iteration
-     */
+    /** \brief Array holding the residuals per iteration. */
     cusp::array1d<Real,cusp::host_memory> residuals;
 
 private:
@@ -271,6 +277,7 @@ private:
 
 public:
 
+    /** \brief A real-valued type used for norms and tolerances. */
     typedef typename Parent::Real Real;
 
     /**
@@ -310,6 +317,7 @@ private:
 
 public:
 
+    /** \brief A real-valued type used for norms and tolerances. */
     typedef typename Parent::Real Real;
 
     /**
@@ -349,6 +357,7 @@ private:
 
 public:
 
+    /** \brief A real-valued type used for norms and tolerances. */
     typedef typename Parent::Real Real;
 
     /**

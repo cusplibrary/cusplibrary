@@ -50,6 +50,7 @@ struct norm_type< cusp::complex<T> >
 /* \endcond */
 
 using thrust::conj;
+/** \brief Compute the complex conjugate of \p z. For real types, returns \p z unchanged. */
 template<typename T>
 _CCCL_HOST_DEVICE
 inline T
@@ -59,6 +60,7 @@ conj(const T& z)
 }
 
 using thrust::abs;
+/** \brief Compute the absolute value of \p z. */
 template <typename T>
 _CCCL_HOST_DEVICE
 inline typename cusp::norm_type<T>::type
@@ -68,6 +70,7 @@ abs(const T& z)
 }
 
 using thrust::norm;
+/** \brief Compute the norm of \p z. */
 template <typename T>
 _CCCL_HOST_DEVICE
 inline typename cusp::norm_type<T>::type
