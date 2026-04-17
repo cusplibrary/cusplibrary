@@ -95,7 +95,7 @@ Cusp natively supports several sparse matrix formats:
   * [Hybrid (HYB)](classcusp_1_1hyb__matrix.html)
   * [Permutation](classcusp_1_1permutation__matrix.html)
 
-When manipulating matrices it is important to consider the advantages and disadvantages of each format.  In general, the DIA and ELL formats are the most efficient for computing sparse matrix-vector products, and therefore are the fastest formats for solving sparse linear systems with iterative methods (e.g. conjugate gradient).  The COO and CSR formats are more flexible than DIA and ELL and easier manipulate.  The HYB format is a hybrid combination of the ELL (fast) and COO (flexible) formats and is a good default choice.  Refer to the matrix format [examples](examples.html) for additional information.
+When manipulating matrices it is important to consider the advantages and disadvantages of each format.  In general, the DIA and ELL formats are the most efficient for computing sparse matrix-vector products, and therefore are the fastest formats for solving sparse linear systems with iterative methods (e.g. conjugate gradient).  The COO and CSR formats are more flexible than DIA and ELL and easier manipulate.  The HYB format is a hybrid combination of the ELL (fast) and COO (flexible) formats and is a good default choice.  Refer to the matrix format [examples](https://github.com/cusplibrary/cusplibrary/tree/main/examples/MatrixFormats) for additional information.
 
 ## Format Conversions
 
@@ -131,7 +131,7 @@ methods are available:
   * [Multi-mass Conjugate-Gradient (CG-M)](group__krylov__methods.html#gae25c1e3e77e92709bfa9f3726328e421)
   * [Multi-mass Biconjugate Gradient stabilized (BiCGstab-M)](group__krylov__methods.html#gae9649279f0fb30cbc6a48c9f912a5f87)
 
-More detailed examples are available [here](examples.html).
+More detailed examples are available [here](https://github.com/cusplibrary/cusplibrary/tree/main/examples).
 
 ## Preconditioners
 
@@ -148,8 +148,7 @@ It may be useful to solve a linear system `A x = b` without converting the matri
 ## Additional Resources
 
   * Comprehensive [Documentation](topics.html) of Cusp's API
-  * A list of [Frequently Asked Questions](https://code.google.com/p/cusp-library/wiki/FrequentlyAskedQuestions)
-  * Collection of [example](examples.html) programs
+  * Collection of [example](https://github.com/cusplibrary/cusplibrary/tree/main/examples) programs
 
 <!-- include Algorithms examples  -->
 \example blas.cu
