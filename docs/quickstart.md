@@ -147,7 +147,7 @@ It may be useful to solve a linear system `A x = b` without converting the matri
 
 ## Additional Resources
 
-  * Comprehensive [Documentation](modules.html) of Cusp's API
+  * Comprehensive [Documentation](topics.html) of Cusp's API
   * A list of [Frequently Asked Questions](https://code.google.com/p/cusp-library/wiki/FrequentlyAskedQuestions)
   * Collection of [example](examples.html) programs
 
