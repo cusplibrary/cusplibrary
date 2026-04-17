@@ -1,4 +1,4 @@
-# Quick Start Guide
+\page quickstart Quick Start Guide
 # Summary Guide for new Cusp developers
 
 ## Introduction
