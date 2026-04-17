@@ -1,18 +1,87 @@
 #######################################
+#            Cusp v0.6.1              #
+#######################################
+
+Summary
+  Cusp v0.6.1 modernizes the codebase for CUDA 12+ and CCCL (formerly Thrust).
+  This release removes deprecated C++ constructs, updates the build system, and
+  adds GitHub Actions CI with code coverage.
+
+New Features
+  GitHub Actions CI with OpenMP and TBB backends
+  Code coverage reporting via Codecov
+  SCons-based build system for tests and examples
+
+Breaking API changes
+  Removed deprecated std::unary_function and std::binary_function usage
+  Replaced cudaThreadSynchronize with cudaDeviceSynchronize throughout
+  Requires CCCL (CUDA C++ Core Libraries) instead of standalone Thrust
+
+Bug Fixes
+  Fixed -O3 optimization issue with dangling T&& references
+  Fixed out-of-bounds memory error
+  Fixed type compatibility issues with C++12 and later standards
+  Fixed csr_vector to use correct dispatch detail
+  Fixed join_iterator constant_tuple definition for modern compilers
+  Fixed identity operator to use std::identity
+  Updated cusparse calls to newer cusparseSpGEMM routine
+  Used _CCCL_HOST_DEVICE and fully qualified ::cuda:: namespaces throughout
+  Added SM 9.0 support
+
+#######################################
 #            Cusp v0.6.0              #
 #######################################
 
 Summary
-  TODO
+  Cusp v0.6.0 provides support for CUDA 8.0 and CUDA 9.0 with Thrust 1.8+.
+  This release reflects a major refactoring of the execution policy dispatch
+  system across all algorithms, closer integration with Thrust's internal
+  execution policy structure, and substantial improvements to BLAS integration,
+  the smoothed aggregation AMG solver, and complex type support.
 
 New Features
-  TODO
+  Generalized SpGEMM with user-defined initialize, combine, and reduce operations
+  Block CSR SpMV for multiple right-hand-side vectors
+  Refactored BLAS routines with CUBLAS and CBLAS backend integration (levels 1-3)
+  Policy-based execution dispatch for all algorithms including multiply, transpose,
+    elementwise, convert, sort, graph, and krylov solvers
+  Policy-based LAPACK interface
+  Refactored smoothed aggregation AMG with policy-based dispatch for all components
+    including strength, aggregation, smooth_prolongator, and hierarchy extension
+  Custom AMG example demonstrating user-defined SA dispatching
+  Generalized monitor and linear_operator classes to use execution policies
+  Optimized CSR MatrixMarket reader (resolves #66)
+  Improved support for complex types in SA, printing, random values, and testing
+  Grapple profiler implementation with timing support
+  Evolution strength of connection measure for SA
+  CUB-based COO and CSR SpMV kernels
+  Custom binary function support in DIA and COO SpMV kernels
+  MSVC and Clang compiler support improvements
 
-Breaking API changes
-  TODO
+  Algorithms
+    cusp::multiply with generalized SpGEMM
+    cusp::blas level 2 and level 3 routines (GEMM, GEMV, TRMV, etc.)
 
 Bug Fixes
-  TODO
+  Fixed shared memory error in blocked CSR SpMV
+  Fixed logical error in valid entry counts for coo_matrix conversions
+  Fixed CUDA 9 build errors and imported thrust launch routines
+  Fixed errors in lobpcg and lanczos solvers
+  Fixed MIS aggregation errors across multiple dispatch paths
+  Fixed cross-system copy and conversion path errors
+  Fixed OpenMP elementwise, SpGEMM, and matrix-matrix multiply errors
+  Fixed dispatching errors in OMP backend and sequential conversions
+  Fixed CUBLAS and CBLAS interface routines for complex types
+  Fixed LAPACK stev template error
+  Fixed BFS to support unsymmetric matrices and long long types
+  Fixed missing conjugate in GMRES plane rotation
+  Fixed row indexing bug in COO SpMV
+  Fixed temporary_array errors in sequential csr_block_spmv and SA
+  Fixed permutation_matrix template parameters and multiply
+  Fixed coo_matrix_view indices initialization and conversions
+  Resolved issues related to Thrust 1.7.0, 1.7.2, 1.8.0, and 1.8.3
+  Resolved issues related to MSVC, GCC 4.4, and Clang
+  Disabled two-phase BFS expansion (resolves #72)
 
 #######################################
 #            Cusp v0.5.1              #
