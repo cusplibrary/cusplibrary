@@ -54,6 +54,9 @@ tester
 # Ignore all build release files
 testing/*release
 
+# Ignore pycusp scikit-build-core output
+python/build/
+
 # Ignore testing output
 testing/device_cuda_debug
 testing/device_omp_debug

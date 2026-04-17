@@ -1,0 +1,23 @@
+[build-system]
+requires = ["scikit-build-core>=0.10", "nanobind>=2.0"]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "pycusp"
+version = "0.1.0"
+description = "Python bindings for the CUSP sparse linear algebra library"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "CUSP Library" }]
+license = { text = "Apache-2.0" }
+dependencies = ["numpy>=1.23"]
+
+[project.optional-dependencies]
+test = ["pytest>=7", "scipy>=1.10"]
+
+[tool.scikit-build]
+minimum-version = "0.10"
+build-dir = "build/{wheel_tag}"
+wheel.packages = ["pycusp"]
+cmake.version = ">=3.20"
+cmake.build-type = "Release"
