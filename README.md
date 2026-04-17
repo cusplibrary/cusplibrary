@@ -1,8 +1,8 @@
 ## CUSP : A C++ Templated Sparse Matrix Library
 
-| CI | Coverage |
-| -- | -------- |
-| [![CI](https://github.com/cusplibrary/cusplibrary/actions/workflows/ci.yml/badge.svg)](https://github.com/cusplibrary/cusplibrary/actions/workflows/ci.yml) | [![Coverage](https://codecov.io/gh/cusplibrary/cusplibrary/branch/main/graph/badge.svg)](https://codecov.io/gh/cusplibrary/cusplibrary) |
+| CI | Coverage | Docs |
+| -- | -------- | ---- |
+| [![CI](https://github.com/cusplibrary/cusplibrary/actions/workflows/ci.yml/badge.svg)](https://github.com/cusplibrary/cusplibrary/actions/workflows/ci.yml) | [![Coverage](https://codecov.io/gh/cusplibrary/cusplibrary/branch/main/graph/badge.svg)](https://codecov.io/gh/cusplibrary/cusplibrary) | [![Docs](https://img.shields.io/badge/docs-cusplibrary.github.io-blue)](https://cusplibrary.github.io) |
 
 For more information, see the project documentation at [CUSP Website](http://cusplibrary.github.io).
 
